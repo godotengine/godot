@@ -1845,6 +1845,14 @@
 				Sets a shader material's shader.
 			</description>
 		</method>
+		<method name="material_set_sort_group">
+			<return type="void" />
+			<argument index="0" name="material" type="RID" />
+			<argument index="1" name="sort_group" type="int" />
+			<description>
+				Sets a material's sort group id.
+			</description>
+		</method>
 		<method name="mesh_add_surface">
 			<return type="void" />
 			<argument index="0" name="mesh" type="RID" />
@@ -2853,6 +2861,35 @@
 			<description>
 			</description>
 		</method>
+		<method name="sort_group_allocate">
+			<return type="int" />
+			<description>
+				Creates new sort group.
+			</description>
+		</method>
+		<method name="sort_group_free">
+			<return type="void" />
+			<argument index="0" name="sg" type="int" />
+			<description>
+				Removes sort group.
+			</description>
+		</method>
+		<method name="sort_group_set_parent">
+			<return type="void" />
+			<argument index="0" name="sg" type="int" />
+			<argument index="1" name="parent" type="int" />
+			<description>
+				Sets the sort group parent group id.
+			</description>
+		</method>
+		<method name="sort_group_set_render_priority">
+			<return type="void" />
+			<argument index="0" name="sg" type="int" />
+			<argument index="1" name="priority" type="int" />
+			<description>
+				Sets the sort group render priority.
+			</description>
+		</method>
 		<method name="spot_light_create">
 			<return type="RID" />
 			<description>
@@ -3545,10 +3582,10 @@
 		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
+		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-2147483648">
 			The minimum renderpriority of all materials.
 		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
+		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="2147483647">
 			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">

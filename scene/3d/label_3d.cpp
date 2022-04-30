@@ -31,6 +31,7 @@
 #include "label_3d.h"
 
 #include "core/core_string_names.h"
+#include "scene/3d/sort_group.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 
@@ -229,6 +230,7 @@ void Label3D::_validate_property(PropertyInfo &property) const {
 
 void Label3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_PARENTED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (!pending_update) {
 				_im_update();
@@ -408,6 +410,20 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
 			if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
 				RS::get_singleton()->material_set_render_priority(surf.material, p_priority);
+
+				int32_t sort_group = 0;
+				if (is_inside_tree()) {
+					Node *p = get_parent();
+					while (p) {
+						SortGroup *sg = Object::cast_to<SortGroup>(p);
+						if (sg) {
+							sort_group = sg->get_sort_group();
+							break;
+						}
+						p = p->get_parent();
+					}
+				}
+				RS::get_singleton()->material_set_sort_group(surf.material, sort_group);
 			} else {
 				surf.z_shift = p_priority * pixel_size;
 			}

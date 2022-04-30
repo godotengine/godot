@@ -141,11 +141,12 @@ protected:
 
 	void _im_update();
 	void _font_changed();
-	void _queue_update();
 
 	void _shape();
 
 public:
+	void _queue_update();
+
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
 

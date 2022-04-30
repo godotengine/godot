@@ -435,7 +435,11 @@ RendererRD::ShaderData *SceneShaderForwardMobile::_create_shader_func() {
 }
 
 void SceneShaderForwardMobile::MaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //32 bits
+}
+
+void SceneShaderForwardMobile::MaterialData::set_sort_group(int p_sort_group) {
+	sort_group = p_sort_group;
 }
 
 void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {

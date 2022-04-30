@@ -2381,6 +2381,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	sdcache->sort.sort_key1 = 0;
 	sdcache->sort.sort_key2 = 0;
+	sdcache->sort.sort_key3 = 0;
 
 	sdcache->sort.surface_index = p_surface;
 	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
@@ -2389,6 +2390,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
+	sdcache->sort.sort_group = p_material->sort_group;
 }
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, RID p_mat_src, RID p_mesh) {

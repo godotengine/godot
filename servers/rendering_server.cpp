@@ -1730,8 +1730,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("material_set_param", "material", "parameter", "value"), &RenderingServer::material_set_param);
 	ClassDB::bind_method(D_METHOD("material_get_param", "material", "parameter"), &RenderingServer::material_get_param);
 	ClassDB::bind_method(D_METHOD("material_set_render_priority", "material", "priority"), &RenderingServer::material_set_render_priority);
+	ClassDB::bind_method(D_METHOD("material_set_sort_group", "material", "sort_group"), &RenderingServer::material_set_sort_group);
 
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &RenderingServer::material_set_next_pass);
+
+	ClassDB::bind_method(D_METHOD("sort_group_allocate"), &RenderingServer::sort_group_allocate);
+	ClassDB::bind_method(D_METHOD("sort_group_free", "sg"), &RenderingServer::sort_group_free);
+	ClassDB::bind_method(D_METHOD("sort_group_set_render_priority", "sg", "priority"), &RenderingServer::sort_group_set_render_priority);
+	ClassDB::bind_method(D_METHOD("sort_group_set_parent", "sg", "parent"), &RenderingServer::sort_group_set_parent);
 
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MIN);
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MAX);

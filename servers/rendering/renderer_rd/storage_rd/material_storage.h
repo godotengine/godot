@@ -87,6 +87,7 @@ struct MaterialData {
 	void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 	virtual void set_render_priority(int p_priority) = 0;
+	virtual void set_sort_group(int p_sort_group) = 0;
 	virtual void set_next_pass(RID p_pass) = 0;
 	virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 	virtual ~MaterialData();
@@ -122,6 +123,7 @@ struct Material {
 	bool texture_dirty = false;
 	Map<StringName, Variant> params;
 	int32_t priority = 0;
+	int32_t sort_group = 0;
 	RID next_pass;
 	SelfList<Material> update_element;
 
@@ -221,6 +223,14 @@ private:
 
 	static void _material_uniform_set_erased(void *p_material);
 
+	/* SORT GROUP API */
+	struct SortGroup {
+		uint32_t render_priority = 2147483648;
+		int32_t parent = 0;
+	};
+	static SafeNumeric<int32_t> sort_group_base_id;
+	HashMap<int32_t, SortGroup> sort_groups;
+
 public:
 	static MaterialStorage *get_singleton();
 
@@ -302,6 +312,7 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 	virtual void material_set_render_priority(RID p_material, int priority) override;
+	virtual void material_set_sort_group(RID p_material, int p_sort_group) override;
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
@@ -326,6 +337,12 @@ public:
 			return material->data;
 		}
 	}
+
+	virtual int32_t sort_group_allocate() override;
+	virtual void sort_group_free(int32_t p_sg) override;
+	virtual void sort_group_set_render_priority(int32_t p_sg, int p_priority) override;
+	virtual void sort_group_set_parent(int32_t p_sg, int32_t p_parent) override;
+	virtual void sort_group_find_pair_group_priority(int32_t p_a_sort_group, int32_t p_b_sort_group, uint32_t &r_a_group_priority, uint32_t &r_b_group_priority);
 };
 
 } // namespace RendererRD

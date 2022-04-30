@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SortGroup" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		[SortGroup] allows grouping [Sprite3D] and [Label3D] nodes, to control the order in which they are rendered.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_sort_group" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns sort group id, which can be used to add any material to the group, using [member Material.sort_group] property.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
+			Sets the render priority for the group. Higher priority objects will be sorted in front of lower priority objects.
+		</member>
+	</members>
+</class>

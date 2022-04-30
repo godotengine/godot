@@ -920,7 +920,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 
 		bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
 
-		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && repeats < RenderElementInfo::MAX_REPEATS) {
+		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && prev_surface->sort.sort_key3 == surface->sort.sort_key3 && repeats < RenderElementInfo::MAX_REPEATS) {
 			//this element is the same as the previous one, count repeats to draw it using instancing
 			repeats++;
 		} else {
@@ -2711,6 +2711,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 
 	sdcache->sort.sort_key1 = 0;
 	sdcache->sort.sort_key2 = 0;
+	sdcache->sort.sort_key3 = 0;
 
 	sdcache->sort.surface_index = p_surface;
 	sdcache->sort.material_id_low = p_material_id & 0xFFFF;
@@ -2719,6 +2720,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	sdcache->sort.geometry_id = p_mesh.get_local_index(); //only meshes can repeat anyway
 	sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
+	sdcache->sort.sort_group = p_material->sort_group;
 	sdcache->sort.uses_projector = ginstance->using_projectors;
 	sdcache->sort.uses_softshadow = ginstance->using_softshadows;
 }

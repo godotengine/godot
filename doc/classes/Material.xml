@@ -47,12 +47,15 @@
 			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
+		<member name="sort_group" type="int" setter="set_sort_group" getter="get_sort_group">
+			Sets the sort group id, used to determine rendering order.
+		</member>
 	</members>
 	<constants>
-		<constant name="RENDER_PRIORITY_MAX" value="127">
+		<constant name="RENDER_PRIORITY_MAX" value="2147483647">
 			Maximum value for the [member render_priority] parameter.
 		</constant>
-		<constant name="RENDER_PRIORITY_MIN" value="-128">
+		<constant name="RENDER_PRIORITY_MIN" value="-2147483648">
 			Minimum value for the [member render_priority] parameter.
 		</constant>
 	</constants>

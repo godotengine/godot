@@ -246,6 +246,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/soft_dynamic_body_3d.h"
+#include "scene/3d/sort_group.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
@@ -478,6 +479,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(BoxOccluder3D);
 	GDREGISTER_CLASS(SphereOccluder3D);
 	GDREGISTER_CLASS(PolygonOccluder3D);
+	GDREGISTER_CLASS(SortGroup);
 	GDREGISTER_ABSTRACT_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);

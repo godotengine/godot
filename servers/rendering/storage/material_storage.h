@@ -77,6 +77,7 @@ public:
 	virtual void material_free(RID p_rid) = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
+	virtual void material_set_sort_group(RID p_material, int p_sort_group) = 0;
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
@@ -96,6 +97,11 @@ public:
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
 	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) = 0;
+
+	virtual int32_t sort_group_allocate() = 0;
+	virtual void sort_group_free(int32_t p_sg) = 0;
+	virtual void sort_group_set_render_priority(int32_t p_sg, int p_priority) = 0;
+	virtual void sort_group_set_parent(int32_t p_sg, int32_t p_parent) = 0;
 };
 
 #endif // !MATERIAL_STORAGE_H

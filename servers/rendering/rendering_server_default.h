@@ -244,7 +244,13 @@ public:
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
+	FUNC2(material_set_sort_group, RID, int)
 	FUNC2(material_set_next_pass, RID, RID)
+
+	FUNC0R(int32_t, sort_group_allocate)
+	FUNC1(sort_group_free, int32_t)
+	FUNC2(sort_group_set_render_priority, int32_t, int)
+	FUNC2(sort_group_set_parent, int32_t, int32_t)
 
 	/* MESH API */
 

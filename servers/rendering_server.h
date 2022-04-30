@@ -193,8 +193,8 @@ public:
 	/* COMMON MATERIAL API */
 
 	enum {
-		MATERIAL_RENDER_PRIORITY_MIN = -128,
-		MATERIAL_RENDER_PRIORITY_MAX = 127,
+		MATERIAL_RENDER_PRIORITY_MIN = (int64_t)INT32_MIN,
+		MATERIAL_RENDER_PRIORITY_MAX = (int64_t)INT32_MAX,
 	};
 
 	virtual RID material_create() = 0;
@@ -205,8 +205,14 @@ public:
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
+	virtual void material_set_sort_group(RID p_material, int sort_group) = 0;
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
+
+	virtual int32_t sort_group_allocate() = 0;
+	virtual void sort_group_free(int32_t p_sg) = 0;
+	virtual void sort_group_set_render_priority(int32_t p_sg, int p_priority) = 0;
+	virtual void sort_group_set_parent(int32_t p_sg, int32_t p_parent) = 0;
 
 	/* MESH API */
 

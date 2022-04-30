@@ -106,9 +106,9 @@ protected:
 	uint32_t skin_stride;
 	uint32_t mesh_surface_format;
 
+public:
 	void _queue_update();
 
-public:
 	void set_centered(bool p_center);
 	bool is_centered() const;
 

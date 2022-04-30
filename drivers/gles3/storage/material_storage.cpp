@@ -2452,6 +2452,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
 				material->data->set_render_priority(material->priority);
+				material->data->set_sort_group(material->sort_group);
 			}
 			material->shader_mode = new_mode;
 		}
@@ -2630,6 +2631,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
 	material->data->set_render_priority(material->priority);
+	material->data->set_sort_group(material->sort_group);
 	//updating happens later
 	material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
 	_material_queue_update(material, true, true);
@@ -2692,6 +2694,15 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	}
 }
 
+void MaterialStorage::material_set_sort_group(RID p_material, int sort_group) {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_COND(!material);
+	material->sort_group = sort_group;
+	if (material->data) {
+		material->data->set_sort_group(sort_group);
+	}
+}
+
 bool MaterialStorage::material_is_animated(RID p_material) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
@@ -2737,6 +2748,26 @@ void MaterialStorage::material_update_dependency(RID p_material, RendererStorage
 	if (material->next_pass.is_valid()) {
 		material_update_dependency(material->next_pass, p_instance);
 	}
+}
+
+SafeNumeric<int32_t> MaterialStorage::sort_group_base_id{ 1 };
+
+int32_t MaterialStorage::sort_group_allocate() {
+	int32_t id = sort_group_base_id.increment();
+	sort_groups[id] = SortGroup();
+	return id;
+}
+
+void MaterialStorage::sort_group_free(int32_t p_sg) {
+	sort_groups.erase(p_sg);
+}
+
+void MaterialStorage::sort_group_set_render_priority(int32_t p_sg, int p_priority) {
+	sort_groups[p_sg].render_priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN;
+}
+
+void MaterialStorage::sort_group_set_parent(int32_t p_sg, int32_t p_parent) {
+	sort_groups[p_sg].parent = p_parent;
 }
 
 // Canvas Shader Data

@@ -373,7 +373,15 @@ protected:
 
 		struct SortByKey {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
+				if (A->sort.sort_key3 == B->sort.sort_key3) {
+					if (A->sort.sort_key2 == B->sort.sort_key2) {
+						return (A->sort.sort_key1 < B->sort.sort_key1);
+					} else {
+						return (A->sort.sort_key2 < B->sort.sort_key2);
+					}
+				} else {
+					return (A->sort.sort_key3 < B->sort.sort_key3);
+				}
 			}
 		};
 
@@ -401,7 +409,22 @@ protected:
 
 		struct SortByReverseDepthAndPriority {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+				if (A->sort.sort_group == B->sort.sort_group) {
+					if (A->sort.priority == B->sort.priority) {
+						return (A->owner->depth > B->owner->depth);
+					} else {
+						return (A->sort.priority < B->sort.priority);
+					}
+				} else {
+					uint32_t a_group_priority = A->sort.priority;
+					uint32_t b_group_priority = B->sort.priority;
+					RendererRD::MaterialStorage::get_singleton()->sort_group_find_pair_group_priority(A->sort.sort_group, B->sort.sort_group, a_group_priority, b_group_priority);
+					if (a_group_priority == b_group_priority) {
+						return (A->owner->depth > B->owner->depth);
+					} else {
+						return (a_group_priority < b_group_priority);
+					}
+				}
 			}
 		};
 
@@ -486,14 +509,16 @@ protected:
 				uint64_t shader_id : 32;
 				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
 				uint64_t depth_layer : 4;
-				uint64_t priority : 8;
-
+				uint64_t priority : 32;
+				uint64_t sort_group : 32;
 				// uint64_t lod_index : 8; // no need to sort on LOD
 				// uint64_t uses_forward_gi : 1; // no GI here, remove
+				// uint64_t reserved : 5
 			};
 			struct {
 				uint64_t sort_key1;
 				uint64_t sort_key2;
+				uint64_t sort_key3;
 			};
 		} sort;
 

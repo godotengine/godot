@@ -45,6 +45,7 @@ class Material : public Resource {
 	RID material;
 	Ref<Material> next_pass;
 	int render_priority;
+	int sort_group = 0;
 
 	void inspect_native_shader_code();
 
@@ -70,6 +71,9 @@ public:
 
 	void set_render_priority(int p_priority);
 	int get_render_priority() const;
+
+	void set_sort_group(int p_sort_group);
+	int get_sort_group() const;
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const;

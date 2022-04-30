@@ -2307,6 +2307,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
 				material->data->set_render_priority(material->priority);
+				material->data->set_sort_group(material->sort_group);
 			}
 			material->shader_type = new_type;
 		}
@@ -2445,7 +2446,7 @@ void MaterialStorage::_update_queued_materials() {
 		material_update_list.remove(&material->update_element);
 
 		if (uniforms_changed) {
-			//some implementations such as 3D renderer cache the matreial uniform set, so update is required
+			//some implementations such as 3D renderer cache the material uniform set, so update is required
 			material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
 		}
 	}
@@ -2509,6 +2510,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
 	material->data->set_render_priority(material->priority);
+	material->data->set_sort_group(material->sort_group);
 	//updating happens later
 	material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
 	_material_queue_update(material, true, true);
@@ -2568,6 +2570,15 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	}
 }
 
+void MaterialStorage::material_set_sort_group(RID p_material, int sort_group) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_COND(!material);
+	material->sort_group = sort_group;
+	if (material->data) {
+		material->data->set_sort_group(sort_group);
+	}
+}
+
 bool MaterialStorage::material_is_animated(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
@@ -2623,4 +2634,58 @@ void MaterialStorage::material_set_data_request_function(ShaderType p_shader_typ
 MaterialDataRequestFunction MaterialStorage::material_get_data_request_function(ShaderType p_shader_type) {
 	ERR_FAIL_INDEX_V(p_shader_type, SHADER_TYPE_MAX, nullptr);
 	return material_data_request_func[p_shader_type];
+}
+
+SafeNumeric<int32_t> MaterialStorage::sort_group_base_id{ 1 };
+
+int32_t MaterialStorage::sort_group_allocate() {
+	int32_t id = sort_group_base_id.increment();
+	sort_groups[id] = SortGroup();
+	return id;
+}
+
+void MaterialStorage::sort_group_free(int32_t p_sg) {
+	sort_groups.erase(p_sg);
+}
+
+void MaterialStorage::sort_group_set_render_priority(int32_t p_sg, int p_priority) {
+	sort_groups[p_sg].render_priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN;
+}
+
+void MaterialStorage::sort_group_set_parent(int32_t p_sg, int32_t p_parent) {
+	sort_groups[p_sg].parent = p_parent;
+}
+
+void MaterialStorage::sort_group_find_pair_group_priority(int32_t p_a_sort_group, int32_t p_b_sort_group, uint32_t &r_a_group_priority, uint32_t &r_b_group_priority) {
+	List<int32_t> a_path;
+	int32_t a = p_a_sort_group;
+	do {
+		a_path.push_front(a);
+		a = sort_groups[a].parent;
+	} while (a != 0);
+
+	List<int32_t> b_path;
+	int32_t b = p_b_sort_group;
+	do {
+		b_path.push_front(b);
+		b = sort_groups[b].parent;
+	} while (b != 0);
+
+	List<int32_t>::Element *A = a_path.front();
+	List<int32_t>::Element *B = b_path.front();
+	while (A && B) {
+		if (A->get() != B->get()) {
+			r_a_group_priority = sort_groups[A->get()].render_priority;
+			r_b_group_priority = sort_groups[B->get()].render_priority;
+			return;
+		}
+		A = A->next();
+		B = B->next();
+	}
+	if (A && A->get() != 0) {
+		r_a_group_priority = sort_groups[A->get()].render_priority;
+	}
+	if (B && B->get() != 0) {
+		r_b_group_priority = sort_groups[B->get()].render_priority;
+	}
 }

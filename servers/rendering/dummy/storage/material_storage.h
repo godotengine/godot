@@ -77,6 +77,7 @@ public:
 	virtual void material_free(RID p_rid) override{};
 
 	virtual void material_set_render_priority(RID p_material, int priority) override {}
+	virtual void material_set_sort_group(RID p_material, int p_sort_group) override {}
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) override {}
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override {}
@@ -88,6 +89,11 @@ public:
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
 	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) override {}
+
+	virtual int32_t sort_group_allocate() override { return 0; };
+	virtual void sort_group_free(int32_t p_sg) override{};
+	virtual void sort_group_set_render_priority(int32_t p_sg, int priority) override{};
+	virtual void sort_group_set_parent(int32_t p_sg, int32_t p_parent) override{};
 };
 
 } // namespace RendererDummy

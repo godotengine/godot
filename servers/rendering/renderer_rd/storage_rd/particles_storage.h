@@ -387,6 +387,7 @@ private:
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
+		virtual void set_sort_group(int p_sort_group) {}
 		virtual void set_next_pass(RID p_pass) {}
 		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~ParticlesMaterialData();

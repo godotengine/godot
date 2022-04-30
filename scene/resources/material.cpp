@@ -67,6 +67,15 @@ int Material::get_render_priority() const {
 	return render_priority;
 }
 
+void Material::set_sort_group(int p_sort_group) {
+	sort_group = p_sort_group;
+	RS::get_singleton()->material_set_sort_group(material, p_sort_group);
+}
+
+int Material::get_sort_group() const {
+	return sort_group;
+}
+
 RID Material::get_rid() const {
 	return material;
 }
@@ -126,10 +135,14 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
 
+	ClassDB::bind_method(D_METHOD("set_sort_group", "sort_group"), &Material::set_sort_group);
+	ClassDB::bind_method(D_METHOD("get_sort_group"), &Material::get_sort_group);
+
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_group"), "set_sort_group", "get_sort_group");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
 
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);

@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "core/core_string_names.h"
+#include "scene/3d/sort_group.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -67,6 +68,7 @@ void SpriteBase3D::_propagate_color_changed() {
 
 void SpriteBase3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_PARENTED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (!pending_update) {
 				_im_update();
@@ -629,8 +631,24 @@ void Sprite3D::_draw() {
 		last_texture = texture->get_rid();
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
-		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
-		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
+		RID material = get_material();
+		RS::get_singleton()->material_set_render_priority(material, get_render_priority());
+
+		int32_t sort_group = 0;
+		if (is_inside_tree()) {
+			Node *p = get_parent();
+			while (p) {
+				SortGroup *sg = Object::cast_to<SortGroup>(p);
+				if (sg) {
+					sort_group = sg->get_sort_group();
+					break;
+				}
+				p = p->get_parent();
+			}
+		}
+		RS::get_singleton()->material_set_sort_group(material, sort_group);
+
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, material);
 	}
 }
 
@@ -995,8 +1013,24 @@ void AnimatedSprite3D::_draw() {
 		last_texture = texture->get_rid();
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
-		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
-		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
+		RID material = get_material();
+		RS::get_singleton()->material_set_render_priority(material, get_render_priority());
+
+		int32_t sort_group = 0;
+		if (is_inside_tree()) {
+			Node *p = get_parent();
+			while (p) {
+				SortGroup *sg = Object::cast_to<SortGroup>(p);
+				if (sg) {
+					sort_group = sg->get_sort_group();
+					break;
+				}
+				p = p->get_parent();
+			}
+		}
+		RS::get_singleton()->material_set_sort_group(material, sort_group);
+
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, material);
 	}
 }
 
