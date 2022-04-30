@@ -110,6 +110,32 @@
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS(m_name);
 
+#define MAKE_DEFAULT_FONT_MSDF(m_name, m_variations)                  \
+	Ref<Font> m_name;                                                 \
+	m_name.instantiate();                                             \
+	if (CustomFont.is_valid()) {                                      \
+		m_name->add_data(CustomFontMSDF);                             \
+		m_name->add_data(DefaultFontMSDF);                            \
+	} else {                                                          \
+		m_name->add_data(DefaultFontMSDF);                            \
+	}                                                                 \
+	{                                                                 \
+		Dictionary variations;                                        \
+		if (!m_variations.is_empty()) {                               \
+			Vector<String> variation_tags = m_variations.split(",");  \
+			for (int i = 0; i < variation_tags.size(); i++) {         \
+				Vector<String> tokens = variation_tags[i].split("="); \
+				if (tokens.size() == 2) {                             \
+					variations[tokens[0]] = tokens[1].to_float();     \
+				}                                                     \
+			}                                                         \
+		}                                                             \
+		m_name->set_variation_coordinates(variations);                \
+	}                                                                 \
+	m_name->set_spacing(TextServer::SPACING_TOP, -EDSCALE);           \
+	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
+	MAKE_FALLBACKS(m_name);
+
 #define MAKE_SLANTED_FONT(m_name, m_variations)                       \
 	Ref<Font> m_name;                                                 \
 	m_name.instantiate();                                             \
@@ -163,6 +189,32 @@
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS_BOLD(m_name);
 
+#define MAKE_BOLD_FONT_MSDF(m_name, m_variations)                     \
+	Ref<Font> m_name;                                                 \
+	m_name.instantiate();                                             \
+	if (CustomFontBold.is_valid()) {                                  \
+		m_name->add_data(CustomFontBoldMSDF);                         \
+		m_name->add_data(DefaultFontBoldMSDF);                        \
+	} else {                                                          \
+		m_name->add_data(DefaultFontBoldMSDF);                        \
+	}                                                                 \
+	{                                                                 \
+		Dictionary variations;                                        \
+		if (!m_variations.is_empty()) {                               \
+			Vector<String> variation_tags = m_variations.split(",");  \
+			for (int i = 0; i < variation_tags.size(); i++) {         \
+				Vector<String> tokens = variation_tags[i].split("="); \
+				if (tokens.size() == 2) {                             \
+					variations[tokens[0]] = tokens[1].to_float();     \
+				}                                                     \
+			}                                                         \
+		}                                                             \
+		m_name->set_variation_coordinates(variations);                \
+	}                                                                 \
+	m_name->set_spacing(TextServer::SPACING_TOP, -EDSCALE);           \
+	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
+	MAKE_FALLBACKS_BOLD(m_name);
+
 #define MAKE_SOURCE_FONT(m_name, m_variations)                        \
 	Ref<Font> m_name;                                                 \
 	m_name.instantiate();                                             \
@@ -189,13 +241,14 @@
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS(m_name);
 
-Ref<FontData> load_cached_external_font(const String &p_path, TextServer::Hinting p_hinting, bool p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning) {
+Ref<FontData> load_cached_external_font(const String &p_path, TextServer::Hinting p_hinting, bool p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false) {
 	Ref<FontData> font;
 	font.instantiate();
 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
 
 	font->set_data(data);
+	font->set_multichannel_signed_distance_field(p_msdf);
 	font->set_antialiased(p_aa);
 	font->set_hinting(p_hinting);
 	font->set_force_autohinter(p_autohint);
@@ -204,11 +257,12 @@ Ref<FontData> load_cached_external_font(const String &p_path, TextServer::Hintin
 	return font;
 }
 
-Ref<FontData> load_cached_internal_font(const uint8_t *p_data, size_t p_size, TextServer::Hinting p_hinting, bool p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning) {
+Ref<FontData> load_cached_internal_font(const uint8_t *p_data, size_t p_size, TextServer::Hinting p_hinting, bool p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false) {
 	Ref<FontData> font;
 	font.instantiate();
 
 	font->set_data_ptr(p_data, p_size);
+	font->set_multichannel_signed_distance_field(p_msdf);
 	font->set_antialiased(p_aa);
 	font->set_hinting(p_hinting);
 	font->set_force_autohinter(p_autohint);
@@ -261,6 +315,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
 	}
 
+	Ref<FontData> CustomFontMSDF;
+	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
+		CustomFontMSDF = load_cached_external_font(custom_font_path, font_hinting, font_antialiased, true, font_subpixel_positioning, true);
+	} else {
+		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
+	}
+
 	Ref<FontData> CustomFontSlanted;
 	if (CustomFont.is_valid()) {
 		CustomFontSlanted = CustomFont->duplicate();
@@ -282,6 +343,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		CustomFontBold->set_embolden(embolden_strength);
 	}
 
+	Ref<FontData> CustomFontBoldMSDF;
+	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
+		CustomFontBoldMSDF = load_cached_external_font(custom_font_path, font_hinting, font_antialiased, true, font_subpixel_positioning, true);
+	} else {
+		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
+	}
+
 	/* Custom source code font */
 
 	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
@@ -295,7 +363,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Noto Sans */
 
 	Ref<FontData> DefaultFont = load_cached_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
+	Ref<FontData> DefaultFontMSDF = load_cached_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiased, true, font_subpixel_positioning, true);
 	Ref<FontData> DefaultFontBold = load_cached_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
+	Ref<FontData> DefaultFontBoldMSDF = load_cached_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiased, true, font_subpixel_positioning, true);
 	Ref<FontData> FontArabic = load_cached_internal_font(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
 	Ref<FontData> FontArabicBold = load_cached_internal_font(_font_NotoNaskhArabicUI_Bold, _font_NotoNaskhArabicUI_Bold_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
 	Ref<FontData> FontBengali = load_cached_internal_font(_font_NotoSansBengaliUI_Regular, _font_NotoSansBengaliUI_Regular_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
@@ -347,11 +417,17 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
 	p_theme->set_font("main", "EditorFonts", df);
 
+	MAKE_DEFAULT_FONT_MSDF(df_msdf, String());
+	p_theme->set_font("main_msdf", "EditorFonts", df_msdf);
+
 	// Bold font
 	MAKE_BOLD_FONT(df_bold, String());
 	MAKE_SLANTED_FONT(df_italic, String());
 	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
 	p_theme->set_font("bold", "EditorFonts", df_bold);
+
+	MAKE_BOLD_FONT_MSDF(df_bold_msdf, String());
+	p_theme->set_font("main_bold_msdf", "EditorFonts", df_bold_msdf);
 
 	// Title font
 	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
