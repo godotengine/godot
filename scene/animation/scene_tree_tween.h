@@ -88,6 +88,9 @@ private:
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
+#ifdef DEBUG_ENABLED
+	bool is_infinite = false;
+#endif
 
 	void start_tweeners();
 
