@@ -850,7 +850,7 @@ bool CallbackTweener::step(float &r_delta) {
 		Callable::CallError ce;
 		callback.call(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_call_error_text(callback.get_object(), callback.get_method(), nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
 		}
 
 		finished = true;
@@ -921,7 +921,7 @@ bool MethodTweener::step(float &r_delta) {
 	Callable::CallError ce;
 	callback.call(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_call_error_text(callback.get_object(), callback.get_method(), argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
 	}
 
 	if (time < duration) {
