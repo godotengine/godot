@@ -7,6 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_region_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [Navigation2DServer]. Combined with [method Navigation2DServer.map_get_closest_point_owner] can be used to identify the [NavigationPolygonInstance] closest to a point on the merged navigation map.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
