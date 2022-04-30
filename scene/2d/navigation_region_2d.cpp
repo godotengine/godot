@@ -387,6 +387,10 @@ uint32_t NavigationRegion2D::get_layers() const {
 	return NavigationServer2D::get_singleton()->region_get_layers(region);
 }
 
+RID NavigationRegion2D::get_region_rid() const {
+	return region;
+}
+
 /////////////////////////////
 #ifdef TOOLS_ENABLED
 Rect2 NavigationRegion2D::_edit_get_rect() const {
@@ -533,6 +537,8 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion2D::set_layers);
 	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion2D::get_layers);
+
+	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion2D::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("_navpoly_changed"), &NavigationRegion2D::_navpoly_changed);
 
