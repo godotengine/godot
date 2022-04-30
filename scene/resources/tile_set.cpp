@@ -469,9 +469,9 @@ TileSet::TileMode TileSet::tile_get_tile_mode(int p_id) const {
 	return tile_map[p_id].tile_mode;
 }
 
-void TileSet::autotile_set_icon_coordinate(int p_id, Vector2 coord) {
+void TileSet::autotile_set_icon_coordinate(int p_id, const Vector2 &p_coord) {
 	ERR_FAIL_COND_MSG(!tile_map.has(p_id), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
-	tile_map[p_id].autotile_data.icon_coord = coord;
+	tile_map[p_id].autotile_data.icon_coord = p_coord;
 	emit_changed();
 }
 
@@ -492,7 +492,7 @@ int TileSet::autotile_get_spacing(int p_id) const {
 	return tile_map[p_id].autotile_data.spacing;
 }
 
-void TileSet::autotile_set_size(int p_id, Size2 p_size) {
+void TileSet::autotile_set_size(int p_id, const Size2 &p_size) {
 	ERR_FAIL_COND_MSG(!tile_map.has(p_id), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
 	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
 	tile_map[p_id].autotile_data.size = p_size;
@@ -550,7 +550,7 @@ const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 	return tile_map[p_id].autotile_data.z_index_map;
 }
 
-void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag) {
+void TileSet::autotile_set_bitmask(int p_id, const Vector2 &p_coord, uint32_t p_flag) {
 	ERR_FAIL_COND_MSG(!tile_map.has(p_id), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
 	if (p_flag == 0) {
 		if (tile_map[p_id].autotile_data.flags.has(p_coord)) {
@@ -561,7 +561,7 @@ void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag) {
 	}
 }
 
-uint32_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
+uint32_t TileSet::autotile_get_bitmask(int p_id, const Vector2 &p_coord) {
 	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), 0, vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
 	if (!tile_map[p_id].autotile_data.flags.has(p_coord)) {
 		return 0;
