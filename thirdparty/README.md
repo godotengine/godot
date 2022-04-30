@@ -245,6 +245,9 @@ Files generated from upstream source:
 Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
+- `jpge.{c,h}`
+
+Manually applied upstream PR 18 to jpge.cpp to fix macOS/iOS builds (remove `malloc.h` include).
 
 
 ## libogg

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_saver_jpege.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RESOURCE_SAVER_JPG_H
+#define RESOURCE_SAVER_JPG_H
 
-#include "image_loader_jpegd.h"
-#include "resource_saver_jpege.h"
+#include "core/io/image.h"
+#include "core/io/resource_saver.h"
 
-static ImageLoaderJPG *image_loader_jpg = nullptr;
-static Ref<ResourceSaverJPG> resource_saver_jpg;
+#include <jpge.h>
 
-void register_jpg_types() {
-	image_loader_jpg = memnew(ImageLoaderJPG);
-	ImageLoader::add_image_format_loader(image_loader_jpg);
+class ResourceSaverJPG : public ResourceFormatSaver {
+public:
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0) override;
+	virtual bool recognize(const RES &p_resource) const override;
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const override;
 
-	resource_saver_jpg.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_jpg);
-}
+	Error save_image(const String &p_path, const Ref<Image> &p_image);
+	Vector<uint8_t> save_jpg_to_buffer(Ref<Image> p_image);
 
-void unregister_jpg_types() {
-	ResourceSaver::remove_resource_format_saver(resource_saver_jpg);
-	resource_saver_jpg.unref();
+	ResourceSaverJPG() {}
+};
 
-	memdelete(image_loader_jpg);
-}
+#endif // RESOURCE_SAVER_JPG_H
