@@ -134,6 +134,16 @@ Color SpriteBase3D::get_modulate() const {
 	return modulate;
 }
 
+void SpriteBase3D::set_render_priority(int p_priority) {
+	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	render_priority = p_priority;
+	_queue_update();
+}
+
+int SpriteBase3D::get_render_priority() const {
+	return render_priority;
+}
+
 void SpriteBase3D::set_pixel_size(real_t p_amount) {
 	pixel_size = p_amount;
 	_queue_update();
@@ -295,6 +305,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
 
+	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &SpriteBase3D::set_render_priority);
+	ClassDB::bind_method(D_METHOD("get_render_priority"), &SpriteBase3D::get_render_priority);
+
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -335,6 +348,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
@@ -613,6 +627,10 @@ void Sprite3D::_draw() {
 	if (last_texture != texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
 		last_texture = texture->get_rid();
+	}
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
 	}
 }
 
@@ -975,6 +993,10 @@ void AnimatedSprite3D::_draw() {
 	if (last_texture != texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
 		last_texture = texture->get_rid();
+	}
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
 	}
 }
 
