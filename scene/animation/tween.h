@@ -116,6 +116,9 @@ private:
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
+#ifdef DEBUG_ENABLED
+	bool is_infinite = false;
+#endif
 
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
