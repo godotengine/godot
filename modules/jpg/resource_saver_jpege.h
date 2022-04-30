@@ -37,6 +37,25 @@
 #include <jpge.h>
 
 class ResourceSaverJPG : public ResourceFormatSaver {
+	GDCLASS(ResourceSaverJPG, ResourceFormatSaver);
+
+public:
+	enum SubSamplingFactor {
+		SUBSAPLING_Y_ONLY = 0,
+		SUBSAPLING_H1V1,
+		SUBSAPLING_H2V1,
+		SUBSAPLING_H2V2,
+		SUBSAPLING_MAX,
+	};
+
+protected:
+	static void _bind_methods();
+
+private:
+	Dictionary jpge_options;
+
+	static Error _configure_jpge_parameters(const Dictionary &p_config, jpge::params &p_params);
+
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0) override;
 	virtual bool recognize(const RES &p_resource) const override;
@@ -44,8 +63,11 @@ public:
 
 	Error save_image(const String &p_path, const Ref<Image> &p_image);
 	Vector<uint8_t> save_jpg_to_buffer(Ref<Image> p_image);
+	void set_encode_options(const Dictionary &p_options);
 
 	ResourceSaverJPG() {}
 };
+
+VARIANT_ENUM_CAST(ResourceSaverJPG::SubSamplingFactor);
 
 #endif // RESOURCE_SAVER_JPG_H

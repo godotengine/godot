@@ -33,6 +33,59 @@
 #include "core/io/file_access.h"
 #include "scene/resources/texture.h"
 
+void ResourceSaverJPG::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("save_image", "path", "image"), &ResourceSaverJPG::save_image);
+	ClassDB::bind_method(D_METHOD("save_image_to_buffer", "image"), &ResourceSaverJPG::save_jpg_to_buffer);
+	ClassDB::bind_method(D_METHOD("set_encode_options", "options"), &ResourceSaverJPG::set_encode_options);
+	BIND_ENUM_CONSTANT(SUBSAPLING_Y_ONLY);
+	BIND_ENUM_CONSTANT(SUBSAPLING_H1V1);
+	BIND_ENUM_CONSTANT(SUBSAPLING_H2V1);
+	BIND_ENUM_CONSTANT(SUBSAPLING_H2V2);
+	BIND_ENUM_CONSTANT(SUBSAPLING_MAX);
+}
+
+#define SET_VAL(p_key, p_type)                                                                                                                                    \
+	if (p_config.has(#p_key)) {                                                                                                                                   \
+		ERR_FAIL_COND_V_MSG(p_config[#p_key].get_type() != p_type, ERR_INVALID_PARAMETER, vformat("Invalid property type for: %s, expected %d", #p_key, p_type)); \
+		p_params.m_##p_key = p_config[#p_key];                                                                                                                    \
+	}
+Error ResourceSaverJPG::_configure_jpge_parameters(const Dictionary &p_config, jpge::params &p_params) {
+	SET_VAL(quality, Variant::INT);
+	SET_VAL(no_chroma_discrim_flag, Variant::BOOL);
+	SET_VAL(two_pass_flag, Variant::BOOL);
+	SET_VAL(use_std_tables, Variant::BOOL);
+	if (p_config.has("subsampling") && p_config["subsampling"].get_type() == Variant::INT) {
+		SubSamplingFactor factor = (SubSamplingFactor)(p_config["subsampling"].operator int());
+		switch (factor) {
+			case SUBSAPLING_Y_ONLY:
+				p_params.m_subsampling = jpge::Y_ONLY;
+				break;
+			case SUBSAPLING_H1V1:
+				p_params.m_subsampling = jpge::H1V1;
+				break;
+			case SUBSAPLING_H2V1:
+				p_params.m_subsampling = jpge::H2V1;
+				break;
+			case SUBSAPLING_H2V2:
+				p_params.m_subsampling = jpge::H2V2;
+				break;
+			default:
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid subsampling factor");
+		}
+	}
+	return OK;
+}
+#undef SET_VAL
+
+void ResourceSaverJPG::set_encode_options(const Dictionary &p_options) {
+	// Validate options.
+	struct jpge::params params;
+	Error err = _configure_jpge_parameters(p_options, params);
+	ERR_FAIL_COND(err != OK);
+
+	jpge_options = p_options;
+}
+
 Error ResourceSaverJPG::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;
 
@@ -58,6 +111,11 @@ Error ResourceSaverJPG::save_image(const String &p_path, const Ref<Image> &p_ima
 
 Vector<uint8_t> ResourceSaverJPG::save_jpg_to_buffer(Ref<Image> p_image) {
 	Vector<uint8_t> out;
+
+	struct jpge::params params;
+	Error err = _configure_jpge_parameters(jpge_options, params);
+	ERR_FAIL_COND_V(err != OK, out);
+
 	Ref<Image> source_image = p_image->duplicate();
 	if (source_image->is_compressed()) {
 		source_image->decompress();
@@ -71,8 +129,6 @@ Vector<uint8_t> ResourceSaverJPG::save_jpg_to_buffer(Ref<Image> p_image) {
 	const Vector<uint8_t> image_data = source_image->get_data();
 	int size = image_data.size();
 	out.resize(size);
-
-	struct jpge::params params;
 	bool ret = jpge::compress_image_to_jpeg_file_in_memory(out.ptrw(), size, width, height, 3, image_data.ptr(), params);
 	ERR_FAIL_COND_V(!ret, out);
 	return out;

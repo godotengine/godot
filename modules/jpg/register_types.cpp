@@ -37,6 +37,8 @@ static ImageLoaderJPG *image_loader_jpg = nullptr;
 static Ref<ResourceSaverJPG> resource_saver_jpg;
 
 void register_jpg_types() {
+	GDREGISTER_CLASS(ResourceSaverJPG);
+
 	image_loader_jpg = memnew(ImageLoaderJPG);
 	ImageLoader::add_image_format_loader(image_loader_jpg);
 

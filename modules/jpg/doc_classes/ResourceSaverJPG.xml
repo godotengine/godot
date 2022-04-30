@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceSaverJPG" inherits="ResourceFormatSaver" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="save_image">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="image" type="Image" />
+			<description>
+				Saves an [code]image[/code] as a JPEG file with the given [code]path[/code] using the configured encode options. See [method set_encode_options].
+			</description>
+		</method>
+		<method name="save_image_to_buffer">
+			<return type="PackedByteArray" />
+			<argument index="0" name="image" type="Image" />
+			<description>
+				Saves an [code]image[/code] as a JPEG buffer using the configured encode options. See [method set_encode_options].
+			</description>
+		</method>
+		<method name="set_encode_options">
+			<return type="void" />
+			<argument index="0" name="options" type="Dictionary" />
+			<description>
+				Sets the encoding options for this [ResourceSaverJPG]. Default options are:
+				[codeblock]
+				{
+				    "quality": 85, # Quality: 1-100, higher is better. Typical values are around 50-95.
+				    "subsampling": ResourceSaverJPG.SUBSAPLING_H2V2,
+				    "two_pass_flag": false,
+				    "use_std_tables": false, # Use traditional quantization tables from JPEG Annex K instead of mozjpeg's default.
+				}
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SUBSAPLING_Y_ONLY" value="0" enum="SubSamplingFactor">
+			Y (grayscale) only.
+		</constant>
+		<constant name="SUBSAPLING_H1V1" value="1" enum="SubSamplingFactor">
+			YCbCr, no subsampling (H1V1, YCbCr 1x1x1, 3 blocks per MCU).
+		</constant>
+		<constant name="SUBSAPLING_H2V1" value="2" enum="SubSamplingFactor">
+			YCbCr, H2V1 subsampling (YCbCr 2x1x1, 4 blocks per MCU).
+		</constant>
+		<constant name="SUBSAPLING_H2V2" value="3" enum="SubSamplingFactor">
+			YCbCr, H2V2 subsampling (YCbCr 4x1x1, 6 blocks per MCU. Very common.
+		</constant>
+		<constant name="SUBSAPLING_MAX" value="4" enum="SubSamplingFactor">
+			Represents the size of the [enum SubSamplingFactor] enum.
+		</constant>
+	</constants>
+</class>
