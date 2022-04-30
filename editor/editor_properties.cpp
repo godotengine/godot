@@ -2980,7 +2980,7 @@ void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_ed
 		List<String> extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 
-		if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() == parent)) {
+		if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
 			// If the resource belongs to another scene, edit it in that scene instead.
 			EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
 			return;
