@@ -69,6 +69,10 @@ bool NavigationMeshInstance::is_enabled() const {
 	return enabled;
 }
 
+RID NavigationMeshInstance::get_region_rid() const {
+	return region;
+}
+
 /////////////////////////////
 
 void NavigationMeshInstance::_notification(int p_what) {
@@ -209,6 +213,8 @@ void NavigationMeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshInstance::is_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationMeshInstance::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationMeshInstance::bake_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationMeshInstance::_bake_finished);

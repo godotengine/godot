@@ -15,6 +15,12 @@
 				Bakes the [NavigationMesh]. The baking is done in a separate thread because navigation baking is not a cheap operation. This can be done at runtime. When it is completed, it automatically sets the new [NavigationMesh].
 			</description>
 		</method>
+		<method name="get_region_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer]. Combined with [method NavigationServer.map_get_closest_point_owner] can be used to identify the [NavigationMeshInstance] closest to a point on the merged navigation map.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">

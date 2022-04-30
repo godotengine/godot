@@ -57,6 +57,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	RID get_region_rid() const;
+
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
