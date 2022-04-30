@@ -295,6 +295,8 @@
 	<signals>
 		<signal name="finished">
 			<description>
+				Emitted when the [SceneTreeTween] has finished all tweening. Never emitted when the [SceneTreeTween] is set to infinite looping (see [method set_loops]).
+				[b]Note:[/b] The [SceneTreeTween] is removed (invalidated) after this signal is emitted, but it doesn't happen immediately, but on the next processing frame. Calling [method stop] inside the signal callback will preserve the [SceneTreeTween].
 			</description>
 		</signal>
 		<signal name="loop_finished">
