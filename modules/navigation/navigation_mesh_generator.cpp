@@ -34,7 +34,6 @@
 
 #include "core/math/convex_hull.h"
 #include "core/os/thread.h"
-#include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -202,14 +201,17 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
-			for (int i = 0; i < p_node->get_child_count(); ++i) {
-				Node *child = p_node->get_child(i);
-				if (Object::cast_to<CollisionShape3D>(child)) {
-					CollisionShape3D *col_shape = Object::cast_to<CollisionShape3D>(child);
+			List<uint32_t> shape_owners;
+			static_body->get_shape_owners(&shape_owners);
+			for (uint32_t shape_owner : shape_owners) {
+				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
+				for (int i = 0; i < shape_count; i++) {
+					Ref<Shape3D> s = static_body->shape_owner_get_shape(shape_owner, i);
+					if (s.is_null()) {
+						continue;
+					}
 
-					Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * col_shape->get_transform();
-
-					Ref<Shape3D> s = col_shape->get_shape();
+					const Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * static_body->shape_owner_get_transform(shape_owner);
 
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
