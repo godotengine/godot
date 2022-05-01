@@ -129,6 +129,7 @@ EditorAbout::EditorAbout() {
 	vbc->add_child(hbc);
 
 	_logo = memnew(TextureRect);
+	_logo->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	hbc->add_child(_logo);
 
 	VBoxContainer *version_info_vbc = memnew(VBoxContainer);
