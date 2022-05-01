@@ -3548,13 +3548,25 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedVector3Array array = PackedVector3Array();
-					for (int i = 0; i < array_size; i += 3) {
-						array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						PackedColorArray array = PackedColorArray();
+						for (int i = 0; i < array_size; i += 3) {
+							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+						}
+						value = Variant(array);
+					} else {
+						PackedVector3Array array = PackedVector3Array();
+						for (int i = 0; i < array_size; i += 3) {
+							array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+						}
+						value = Variant(array);
 					}
-					value = Variant(array);
 				} else {
-					value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real));
+					} else {
+						value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+					}
 				}
 				break;
 			case ShaderLanguage::TYPE_VEC4:
@@ -3760,9 +3772,19 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC3:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_VECTOR3_ARRAY;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+					pi.type = Variant::PACKED_COLOR_ARRAY;
+				} else {
+					pi.type = Variant::PACKED_VECTOR3_ARRAY;
+				}
 			} else {
-				pi.type = Variant::VECTOR3;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+					pi.type = Variant::COLOR;
+				} else {
+					pi.type = Variant::VECTOR3;
+				}
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
@@ -8001,8 +8023,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
 							} else if (tk.type == TK_HINT_COLOR) {
-								if (type != TYPE_VEC4) {
-									_set_error(vformat(RTR("Color hint is for '%s' only."), "vec4"));
+								if (type != TYPE_VEC3 && type != TYPE_VEC4) {
+									_set_error(vformat(RTR("Color hint is for '%s' or '%s' only."), "vec3", "vec4"));
 									return ERR_PARSE_ERROR;
 								}
 								uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
@@ -9514,7 +9536,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 		} break;
 		case COMPLETION_HINT: {
-			if (completion_base == DataType::TYPE_VEC4) {
+			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
 				ScriptLanguage::CodeCompletionOption option("hint_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
