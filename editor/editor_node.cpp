@@ -70,7 +70,6 @@
 #include "servers/physics_server_2d.h"
 #include "servers/rendering/rendering_device.h"
 
-#include "editor/animation_track_editor.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -82,7 +81,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_dialog.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
@@ -92,12 +90,8 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_quick_open.h"
-#include "editor/editor_resource_picker.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
 #include "editor/editor_run_native.h"
-#include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
@@ -123,7 +117,6 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
-#include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_shader_file.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -133,78 +126,21 @@
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugin_config_dialog.h"
-#include "editor/plugins/animation_blend_space_1d_editor.h"
-#include "editor/plugins/animation_blend_space_2d_editor.h"
-#include "editor/plugins/animation_blend_tree_editor_plugin.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
-#include "editor/plugins/animation_state_machine_editor.h"
-#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
-#include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
-#include "editor/plugins/bit_map_editor_plugin.h"
-#include "editor/plugins/bone_map_editor_plugin.h"
-#include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/cast_2d_editor_plugin.h"
-#include "editor/plugins/collision_polygon_2d_editor_plugin.h"
-#include "editor/plugins/collision_shape_2d_editor_plugin.h"
-#include "editor/plugins/control_editor_plugin.h"
-#include "editor/plugins/cpu_particles_2d_editor_plugin.h"
-#include "editor/plugins/cpu_particles_3d_editor_plugin.h"
-#include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
-#include "editor/plugins/editor_debugger_plugin.h"
-#include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
-#include "editor/plugins/gpu_particles_2d_editor_plugin.h"
-#include "editor/plugins/gpu_particles_3d_editor_plugin.h"
-#include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
-#include "editor/plugins/gradient_editor_plugin.h"
-#include "editor/plugins/gradient_texture_2d_editor_plugin.h"
-#include "editor/plugins/input_event_editor_plugin.h"
-#include "editor/plugins/light_occluder_2d_editor_plugin.h"
-#include "editor/plugins/lightmap_gi_editor_plugin.h"
-#include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
-#include "editor/plugins/mesh_editor_plugin.h"
-#include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
-#include "editor/plugins/multimesh_editor_plugin.h"
-#include "editor/plugins/navigation_link_2d_editor_plugin.h"
-#include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
-#include "editor/plugins/path_2d_editor_plugin.h"
-#include "editor/plugins/path_3d_editor_plugin.h"
-#include "editor/plugins/physical_bone_3d_editor_plugin.h"
-#include "editor/plugins/polygon_2d_editor_plugin.h"
-#include "editor/plugins/polygon_3d_editor_plugin.h"
-#include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
-#include "editor/plugins/shader_editor_plugin.h"
-#include "editor/plugins/shader_file_editor_plugin.h"
-#include "editor/plugins/skeleton_2d_editor_plugin.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
-#include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
-#include "editor/plugins/sprite_2d_editor_plugin.h"
-#include "editor/plugins/sprite_frames_editor_plugin.h"
-#include "editor/plugins/style_box_editor_plugin.h"
-#include "editor/plugins/sub_viewport_preview_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
-#include "editor/plugins/texture_3d_editor_plugin.h"
-#include "editor/plugins/texture_editor_plugin.h"
-#include "editor/plugins/texture_layered_editor_plugin.h"
-#include "editor/plugins/texture_region_editor_plugin.h"
-#include "editor/plugins/theme_editor_plugin.h"
-#include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
-#include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "editor/register_exporters.h"
@@ -4129,63 +4065,6 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
-void EditorNode::register_editor_types() {
-	ResourceLoader::set_timestamp_on_load(true);
-	ResourceSaver::set_timestamp_on_save(true);
-
-	GDREGISTER_CLASS(EditorPaths);
-	GDREGISTER_CLASS(EditorPlugin);
-	GDREGISTER_CLASS(EditorTranslationParserPlugin);
-	GDREGISTER_CLASS(EditorImportPlugin);
-	GDREGISTER_CLASS(EditorScript);
-	GDREGISTER_CLASS(EditorSelection);
-	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_ABSTRACT_CLASS(EditorSettings);
-	GDREGISTER_CLASS(EditorNode3DGizmo);
-	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
-	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
-	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
-	GDREGISTER_CLASS(EditorFileSystemDirectory);
-	GDREGISTER_CLASS(EditorVCSInterface);
-	GDREGISTER_ABSTRACT_CLASS(ScriptEditor);
-	GDREGISTER_ABSTRACT_CLASS(ScriptEditorBase);
-	GDREGISTER_CLASS(EditorSyntaxHighlighter);
-	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
-	GDREGISTER_CLASS(EditorExportPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
-	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneFormatImporter);
-	GDREGISTER_CLASS(EditorScenePostImportPlugin);
-	GDREGISTER_CLASS(EditorInspector);
-	GDREGISTER_CLASS(EditorInspectorPlugin);
-	GDREGISTER_CLASS(EditorProperty);
-	GDREGISTER_CLASS(AnimationTrackEditPlugin);
-	GDREGISTER_CLASS(ScriptCreateDialog);
-	GDREGISTER_CLASS(EditorFeatureProfile);
-	GDREGISTER_CLASS(EditorSpinSlider);
-	GDREGISTER_CLASS(EditorResourcePicker);
-	GDREGISTER_CLASS(EditorScriptPicker);
-	GDREGISTER_ABSTRACT_CLASS(EditorUndoRedoManager);
-
-	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
-	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
-
-	GDREGISTER_CLASS(EditorScenePostImport);
-	GDREGISTER_CLASS(EditorCommandPalette);
-	GDREGISTER_CLASS(EditorDebuggerPlugin);
-	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
-}
-
-void EditorNode::unregister_editor_types() {
-	_init_callbacks.clear();
-	if (EditorPaths::get_singleton()) {
-		EditorPaths::free();
-	}
-
-	EditorResourcePicker::clear_caches();
-}
-
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 	if (has_child_process(p_pid)) {
 		editor_run.stop_child_process(p_pid);
@@ -5233,6 +5112,10 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 
 	memdelete(cd);
 	return singleton->immediate_dialog_confirmed;
+}
+
+void EditorNode::cleanup() {
+	_init_callbacks.clear();
 }
 
 int EditorNode::get_current_tab() {
@@ -7325,7 +7208,6 @@ EditorNode::EditorNode() {
 	add_child(audio_preview_gen);
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(debug_menu)));
-	add_editor_plugin(memnew(DebugAdapterServer()));
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
@@ -7375,63 +7257,7 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
-
-	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
-	add_editor_plugin(memnew(AnimationTreeEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
-	add_editor_plugin(memnew(BitMapEditorPlugin));
-	add_editor_plugin(memnew(BoneMapEditorPlugin));
-	add_editor_plugin(memnew(Camera3DEditorPlugin));
-	add_editor_plugin(memnew(ControlEditorPlugin));
-	add_editor_plugin(memnew(CPUParticles3DEditorPlugin));
-	add_editor_plugin(memnew(CurveEditorPlugin));
-	add_editor_plugin(memnew(FontEditorPlugin));
-	add_editor_plugin(memnew(GPUParticles3DEditorPlugin));
-	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
-	add_editor_plugin(memnew(GradientEditorPlugin));
-	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
-	add_editor_plugin(memnew(InputEventEditorPlugin));
-	add_editor_plugin(memnew(LightmapGIEditorPlugin));
-	add_editor_plugin(memnew(MaterialEditorPlugin));
-	add_editor_plugin(memnew(MeshEditorPlugin));
-	add_editor_plugin(memnew(MeshInstance3DEditorPlugin));
-	add_editor_plugin(memnew(MeshLibraryEditorPlugin));
-	add_editor_plugin(memnew(MultiMeshEditorPlugin));
-	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin));
-	add_editor_plugin(memnew(Path3DEditorPlugin));
-	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin));
-	add_editor_plugin(memnew(Polygon3DEditorPlugin));
-	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin));
-	add_editor_plugin(memnew(ShaderEditorPlugin));
-	add_editor_plugin(memnew(ShaderFileEditorPlugin));
-	add_editor_plugin(memnew(Skeleton3DEditorPlugin));
-	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin));
-	add_editor_plugin(memnew(SpriteFramesEditorPlugin));
-	add_editor_plugin(memnew(StyleBoxEditorPlugin));
-	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
-	add_editor_plugin(memnew(Texture3DEditorPlugin));
-	add_editor_plugin(memnew(TextureEditorPlugin));
-	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
-	add_editor_plugin(memnew(TextureRegionEditorPlugin));
-	add_editor_plugin(memnew(ThemeEditorPlugin));
-	add_editor_plugin(memnew(VoxelGIEditorPlugin));
-
-	// 2D
-	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin));
-	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
-	add_editor_plugin(memnew(CPUParticles2DEditorPlugin));
-	add_editor_plugin(memnew(GPUParticles2DEditorPlugin));
-	add_editor_plugin(memnew(LightOccluder2DEditorPlugin));
-	add_editor_plugin(memnew(Line2DEditorPlugin));
-	add_editor_plugin(memnew(NavigationLink2DEditorPlugin));
-	add_editor_plugin(memnew(NavigationPolygonEditorPlugin));
-	add_editor_plugin(memnew(Path2DEditorPlugin));
-	add_editor_plugin(memnew(Polygon2DEditorPlugin));
-	add_editor_plugin(memnew(Cast2DEditorPlugin));
-	add_editor_plugin(memnew(Skeleton2DEditorPlugin));
-	add_editor_plugin(memnew(Sprite2DEditorPlugin));
-	add_editor_plugin(memnew(TilesEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));
