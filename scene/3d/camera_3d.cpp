@@ -475,9 +475,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_near", "near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
 	ClassDB::bind_method(D_METHOD("set_projection", "mode"), &Camera3D::set_projection);
-	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset", "offset"), &Camera3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera3D::get_h_offset);
-	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera3D::set_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset", "offset"), &Camera3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera3D::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);
@@ -509,7 +509,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.001"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp"), "set_near", "get_near");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp"), "set_far", "get_far");
@@ -557,7 +557,7 @@ void Camera3D::set_fov(real_t p_fov) {
 }
 
 void Camera3D::set_size(real_t p_size) {
-	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
+	ERR_FAIL_COND(p_size < 0.001 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 }

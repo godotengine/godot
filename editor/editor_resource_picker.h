@@ -52,9 +52,9 @@ class EditorResourcePicker : public HBoxContainer {
 
 	Vector<String> inheritors_array;
 
-	Button *assign_button;
-	TextureRect *preview_rect;
-	Button *edit_button;
+	Button *assign_button = nullptr;
+	TextureRect *preview_rect = nullptr;
+	Button *edit_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
 

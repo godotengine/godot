@@ -349,14 +349,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::BASIS: {
 			int id = variable_id++;
 			Basis basis = p_var;
-			const String type_vec2 = Variant::get_type_name(Variant::VECTOR2);
+			const String type_vec3 = Variant::get_type_name(Variant::VECTOR3);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
 			z.name = "z";
-			x.type = type_vec2;
-			y.type = type_vec2;
-			z.type = type_vec2;
+			x.type = type_vec3;
+			y.type = type_vec3;
+			z.type = type_vec3;
 			x.value = basis.elements[0];
 			y.value = basis.elements[1];
 			z.value = basis.elements[2];

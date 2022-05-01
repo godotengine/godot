@@ -112,10 +112,7 @@ void NavigationPolygonEditor::_create_resource() {
 	_menu_option(MODE_CREATE);
 }
 
-NavigationPolygonEditor::NavigationPolygonEditor() :
-		AbstractPolygon2DEditor() {
-	node = nullptr;
-}
+NavigationPolygonEditor::NavigationPolygonEditor() {}
 
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(NavigationPolygonEditor), "NavigationRegion2D") {

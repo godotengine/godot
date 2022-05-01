@@ -37,6 +37,8 @@
 #include "key_mapping_osx.h"
 #include "os_osx.h"
 
+#include "tts_osx.h"
+
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -326,7 +328,7 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		Callable::CallError ce;
 
 		{
-			List<WindowID>::Element *E = popup_list.front();
+			List<WindowID>::Element *E = popup_list.back();
 			if (E && Object::cast_to<InputEventKey>(*p_event)) {
 				// Redirect keyboard input to active popup.
 				if (windows.has(E->get())) {
@@ -702,6 +704,7 @@ bool DisplayServerOSX::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_ICON:
 		//case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_SWAP_BUFFERS:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default: {
 		}
@@ -1456,6 +1459,41 @@ void DisplayServerOSX::global_menu_clear(const String &p_menu_root) {
 			[menu setSubmenu:apple_menu forItem:menu_item];
 		}
 	}
+}
+
+bool DisplayServerOSX::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isSpeaking];
+}
+
+bool DisplayServerOSX::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isPaused];
+}
+
+Array DisplayServerOSX::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return [tts getVoices];
+}
+
+void DisplayServerOSX::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
+}
+
+void DisplayServerOSX::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	[tts pauseSpeaking];
+}
+
+void DisplayServerOSX::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	[tts resumeSpeaking];
+}
+
+void DisplayServerOSX::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	[tts stopSpeaking];
 }
 
 Error DisplayServerOSX::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
@@ -2892,14 +2930,13 @@ void DisplayServerOSX::swap_buffers() {
 void DisplayServerOSX::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
-	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
-	ERR_FAIL_COND(!f);
+	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND(f.is_null());
 
 	Vector<uint8_t> data;
 	uint64_t len = f->get_length();
 	data.resize(len);
 	f->get_buffer((uint8_t *)&data.write[0], len);
-	memdelete(f);
 
 	NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
 	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
@@ -3000,20 +3037,24 @@ Rect2i DisplayServerOSX::window_get_popup_safe_rect(WindowID p_window) const {
 }
 
 void DisplayServerOSX::popup_open(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
 		bool was_empty = popup_list.is_empty();
-		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		// Find current popup parent, or root popup if new window is not transient.
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
 		while (E) {
 			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
-				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			} else {
 				break;
 			}
+		}
+		if (C) {
+			send_window_event(windows[C->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		if (was_empty && popup_list.is_empty()) {
@@ -3026,12 +3067,16 @@ void DisplayServerOSX::popup_open(WindowID p_window) {
 }
 
 void DisplayServerOSX::popup_close(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	bool was_empty = popup_list.is_empty();
 	List<WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		List<WindowID>::Element *F = E->next();
+		WindowID win_id = E->get();
 		popup_list.erase(E);
+
+		send_window_event(windows[win_id], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		E = F;
 	}
 	if (!was_empty && popup_list.is_empty()) {
@@ -3047,11 +3092,8 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 	if (p_close) {
 		// Close all popups.
 		List<WindowID>::Element *E = popup_list.front();
-		while (E) {
+		if (E) {
 			send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-			List<WindowID>::Element *F = E->next();
-			popup_list.erase(E);
-			E = F;
 		}
 		if (!was_empty) {
 			// Inform OS that all popups are closed.
@@ -3064,7 +3106,9 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 		}
 
 		Point2i pos = mouse_get_position();
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
+		// Find top popup to close.
 		while (E) {
 			// Popup window area.
 			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
@@ -3075,11 +3119,12 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 			} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 				break;
 			} else {
-				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			}
+		}
+		if (C) {
+			send_window_event(windows[C->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 		if (!was_empty && popup_list.is_empty()) {
 			// Inform OS that all popups are closed.
@@ -3113,6 +3158,9 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	// Register to be notified on displays arrangement changes.
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
+
+	// Init TTS
+	tts = [[TTS_OSX alloc] init];
 
 	NSMenuItem *menu_item;
 	NSString *title;

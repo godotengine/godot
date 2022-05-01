@@ -52,11 +52,11 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-	iOS *ios;
+	iOS *ios = nullptr;
 
-	JoypadIPhone *joypad_iphone;
+	JoypadIPhone *joypad_iphone = nullptr;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;

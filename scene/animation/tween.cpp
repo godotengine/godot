@@ -130,6 +130,7 @@ void Tween::stop() {
 	started = false;
 	running = false;
 	dead = false;
+	total_time = 0;
 }
 
 void Tween::pause() {
@@ -149,10 +150,6 @@ void Tween::kill() {
 
 bool Tween::is_running() {
 	return running;
-}
-
-void Tween::set_valid(bool p_valid) {
-	valid = p_valid;
 }
 
 bool Tween::is_valid() {
@@ -272,20 +269,23 @@ bool Tween::step(float p_delta) {
 		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
+		total_time = 0;
 		start_tweeners();
 		started = true;
 	}
 
 	float rem_delta = p_delta * speed_scale;
 	bool step_active = false;
+	total_time += rem_delta;
+
+#ifdef DEBUG_ENABLED
+	float initial_delta = rem_delta;
+	bool potential_infinite = false;
+#endif
 
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
 		step_active = false;
-
-#ifdef DEBUG_ENABLED
-		float prev_delta = rem_delta;
-#endif
 
 		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
@@ -311,17 +311,21 @@ bool Tween::step(float p_delta) {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
 					start_tweeners();
+#ifdef DEBUG_ENABLED
+					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
+						if (!potential_infinite) {
+							potential_infinite = true;
+						} else {
+							// Looped twice without using any time, this is 100% certain infinite loop.
+							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+						}
+					}
+#endif
 				}
 			} else {
 				start_tweeners();
 			}
 		}
-
-#ifdef DEBUG_ENABLED
-		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
-			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
-		}
-#endif
 	}
 
 	return true;
@@ -344,6 +348,10 @@ Node *Tween::get_bound_node() const {
 	} else {
 		return nullptr;
 	}
+}
+
+float Tween::get_total_time() const {
+	return total_time;
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
@@ -624,6 +632,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
+	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
@@ -640,7 +649,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_method(D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
+	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
@@ -669,6 +678,14 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(EASE_OUT);
 	BIND_ENUM_CONSTANT(EASE_IN_OUT);
 	BIND_ENUM_CONSTANT(EASE_OUT_IN);
+}
+
+Tween::Tween() {
+	ERR_FAIL_MSG("Tween can't be created directly. Use create_tween() method.");
+}
+
+Tween::Tween(bool p_valid) {
+	valid = p_valid;
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
@@ -838,7 +855,7 @@ bool CallbackTweener::step(float &r_delta) {
 		Callable::CallError ce;
 		callback.call(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_call_error_text(this, callback.get_method(), nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
 		}
 
 		finished = true;
@@ -909,7 +926,7 @@ bool MethodTweener::step(float &r_delta) {
 	Callable::CallError ce;
 	callback.call(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_call_error_text(this, callback.get_method(), argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
 	}
 
 	if (time < duration) {

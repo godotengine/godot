@@ -106,7 +106,7 @@ void CodeEdit::_notification(int p_what) {
 
 				const int code_completion_options_count = code_completion_options.size();
 				const int lines = MIN(code_completion_options_count, code_completion_max_lines);
-				const int icon_hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+				const int icon_hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 				const Size2 icon_area_size(row_height, row_height);
 
 				code_completion_rect.size.width = code_completion_longest_line + icon_hsep + icon_area_size.width + 2;
@@ -994,7 +994,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			}
 
 			/* Make sure this is the last char, trailing whitespace or comments are okay. */
-			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, cc) == -1)) {
+			/* Increment column for comments because the delimiter (#) should be ignored. */
+			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, line_col + 1) == -1)) {
 				should_indent = false;
 			}
 		}

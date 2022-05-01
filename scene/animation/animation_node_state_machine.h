@@ -97,7 +97,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	float len_current = 0.0;
 	float pos_current = 0.0;
-	int loops_current = 0;
+	bool end_loop = false;
 
 	StringName current;
 

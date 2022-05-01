@@ -530,8 +530,8 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	String json_description = "{\"images\":[";
 	String sizes;
 
-	DirAccessRef da = DirAccess::open(p_iconset_dir);
-	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_iconset_dir + "'.");
+	Ref<DirAccess> da = DirAccess::open(p_iconset_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), ERR_CANT_OPEN, "Cannot open directory '" + p_iconset_dir + "'.");
 
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		IconInfo info = icon_infos[i];
@@ -588,17 +588,15 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	}
 	json_description += "]}";
 
-	FileAccess *json_file = FileAccess::open(p_iconset_dir + "Contents.json", FileAccess::WRITE);
-	ERR_FAIL_COND_V(!json_file, ERR_CANT_CREATE);
+	Ref<FileAccess> json_file = FileAccess::open(p_iconset_dir + "Contents.json", FileAccess::WRITE);
+	ERR_FAIL_COND_V(json_file.is_null(), ERR_CANT_CREATE);
 	CharString json_utf8 = json_description.utf8();
 	json_file->store_buffer((const uint8_t *)json_utf8.get_data(), json_utf8.length());
-	memdelete(json_file);
 
-	FileAccess *sizes_file = FileAccess::open(p_iconset_dir + "sizes", FileAccess::WRITE);
-	ERR_FAIL_COND_V(!sizes_file, ERR_CANT_CREATE);
+	Ref<FileAccess> sizes_file = FileAccess::open(p_iconset_dir + "sizes", FileAccess::WRITE);
+	ERR_FAIL_COND_V(sizes_file.is_null(), ERR_CANT_CREATE);
 	CharString sizes_utf8 = sizes.utf8();
 	sizes_file->store_buffer((const uint8_t *)sizes_utf8.get_data(), sizes_utf8.length());
-	memdelete(sizes_file);
 
 	return OK;
 }
@@ -672,8 +670,8 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 }
 
 Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
-	DirAccessRef da = DirAccess::open(p_dest_dir);
-	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
+	Ref<DirAccess> da = DirAccess::open(p_dest_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
 
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		LoadingScreenInfo info = loading_screen_infos[i];
@@ -761,7 +759,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 	return OK;
 }
 
-Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata) {
+Error EditorExportPlatformIOS::_walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata) {
 	Vector<String> dirs;
 	String current_dir = p_da->get_current_dir();
 	p_da->list_dir_begin();
@@ -807,7 +805,7 @@ struct CodesignData {
 
 Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 	if (p_file.ends_with(".dylib")) {
-		CodesignData *data = (CodesignData *)p_userdata;
+		CodesignData *data = static_cast<CodesignData *>(p_userdata);
 		print_line(String("Signing ") + p_file);
 
 		String sign_id;
@@ -964,8 +962,8 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	String binary_name = p_out_dir.get_file().get_basename();
 
-	DirAccessRef da = DirAccess::create_for_path(p_asset);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::create_for_path(p_asset);
+	if (da.is_null()) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't create directory: " + p_asset + ".");
 	}
 	bool file_exists = da->file_exists(p_asset);
@@ -1030,8 +1028,8 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 		destination = p_out_dir.plus_file(asset_path);
 	}
 
-	DirAccessRef filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
+	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
 
 	if (!filesystem_da->dir_exists(destination_dir)) {
 		Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
@@ -1097,11 +1095,9 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 
 			String info_plist = info_plist_format.replace("$name", file_name);
 
-			FileAccess *f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
-			if (f) {
+			Ref<FileAccess> f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
+			if (f.is_valid()) {
 				f->store_string(info_plist);
-				f->close();
-				memdelete(f);
 			}
 		}
 	}
@@ -1411,8 +1407,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	{
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (da) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (da.is_valid()) {
 			String current_dir = da->get_current_dir();
 
 			// remove leftovers from last export so they don't interfere
@@ -1488,12 +1484,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	Vector<IOSExportAsset> assets;
 
-	DirAccessRef tmp_app_path = DirAccess::create_for_path(dest_dir);
-	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE);
+	Ref<DirAccess> tmp_app_path = DirAccess::create_for_path(dest_dir);
+	ERR_FAIL_COND_V(tmp_app_path.is_null(), ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
 		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
@@ -1515,6 +1510,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 
@@ -1572,15 +1570,15 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			}
 
 			/* write the file */
-			FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
-			if (!f) {
-				ERR_PRINT("Can't write '" + file + "'.");
-				unzClose(src_pkg_zip);
-				return ERR_CANT_CREATE;
-			};
-			f->store_buffer(data.ptr(), data.size());
-			f->close();
-			memdelete(f);
+			{
+				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+				if (f.is_null()) {
+					ERR_PRINT("Can't write '" + file + "'.");
+					unzClose(src_pkg_zip);
+					return ERR_CANT_CREATE;
+				};
+				f->store_buffer(data.ptr(), data.size());
+			}
 
 #if defined(OSX_ENABLED) || defined(X11_ENABLED)
 			if (is_execute) {
@@ -1611,7 +1609,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		{
 			String fname = dest_dir + binary_name + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
-			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
@@ -1626,7 +1624,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 				String lang = tr->get_locale();
 				String fname = dest_dir + binary_name + "/" + lang + ".lproj";
 				tmp_app_path->make_dir_recursive(fname);
-				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 				f->store_line("/* Localized versions of Info.plist keys */");
 				f->store_line("");
 				if (appnames.has(lang)) {
@@ -1680,9 +1678,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		String launch_image_path = dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/";
 		String splash_image_path = dest_dir + binary_name + "/Images.xcassets/SplashImage.imageset/";
 
-		DirAccessRef launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-		if (!launch_screen_da) {
+		Ref<DirAccess> launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (launch_screen_da.is_null()) {
 			return ERR_CANT_CREATE;
 		}
 
@@ -1719,25 +1716,24 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	_export_additional_assets(dest_dir + binary_name, libraries, assets);
 	_add_assets_to_project(p_preset, project_file_data, assets);
 	String project_file_name = dest_dir + binary_name + ".xcodeproj/project.pbxproj";
-	FileAccess *f = FileAccess::open(project_file_name, FileAccess::WRITE);
-	if (!f) {
-		ERR_PRINT("Can't write '" + project_file_name + "'.");
-		return ERR_CANT_CREATE;
-	};
-	f->store_buffer(project_file_data.ptr(), project_file_data.size());
-	f->close();
-	memdelete(f);
+	{
+		Ref<FileAccess> f = FileAccess::open(project_file_name, FileAccess::WRITE);
+		if (f.is_null()) {
+			ERR_PRINT("Can't write '" + project_file_name + "'.");
+			return ERR_CANT_CREATE;
+		};
+		f->store_buffer(project_file_data.ptr(), project_file_data.size());
+	}
 
 #ifdef OSX_ENABLED
 	{
 		if (ep.step("Code-signing dylibs", 2)) {
 			return ERR_SKIP;
 		}
-		DirAccess *dylibs_dir = DirAccess::open(dest_dir + binary_name + "/dylibs");
-		ERR_FAIL_COND_V(!dylibs_dir, ERR_CANT_OPEN);
+		Ref<DirAccess> dylibs_dir = DirAccess::open(dest_dir + binary_name + "/dylibs");
+		ERR_FAIL_COND_V(dylibs_dir.is_null(), ERR_CANT_OPEN);
 		CodesignData codesign_data(p_preset, p_debug);
 		err = _walk_dir_recursive(dylibs_dir, _codesign, &codesign_data);
-		memdelete(dylibs_dir);
 		ERR_FAIL_COND_V(err, err);
 	}
 

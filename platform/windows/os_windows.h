@@ -60,14 +60,14 @@
 class JoypadWindows;
 class OS_Windows : public OS {
 #ifdef STDOUT_FILE
-	FILE *stdo;
+	FILE *stdo = nullptr;
 #endif
 
 	uint64_t ticks_start;
 	uint64_t ticks_per_second;
 
 	HINSTANCE hInstance;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
@@ -143,6 +143,8 @@ public:
 
 	virtual int get_processor_count() const override;
 	virtual String get_processor_name() const override;
+
+	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

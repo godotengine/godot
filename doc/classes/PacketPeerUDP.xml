@@ -61,7 +61,7 @@
 				Returns whether this [PacketPeerUDP] is bound to an address and can receive packets.
 			</description>
 		</method>
-		<method name="is_connected_to_host" qualifiers="const">
+		<method name="is_socket_connected" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the UDP socket is open and has been connected to a remote address. See [method connect_to_host].

@@ -40,8 +40,8 @@ class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);
 
 	static EditorCommandPalette *singleton;
-	LineEdit *command_search_box;
-	Tree *search_options;
+	LineEdit *command_search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	struct Command {
 		Callable callable;

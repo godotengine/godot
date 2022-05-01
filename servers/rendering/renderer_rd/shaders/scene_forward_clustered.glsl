@@ -1479,62 +1479,78 @@ void main() {
 				} else { //no soft shadows
 
 					vec4 pssm_coord;
+					float blur_factor;
+
 					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 						vec4 v = vec4(vertex, 1.0);
 
 						BIAS_FUNC(v, 0)
 
 						pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						blur_factor = 1.0;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 						vec4 v = vec4(vertex, 1.0);
 
 						BIAS_FUNC(v, 1)
 
 						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
 
 						BIAS_FUNC(v, 2)
 
 						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-
+						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
 					} else {
 						vec4 v = vec4(vertex, 1.0);
 
 						BIAS_FUNC(v, 3)
 
 						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
 					}
 
 					pssm_coord /= pssm_coord.w;
 
-					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor, pssm_coord);
 
 					if (directional_lights.data[i].blend_splits) {
 						float pssm_blend;
+						float blur_factor2;
 
 						if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 1)
 							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
 							pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
 						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 2)
 							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
 							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
 						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 3)
 							pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
 							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
 						} else {
 							pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
+							blur_factor2 = 1.0;
 						}
 
 						pssm_coord /= pssm_coord.w;
 
-						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor2, pssm_coord);
 						shadow = mix(shadow, shadow2, pssm_blend);
 					}
 				}

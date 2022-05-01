@@ -115,7 +115,7 @@ private:
 	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
-	Node *edited_scene_root;
+	Node *edited_scene_root = nullptr;
 #endif
 	struct UGCall {
 		StringName group;
@@ -138,7 +138,7 @@ private:
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
-	Node *current_scene;
+	Node *current_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -159,6 +159,7 @@ private:
 	///network///
 
 	Ref<MultiplayerAPI> multiplayer;
+	HashMap<NodePath, Ref<MultiplayerAPI>> custom_multiplayers;
 	bool multiplayer_poll = true;
 
 	static SceneTree *singleton;
@@ -204,6 +205,7 @@ private:
 
 	enum CallInputType {
 		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_SHORTCUT_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
 	};
@@ -350,10 +352,10 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer() const;
+	Ref<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
+	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
-	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 
 	static void add_idle_callback(IdleCallback p_callback);
 

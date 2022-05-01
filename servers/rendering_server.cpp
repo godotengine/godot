@@ -424,7 +424,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
 						if (src[i * 4 + 3] > 0) {
-							value |= 3 << 30;
+							value |= 3UL << 30;
 						}
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
@@ -440,7 +440,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
 						if (src[i * 4 + 3] > 0) {
-							value |= 3 << 30;
+							value |= 3UL << 30;
 						}
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 					}
@@ -986,7 +986,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Invalid array format for surface.");
 
 	Vector<uint8_t> blend_shape_data;
-	uint32_t blend_shape_count = 0;
 
 	if (p_blend_shapes.size()) {
 		uint32_t bs_format = format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK;
@@ -1003,7 +1002,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			ERR_FAIL_COND_V_MSG(err2 != OK, ERR_INVALID_DATA, "Invalid blend shape array format for surface.");
 
 			blend_shape_data.append_array(vertex_array_shape);
-			blend_shape_count++;
 		}
 	}
 	Vector<SurfaceData::LOD> lods;
@@ -1102,7 +1100,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						Vector2 *w = arr_2d.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&r[j * vertex_elem_size + offsets[i]];
+							const float *v = reinterpret_cast<const float *>(&r[j * vertex_elem_size + offsets[i]]);
 							w[j] = Vector2(v[0], v[1]);
 						}
 					}
@@ -1116,7 +1114,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						Vector3 *w = arr_3d.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&r[j * vertex_elem_size + offsets[i]];
+							const float *v = reinterpret_cast<const float *>(&r[j * vertex_elem_size + offsets[i]]);
 							w[j] = Vector3(v[0], v[1], v[2]);
 						}
 					}
@@ -1165,7 +1163,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Color *w = arr.ptrw();
 
 				for (int32_t j = 0; j < p_vertex_len; j++) {
-					const uint8_t *v = (const uint8_t *)&ar[j * attrib_elem_size + offsets[i]];
+					const uint8_t *v = reinterpret_cast<const uint8_t *>(&ar[j * attrib_elem_size + offsets[i]]);
 
 					w[j] = Color(v[0] / 255.0, v[1] / 255.0, v[2] / 255.0, v[3] / 255.0);
 				}
@@ -1179,7 +1177,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector2 *w = arr.ptrw();
 
 				for (int j = 0; j < p_vertex_len; j++) {
-					const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+					const float *v = reinterpret_cast<const float *>(&ar[j * attrib_elem_size + offsets[i]]);
 					w[j] = Vector2(v[0], v[1]);
 				}
 
@@ -1193,7 +1191,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Vector2 *w = arr.ptrw();
 
 				for (int j = 0; j < p_vertex_len; j++) {
-					const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+					const float *v = reinterpret_cast<const float *>(&ar[j * attrib_elem_size + offsets[i]]);
 					w[j] = Vector2(v[0], v[1]);
 				}
 
@@ -1218,7 +1216,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						uint8_t *w = arr.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const uint8_t *v = (const uint8_t *)&ar[j * attrib_elem_size + offsets[i]];
+							const uint8_t *v = reinterpret_cast<const uint8_t *>(&ar[j * attrib_elem_size + offsets[i]]);
 							memcpy(&w[j * s], v, s);
 						}
 
@@ -1237,7 +1235,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 						float *w = arr.ptrw();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-							const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
+							const float *v = reinterpret_cast<const float *>(&ar[j * attrib_elem_size + offsets[i]]);
 							memcpy(&w[j * s], v, s * sizeof(float));
 						}
 						ret[i] = arr;
@@ -2575,7 +2573,7 @@ void RenderingServer::_bind_methods() {
 
 	/* Primitives */
 
-	ClassDB::bind_method(D_METHOD("canvas_item_add_line", "item", "from", "to", "color", "width"), &RenderingServer::canvas_item_add_line, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_line", "item", "from", "to", "color", "width", "antialiased"), &RenderingServer::canvas_item_add_line, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polyline", "item", "points", "colors", "width", "antialiased"), &RenderingServer::canvas_item_add_polyline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::canvas_item_add_rect);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::canvas_item_add_circle);

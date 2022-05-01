@@ -184,7 +184,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	if (p_type_from == p_type_to) {
 		return true;
 	}
-	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
+	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
 	}
 
@@ -490,7 +490,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	if (p_type_from == p_type_to) {
 		return true;
 	}
-	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
+	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
 	}
 
@@ -3341,27 +3341,7 @@ String Variant::get_construct_string() const {
 }
 
 String Variant::get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	String err_text;
-
-	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-		int errorarg = ce.argument;
-		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		} else {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		}
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Method not found.";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-		err_text = "Instance is null";
-	} else if (ce.error == Callable::CallError::CALL_OK) {
-		return "Call OK";
-	}
-	return "'" + String(p_method) + "': " + err_text;
+	return get_call_error_text(nullptr, p_method, p_argptrs, p_argcount, ce);
 }
 
 String Variant::get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
@@ -3386,37 +3366,20 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 		return "Call OK";
 	}
 
-	String class_name = p_base->get_class();
-	Ref<Resource> script = p_base->get_script();
-	if (script.is_valid() && script->get_path().is_resource_file()) {
-		class_name += "(" + script->get_path().get_file() + ")";
+	String base_text;
+	if (p_base) {
+		base_text = p_base->get_class();
+		Ref<Resource> script = p_base->get_script();
+		if (script.is_valid() && script->get_path().is_resource_file()) {
+			base_text += "(" + script->get_path().get_file() + ")";
+		}
+		base_text += "::";
 	}
-	return "'" + class_name + "::" + String(p_method) + "': " + err_text;
+	return "'" + base_text + String(p_method) + "': " + err_text;
 }
 
 String Variant::get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	String err_text;
-
-	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-		int errorarg = ce.argument;
-		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		} else {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		}
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Method not found.";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-		err_text = "Instance is null";
-	} else if (ce.error == Callable::CallError::CALL_OK) {
-		return "Call OK";
-	}
-
-	return String(p_callable) + " : " + err_text;
+	return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, p_argcount, ce);
 }
 
 String vformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {

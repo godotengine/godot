@@ -84,7 +84,7 @@ private:
 
 	String download_to_file;
 
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 
 	int body_len = -1;
 	SafeNumeric<int> downloaded;
@@ -144,7 +144,7 @@ public:
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
 	void set_timeout(double p_timeout);
 	double get_timeout();
@@ -158,7 +158,6 @@ public:
 	void set_https_proxy(const String &p_host, int p_port);
 
 	HTTPRequest();
-	~HTTPRequest();
 };
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);

@@ -55,6 +55,8 @@ private:
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
 #endif
 
+	Map<int, CharString> utterance_ids;
+
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
@@ -65,6 +67,8 @@ private:
 
 	String clipboard;
 	Point2 touches[32];
+
+	Array voices;
 
 	char canvas_id[256] = { 0 };
 	bool cursor_inside_canvas = true;
@@ -89,6 +93,7 @@ private:
 	static void vk_input_text_callback(const char *p_text, int p_cursor);
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
+	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
 
 	static Vector<String> get_rendering_drivers_func();
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
@@ -97,6 +102,7 @@ private:
 
 	static void request_quit_callback();
 	static void window_blur_callback();
+	static void update_voices_callback(int p_size, const char **p_voice);
 	static void update_clipboard_callback(const char *p_text);
 	static void send_window_event_callback(int p_notification);
 	static void drop_files_js_callback(char **p_filev, int p_filec);
@@ -114,6 +120,16 @@ public:
 	// from DisplayServer
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+	// tts
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
 
 	// cursor
 	virtual void cursor_set_shape(CursorShape p_shape) override;

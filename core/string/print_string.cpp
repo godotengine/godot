@@ -45,7 +45,7 @@ void add_print_handler(PrintHandlerList *p_handler) {
 	_global_unlock();
 }
 
-void remove_print_handler(PrintHandlerList *p_handler) {
+void remove_print_handler(const PrintHandlerList *p_handler) {
 	_global_lock();
 
 	PrintHandlerList *prev = nullptr;

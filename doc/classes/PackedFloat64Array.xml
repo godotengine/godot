@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedFloat64Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of 64-bit floating-point values.
+		A packed array of 64-bit floating-point values.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold 64-bit floating-point values. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 64-bit floating-point values. Packs data tightly, so it saves memory for large array sizes.
 		If you only need to pack 32-bit floats tightly, see [PackedFloat32Array] for a more memory-friendly alternative.
 	</description>
 	<tutorials>

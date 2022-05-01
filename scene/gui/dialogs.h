@@ -45,10 +45,10 @@ class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
 	Window *parent_visible = nullptr;
-	Panel *bg;
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
+	Panel *bg = nullptr;
+	HBoxContainer *hbc = nullptr;
+	Label *label = nullptr;
+	Button *ok = nullptr;
 	bool hide_on_ok = true;
 	bool close_on_escape = true;
 
@@ -103,7 +103,7 @@ public:
 
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
+	Button *cancel = nullptr;
 
 protected:
 	static void _bind_methods();

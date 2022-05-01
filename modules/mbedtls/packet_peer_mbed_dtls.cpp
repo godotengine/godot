@@ -35,11 +35,11 @@
 #include "core/io/stream_peer_ssl.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
+	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -53,11 +53,11 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 }
 
 int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
+	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -115,7 +115,7 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 }
 
 Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs, const String &p_for_hostname, Ref<X509Certificate> p_ca_certs) {
-	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_connected_to_host(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
 
 	base = p_base;
 	int ret = 0;

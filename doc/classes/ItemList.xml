@@ -476,7 +476,7 @@
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.1)">
 			[Color] of the guideline. The guideline is a line drawn between each row of items.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal spacing between items.
 		</theme_item>
 		<theme_item name="icon_margin" data_type="constant" type="int" default="4">
@@ -488,7 +488,7 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
 		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="2">
+		<theme_item name="v_separation" data_type="constant" type="int" default="2">
 			The vertical spacing between items.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">

@@ -618,10 +618,14 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
                 if cc_version_major == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
+                if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+                    env.Append(CCFLAGS=["-Wno-error=return-type"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
-        else:  # always enable those errors
-            env.Append(CCFLAGS=["-Werror=return-type"])
+        else:  # Always enable those errors.
+            # False positives in our error macros, see GH-58747.
+            if not (methods.using_gcc(env) and cc_version_major >= 12):
+                env.Append(CCFLAGS=["-Werror=return-type"])
 
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()

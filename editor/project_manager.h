@@ -42,9 +42,9 @@ class ProjectDialog;
 class ProjectList;
 
 enum FilterOption {
+	EDIT_DATE,
 	NAME,
 	PATH,
-	EDIT_DATE,
 };
 
 class ProjectManager : public Control {
@@ -126,8 +126,8 @@ class ProjectManager : public Control {
 	void _install_project(const String &p_zip_path, const String &p_title);
 
 	void _dim_window();
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_ev) override;
-	void _files_dropped(PackedStringArray p_files, int p_screen);
+	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
+	void _files_dropped(PackedStringArray p_files);
 
 	void _version_button_pressed();
 	void _on_order_option_changed(int p_idx);

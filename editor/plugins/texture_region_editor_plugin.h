@@ -52,23 +52,23 @@ class TextureRegionEditor : public VBoxContainer {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	OptionButton *snap_mode_button;
-	Button *zoom_in;
-	Button *zoom_reset;
-	Button *zoom_out;
-	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
-	SpinBox *sb_step_y;
-	SpinBox *sb_step_x;
-	SpinBox *sb_off_y;
-	SpinBox *sb_off_x;
-	SpinBox *sb_sep_y;
-	SpinBox *sb_sep_x;
-	Panel *edit_draw;
+	OptionButton *snap_mode_button = nullptr;
+	Button *zoom_in = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_out = nullptr;
+	HBoxContainer *hb_grid = nullptr; //For showing/hiding the grid controls when changing the SnapMode
+	SpinBox *sb_step_y = nullptr;
+	SpinBox *sb_step_x = nullptr;
+	SpinBox *sb_off_y = nullptr;
+	SpinBox *sb_off_x = nullptr;
+	SpinBox *sb_sep_y = nullptr;
+	SpinBox *sb_sep_x = nullptr;
+	Panel *edit_draw = nullptr;
 
-	VScrollBar *vscroll;
-	HScrollBar *hscroll;
+	VScrollBar *vscroll = nullptr;
+	HScrollBar *hscroll = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Vector2 draw_ofs;
 	float draw_zoom;
@@ -79,9 +79,9 @@ class TextureRegionEditor : public VBoxContainer {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-	Sprite2D *node_sprite_2d;
-	Sprite3D *node_sprite_3d;
-	NinePatchRect *node_ninepatch;
+	Sprite2D *node_sprite_2d = nullptr;
+	Sprite3D *node_sprite_3d = nullptr;
+	NinePatchRect *node_ninepatch = nullptr;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
@@ -146,8 +146,8 @@ class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
 	bool manually_hidden;
-	Button *texture_region_button;
-	TextureRegionEditor *region_editor;
+	Button *texture_region_button = nullptr;
+	TextureRegionEditor *region_editor = nullptr;
 
 protected:
 	static void _bind_methods();

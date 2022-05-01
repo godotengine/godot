@@ -278,7 +278,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] (Universal Windows Platform) if exported thereon.
+				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] if exported on Universal Windows Platform.
 				On macOS, this is [code]"macOS"[/code].
 				On Linux-based operating systems, this is [code]"Linux"[/code].
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
@@ -453,6 +453,14 @@
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="move_to_trash" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Moves the file or directory to the system's recycle bin. See also [method Directory.remove].
+				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 			</description>
 		</method>
 		<method name="open_midi_inputs">

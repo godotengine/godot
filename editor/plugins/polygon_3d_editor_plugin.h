@@ -41,7 +41,7 @@ class CanvasItemEditor;
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
@@ -50,21 +50,21 @@ class Polygon3DEditor : public HBoxContainer {
 
 	Mode mode;
 
-	Button *button_create;
-	Button *button_edit;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
 
 	Ref<StandardMaterial3D> line_material;
 	Ref<StandardMaterial3D> handle_material;
 
-	Panel *panel;
-	Node3D *node;
+	Panel *panel = nullptr;
+	Node3D *node = nullptr;
 	Ref<Resource> node_resource;
 	Ref<ImmediateMesh> imesh;
-	MeshInstance3D *imgeom;
-	MeshInstance3D *pointsm;
+	MeshInstance3D *imgeom = nullptr;
+	MeshInstance3D *pointsm = nullptr;
 	Ref<ArrayMesh> m;
 
-	MenuButton *options;
+	MenuButton *options = nullptr;
 
 	int edited_point;
 	Vector2 edited_point_pos;
@@ -98,7 +98,7 @@ public:
 class Polygon3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Polygon3DEditorPlugin, EditorPlugin);
 
-	Polygon3DEditor *polygon_editor;
+	Polygon3DEditor *polygon_editor = nullptr;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_spatial_gui_input(p_camera, p_event); }

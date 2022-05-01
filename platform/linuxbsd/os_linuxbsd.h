@@ -63,7 +63,7 @@ class OS_LinuxBSD : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 protected:
 	virtual void initialize() override;
@@ -77,6 +77,8 @@ public:
 	virtual String get_name() const override;
 
 	virtual MainLoop *get_main_loop() const override;
+
+	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

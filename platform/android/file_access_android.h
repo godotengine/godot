@@ -38,17 +38,18 @@
 //#include <android_native_app_glue.h>
 
 class FileAccessAndroid : public FileAccess {
-	static FileAccess *create_android();
+	static Ref<FileAccess> create_android();
 	mutable AAsset *a = nullptr;
 	mutable uint64_t len = 0;
 	mutable uint64_t pos = 0;
 	mutable bool eof = false;
 
+	void _close();
+
 public:
 	static AAssetManager *asset_manager;
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

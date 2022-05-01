@@ -44,7 +44,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	}
 
 	for (int i = 0; i < p_amount; i++) {
-		RID texture = storage->render_target_get_texture(p_render_targets[i].render_target);
+		RID texture = texture_storage->render_target_get_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(texture.is_null());
 		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
@@ -155,10 +155,11 @@ void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
-	memdelete(decal_atlas_storage);
+	memdelete(particles_storage);
+	memdelete(light_storage);
+	memdelete(mesh_storage);
 	memdelete(material_storage);
 	memdelete(texture_storage);
-	memdelete(canvas_texture_storage);
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
@@ -252,8 +253,8 @@ RendererCompositorRD::RendererCompositorRD() {
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
-		DirAccessRef da = DirAccess::open(shader_cache_dir);
-		if (!da) {
+		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
+		if (da.is_null()) {
 			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 		} else {
 			Error err = da->change_dir("shader_cache");
@@ -287,10 +288,11 @@ RendererCompositorRD::RendererCompositorRD() {
 	singleton = this;
 	time = 0;
 
-	canvas_texture_storage = memnew(RendererRD::CanvasTextureStorage);
 	texture_storage = memnew(RendererRD::TextureStorage);
-	decal_atlas_storage = memnew(RendererRD::DecalAtlasStorage);
 	material_storage = memnew(RendererRD::MaterialStorage);
+	mesh_storage = memnew(RendererRD::MeshStorage);
+	light_storage = memnew(RendererRD::LightStorage);
+	particles_storage = memnew(RendererRD::ParticlesStorage);
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 

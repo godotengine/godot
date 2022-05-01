@@ -83,6 +83,7 @@ public:
 		VARYING_TYPE_FLOAT,
 		VARYING_TYPE_VECTOR_2D,
 		VARYING_TYPE_VECTOR_3D,
+		VARYING_TYPE_VECTOR_4D,
 		VARYING_TYPE_COLOR,
 		VARYING_TYPE_TRANSFORM,
 		VARYING_TYPE_MAX,
@@ -271,6 +272,7 @@ public:
 		PORT_TYPE_SCALAR_INT,
 		PORT_TYPE_VECTOR_2D,
 		PORT_TYPE_VECTOR_3D,
+		PORT_TYPE_VECTOR_4D,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
 		PORT_TYPE_SAMPLER,
@@ -446,6 +448,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual String get_caption() const override;
 
@@ -556,6 +559,7 @@ public:
 		UNIFORM_TYPE_BOOLEAN,
 		UNIFORM_TYPE_VECTOR2,
 		UNIFORM_TYPE_VECTOR3,
+		UNIFORM_TYPE_VECTOR4,
 		UNIFORM_TYPE_TRANSFORM,
 		UNIFORM_TYPE_COLOR,
 		UNIFORM_TYPE_SAMPLER,

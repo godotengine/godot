@@ -129,12 +129,9 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 
 Error ConfigFile::save(const String &p_path) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	if (err) {
-		if (file) {
-			memdelete(file);
-		}
 		return err;
 	}
 
@@ -143,17 +140,16 @@ Error ConfigFile::save(const String &p_path) {
 
 Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	if (err) {
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256);
 	if (err) {
-		memdelete(fae);
-		memdelete(f);
 		return err;
 	}
 	return _internal_save(fae);
@@ -161,24 +157,23 @@ Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_
 
 Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	if (err) {
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256);
 	if (err) {
-		memdelete(fae);
-		memdelete(f);
 		return err;
 	}
 
 	return _internal_save(fae);
 }
 
-Error ConfigFile::_internal_save(FileAccess *file) {
+Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::Element E = values.front(); E; E = E.next()) {
 		if (E != values.front()) {
 			file->store_string("\n");
@@ -194,16 +189,14 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		}
 	}
 
-	memdelete(file);
-
 	return OK;
 }
 
 Error ConfigFile::load(const String &p_path) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (!f) {
+	if (f.is_null()) {
 		return err;
 	}
 
@@ -212,17 +205,16 @@ Error ConfigFile::load(const String &p_path) {
 
 Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (err) {
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ);
 	if (err) {
-		memdelete(fae);
-		memdelete(f);
 		return err;
 	}
 	return _internal_load(p_path, fae);
@@ -230,30 +222,27 @@ Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_
 
 Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (err) {
 		return err;
 	}
 
-	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	Ref<FileAccessEncrypted> fae;
+	fae.instantiate();
 	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ);
 	if (err) {
-		memdelete(fae);
-		memdelete(f);
 		return err;
 	}
 
 	return _internal_load(p_path, fae);
 }
 
-Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
+Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f) {
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
 	Error err = _parse(p_path, &stream);
-
-	memdelete(f);
 
 	return err;
 }

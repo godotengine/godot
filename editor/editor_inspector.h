@@ -68,7 +68,7 @@ private:
 	String label;
 	int text_size;
 	friend class EditorInspector;
-	Object *object;
+	Object *object = nullptr;
 	StringName property;
 	String property_path;
 
@@ -111,9 +111,9 @@ private:
 	float split_ratio;
 
 	Vector<Control *> focusables;
-	Control *label_reference;
-	Control *bottom_editor;
-	PopupMenu *menu;
+	Control *label_reference = nullptr;
+	Control *bottom_editor = nullptr;
+	PopupMenu *menu = nullptr;
 
 	mutable String tooltip_text;
 
@@ -128,7 +128,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	const Color *_get_property_colors();
 
 public:
@@ -269,14 +269,14 @@ class EditorInspectorSection : public Container {
 	bool foldable = false;
 	int indent_depth = 0;
 
-	Timer *dropping_unfold_timer;
+	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
 
 	void _test_unfold();
 
 protected:
 	Object *object = nullptr;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -297,7 +297,7 @@ public:
 class EditorInspectorArray : public EditorInspectorSection {
 	GDCLASS(EditorInspectorArray, EditorInspectorSection);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	enum Mode {
 		MODE_NONE,
@@ -309,16 +309,16 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int count = 0;
 
-	VBoxContainer *elements_vbox;
+	VBoxContainer *elements_vbox = nullptr;
 
-	Control *control_dropping;
+	Control *control_dropping = nullptr;
 	bool dropping = false;
 
-	Button *add_button;
+	Button *add_button = nullptr;
 
-	AcceptDialog *resize_dialog;
+	AcceptDialog *resize_dialog = nullptr;
 	int new_size = 0;
-	LineEdit *new_size_line_edit;
+	LineEdit *new_size_line_edit = nullptr;
 
 	// Pagination
 	int page_length = 5;
@@ -337,14 +337,14 @@ class EditorInspectorArray : public EditorInspectorSection {
 		OPTION_RESIZE_ARRAY,
 	};
 	int popup_array_index_pressed = -1;
-	PopupMenu *rmb_popup;
+	PopupMenu *rmb_popup = nullptr;
 
 	struct ArrayElement {
-		PanelContainer *panel;
-		MarginContainer *margin;
-		HBoxContainer *hbox;
-		TextureRect *move_texture_rect;
-		VBoxContainer *vbox;
+		PanelContainer *panel = nullptr;
+		MarginContainer *margin = nullptr;
+		HBoxContainer *hbox = nullptr;
+		TextureRect *move_texture_rect = nullptr;
+		VBoxContainer *vbox = nullptr;
 	};
 	LocalVector<ArrayElement> array_elements;
 
@@ -399,12 +399,12 @@ class EditorPaginator : public HBoxContainer {
 
 	int page = 0;
 	int max_page = 0;
-	Button *first_page_button;
-	Button *prev_page_button;
-	LineEdit *page_line_edit;
-	Label *page_count_label;
-	Button *next_page_button;
-	Button *last_page_button;
+	Button *first_page_button = nullptr;
+	Button *prev_page_button = nullptr;
+	LineEdit *page_line_edit = nullptr;
+	Label *page_count_label = nullptr;
+	Button *next_page_button = nullptr;
+	Button *last_page_button = nullptr;
 
 	void _first_page_button_pressed();
 	void _prev_page_button_pressed();
@@ -425,14 +425,14 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	enum {
 		MAX_PLUGINS = 1024
 	};
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
 
-	VBoxContainer *main_vbox;
+	VBoxContainer *main_vbox = nullptr;
 
 	//map use to cache the instantiated editors
 	Map<StringName, List<EditorProperty *>> editor_property_map;
@@ -440,11 +440,11 @@ class EditorInspector : public ScrollContainer {
 	Set<StringName> pending;
 
 	void _clear();
-	Object *object;
+	Object *object = nullptr;
 
 	//
 
-	LineEdit *search_box;
+	LineEdit *search_box = nullptr;
 	bool show_categories = false;
 	bool hide_script = true;
 	bool hide_metadata = true;

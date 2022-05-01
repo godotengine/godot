@@ -43,12 +43,12 @@ class ShaderGlobalsEditorInterface;
 class ShaderGlobalsEditor : public VBoxContainer {
 	GDCLASS(ShaderGlobalsEditor, VBoxContainer)
 
-	ShaderGlobalsEditorInterface *interface;
-	EditorInspector *inspector;
+	ShaderGlobalsEditorInterface *interface = nullptr;
+	EditorInspector *inspector = nullptr;
 
-	LineEdit *variable_name;
-	OptionButton *variable_type;
-	Button *variable_add;
+	LineEdit *variable_name = nullptr;
+	OptionButton *variable_type = nullptr;
+	Button *variable_add = nullptr;
 
 	void _variable_added();
 	void _variable_deleted(const String &p_variable);

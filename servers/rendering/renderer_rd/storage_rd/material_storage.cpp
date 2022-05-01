@@ -339,7 +339,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -361,7 +361,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedVector2Array &a = value;
@@ -385,33 +385,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
-			float *gui = (float *)data;
-
-			if (p_array_size > 0) {
-				const PackedVector3Array &a = value;
-				int s = a.size();
-
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = a[i].x;
-						gui[j + 1] = a[i].y;
-						gui[j + 2] = a[i].z;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
-					}
-					gui[j + 3] = 0; // ignored
-				}
-			} else {
-				Vector3 v = value;
-				gui[0] = v.x;
-				gui[1] = v.y;
-				gui[2] = v.z;
-			}
-		} break;
-		case ShaderLanguage::TYPE_VEC4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
@@ -422,7 +396,67 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 						if (i < s) {
 							Color color = a[i];
 							if (p_linear_color) {
-								color = color.to_linear();
+								color = color.srgb_to_linear();
+							}
+							gui[j] = color.r;
+							gui[j + 1] = color.g;
+							gui[j + 2] = color.b;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
+					}
+				} else {
+					const PackedVector3Array &a = value;
+					int s = a.size();
+
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							gui[j] = a[i].x;
+							gui[j + 1] = a[i].y;
+							gui[j + 2] = a[i].z;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
+					}
+				}
+			} else {
+				if (value.get_type() == Variant::COLOR) {
+					Color v = value;
+
+					if (p_linear_color) {
+						v = v.srgb_to_linear();
+					}
+
+					gui[0] = v.r;
+					gui[1] = v.g;
+					gui[2] = v.b;
+				} else {
+					Vector3 v = value;
+					gui[0] = v.x;
+					gui[1] = v.y;
+					gui[2] = v.z;
+				}
+			}
+		} break;
+		case ShaderLanguage::TYPE_VEC4: {
+			float *gui = reinterpret_cast<float *>(data);
+
+			if (p_array_size > 0) {
+				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
+					const PackedColorArray &a = value;
+					int s = a.size();
+
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							Color color = a[i];
+							if (p_linear_color) {
+								color = color.srgb_to_linear();
 							}
 							gui[j] = color.r;
 							gui[j + 1] = color.g;
@@ -459,7 +493,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					Color v = value;
 
 					if (p_linear_color) {
-						v = v.to_linear();
+						v = v.srgb_to_linear();
 					}
 
 					gui[0] = v.r;
@@ -491,7 +525,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -532,7 +566,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -587,7 +621,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -748,12 +782,12 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 			gui[0] = value[0].real;
 
 		} break;
 		case ShaderLanguage::TYPE_VEC2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 2; i++) {
 				gui[i] = value[i].real;
@@ -761,7 +795,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
 				gui[i] = value[i].real;
@@ -769,14 +803,14 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
 				gui[i] = value[i].real;
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			//in std140 members of mat2 are treated as vec4s
 			gui[0] = value[0].real;
@@ -789,7 +823,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			gui[7] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			gui[0] = value[0].real;
 			gui[1] = value[1].real;
@@ -805,7 +839,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			gui[11] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 16; i++) {
 				gui[i] = value[i].real;
@@ -921,7 +955,7 @@ void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::S
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if (E.value.type == ShaderLanguage::TYPE_VEC4 && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
 			} else {
@@ -1298,6 +1332,94 @@ MaterialStorage *MaterialStorage::get_singleton() {
 MaterialStorage::MaterialStorage() {
 	singleton = this;
 
+	//default samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			default_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
+
+	//custom sampler
+	sampler_rd_configure_custom(0.0f);
+
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		shader_data_request_func[i] = nullptr;
 	}
@@ -1319,7 +1441,119 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_variables.buffer_dirty_regions);
 	RD::get_singleton()->free(global_variables.buffer);
 
+	//def samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::get_singleton()->free(default_rd_samplers[i][j]);
+		}
+	}
+
+	//custom samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 0; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (custom_rd_samplers[i][j].is_valid()) {
+				RD::get_singleton()->free(custom_rd_samplers[i][j]);
+			}
+		}
+	}
+
 	singleton = nullptr;
+}
+
+/* Samplers */
+
+void MaterialStorage::sampler_rd_configure_custom(float p_mipmap_bias) {
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			if (custom_rd_samplers[i][j].is_valid()) {
+				RD::get_singleton()->free(custom_rd_samplers[i][j]);
+			}
+
+			custom_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
 }
 
 /* GLOBAL VARIABLE API */
@@ -1498,7 +1732,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.a;
 
 			GlobalVariables::Value &bv_linear = global_variables.buffer_values[p_index + 1];
-			v = v.to_linear();
+			v = v.srgb_to_linear();
 			bv_linear.x = v.r;
 			bv_linear.y = v.g;
 			bv_linear.z = v.b;
@@ -1685,7 +1919,7 @@ void MaterialStorage::global_variable_remove(const StringName &p_name) {
 	if (!global_variables.variables.has(p_name)) {
 		return;
 	}
-	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+	const GlobalVariables::Variable &gv = global_variables.variables[p_name];
 
 	if (gv.buffer_index >= 0) {
 		global_variables.buffer_usage[gv.buffer_index].elements = 0;
@@ -1910,7 +2144,7 @@ void MaterialStorage::global_variables_instance_update(RID p_instance, int p_ind
 	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
 
-	ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
+	const ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
 		ShaderLanguage::TYPE_MAX, //nil
 		ShaderLanguage::TYPE_BOOL, //bool
 		ShaderLanguage::TYPE_INT, //int

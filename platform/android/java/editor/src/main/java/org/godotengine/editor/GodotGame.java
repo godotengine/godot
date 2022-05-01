@@ -34,4 +34,7 @@ package org.godotengine.editor;
  * Drives the 'run project' window of the Godot Editor.
  */
 public class GodotGame extends GodotEditor {
+	protected boolean overrideOrientationRequest() {
+		return false;
+	}
 }

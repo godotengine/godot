@@ -30,9 +30,9 @@
 
 #include "renderer_scene_render.h"
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_ortogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_orthogonal, bool p_vaspect) {
 	view_count = 1;
-	is_ortogonal = p_is_ortogonal;
+	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -42,11 +42,11 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	view_projection[0] = p_projection;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const CameraMatrix *p_projections, bool p_is_ortogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const CameraMatrix *p_projections, bool p_is_orthogonal, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
 	view_count = p_view_count;
-	is_ortogonal = p_is_ortogonal;
+	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
 	Vector<Plane> planes[2];
 

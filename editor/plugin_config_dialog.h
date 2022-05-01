@@ -41,18 +41,18 @@
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
 
-	LineEdit *name_edit;
-	LineEdit *subfolder_edit;
-	TextEdit *desc_edit;
-	LineEdit *author_edit;
-	LineEdit *version_edit;
-	OptionButton *script_option_edit;
-	LineEdit *script_edit;
-	CheckBox *active_edit;
+	LineEdit *name_edit = nullptr;
+	LineEdit *subfolder_edit = nullptr;
+	TextEdit *desc_edit = nullptr;
+	LineEdit *author_edit = nullptr;
+	LineEdit *version_edit = nullptr;
+	OptionButton *script_option_edit = nullptr;
+	LineEdit *script_edit = nullptr;
+	CheckBox *active_edit = nullptr;
 
-	TextureRect *name_validation;
-	TextureRect *subfolder_validation;
-	TextureRect *script_validation;
+	TextureRect *name_validation = nullptr;
+	TextureRect *subfolder_validation = nullptr;
+	TextureRect *script_validation = nullptr;
 
 	bool _edit_mode;
 

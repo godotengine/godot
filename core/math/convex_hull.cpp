@@ -509,7 +509,7 @@ public:
 		Face() {
 		}
 
-		void init(Vertex *p_a, Vertex *p_b, Vertex *p_c) {
+		void init(Vertex *p_a, const Vertex *p_b, const Vertex *p_c) {
 			nearby_vertex = p_a;
 			origin = p_a->point;
 			dir0 = *p_b - *p_a;
@@ -614,7 +614,7 @@ private:
 
 	static Orientation get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t);
 	Edge *find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_ssxrxs, Rational64 &p_min_cot);
-	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1);
+	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1);
 
 	Edge *new_edge_pair(Vertex *p_from, Vertex *p_to);
 
@@ -1189,7 +1189,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const V
 	return min_edge;
 }
 
-void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1) {
+void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1) {
 	Edge *start0 = p_e0;
 	Edge *start1 = p_e1;
 	Point32 et0 = start0 ? start0->target->point : p_c0->point;

@@ -47,6 +47,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/joint_3d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
@@ -475,7 +476,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	}
 }
 
-void EditorNode3DGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
+void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
 	ERR_FAIL_COND(!spatial_node);
 
 	BoxMesh box_mesh;
@@ -2163,6 +2164,38 @@ void Sprite3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
+	if (tm.is_valid()) {
+		p_gizmo->add_collision_triangles(tm);
+	}
+}
+
+///
+
+Label3DGizmoPlugin::Label3DGizmoPlugin() {
+}
+
+bool Label3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Label3D>(p_spatial) != nullptr;
+}
+
+String Label3DGizmoPlugin::get_gizmo_name() const {
+	return "Label3D";
+}
+
+int Label3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool Label3DGizmoPlugin::can_be_hidden() const {
+	return false;
+}
+
+void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Label3D *label = Object::cast_to<Label3D>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Ref<TriangleMesh> tm = label->generate_triangle_mesh();
 	if (tm.is_valid()) {
 		p_gizmo->add_collision_triangles(tm);
 	}

@@ -45,13 +45,13 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	bool updating = false;
 
-	TabContainer *tabs;
-	Control *tab_general;
-	Control *tab_shortcuts;
+	TabContainer *tabs = nullptr;
+	Control *tab_general = nullptr;
+	Control *tab_shortcuts = nullptr;
 
-	LineEdit *search_box;
-	LineEdit *shortcut_search_box;
-	SectionedInspector *inspector;
+	LineEdit *search_box = nullptr;
+	LineEdit *shortcut_search_box = nullptr;
+	SectionedInspector *inspector = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -61,19 +61,19 @@ class EditorSettingsDialog : public AcceptDialog {
 		SHORTCUT_REVERT
 	};
 
-	Tree *shortcuts;
+	Tree *shortcuts = nullptr;
 	String shortcut_filter;
 
-	InputEventConfigurationDialog *shortcut_editor;
+	InputEventConfigurationDialog *shortcut_editor = nullptr;
 
 	bool is_editing_action = false;
 	String current_edited_identifier;
 	Array current_events;
 	int current_event_index = -1;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
@@ -82,7 +82,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	void _update_icons();
 
@@ -110,10 +110,10 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
+	Label *restart_label = nullptr;
+	TextureRect *restart_icon = nullptr;
+	PanelContainer *restart_container = nullptr;
+	Button *restart_close_button = nullptr;
 
 	void _editor_restart_request();
 	void _editor_restart();

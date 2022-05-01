@@ -252,11 +252,11 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererMeshStorage
+#define server_name RSG::mesh_storage
 
 	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
-		RID mesh = RSG::storage->mesh_allocate();
+		RID mesh = RSG::mesh_storage->mesh_allocate();
 
 		// TODO once we have RSG::mesh_storage, add can_create_resources_async and call here instead of texture_storage!!
 
@@ -264,16 +264,16 @@ public:
 			if (Thread::get_caller_id() == server_thread) {
 				command_queue.flush_if_pending();
 			}
-			RSG::storage->mesh_initialize(mesh);
-			RSG::storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
+			RSG::mesh_storage->mesh_initialize(mesh);
+			RSG::mesh_storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				RSG::storage->mesh_add_surface(mesh, p_surfaces[i]);
+				RSG::mesh_storage->mesh_add_surface(mesh, p_surfaces[i]);
 			}
 		} else {
-			command_queue.push(RSG::storage, &RendererStorage::mesh_initialize, mesh);
-			command_queue.push(RSG::storage, &RendererStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_initialize, mesh);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				command_queue.push(RSG::storage, &RendererStorage::mesh_add_surface, mesh, p_surfaces[i]);
+				command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_add_surface, mesh, p_surfaces[i]);
 			}
 		}
 
@@ -348,6 +348,11 @@ public:
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
 
 	/* Light API */
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererLightStorage
+#define server_name RSG::light_storage
 
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
@@ -389,13 +394,27 @@ public:
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 
+	/* LIGHTMAP */
+
+	FUNCRIDSPLIT(lightmap)
+
+	FUNC3(lightmap_set_textures, RID, RID, bool)
+	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
+	FUNC2(lightmap_set_probe_interior, RID, bool)
+	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
+	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
+	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
+	FUNC1(lightmap_set_probe_capture_update_speed, float)
+
 	/* DECAL API */
 
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererDecalAtlasStorage
-#define server_name RSG::decal_atlas_storage
+#define ServerName RendererTextureStorage
+#define server_name RSG::texture_storage
 
 	FUNCRIDSPLIT(decal)
 
@@ -438,21 +457,13 @@ public:
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
 
-	/* LIGHTMAP */
-
-	FUNCRIDSPLIT(lightmap)
-
-	FUNC3(lightmap_set_textures, RID, RID, bool)
-	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
-	FUNC2(lightmap_set_probe_interior, RID, bool)
-	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
-	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
-	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
-	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
-	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
-	FUNC1(lightmap_set_probe_capture_update_speed, float)
-
 	/* PARTICLES */
+
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererParticlesStorage
+#define server_name RSG::particles_storage
 
 	FUNCRIDSPLIT(particles)
 
@@ -508,6 +519,12 @@ public:
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
+
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(fog_volume)
 
@@ -794,7 +811,7 @@ public:
 
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
 
-	FUNC5(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float)
+	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	FUNC4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
 	FUNC3(canvas_item_add_rect, RID, const Rect2 &, const Color &)

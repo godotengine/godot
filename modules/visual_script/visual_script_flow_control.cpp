@@ -123,11 +123,11 @@ public:
 	VisualScriptInstance *instance;
 	bool with_value;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (with_value) {
 			*p_working_mem = *p_inputs[0];
 			return STEP_EXIT_FUNCTION_BIT;
@@ -216,11 +216,11 @@ public:
 	VisualScriptCondition *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 1; }
+	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE) {
 			return 2;
 		} else if (p_inputs[0]->operator bool()) {
@@ -296,11 +296,11 @@ public:
 	VisualScriptWhile *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 1; }
+	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool keep_going = p_inputs[0]->operator bool();
 
 		if (keep_going) {
@@ -379,11 +379,11 @@ public:
 	VisualScriptIterator *node;
 	VisualScriptInstance *instance;
 
-	virtual int get_working_memory_size() const { return 2; }
+	virtual int get_working_memory_size() const override { return 2; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0] = *p_inputs[0];
 			bool valid;
@@ -512,11 +512,11 @@ public:
 	VisualScriptInstance *instance;
 	int steps;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0] = 0;
 		}
@@ -599,11 +599,11 @@ public:
 	VisualScriptInstance *instance;
 	int case_count;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE) {
 			return case_count; //exit
 		}
@@ -778,11 +778,11 @@ public:
 	StringName base_type;
 	String script;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Object *obj = *p_inputs[0];
 
 		*p_outputs[0] = Variant();

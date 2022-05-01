@@ -34,10 +34,19 @@
 #include "noise.h"
 #include "noise_texture.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_plugin.h"
+#include "editor/noise_editor_plugin.h"
+#endif
+
 void register_noise_types() {
 	GDREGISTER_CLASS(NoiseTexture);
 	GDREGISTER_ABSTRACT_CLASS(Noise);
 	GDREGISTER_CLASS(FastNoiseLite);
+
+#ifdef TOOLS_ENABLED
+	EditorPlugins::add_by_type<NoiseEditorPlugin>();
+#endif
 }
 
 void unregister_noise_types() {

@@ -30,6 +30,8 @@
 
 #include "ot_features_plugin.h"
 
+#include "scene/3d/label_3d.h"
+
 void OpenTypeFeaturesEditor::_value_changed(double val) {
 	if (setting) {
 		return;
@@ -116,7 +118,25 @@ void OpenTypeFeaturesAdd::setup(Object *p_object) {
 	bool have_ss = false;
 	bool have_cv = false;
 	bool have_cu = false;
-	Dictionary features = Object::cast_to<Control>(edited_object)->get_theme_font(SNAME("font"))->get_feature_list();
+
+	Ref<Font> font;
+
+	Control *ctrl = Object::cast_to<Control>(edited_object);
+	if (ctrl != nullptr) {
+		font = ctrl->get_theme_font(SNAME("font"));
+	} else {
+		Label3D *l3d = Object::cast_to<Label3D>(edited_object);
+		if (l3d != nullptr) {
+			font = l3d->_get_font_or_default();
+		}
+	}
+
+	if (font.is_null()) {
+		return;
+	}
+
+	Dictionary features = font->get_feature_list();
+
 	for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
 		String ftr_name = TS->tag_to_name(*ftr);
 		if (ftr_name.begins_with("stylistic_set_")) {
@@ -145,8 +165,11 @@ void OpenTypeFeaturesAdd::setup(Object *p_object) {
 
 void OpenTypeFeaturesAdd::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
 			set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
 	}
@@ -173,7 +196,6 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 	menu_cu->set_name("CUMenu");
 	menu->add_child(menu_cu);
 
-	connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
 	menu->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_cv->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_ss->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
@@ -183,7 +205,7 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 /*************************************************************************/
 
 bool EditorInspectorPluginOpenTypeFeatures::can_handle(Object *p_object) {
-	return (Object::cast_to<Control>(p_object) != nullptr);
+	return (Object::cast_to<Control>(p_object) != nullptr) || (Object::cast_to<Label3D>(p_object) != nullptr);
 }
 
 bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {

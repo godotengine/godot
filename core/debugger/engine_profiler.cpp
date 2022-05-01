@@ -55,13 +55,13 @@ Error EngineProfiler::bind(const String &p_name) {
 	EngineDebugger::Profiler prof(
 			this,
 			[](void *p_user, bool p_enable, const Array &p_opts) {
-				((EngineProfiler *)p_user)->toggle(p_enable, p_opts);
+				static_cast<EngineProfiler *>(p_user)->toggle(p_enable, p_opts);
 			},
 			[](void *p_user, const Array &p_data) {
-				((EngineProfiler *)p_user)->add(p_data);
+				static_cast<EngineProfiler *>(p_user)->add(p_data);
 			},
 			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-				((EngineProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+				static_cast<EngineProfiler *>(p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
 			});
 	registration = p_name;
 	EngineDebugger::register_profiler(p_name, prof);

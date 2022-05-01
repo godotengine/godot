@@ -144,6 +144,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Map<StringName, Color> node_colors;
 	HashMap<StringName, Ref<StyleBox>> node_styles;
+	Map<StringName, Variant::Type> base_type_map;
 
 	void _update_graph_connections();
 	void _update_graph(int p_only_id = -1);

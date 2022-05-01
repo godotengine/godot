@@ -40,10 +40,11 @@
 #include <openxr/openxr.h>
 
 class OpenXRAPI;
+class OpenXRActionMap;
 
 class OpenXRExtensionWrapper {
 protected:
-	OpenXRAPI *openxr_api;
+	OpenXRAPI *openxr_api = nullptr;
 
 	// Store extension we require.
 	// If bool pointer is a nullptr this means this extension is mandatory and initialisation will fail if it is not available

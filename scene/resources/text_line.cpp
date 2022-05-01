@@ -327,10 +327,18 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
 			case HORIZONTAL_ALIGNMENT_CENTER: {
-				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-					ofs.x += Math::floor((width - length) / 2.0);
-				} else {
-					ofs.y += Math::floor((width - length) / 2.0);
+				if (length <= width) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += Math::floor((width - length) / 2.0);
+					} else {
+						ofs.y += Math::floor((width - length) / 2.0);
+					}
+				} else if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
 				}
 			} break;
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
@@ -366,10 +374,18 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
 			case HORIZONTAL_ALIGNMENT_CENTER: {
-				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-					ofs.x += Math::floor((width - length) / 2.0);
-				} else {
-					ofs.y += Math::floor((width - length) / 2.0);
+				if (length <= width) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += Math::floor((width - length) / 2.0);
+					} else {
+						ofs.y += Math::floor((width - length) / 2.0);
+					}
+				} else if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
 				}
 			} break;
 			case HORIZONTAL_ALIGNMENT_RIGHT: {

@@ -3470,7 +3470,7 @@ msgid "The property is a translatable string."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "Used to group properties together in the editor."
+msgid "Used to group properties together in the editor. See [EditorInspector]."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -6987,8 +6987,9 @@ msgstr ""
 
 #: doc/classes/Array.xml
 msgid ""
-"Removes the first occurrence of a value from the array. To remove an element "
-"by index, use [method remove] instead.\n"
+"Removes the first occurrence of a value from the array. If the value does "
+"not exist in the array, nothing happens. To remove an element by index, use "
+"[method remove] instead.\n"
 "[b]Note:[/b] This method acts in-place and doesn't return a value.\n"
 "[b]Note:[/b] On large arrays, this method will be slower if the removed "
 "element is close to the beginning of the array (index 0). This is because "
@@ -11715,8 +11716,8 @@ msgstr ""
 #: doc/classes/Camera.xml
 msgid ""
 "The camera's size measured as 1/2 the width or height. Only applicable in "
-"orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] "
-"sets the other axis' size length."
+"orthogonal and frustum modes. Since [member keep_aspect] locks on axis, "
+"[code]size[/code] sets the other axis' size length."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -12514,8 +12515,11 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"If [code]enable[/code] is [code]true[/code], the node won't inherit its "
-"transform from parent canvas items."
+"If [code]enable[/code] is [code]true[/code], this [CanvasItem] will [i]not[/"
+"i] inherit its transform from parent [CanvasItem]s. Its draw order will also "
+"be changed to make it draw on top of other [CanvasItem]s that are not set as "
+"top-level. The [CanvasItem] will effectively act as if it was placed as a "
+"child of a bare [Node]. See also [method is_set_as_toplevel]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -13604,7 +13608,10 @@ msgid ""
 "number of 2D collision [Shape2D]s. Each shape must be assigned to a [i]shape "
 "owner[/i]. The CollisionObject2D can have any number of shape owners. Shape "
 "owners are not nodes and do not appear in the editor, but are accessible "
-"through code using the [code]shape_owner_*[/code] methods."
+"through code using the [code]shape_owner_*[/code] methods.\n"
+"[b]Note:[/b] Only collisions between objects within the same canvas "
+"([Viewport] canvas or [CanvasLayer]) are supported. The behavior of "
+"collisions between objects in different canvases is undefined."
 msgstr ""
 
 #: doc/classes/CollisionObject2D.xml
@@ -20479,18 +20486,34 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInspector.xml
-msgid "A tab used to edit properties of the selected node."
+msgid "A control used to edit properties of an object."
 msgstr ""
 
 #: doc/classes/EditorInspector.xml
 msgid ""
-"The editor inspector is by default located on the right-hand side of the "
-"editor. It's used to edit the properties of the selected node. For example, "
-"you can select a node such as [Sprite] then edit its transform through the "
-"inspector tool. The editor inspector is an essential tool in the game "
-"development workflow.\n"
-"[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access "
-"the singleton using [method EditorInterface.get_inspector]."
+"This is the control that implements property editing in the editor's "
+"Settings dialogs, the Inspector dock, etc. To get the [EditorInspector] used "
+"in the editor's Inspector dock, use [method EditorInterface.get_inspector].\n"
+"[EditorInspector] will show properties in the same order as the array "
+"returned by [method Object.get_property_list].\n"
+"If a property's name is path-like (i.e. if it contains forward slashes), "
+"[EditorInspector] will create nested sections for \"directories\" along the "
+"path. For example, if a property is named [code]highlighting/gdscript/"
+"node_path_color[/code], it will be shown as \"Node Path Color\" inside the "
+"\"GDScript\" section nested inside the \"Highlighting\" section.\n"
+"If a property has [constant @GlobalScope.PROPERTY_USAGE_GROUP] usage, it "
+"will group subsequent properties whose name starts with the property's hint "
+"string. The group ends when a property does not start with that hint string "
+"or when a new group starts. An empty group name effectively ends the current "
+"group. [EditorInspector] will create a top-level section for each group. For "
+"example, if a property with group usage is named [code]Collide With[/code] "
+"and its hint string is [code]collide_with_[/code], a subsequent "
+"[code]collide_with_area[/code] property will be shown as \"Area\" inside the "
+"\"Collide With\" section.\n"
+"[b]Note:[/b] Unlike sections created from path-like property names, "
+"[EditorInspector] won't capitalize the name for sections created from "
+"groups. So properties with group usage usually use capitalized names instead "
+"of snake_cased names."
 msgstr ""
 
 #: doc/classes/EditorInspector.xml
@@ -21663,6 +21686,14 @@ msgid ""
 "- Up Axis: Y\n"
 "- Binary format in FBX 2017\n"
 "[/codeblock]"
+msgstr ""
+
+#: modules/gltf/doc_classes/EditorSceneImporterGLTF.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [EditorSceneImporterGLTF] within a script will cause an error in an "
+"exported project."
 msgstr ""
 
 #: doc/classes/EditorScenePostImport.xml
@@ -25559,6 +25590,50 @@ msgstr ""
 msgid "Represents the size of the [enum Subdiv] enum."
 msgstr ""
 
+#: modules/gltf/doc_classes/GLTFAccessor.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFAccessor] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFAnimation.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFAnimation] within a script will cause an error in an exported "
+"project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFBufferView.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFBufferView] within a script will cause an error in an exported "
+"project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFCamera.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFCamera] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFDocument.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFDocument] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFLight.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFLight] within a script will cause an error in an exported project."
+msgstr ""
+
 #: modules/gltf/doc_classes/GLTFLight.xml
 msgid ""
 "The [Color] of the light. Defaults to white. A black color causes the light "
@@ -25606,6 +25681,49 @@ msgid ""
 "The type of the light. The values accepted by Godot are \"point\", \"spot\", "
 "and \"directional\", which correspond to Godot's [OmniLight], [SpotLight], "
 "and [DirectionalLight] respectively."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFMesh.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFMesh] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFNode.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFNode] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFSkeleton.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFSkeleton] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFSpecGloss.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFSpecGloss] within a script will cause an error in an exported "
+"project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFState.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFState] within a script will cause an error in an exported project."
+msgstr ""
+
+#: modules/gltf/doc_classes/GLTFTexture.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [GLTFTexture] within a script will cause an error in an exported project."
 msgstr ""
 
 #: modules/mono/doc_classes/GodotSharp.xml
@@ -32521,7 +32639,7 @@ msgid ""
 "be within the text's length."
 msgstr ""
 
-#: doc/classes/LineEdit.xml
+#: doc/classes/LineEdit.xml doc/classes/RichTextLabel.xml
 msgid "Clears the current selection."
 msgstr ""
 
@@ -32538,6 +32656,18 @@ msgstr ""
 msgid ""
 "Returns the scroll offset due to [member caret_position], as a number of "
 "characters."
+msgstr ""
+
+#: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
+msgid "Returns the selection begin column."
+msgstr ""
+
+#: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
+msgid "Returns the selection end column."
+msgstr ""
+
+#: doc/classes/LineEdit.xml
+msgid "Returns [code]true[/code] if the user has selected text."
 msgstr ""
 
 #: doc/classes/LineEdit.xml
@@ -37956,7 +38086,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml
-msgid "Returns the object's metadata entry for the given [code]name[/code]."
+msgid ""
+"Returns the object's metadata entry for the given [code]name[/code].\n"
+"Throws error if the entry does not exist, unless [code]default[/code] is not "
+"[code]null[/code] (in which case the default value will be returned)."
 msgstr ""
 
 #: doc/classes/Object.xml
@@ -40162,6 +40295,14 @@ msgid ""
 "It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the "
 "scene is being instantiated to be the base of another one.\n"
 "[b]Note:[/b] Only available in editor builds."
+msgstr ""
+
+#: modules/gltf/doc_classes/PackedSceneGLTF.xml
+msgid ""
+"[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF "
+"loading and saving is [i]not[/i] available in exported projects. References "
+"to [PackedSceneGLTF] within a script will cause an error in an exported "
+"project."
 msgstr ""
 
 #: doc/classes/PacketPeer.xml
@@ -45867,7 +46008,7 @@ msgstr ""
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Allows the window to be resizable by default.\n"
-"[b]Note:[/b] This setting is ignored on iOS and Android."
+"[b]Note:[/b] This setting is ignored on iOS."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -46514,7 +46655,7 @@ msgid "Optional name for the 3D render layer 13."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
-msgid "Optional name for the 3D render layer 14"
+msgid "Optional name for the 3D render layer 14."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47784,16 +47925,24 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"If [code]true[/code], forces vertex shading for all rendering. This can "
-"increase performance a lot, but also reduces quality immensely. Can be used "
-"to optimize performance on low-end mobile devices."
+"If [code]true[/code], forces vertex shading for all 3D [SpatialMaterial] and "
+"[ShaderMaterial] rendering. This can be used to improve performance on low-"
+"end mobile devices. The downside is that shading becomes much less accurate, "
+"with visible linear interpolation between vertices that are joined together. "
+"This can be compensated by ensuring meshes have a sufficient level of "
+"subdivision (but not too much, to avoid reducing performance). Some material "
+"features are also not supported when vertex shading is enabled.\n"
+"See also [member SpatialMaterial.flags_vertex_lighting] which can be used to "
+"enable vertex shading on specific materials only.\n"
+"[b]Note:[/b] This setting does not affect unshaded materials."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_vertex_shading] on mobile devices, due to performance concerns or "
-"driver support."
+"driver support. If lighting looks broken after exporting the project to a "
+"mobile platform, try disabling this setting."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49825,6 +49974,10 @@ msgstr ""
 msgid ""
 "Returns the total number of newlines in the tag stack's text tags. Considers "
 "wrapped text as one line."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
+msgid "Returns the current selection text. Does not include BBCodes."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
@@ -52119,14 +52272,23 @@ msgstr ""
 
 #: doc/classes/Semaphore.xml
 msgid ""
-"Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] "
-"on success, [constant ERR_BUSY] otherwise."
+"Lowers the [Semaphore], allowing one more thread in.\n"
+"[b]Note:[/b] This method internals' can't possibly fail, but an error code "
+"is returned for backwards compatibility, which will always be [constant OK]."
 msgstr ""
 
 #: doc/classes/Semaphore.xml
 msgid ""
-"Tries to wait for the [Semaphore], if its value is zero, blocks until non-"
-"zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise."
+"Like [method wait], but won't block, so if the value is zero, fails "
+"immediately and returns [constant ERR_BUSY]. If non-zero, it returns "
+"[constant OK] to report success."
+msgstr ""
+
+#: doc/classes/Semaphore.xml
+msgid ""
+"Waits for the [Semaphore], if its value is zero, blocks until non-zero.\n"
+"[b]Note:[/b] This method internals' can't possibly fail, but an error code "
+"is returned for backwards compatibility, which will always be [constant OK]."
 msgstr ""
 
 #: doc/classes/Separator.xml
@@ -53572,7 +53734,21 @@ msgstr ""
 #: doc/classes/SpatialMaterial.xml
 msgid ""
 "If [code]true[/code], lighting is calculated per vertex rather than per "
-"pixel. This may increase performance on low-end devices."
+"pixel. This may increase performance on low-end devices, especially for "
+"meshes with a lower polygon count. The downside is that shading becomes much "
+"less accurate, with visible linear interpolation between vertices that are "
+"joined together. This can be compensated by ensuring meshes have a "
+"sufficient level of subdivision (but not too much, to avoid reducing "
+"performance). Some material features are also not supported when vertex "
+"shading is enabled.\n"
+"See also [member ProjectSettings.rendering/quality/shading/"
+"force_vertex_shading] which can globally enable vertex shading on all "
+"materials.\n"
+"[b]Note:[/b] By default, vertex shading is enforced on mobile platforms by "
+"[member ProjectSettings.rendering/quality/shading/force_vertex_shading]'s "
+"[code]mobile[/code] override.\n"
+"[b]Note:[/b] [member flags_vertex_lighting] has no effect if [member "
+"flags_unshaded] is [code]true[/code]."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -54376,7 +54552,10 @@ msgid ""
 "the text alignment to right.\n"
 "See [Range] class for more options over the [SpinBox].\n"
 "[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a "
-"[SpinBox]'s background, add theme items for [LineEdit] and customize them."
+"[SpinBox]'s background, add theme items for [LineEdit] and customize them.\n"
+"[b]Note:[/b] If you want to implement drag and drop for the underlying "
+"[LineEdit], you can use [method Control.set_drag_forwarding] on the node "
+"returned by [method get_line_edit]."
 msgstr ""
 
 #: doc/classes/SpinBox.xml
@@ -55694,7 +55873,6 @@ msgid ""
 "print(\"1.7\".is_valid_float()) # Prints \"True\"\n"
 "print(\"24\".is_valid_float()) # Prints \"True\"\n"
 "print(\"7e3\".is_valid_float()) # Prints \"True\"\n"
-"print(\"24\".is_valid_float()) # Prints \"True\"\n"
 "print(\"Hello\".is_valid_float()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
@@ -55965,9 +56143,9 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Returns the similarity index ([url=https://en.wikipedia.org/wiki/"
-"S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this "
-"string compared to another. 1.0 means totally similar and 0.0 means totally "
-"dissimilar.\n"
+"S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of "
+"this string compared to another. A result of 1.0 means totally similar, "
+"while 0.0 means totally dissimilar.\n"
 "[codeblock]\n"
 "print(\"ABC123\".similarity(\"ABC123\")) # Prints \"1\"\n"
 "print(\"ABC123\".similarity(\"XYZ456\")) # Prints \"0\"\n"
@@ -57438,19 +57616,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TextEdit.xml
-msgid "Returns the selection begin column."
-msgstr ""
-
-#: doc/classes/TextEdit.xml
 msgid "Returns the selection begin line."
 msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid "Returns the text inside the selection."
-msgstr ""
-
-#: doc/classes/TextEdit.xml
-msgid "Returns the selection end column."
 msgstr ""
 
 #: doc/classes/TextEdit.xml
@@ -58474,6 +58644,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+msgid ""
+"Adds an empty theme type for every valid data type.\n"
+"[b]Note:[/b] Empty types are not saved with the theme. This method only "
+"exists to perform in-memory changes to the resource. Use available "
+"[code]set_*[/code] methods to add theme items."
+msgstr ""
+
+#: doc/classes/Theme.xml
 msgid "Clears all values on the theme."
 msgstr ""
 
@@ -58729,6 +58907,13 @@ msgid ""
 "[b]Note:[/b] This modifies the current theme. If you want to merge two "
 "themes together without modifying either one, create a new empty theme and "
 "merge the other two into it one after another."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
+"Removes the theme type, gracefully discarding defined theme items. If the "
+"type is a variation, this information is also erased. If the type is a base "
+"for type variations, those variations lose their base."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -71426,6 +71611,11 @@ msgid ""
 msgstr ""
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
+msgid ""
+"Sets additional headers to be sent to clients during the HTTP handshake."
+msgstr ""
+
+#: modules/websocket/doc_classes/WebSocketServer.xml
 msgid "Stops the server and clear its state."
 msgstr ""
 
@@ -71521,6 +71711,9 @@ msgid ""
 "\n"
 "    webxr_interface = ARVRServer.find_interface(\"WebXR\")\n"
 "    if webxr_interface:\n"
+"        # Map to the standard button/axis ids when possible.\n"
+"        webxr_interface.xr_standard_mapping = true\n"
+"\n"
 "        # WebXR uses a lot of asynchronous callbacks, so we connect to "
 "various\n"
 "        # signals in order to receive them.\n"
@@ -71742,6 +71935,13 @@ msgid ""
 "API/XRVisibilityState]WebXR's XRVisibilityState[/url], including "
 "[code]\"hidden\"[/code], [code]\"visible\"[/code], and [code]\"visible-"
 "blurred\"[/code]."
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid ""
+"If set to true, the button and axes ids will be converted to match the "
+"standard ids used by other AR/VR interfaces, when possible.\n"
+"Otherwise, the ids will be passed through unaltered from WebXR."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml

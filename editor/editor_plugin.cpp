@@ -524,6 +524,10 @@ void EditorPlugin::remove_tool_menu_item(const String &p_name) {
 	EditorNode::get_singleton()->remove_tool_menu_item(p_name);
 }
 
+PopupMenu *EditorPlugin::get_export_as_menu() {
+	return EditorNode::get_singleton()->get_export_as_menu();
+}
+
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
 	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
@@ -763,20 +767,20 @@ void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::get_singleton()->add_importer(p_importer, p_first_priority);
+	ResourceImporterScene::add_importer(p_importer, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
+	ResourceImporterScene::remove_importer(p_importer);
 }
 
 void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
-	ResourceImporterScene::get_singleton()->add_post_importer_plugin(p_plugin, p_first_priority);
+	ResourceImporterScene::add_post_importer_plugin(p_plugin, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
-	ResourceImporterScene::get_singleton()->remove_post_importer_plugin(p_plugin);
+	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
 }
 
 int find(const PackedStringArray &a, const String &v) {
@@ -870,6 +874,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
+	ClassDB::bind_method(D_METHOD("get_export_as_menu"), &EditorPlugin::get_export_as_menu);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
 

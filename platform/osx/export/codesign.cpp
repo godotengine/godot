@@ -49,8 +49,8 @@
 /*************************************************************************/
 
 String CodeSignCodeResources::hash_sha1_base64(const String &p_path) {
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, String(), vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
 
 	CryptoCore::SHA1Context ctx;
 	ctx.start();
@@ -68,14 +68,13 @@ String CodeSignCodeResources::hash_sha1_base64(const String &p_path) {
 
 	unsigned char hash[0x14];
 	ctx.finish(hash);
-	fa->close();
 
 	return CryptoCore::b64_encode_str(hash, 0x14);
 }
 
 String CodeSignCodeResources::hash_sha256_base64(const String &p_path) {
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, String(), vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
 
 	CryptoCore::SHA256Context ctx;
 	ctx.start();
@@ -93,7 +92,6 @@ String CodeSignCodeResources::hash_sha256_base64(const String &p_path) {
 
 	unsigned char hash[0x20];
 	ctx.finish(hash);
-	fa->close();
 
 	return CryptoCore::b64_encode_str(hash, 0x20);
 }
@@ -211,16 +209,14 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 		}                                               \
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!da, false);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), false);
 
 	Vector<String> files_to_add;
 	if (LipO::is_lipo(p_exepath)) {
 		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
-		if (err != OK) {
-			ERR_FAIL_V_MSG(false, vformat("CodeSign/CodeResources: Failed to create \"%s\" subfolder.", tmp_path_name));
-		}
+		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("CodeSign/CodeResources: Failed to create \"%s\" subfolder.", tmp_path_name));
 		LipO lip;
 		if (lip.open_file(p_exepath)) {
 			for (int i = 0; i < lip.get_arch_count(); i++) {
@@ -287,8 +283,8 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 }
 
 bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const String &p_path, const String &p_main_exe_path) {
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!da, false);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), false);
 	Error err = da->change_dir(p_root.plus_file(p_path));
 	ERR_FAIL_COND_V(err != OK, false);
 
@@ -431,12 +427,11 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	String text = pl.save_text();
 	ERR_FAIL_COND_V_MSG(text.is_empty(), false, "CodeSign/CodeResources: Generating resources PList failed.");
 
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, false, vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
 
 	CharString cs = text.utf8();
 	fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
-	fa->close();
 	return true;
 }
 
@@ -809,8 +804,8 @@ int CodeSignRequirements::get_size() const {
 	return blob.size();
 }
 
-void CodeSignRequirements::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/Requirements: Invalid file handle.");
+void CodeSignRequirements::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/Requirements: Invalid file handle.");
 	p_file->store_buffer(blob.ptr(), blob.size());
 }
 
@@ -863,8 +858,8 @@ int CodeSignEntitlementsText::get_size() const {
 	return blob.size();
 }
 
-void CodeSignEntitlementsText::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/EntitlementsText: Invalid file handle.");
+void CodeSignEntitlementsText::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/EntitlementsText: Invalid file handle.");
 	p_file->store_buffer(blob.ptr(), blob.size());
 }
 
@@ -918,8 +913,8 @@ int CodeSignEntitlementsBinary::get_size() const {
 	return blob.size();
 }
 
-void CodeSignEntitlementsBinary::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/EntitlementsBinary: Invalid file handle.");
+void CodeSignEntitlementsBinary::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/EntitlementsBinary: Invalid file handle.");
 	p_file->store_buffer(blob.ptr(), blob.size());
 }
 
@@ -947,7 +942,7 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 	}
 	blob.resize(cd_size);
 	memset(blob.ptrw() + 8, 0x00, cd_size - 8);
-	CodeDirectoryHeader *cd = (CodeDirectoryHeader *)(blob.ptrw() + 8);
+	CodeDirectoryHeader *cd = reinterpret_cast<CodeDirectoryHeader *>(blob.ptrw() + 8);
 
 	bool is_64_cl = (p_code_limit >= std::numeric_limits<uint32_t>::max());
 
@@ -1040,8 +1035,8 @@ int CodeSignCodeDirectory::get_size() const {
 	return blob.size();
 }
 
-void CodeSignCodeDirectory::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/CodeDirectory: Invalid file handle.");
+void CodeSignCodeDirectory::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/CodeDirectory: Invalid file handle.");
 	p_file->store_buffer(blob.ptr(), blob.size());
 }
 
@@ -1086,8 +1081,8 @@ int CodeSignSignature::get_size() const {
 	return blob.size();
 }
 
-void CodeSignSignature::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/Signature: Invalid file handle.");
+void CodeSignSignature::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/Signature: Invalid file handle.");
 	p_file->store_buffer(blob.ptr(), blob.size());
 }
 
@@ -1115,8 +1110,8 @@ int CodeSignSuperBlob::get_size() const {
 	return size;
 }
 
-void CodeSignSuperBlob::write_to_file(FileAccess *p_file) const {
-	ERR_FAIL_COND_MSG(!p_file, "CodeSign/SuperBlob: Invalid file handle.");
+void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/SuperBlob: Invalid file handle.");
 	uint32_t size = get_size();
 	uint32_t data_offset = 12 + blobs.size() * 8;
 
@@ -1147,8 +1142,8 @@ void CodeSignSuperBlob::write_to_file(FileAccess *p_file) const {
 
 PackedByteArray CodeSign::file_hash_sha1(const String &p_path) {
 	PackedByteArray file_hash;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, PackedByteArray(), vformat("CodeSign: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), PackedByteArray(), vformat("CodeSign: Can't open file: \"%s\".", p_path));
 
 	CryptoCore::SHA1Context ctx;
 	ctx.start();
@@ -1171,8 +1166,8 @@ PackedByteArray CodeSign::file_hash_sha1(const String &p_path) {
 
 PackedByteArray CodeSign::file_hash_sha256(const String &p_path) {
 	PackedByteArray file_hash;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, PackedByteArray(), vformat("CodeSign: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), PackedByteArray(), vformat("CodeSign: Can't open file: \"%s\".", p_path));
 
 	CryptoCore::SHA256Context ctx;
 	ctx.start();
@@ -1208,8 +1203,8 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	String id;
 	String main_exe = p_exe_path;
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da.is_null()) {
 		r_error_msg = TTR("Can't get filesystem access.");
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CodeSign: Can't get filesystem access.");
 	}
@@ -1522,8 +1517,8 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 }
 
 Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String &p_path, const String &p_ent_path, String &r_error_msg) {
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da.is_null()) {
 		r_error_msg = TTR("Can't get filesystem access.");
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CodeSign: Can't get filesystem access.");
 	}

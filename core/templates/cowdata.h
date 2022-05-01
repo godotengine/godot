@@ -86,13 +86,6 @@ private:
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
 
-	_FORCE_INLINE_ T *_get_data() const {
-		if (!_ptr) {
-			return nullptr;
-		}
-		return reinterpret_cast<T *>(_ptr);
-	}
-
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
 		return next_power_of_2(p_elements * sizeof(T));
 	}
@@ -128,11 +121,11 @@ public:
 
 	_FORCE_INLINE_ T *ptrw() {
 		_copy_on_write();
-		return (T *)_get_data();
+		return _ptr;
 	}
 
 	_FORCE_INLINE_ const T *ptr() const {
-		return _get_data();
+		return _ptr;
 	}
 
 	_FORCE_INLINE_ int size() const {
@@ -150,19 +143,19 @@ public:
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());
 		_copy_on_write();
-		_get_data()[p_index] = p_elem;
+		_ptr[p_index] = p_elem;
 	}
 
 	_FORCE_INLINE_ T &get_m(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
 	_FORCE_INLINE_ const T &get(int p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
 	Error resize(int p_size);
@@ -249,7 +242,7 @@ uint32_t CowData<T>::_copy_on_write() {
 
 		} else {
 			for (uint32_t i = 0; i < current_size; i++) {
-				memnew_placement(&_data[i], T(_get_data()[i]));
+				memnew_placement(&_data[i], T(_ptr[i]));
 			}
 		}
 
@@ -308,10 +301,8 @@ Error CowData<T>::resize(int p_size) {
 		// construct the newly created elements
 
 		if (!__has_trivial_constructor(T)) {
-			T *elems = _get_data();
-
 			for (int i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&elems[i], T);
+				memnew_placement(&_ptr[i], T);
 			}
 		}
 
@@ -321,7 +312,7 @@ Error CowData<T>::resize(int p_size) {
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {
-				T *t = &_get_data()[i];
+				T *t = &_ptr[i];
 				t->~T();
 			}
 		}

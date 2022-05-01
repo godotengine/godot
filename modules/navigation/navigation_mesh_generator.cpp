@@ -124,6 +124,28 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
+void NavigationMeshGenerator::_add_mesh_array(const Array &p_array, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
+	Vector<Vector3> mesh_vertices = p_array[Mesh::ARRAY_VERTEX];
+	const Vector3 *vr = mesh_vertices.ptr();
+
+	Vector<int> mesh_indices = p_array[Mesh::ARRAY_INDEX];
+	const int *ir = mesh_indices.ptr();
+
+	const int face_count = mesh_indices.size() / 3;
+	const int current_vertex_count = p_vertices.size() / 3;
+
+	for (int j = 0; j < mesh_vertices.size(); j++) {
+		_add_vertex(p_xform.xform(vr[j]), p_vertices);
+	}
+
+	for (int j = 0; j < face_count; j++) {
+		// CCW
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 0]));
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 2]));
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
+	}
+}
+
 void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = p_vertices.size() / 3;
@@ -187,43 +209,38 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 
 					Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * col_shape->get_transform();
 
-					Ref<Mesh> mesh;
 					Ref<Shape3D> s = col_shape->get_shape();
 
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
-						Ref<BoxMesh> box_mesh;
-						box_mesh.instantiate();
-						box_mesh->set_size(box->get_size());
-						mesh = box_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						BoxMesh::create_mesh_array(arr, box->get_size());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
 					if (capsule) {
-						Ref<CapsuleMesh> capsule_mesh;
-						capsule_mesh.instantiate();
-						capsule_mesh->set_radius(capsule->get_radius());
-						capsule_mesh->set_height(capsule->get_height());
-						mesh = capsule_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CapsuleMesh::create_mesh_array(arr, capsule->get_radius(), capsule->get_height());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					CylinderShape3D *cylinder = Object::cast_to<CylinderShape3D>(*s);
 					if (cylinder) {
-						Ref<CylinderMesh> cylinder_mesh;
-						cylinder_mesh.instantiate();
-						cylinder_mesh->set_height(cylinder->get_height());
-						cylinder_mesh->set_bottom_radius(cylinder->get_radius());
-						cylinder_mesh->set_top_radius(cylinder->get_radius());
-						mesh = cylinder_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CylinderMesh::create_mesh_array(arr, cylinder->get_radius(), cylinder->get_radius(), cylinder->get_height());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					SphereShape3D *sphere = Object::cast_to<SphereShape3D>(*s);
 					if (sphere) {
-						Ref<SphereMesh> sphere_mesh;
-						sphere_mesh.instantiate();
-						sphere_mesh->set_radius(sphere->get_radius());
-						sphere_mesh->set_height(sphere->get_radius() * 2.0);
-						mesh = sphere_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						SphereMesh::create_mesh_array(arr, sphere->get_radius(), sphere->get_radius() * 2.0);
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
@@ -254,10 +271,6 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							_add_faces(faces, transform, p_vertices, p_indices);
 						}
 					}
-
-					if (mesh.is_valid()) {
-						_add_mesh(mesh, transform, p_vertices, p_indices);
-					}
 				}
 			}
 		}
@@ -284,44 +297,39 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 				RID shape = shapes[i + 1];
 				PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
 				Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);
-				Ref<Mesh> mesh;
 
 				switch (type) {
 					case PhysicsServer3D::SHAPE_SPHERE: {
 						real_t radius = data;
-						Ref<SphereMesh> sphere_mesh;
-						sphere_mesh.instantiate();
-						sphere_mesh->set_radius(radius);
-						sphere_mesh->set_height(radius * 2.0);
-						mesh = sphere_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_BOX: {
 						Vector3 extents = data;
-						Ref<BoxMesh> box_mesh;
-						box_mesh.instantiate();
-						box_mesh->set_size(2.0 * extents);
-						mesh = box_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						BoxMesh::create_mesh_array(arr, extents * 2.0);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CAPSULE: {
 						Dictionary dict = data;
 						real_t radius = dict["radius"];
 						real_t height = dict["height"];
-						Ref<CapsuleMesh> capsule_mesh;
-						capsule_mesh.instantiate();
-						capsule_mesh->set_radius(radius);
-						capsule_mesh->set_height(height);
-						mesh = capsule_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CapsuleMesh::create_mesh_array(arr, radius, height);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CYLINDER: {
 						Dictionary dict = data;
 						real_t radius = dict["radius"];
 						real_t height = dict["height"];
-						Ref<CylinderMesh> cylinder_mesh;
-						cylinder_mesh.instantiate();
-						cylinder_mesh->set_height(height);
-						cylinder_mesh->set_bottom_radius(radius);
-						cylinder_mesh->set_top_radius(radius);
-						mesh = cylinder_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CylinderMesh::create_mesh_array(arr, radius, radius, height);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CONVEX_POLYGON: {
 						PackedVector3Array vertices = data;
@@ -353,10 +361,6 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 					default: {
 						WARN_PRINT("Unsupported collision shape type.");
 					} break;
-				}
-
-				if (mesh.is_valid()) {
-					_add_mesh(mesh, shapes[i], p_vertices, p_indices);
 				}
 			}
 		}

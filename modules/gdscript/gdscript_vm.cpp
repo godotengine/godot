@@ -93,9 +93,13 @@ static String _get_var_type(const Variant *p_var) {
 				basestr = "null instance";
 			}
 		} else {
-			basestr = bobj->get_class();
-			if (bobj->get_script_instance()) {
-				basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+			if (bobj->is_class_ptr(GDScriptNativeClass::get_class_ptr_static())) {
+				basestr = Object::cast_to<GDScriptNativeClass>(bobj)->get_name();
+			} else {
+				basestr = bobj->get_class();
+				if (bobj->get_script_instance()) {
+					basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+				}
 			}
 		}
 
@@ -263,6 +267,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_METHOD_BIND,                   \
 		&&OPCODE_CALL_METHOD_BIND_RET,               \
 		&&OPCODE_CALL_BUILTIN_STATIC,                \
+		&&OPCODE_CALL_NATIVE_STATIC,                 \
 		&&OPCODE_CALL_PTRCALL_NO_RETURN,             \
 		&&OPCODE_CALL_PTRCALL_BOOL,                  \
 		&&OPCODE_CALL_PTRCALL_INT,                   \
@@ -301,6 +306,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_AWAIT,                              \
 		&&OPCODE_AWAIT_RESUME,                       \
 		&&OPCODE_CREATE_LAMBDA,                      \
+		&&OPCODE_CREATE_SELF_LAMBDA,                 \
 		&&OPCODE_JUMP,                               \
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
@@ -367,7 +373,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_QUATERNION,             \
 		&&OPCODE_TYPE_ADJUST_AABB,                   \
 		&&OPCODE_TYPE_ADJUST_BASIS,                  \
-		&&OPCODE_TYPE_ADJUST_TRANSFORM,              \
+		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,            \
 		&&OPCODE_TYPE_ADJUST_COLOR,                  \
 		&&OPCODE_TYPE_ADJUST_STRING_NAME,            \
 		&&OPCODE_TYPE_ADJUST_NODE_PATH,              \
@@ -1710,6 +1716,47 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CALL_NATIVE_STATIC) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= _methods_count);
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
+
+				int argc = _code_ptr[ip + 2];
+				GD_ERR_BREAK(argc < 0);
+
+				GET_INSTRUCTION_ARG(ret, argc);
+
+				const Variant **argptrs = const_cast<const Variant **>(instruction_args);
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				Callable::CallError err;
+				*ret = method->call(nullptr, argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+
+				if (err.error != Callable::CallError::CALL_OK) {
+					err_text = _get_call_error(err, "static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs);
+					OPCODE_BREAK;
+				}
+#endif
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
 #ifdef DEBUG_ENABLED
 #define OPCODE_CALL_PTR(m_type)                                                      \
 	OPCODE(OPCODE_CALL_PTRCALL_##m_type) {                                           \
@@ -2223,6 +2270,41 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));
+
+				GET_INSTRUCTION_ARG(result, captures_count);
+				*result = Callable(callable);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CREATE_SELF_LAMBDA) {
+				CHECK_SPACE(2 + instr_arg_count);
+
+				GD_ERR_BREAK(p_instance == nullptr);
+
+				ip += instr_arg_count;
+
+				int captures_count = _code_ptr[ip + 1];
+				GD_ERR_BREAK(captures_count < 0);
+
+				int lambda_index = _code_ptr[ip + 2];
+				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
+				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
+
+				Vector<Variant> captures;
+				captures.resize(captures_count);
+				for (int i = 0; i < captures_count; i++) {
+					GET_INSTRUCTION_ARG(arg, i);
+					captures.write[i] = *arg;
+				}
+
+				GDScriptLambdaSelfCallable *callable;
+				if (Object::cast_to<RefCounted>(p_instance->owner)) {
+					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, captures));
+				} else {
+					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, captures));
+				}
 
 				GET_INSTRUCTION_ARG(result, captures_count);
 				*result = Callable(callable);
@@ -3217,7 +3299,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(QUATERNION, Quaternion);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
-			OPCODE_TYPE_ADJUST(TRANSFORM, Transform3D);
+			OPCODE_TYPE_ADJUST(TRANSFORM3D, Transform3D);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

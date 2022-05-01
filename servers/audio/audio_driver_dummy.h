@@ -40,7 +40,7 @@ class AudioDriverDummy : public AudioDriver {
 	Thread thread;
 	Mutex mutex;
 
-	int32_t *samples_in;
+	int32_t *samples_in = nullptr;
 
 	static void thread_func(void *p_udata);
 

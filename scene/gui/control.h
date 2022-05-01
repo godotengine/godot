@@ -147,16 +147,6 @@ public:
 		TEXT_DIRECTION_INHERITED,
 	};
 
-	enum StructuredTextParser {
-		STRUCTURED_TEXT_DEFAULT,
-		STRUCTURED_TEXT_URI,
-		STRUCTURED_TEXT_FILE,
-		STRUCTURED_TEXT_EMAIL,
-		STRUCTURED_TEXT_LIST,
-		STRUCTURED_TEXT_NONE,
-		STRUCTURED_TEXT_CUSTOM
-	};
-
 private:
 	struct CComparator {
 		bool operator()(const Control *p_a, const Control *p_b) const {
@@ -290,7 +280,7 @@ protected:
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const;
+	virtual Array structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -579,6 +569,5 @@ VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
-VARIANT_ENUM_CAST(Control::StructuredTextParser);
 
 #endif

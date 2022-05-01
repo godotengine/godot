@@ -47,14 +47,14 @@
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
-	LineEdit *search_text;
-	Button *find_prev;
-	Button *find_next;
-	Label *matches_label;
-	TextureButton *hide_button;
+	LineEdit *search_text = nullptr;
+	Button *find_prev = nullptr;
+	Button *find_next = nullptr;
+	Label *matches_label = nullptr;
+	TextureButton *hide_button = nullptr;
 	String prev_search;
 
-	RichTextLabel *rich_text_label;
+	RichTextLabel *rich_text_label = nullptr;
 
 	int results_count;
 
@@ -114,15 +114,15 @@ class EditorHelp : public VBoxContainer {
 	Map<String, Map<String, int>> enum_values_line;
 	int description_line;
 
-	RichTextLabel *class_desc;
-	HSplitContainer *h_split;
+	RichTextLabel *class_desc = nullptr;
+	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
 
-	ConfirmationDialog *search_dialog;
-	LineEdit *search;
-	FindBar *find_bar;
-	HBoxContainer *status_bar;
-	Button *toggle_scripts_button;
+	ConfirmationDialog *search_dialog = nullptr;
+	LineEdit *search = nullptr;
+	FindBar *find_bar = nullptr;
+	HBoxContainer *status_bar = nullptr;
+	Button *toggle_scripts_button = nullptr;
 
 	String base_path;
 
@@ -210,7 +210,7 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
-	RichTextLabel *rich_text;
+	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
 

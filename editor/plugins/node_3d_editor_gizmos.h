@@ -70,14 +70,14 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	bool valid;
 	bool hidden;
 	Vector<Instance> instances;
-	Node3D *spatial_node;
+	Node3D *spatial_node = nullptr;
 
 	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
 
 protected:
 	static void _bind_methods();
 
-	EditorNode3DGizmoPlugin *gizmo_plugin;
+	EditorNode3DGizmoPlugin *gizmo_plugin = nullptr;
 
 	GDVIRTUAL0(_redraw)
 	GDVIRTUAL2RC(String, _get_handle_name, int, bool)
@@ -99,7 +99,7 @@ public:
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
 	void add_unscaled_billboard(const Ref<Material> &p_material, real_t p_scale = 1, const Color &p_modulate = Color(1, 1, 1));
 	void add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, const Vector<int> &p_ids = Vector<int>(), bool p_billboard = false, bool p_secondary = false);
-	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3(), const Transform3D &p_xform = Transform3D());
+	void add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3(), const Transform3D &p_xform = Transform3D());
 
 	virtual bool is_handle_highlighted(int p_id, bool p_secondary) const;
 	virtual String get_handle_name(int p_id, bool p_secondary) const;
@@ -319,6 +319,19 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	Sprite3DGizmoPlugin();
+};
+
+class Label3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Label3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	bool can_be_hidden() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	Label3DGizmoPlugin();
 };
 
 class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -618,7 +631,7 @@ public:
 class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 	uint64_t update_idx = 0;
 
 	void incremental_update_gizmos();

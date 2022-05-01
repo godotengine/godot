@@ -186,7 +186,7 @@
 			<description>
 				Returns an array with the given range. Range can be 1 argument [code]N[/code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). Returns an empty array if the range isn't valid (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
 				Returns an array with the given range. [code]range()[/code] can have 1 argument N ([code]0[/code] to [code]N - 1[/code]), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). [code]increment[/code] can be negative. If [code]increment[/code] is negative, [code]final - 1[/code] will become [code]final + 1[/code]. Also, the initial value must be greater than the final value for the loop to run.
-				[code]range()(/code] converts all arguments to [int] before processing.
+				[code]range()[/code] converts all arguments to [int] before processing.
 				[codeblock]
 				print(range(4))
 				print(range(2, 5))

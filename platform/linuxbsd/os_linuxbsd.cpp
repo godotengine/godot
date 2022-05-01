@@ -131,20 +131,19 @@ void OS_LinuxBSD::initialize_joypads() {
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
 	if (machine_id.is_empty()) {
-		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
+		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
+		if (f.is_valid()) {
 			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
-			f->close();
-			memdelete(f);
 		}
 	}
 	return machine_id;
 }
 
 String OS_LinuxBSD::get_processor_name() const {
-	FileAccessRef f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
+	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
 
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
@@ -241,6 +240,91 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
+}
+
+uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
+	Ref<FileAccess> f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+
+	// Read and check ELF magic number.
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			return 0;
+		}
+	}
+
+	// Read program architecture bits from class field.
+	int bits = f->get_8() * 32;
+
+	// Get info about the section header table.
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		f->seek(0x20);
+		section_table_pos = f->get_32();
+		f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		f->seek(0x28);
+		section_table_pos = f->get_64();
+		f->seek(0x3c);
+	}
+	int num_sections = f->get_16();
+	int string_section_idx = f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		// Jump to the strings section header.
+		f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			f->seek(f->get_position() + 0x10);
+			string_data_pos = f->get_32();
+			string_data_size = f->get_32();
+		} else { // 64
+			f->seek(f->get_position() + 0x18);
+			string_data_pos = f->get_64();
+			string_data_size = f->get_64();
+		}
+
+		// Read strings data.
+		f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return 0;
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		f->seek(section_header_pos);
+
+		uint32_t name_offset = f->get_32();
+		if (strcmp((char *)strings + name_offset, "pck") == 0) {
+			if (bits == 32) {
+				f->seek(section_header_pos + 0x10);
+				off = f->get_32();
+			} else { // 64
+				f->seek(section_header_pos + 0x18);
+				off = f->get_64();
+			}
+			break;
+		}
+	}
+	memfree(strings);
+
+	return off;
 }
 
 String OS_LinuxBSD::get_config_path() const {
@@ -465,7 +549,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 	// Create needed directories for decided trash can location.
 	{
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		Error err = dir_access->make_dir_recursive(trash_path);
 
 		// Issue an error if trash can is not created properly.
@@ -512,13 +596,14 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String trash_info = "[Trash Info]\nPath=" + path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
-		FileAccessRef file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
-		file->store_string(trash_info);
-		file->close();
+		{
+			Ref<FileAccess> file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
+			file->store_string(trash_info);
+		}
 
 		// Rename our resource before moving it to the trash can.
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		err = dir_access->rename(path, renamed_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + path + "\" to \"" + renamed_path + "\"");
 	}
@@ -535,7 +620,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {
 			ERR_PRINT("move_to_trash: Could not move the resource \"" + path + "\" to the trash can \"" + trash_path + "/files\"");
-			DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			err = dir_access->rename(renamed_path, path);
 			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename \"" + renamed_path + "\" back to its original name: \"" + path + "\"");
 			return FAILED;

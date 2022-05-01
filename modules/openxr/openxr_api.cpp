@@ -48,14 +48,14 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#include "modules/openxr/openxr_interface.h"
+#include "openxr_interface.h"
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 
-bool OpenXRAPI::openxr_is_enabled() {
+bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
 
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
 #ifdef TOOLS_ENABLED
 		// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 		return false;
@@ -172,10 +172,17 @@ bool OpenXRAPI::load_supported_extensions() {
 
 bool OpenXRAPI::is_extension_supported(const char *p_extension) const {
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
-		if (strcmp(supported_extensions[i].extensionName, p_extension)) {
+		if (strcmp(supported_extensions[i].extensionName, p_extension) == 0) {
+#ifdef DEBUG
+			print_line("OpenXR: requested extension", p_extension, "is supported");
+#endif
 			return true;
 		}
 	}
+
+#ifdef DEBUG
+	print_line("OpenXR: requested extension", p_extension, "is not supported");
+#endif
 
 	return false;
 }
@@ -206,6 +213,14 @@ bool OpenXRAPI::create_instance() {
 			requested_extensions[requested_extension.key] = requested_extension.value;
 		}
 	}
+
+	// Add optional extensions for controllers that may be supported.
+	// Overkill to create extension classes for this.
+	requested_extensions[XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME] = &ext_hp_mixed_reality_available;
+	requested_extensions[XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME] = &ext_samsung_odyssey_available;
+	requested_extensions[XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_cosmos_available;
+	requested_extensions[XR_HTC_VIVE_FOCUS3_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_focus3_available;
+	requested_extensions[XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_huawei_controller_available;
 
 	// Check which extensions are supported
 	enabled_extensions.clear();
@@ -408,7 +423,7 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		view_configuration_views[i].type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
-		view_configuration_views[i].next = NULL;
+		view_configuration_views[i].next = nullptr;
 	}
 
 	result = xrEnumerateViewConfigurationViews(instance, system_id, p_configuration_type, view_count, &view_count, view_configuration_views);
@@ -680,10 +695,10 @@ bool OpenXRAPI::create_main_swapchain() {
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		views[i].type = XR_TYPE_VIEW;
-		views[i].next = NULL;
+		views[i].next = nullptr;
 
 		projection_views[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-		projection_views[i].next = NULL;
+		projection_views[i].next = nullptr;
 		projection_views[i].subImage.swapchain = swapchain;
 		projection_views[i].subImage.imageArrayIndex = i;
 		projection_views[i].subImage.imageRect.offset.x = 0;
@@ -1081,7 +1096,7 @@ Size2 OpenXRAPI::get_recommended_target_size() {
 	return target_size;
 }
 
-XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
+XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, const Vector3 &r_angular_velocity) {
 	XrResult result;
 
 	ERR_FAIL_COND_V(!running, XRPose::XR_TRACKING_CONFIDENCE_NONE);
@@ -1147,7 +1162,7 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 	}
 
 	// we don't have valid view info
-	if (views == NULL || !view_pose_valid) {
+	if (views == nullptr || !view_pose_valid) {
 		return false;
 	}
 
@@ -1167,7 +1182,7 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 	}
 
 	// we don't have valid view info
-	if (views == NULL || !view_pose_valid) {
+	if (views == nullptr || !view_pose_valid) {
 		return false;
 	}
 
@@ -2282,7 +2297,7 @@ Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_tracker) {
 	return result_state.isActive ? Vector2(result_state.currentState.x, result_state.currentState.y) : Vector2();
 }
 
-XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
+XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, const Vector3 &r_angular_velocity) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, XRPose::XR_TRACKING_CONFIDENCE_NONE);
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, XRPose::XR_TRACKING_CONFIDENCE_NONE);

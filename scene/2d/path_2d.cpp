@@ -311,7 +311,7 @@ void PathFollow2D::set_offset(real_t p_offset) {
 		if (path->get_curve().is_valid()) {
 			real_t path_length = path->get_curve()->get_baked_length();
 
-			if (loop) {
+			if (loop && path_length) {
 				offset = Math::fposmod(offset, path_length);
 				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
 					offset = path_length;

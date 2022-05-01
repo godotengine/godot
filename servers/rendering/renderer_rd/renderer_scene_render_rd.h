@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
@@ -50,7 +51,7 @@ struct RenderDataRD {
 
 	Transform3D cam_transform = Transform3D();
 	CameraMatrix cam_projection = CameraMatrix();
-	bool cam_ortogonal = false;
+	bool cam_orthogonal = false;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -92,7 +93,8 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
+	RendererRD::ToneMapper *tone_mapper = nullptr;
 	double time;
 	double time_step = 0;
 
@@ -113,7 +115,7 @@ protected:
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
@@ -314,10 +316,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -705,27 +707,27 @@ private:
 		template <class T>
 		struct InstanceSort {
 			float depth;
-			T *instance;
+			T *instance = nullptr;
 			bool operator<(const InstanceSort &p_sort) const {
 				return depth < p_sort.depth;
 			}
 		};
 
-		ReflectionData *reflections;
+		ReflectionData *reflections = nullptr;
 		InstanceSort<ReflectionProbeInstance> *reflection_sort;
 		uint32_t max_reflections;
 		RID reflection_buffer;
 		uint32_t max_reflection_probes_per_instance;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
+		DecalData *decals = nullptr;
 		InstanceSort<DecalInstance> *decal_sort;
 		uint32_t max_decals;
 		RID decal_buffer;
 		uint32_t decal_count;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
 		InstanceSort<LightInstance> *omni_light_sort;
 		InstanceSort<LightInstance> *spot_light_sort;
@@ -735,7 +737,7 @@ private:
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
 		uint32_t max_directional_lights;
 		RID directional_light_buffer;
 
@@ -938,7 +940,7 @@ private:
 	};
 
 	struct FogMaterialData : public RendererRD::MaterialData {
-		FogShaderData *shader_data;
+		FogShaderData *shader_data = nullptr;
 		RID uniform_set;
 		bool uniform_set_updated;
 
@@ -1411,7 +1413,7 @@ public:
 
 	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
-	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 
 	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
 

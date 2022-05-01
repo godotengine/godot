@@ -636,6 +636,38 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish -5 frog"));
 
+	// Negative int left padded with spaces.
+	format = "fish %5d frog";
+	args.clear();
+	args.push_back(-5);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish    -5 frog"));
+
+	// Negative int left padded with zeros.
+	format = "fish %05d frog";
+	args.clear();
+	args.push_back(-5);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -0005 frog"));
+
+	// Negative int right padded with spaces.
+	format = "fish %-5d frog";
+	args.clear();
+	args.push_back(-5);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -5    frog"));
+
+	// Negative int right padded with zeros. (0 ignored)
+	format = "fish %-05d frog";
+	args.clear();
+	args.push_back(-5);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -5    frog"));
+
 	// Hex (lower)
 	format = "fish %x frog";
 	args.clear();
@@ -725,6 +757,14 @@ TEST_CASE("[String] sprintf") {
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish 100 frog"));
+
+	// Negative real right padded with zeros. (0 ignored)
+	format = "fish %-011f frog";
+	args.clear();
+	args.push_back(-99.99);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -99.990000  frog"));
 
 	/////// Strings.
 

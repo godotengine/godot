@@ -92,6 +92,11 @@ public class GodotLib {
 	public static native boolean step();
 
 	/**
+	 * TTS callback.
+	 */
+	public static native void ttsCallback(int event, int id, int pos);
+
+	/**
 	 * Forward touch events from the main thread to the GL thread.
 	 */
 	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);

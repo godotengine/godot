@@ -377,17 +377,17 @@ void CreateDialog::_confirmed() {
 		return;
 	}
 
-	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
-	if (f) {
-		f->store_line(selected_item);
+	{
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line(selected_item);
 
-		for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
-			if (recent->get_item_text(i) != selected_item) {
-				f->store_line(recent->get_item_text(i));
+			for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
+				if (recent->get_item_text(i) != selected_item) {
+					f->store_line(recent->get_item_text(i));
+				}
 			}
 		}
-
-		memdelete(f);
 	}
 
 	// To prevent, emitting an error from the transient window (shader dialog for example) hide this dialog before emitting the "create" signal.
@@ -647,25 +647,26 @@ void CreateDialog::_save_and_update_favorite_list() {
 	favorites->clear();
 	TreeItem *root = favorites->create_item();
 
-	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
-	if (f) {
-		for (int i = 0; i < favorite_list.size(); i++) {
-			String l = favorite_list[i];
-			String name = l.get_slicec(' ', 0);
-			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
-				continue;
-			}
-			f->store_line(l);
+	{
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
+		if (f.is_valid()) {
+			for (int i = 0; i < favorite_list.size(); i++) {
+				String l = favorite_list[i];
+				String name = l.get_slicec(' ', 0);
+				if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
+					continue;
+				}
+				f->store_line(l);
 
-			if (_is_class_disabled_by_feature_profile(name)) {
-				continue;
-			}
+				if (_is_class_disabled_by_feature_profile(name)) {
+					continue;
+				}
 
-			TreeItem *ti = favorites->create_item(root);
-			ti->set_text(0, l);
-			ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				TreeItem *ti = favorites->create_item(root);
+				ti->set_text(0, l);
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+			}
 		}
-		memdelete(f);
 	}
 
 	emit_signal(SNAME("favorites_updated"));
@@ -673,8 +674,8 @@ void CreateDialog::_save_and_update_favorite_list() {
 
 void CreateDialog::_load_favorites_and_history() {
 	String dir = EditorSettings::get_singleton()->get_project_settings_dir();
-	FileAccess *f = FileAccess::open(dir.plus_file("create_recent." + base_type), FileAccess::READ);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(dir.plus_file("create_recent." + base_type), FileAccess::READ);
+	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 			String name = l.get_slicec(' ', 0);
@@ -683,12 +684,10 @@ void CreateDialog::_load_favorites_and_history() {
 				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
 			}
 		}
-
-		memdelete(f);
 	}
 
 	f = FileAccess::open(dir.plus_file("favorites." + base_type), FileAccess::READ);
-	if (f) {
+	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
@@ -696,8 +695,6 @@ void CreateDialog::_load_favorites_and_history() {
 				favorite_list.push_back(l);
 			}
 		}
-
-		memdelete(f);
 	}
 }
 

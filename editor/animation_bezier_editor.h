@@ -49,7 +49,7 @@ class AnimationBezierTrackEdit : public Control {
 	AnimationTimelineEdit *timeline = nullptr;
 	UndoRedo *undo_redo = nullptr;
 	Node *root = nullptr;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos = 0;
 
 	Ref<Animation> animation;
@@ -130,7 +130,7 @@ class AnimationBezierTrackEdit : public Control {
 		float transition = 0;
 	};
 
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 	struct EditPoint {
 		Rect2 point_rect;

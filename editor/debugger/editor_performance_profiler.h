@@ -62,9 +62,9 @@ private:
 	OrderedHashMap<StringName, Monitor> monitors;
 
 	Map<StringName, TreeItem *> base_map;
-	Tree *monitor_tree;
-	Control *monitor_draw;
-	Label *info_message;
+	Tree *monitor_tree = nullptr;
+	Control *monitor_draw = nullptr;
+	Label *info_message = nullptr;
 	StringName marker_key;
 	int marker_frame;
 	const int MARGIN = 4;

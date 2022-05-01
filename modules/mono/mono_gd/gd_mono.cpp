@@ -643,7 +643,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	// Create destination directory if needed
 	if (!DirAccess::exists(dst_dir)) {
-		DirAccessRef da = DirAccess::create_for_path(dst_dir);
+		Ref<DirAccess> da = DirAccess::create_for_path(dst_dir);
 		Error err = da->make_dir_recursive(dst_dir);
 
 		if (err != OK) {
@@ -652,7 +652,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 		}
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	String xml_file = assembly_name + ".xml";
 	if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK) {

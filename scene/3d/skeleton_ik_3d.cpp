@@ -140,7 +140,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vec
 	}
 }
 
-void FabrikInverseKinematic::solve_simple_backwards(Chain &r_chain, bool p_solve_magnet) {
+void FabrikInverseKinematic::solve_simple_backwards(const Chain &r_chain, bool p_solve_magnet) {
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}

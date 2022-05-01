@@ -163,15 +163,15 @@ Vector2 ParallaxBackground::get_final_offset() const {
 
 void ParallaxBackground::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_camera_moved"), &ParallaxBackground::_camera_moved);
-	ClassDB::bind_method(D_METHOD("set_scroll_offset", "ofs"), &ParallaxBackground::set_scroll_offset);
+	ClassDB::bind_method(D_METHOD("set_scroll_offset", "offset"), &ParallaxBackground::set_scroll_offset);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &ParallaxBackground::get_scroll_offset);
-	ClassDB::bind_method(D_METHOD("set_scroll_base_offset", "ofs"), &ParallaxBackground::set_scroll_base_offset);
+	ClassDB::bind_method(D_METHOD("set_scroll_base_offset", "offset"), &ParallaxBackground::set_scroll_base_offset);
 	ClassDB::bind_method(D_METHOD("get_scroll_base_offset"), &ParallaxBackground::get_scroll_base_offset);
 	ClassDB::bind_method(D_METHOD("set_scroll_base_scale", "scale"), &ParallaxBackground::set_scroll_base_scale);
 	ClassDB::bind_method(D_METHOD("get_scroll_base_scale"), &ParallaxBackground::get_scroll_base_scale);
-	ClassDB::bind_method(D_METHOD("set_limit_begin", "ofs"), &ParallaxBackground::set_limit_begin);
+	ClassDB::bind_method(D_METHOD("set_limit_begin", "offset"), &ParallaxBackground::set_limit_begin);
 	ClassDB::bind_method(D_METHOD("get_limit_begin"), &ParallaxBackground::get_limit_begin);
-	ClassDB::bind_method(D_METHOD("set_limit_end", "ofs"), &ParallaxBackground::set_limit_end);
+	ClassDB::bind_method(D_METHOD("set_limit_end", "offset"), &ParallaxBackground::set_limit_end);
 	ClassDB::bind_method(D_METHOD("get_limit_end"), &ParallaxBackground::get_limit_end);
 	ClassDB::bind_method(D_METHOD("set_ignore_camera_zoom", "ignore"), &ParallaxBackground::set_ignore_camera_zoom);
 	ClassDB::bind_method(D_METHOD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);

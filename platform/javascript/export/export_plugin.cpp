@@ -33,8 +33,7 @@
 #include "core/config/project_settings.h"
 
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
 	if (!pkg) {
@@ -70,14 +69,13 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 
 		//write
 		String dst = p_dir.plus_file(file.replace("godot", p_name));
-		FileAccess *f = FileAccess::open(dst, FileAccess::WRITE);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
+		if (f.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + dst);
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
 		f->store_buffer(data.ptr(), data.size());
-		memdelete(f);
 
 	} while (unzGoToNextFile(pkg) == UNZ_OK);
 	unzClose(pkg);
@@ -85,13 +83,12 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 }
 
 Error EditorExportPlatformJavaScript::_write_or_error(const uint8_t *p_content, int p_size, String p_path) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	if (f.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
 		return ERR_FILE_CANT_WRITE;
 	}
 	f->store_buffer(p_content, p_size);
-	memdelete(f);
 	return OK;
 }
 
@@ -233,15 +230,13 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	const String sw_path = dir.plus_file(name + ".service.worker.js");
 	Vector<uint8_t> sw;
 	{
-		FileAccess *f = FileAccess::open(sw_path, FileAccess::READ);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(sw_path, FileAccess::READ);
+		if (f.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + sw_path);
 			return ERR_FILE_CANT_READ;
 		}
 		sw.resize(f->get_length());
 		f->get_buffer(sw.ptrw(), sw.size());
-		memdelete(f);
-		f = nullptr;
 	}
 	_replace_strings(replaces, sw);
 	Error err = _write_or_error(sw.ptr(), sw.size(), dir.plus_file(name + ".service.worker.js"));
@@ -252,7 +247,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	// Custom offline page
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
 	if (!offline_page.is_empty()) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
 		if (err != OK) {
@@ -456,7 +451,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 
 	{
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		for (int i = 0; i < shared_objects.size(); i++) {
 			String dst = base_dir.plus_file(shared_objects[i].path.get_file());
 			error = da->copy(shared_objects[i].path, dst);
@@ -475,32 +470,25 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	// Parse generated file sizes (pck and wasm, to help show a meaningful loading bar).
 	Dictionary file_sizes;
-	FileAccess *f = nullptr;
-	f = FileAccess::open(pck_path, FileAccess::READ);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(pck_path, FileAccess::READ);
+	if (f.is_valid()) {
 		file_sizes[pck_path.get_file()] = (uint64_t)f->get_length();
-		memdelete(f);
-		f = nullptr;
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
-	if (f) {
+	if (f.is_valid()) {
 		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
-		memdelete(f);
-		f = nullptr;
 	}
 
 	// Read the HTML shell file (custom or from template).
 	const String html_path = custom_html.is_empty() ? base_path + ".html" : custom_html;
 	Vector<uint8_t> html;
 	f = FileAccess::open(html_path, FileAccess::READ);
-	if (!f) {
+	if (f.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("Could not read HTML shell:") + "\n" + html_path);
 		return ERR_FILE_CANT_READ;
 	}
 	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
-	memdelete(f);
-	f = nullptr;
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
@@ -586,7 +574,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	}
 
 	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
 		if (err != OK) {
@@ -651,7 +639,7 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
 }
 
 void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
-	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
+	EditorExportPlatformJavaScript *ej = static_cast<EditorExportPlatformJavaScript *>(data);
 	while (!ej->server_quit) {
 		OS::get_singleton()->delay_usec(6900);
 		{

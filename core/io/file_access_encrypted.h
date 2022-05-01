@@ -46,7 +46,7 @@ public:
 private:
 	Vector<uint8_t> key;
 	bool writing = false;
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 	uint64_t base = 0;
 	uint64_t length = 0;
 	Vector<uint8_t> data;
@@ -54,15 +54,13 @@ private:
 	mutable bool eofed = false;
 	bool use_magic = true;
 
-	void _release();
+	void _close();
 
 public:
-	Error open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true);
-	Error open_and_parse_password(FileAccess *p_base, const String &p_key, Mode p_mode);
+	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true);
+	Error open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode);
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
-	virtual void release(); ///< finish and keep base file open
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual String get_path() const; /// returns the path for the current open file

@@ -73,7 +73,7 @@ typedef ShaderData *(*ShaderDataRequestFunction)();
 struct Material;
 
 struct Shader {
-	ShaderData *data;
+	ShaderData *data = nullptr;
 	String code;
 	ShaderType type;
 	Map<StringName, Map<int, RID>> default_texture_parameter;
@@ -177,9 +177,9 @@ struct GlobalVariables {
 	List<RID> materials_using_texture;
 
 	RID buffer;
-	Value *buffer_values;
-	ValueUsage *buffer_usage;
-	bool *buffer_dirty_regions;
+	Value *buffer_values = nullptr;
+	ValueUsage *buffer_usage = nullptr;
+	bool *buffer_dirty_regions = nullptr;
 	uint32_t buffer_dirty_region_count = 0;
 
 	uint32_t buffer_size;
@@ -194,6 +194,11 @@ class MaterialStorage : public RendererMaterialStorage {
 private:
 	friend struct MaterialData;
 	static MaterialStorage *singleton;
+
+	/* Samplers */
+
+	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 
 	/* GLOBAL VARIABLE API */
 
@@ -221,6 +226,19 @@ public:
 
 	MaterialStorage();
 	virtual ~MaterialStorage();
+
+	/* Samplers */
+
+	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
+		return default_rd_samplers[p_filter][p_repeat];
+	}
+	_FORCE_INLINE_ RID sampler_rd_get_custom(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
+		return custom_rd_samplers[p_filter][p_repeat];
+	}
+
+	void sampler_rd_configure_custom(float mipmap_bias);
+
+	// void sampler_rd_set_default(float p_mipmap_bias);
 
 	/* GLOBAL VARIABLE API */
 

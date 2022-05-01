@@ -284,7 +284,7 @@ private:
 
 	struct CallbackItem {
 		AudioCallback callback;
-		void *userdata;
+		void *userdata = nullptr;
 	};
 
 	SafeList<CallbackItem *> update_callback_list;

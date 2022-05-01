@@ -41,7 +41,7 @@
 #endif
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	switch (pa_context_get_state(c)) {
 		case PA_CONTEXT_TERMINATED:
@@ -65,7 +65,7 @@ void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 }
 
 void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -84,7 +84,7 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 }
 
 void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -104,7 +104,7 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
 	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	ad->capture_default_device = i->default_source_name;
 	ad->default_device = i->default_sink_name;
@@ -379,7 +379,7 @@ float AudioDriverPulseAudio::get_latency() {
 }
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(p_udata);
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
@@ -588,7 +588,7 @@ AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 }
 
 void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -771,7 +771,7 @@ void AudioDriverPulseAudio::capture_set_device(const String &p_name) {
 }
 
 void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {

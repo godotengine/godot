@@ -32,6 +32,7 @@
 #define RICH_TEXT_LABEL_H
 
 #include "rich_text_effect.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -89,6 +90,11 @@ public:
 		VC_GLYPHS_AUTO,
 		VC_GLYPHS_LTR,
 		VC_GLYPHS_RTL,
+	};
+
+	enum MenuItems {
+		MENU_COPY,
+		MENU_SELECT_ALL,
 	};
 
 protected:
@@ -228,7 +234,7 @@ private:
 		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
-		Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -393,7 +399,7 @@ private:
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	struct Selection {
@@ -420,6 +426,15 @@ private:
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
 
+	bool context_menu_enabled = false;
+	bool shortcut_keys_enabled = true;
+
+	// Context menu.
+	PopupMenu *menu = nullptr;
+	void _generate_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
+	void _menu_option(int p_option);
+
 	int visible_characters = -1;
 	float percent_visible = 1.0;
 	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
@@ -435,7 +450,7 @@ private:
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
-	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
@@ -452,7 +467,7 @@ private:
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	HorizontalAlignment _find_alignment(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
-	Control::StructuredTextParser _find_stt(Item *p_item);
+	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
@@ -510,7 +525,7 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", Control::StructuredTextParser p_st_parser = STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
@@ -555,6 +570,12 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_context_menu_enabled(bool p_enabled);
+	bool is_context_menu_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
 	void set_fit_content_height(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
 
@@ -584,9 +605,15 @@ public:
 	int get_selection_from() const;
 	int get_selection_to() const;
 	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+	void deselect();
+
+	// Context menu.
+	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);
@@ -606,8 +633,8 @@ public:
 	void set_autowrap_mode(AutowrapMode p_mode);
 	AutowrapMode get_autowrap_mode() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;

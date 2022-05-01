@@ -37,7 +37,7 @@
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	NavigationRegion2D *node;
+	NavigationRegion2D *node = nullptr;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 

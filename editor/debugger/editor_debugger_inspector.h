@@ -70,7 +70,7 @@ private:
 	ObjectID inspected_object_id;
 	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
 	Set<RES> remote_dependencies;
-	EditorDebuggerRemoteObject *variables;
+	EditorDebuggerRemoteObject *variables = nullptr;
 
 	void _object_selected(ObjectID p_object);
 	void _object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value);

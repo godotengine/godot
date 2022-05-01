@@ -64,8 +64,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
 	Set<String> files_sorted;
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -238,8 +237,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 }
 
 void EditorAssetInstaller::ok_pressed() {
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -259,6 +257,9 @@ void EditorAssetInstaller::ok_pressed() {
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String name = String::utf8(fname);
 
@@ -277,7 +278,7 @@ void EditorAssetInstaller::ok_pressed() {
 					dirpath = dirpath.substr(0, dirpath.length() - 1);
 				}
 
-				DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
 			} else {
 				Vector<uint8_t> data;
@@ -288,10 +289,9 @@ void EditorAssetInstaller::ok_pressed() {
 				unzReadCurrentFile(pkg, data.ptrw(), data.size());
 				unzCloseCurrentFile(pkg);
 
-				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
-				if (f) {
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
-					memdelete(f);
 				} else {
 					failed_files.push_back(path);
 				}

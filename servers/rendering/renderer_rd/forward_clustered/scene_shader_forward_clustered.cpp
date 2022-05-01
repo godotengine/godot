@@ -55,7 +55,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	int blend_mode = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
 	int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-	int cull = CULL_BACK;
+	int cull_modei = CULL_BACK;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -101,9 +101,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull, CULL_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull, CULL_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull, CULL_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, CULL_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -145,6 +145,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	cull_mode = Cull(cull_modei);
 
 #if 0
 	print_line("**compiling shader:");
@@ -258,7 +259,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			{ RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_DISABLED }
 		};
 
-		RD::PolygonCullMode cull_mode_rd = cull_mode_rd_table[i][cull];
+		RD::PolygonCullMode cull_mode_rd = cull_mode_rd_table[i][cull_mode];
 
 		for (int j = 0; j < RS::PRIMITIVE_MAX; j++) {
 			RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
@@ -293,15 +294,15 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				raster_state.cull_mode = cull_mode_rd;
 				raster_state.wireframe = wireframe;
 
-				RD::PipelineColorBlendState blend_state;
-				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
-				RD::PipelineMultisampleState multisample_state;
-
 				if (k == PIPELINE_VERSION_COLOR_PASS) {
 					for (int l = 0; l < PIPELINE_COLOR_PASS_FLAG_COUNT; l++) {
 						if (!shader_singleton->valid_color_pass_pipelines.has(l)) {
 							continue;
 						}
+
+						RD::PipelineColorBlendState blend_state;
+						RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+						RD::PipelineMultisampleState multisample_state;
 
 						int shader_flags = 0;
 						if (l & PIPELINE_COLOR_PASS_FLAG_TRANSPARENT) {
@@ -338,6 +339,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						color_pipelines[i][j][l].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 					}
 				} else {
+					RD::PipelineColorBlendState blend_state;
+					RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+					RD::PipelineMultisampleState multisample_state;
+
 					if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW) {
 						//none, leave empty
 					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
@@ -550,10 +555,21 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 	}
 
 	valid_color_pass_pipelines.insert(0);
+
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
 
 	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_shader_funcs);
 	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_material_funcs);
@@ -762,7 +778,7 @@ void fragment() {
 		material_storage->material_initialize(default_material);
 		material_storage->material_set_shader(default_material, default_shader);
 
-		MaterialData *md = (MaterialData *)material_storage->material_get_data(default_material, RendererRD::SHADER_TYPE_3D);
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::SHADER_TYPE_3D));
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 		default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
 
@@ -790,7 +806,7 @@ void fragment() {
 		material_storage->material_initialize(overdraw_material);
 		material_storage->material_set_shader(overdraw_material, overdraw_material_shader);
 
-		MaterialData *md = (MaterialData *)material_storage->material_get_data(overdraw_material, RendererRD::SHADER_TYPE_3D);
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(overdraw_material, RendererRD::SHADER_TYPE_3D));
 		overdraw_material_shader_ptr = md->shader_data;
 		overdraw_material_uniform_set = md->uniform_set;
 	}
@@ -823,6 +839,9 @@ void SceneShaderForwardClustered::set_default_specialization_constants(const Vec
 			for (int j = 0; j < RS::PRIMITIVE_MAX; j++) {
 				for (int k = 0; k < SHADER_VERSION_MAX; k++) {
 					E->self()->pipelines[i][j][k].update_specialization_constants(default_specialization_constants);
+				}
+				for (int k = 0; k < PIPELINE_COLOR_PASS_FLAG_COUNT; k++) {
+					E->self()->color_pipelines[i][j][k].update_specialization_constants(default_specialization_constants);
 				}
 			}
 		}

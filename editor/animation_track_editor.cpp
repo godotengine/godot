@@ -586,20 +586,20 @@ public:
 					pi.name = "value";
 					p_list->push_back(pi);
 				} else {
-					PropertyHint hint = PROPERTY_HINT_NONE;
-					String hint_string;
+					PropertyHint val_hint = PROPERTY_HINT_NONE;
+					String val_hint_string;
 
 					if (v.get_type() == Variant::OBJECT) {
 						// Could actually check the object property if exists..? Yes I will!
 						Ref<Resource> res = v;
 						if (res.is_valid()) {
-							hint = PROPERTY_HINT_RESOURCE_TYPE;
-							hint_string = res->get_class();
+							val_hint = PROPERTY_HINT_RESOURCE_TYPE;
+							val_hint_string = res->get_class();
 						}
 					}
 
 					if (v.get_type() != Variant::NIL) {
-						p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+						p_list->push_back(PropertyInfo(v.get_type(), "value", val_hint, val_hint_string));
 					}
 				}
 
@@ -1264,20 +1264,20 @@ public:
 							pi.name = "value";
 							p_list->push_back(pi);
 						} else {
-							PropertyHint hint = PROPERTY_HINT_NONE;
-							String hint_string;
+							PropertyHint val_hint = PROPERTY_HINT_NONE;
+							String val_hint_string;
 
 							if (v.get_type() == Variant::OBJECT) {
 								// Could actually check the object property if exists..? Yes I will!
 								Ref<Resource> res = v;
 								if (res.is_valid()) {
-									hint = PROPERTY_HINT_RESOURCE_TYPE;
-									hint_string = res->get_class();
+									val_hint = PROPERTY_HINT_RESOURCE_TYPE;
+									val_hint_string = res->get_class();
 								}
 							}
 
 							if (v.get_type() != Variant::NIL) {
-								p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+								p_list->push_back(PropertyInfo(v.get_type(), "value", val_hint, val_hint_string));
 							}
 						}
 					}
@@ -1572,7 +1572,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			Color color_time_dec = color;
 			color_time_dec.a *= 0.5;
 #define SC_ADJ 100
-			int min = 30;
 			int dec = 1;
 			int step = 1;
 			int decimals = 2;
@@ -1588,7 +1587,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			const int max_sc_width = String::num(max_sc).length() * max_digit_width;
 
 			while (!step_found) {
-				min = max_sc_width;
+				int min = max_sc_width;
 				if (decimals > 0) {
 					min += period_width + max_digit_width * decimals;
 				}
@@ -1961,17 +1960,27 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			int limit = timeline->get_name_limit();
 
+			if (track % 2 == 1) {
+				// Draw a background over odd lines to make long lists of tracks easier to read.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.05));
+			}
+
+			if (hovered) {
+				// Draw hover feedback.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.1));
+			}
+
 			if (has_focus()) {
 				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 				accent.a *= 0.7;
 				// Offside so the horizontal sides aren't cutoff.
-				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
+				draw_style_box(get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles")), Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-			int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color linecolor = color;
 			linecolor.a = 0.2;
 
@@ -2236,7 +2245,16 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_MOUSE_ENTER:
+			hovered = true;
+			update();
+			break;
 		case NOTIFICATION_MOUSE_EXIT:
+			hovered = false;
+			// When the mouse cursor exits the track, we're no longer hovering any keyframe.
+			hovering_key_idx = -1;
+			update();
+			[[fallthrough]];
 		case NOTIFICATION_DRAG_END: {
 			cancel_drop();
 		} break;
@@ -2348,7 +2366,13 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 	}
 
-	draw_texture(icon_to_draw, ofs);
+	// Use a different color for the currently hovered key.
+	// The color multiplier is chosen to work with both dark and light editor themes,
+	// and on both unselected and selected key icons.
+	draw_texture(
+			icon_to_draw,
+			ofs,
+			p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog")) : Color(1, 1, 1));
 }
 
 // Helper.
@@ -2437,7 +2461,7 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	int separation = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
+	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
 	max_h = MAX(max_h, get_key_height());
@@ -2527,7 +2551,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
-	Ref<Texture2D> type_icons[9] = {
+	const Ref<Texture2D> type_icons[9] = {
 		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
@@ -2935,6 +2959,59 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		const int previous_hovering_key_idx = hovering_key_idx;
+
+		// Hovering compressed keyframes for editing is not possible.
+		if (!animation->track_is_compressed(track)) {
+			const float scale = timeline->get_zoom_scale();
+			const int limit = timeline->get_name_limit();
+			const int limit_end = get_size().width - timeline->get_buttons_width();
+			// Left Border including space occupied by keyframes on t=0.
+			const int limit_start_hitbox = limit - type_icon->get_width();
+			const Point2 pos = mm->get_position();
+
+			if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
+				// Use the same logic as key selection to ensure that hovering accurately represents
+				// which key will be selected when clicking.
+				int key_idx = -1;
+				float key_distance = 1e20;
+
+				hovering_key_idx = -1;
+
+				// Hovering should happen in the opposite order of drawing for more accurate overlap hovering.
+				for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
+					Rect2 rect = get_key_rect(i, scale);
+					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					offset = offset * scale + limit;
+					rect.position.x += offset;
+
+					if (rect.has_point(pos)) {
+						if (is_key_selectable_by_distance()) {
+							const float distance = ABS(offset - pos.x);
+							if (key_idx == -1 || distance < key_distance) {
+								key_idx = i;
+								key_distance = distance;
+								hovering_key_idx = i;
+							}
+						} else {
+							// First one does it.
+							hovering_key_idx = i;
+							break;
+						}
+					}
+				}
+
+				print_line(hovering_key_idx);
+
+				if (hovering_key_idx != previous_hovering_key_idx) {
+					// Required to draw keyframe hover feedback on the correct keyframe.
+					update();
+				}
+			}
+		}
+	}
+
 	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
@@ -3123,13 +3200,13 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
-	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "ofs")));
+	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("bezier_edit"));
 
 	ADD_SIGNAL(MethodInfo("move_selection_begin"));
-	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "ofs")));
+	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("move_selection_commit"));
 	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
 
@@ -3209,7 +3286,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-			int separation = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+			int separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 			if (root && root->has_node(node)) {
@@ -3255,7 +3332,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	int separation = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
+	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
 	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
 }
@@ -3456,31 +3533,75 @@ void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool 
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
-	if (animation->track_is_compressed(p_track)) {
+	_animation_track_remove_request(p_track, animation);
+}
+
+void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Animation> p_from_animation) {
+	if (p_from_animation->track_is_compressed(p_track)) {
 		EditorNode::get_singleton()->show_warning(TTR("Compressed tracks can't be edited or removed. Re-import the animation with compression disabled in order to edit."));
 		return;
 	}
 	int idx = p_track;
-	if (idx >= 0 && idx < animation->get_track_count()) {
+	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
 		undo_redo->create_action(TTR("Remove Anim Track"));
-		undo_redo->add_do_method(this, "_clear_selection", false);
-		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
-		undo_redo->add_undo_method(animation.ptr(), "add_track", animation->track_get_type(idx), idx);
-		undo_redo->add_undo_method(animation.ptr(), "track_set_path", idx, animation->track_get_path(idx));
 
-		// TODO interpolation.
-		for (int i = 0; i < animation->track_get_key_count(idx); i++) {
-			Variant v = animation->track_get_key_value(idx, i);
-			float time = animation->track_get_key_time(idx, i);
-			float trans = animation->track_get_key_transition(idx, i);
+		// Remove corresponding reset tracks if they are no longer needed.
+		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+		if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
+			Ref<Animation> reset = player->get_animation(SceneStringNames::get_singleton()->RESET);
+			if (reset != p_from_animation) {
+				for (int i = 0; i < reset->get_track_count(); i++) {
+					if (reset->track_get_path(i) == p_from_animation->track_get_path(p_track)) {
+						// Check if the reset track isn't used by other animations.
+						bool used = false;
+						List<StringName> animation_list;
+						player->get_animation_list(&animation_list);
 
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", idx, time, v);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", idx, i, trans);
+						for (const StringName &anim_name : animation_list) {
+							Ref<Animation> anim = player->get_animation(anim_name);
+							if (anim == p_from_animation || anim == reset) {
+								continue;
+							}
+
+							for (int j = 0; j < anim->get_track_count(); j++) {
+								if (anim->track_get_path(j) == reset->track_get_path(i)) {
+									used = true;
+									break;
+								}
+							}
+
+							if (used) {
+								break;
+							}
+						}
+
+						if (!used) {
+							_animation_track_remove_request(i, reset);
+						}
+						break;
+					}
+				}
+			}
 		}
 
-		undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", idx, animation->track_get_interpolation_type(idx));
-		if (animation->track_get_type(idx) == Animation::TYPE_VALUE) {
-			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", idx, animation->value_track_get_update_mode(idx));
+		undo_redo->add_do_method(this, "_clear_selection", false);
+		undo_redo->add_do_method(p_from_animation.ptr(), "remove_track", idx);
+		undo_redo->add_undo_method(p_from_animation.ptr(), "add_track", p_from_animation->track_get_type(idx), idx);
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_path", idx, p_from_animation->track_get_path(idx));
+
+		// TODO interpolation.
+		for (int i = 0; i < p_from_animation->track_get_key_count(idx); i++) {
+			Variant v = p_from_animation->track_get_key_value(idx, i);
+			float time = p_from_animation->track_get_key_time(idx, i);
+			float trans = p_from_animation->track_get_key_transition(idx, i);
+
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_insert_key", idx, time, v);
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_key_transition", idx, i, trans);
+		}
+
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_interpolation_type", idx, p_from_animation->track_get_interpolation_type(idx));
+		if (p_from_animation->track_get_type(idx) == Animation::TYPE_VALUE) {
+			undo_redo->add_undo_method(p_from_animation.ptr(), "value_track_set_update_mode", idx, p_from_animation->value_track_get_update_mode(idx));
 		}
 
 		undo_redo->commit_action();
@@ -3955,12 +4076,20 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
 		return player->get_animation(SceneStringNames::get_singleton()->RESET);
 	} else {
+		Ref<AnimationLibrary> al;
+		if (!player->has_animation_library("")) {
+			al.instantiate();
+			player->add_animation_library("", al);
+		} else {
+			al = player->get_animation_library("");
+		}
+
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
-		undo_redo->add_do_method(player, "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
+		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
-		undo_redo->add_undo_method(player, "remove_animation", SceneStringNames::get_singleton()->RESET);
+		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringNames::get_singleton()->RESET);
 		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		return reset_anim;
 	}

@@ -139,6 +139,7 @@
 #include "scene/multiplayer/scene_cache_interface.h"
 #include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/multiplayer/scene_rpc_interface.h"
+#include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -225,6 +226,7 @@
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/joint_3d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
@@ -479,6 +481,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);
+	GDREGISTER_CLASS(Label3D);
 	GDREGISTER_ABSTRACT_CLASS(Light3D);
 	GDREGISTER_CLASS(DirectionalLight3D);
 	GDREGISTER_CLASS(OmniLight3D);
@@ -575,6 +578,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Constant);
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
@@ -619,6 +623,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniformTriplanar);
@@ -834,6 +839,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CompressedTexture2DArray);
 
 	GDREGISTER_CLASS(Animation);
+	GDREGISTER_CLASS(AnimationLibrary);
 	GDREGISTER_CLASS(FontData);
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
@@ -896,18 +902,16 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
-	ClassDB::add_compatibility_class("AStar", "AStar3D");
+	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
+	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
 	ClassDB::add_compatibility_class("BitmapFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
-	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
+	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
+	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
-	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
-	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
-	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
-	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
 	ClassDB::add_compatibility_class("Portal", "Node3D");
 	ClassDB::add_compatibility_class("Room", "Node3D");
@@ -928,6 +932,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
 	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
 	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
+	ClassDB::add_compatibility_class("AStar", "AStar3D");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
 	ClassDB::add_compatibility_class("Camera", "Camera3D");
@@ -955,6 +960,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
 	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
+	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
+	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("GradientTexture", "GradientTexture1D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
@@ -1102,6 +1109,9 @@ void initialize_theme() {
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
+	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
+
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
@@ -1112,7 +1122,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
 	}
 
 	if (!theme_path.is_empty()) {

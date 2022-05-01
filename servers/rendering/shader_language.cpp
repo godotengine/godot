@@ -2813,7 +2813,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 								bool error = false;
 								if (p_func->arguments[arg]->type == Node::TYPE_VARIABLE) {
-									const VariableNode *vn = (VariableNode *)p_func->arguments[arg];
+									const VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg]);
 
 									bool is_const = false;
 									ConstantNode::Value value;
@@ -2825,7 +2825,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 									}
 								} else {
 									if (p_func->arguments[arg]->type == Node::TYPE_CONSTANT) {
-										ConstantNode *cn = (ConstantNode *)p_func->arguments[arg];
+										const ConstantNode *cn = static_cast<ConstantNode *>(p_func->arguments[arg]);
 
 										if (cn->get_datatype() == TYPE_INT && cn->values.size() == 1) {
 											int value = cn->values[0].sint;
@@ -3467,7 +3467,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Plane(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
+					value = Variant(Quaternion(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
 				}
 				break;
 			case ShaderLanguage::TYPE_UINT:
@@ -3517,7 +3517,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Plane(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
+					value = Variant(Quaternion(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
 				}
 				break;
 			case ShaderLanguage::TYPE_FLOAT:
@@ -3548,13 +3548,25 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedVector3Array array = PackedVector3Array();
-					for (int i = 0; i < array_size; i += 3) {
-						array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						PackedColorArray array = PackedColorArray();
+						for (int i = 0; i < array_size; i += 3) {
+							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+						}
+						value = Variant(array);
+					} else {
+						PackedVector3Array array = PackedVector3Array();
+						for (int i = 0; i < array_size; i += 3) {
+							array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+						}
+						value = Variant(array);
 					}
-					value = Variant(array);
 				} else {
-					value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real));
+					} else {
+						value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+					}
 				}
 				break;
 			case ShaderLanguage::TYPE_VEC4:
@@ -3581,7 +3593,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					} else {
-						value = Variant(Plane(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+						value = Variant(Quaternion(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					}
 				}
 				break;
@@ -3760,9 +3772,19 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC3:
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_VECTOR3_ARRAY;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+					pi.type = Variant::PACKED_COLOR_ARRAY;
+				} else {
+					pi.type = Variant::PACKED_VECTOR3_ARRAY;
+				}
 			} else {
-				pi.type = Variant::VECTOR3;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+					pi.type = Variant::COLOR;
+				} else {
+					pi.type = Variant::VECTOR3;
+				}
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
@@ -3776,7 +3798,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 					pi.type = Variant::COLOR;
 				} else {
-					pi.type = Variant::PLANE;
+					pi.type = Variant::QUATERNION;
 				}
 			}
 		} break;
@@ -4132,7 +4154,7 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 	switch (p_node->type) {
 		case Node::TYPE_OPERATOR: {
-			OperatorNode *op_node = (OperatorNode *)p_node;
+			const OperatorNode *op_node = static_cast<const OperatorNode *>(p_node);
 			for (int i = int(op_node->op == OP_CALL); i < op_node->arguments.size(); i++) {
 				if (!_check_node_constness(op_node->arguments[i])) {
 					return false;
@@ -4142,13 +4164,13 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 		case Node::TYPE_CONSTANT:
 			break;
 		case Node::TYPE_VARIABLE: {
-			VariableNode *varn = (VariableNode *)p_node;
+			const VariableNode *varn = static_cast<const VariableNode *>(p_node);
 			if (!varn->is_const) {
 				return false;
 			}
 		} break;
 		case Node::TYPE_ARRAY: {
-			ArrayNode *arrn = (ArrayNode *)p_node;
+			const ArrayNode *arrn = static_cast<const ArrayNode *>(p_node);
 			if (!arrn->is_const) {
 				return false;
 			}
@@ -4670,16 +4692,18 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr = _parse_array_constructor(p_block, p_function_info);
 			} else {
 				DataType datatype;
-				DataPrecision precision;
-				bool precision_defined = false;
+				DataPrecision precision = PRECISION_DEFAULT;
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
-					precision_defined = true;
 					tk = _get_token();
 				}
 
 				datatype = get_token_datatype(tk.type);
+				if (precision != PRECISION_DEFAULT && _validate_precision(datatype, precision) != OK) {
+					return nullptr;
+				}
+
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
@@ -4697,7 +4721,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					OperatorNode *func = alloc_node<OperatorNode>();
 					func->op = OP_CONSTRUCT;
 
-					if (precision_defined) {
+					if (precision != PRECISION_DEFAULT) {
 						func->return_precision_cache = precision;
 					}
 
@@ -5144,7 +5168,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (!call_expression) {
 							return nullptr;
 						}
-						data_type = call_expression->get_datatype();
 					} else if (tk.type == TK_BRACKET_OPEN) { // indexing
 						index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
@@ -5157,7 +5180,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -5598,15 +5621,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_ARRAY;
 						}
-						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						mn->call_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_GLOBAL;
 						}
-						if (!call_expression) {
+						if (!mn->call_expression) {
 							return nullptr;
 						}
-						mn->datatype = call_expression->get_datatype();
-						mn->call_expression = call_expression;
 					} else if (tk.type == TK_BRACKET_OPEN) {
 						Node *index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
@@ -5619,7 +5640,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -6429,10 +6450,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (!is_struct) {
 					is_struct = shader->structs.has(tk.text); // check again.
 				}
-				if (is_struct && precision != PRECISION_DEFAULT) {
-					_set_error(RTR("The precision modifier cannot be used on structs."));
-					return ERR_PARSE_ERROR;
-				}
 				if (!is_token_nonvoid_datatype(tk.type)) {
 					_set_error(RTR("Expected variable type after precision modifier."));
 					return ERR_PARSE_ERROR;
@@ -6449,6 +6466,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			DataType type = is_struct ? TYPE_STRUCT : get_token_datatype(tk.type);
 
 			if (_validate_datatype(type) != OK) {
+				return ERR_PARSE_ERROR;
+			}
+
+			if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6603,10 +6624,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 								if (is_token_precision(tk.type)) {
 									precision2 = get_token_precision(tk.type);
 									tk = _get_token();
-									if (shader->structs.has(tk.text)) {
-										_set_error(RTR("The precision modifier cannot be used on structs."));
-										return ERR_PARSE_ERROR;
-									}
 									if (!is_token_nonvoid_datatype(tk.type)) {
 										_set_error(RTR("Expected data type after precision modifier."));
 										return ERR_PARSE_ERROR;
@@ -6625,6 +6642,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 									type2 = get_token_datatype(tk.type);
+								}
+
+								if (precision2 != PRECISION_DEFAULT && _validate_precision(type2, precision2) != OK) {
+									return ERR_PARSE_ERROR;
 								}
 
 								int array_size2 = 0;
@@ -6702,7 +6723,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 
-									if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+									if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 										_set_error(RTR("Expected a constant expression."));
 										return ERR_PARSE_ERROR;
 									}
@@ -6758,8 +6779,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
-					if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-						OperatorNode *op = ((OperatorNode *)n);
+					if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
+						OperatorNode *op = static_cast<OperatorNode *>(n);
 						for (int i = 1; i < op->arguments.size(); i++) {
 							if (!_check_node_constness(op->arguments[i])) {
 								_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -6803,7 +6824,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} while (tk.type == TK_COMMA); //another variable
 
-			p_block->statements.push_back((Node *)vdnode);
+			p_block->statements.push_back(static_cast<Node *>(vdnode));
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
@@ -6925,7 +6946,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				} else {
 					Set<int> constants;
 					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = (ControlFlowNode *)switch_block->statements[i];
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::TYPE_CONSTANT) {
@@ -7430,6 +7451,25 @@ String ShaderLanguage::_get_qualifier_str(ArgumentQualifier p_qualifier) const {
 	return "";
 }
 
+Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_precision) {
+	switch (p_type) {
+		case TYPE_STRUCT: {
+			_set_error(RTR("The precision modifier cannot be used on structs."));
+			return FAILED;
+		} break;
+		case TYPE_BOOL:
+		case TYPE_BVEC2:
+		case TYPE_BVEC3:
+		case TYPE_BVEC4: {
+			_set_error(RTR("The precision modifier cannot be used on boolean types."));
+			return FAILED;
+		} break;
+		default:
+			break;
+	}
+	return OK;
+}
+
 Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		bool invalid_type = false;
@@ -7611,8 +7651,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 					StringName struct_name = "";
 					bool struct_dt = false;
-					bool use_precision = false;
-					DataPrecision precision = DataPrecision::PRECISION_DEFAULT;
+					DataPrecision precision = PRECISION_DEFAULT;
 
 					if (tk.type == TK_STRUCT) {
 						_set_error(RTR("Nested structs are not allowed."));
@@ -7621,7 +7660,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (is_token_precision(tk.type)) {
 						precision = get_token_precision(tk.type);
-						use_precision = true;
 						tk = _get_token();
 					}
 
@@ -7633,10 +7671,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						}
 #endif // DEBUG_ENABLED
 						struct_dt = true;
-						if (use_precision) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 					}
 
 					if (!is_token_datatype(tk.type) && !struct_dt) {
@@ -7644,6 +7678,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					} else {
 						type = struct_dt ? TYPE_STRUCT : get_token_datatype(tk.type);
+
+						if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+							return ERR_PARSE_ERROR;
+						}
 
 						if (type == TYPE_VOID || is_sampler_type(type)) {
 							_set_error(vformat(RTR("A '%s' data type is not allowed here."), get_datatype_name(type)));
@@ -7765,7 +7803,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 				}
 
-				bool precision_defined = false;
 				DataPrecision precision = PRECISION_DEFAULT;
 				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
@@ -7784,16 +7821,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
-					precision_defined = true;
 					tk = _get_token();
 				}
 
 				if (shader->structs.has(tk.text)) {
 					if (uniform) {
-						if (precision_defined) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
 						return ERR_PARSE_ERROR;
 					} else {
@@ -7808,6 +7840,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				type = get_token_datatype(tk.type);
+
+				if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+					return ERR_PARSE_ERROR;
+				}
 
 				if (type == TYPE_VOID) {
 					_set_error(vformat(RTR("The '%s' data type is not allowed here."), "void"));
@@ -7987,8 +8023,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
 							} else if (tk.type == TK_HINT_COLOR) {
-								if (type != TYPE_VEC4) {
-									_set_error(vformat(RTR("Color hint is for '%s' only."), "vec4"));
+								if (type != TYPE_VEC3 && type != TYPE_VEC4) {
+									_set_error(vformat(RTR("Color hint is for '%s' or '%s' only."), "vec3", "vec4"));
 									return ERR_PARSE_ERROR;
 								}
 								uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
@@ -8252,10 +8288,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (shader->structs.has(tk.text)) {
-					if (precision != PRECISION_DEFAULT) {
-						_set_error(RTR("The precision modifier cannot be used on structs."));
-						return ERR_PARSE_ERROR;
-					}
 					is_struct = true;
 					struct_name = tk.text;
 				} else {
@@ -8279,6 +8311,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				} else {
 					type = get_token_datatype(tk.type);
 				}
+
+				if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+					return ERR_PARSE_ERROR;
+				}
+
 				prev_pos = _get_tkpos();
 				tk = _get_token();
 
@@ -8467,7 +8504,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											return ERR_PARSE_ERROR;
 										}
 
-										if (n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+										if (n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 											_set_error(RTR("Expected constant expression."));
 											return ERR_PARSE_ERROR;
 										}
@@ -8523,8 +8560,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
-								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
-									OperatorNode *op = ((OperatorNode *)expr);
+								if (expr->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(expr)->op == OP_CALL) {
+									OperatorNode *op = static_cast<OperatorNode *>(expr);
 									for (int i = 1; i < op->arguments.size(); i++) {
 										if (!_check_node_constness(op->arguments[i])) {
 											_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -8655,44 +8692,41 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						break;
 					}
 
-					bool is_const = false;
+					bool param_is_const = false;
 					if (tk.type == TK_CONST) {
-						is_const = true;
+						param_is_const = true;
 						tk = _get_token();
 					}
 
-					ArgumentQualifier qualifier = ARGUMENT_QUALIFIER_IN;
-
+					ArgumentQualifier param_qualifier = ARGUMENT_QUALIFIER_IN;
 					if (tk.type == TK_ARG_IN) {
-						qualifier = ARGUMENT_QUALIFIER_IN;
+						param_qualifier = ARGUMENT_QUALIFIER_IN;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_OUT) {
-						if (is_const) {
+						if (param_is_const) {
 							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "out", "const"));
 							return ERR_PARSE_ERROR;
 						}
-						qualifier = ARGUMENT_QUALIFIER_OUT;
+						param_qualifier = ARGUMENT_QUALIFIER_OUT;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_INOUT) {
-						if (is_const) {
+						if (param_is_const) {
 							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "inout", "const"));
 							return ERR_PARSE_ERROR;
 						}
-						qualifier = ARGUMENT_QUALIFIER_INOUT;
+						param_qualifier = ARGUMENT_QUALIFIER_INOUT;
 						tk = _get_token();
 					}
 
-					DataType ptype;
-					StringName pname;
+					DataType param_type;
+					StringName param_name;
 					StringName param_struct_name;
-					DataPrecision pprecision = PRECISION_DEFAULT;
-					bool use_precision = false;
+					DataPrecision param_precision = PRECISION_DEFAULT;
 					int arg_array_size = 0;
 
 					if (is_token_precision(tk.type)) {
-						pprecision = get_token_precision(tk.type);
+						param_precision = get_token_precision(tk.type);
 						tk = _get_token();
-						use_precision = true;
 					}
 
 					is_struct = false;
@@ -8705,10 +8739,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							used_structs[param_struct_name].used = true;
 						}
 #endif // DEBUG_ENABLED
-						if (use_precision) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 					}
 
 					if (!is_struct && !is_token_datatype(tk.type)) {
@@ -8716,7 +8746,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					if (qualifier == ARGUMENT_QUALIFIER_OUT || qualifier == ARGUMENT_QUALIFIER_INOUT) {
+					if (param_qualifier == ARGUMENT_QUALIFIER_OUT || param_qualifier == ARGUMENT_QUALIFIER_INOUT) {
 						if (is_sampler_type(get_token_datatype(tk.type))) {
 							_set_error(RTR("Opaque types cannot be output parameters."));
 							return ERR_PARSE_ERROR;
@@ -8724,16 +8754,20 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 
 					if (is_struct) {
-						ptype = TYPE_STRUCT;
+						param_type = TYPE_STRUCT;
 					} else {
-						ptype = get_token_datatype(tk.type);
-						if (_validate_datatype(ptype) != OK) {
+						param_type = get_token_datatype(tk.type);
+						if (_validate_datatype(param_type) != OK) {
 							return ERR_PARSE_ERROR;
 						}
-						if (ptype == TYPE_VOID) {
+						if (param_type == TYPE_VOID) {
 							_set_error(RTR("Void type not allowed as argument."));
 							return ERR_PARSE_ERROR;
 						}
+					}
+
+					if (param_precision != PRECISION_DEFAULT && _validate_precision(param_type, param_precision) != OK) {
+						return ERR_PARSE_ERROR;
 					}
 
 					tk = _get_token();
@@ -8750,32 +8784,32 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					pname = tk.text;
+					param_name = tk.text;
 
 					ShaderLanguage::IdentifierType itype;
-					if (_find_identifier(func_node->body, false, builtins, pname, (ShaderLanguage::DataType *)nullptr, &itype)) {
+					if (_find_identifier(func_node->body, false, builtins, param_name, (ShaderLanguage::DataType *)nullptr, &itype)) {
 						if (itype != IDENTIFIER_FUNCTION) {
-							_set_redefinition_error(String(pname));
+							_set_redefinition_error(String(param_name));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
-					if (has_builtin(p_functions, pname)) {
-						_set_redefinition_error(String(pname));
+					if (has_builtin(p_functions, param_name)) {
+						_set_redefinition_error(String(param_name));
 						return ERR_PARSE_ERROR;
 					}
 
 					FunctionNode::Argument arg;
-					arg.type = ptype;
-					arg.name = pname;
+					arg.type = param_type;
+					arg.name = param_name;
 					arg.type_str = param_struct_name;
-					arg.precision = pprecision;
-					arg.qualifier = qualifier;
+					arg.precision = param_precision;
+					arg.qualifier = param_qualifier;
 					arg.tex_argument_check = false;
 					arg.tex_builtin_check = false;
 					arg.tex_argument_filter = FILTER_DEFAULT;
 					arg.tex_argument_repeat = REPEAT_DEFAULT;
-					arg.is_const = is_const;
+					arg.is_const = param_is_const;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -8861,7 +8895,7 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 
 	for (int i = p_flow->blocks.size() - 1; i >= 0; i--) {
 		if (p_flow->blocks[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *last_block = (BlockNode *)p_flow->blocks[i];
+			BlockNode *last_block = static_cast<BlockNode *>(p_flow->blocks[i]);
 			if (_find_last_flow_op_in_block(last_block, p_op) == OK) {
 				found = true;
 				break;
@@ -8879,7 +8913,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 
 	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
 		if (p_block->statements[i]->type == Node::TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = (ControlFlowNode *)p_block->statements[i];
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -8890,7 +8924,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 				}
 			}
 		} else if (p_block->statements[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *block = (BlockNode *)p_block->statements[i];
+			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;
@@ -9502,7 +9536,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 		} break;
 		case COMPLETION_HINT: {
-			if (completion_base == DataType::TYPE_VEC4) {
+			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
 				ScriptLanguage::CodeCompletionOption option("hint_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {

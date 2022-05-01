@@ -138,11 +138,11 @@ static Object *obj_to_obj(Object *d) {
 	return d;
 }
 
-static StringName sn_to_sn(StringName &d) {
+static StringName sn_to_sn(const StringName &d) {
 	return d;
 }
 
-static Variant var_to_var(Variant &d) {
+static Variant var_to_var(const Variant &d) {
 	return d;
 }
 
@@ -193,7 +193,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &NavigationServer2D::agent_set_callback, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("free", "object"), &NavigationServer2D::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer2D::free);
 
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 }

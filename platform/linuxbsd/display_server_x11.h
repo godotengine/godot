@@ -46,6 +46,10 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
+#if defined(SPEECHD_ENABLED)
+#include "tts_linux.h"
+#endif
+
 #if defined(GLES3_ENABLED)
 #include "gl_manager_x11.h"
 #endif
@@ -108,8 +112,12 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 #if defined(DBUS_ENABLED)
-	FreeDesktopScreenSaver *screensaver;
+	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
+#endif
+
+#ifdef SPEECHD_ENABLED
+	TTS_Linux *tts = nullptr;
 #endif
 
 	struct WindowData {
@@ -168,7 +176,7 @@ class DisplayServerX11 : public DisplayServer {
 	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
-	char *xmbstring;
+	char *xmbstring = nullptr;
 	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
@@ -249,7 +257,7 @@ class DisplayServerX11 : public DisplayServer {
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
 	xrr_get_monitors_t xrr_get_monitors;
 	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
+	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
 	struct Property {
@@ -297,6 +305,17 @@ public:
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+#ifdef SPEECHD_ENABLED
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+#endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;

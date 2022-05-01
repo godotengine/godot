@@ -87,7 +87,7 @@ jobs:
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
               libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
-              llvm
+              llvm libspeechd-dev speech-dispatcher
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -192,14 +192,6 @@ jobs:
         run: |
           cp -f extension_api.json godot-cpp/godot-headers/
           cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
-
-      # Build godot-cpp library
-      - name: Build godot-cpp library
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          cd godot-cpp
-          scons target=${{ matrix.target }} generate_bindings=yes -j2
-          cd ..
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension

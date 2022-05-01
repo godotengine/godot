@@ -75,7 +75,7 @@ void AudioDriverOpenSL::_buffer_callback(
 void AudioDriverOpenSL::_buffer_callbacks(
 		SLAndroidSimpleBufferQueueItf queueItf,
 		void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_buffer_callback(queueItf);
 }
@@ -208,7 +208,7 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 }
 
 void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf queueItf, void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_record_buffer_callback(queueItf);
 }

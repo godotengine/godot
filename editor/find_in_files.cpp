@@ -211,8 +211,8 @@ float FindInFiles::get_progress() const {
 }
 
 void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
-	DirAccessRef dir = DirAccess::open(path);
-	if (!dir) {
+	Ref<DirAccess> dir = DirAccess::open(path);
+	if (dir.is_null()) {
 		print_verbose("Cannot open directory! " + path);
 		return;
 	}
@@ -253,8 +253,8 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 }
 
 void FindInFiles::_scan_file(String fpath) {
-	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+	if (f.is_null()) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
@@ -274,8 +274,6 @@ void FindInFiles::_scan_file(String fpath) {
 			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
 		}
 	}
-
-	f->close();
 }
 
 void FindInFiles::_bind_methods() {
@@ -449,7 +447,7 @@ Set<String> FindInFilesDialog::get_filter() const {
 	// Could check the _filters_preferences but it might not have been generated yet.
 	Set<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		if (cb->is_pressed()) {
 			filters.insert(cb->get_text());
 		}
@@ -489,7 +487,7 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 
 void FindInFilesDialog::custom_action(const String &p_action) {
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		_filters_preferences[cb->get_text()] = cb->is_pressed();
 	}
 
@@ -873,7 +871,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 // Same as get_line, but preserves line ending characters.
 class ConservativeGetLine {
 public:
-	String get_line(FileAccess *f) {
+	String get_line(Ref<FileAccess> f) {
 		_line_buffer.clear();
 
 		char32_t c = f->get_8();
@@ -908,8 +906,8 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
 
-	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + fpath + "'.");
+	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
 
 	String buffer;
 	int current_line = 1;
@@ -958,8 +956,6 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
 	f->store_string(buffer);
-
-	f->close();
 }
 
 String FindInFilesPanel::get_replace_text() {

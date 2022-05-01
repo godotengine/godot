@@ -157,9 +157,9 @@ private:
 	};
 
 	struct JoyEvent {
-		int type;
-		int index; // Can be either JoyAxis or JoyButton.
-		float value;
+		int type = TYPE_MAX;
+		int index = -1; // Can be either JoyAxis or JoyButton.
+		float value = 0.f;
 	};
 
 	struct JoyBinding {
@@ -331,6 +331,7 @@ public:
 	void set_event_dispatch_function(EventDispatchFunc p_function);
 
 	Input();
+	~Input();
 };
 
 VARIANT_ENUM_CAST(Input::MouseMode);

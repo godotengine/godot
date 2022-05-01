@@ -127,6 +127,7 @@ class TextServerFallback : public TextServerExtension {
 		int texture_h = 0;
 		PackedInt32Array offsets;
 		Ref<ImageTexture> texture;
+		bool dirty = true;
 	};
 
 	struct FontTexturePosition {
@@ -178,6 +179,7 @@ class TextServerFallback : public TextServerExtension {
 		Mutex mutex;
 
 		bool antialiased = true;
+		bool mipmaps = false;
 		bool msdf = false;
 		int msdf_range = 14;
 		int msdf_source_size = 48;
@@ -343,8 +345,12 @@ public:
 	virtual bool has(const RID &p_rid) override;
 	virtual bool load_support_data(const String &p_filename) override;
 
-	virtual String get_support_data_filename() const override { return ""; };
-	virtual String get_support_data_info() const override { return "Not supported"; };
+	virtual String get_support_data_filename() const override {
+		return "";
+	};
+	virtual String get_support_data_info() const override {
+		return "Not supported";
+	};
 	virtual bool save_support_data(const String &p_filename) const override;
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const override;
@@ -369,6 +375,9 @@ public:
 
 	virtual void font_set_antialiased(const RID &p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(const RID &p_font_rid) const override;
+
+	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
+	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;
 
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) override;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const override;
@@ -453,6 +462,8 @@ public:
 
 	virtual int64_t font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) override;
+	virtual RID font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
+	virtual Size2 font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const override;
 
@@ -561,6 +572,8 @@ public:
 	virtual double shaped_text_get_width(const RID &p_shaped) const override;
 	virtual double shaped_text_get_underline_position(const RID &p_shaped) const override;
 	virtual double shaped_text_get_underline_thickness(const RID &p_shaped) const override;
+
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;

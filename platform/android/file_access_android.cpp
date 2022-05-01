@@ -34,11 +34,13 @@
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
-FileAccess *FileAccessAndroid::create_android() {
+Ref<FileAccess> FileAccessAndroid::create_android() {
 	return memnew(FileAccessAndroid);
 }
 
 Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
+	_close();
+
 	String path = fix_path(p_path).simplify_path();
 	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
@@ -58,7 +60,7 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessAndroid::close() {
+void FileAccessAndroid::_close() {
 	if (!a) {
 		return;
 	}
@@ -162,5 +164,5 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 }
 
 FileAccessAndroid::~FileAccessAndroid() {
-	close();
+	_close();
 }

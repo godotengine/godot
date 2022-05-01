@@ -68,38 +68,38 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *uv_edit_mode[4];
 	Ref<ButtonGroup> uv_edit_group;
 
-	Polygon2D *node;
+	Polygon2D *node = nullptr;
 
 	UVMode uv_mode;
-	AcceptDialog *uv_edit;
+	AcceptDialog *uv_edit = nullptr;
 	Button *uv_button[UV_MODE_MAX];
-	Button *b_snap_enable;
-	Button *b_snap_grid;
-	Panel *uv_edit_draw;
-	HSlider *uv_zoom;
-	SpinBox *uv_zoom_value;
-	HScrollBar *uv_hscroll;
-	VScrollBar *uv_vscroll;
-	MenuButton *uv_menu;
-	TextureRect *uv_icon_zoom;
+	Button *b_snap_enable = nullptr;
+	Button *b_snap_grid = nullptr;
+	Panel *uv_edit_draw = nullptr;
+	HSlider *uv_zoom = nullptr;
+	SpinBox *uv_zoom_value = nullptr;
+	HScrollBar *uv_hscroll = nullptr;
+	VScrollBar *uv_vscroll = nullptr;
+	MenuButton *uv_menu = nullptr;
+	TextureRect *uv_icon_zoom = nullptr;
 
 	Ref<ViewPanner> uv_panner;
 	void _uv_scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _uv_pan_callback(Vector2 p_scroll_vec);
 	void _uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
-	VBoxContainer *bone_scroll_main_vb;
-	ScrollContainer *bone_scroll;
-	VBoxContainer *bone_scroll_vb;
-	Button *sync_bones;
-	HSlider *bone_paint_strength;
-	SpinBox *bone_paint_radius;
-	Label *bone_paint_radius_label;
+	VBoxContainer *bone_scroll_main_vb = nullptr;
+	ScrollContainer *bone_scroll = nullptr;
+	VBoxContainer *bone_scroll_vb = nullptr;
+	Button *sync_bones = nullptr;
+	HSlider *bone_paint_strength = nullptr;
+	SpinBox *bone_paint_radius = nullptr;
+	Label *bone_paint_radius_label = nullptr;
 	bool bone_painting;
 	int bone_painting_bone;
 	Vector<float> prev_weights;
 	Vector2 bone_paint_pos;
-	AcceptDialog *grid_settings;
+	AcceptDialog *grid_settings = nullptr;
 
 	void _sync_bones();
 	void _update_bone_list();
@@ -123,9 +123,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
 
-	AcceptDialog *error;
+	AcceptDialog *error = nullptr;
 
-	Button *button_uv;
+	Button *button_uv = nullptr;
 
 	bool use_snap;
 	bool snap_show_grid;

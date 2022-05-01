@@ -51,7 +51,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 	}
 
 	int paren_size = PAREN_STACK_DEPTH;
-	ParenStackEntry *paren_stack = (ParenStackEntry *)memalloc(paren_size * sizeof(ParenStackEntry));
+	ParenStackEntry *paren_stack = static_cast<ParenStackEntry *>(memalloc(paren_size * sizeof(ParenStackEntry)));
 
 	int script_start;
 	int script_end = p_start;
@@ -77,7 +77,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					if (unlikely(paren_sp >= paren_size)) {
 						// If the stack is full, allocate more space to handle deeply nested parentheses. This is unlikely to happen with any real text.
 						paren_size += PAREN_STACK_DEPTH;
-						paren_stack = (ParenStackEntry *)memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry));
+						paren_stack = static_cast<ParenStackEntry *>(memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry)));
 					}
 					paren_stack[paren_sp].pair_index = ch;
 					paren_stack[paren_sp].script_code = script_code;

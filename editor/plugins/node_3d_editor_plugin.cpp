@@ -369,7 +369,7 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
@@ -2087,9 +2087,8 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 	const NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 
 	real_t pan_speed = 1 / 150.0;
-	int pan_speed_modifier = 10;
 	if (nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
-		pan_speed *= pan_speed_modifier;
+		pan_speed *= 10;
 	}
 
 	Transform3D camera_transform;
@@ -2112,9 +2111,8 @@ void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const
 	const NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 
 	real_t zoom_speed = 1 / 80.0;
-	int zoom_speed_modifier = 10;
 	if (nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
-		zoom_speed *= zoom_speed_modifier;
+		zoom_speed *= 10;
 	}
 
 	NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/navigation/zoom_style").operator int();
@@ -2467,7 +2465,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			_update_camera(delta);
 
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
@@ -2818,7 +2816,7 @@ void Node3DEditorViewport::_draw() {
 				real_t scale_length = (max_speed - min_speed);
 
 				if (!Math::is_zero_approx(scale_length)) {
-					real_t logscale_t = 1.0 - Math::log(1 + freelook_speed - min_speed) / Math::log(1 + scale_length);
+					real_t logscale_t = 1.0 - Math::log1p(freelook_speed - min_speed) / Math::log1p(scale_length);
 
 					// Display the freelook speed to help the user get a better sense of scale.
 					const int precision = freelook_speed < 1.0 ? 2 : 1;
@@ -2841,7 +2839,7 @@ void Node3DEditorViewport::_draw() {
 				real_t scale_length = (max_distance - min_distance);
 
 				if (!Math::is_zero_approx(scale_length)) {
-					real_t logscale_t = 1.0 - Math::log(1 + cursor.distance - min_distance) / Math::log(1 + scale_length);
+					real_t logscale_t = 1.0 - Math::log1p(cursor.distance - min_distance) / Math::log1p(scale_length);
 
 					// Display the zoom center distance to help the user get a better sense of scale.
 					const int precision = cursor.distance < 1.0 ? 2 : 1;
@@ -3644,7 +3642,7 @@ void Node3DEditorViewport::focus_selection() {
 	Vector3 center;
 	int count = 0;
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	for (Node *E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E);
@@ -5515,7 +5513,7 @@ void Node3DEditor::_xform_dialog_action() {
 
 	undo_redo->create_action(TTR("XForm Dialog"));
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	for (Node *E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E);
@@ -6720,7 +6718,7 @@ Set<RID> _get_physics_bodies_rid(Node *node) {
 }
 
 void Node3DEditor::snap_selected_nodes_to_floor() {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_selected_node_list();
 	Dictionary snap_data;
 
 	for (Node *E : selection) {
@@ -6848,7 +6846,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 	}
 }
 
-void Node3DEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree()) {
@@ -7120,7 +7118,9 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 				}
 			}
 		}
-		sp->update_gizmos();
+		if (!sp->get_gizmos().is_empty()) {
+			sp->update_gizmos();
+		}
 	}
 }
 
@@ -7276,6 +7276,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftDynamicBody3DGizmoPlugin>(memnew(SoftDynamicBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Position3DGizmoPlugin>(memnew(Position3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
@@ -7893,7 +7894,7 @@ Node3DEditor::Node3DEditor() {
 
 	selected = nullptr;
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);

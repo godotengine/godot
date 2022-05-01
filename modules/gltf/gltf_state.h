@@ -62,6 +62,7 @@ class GLTFState : public Resource {
 	Vector<uint8_t> glb_data;
 
 	bool use_named_skin_binds = false;
+	bool discard_meshes_and_materials = false;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -111,6 +112,9 @@ public:
 
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
+
+	bool get_discard_meshes_and_materials();
+	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
 
 	Array get_nodes();
 	void set_nodes(Array p_nodes);

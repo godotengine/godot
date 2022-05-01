@@ -7,9 +7,9 @@ readability.
 
 ## amd-fsr
 
-Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
-Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
-License: MIT
+- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
+- Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
+- License: MIT
 
 Files extracted from upstream source:
 

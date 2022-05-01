@@ -60,7 +60,7 @@
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
-	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
+	ResourceImporterScene::add_importer(import_gltf);
 
 	// Blend to glTF importer.
 
@@ -72,7 +72,7 @@ static void _editor_init() {
 	if (blend_enabled) {
 		Ref<EditorSceneFormatImporterBlend> importer;
 		importer.instantiate();
-		ResourceImporterScene::get_singleton()->add_importer(importer);
+		ResourceImporterScene::add_importer(importer);
 
 		Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
 		blend_import_query.instantiate();
@@ -87,7 +87,7 @@ static void _editor_init() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
 	if (fbx_enabled) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (fbx2gltf_path.is_empty()) {
 			WARN_PRINT("FBX file import is enabled, but no FBX2glTF path is configured. FBX files will not be imported.");
 		} else if (!da->file_exists(fbx2gltf_path)) {
@@ -95,7 +95,7 @@ static void _editor_init() {
 		} else {
 			Ref<EditorSceneFormatImporterFBX> importer;
 			importer.instantiate();
-			ResourceImporterScene::get_singleton()->add_importer(importer);
+			ResourceImporterScene::add_importer(importer);
 		}
 	}
 }

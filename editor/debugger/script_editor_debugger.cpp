@@ -164,7 +164,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 	switch (file_dialog_purpose) {
 		case SAVE_MONITORS_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -209,7 +209,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 		} break;
 		case SAVE_VRAM_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -1496,7 +1496,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		item_menu->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {

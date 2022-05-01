@@ -68,11 +68,9 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			const Map<StringName, Variant> &p_options, int p_bake_fps,
 			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags,
-			const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 	virtual void get_import_options(const String &p_path,
 			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, const String &p_option,
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
 			const Map<StringName, Variant> &p_options) override;
 };
 
@@ -84,11 +82,11 @@ class Label;
 class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImportFormatSupportQuery {
 	GDCLASS(EditorFileSystemImportFormatSupportQueryBlend, EditorFileSystemImportFormatSupportQuery);
 
-	ConfirmationDialog *configure_blender_dialog;
-	LineEdit *blender_path;
-	Button *blender_path_browse;
-	EditorFileDialog *browse_dialog;
-	Label *path_status;
+	ConfirmationDialog *configure_blender_dialog = nullptr;
+	LineEdit *blender_path = nullptr;
+	Button *blender_path_browse = nullptr;
+	EditorFileDialog *browse_dialog = nullptr;
+	Label *path_status = nullptr;
 	bool confirmed = false;
 
 	String auto_detected_path;

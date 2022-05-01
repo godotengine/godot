@@ -62,7 +62,7 @@ void AudioEffectRecordInstance::_update_buffer() {
 }
 
 void AudioEffectRecordInstance::_update(void *userdata) {
-	AudioEffectRecordInstance *ins = (AudioEffectRecordInstance *)userdata;
+	AudioEffectRecordInstance *ins = static_cast<AudioEffectRecordInstance *>(userdata);
 	ins->_update_buffer();
 }
 

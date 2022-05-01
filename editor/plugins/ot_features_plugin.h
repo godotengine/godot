@@ -38,7 +38,7 @@
 
 class OpenTypeFeaturesEditor : public EditorProperty {
 	GDCLASS(OpenTypeFeaturesEditor, EditorProperty);
-	EditorSpinSlider *spin;
+	EditorSpinSlider *spin = nullptr;
 	bool setting = true;
 	void _value_changed(double p_val);
 	Button *button = nullptr;

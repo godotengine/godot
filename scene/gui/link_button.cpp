@@ -61,7 +61,7 @@ String LinkButton::get_text() const {
 	return text;
 }
 
-void LinkButton::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		_shape();
@@ -69,7 +69,7 @@ void LinkButton::set_structured_text_bidi_override(Control::StructuredTextParser
 	}
 }
 
-Control::StructuredTextParser LinkButton::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 

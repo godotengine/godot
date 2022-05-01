@@ -90,20 +90,20 @@ public:
 	};
 
 private:
-	Button *activate;
-	Button *clear_button;
-	TextureRect *graph;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
-	Tree *variables;
-	HSplitContainer *h_split;
+	Tree *variables = nullptr;
+	HSplitContainer *h_split = nullptr;
 
 	Set<StringName> plot_sigs;
 
-	OptionButton *display_mode;
-	OptionButton *display_time;
+	OptionButton *display_mode = nullptr;
+	OptionButton *display_time = nullptr;
 
-	SpinBox *cursor_metric_edit;
+	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
 	int total_metrics;
@@ -119,8 +119,8 @@ private:
 
 	bool seeking;
 
-	Timer *frame_delay;
-	Timer *plot_delay;
+	Timer *frame_delay = nullptr;
+	Timer *plot_delay = nullptr;
 
 	void _update_frame();
 

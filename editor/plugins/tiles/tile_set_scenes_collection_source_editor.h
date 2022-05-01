@@ -70,7 +70,7 @@ private:
 		GDCLASS(SceneTileProxyObject, Object);
 
 	private:
-		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
+		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
 
 		TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 		int source_id;
@@ -97,23 +97,23 @@ private:
 	TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 	int tile_set_source_id = -1;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	bool tile_set_scenes_collection_source_changed_needs_update = false;
 
 	// Source inspector.
-	TileSetScenesCollectionProxyObject *scenes_collection_source_proxy_object;
-	Label *scenes_collection_source_inspector_label;
-	EditorInspector *scenes_collection_source_inspector;
+	TileSetScenesCollectionProxyObject *scenes_collection_source_proxy_object = nullptr;
+	Label *scenes_collection_source_inspector_label = nullptr;
+	EditorInspector *scenes_collection_source_inspector = nullptr;
 
 	// Tile inspector.
-	SceneTileProxyObject *tile_proxy_object;
-	Label *tile_inspector_label;
-	EditorInspector *tile_inspector;
+	SceneTileProxyObject *tile_proxy_object = nullptr;
+	Label *tile_inspector_label = nullptr;
+	EditorInspector *tile_inspector = nullptr;
 
-	ItemList *scene_tiles_list;
-	Button *scene_tile_add_button;
-	Button *scene_tile_delete_button;
+	ItemList *scene_tiles_list = nullptr;
+	Button *scene_tile_add_button = nullptr;
+	Button *scene_tile_delete_button = nullptr;
 
 	void _tile_set_scenes_collection_source_changed();
 	void _scenes_collection_source_proxy_object_changed(String p_what);

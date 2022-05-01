@@ -981,7 +981,7 @@ void Window::_window_input_text(const String &p_text) {
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal(SNAME("files_dropped"), p_files, current_screen);
+	emit_signal(SNAME("files_dropped"), p_files);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1045,7 +1045,9 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 
 	Rect2i popup_rect;
 	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	if (parent_rect != Rect2()) {
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
 
 	popup(popup_rect);
 }
@@ -1066,12 +1068,13 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	if (p_minsize == Size2i()) {
-		popup_rect.size = _get_contents_minimum_size();
-	} else {
-		popup_rect.size = p_minsize;
+	Size2 contents_minsize = _get_contents_minimum_size();
+	popup_rect.size.x = MAX(p_minsize.x, contents_minsize.x);
+	popup_rect.size.y = MAX(p_minsize.y, contents_minsize.y);
+
+	if (parent_rect != Rect2()) {
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
@@ -1079,6 +1082,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
 	Rect2 parent_rect;
 
@@ -1092,8 +1096,10 @@ void Window::popup_centered_ratio(float p_ratio) {
 	}
 
 	Rect2i popup_rect;
-	popup_rect.size = parent_rect.size * p_ratio;
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	if (parent_rect != Rect2()) {
+		popup_rect.size = parent_rect.size * p_ratio;
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
 
 	popup(popup_rect);
 }

@@ -1228,9 +1228,7 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-Polygon2DEditor::Polygon2DEditor() :
-		AbstractPolygon2DEditor() {
-	node = nullptr;
+Polygon2DEditor::Polygon2DEditor() {
 	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
 	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(10, 10));
 	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);

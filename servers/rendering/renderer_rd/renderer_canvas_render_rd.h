@@ -41,7 +41,7 @@
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum {
 		BASE_UNIFORM_SET = 0,
@@ -200,7 +200,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	}
 
 	struct CanvasMaterialData : public RendererRD::MaterialData {
-		CanvasShaderData *shader_data;
+		CanvasShaderData *shader_data = nullptr;
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
@@ -361,7 +361,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t pad2;
 		};
 
-		LightUniform *light_uniforms;
+		LightUniform *light_uniforms = nullptr;
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;

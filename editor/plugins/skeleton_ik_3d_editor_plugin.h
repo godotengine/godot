@@ -38,9 +38,9 @@ class SkeletonIK3D;
 class SkeletonIK3DEditorPlugin : public EditorPlugin {
 	GDCLASS(SkeletonIK3DEditorPlugin, EditorPlugin);
 
-	SkeletonIK3D *skeleton_ik;
+	SkeletonIK3D *skeleton_ik = nullptr;
 
-	Button *play_btn;
+	Button *play_btn = nullptr;
 
 	void _play();
 

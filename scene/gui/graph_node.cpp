@@ -351,10 +351,10 @@ void GraphNode::_notification(int p_what) {
 			Ref<StyleBox> sb;
 
 			if (comment) {
-				sb = get_theme_stylebox(selected ? "commentfocus" : "comment");
+				sb = get_theme_stylebox(selected ? "comment_focus" : "comment");
 
 			} else {
-				sb = get_theme_stylebox(selected ? "selectedframe" : "frame");
+				sb = get_theme_stylebox(selected ? "selected_frame" : "frame");
 			}
 
 			//sb=sb->duplicate();
@@ -393,7 +393,6 @@ void GraphNode::_notification(int p_what) {
 				w -= close->get_width();
 			}
 
-			title_buf->set_width(w);
 			title_buf->draw(get_canvas_item(), Point2(sb->get_margin(SIDE_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
 			if (show_close) {
 				Vector2 cpos = Point2(w + sb->get_margin(SIDE_LEFT) + close_h_offset, -close->get_height() + close_offset);

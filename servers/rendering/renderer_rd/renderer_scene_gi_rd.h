@@ -45,7 +45,6 @@
 #include "servers/rendering/renderer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_debug.glsl.gen.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -55,7 +54,7 @@ class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* VOXEL_GI INSTANCE */
 
@@ -331,8 +330,8 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -455,8 +454,8 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		// used for rendering (voxelization)
 		RID render_albedo;

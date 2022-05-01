@@ -100,7 +100,7 @@ public:
 class TextControlEditorPlugin : public EditorPlugin {
 	GDCLASS(TextControlEditorPlugin, EditorPlugin);
 
-	TextControlEditor *text_ctl_editor;
+	TextControlEditor *text_ctl_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "TextControlFontEditor"; }

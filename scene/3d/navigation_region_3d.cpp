@@ -73,6 +73,10 @@ uint32_t NavigationRegion3D::get_layers() const {
 	return NavigationServer3D::get_singleton()->region_get_layers(region);
 }
 
+RID NavigationRegion3D::get_region_rid() const {
+	return region;
+}
+
 /////////////////////////////
 
 void NavigationRegion3D::_notification(int p_what) {
@@ -197,6 +201,8 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion3D::set_layers);
 	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion3D::get_layers);
+
+	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationRegion3D::bake_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationRegion3D::_bake_finished);

@@ -139,7 +139,7 @@ void OS_Android::finalize() {
 }
 
 OS_Android *OS_Android::get_singleton() {
-	return (OS_Android *)OS::get_singleton();
+	return static_cast<OS_Android *>(OS::get_singleton());
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
@@ -187,10 +187,11 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 		return false;
 	}
 	DisplayServerAndroid::get_singleton()->process_events();
+	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
-		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || RenderingServer::get_singleton()->has_changed();
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || RenderingServer::get_singleton()->has_changed() || current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
 
 	return exit;

@@ -40,8 +40,8 @@ String CallableCustomBind::get_as_text() const {
 }
 
 bool CallableCustomBind::_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
-	const CallableCustomBind *a = (const CallableCustomBind *)p_a;
-	const CallableCustomBind *b = (const CallableCustomBind *)p_b;
+	const CallableCustomBind *a = static_cast<const CallableCustomBind *>(p_a);
+	const CallableCustomBind *b = static_cast<const CallableCustomBind *>(p_b);
 
 	if (!(a->callable != b->callable)) {
 		return false;
@@ -55,8 +55,8 @@ bool CallableCustomBind::_equal_func(const CallableCustom *p_a, const CallableCu
 }
 
 bool CallableCustomBind::_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
-	const CallableCustomBind *a = (const CallableCustomBind *)p_a;
-	const CallableCustomBind *b = (const CallableCustomBind *)p_b;
+	const CallableCustomBind *a = static_cast<const CallableCustomBind *>(p_a);
+	const CallableCustomBind *b = static_cast<const CallableCustomBind *>(p_b);
 
 	if (a->callable < b->callable) {
 		return true;
@@ -117,8 +117,8 @@ String CallableCustomUnbind::get_as_text() const {
 }
 
 bool CallableCustomUnbind::_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
-	const CallableCustomUnbind *a = (const CallableCustomUnbind *)p_a;
-	const CallableCustomUnbind *b = (const CallableCustomUnbind *)p_b;
+	const CallableCustomUnbind *a = static_cast<const CallableCustomUnbind *>(p_a);
+	const CallableCustomUnbind *b = static_cast<const CallableCustomUnbind *>(p_b);
 
 	if (!(a->callable != b->callable)) {
 		return false;
@@ -132,8 +132,8 @@ bool CallableCustomUnbind::_equal_func(const CallableCustom *p_a, const Callable
 }
 
 bool CallableCustomUnbind::_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
-	const CallableCustomUnbind *a = (const CallableCustomUnbind *)p_a;
-	const CallableCustomUnbind *b = (const CallableCustomUnbind *)p_b;
+	const CallableCustomUnbind *a = static_cast<const CallableCustomUnbind *>(p_a);
+	const CallableCustomUnbind *b = static_cast<const CallableCustomUnbind *>(p_b);
 
 	if (a->callable < b->callable) {
 		return true;

@@ -235,6 +235,7 @@ public:
 
 	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	Error move_to_trash(const String &p_path) const;
 	String get_user_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;
@@ -349,7 +350,7 @@ public:
 class File : public RefCounted {
 	GDCLASS(File, RefCounted);
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	bool big_endian = false;
 
 protected:
@@ -442,12 +443,11 @@ public:
 	uint64_t get_modified_time(const String &p_file) const;
 
 	File() {}
-	virtual ~File();
 };
 
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
-	DirAccess *d;
+	Ref<DirAccess> d;
 
 	bool dir_open = false;
 	bool include_navigational = false;
@@ -495,7 +495,6 @@ public:
 	Error remove(String p_name);
 
 	Directory();
-	virtual ~Directory();
 };
 
 class Marshalls : public Object {

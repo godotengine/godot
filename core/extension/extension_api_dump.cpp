@@ -869,9 +869,8 @@ void NativeExtensionAPIDump::generate_extension_json_file(const String &p_path) 
 	json.instantiate();
 
 	String text = json->stringify(api, "\t", false);
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	CharString cs = text.ascii();
 	fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
-	fa->close();
 }
 #endif

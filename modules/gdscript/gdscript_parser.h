@@ -312,7 +312,7 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		virtual bool is_expression() const { return true; }
+		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
 
 	protected:
@@ -767,6 +767,7 @@ public:
 			LOCAL_BIND, // Pattern bind.
 			MEMBER_VARIABLE,
 			MEMBER_CONSTANT,
+			INHERITED_VARIABLE,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -800,6 +801,7 @@ public:
 		FunctionNode *parent_function = nullptr;
 		Vector<IdentifierNode *> captures;
 		Map<StringName, int> captures_indices;
+		bool use_self = false;
 
 		bool has_name() const {
 			return function && function->identifier;

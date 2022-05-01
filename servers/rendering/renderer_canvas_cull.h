@@ -124,7 +124,7 @@ public:
 		Set<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
-			Item *item;
+			Item *item = nullptr;
 			bool operator<(const ChildItem &p_item) const {
 				return item->index < p_item.item->index;
 			}
@@ -215,7 +215,7 @@ public:
 
 	void canvas_item_set_update_when_visible(RID p_item, bool p_update);
 
-	void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0);
+	void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false);
 	void canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color);

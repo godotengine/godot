@@ -78,7 +78,7 @@
 		</member>
 		<member name="icon" type="Texture2D" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
-			To edit margin and spacing of the icon, use [theme_item hseparation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
+			To edit margin and spacing of the icon, use [theme_item h_separation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
 		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
 			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum @GlobalScope.HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
@@ -133,7 +133,7 @@
 		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Icon modulate [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="2">
+		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

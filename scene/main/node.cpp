@@ -79,6 +79,9 @@ void Node::_notification(int p_notification) {
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
+			if (data.shortcut_input) {
+				add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+			}
 			if (data.unhandled_input) {
 				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -99,6 +102,9 @@ void Node::_notification(int p_notification) {
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+			}
+			if (data.shortcut_input) {
+				remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
 			}
 			if (data.unhandled_input) {
 				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
@@ -124,6 +130,10 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_READY: {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 				set_process_input(true);
+			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_shortcut_input)) {
+				set_process_shortcut_input(true);
 			}
 
 			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
@@ -247,6 +257,9 @@ void Node::_propagate_after_exit_tree() {
 		}
 
 		if (!found) {
+			if (data.unique_name_in_owner) {
+				_release_unique_name_in_owner();
+			}
 			data.owner->data.owned.erase(data.OW);
 			data.owner = nullptr;
 		}
@@ -640,21 +653,10 @@ void Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg
 }
 
 Ref<MultiplayerAPI> Node::get_multiplayer() const {
-	if (multiplayer.is_valid()) {
-		return multiplayer;
-	}
 	if (!is_inside_tree()) {
 		return Ref<MultiplayerAPI>();
 	}
-	return get_tree()->get_multiplayer();
-}
-
-Ref<MultiplayerAPI> Node::get_custom_multiplayer() const {
-	return multiplayer;
-}
-
-void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
-	multiplayer = p_multiplayer;
+	return get_tree()->get_multiplayer(get_path());
 }
 
 Vector<Multiplayer::RPCConfig> Node::get_node_rpc_methods() const {
@@ -835,6 +837,26 @@ bool Node::is_processing_input() const {
 	return data.input;
 }
 
+void Node::set_process_shortcut_input(bool p_enable) {
+	if (p_enable == data.shortcut_input) {
+		return;
+	}
+	data.shortcut_input = p_enable;
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (p_enable) {
+		add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	} else {
+		remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	}
+}
+
+bool Node::is_processing_shortcut_input() const {
+	return data.shortcut_input;
+}
+
 void Node::set_process_unhandled_input(bool p_enable) {
 	if (p_enable == data.unhandled_input) {
 		return;
@@ -887,10 +909,18 @@ void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
+
+	if (data.unique_name_in_owner && data.owner) {
+		_release_unique_name_in_owner();
+	}
 	data.name = name;
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this, true);
+	}
+
+	if (data.unique_name_in_owner && data.owner) {
+		_acquire_unique_name_in_owner();
 	}
 
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
@@ -1273,6 +1303,24 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 				next = root;
 			}
 
+		} else if (name.is_node_unique_name()) {
+			if (current->data.owned_unique_nodes.size()) {
+				// Has unique nodes in ownership
+				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else if (current->data.owner) {
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else {
+				return nullptr;
+			}
+
 		} else {
 			next = nullptr;
 
@@ -1314,9 +1362,39 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+// Finds the first child node (in tree order) whose name matches the given pattern.
+// Can be recursive or not, and limited to owned nodes.
+Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) const {
+	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
+
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner) {
+			continue;
+		}
+		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+			return cptr[i];
+		}
+
+		if (!p_recursive) {
+			continue;
+		}
+
+		Node *ret = cptr[i]->find_child(p_pattern, true, p_owned);
+		if (ret) {
+			return ret;
+		}
+	}
+	return nullptr;
+}
+
+// Finds child nodes based on their name using pattern matching, or class name,
+// or both (either pattern or type can be left empty).
+// Can be recursive or not, and limited to owned nodes.
+TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	TypedArray<Node> ret;
-	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
@@ -1325,8 +1403,8 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 			continue;
 		}
 
-		if (!p_mask.is_empty()) {
-			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+		if (!p_pattern.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
 				continue;
 			} else if (p_type.is_empty()) {
 				ret.append(cptr[i]);
@@ -1348,7 +1426,7 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 		}
 
 		if (p_recursive) {
-			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
+			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
 		}
 	}
 
@@ -1359,10 +1437,10 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
-Node *Node::find_parent(const String &p_mask) const {
+Node *Node::find_parent(const String &p_pattern) const {
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_mask)) {
+		if (p->data.name.operator String().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -1468,8 +1546,56 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.OW = data.owner->data.owned.back();
 }
 
+void Node::_release_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which == nullptr || *which != this) {
+		return; // Ignore.
+	}
+	data.owner->data.owned_unique_nodes.erase(key);
+}
+
+void Node::_acquire_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which != nullptr && *which != this) {
+		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
+		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name."),
+				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
+		data.unique_name_in_owner = false;
+		return;
+	}
+	data.owner->data.owned_unique_nodes[key] = this;
+}
+
+void Node::set_unique_name_in_owner(bool p_enabled) {
+	if (data.unique_name_in_owner == p_enabled) {
+		return;
+	}
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_release_unique_name_in_owner();
+	}
+	data.unique_name_in_owner = p_enabled;
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_acquire_unique_name_in_owner();
+	}
+
+	update_configuration_warnings();
+}
+
+bool Node::is_unique_name_in_owner() const {
+	return data.unique_name_in_owner;
+}
+
 void Node::set_owner(Node *p_owner) {
 	if (data.owner) {
+		if (data.unique_name_in_owner) {
+			_release_unique_name_in_owner();
+		}
 		data.owner->data.owned.erase(data.OW);
 		data.OW = nullptr;
 		data.owner = nullptr;
@@ -1496,6 +1622,10 @@ void Node::set_owner(Node *p_owner) {
 	ERR_FAIL_COND(!owner_valid);
 
 	_set_owner_nocheck(p_owner);
+
+	if (data.unique_name_in_owner) {
+		_acquire_unique_name_in_owner();
+	}
 }
 
 Node *Node::get_owner() const {
@@ -2555,16 +2685,16 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 TypedArray<String> Node::get_configuration_warnings() const {
+	TypedArray<String> ret;
+
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		TypedArray<String> ret;
-		ret.resize(warnings.size());
 		for (int i = 0; i < warnings.size(); i++) {
-			ret[i] = warnings[i];
+			ret.push_back(warnings[i]);
 		}
-		return ret;
 	}
-	return Array();
+
+	return ret;
 }
 
 String Node::get_configuration_warnings_as_string() const {
@@ -2615,6 +2745,15 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 	}
 	input(p_event);
 }
+
+void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_shortcut_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	shortcut_input(p_event);
+}
+
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2622,6 +2761,7 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 	unhandled_input(p_event);
 }
+
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2631,6 +2771,9 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::shortcut_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2658,8 +2801,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
+	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
@@ -2694,6 +2838,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
+	ClassDB::bind_method(D_METHOD("set_process_shortcut_input", "enable"), &Node::set_process_shortcut_input);
+	ClassDB::bind_method(D_METHOD("is_processing_shortcut_input"), &Node::is_processing_shortcut_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_input", "enable"), &Node::set_process_unhandled_input);
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_input"), &Node::is_processing_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_key_input", "enable"), &Node::set_process_unhandled_key_input);
@@ -2735,8 +2881,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multiplayer_authority"), &Node::is_multiplayer_authority);
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
-	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "call_local", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(false), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
@@ -2744,6 +2888,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
+
+	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
+	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -2835,10 +2982,10 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "set_custom_multiplayer", "get_custom_multiplayer");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
@@ -2854,6 +3001,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_ready);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }

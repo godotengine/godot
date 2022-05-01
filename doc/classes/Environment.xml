@@ -51,16 +51,17 @@
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
-			The ambient light's [Color].
+			The ambient light's [Color]. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).
 		</member>
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
-			The ambient light's energy. The higher the value, the stronger the light.
+			The ambient light's energy. The higher the value, the stronger the light. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of [code]0.0[/code] means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of [code]1.0[/code] means that [i]all[/i] the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
 			[b]Note:[/b] [member ambient_light_sky_contribution] is internally clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 		</member>
 		<member name="ambient_light_source" type="int" setter="set_ambient_source" getter="get_ambient_source" enum="Environment.AmbientSource" default="0">
+			The ambient light source to use for rendering materials and global illumination.
 		</member>
 		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure_enabled" getter="is_tonemap_auto_exposure_enabled" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
@@ -97,6 +98,7 @@
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
 		</member>
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.001">
+			The exponential fog density to use. Higher values result in a more dense fog.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
 			If [code]true[/code], fog effects are enabled.
@@ -108,10 +110,13 @@
 			The density used to increase fog as height decreases. To make fog increase as height increases, use a negative value.
 		</member>
 		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.5, 0.6, 0.7, 1)">
+			The fog's color.
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
+			The fog's brightness. Higher values result in brighter fog.
 		</member>
 		<member name="fog_sun_scatter" type="float" setter="set_fog_sun_scatter" getter="get_fog_sun_scatter" default="0.0">
+			If set above [code]0.0[/code], renders the scene's directional light(s) in the fog color depending on the view angle. This can be used to give the impression that the sun is "piercing" through the fog.
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			The glow blending mode.
@@ -132,7 +137,7 @@
 			The lower threshold of the HDR glow. When using the OpenGL renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			The overall brightness multiplier of the glow effect. When using the OpenGL renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
+			The overall brightness multiplier of the glow effect. When using the OpenGL renderer, this should be increased to [code]1.5[/code] to compensate for the lack of HDR rendering.
 		</member>
 		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
@@ -163,6 +168,7 @@
 			How strong of an impact the [member glow_map] should have on the overall glow effect. A strength of [code]0.0[/code] means the glow map has no effect on the overall glow effect. A strength of [code]1.0[/code] means the glow has a full effect on the overall glow effect (and can turn off glow entirely in specific areas of the screen if the glow map has black areas).
 		</member>
 		<member name="glow_mix" type="float" setter="set_glow_mix" getter="get_glow_mix" default="0.05">
+			When using the [constant GLOW_BLEND_MODE_MIX] [member glow_blend_mode], this controls how much the source image is blended with the glow layer. A value of [code]0.0[/code] makes the glow rendering invisible, while a value of [code]1.0[/code] is equivalent to [constant GLOW_BLEND_MODE_REPLACE].
 		</member>
 		<member name="glow_normalized" type="bool" setter="set_glow_normalized" getter="is_glow_normalized" default="false">
 			If [code]true[/code], glow levels will be normalized so that summed together their intensities equal [code]1.0[/code].
@@ -171,10 +177,15 @@
 			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the OpenGL renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
+			The reflected (specular) light source.
 		</member>
 		<member name="sdfgi_bounce_feedback" type="float" setter="set_sdfgi_bounce_feedback" getter="get_sdfgi_bounce_feedback" default="0.5">
+			The energy multiplier applied to light every time it bounces from a surface when using SDFGI. Values greater than [code]0.0[/code] will simulate multiple bounces, resulting in a more realistic appearance. Increasing [member sdfgi_bounce_feedback] generally has no performance impact. See also [member sdfgi_energy].
+			[b]Note:[/b] Values greater than [code]0.5[/code] can cause infinite feedback loops and should be avoided in scenes with bright materials.
+			[b]Note:[/b] If [member sdfgi_bounce_feedback] is [code]0.0[/code], indirect lighting will not be represented in reflections as light will only bounce one time.
 		</member>
 		<member name="sdfgi_cascade0_distance" type="float" setter="set_sdfgi_cascade0_distance" getter="get_sdfgi_cascade0_distance" default="12.8">
+			[b]Note:[/b] This property is linked to [member sdfgi_min_cell_size] and [member sdfgi_max_distance]. Changing its value will automatically change those properties as well.
 		</member>
 		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" default="4">
 			The number of cascades to use for SDFGI (between 1 and 8). A higher number of cascades allows displaying SDFGI further away while preserving detail up close, at the cost of performance. When using SDFGI on small-scale levels, [member sdfgi_cascades] can often be decreased between [code]1[/code] and [code]4[/code] to improve performance.
@@ -185,27 +196,39 @@
 			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
 		</member>
 		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">
+			The energy multiplier to use for SDFGI. Higher values will result in brighter indirect lighting and reflections. See also [member sdfgi_bounce_feedback].
 		</member>
 		<member name="sdfgi_max_distance" type="float" setter="set_sdfgi_max_distance" getter="get_sdfgi_max_distance" default="204.8">
+			The maximum distance at which SDFGI is visible. Beyond this distance, environment lighting or other sources of GI such as [ReflectionProbe] will be used as a fallback.
+			[b]Note:[/b] This property is linked to [member sdfgi_min_cell_size] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
 		</member>
 		<member name="sdfgi_min_cell_size" type="float" setter="set_sdfgi_min_cell_size" getter="get_sdfgi_min_cell_size" default="0.2">
+			The cell size to use for the closest SDFGI cascade (in 3D units). Lower values allow SDFGI to be more precise up close, at the cost of making SDFGI updates more demanding. This can cause stuttering when the camera moves fast. Higher values allow SDFGI to cover more ground, while also reducing the performance impact of SDFGI updates.
+			[b]Note:[/b] This property is linked to [member sdfgi_max_distance] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
 		</member>
 		<member name="sdfgi_normal_bias" type="float" setter="set_sdfgi_normal_bias" getter="get_sdfgi_normal_bias" default="1.1">
+			The normal bias to use for SDFGI probes. Increasing this value can reduce visible streaking artifacts on sloped surfaces, at the cost of increased light leaking.
 		</member>
 		<member name="sdfgi_probe_bias" type="float" setter="set_sdfgi_probe_bias" getter="get_sdfgi_probe_bias" default="1.1">
+			The constant bias to use for SDFGI probes. Increasing this value can reduce visible streaking artifacts on sloped surfaces, at the cost of increased light leaking.
 		</member>
 		<member name="sdfgi_read_sky_light" type="bool" setter="set_sdfgi_read_sky_light" getter="is_sdfgi_reading_sky_light" default="true">
+			If [code]true[/code], SDFGI takes the environment lighting into account. This should be set to [code]false[/code] for interior scenes.
 		</member>
 		<member name="sdfgi_use_occlusion" type="bool" setter="set_sdfgi_use_occlusion" getter="is_sdfgi_using_occlusion" default="false">
+			If [code]true[/code], SDFGI uses an occlusion detection approach to reduce light leaking. Occlusion may however introduce dark blotches in certain spots, which may be undesired in mostly outdoor scenes. [member sdfgi_use_occlusion] has a performance impact and should only be enabled when needed.
 		</member>
 		<member name="sdfgi_y_scale" type="int" setter="set_sdfgi_y_scale" getter="get_sdfgi_y_scale" enum="Environment.SDFGIYScale" default="1">
+			The Y scale to use for SDFGI cells. Lower values will result in SDFGI cells being packed together more closely on the Y axis. This is used to balance between quality and covering a lot of vertical ground. [member sdfgi_y_scale] should be set depending on how vertical your scene is (and how fast your camera may move on the Y axis).
 		</member>
 		<member name="sky" type="Sky" setter="set_sky" getter="get_sky">
 			The [Sky] resource used for this [Environment].
 		</member>
 		<member name="sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
+			If set to a value greater than [code]0.0[/code], overrides the field of view to use for sky rendering. If set to [code]0.0[/code], the same FOV as the current [Camera3D] is used for sky rendering.
 		</member>
 		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
+			The rotation to use for sky rendering.
 		</member>
 		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect" default="0.0">
 			The screen-space ambient occlusion intensity on materials that have an AO texture defined. Values higher than [code]0[/code] will make the SSAO effect visible in areas darkened by AO textures.
@@ -265,13 +288,13 @@
 			The maximum number of steps for screen-space reflections. Higher values are slower.
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
-			The default exposure used for tonemapping.
+			The default exposure used for tonemapping. Higher values result in a brighter image. See also [member tonemap_white].
 		</member>
 		<member name="tonemap_mode" type="int" setter="set_tonemapper" getter="get_tonemapper" enum="Environment.ToneMapper" default="0">
 			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on a LDR display. (Godot doesn't support rendering on HDR displays yet.)
 		</member>
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
-			The white reference value for tonemapping. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR].
+			The white reference value for tonemapping (also called "whitepoint"). Higher values can make highlights look less blown out, and will also slightly darken the whole scene as a result. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR]. See also [member tonemap_exposure].
 		</member>
 		<member name="volumetric_fog_albedo" type="Color" setter="set_volumetric_fog_albedo" getter="get_volumetric_fog_albedo" default="Color(1, 1, 1, 1)">
 			The [Color] of the volumetric fog when interacting with lights. Mist and fog have an albedo close to [code]Color(1, 1, 1, 1)[/code] while smoke has a darker albedo.
@@ -336,10 +359,10 @@
 			Gather ambient light from whichever source is specified as the background.
 		</constant>
 		<constant name="AMBIENT_SOURCE_DISABLED" value="1" enum="AmbientSource">
-			Disable ambient light.
+			Disable ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
 		</constant>
 		<constant name="AMBIENT_SOURCE_COLOR" value="2" enum="AmbientSource">
-			Specify a specific [Color] for ambient light.
+			Specify a specific [Color] for ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
 		</constant>
 		<constant name="AMBIENT_SOURCE_SKY" value="3" enum="AmbientSource">
 			Gather ambient light from the [Sky] regardless of what the background is.
@@ -348,22 +371,23 @@
 			Use the background for reflections.
 		</constant>
 		<constant name="REFLECTION_SOURCE_DISABLED" value="1" enum="ReflectionSource">
-			Disable reflections.
+			Disable reflections. This provides a slight performance boost over other options.
 		</constant>
 		<constant name="REFLECTION_SOURCE_SKY" value="2" enum="ReflectionSource">
 			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
+			Linear tonemapper operator. Reads the linear data and passes it on unmodified. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
+			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
 		</constant>
 		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
-			Filmic tonemapper operator.
+			Filmic tonemapper operator. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant TONE_MAPPER_REINHARDT].
 		</constant>
 		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Academy Color Encoding System tonemapper operator.
+			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant TONE_MAPPER_REINHARDT] and [constant TONE_MAPPER_FILMIC].
+			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
@@ -381,10 +405,13 @@
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale">
+			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
+			Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_100_PERCENT" value="2" enum="SDFGIYScale">
+			Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
 		</constant>
 	</constants>
 </class>

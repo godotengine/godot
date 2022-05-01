@@ -120,10 +120,10 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-static PhysicsServer3D *physics_server = nullptr;
-static PhysicsServer2D *physics_2d_server = nullptr;
-static NavigationServer3D *navigation_server = nullptr;
-static NavigationServer2D *navigation_2d_server = nullptr;
+static PhysicsServer3D *physics_server_3d = nullptr;
+static PhysicsServer2D *physics_server_2d = nullptr;
+static NavigationServer3D *navigation_server_3d = nullptr;
+static NavigationServer2D *navigation_server_2d = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -204,32 +204,32 @@ static String get_full_version_string() {
 // to have less code in main.cpp.
 void initialize_physics() {
 	/// 3D Physics Server
-	physics_server = PhysicsServer3DManager::new_server(
+	physics_server_3d = PhysicsServer3DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
-	if (!physics_server) {
+	if (!physics_server_3d) {
 		// Physics server not found, Use the default physics
-		physics_server = PhysicsServer3DManager::new_default_server();
+		physics_server_3d = PhysicsServer3DManager::new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server);
-	physics_server->init();
+	ERR_FAIL_COND(!physics_server_3d);
+	physics_server_3d->init();
 
 	/// 2D Physics server
-	physics_2d_server = PhysicsServer2DManager::new_server(
+	physics_server_2d = PhysicsServer2DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::setting_property_name));
-	if (!physics_2d_server) {
+	if (!physics_server_2d) {
 		// Physics server not found, Use the default physics
-		physics_2d_server = PhysicsServer2DManager::new_default_server();
+		physics_server_2d = PhysicsServer2DManager::new_default_server();
 	}
-	ERR_FAIL_COND(!physics_2d_server);
-	physics_2d_server->init();
+	ERR_FAIL_COND(!physics_server_2d);
+	physics_server_2d->init();
 }
 
 void finalize_physics() {
-	physics_server->finish();
-	memdelete(physics_server);
+	physics_server_3d->finish();
+	memdelete(physics_server_3d);
 
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
+	physics_server_2d->finish();
+	memdelete(physics_server_2d);
 }
 
 void finalize_display() {
@@ -240,18 +240,18 @@ void finalize_display() {
 }
 
 void initialize_navigation_server() {
-	ERR_FAIL_COND(navigation_server != nullptr);
+	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
-	navigation_server = NavigationServer3DManager::new_default_server();
-	navigation_2d_server = memnew(NavigationServer2D);
+	navigation_server_3d = NavigationServer3DManager::new_default_server();
+	navigation_server_2d = memnew(NavigationServer2D);
 }
 
 void finalize_navigation_server() {
-	memdelete(navigation_server);
-	navigation_server = nullptr;
+	memdelete(navigation_server_3d);
+	navigation_server_3d = nullptr;
 
-	memdelete(navigation_2d_server);
-	navigation_2d_server = nullptr;
+	memdelete(navigation_server_2d);
+	navigation_server_2d = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -605,8 +605,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
-
-	I = args.front();
 
 	String display_driver = "";
 	String audio_driver = "";
@@ -1489,8 +1487,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
 	// XR project settings.
-	GLOBAL_DEF_BASIC("xr/openxr/enabled", false);
-	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://default_action_map.tres");
+	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://openxr_action_map.tres");
 	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
 
 	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
@@ -2114,8 +2112,8 @@ bool Main::start() {
 		}
 
 		{
-			DirAccessRef da = DirAccess::open(doc_tool_path);
-			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
+			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
+			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -2151,7 +2149,7 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Create the module documentation directory if it doesn't exist
-				DirAccessRef da = DirAccess::create_for_path(path);
+				Ref<DirAccess> da = DirAccess::create_for_path(path);
 				err = da->make_dir_recursive(path);
 				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
@@ -2163,7 +2161,7 @@ bool Main::start() {
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
-		DirAccessRef da = DirAccess::create_for_path(index_path);
+		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
@@ -2336,7 +2334,7 @@ bool Main::start() {
 					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
@@ -2503,11 +2501,11 @@ bool Main::start() {
 						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
-							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
 						} else {
-							DirAccessRef da = DirAccess::open(local_game_path.substr(0, sep));
-							if (da) {
+							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
+							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().plus_file(
 										local_game_path.substr(sep + 1, local_game_path.length()));
 							}

@@ -99,6 +99,9 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
+		HashMap<StringName, Node *> owned_unique_nodes;
+		bool unique_name_in_owner = false;
+
 		int internal_children_front = 0;
 		int internal_children_back = 0;
 		int pos = -1;
@@ -136,6 +139,7 @@ private:
 		bool process_internal = false;
 
 		bool input = false;
+		bool shortcut_input = false;
 		bool unhandled_input = false;
 		bool unhandled_key_input = false;
 
@@ -192,6 +196,9 @@ private:
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
 
+	void _release_unique_name_in_owner();
+	void _acquire_unique_name_in_owner();
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
@@ -215,11 +222,13 @@ protected:
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);
+	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
+	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
 
@@ -231,6 +240,7 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
@@ -300,12 +310,13 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	TypedArray<Node> find_nodes(const String &p_mask, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
+	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
+	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
-	Node *find_parent(const String &p_mask) const;
+	Node *find_parent(const String &p_pattern) const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -340,6 +351,9 @@ public:
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
+
+	void set_unique_name_in_owner(bool p_enabled);
+	bool is_unique_name_in_owner() const;
 
 	void remove_and_skip();
 	int get_index(bool p_include_internal = true) const;
@@ -394,6 +408,9 @@ public:
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
+
+	void set_process_shortcut_input(bool p_enable);
+	bool is_processing_shortcut_input() const;
 
 	void set_process_unhandled_input(bool p_enable);
 	bool is_processing_unhandled_input() const;
@@ -498,8 +515,6 @@ public:
 	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
-	Ref<MultiplayerAPI> get_custom_multiplayer() const;
-	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 
 	Node();
 	~Node();

@@ -330,6 +330,91 @@ const GodotDisplay = {
 		return 0;
 	},
 
+	godot_js_tts_is_speaking__sig: 'i',
+	godot_js_tts_is_speaking: function () {
+		return window.speechSynthesis.speaking;
+	},
+
+	godot_js_tts_is_paused__sig: 'i',
+	godot_js_tts_is_paused: function () {
+		return window.speechSynthesis.paused;
+	},
+
+	godot_js_tts_get_voices__sig: 'vi',
+	godot_js_tts_get_voices: function (p_callback) {
+		const func = GodotRuntime.get_func(p_callback);
+		try {
+			const arr = [];
+			const voices = window.speechSynthesis.getVoices();
+			for (let i = 0; i < voices.length; i++) {
+				arr.push(`${voices[i].lang};${voices[i].name}`);
+			}
+			const c_ptr = GodotRuntime.allocStringArray(arr);
+			func(arr.length, c_ptr);
+			GodotRuntime.freeStringArray(c_ptr, arr.length);
+		} catch (e) {
+			// Fail graciously.
+		}
+	},
+
+	godot_js_tts_speak__sig: 'viiiffii',
+	godot_js_tts_speak: function (p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_callback) {
+		const func = GodotRuntime.get_func(p_callback);
+
+		function listener_end(evt) {
+			evt.currentTarget.cb(1 /*TTS_UTTERANCE_ENDED*/, evt.currentTarget.id, 0);
+		}
+
+		function listener_start(evt) {
+			evt.currentTarget.cb(0 /*TTS_UTTERANCE_STARTED*/, evt.currentTarget.id, 0);
+		}
+
+		function listener_error(evt) {
+			evt.currentTarget.cb(2 /*TTS_UTTERANCE_CANCELED*/, evt.currentTarget.id, 0);
+		}
+
+		function listener_bound(evt) {
+			evt.currentTarget.cb(3 /*TTS_UTTERANCE_BOUNDARY*/, evt.currentTarget.id, evt.charIndex);
+		}
+
+		const utterance = new SpeechSynthesisUtterance(GodotRuntime.parseString(p_text));
+		utterance.rate = p_rate;
+		utterance.pitch = p_pitch;
+		utterance.volume = p_volume / 100.0;
+		utterance.addEventListener('end', listener_end);
+		utterance.addEventListener('start', listener_start);
+		utterance.addEventListener('error', listener_error);
+		utterance.addEventListener('boundary', listener_bound);
+		utterance.id = p_utterance_id;
+		utterance.cb = func;
+		const voice = GodotRuntime.parseString(p_voice);
+		const voices = window.speechSynthesis.getVoices();
+		for (let i = 0; i < voices.length; i++) {
+			if (voices[i].name === voice) {
+				utterance.voice = voices[i];
+				break;
+			}
+		}
+		window.speechSynthesis.resume();
+		window.speechSynthesis.speak(utterance);
+	},
+
+	godot_js_tts_pause__sig: 'v',
+	godot_js_tts_pause: function () {
+		window.speechSynthesis.pause();
+	},
+
+	godot_js_tts_resume__sig: 'v',
+	godot_js_tts_resume: function () {
+		window.speechSynthesis.resume();
+	},
+
+	godot_js_tts_stop__sig: 'v',
+	godot_js_tts_stop: function () {
+		window.speechSynthesis.cancel();
+		window.speechSynthesis.resume();
+	},
+
 	godot_js_display_alert__sig: 'vi',
 	godot_js_display_alert: function (p_text) {
 		window.alert(GodotRuntime.parseString(p_text)); // eslint-disable-line no-alert
@@ -623,6 +708,11 @@ const GodotDisplay = {
 	godot_js_display_vk_available__sig: 'i',
 	godot_js_display_vk_available: function () {
 		return GodotDisplayVK.available();
+	},
+
+	godot_js_display_tts_available__sig: 'i',
+	godot_js_display_tts_available: function () {
+		return 'speechSynthesis' in window;
 	},
 
 	godot_js_display_vk_cb__sig: 'vi',

@@ -538,8 +538,8 @@ private:
 
 	std::mutex _instance_binding_mutex;
 	struct InstanceBinding {
-		void *binding;
-		void *token;
+		void *binding = nullptr;
+		void *token = nullptr;
 		GDNativeInstanceBindingFreeCallback free_callback = nullptr;
 		GDNativeInstanceBindingReferenceCallback reference_callback = nullptr;
 	};
@@ -633,6 +633,7 @@ public:
 
 	bool _is_gpl_reversed() const { return false; }
 
+	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
 	template <class T>
@@ -849,7 +850,7 @@ class ObjectDB {
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		uint64_t is_ref_counted : 1;
-		Object *object;
+		Object *object = nullptr;
 	};
 
 	static SpinLock spin_lock;

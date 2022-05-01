@@ -696,7 +696,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						int type = gn->get_connection_output_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -708,7 +708,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						int type = gn->get_connection_input_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -981,7 +981,7 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "commentfocus" : "comment");
+		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "comment_focus" : "comment");
 		if (sbf.is_valid()) {
 			Color node_color = sbf->get_bg_color();
 			sb_minimap->set_bg_color(node_color);
@@ -1004,7 +1004,7 @@ void GraphEdit::_minimap_draw() {
 		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "selectedframe" : "frame");
+		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "selected_frame" : "frame");
 		if (sbf.is_valid()) {
 			Color node_color = sbf->get_border_color();
 			sb_minimap->set_bg_color(node_color);
@@ -1568,26 +1568,17 @@ void GraphEdit::_update_zoom_label() {
 }
 
 void GraphEdit::add_valid_connection_type(int p_type, int p_with_type) {
-	ConnType ct;
-	ct.type_a = p_type;
-	ct.type_b = p_with_type;
-
+	ConnType ct(p_type, p_with_type);
 	valid_connection_types.insert(ct);
 }
 
 void GraphEdit::remove_valid_connection_type(int p_type, int p_with_type) {
-	ConnType ct;
-	ct.type_a = p_type;
-	ct.type_b = p_with_type;
-
+	ConnType ct(p_type, p_with_type);
 	valid_connection_types.erase(ct);
 }
 
 bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {
-	ConnType ct;
-	ct.type_a = p_type;
-	ct.type_b = p_with_type;
-
+	ConnType ct(p_type, p_with_type);
 	return valid_connection_types.has(ct);
 }
 
@@ -1646,6 +1637,7 @@ float GraphEdit::get_minimap_opacity() const {
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
 	minimap_button->set_pressed(p_enable);
+	_minimap_toggled();
 	minimap->update();
 }
 
@@ -2202,7 +2194,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
 	ClassDB::bind_method(D_METHOD("get_scroll_ofs"), &GraphEdit::get_scroll_ofs);
-	ClassDB::bind_method(D_METHOD("set_scroll_ofs", "ofs"), &GraphEdit::set_scroll_ofs);
+	ClassDB::bind_method(D_METHOD("set_scroll_ofs", "offset"), &GraphEdit::set_scroll_ofs);
 
 	ClassDB::bind_method(D_METHOD("add_valid_right_disconnect_type", "type"), &GraphEdit::add_valid_right_disconnect_type);
 	ClassDB::bind_method(D_METHOD("remove_valid_right_disconnect_type", "type"), &GraphEdit::remove_valid_right_disconnect_type);
@@ -2301,7 +2293,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
-	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
+	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
 	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 

@@ -220,6 +220,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
 	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
 
+	ClassDB::bind_method(D_METHOD("font_set_generate_mipmaps", "font_rid", "generate_mipmaps"), &TextServer::font_set_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("font_get_generate_mipmaps", "font_rid"), &TextServer::font_get_generate_mipmaps);
+
 	ClassDB::bind_method(D_METHOD("font_set_multichannel_signed_distance_field", "font_rid", "msdf"), &TextServer::font_set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("font_is_multichannel_signed_distance_field", "font_rid"), &TextServer::font_is_multichannel_signed_distance_field);
 
@@ -303,6 +306,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_idx", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_idx);
 	ClassDB::bind_method(D_METHOD("font_set_glyph_texture_idx", "font_rid", "size", "glyph", "texture_idx"), &TextServer::font_set_glyph_texture_idx);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_rid", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_rid);
+	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_size", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_size);
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::font_get_glyph_contours);
 
@@ -395,7 +401,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_range", "shaped"), &TextServer::shaped_text_get_range);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
@@ -433,10 +439,14 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language"), &TextServer::string_get_word_breaks, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
 
 	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("parse_structured_text", "parser_type", "args", "text"), &TextServer::parse_structured_text);
 
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
@@ -526,6 +536,15 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_BOLD);
 	BIND_ENUM_CONSTANT(FONT_ITALIC);
 	BIND_ENUM_CONSTANT(FONT_FIXED_WIDTH);
+
+	/* Structured text parser */
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_DEFAULT);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_URI);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
@@ -758,7 +777,7 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, in
 
 	int word_start = range.x;
 
-	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const int l_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {
@@ -979,6 +998,14 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(co
 	}
 }
 
+_FORCE_INLINE_ void _push_range(Vector<Vector2> &r_vector, real_t p_start, real_t p_end) {
+	if (!r_vector.is_empty() && Math::is_equal_approx(r_vector[r_vector.size() - 1].y, p_start, (real_t)UNIT_EPSILON)) {
+		r_vector.write[r_vector.size() - 1].y = p_end;
+	} else {
+		r_vector.push_back(Vector2(p_start, p_end));
+	}
+}
+
 Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64_t p_start, int64_t p_end) const {
 	Vector<Vector2> ranges;
 
@@ -1003,7 +1030,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
-						ranges.push_back(Vector2(off, off + advance));
+						_push_range(ranges, off, off + advance);
 					}
 					// Only start of grapheme is in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end > end) {
@@ -1013,9 +1040,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + advance));
+							_push_range(ranges, off + char_adv * (glyphs[i].end - end), off + advance);
 						} else {
-							ranges.push_back(Vector2(off, off + char_adv * (end - glyphs[i].start)));
+							_push_range(ranges, off, off + char_adv * (end - glyphs[i].start));
 						}
 					}
 					// Only end of grapheme is in selection range.
@@ -1026,9 +1053,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off, off + char_adv * (glyphs[i].end - start)));
+							_push_range(ranges, off, off + char_adv * (glyphs[i].end - start));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + advance));
+							_push_range(ranges, off + char_adv * (start - glyphs[i].start), off + advance);
 						}
 					}
 					// Selection range is within grapheme.
@@ -1039,34 +1066,15 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + char_adv * (glyphs[i].end - start)));
+							_push_range(ranges, off + char_adv * (glyphs[i].end - end), off + char_adv * (glyphs[i].end - start));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + char_adv * (end - glyphs[i].start)));
+							_push_range(ranges, off + char_adv * (start - glyphs[i].start), off + char_adv * (end - glyphs[i].start));
 						}
 					}
 				}
 			}
 			off += glyphs[i].advance;
 		}
-	}
-
-	// Merge intersecting ranges.
-	int i = 0;
-	while (i < ranges.size()) {
-		i++;
-	}
-	i = 0;
-	while (i < ranges.size()) {
-		int j = i + 1;
-		while (j < ranges.size()) {
-			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
-				ranges.write[i].y = ranges[j].y;
-				ranges.remove_at(j);
-				continue;
-			}
-			j++;
-		}
-		i++;
 	}
 
 	return ranges;
@@ -1542,6 +1550,83 @@ String TextServer::strip_diacritics(const String &p_string) const {
 		}
 	}
 	return result;
+}
+
+Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	Array ret;
+	switch (p_parser_type) {
+		case STRUCTURED_TEXT_URI: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_FILE: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_EMAIL: {
+			bool local = true;
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
+					local = false;
+					ret.push_back(Vector2i(prev, i));
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_LIST: {
+			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
+				Vector<String> tags = p_text.split(String(p_args[0]));
+				int prev = 0;
+				for (int i = 0; i < tags.size(); i++) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, prev + tags[i].length()));
+					}
+					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
+					prev = prev + tags[i].length() + 1;
+				}
+			}
+		} break;
+		case STRUCTURED_TEXT_CUSTOM:
+		case STRUCTURED_TEXT_NONE:
+		case STRUCTURED_TEXT_DEFAULT:
+		default: {
+			ret.push_back(Vector2i(0, p_text.length()));
+		}
+	}
+	return ret;
 }
 
 Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {

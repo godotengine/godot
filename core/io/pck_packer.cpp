@@ -83,13 +83,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 	}
 	enc_dir = p_encrypt_directory;
 
-	if (file != nullptr) {
-		memdelete(file);
-	}
-
 	file = FileAccess::open(p_file, FileAccess::WRITE);
-
-	ERR_FAIL_COND_V_MSG(!file, ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
 
 	alignment = p_alignment;
 
@@ -112,8 +107,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 }
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encrypt) {
-	FileAccess *f = FileAccess::open(p_src, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_src, FileAccess::READ);
+	if (f.is_null()) {
 		return ERR_FILE_CANT_OPEN;
 	}
 
@@ -149,14 +144,11 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 
 	files.push_back(pf);
 
-	f->close();
-	memdelete(f);
-
 	return OK;
 }
 
 Error PCKPacker::flush(bool p_verbose) {
-	ERR_FAIL_COND_V_MSG(!file, ERR_INVALID_PARAMETER, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	int64_t file_base_ofs = file->get_position();
 	file->store_64(0); // files base
@@ -168,12 +160,12 @@ Error PCKPacker::flush(bool p_verbose) {
 	// write the index
 	file->store_32(files.size());
 
-	FileAccessEncrypted *fae = nullptr;
-	FileAccess *fhead = file;
+	Ref<FileAccessEncrypted> fae;
+	Ref<FileAccess> fhead = file;
 
 	if (enc_dir) {
-		fae = memnew(FileAccessEncrypted);
-		ERR_FAIL_COND_V(!fae, ERR_CANT_CREATE);
+		fae.instantiate();
+		ERR_FAIL_COND_V(fae.is_null(), ERR_CANT_CREATE);
 
 		Error err = fae->open_and_parse(file, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
@@ -202,9 +194,9 @@ Error PCKPacker::flush(bool p_verbose) {
 		fhead->store_32(flags);
 	}
 
-	if (fae) {
-		fae->release();
-		memdelete(fae);
+	if (fae.is_valid()) {
+		fhead.unref();
+		fae.unref();
 	}
 
 	int header_padding = _get_pad(alignment, file->get_position());
@@ -222,14 +214,13 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int count = 0;
 	for (int i = 0; i < files.size(); i++) {
-		FileAccess *src = FileAccess::open(files[i].src_path, FileAccess::READ);
+		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 
-		fae = nullptr;
-		FileAccess *ftmp = file;
+		Ref<FileAccess> ftmp = file;
 		if (files[i].encrypted) {
-			fae = memnew(FileAccessEncrypted);
-			ERR_FAIL_COND_V(!fae, ERR_CANT_CREATE);
+			fae.instantiate();
+			ERR_FAIL_COND_V(fae.is_null(), ERR_CANT_CREATE);
 
 			Error err = fae->open_and_parse(file, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
 			ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
@@ -242,9 +233,9 @@ Error PCKPacker::flush(bool p_verbose) {
 			to_write -= read;
 		}
 
-		if (fae) {
-			fae->release();
-			memdelete(fae);
+		if (fae.is_valid()) {
+			ftmp.unref();
+			fae.unref();
 		}
 
 		int pad = _get_pad(alignment, file->get_position());
@@ -252,8 +243,6 @@ Error PCKPacker::flush(bool p_verbose) {
 			file->store_8(Math::rand() % 256);
 		}
 
-		src->close();
-		memdelete(src);
 		count += 1;
 		const int file_num = files.size();
 		if (p_verbose && (file_num > 0)) {
@@ -265,15 +254,8 @@ Error PCKPacker::flush(bool p_verbose) {
 		printf("\n");
 	}
 
-	file->close();
+	file.unref();
 	memdelete_arr(buf);
 
 	return OK;
-}
-
-PCKPacker::~PCKPacker() {
-	if (file != nullptr) {
-		memdelete(file);
-	}
-	file = nullptr;
 }
