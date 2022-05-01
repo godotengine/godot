@@ -392,26 +392,60 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			float *gui = (float *)data;
 
 			if (p_array_size > 0) {
-				const PackedVector3Array &a = value;
-				int s = a.size();
+				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
+					const PackedColorArray &a = value;
+					int s = a.size();
 
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = a[i].x;
-						gui[j + 1] = a[i].y;
-						gui[j + 2] = a[i].z;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							Color color = a[i];
+							if (p_linear_color) {
+								color = color.srgb_to_linear();
+							}
+							gui[j] = color.r;
+							gui[j + 1] = color.g;
+							gui[j + 2] = color.b;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
 					}
-					gui[j + 3] = 0; // ignored
+				} else {
+					const PackedVector3Array &a = value;
+					int s = a.size();
+
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							gui[j] = a[i].x;
+							gui[j + 1] = a[i].y;
+							gui[j + 2] = a[i].z;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
+					}
 				}
 			} else {
-				Vector3 v = value;
-				gui[0] = v.x;
-				gui[1] = v.y;
-				gui[2] = v.z;
+				if (value.get_type() == Variant::COLOR) {
+					Color v = value;
+
+					if (p_linear_color) {
+						v = v.srgb_to_linear();
+					}
+
+					gui[0] = v.r;
+					gui[1] = v.g;
+					gui[2] = v.b;
+				} else {
+					Vector3 v = value;
+					gui[0] = v.x;
+					gui[1] = v.y;
+					gui[2] = v.z;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
@@ -925,7 +959,7 @@ void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::S
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if (E.value.type == ShaderLanguage::TYPE_VEC4 && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
 			} else {
