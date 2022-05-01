@@ -57,6 +57,8 @@ public:
 	void set_layers(uint32_t p_layers);
 	uint32_t get_layers() const;
 
+	RID get_region_rid() const;
+
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 

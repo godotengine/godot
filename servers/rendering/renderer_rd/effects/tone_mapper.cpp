@@ -151,37 +151,37 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 		mode += 6;
 	}
 
-	RID default_shader = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-	RID default_mipmap_shader = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::Uniform u_source_color;
 	u_source_color.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_source_color.binding = 0;
-	u_source_color.append_id(default_shader);
+	u_source_color.append_id(default_sampler);
 	u_source_color.append_id(p_source_color);
 
 	RD::Uniform u_exposure_texture;
 	u_exposure_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_exposure_texture.binding = 0;
-	u_exposure_texture.append_id(default_shader);
+	u_exposure_texture.append_id(default_sampler);
 	u_exposure_texture.append_id(p_settings.exposure_texture);
 
 	RD::Uniform u_glow_texture;
 	u_glow_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_glow_texture.binding = 0;
-	u_glow_texture.append_id(default_mipmap_shader);
+	u_glow_texture.append_id(default_mipmap_sampler);
 	u_glow_texture.append_id(p_settings.glow_texture);
 
 	RD::Uniform u_glow_map;
 	u_glow_map.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_glow_map.binding = 1;
-	u_glow_map.append_id(default_mipmap_shader);
+	u_glow_map.append_id(default_mipmap_sampler);
 	u_glow_map.append_id(p_settings.glow_map);
 
 	RD::Uniform u_color_correction_texture;
 	u_color_correction_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_color_correction_texture.binding = 0;
-	u_color_correction_texture.append_id(default_shader);
+	u_color_correction_texture.append_id(default_sampler);
 	u_color_correction_texture.append_id(p_settings.color_correction_texture);
 
 	RID shader = tonemap.shader.version_get_shader(tonemap.shader_version, mode);
@@ -233,8 +233,8 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.use_debanding = p_settings.use_debanding;
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
-	RID default_shader = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-	RID default_mipmap_shader = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::Uniform u_source_color;
 	u_source_color.uniform_type = RD::UNIFORM_TYPE_INPUT_ATTACHMENT;
@@ -244,25 +244,25 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	RD::Uniform u_exposure_texture;
 	u_exposure_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_exposure_texture.binding = 0;
-	u_exposure_texture.append_id(default_shader);
+	u_exposure_texture.append_id(default_sampler);
 	u_exposure_texture.append_id(p_settings.exposure_texture);
 
 	RD::Uniform u_glow_texture;
 	u_glow_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_glow_texture.binding = 0;
-	u_glow_texture.append_id(default_mipmap_shader);
+	u_glow_texture.append_id(default_mipmap_sampler);
 	u_glow_texture.append_id(p_settings.glow_texture);
 
 	RD::Uniform u_glow_map;
 	u_glow_map.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_glow_map.binding = 1;
-	u_glow_map.append_id(default_mipmap_shader);
+	u_glow_map.append_id(default_mipmap_sampler);
 	u_glow_map.append_id(p_settings.glow_map);
 
 	RD::Uniform u_color_correction_texture;
 	u_color_correction_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u_color_correction_texture.binding = 0;
-	u_color_correction_texture.append_id(default_shader);
+	u_color_correction_texture.append_id(default_sampler);
 	u_color_correction_texture.append_id(p_settings.color_correction_texture);
 
 	RID shader = tonemap.shader.version_get_shader(tonemap.shader_version, mode);

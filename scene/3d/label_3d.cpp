@@ -69,6 +69,12 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label3D::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label3D::is_uppercase);
 
+	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Label3D::set_render_priority);
+	ClassDB::bind_method(D_METHOD("get_render_priority"), &Label3D::get_render_priority);
+
+	ClassDB::bind_method(D_METHOD("set_outline_render_priority", "priority"), &Label3D::set_outline_render_priority);
+	ClassDB::bind_method(D_METHOD("get_outline_render_priority"), &Label3D::get_outline_render_priority);
+
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &Label3D::set_font);
 	ClassDB::bind_method(D_METHOD("get_font"), &Label3D::get_font);
 
@@ -126,6 +132,8 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -580,13 +588,13 @@ void Label3D::_shape() {
 			// Outline surfaces.
 			Vector2 ol_offset = offset;
 			for (int j = 0; j < gl_size; j++) {
-				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, -1, outline_size);
+				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, outline_size);
 			}
 		}
 
 		// Main text surfaces.
 		for (int j = 0; j < gl_size; j++) {
-			_generate_glyph_surfaces(glyphs[j], offset, modulate, 0);
+			_generate_glyph_surfaces(glyphs[j], offset, modulate, render_priority);
 		}
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM)) * pixel_size;
 	}
@@ -730,6 +738,30 @@ void Label3D::set_uppercase(bool p_uppercase) {
 
 bool Label3D::is_uppercase() const {
 	return uppercase;
+}
+
+void Label3D::set_render_priority(int p_priority) {
+	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	if (render_priority != p_priority) {
+		render_priority = p_priority;
+		_queue_update();
+	}
+}
+
+int Label3D::get_render_priority() const {
+	return render_priority;
+}
+
+void Label3D::set_outline_render_priority(int p_priority) {
+	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	if (outline_render_priority != p_priority) {
+		outline_render_priority = p_priority;
+		_queue_update();
+	}
+}
+
+int Label3D::get_outline_render_priority() const {
+	return outline_render_priority;
 }
 
 void Label3D::_font_changed() {
