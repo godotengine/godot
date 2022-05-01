@@ -116,6 +116,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	RID get_region_rid() const;
+
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
