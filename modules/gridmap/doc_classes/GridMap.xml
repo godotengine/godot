@@ -97,7 +97,7 @@
 			<return type="Vector3" />
 			<argument index="0" name="map_position" type="Vector3i" />
 			<description>
-				Returns the position of a grid cell in the GridMap's local coordinate space.
+				Returns the world position for the given grid cell coordinates.
 			</description>
 		</method>
 		<method name="resource_changed">
@@ -137,8 +137,7 @@
 			<return type="Vector3i" />
 			<argument index="0" name="world_position" type="Vector3" />
 			<description>
-				Returns the coordinates of the grid cell containing the given point.
-				[code]pos[/code] should be in the GridMap's local coordinate space.
+				Returns the grid coordinates of the grid cell located at the given world position.
 			</description>
 		</method>
 	</methods>
