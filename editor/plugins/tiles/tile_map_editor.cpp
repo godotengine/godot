@@ -76,7 +76,7 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 		picker_button->show();
 		erase_button->show();
 		tools_settings_vsep_2->show();
-		random_tile_checkbox->show();
+		random_tile_toggle->show();
 		scatter_label->show();
 		scatter_spinbox->show();
 	} else if (tool_buttons_group->get_pressed_button() == line_tool_button) {
@@ -84,7 +84,7 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 		picker_button->show();
 		erase_button->show();
 		tools_settings_vsep_2->show();
-		random_tile_checkbox->show();
+		random_tile_toggle->show();
 		scatter_label->show();
 		scatter_spinbox->show();
 	} else if (tool_buttons_group->get_pressed_button() == rect_tool_button) {
@@ -92,7 +92,7 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 		picker_button->show();
 		erase_button->show();
 		tools_settings_vsep_2->show();
-		random_tile_checkbox->show();
+		random_tile_toggle->show();
 		scatter_label->show();
 		scatter_spinbox->show();
 	} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button) {
@@ -101,7 +101,7 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 		erase_button->show();
 		tools_settings_vsep_2->show();
 		bucket_contiguous_checkbox->show();
-		random_tile_checkbox->show();
+		random_tile_toggle->show();
 		scatter_label->show();
 		scatter_spinbox->show();
 	}
@@ -461,6 +461,7 @@ void TileMapEditorTilesPlugin::_update_theme() {
 
 	picker_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 	erase_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
+	random_tile_toggle->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("RandomNumberGenerator"), SNAME("EditorIcons")));
 
 	missing_atlas_texture_icon = tiles_bottom_panel->get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
 }
@@ -870,7 +871,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				Transform2D tile_xform;
 				tile_xform.set_origin(tile_map->map_to_world(E.key));
 				tile_xform.set_scale(tile_set->get_tile_size());
-				if (!(drag_erasing || erase_button->is_pressed()) && random_tile_checkbox->is_pressed()) {
+				if (!(drag_erasing || erase_button->is_pressed()) && random_tile_toggle->is_pressed()) {
 					tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 				} else {
 					if (tile_set->has_source(E.value.source_id)) {
@@ -1001,7 +1002,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_
 	Map<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
 		// Paint the tiles on the tile map.
-		if (!p_erase && random_tile_checkbox->is_pressed()) {
+		if (!p_erase && random_tile_toggle->is_pressed()) {
 			// Paint a random tile.
 			Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(p_from_mouse_pos), tile_map->world_to_map(p_to_mouse_pos));
 			for (int i = 0; i < line.size(); i++) {
@@ -1061,7 +1062,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start
 
 	Map<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
-		if (!p_erase && random_tile_checkbox->is_pressed()) {
+		if (!p_erase && random_tile_toggle->is_pressed()) {
 			// Paint a random tile.
 			for (int x = 0; x < rect.size.x; x++) {
 				for (int y = 0; y < rect.size.y; y++) {
@@ -1134,7 +1135,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i 
 							source_cell.get_atlas_coords() == tile_map->get_cell_atlas_coords(tile_map_layer, coords) &&
 							source_cell.alternative_tile == tile_map->get_cell_alternative_tile(tile_map_layer, coords) &&
 							(source_cell.source_id != TileSet::INVALID_SOURCE || boundaries.has_point(coords))) {
-						if (!p_erase && random_tile_checkbox->is_pressed()) {
+						if (!p_erase && random_tile_toggle->is_pressed()) {
 							// Paint a random tile.
 							output.insert(coords, _pick_random_tile(pattern));
 						} else {
@@ -1180,7 +1181,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i 
 						source_cell.get_atlas_coords() == tile_map->get_cell_atlas_coords(tile_map_layer, coords) &&
 						source_cell.alternative_tile == tile_map->get_cell_alternative_tile(tile_map_layer, coords) &&
 						(source_cell.source_id != TileSet::INVALID_SOURCE || boundaries.has_point(coords))) {
-					if (!p_erase && random_tile_checkbox->is_pressed()) {
+					if (!p_erase && random_tile_toggle->is_pressed()) {
 						// Paint a random tile.
 						output.insert(coords, _pick_random_tile(pattern));
 					} else {
@@ -2103,11 +2104,12 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tools_settings->add_child(bucket_contiguous_checkbox);
 
 	// Random tile checkbox.
-	random_tile_checkbox = memnew(CheckBox);
-	random_tile_checkbox->set_flat(true);
-	random_tile_checkbox->set_text(TTR("Place Random Tile"));
-	random_tile_checkbox->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
-	tools_settings->add_child(random_tile_checkbox);
+	random_tile_toggle = memnew(Button);
+	random_tile_toggle->set_flat(true);
+	random_tile_toggle->set_toggle_mode(true);
+	random_tile_toggle->set_tooltip(TTR("Place Random Tile"));
+	random_tile_toggle->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
+	tools_settings->add_child(random_tile_toggle);
 
 	// Random tile scattering.
 	scatter_label = memnew(Label);
