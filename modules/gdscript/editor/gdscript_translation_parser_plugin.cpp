@@ -44,7 +44,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	// Search strings in AssignmentNode -> text = "__", hint_tooltip = "__" etc.
 
 	Error err;
-	RES loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	if (err) {
 		ERR_PRINT("Failed to load " + p_path);
 		return err;

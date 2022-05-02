@@ -148,7 +148,7 @@ MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
 	if (rc) {
-		REF r = rc;
+		Ref<RefCounted> r = rc;
 		if (!r.is_valid()) {
 			return nullptr;
 		}

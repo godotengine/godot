@@ -371,7 +371,7 @@ DisplayServer::CursorShape DisplayServerJavaScript::cursor_get_shape() const {
 	return cursor_shape;
 }
 
-void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerJavaScript::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;

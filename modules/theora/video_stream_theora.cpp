@@ -669,13 +669,13 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	VideoStreamTheora *stream = memnew(VideoStreamTheora);

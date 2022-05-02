@@ -195,7 +195,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
-			RES res = frames[j];
+			Ref<Resource> res = frames[j];
 			anim.frames.push_back(res);
 		}
 

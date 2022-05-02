@@ -467,7 +467,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		const PropertyInfo &pi = properties[i].first;
 		Variant &var = properties[i].second;
 
-		RES res = var;
+		Ref<Resource> res = var;
 
 		Array prop;
 		prop.push_back(pi.name);
@@ -529,7 +529,7 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 
 		if (pinfo.type == Variant::OBJECT) {
 			if (var.is_zero()) {
-				var = RES();
+				var = Ref<Resource>();
 			} else if (var.get_type() == Variant::OBJECT) {
 				if (((Object *)var)->is_class("EncodedObjectAsID")) {
 					var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
@@ -646,7 +646,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 }
 
 void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
-	RES r = ResourceLoader::load(p_value);
+	Ref<Resource> r = ResourceLoader::load(p_value);
 	if (!r.is_valid()) {
 		return;
 	}
@@ -701,7 +701,7 @@ void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant
 		return;
 	}
 
-	RES r = ResourceCache::get(resp);
+	Ref<Resource> r = ResourceCache::get(resp);
 	if (!r.is_valid()) {
 		return;
 	}
@@ -710,7 +710,7 @@ void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant
 }
 
 void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
-	RES r = ResourceLoader::load(p_value);
+	Ref<Resource> r = ResourceLoader::load(p_value);
 	if (!r.is_valid()) {
 		return;
 	}
@@ -728,7 +728,7 @@ void LiveEditor::_res_call_func(int p_id, const StringName &p_method, const Vari
 		return;
 	}
 
-	RES r = ResourceCache::get(resp);
+	Ref<Resource> r = ResourceCache::get(resp);
 	if (!r.is_valid()) {
 		return;
 	}

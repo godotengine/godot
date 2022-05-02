@@ -490,7 +490,7 @@ class EditorInspector : public ScrollContainer {
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
 
-	void _resource_selected(const String &p_path, RES p_resource);
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 

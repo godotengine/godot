@@ -80,7 +80,7 @@ private:
 	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
@@ -409,7 +409,7 @@ public:
 	};
 	virtual void cursor_set_shape(CursorShape p_shape);
 	virtual CursorShape cursor_get_shape() const;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	virtual bool get_swap_cancel_ok();
 

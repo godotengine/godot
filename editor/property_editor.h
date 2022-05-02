@@ -58,8 +58,8 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(String, _converts_to)
-	GDVIRTUAL1RC(bool, _handles, RES)
-	GDVIRTUAL1RC(RES, _convert, RES)
+	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
+	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
 
 public:
 	virtual String converts_to() const;

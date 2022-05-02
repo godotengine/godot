@@ -601,7 +601,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					}
 
 					if (Object::cast_to<RefCounted>(obj)) {
-						REF ref = REF(Object::cast_to<RefCounted>(obj));
+						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 						r_variant = ref;
 					} else {
 						r_variant = obj;

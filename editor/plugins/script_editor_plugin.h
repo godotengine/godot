@@ -53,7 +53,7 @@ class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
 
 private:
-	REF edited_resourse;
+	Ref<RefCounted> edited_resourse;
 
 protected:
 	static void _bind_methods();
@@ -65,8 +65,8 @@ public:
 	virtual String _get_name() const;
 	virtual Array _get_supported_languages() const;
 
-	void _set_edited_resource(const RES &p_res) { edited_resourse = p_res; }
-	REF _get_edited_resource() { return edited_resourse; }
+	void _set_edited_resource(const Ref<Resource> &p_res) { edited_resourse = p_res; }
+	Ref<RefCounted> _get_edited_resource() { return edited_resourse; }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const;
 };
@@ -136,9 +136,9 @@ public:
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
 	virtual void apply_code() = 0;
-	virtual RES get_edited_resource() const = 0;
+	virtual Ref<Resource> get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
-	virtual void set_edited_resource(const RES &p_res) = 0;
+	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
 	virtual void enable_editor() = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
@@ -179,7 +179,7 @@ public:
 	ScriptEditorBase() {}
 };
 
-typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
+typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
 
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
@@ -330,7 +330,7 @@ class ScriptEditor : public PanelContainer {
 	void _resave_scripts(const String &p_str);
 	void _reload_scripts();
 
-	bool _test_script_times_on_disk(RES p_for_script = Ref<Resource>());
+	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
 
 	void _add_recent_script(String p_path);
 	void _update_recent_scripts();
@@ -377,12 +377,12 @@ class ScriptEditor : public PanelContainer {
 	bool convert_indent_on_save;
 
 	void _goto_script_line2(int p_line);
-	void _goto_script_line(REF p_script, int p_line);
-	void _set_execution(REF p_script, int p_line);
-	void _clear_execution(REF p_script);
+	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
+	void _set_execution(Ref<RefCounted> p_script, int p_line);
+	void _clear_execution(Ref<RefCounted> p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _script_created(Ref<Script> p_script);
-	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
+	void _set_breakpoint(Ref<RefCounted> p_scrpt, int p_line, bool p_enabled);
 	void _clear_breakpoints();
 	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
@@ -481,12 +481,12 @@ public:
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
-	RES open_file(const String &p_file);
+	Ref<Resource> open_file(const String &p_file);
 
 	void ensure_select_current();
 
-	_FORCE_INLINE_ bool edit(const RES &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
-	bool edit(const RES &p_resource, int p_line, int p_col, bool p_grab_focus = true);
+	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
+	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
 	void get_breakpoints(List<String> *p_breakpoints);
 

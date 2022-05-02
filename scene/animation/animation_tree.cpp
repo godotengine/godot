@@ -570,7 +570,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			}
 
 			if (!track) {
-				RES resource;
+				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 

@@ -874,7 +874,7 @@ class PhysicsShapeQueryParameters3D : public RefCounted {
 
 	PhysicsDirectSpaceState3D::ShapeParameters parameters;
 
-	RES shape_ref;
+	Ref<Resource> shape_ref;
 
 protected:
 	static void _bind_methods();
@@ -882,8 +882,8 @@ protected:
 public:
 	const PhysicsDirectSpaceState3D::ShapeParameters &get_parameters() const { return parameters; }
 
-	void set_shape(const RES &p_shape_ref);
-	RES get_shape() const { return shape_ref; }
+	void set_shape(const Ref<Resource> &p_shape_ref);
+	Ref<Resource> get_shape() const { return shape_ref; }
 
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const { return parameters.shape_rid; }

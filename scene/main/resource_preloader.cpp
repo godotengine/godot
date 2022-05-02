@@ -41,7 +41,7 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 
 	for (int i = 0; i < resdata.size(); i++) {
 		String name = names[i];
-		RES resource = resdata[i];
+		Ref<Resource> resource = resdata[i];
 		ERR_CONTINUE(!resource.is_valid());
 		resources[name] = resource;
 
@@ -57,7 +57,7 @@ Array ResourcePreloader::_get_resources() const {
 
 	Set<String> sorted_names;
 
-	for (const KeyValue<StringName, RES> &E : resources) {
+	for (const KeyValue<StringName, Ref<Resource>> &E : resources) {
 		sorted_names.insert(E.key);
 	}
 
@@ -74,7 +74,7 @@ Array ResourcePreloader::_get_resources() const {
 	return res;
 }
 
-void ResourcePreloader::add_resource(const StringName &p_name, const RES &p_resource) {
+void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resource> &p_resource) {
 	ERR_FAIL_COND(p_resource.is_null());
 	if (resources.has(p_name)) {
 		StringName new_name;
@@ -104,7 +104,7 @@ void ResourcePreloader::remove_resource(const StringName &p_name) {
 void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
 	ERR_FAIL_COND(!resources.has(p_from_name));
 
-	RES res = resources[p_from_name];
+	Ref<Resource> res = resources[p_from_name];
 
 	resources.erase(p_from_name);
 	add_resource(p_to_name, res);
@@ -114,8 +114,8 @@ bool ResourcePreloader::has_resource(const StringName &p_name) const {
 	return resources.has(p_name);
 }
 
-RES ResourcePreloader::get_resource(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!resources.has(p_name), RES());
+Ref<Resource> ResourcePreloader::get_resource(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!resources.has(p_name), Ref<Resource>());
 	return resources[p_name];
 }
 
@@ -123,7 +123,7 @@ Vector<String> ResourcePreloader::_get_resource_list() const {
 	Vector<String> res;
 	res.resize(resources.size());
 	int i = 0;
-	for (Map<StringName, RES>::Element *E = resources.front(); E; E = E->next(), i++) {
+	for (Map<StringName, Ref<Resource>>::Element *E = resources.front(); E; E = E->next(), i++) {
 		res.set(i, E->key());
 	}
 
@@ -131,7 +131,7 @@ Vector<String> ResourcePreloader::_get_resource_list() const {
 }
 
 void ResourcePreloader::get_resource_list(List<StringName> *p_list) {
-	for (const KeyValue<StringName, RES> &E : resources) {
+	for (const KeyValue<StringName, Ref<Resource>> &E : resources) {
 		p_list->push_back(E.key);
 	}
 }

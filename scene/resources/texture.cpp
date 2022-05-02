@@ -1058,7 +1058,7 @@ CompressedTexture2D::~CompressedTexture2D() {
 	}
 }
 
-RES ResourceFormatLoaderCompressedTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderCompressedTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<CompressedTexture2D> st;
 	st.instantiate();
 	Error err = st->load(p_path);
@@ -1066,7 +1066,7 @@ RES ResourceFormatLoaderCompressedTexture2D::load(const String &p_path, const St
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return st;
@@ -1416,7 +1416,7 @@ CompressedTexture3D::~CompressedTexture3D() {
 
 /////////////////////////////
 
-RES ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<CompressedTexture3D> st;
 	st.instantiate();
 	Error err = st->load(p_path);
@@ -1424,7 +1424,7 @@ RES ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const St
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return st;
@@ -3243,7 +3243,7 @@ CompressedTextureLayered::~CompressedTextureLayered() {
 
 /////////////////////////////////////////////////
 
-RES ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<CompressedTextureLayered> ct;
 	if (p_path.get_extension().to_lower() == "ctexarray") {
 		Ref<CompressedTexture2DArray> c;
@@ -3261,14 +3261,14 @@ RES ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, con
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 	Error err = ct->load(p_path);
 	if (r_error) {
 		*r_error = err;
 	}
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return ct;

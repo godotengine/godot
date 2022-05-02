@@ -82,7 +82,7 @@ Variant GDScriptNativeClass::_new() {
 
 	RefCounted *rc = Object::cast_to<RefCounted>(o);
 	if (rc) {
-		return REF(rc);
+		return Ref<RefCounted>(rc);
 	} else {
 		return o;
 	}
@@ -195,7 +195,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
-	REF ref;
+	Ref<RefCounted> ref;
 	Object *owner = nullptr;
 
 	GDScript *_baseptr = this;
@@ -213,7 +213,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
-		ref = REF(r);
+		ref = Ref<RefCounted>(r);
 	}
 
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
@@ -2292,7 +2292,7 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -2353,7 +2353,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 }
 
-Error ResourceFormatSaverGDScript::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverGDScript::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	Ref<GDScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
@@ -2378,12 +2378,12 @@ Error ResourceFormatSaverGDScript::save(const String &p_path, const RES &p_resou
 	return OK;
 }
 
-void ResourceFormatSaverGDScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Object::cast_to<GDScript>(*p_resource)) {
 		p_extensions->push_back("gd");
 	}
 }
 
-bool ResourceFormatSaverGDScript::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverGDScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<GDScript>(*p_resource) != nullptr;
 }

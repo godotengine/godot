@@ -1476,7 +1476,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
-			RES r = p_var;
+			Ref<Resource> r = p_var;
 			if (!r.is_valid()) {
 				return;
 			}

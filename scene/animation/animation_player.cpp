@@ -284,7 +284,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 		p_anim->node_cache.write[i] = nullptr;
-		RES resource;
+		Ref<Resource> resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
 		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node

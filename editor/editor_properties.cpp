@@ -2974,7 +2974,7 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_edit) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
@@ -2996,7 +2996,7 @@ void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_ed
 	}
 }
 
-void EditorPropertyResource::_resource_changed(const RES &p_resource) {
+void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
 	if (get_edited_object() && s.is_valid()) {
@@ -3009,14 +3009,14 @@ void EditorPropertyResource::_resource_changed(const RES &p_resource) {
 		Resource *r = Object::cast_to<Resource>(get_edited_object());
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
-			emit_changed(get_edited_property(), RES());
+			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
 
 		if (r && !r->is_local_to_scene()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on this resource because it's not set as local to scene.\nPlease switch on the 'local to scene' property on it (and all resources containing it up to a node)."));
-			emit_changed(get_edited_property(), RES());
+			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
@@ -3051,7 +3051,7 @@ void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_prope
 	emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
 }
 
-void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
+void EditorPropertyResource::_sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property) {
 	emit_signal(SNAME("resource_selected"), String(get_edited_property()) + ":" + p_property, p_resource);
 }
 
@@ -3060,7 +3060,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 }
 
 void EditorPropertyResource::_open_editor_pressed() {
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
 		EditorNode::get_singleton()->call_deferred(SNAME("edit_item_resource"), res);
@@ -3072,7 +3072,7 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 		return;
 	}
 
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (!res.is_valid()) {
 		return;
 	}
@@ -3218,7 +3218,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 }
 
 void EditorPropertyResource::update_property() {
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {

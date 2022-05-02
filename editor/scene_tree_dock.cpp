@@ -1153,7 +1153,7 @@ void SceneTreeDock::_property_selected(int p_idx) {
 	property_drop_node = nullptr;
 }
 
-void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, RES p_res) {
+void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res) {
 	editor_data->get_undo_redo().create_action(vformat(TTR("Set %s"), p_property));
 	editor_data->get_undo_redo().add_do_property(p_node, p_property, p_res);
 	editor_data->get_undo_redo().add_undo_property(p_node, p_property, p_node->get(p_property));
@@ -3056,14 +3056,14 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	ur.create_action(TTR("Paste Node(s)"));
 	ur.add_do_method(editor_selection, "clear");
 
-	Map<RES, RES> resource_remap;
+	Map<Ref<Resource>, Ref<Resource>> resource_remap;
 	String target_scene;
 	if (edited_scene) {
 		target_scene = edited_scene->get_scene_file_path();
 	}
 	if (target_scene != clipboard_source_scene) {
 		if (!clipboard_resource_remap.has(target_scene)) {
-			Map<RES, RES> remap;
+			Map<Ref<Resource>, Ref<Resource>> remap;
 			for (Node *E : node_clipboard) {
 				_create_remap_for_node(E, remap);
 			}
@@ -3259,7 +3259,7 @@ void SceneTreeDock::_clear_clipboard() {
 	clipboard_resource_remap.clear();
 }
 
-void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap) {
+void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -3273,7 +3273,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 
 		Variant v = p_node->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (!states_stack_ready) {
 					states_stack = PropertyUtils::get_node_states_stack(p_node);
@@ -3298,7 +3298,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 	}
 }
 
-void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap) {
+void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
 	r_remap[p_resource] = p_resource->duplicate();
 
 	List<PropertyInfo> props;
@@ -3311,7 +3311,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 
 		Variant v = p_resource->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (res->is_built_in() && !r_remap.has(res)) {
 					_create_remap_for_resource(res, r_remap);

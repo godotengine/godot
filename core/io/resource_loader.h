@@ -61,7 +61,7 @@ protected:
 	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
 
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -85,7 +85,7 @@ typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
 
 typedef Error (*ResourceLoaderImport)(const String &p_path);
-typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
+typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
 	enum {
@@ -121,7 +121,7 @@ private:
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
 	// Internal load function.
-	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
+	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
 
@@ -138,7 +138,7 @@ private:
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
-		RES resource;
+		Ref<Resource> resource;
 		bool xl_remapped = false;
 		bool use_sub_threads = false;
 		bool start_next = true;
@@ -161,9 +161,9 @@ private:
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
-	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
+	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
-	static RES load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
+	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);

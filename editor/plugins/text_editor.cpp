@@ -89,11 +89,11 @@ Ref<Texture2D> TextEditor::get_theme_icon() {
 	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
 }
 
-RES TextEditor::get_edited_resource() const {
+Ref<Resource> TextEditor::get_edited_resource() const {
 	return text_file;
 }
 
-void TextEditor::set_edited_resource(const RES &p_res) {
+void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	ERR_FAIL_COND(text_file.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 
@@ -412,7 +412,7 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-static ScriptEditorBase *create_editor(const RES &p_resource) {
+static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}

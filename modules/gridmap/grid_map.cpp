@@ -797,7 +797,7 @@ void GridMap::clear() {
 	clear_baked_meshes();
 }
 
-void GridMap::resource_changed(const RES &p_res) {
+void GridMap::resource_changed(const Ref<Resource> &p_res) {
 	_recreate_octant_data();
 }
 

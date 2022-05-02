@@ -94,7 +94,7 @@ protected:
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
 		if (type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
-			RES res = p_value;
+			Ref<Resource> res = p_value;
 			if (res.is_valid()) {
 				gv["value"] = res->get_path();
 			} else {
