@@ -53,7 +53,7 @@ public:
 	// RasterizerCanvasGLES3 *canvas;
 	// RasterizerSceneGLES3 *scene;
 
-	GLES3::Config *config;
+	GLES3::Config *config = nullptr;
 
 	struct Resources {
 		GLuint mipmap_blur_fbo;

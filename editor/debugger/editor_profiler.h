@@ -106,18 +106,18 @@ private:
 	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
-	int total_metrics;
-	int last_metric;
+	int total_metrics = 0;
+	int last_metric = -1;
 
-	int max_functions;
+	int max_functions = 0;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
-	int hover_metric;
+	int hover_metric = -1;
 
-	float graph_height;
+	float graph_height = 1.0f;
 
-	bool seeking;
+	bool seeking = false;
 
 	Timer *frame_delay = nullptr;
 	Timer *plot_delay = nullptr;

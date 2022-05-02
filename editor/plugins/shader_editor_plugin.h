@@ -114,7 +114,7 @@ class ShaderEditor : public PanelContainer {
 	MenuButton *help_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle;
+	uint64_t idle = 0;
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;

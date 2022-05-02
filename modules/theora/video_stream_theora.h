@@ -99,7 +99,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	Ref<ImageTexture> texture;
 
-	AudioMixCallback mix_callback;
+	AudioMixCallback mix_callback = nullptr;
 	void *mix_udata = nullptr;
 	bool paused = false;
 

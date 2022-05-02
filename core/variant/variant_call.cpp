@@ -949,20 +949,20 @@ struct _VariantCall {
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 
 struct VariantBuiltInMethodInfo {
-	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error);
-	Variant::ValidatedBuiltInMethod validated_call;
-	Variant::PTRBuiltInMethod ptrcall;
+	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedBuiltInMethod validated_call = nullptr;
+	Variant::PTRBuiltInMethod ptrcall = nullptr;
 
 	Vector<Variant> default_arguments;
 	Vector<String> argument_names;
 
-	bool is_const;
-	bool is_static;
-	bool has_return_type;
-	bool is_vararg;
+	bool is_const = false;
+	bool is_static = false;
+	bool has_return_type = false;
+	bool is_vararg = false;
 	Variant::Type return_type;
-	int argument_count;
-	Variant::Type (*get_argument_type)(int p_arg);
+	int argument_count = 0;
+	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;

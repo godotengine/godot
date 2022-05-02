@@ -108,7 +108,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool restore_script_editor_on_drag = false;
 	bool reset_create_dialog = false;
 
-	int current_option;
+	int current_option = 0;
 	CreateDialog *create_dialog = nullptr;
 #ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog = nullptr;

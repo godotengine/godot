@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENEIMPORTSETTINGS_H
-#define SCENEIMPORTSETTINGS_H
+#ifndef SCENE_IMPORT_SETTINGS_H
+#define SCENE_IMPORT_SETTINGS_H
 
 #include "editor/import/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
@@ -86,9 +86,9 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Ref<StandardMaterial3D> collider_mat;
 
-	float cam_rot_x;
-	float cam_rot_y;
-	float cam_zoom;
+	float cam_rot_x = 0.0f;
+	float cam_rot_y = 0.0f;
+	float cam_zoom = 0.0f;
 
 	void _update_scene();
 
@@ -176,7 +176,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _menu_callback(int p_id);
 	void _save_dir_callback(const String &p_path);
 
-	int current_action;
+	int current_action = 0;
 
 	Vector<TreeItem *> save_path_items;
 
@@ -205,4 +205,4 @@ public:
 	~SceneImportSettings();
 };
 
-#endif // SCENEIMPORTSETTINGS_H
+#endif // SCENE_IMPORT_SETTINGS_H

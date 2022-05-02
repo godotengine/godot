@@ -47,8 +47,8 @@ class MeshLibraryEditor : public Control {
 	ConfirmationDialog *cd_remove = nullptr;
 	ConfirmationDialog *cd_update = nullptr;
 	EditorFileDialog *file = nullptr;
-	bool apply_xforms;
-	int to_erase;
+	bool apply_xforms = false;
+	int to_erase = 0;
 
 	enum {
 		MENU_OPTION_ADD_ITEM,
@@ -58,7 +58,7 @@ class MeshLibraryEditor : public Control {
 		MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS
 	};
 
-	int option;
+	int option = 0;
 	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
 	void _menu_remove_confirm();

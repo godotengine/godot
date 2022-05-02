@@ -1438,7 +1438,7 @@ Vector3 GodotConcavePolygonShape3D::get_moment_of_inertia(real_t p_mass) const {
 struct _Volume_BVH_Element {
 	AABB aabb;
 	Vector3 center;
-	int face_index;
+	int face_index = 0;
 };
 
 struct _Volume_BVH_CompareX {
@@ -1461,10 +1461,10 @@ struct _Volume_BVH_CompareZ {
 
 struct _Volume_BVH {
 	AABB aabb;
-	_Volume_BVH *left;
-	_Volume_BVH *right;
+	_Volume_BVH *left = nullptr;
+	_Volume_BVH *right = nullptr;
 
-	int face_index;
+	int face_index = 0;
 };
 
 _Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int &count) {

@@ -140,7 +140,7 @@ struct _ConcaveCollisionInfo2D {
 	Vector2 motion_B;
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
-	GodotCollisionSolver2D::CallbackResult result_callback;
+	GodotCollisionSolver2D::CallbackResult result_callback = nullptr;
 	void *userdata = nullptr;
 	bool swap_result = false;
 	bool collided = false;

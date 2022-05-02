@@ -657,10 +657,6 @@ void FindReplaceBar::_bind_methods() {
 }
 
 FindReplaceBar::FindReplaceBar() {
-	results_count = -1;
-	results_count_to_current = -1;
-	needs_to_count_results = true;
-
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
 	vbc_lineedit->set_alignment(BoxContainer::ALIGNMENT_CENTER);

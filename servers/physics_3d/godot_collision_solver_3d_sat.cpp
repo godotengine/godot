@@ -68,7 +68,7 @@
  *************************************************************************/
 
 struct _CollectorCallback {
-	GodotCollisionSolver3D::CallbackResult callback;
+	GodotCollisionSolver3D::CallbackResult callback = nullptr;
 	void *userdata = nullptr;
 	bool swap = false;
 	bool collided = false;

@@ -449,36 +449,36 @@ private:
 	bool orm;
 
 	Color albedo;
-	float specular;
-	float metallic;
-	float roughness;
+	float specular = 0.0f;
+	float metallic = 0.0f;
+	float roughness = 0.0f;
 	Color emission;
-	float emission_energy;
-	float normal_scale;
-	float rim;
-	float rim_tint;
-	float clearcoat;
-	float clearcoat_roughness;
-	float anisotropy;
-	float heightmap_scale;
-	float subsurface_scattering_strength;
-	float transmittance_amount;
+	float emission_energy = 0.0f;
+	float normal_scale = 0.0f;
+	float rim = 0.0f;
+	float rim_tint = 0.0f;
+	float clearcoat = 0.0f;
+	float clearcoat_roughness = 0.0f;
+	float anisotropy = 0.0f;
+	float heightmap_scale = 0.0f;
+	float subsurface_scattering_strength = 0.0f;
+	float transmittance_amount = 0.0f;
 	Color transmittance_color;
-	float transmittance_depth;
-	float transmittance_boost;
+	float transmittance_depth = 0.0f;
+	float transmittance_boost = 0.0f;
 
 	Color backlight;
-	float refraction;
-	float point_size;
-	float alpha_scissor_threshold;
-	float alpha_hash_scale;
-	float alpha_antialiasing_edge;
+	float refraction = 0.0f;
+	float point_size = 0.0f;
+	float alpha_scissor_threshold = 0.0f;
+	float alpha_hash_scale = 0.0f;
+	float alpha_antialiasing_edge = 0.0f;
 	bool grow_enabled = false;
-	float ao_light_affect;
-	float grow;
-	int particles_anim_h_frames;
-	int particles_anim_v_frames;
-	bool particles_anim_loop;
+	float ao_light_affect = 0.0f;
+	float grow = 0.0f;
+	int particles_anim_h_frames = 0;
+	int particles_anim_v_frames = 0;
+	bool particles_anim_loop = false;
 	Transparency transparency = TRANSPARENCY_DISABLED;
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
@@ -486,29 +486,29 @@ private:
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
-	float uv1_triplanar_sharpness;
+	float uv1_triplanar_sharpness = 0.0f;
 
 	Vector3 uv2_scale;
 	Vector3 uv2_offset;
-	float uv2_triplanar_sharpness;
+	float uv2_triplanar_sharpness = 0.0f;
 
 	DetailUV detail_uv = DETAIL_UV_1;
 
 	bool deep_parallax = false;
-	int deep_parallax_min_layers;
-	int deep_parallax_max_layers;
+	int deep_parallax_min_layers = 0;
+	int deep_parallax_max_layers = 0;
 	bool heightmap_parallax_flip_tangent = false;
 	bool heightmap_parallax_flip_binormal = false;
 
 	bool proximity_fade_enabled = false;
-	float proximity_fade_distance;
+	float proximity_fade_distance = 0.0f;
 
 	float msdf_pixel_range = 4.f;
 	float msdf_outline_size = 0.f;
 
 	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
-	float distance_fade_max_distance;
-	float distance_fade_min_distance;
+	float distance_fade_max_distance = 0.0f;
+	float distance_fade_min_distance = 0.0f;
 
 	BlendMode blend_mode = BLEND_MODE_MIX;
 	BlendMode detail_blend_mode = BLEND_MODE_MIX;

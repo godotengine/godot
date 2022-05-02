@@ -54,10 +54,10 @@ class AnimationTimelineEdit : public Range {
 
 	Ref<Animation> animation;
 	AnimationTrackEdit *track_edit = nullptr;
-	int name_limit;
+	int name_limit = 0;
 	Range *zoom = nullptr;
 	Range *h_scroll = nullptr;
-	float play_position_pos;
+	float play_position_pos = 0.0f;
 
 	HBoxContainer *len_hb = nullptr;
 	EditorSpinSlider *length = nullptr;
@@ -86,8 +86,8 @@ class AnimationTimelineEdit : public Range {
 
 	bool dragging_timeline = false;
 	bool dragging_hsize = false;
-	float dragging_hsize_from;
-	float dragging_hsize_at;
+	float dragging_hsize_from = 0.0f;
+	float dragging_hsize_at = 0.0f;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
@@ -145,17 +145,18 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE
 	};
+
 	AnimationTimelineEdit *timeline = nullptr;
 	UndoRedo *undo_redo = nullptr;
 	Popup *path_popup = nullptr;
 	LineEdit *path = nullptr;
 	Node *root = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos;
+	float play_position_pos = 0.0f;
 	NodePath node_path;
 
 	Ref<Animation> animation;
-	int track;
+	int track = 0;
 
 	Rect2 check_rect;
 	Rect2 path_rect;
@@ -187,12 +188,12 @@ class AnimationTrackEdit : public Control {
 
 	Ref<Texture2D> _get_key_type_icon() const;
 
-	mutable int dropping_at;
-	float insert_at_pos;
+	mutable int dropping_at = 0;
+	float insert_at_pos = 0.0f;
 	bool moving_selection_attempt = false;
-	int select_single_attempt;
+	int select_single_attempt = -1;
 	bool moving_selection = false;
-	float moving_selection_from_ofs;
+	float moving_selection_from_ofs = 0.0f;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -341,7 +342,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
 	SceneTreeDialog *pick_track = nullptr;
-	int adding_track_type;
+	int adding_track_type = 0;
 	NodePath adding_track_path;
 
 	bool keying = false;
@@ -353,7 +354,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Variant value;
 		String query;
 		bool advance = false;
-	}; /* insert_data;*/
+	};
 
 	Label *insert_confirm_text = nullptr;
 	CheckBox *insert_confirm_bezier = nullptr;
@@ -388,8 +389,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _timeline_value_changed(double);
 
-	float insert_key_from_track_call_ofs;
-	int insert_key_from_track_call_track;
+	float insert_key_from_track_call_ofs = 0.0f;
+	int insert_key_from_track_call_track = 0;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
@@ -415,7 +416,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _key_deselected(int p_key, int p_track);
 
 	bool moving_selection = false;
-	float moving_selection_offset;
+	float moving_selection_offset = 0.0f;
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
 	void _move_selection_commit();
@@ -459,7 +460,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt;
+	int last_menu_track_opt = 0;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 

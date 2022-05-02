@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 
 struct _CollectorCallback2D {
-	GodotCollisionSolver2D::CallbackResult callback;
+	GodotCollisionSolver2D::CallbackResult callback = nullptr;
 	void *userdata = nullptr;
 	bool swap = false;
 	bool collided = false;

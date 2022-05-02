@@ -68,7 +68,7 @@ enum DDSFormat {
 };
 
 struct DDSFormatInfo {
-	const char *name;
+	const char *name = nullptr;
 	bool compressed = false;
 	bool palette = false;
 	uint32_t divisor = 0;

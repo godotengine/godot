@@ -666,9 +666,6 @@ GPUParticles2D::GPUParticles2D() {
 	set_speed_scale(1);
 	set_fixed_fps(30);
 	set_collision_base_size(collision_base_size);
-#ifdef TOOLS_ENABLED
-	show_visibility_rect = false;
-#endif
 }
 
 GPUParticles2D::~GPUParticles2D() {

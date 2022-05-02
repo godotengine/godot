@@ -283,7 +283,7 @@ private:
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
-	int rendering_driver_current;
+	int rendering_driver_current = 0;
 	String rendering_driver_request;
 
 	// Split containers.
@@ -305,12 +305,12 @@ private:
 	PopupMenu *scene_tabs_context_menu = nullptr;
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
-	int tab_closing_idx;
+	int tab_closing_idx = 0;
 
 	bool exiting = false;
 	bool dimmed = false;
 
-	int old_split_ofs;
+	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
@@ -363,7 +363,7 @@ private:
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
 
-	int overridden_default_layout;
+	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
@@ -412,8 +412,8 @@ private:
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Timer *dock_drag_timer = nullptr;
 	bool docks_visible = true;
-	int dock_popup_selected_idx;
-	int dock_select_rect_over_idx;
+	int dock_popup_selected_idx = -1;
+	int dock_select_rect_over_idx = -1;
 
 	HBoxContainer *tabbar_container = nullptr;
 	Button *distraction_free = nullptr;
@@ -446,24 +446,24 @@ private:
 	bool unsaved_cache = true;
 	bool waiting_for_first_scan = true;
 
-	int current_menu_option;
+	int current_menu_option = 0;
 
 	SubViewport *scene_root = nullptr; // Root of the scene being edited.
 	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
 
-	uint64_t update_spinner_step_msec;
-	uint64_t update_spinner_step_frame;
-	int update_spinner_step;
+	uint64_t update_spinner_step_msec = 0;
+	uint64_t update_spinner_step_frame = 0;
+	int update_spinner_step = 0;
 
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
 	String run_custom_filename;
 
-	uint64_t saved_version;
-	uint64_t last_checked_version;
+	uint64_t saved_version = 1;
+	uint64_t last_checked_version = 0;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;

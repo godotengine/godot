@@ -141,7 +141,7 @@ private:
 	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
 
-	GLint max_image_units;
+	GLint max_image_units = 0;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,

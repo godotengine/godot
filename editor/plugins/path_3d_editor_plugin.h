@@ -84,7 +84,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _mode_changed(int p_idx);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
-	bool handle_clicked;
+	bool handle_clicked = false;
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
 

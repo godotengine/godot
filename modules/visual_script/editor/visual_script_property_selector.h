@@ -173,8 +173,8 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	Control *ui_service = nullptr;
 	Tree *results_tree = nullptr;
 	String term;
-	int search_flags;
-	int scope_flags;
+	int search_flags = 0;
+	int scope_flags = 0;
 
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;

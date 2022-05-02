@@ -60,9 +60,9 @@ class EditorAssetLibraryItem : public PanelContainer {
 	TextureRect *stars[5];
 	Label *price = nullptr;
 
-	int asset_id;
-	int category_id;
-	int author_id;
+	int asset_id = 0;
+	int category_id = 0;
+	int author_id = 0;
 
 	void _asset_clicked();
 	void _category_clicked();
@@ -102,7 +102,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id;
+	int asset_id = 0;
 	String download_url;
 	String title;
 	String sha256;
@@ -146,7 +146,7 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 
 	int prev_status;
 
-	int asset_id;
+	int asset_id = 0;
 
 	bool external_install;
 

@@ -104,7 +104,7 @@ class CustomPropertyEditor : public PopupPanel {
 	Variant::Type type;
 	Variant v;
 	List<String> field_names;
-	int hint;
+	int hint = 0;
 	String hint_text;
 	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
 	VBoxContainer *value_vbox = nullptr;
@@ -120,7 +120,7 @@ class CustomPropertyEditor : public PopupPanel {
 	ColorPicker *color_picker = nullptr;
 	TextEdit *text_edit = nullptr;
 	bool read_only = false;
-	bool picking_viewport;
+	bool picking_viewport = false;
 	GridContainer *checks20gc = nullptr;
 	CheckBox *checks20[20];
 	SpinBox *spinbox = nullptr;

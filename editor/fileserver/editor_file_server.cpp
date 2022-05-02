@@ -311,9 +311,6 @@ void EditorFileServer::stop() {
 
 EditorFileServer::EditorFileServer() {
 	server.instantiate();
-	quit = false;
-	active = false;
-	cmd = CMD_NONE;
 	thread.start(_thread_start, this);
 
 	EDITOR_DEF("filesystem/file_server/port", 6010);

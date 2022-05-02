@@ -104,9 +104,9 @@ private:
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
-	XrSystemId system_id;
+	XrSystemId system_id = 0;
 	String system_name;
-	uint32_t vendor_id;
+	uint32_t vendor_id = 0;
 	XrSystemTrackingProperties tracking_properties;
 	XrSession session = XR_NULL_HANDLE;
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;

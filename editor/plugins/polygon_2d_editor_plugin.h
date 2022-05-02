@@ -96,7 +96,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	SpinBox *bone_paint_radius = nullptr;
 	Label *bone_paint_radius_label = nullptr;
 	bool bone_painting;
-	int bone_painting_bone;
+	int bone_painting_bone = 0;
 	Vector<float> prev_weights;
 	Vector2 bone_paint_pos;
 	AcceptDialog *grid_settings = nullptr;
@@ -110,7 +110,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector<Vector2> uv_create_uv_prev;
 	Vector<Vector2> uv_create_poly_prev;
 	Vector<Color> uv_create_colors_prev;
-	int uv_create_prev_internal_vertices;
+	int uv_create_prev_internal_vertices = 0;
 	Array uv_create_bones_prev;
 	Array polygons_prev;
 

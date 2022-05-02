@@ -1214,7 +1214,6 @@ AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nu
 
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	singleton = this;
-	updating = false;
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
@@ -1347,12 +1346,4 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeStateMachineEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
-
-	over_node_what = -1;
-	dragging_selected_attempt = false;
-	connecting = false;
-
-	last_active = false;
-
-	error_time = 0;
 }

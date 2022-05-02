@@ -185,27 +185,27 @@ private:
 	 */
 	bool enabled_debug_report = false;
 
-	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
-	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
-	PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT;
-	PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT;
-	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
-	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
-	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
-	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
-	PFN_vkDebugReportMessageEXT DebugReportMessageEXT;
-	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
-	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
-	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
-	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
-	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
-	PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
-	PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
-	PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
-	PFN_vkQueuePresentKHR fpQueuePresentKHR;
-	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
-	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
+	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
+	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
+	PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT = nullptr;
+	PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
+	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
+	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
+	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
+	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
+	PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
+	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR = nullptr;
+	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR = nullptr;
+	PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR = nullptr;
+	PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR = nullptr;
+	PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR = nullptr;
+	PFN_vkQueuePresentKHR fpQueuePresentKHR = nullptr;
+	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE = nullptr;
+	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE = nullptr;
 
 	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;

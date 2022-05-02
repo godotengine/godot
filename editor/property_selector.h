@@ -50,7 +50,7 @@ class PropertySelector : public ConfirmationDialog {
 
 	EditorHelpBit *help_bit = nullptr;
 
-	bool properties;
+	bool properties = false;
 	String selected;
 	Variant::Type type;
 	String base_type;

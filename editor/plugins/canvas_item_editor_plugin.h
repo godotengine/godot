@@ -180,7 +180,7 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
-	bool selection_menu_additive_selection;
+	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
 	Control *viewport = nullptr;
@@ -204,20 +204,20 @@ private:
 	bool show_edit_locks = true;
 	bool show_transformation_gizmos = true;
 
-	real_t zoom;
+	real_t zoom = 1.0;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
 	bool selected_from_canvas = false;
 
 	Point2 grid_offset;
-	Point2 grid_step;
-	int primary_grid_steps;
-	int grid_step_multiplier;
+	Point2 grid_step = Point2(8, 8); // A power-of-two value works better as a default.
+	int primary_grid_steps = 8;
+	int grid_step_multiplier = 0;
 
-	real_t snap_rotation_step;
-	real_t snap_rotation_offset;
-	real_t snap_scale_step;
+	real_t snap_rotation_step = 0.0;
+	real_t snap_rotation_offset = Math::deg2rad(15.0);
+	real_t snap_scale_step = 0.1f;
 	bool smart_snap_active = false;
 	bool grid_snap_active = false;
 
@@ -241,7 +241,7 @@ private:
 	bool pan_pressed = false;
 
 	bool ruler_tool_active = false;
-	Point2 ruler_tool_origin = Point2();
+	Point2 ruler_tool_origin;
 	Point2 node_create_position;
 
 	MenuOption last_option;
@@ -346,7 +346,7 @@ private:
 	bool is_hovering_h_guide = false;
 	bool is_hovering_v_guide = false;
 
-	bool updating_value_dialog;
+	bool updating_value_dialog = false;
 
 	Point2 box_selecting_to;
 

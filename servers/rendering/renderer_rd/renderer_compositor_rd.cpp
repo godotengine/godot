@@ -286,7 +286,6 @@ RendererCompositorRD::RendererCompositorRD() {
 	}
 
 	singleton = this;
-	time = 0;
 
 	texture_storage = memnew(RendererRD::TextureStorage);
 	material_storage = memnew(RendererRD::MaterialStorage);

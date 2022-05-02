@@ -63,12 +63,12 @@ class EditorFileServer : public Object {
 	Mutex wait_mutex;
 	Thread thread;
 	static void _thread_start(void *);
-	bool quit;
-	Command cmd;
+	bool quit = false;
+	Command cmd = CMD_NONE;
 
 	String password;
-	int port;
-	bool active;
+	int port = 0;
+	bool active = false;
 
 public:
 	void start();

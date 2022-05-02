@@ -249,7 +249,7 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *debug_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 	Timer *autosave_timer = nullptr;
-	uint64_t idle;
+	uint64_t idle = 0;
 
 	PopupMenu *recent_scripts = nullptr;
 	PopupMenu *theme_submenu = nullptr;
