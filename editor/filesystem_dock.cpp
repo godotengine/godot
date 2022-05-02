@@ -2025,6 +2025,16 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_COPY_UID: {
+			if (!p_selected.is_empty()) {
+				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
+				if (uid != ResourceUID::INVALID_ID) {
+					String uid_string = ResourceUID::get_singleton()->id_to_text(uid);
+					DisplayServer::get_singleton()->clipboard_set(uid_string);
+				}
+			}
+		} break;
+
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
@@ -2550,6 +2560,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
+		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
+			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
+		}
 		if (p_paths[0] != "res://") {
 			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
 			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_DUPLICATE);
@@ -2771,6 +2784,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_DUPLICATE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
 			_tree_rmb_option(FILE_COPY_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
+			_tree_rmb_option(FILE_COPY_UID);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
@@ -2999,6 +3014,7 @@ FileSystemDock::FileSystemDock() {
 
 	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
