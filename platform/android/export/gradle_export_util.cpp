@@ -282,6 +282,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			"        tools:ignore=\"GoogleAppIndexingWarning\"\n"
 			"        android:icon=\"@mipmap/icon\" >\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n"
+			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_version_name\" />\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_metadata_name\" />\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_preset->get("package/classify_as_game")),
@@ -300,6 +301,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			manifest_application_text += vformat(
 					"        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.frequency\" android:value=\"%s\" />\n",
 					hand_tracking_frequency);
+			manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />\n";
 		}
 	} else {
 		manifest_application_text += "        <meta-data tools:node=\"remove\" android:name=\"com.oculus.supportedDevices\" />\n";

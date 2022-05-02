@@ -50,6 +50,13 @@
             android:name="xr_hand_tracking_metadata_name"
             android:value="xr_hand_tracking_metadata_value"/>
 
+        <!-- XR hand tracking version -->
+        <!-- This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
+        <!-- Removed at export time if the xr mode is not VR or hand tracking is disabled. -->
+        <meta-data
+            android:name="xr_hand_tracking_version_name"
+            android:value="xr_hand_tracking_version_value"/>
+
         <!-- Supported Meta devices -->
         <!-- This is removed by the exporter if the xr mode is not VR. -->
         <meta-data
