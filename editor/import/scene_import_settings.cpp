@@ -558,6 +558,8 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	node_map.clear();
 	defaults.clear();
 
+	mesh_preview->hide();
+
 	selected_id = "";
 	selected_type = "";
 
