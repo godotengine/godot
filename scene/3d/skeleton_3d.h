@@ -137,7 +137,7 @@ private:
 
 	bool animate_physical_bones = true;
 	Vector<Bone> bones;
-	bool process_order_dirty;
+	bool process_order_dirty = false;
 
 	Vector<int> parentless_bones;
 

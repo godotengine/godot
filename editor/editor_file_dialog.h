@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORFILEDIALOG_H
-#define EDITORFILEDIALOG_H
+#ifndef EDITOR_FILE_DIALOG_H
+#define EDITOR_FILE_DIALOG_H
 
 #include "core/io/dir_access.h"
 #include "editor/plugins/editor_preview_plugins.h"
@@ -88,11 +88,11 @@ private:
 	LineEdit *makedirname = nullptr;
 
 	Button *makedir = nullptr;
-	Access access;
+	Access access = ACCESS_RESOURCES;
 
 	VBoxContainer *vbox = nullptr;
-	FileMode mode;
-	bool can_create_dir;
+	FileMode mode = FILE_MODE_SAVE_FILE;
+	bool can_create_dir = false;
 	LineEdit *dir = nullptr;
 
 	Button *dir_prev = nullptr;
@@ -130,15 +130,15 @@ private:
 	ItemList *recent = nullptr;
 
 	Vector<String> local_history;
-	int local_history_pos;
+	int local_history_pos = 0;
 	void _push_history();
 
 	Vector<String> filters;
 
 	bool previews_enabled = true;
 	bool preview_waiting = false;
-	int preview_wheel_index;
-	float preview_wheel_timeout;
+	int preview_wheel_index = 0;
+	float preview_wheel_timeout = 0.0f;
 
 	static bool default_show_hidden_files;
 	static DisplayMode default_display_mode;
@@ -257,4 +257,4 @@ VARIANT_ENUM_CAST(EditorFileDialog::FileMode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
 
-#endif // EDITORFILEDIALOG_H
+#endif // EDITOR_FILE_DIALOG_H

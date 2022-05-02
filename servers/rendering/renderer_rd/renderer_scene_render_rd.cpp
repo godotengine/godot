@@ -3976,10 +3976,6 @@ RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_sour
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
 
-RendererSceneRenderRD::FogShaderData::FogShaderData() {
-	valid = false;
-}
-
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_COND(!scene_singleton);

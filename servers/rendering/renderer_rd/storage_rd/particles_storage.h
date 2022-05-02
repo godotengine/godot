@@ -341,16 +341,15 @@ private:
 	/* Particle Shader */
 
 	struct ParticlesShaderData : public ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 		bool uses_collision = false;
 
-		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
@@ -373,7 +372,7 @@ private:
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
-		ParticlesShaderData();
+		ParticlesShaderData() {}
 		virtual ~ParticlesShaderData();
 	};
 

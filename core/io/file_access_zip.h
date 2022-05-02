@@ -80,7 +80,7 @@ class FileAccessZip : public FileAccess {
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
-	mutable bool at_eof;
+	mutable bool at_eof = false;
 
 	void _close();
 

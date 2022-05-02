@@ -93,7 +93,7 @@ String VisualScriptYield::get_text() const {
 class VisualScriptNodeInstanceYield : public VisualScriptNodeInstance {
 public:
 	VisualScriptYield::YieldMode mode;
-	double wait_time;
+	double wait_time = 0.0;
 
 	virtual int get_working_memory_size() const override { return 1; } //yield needs at least 1
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -500,11 +500,11 @@ class VisualScriptNodeInstanceYieldSignal : public VisualScriptNodeInstance {
 public:
 	VisualScriptYieldSignal::CallMode call_mode;
 	NodePath node_path;
-	int output_args;
+	int output_args = 0;
 	StringName signal;
 
-	VisualScriptYieldSignal *node;
-	VisualScriptInstance *instance;
+	VisualScriptYieldSignal *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }

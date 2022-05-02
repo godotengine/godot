@@ -45,7 +45,7 @@ class PipelineCacheRD {
 	RD::PipelineMultisampleState multisample_state;
 	RD::PipelineDepthStencilState depth_stencil_state;
 	RD::PipelineColorBlendState blend_state;
-	int dynamic_state_flags;
+	int dynamic_state_flags = 0;
 	Vector<RD::PipelineSpecializationConstant> base_specialization_constants;
 
 	struct Version {

@@ -666,7 +666,7 @@ public:
 		face_pool.reset(true);
 	}
 
-	Vertex *vertex_list;
+	Vertex *vertex_list = nullptr;
 
 	void compute(const Vector3 *p_coords, int32_t p_count);
 

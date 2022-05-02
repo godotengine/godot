@@ -886,8 +886,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	DrawList *draw_list = nullptr; // One for regular draw lists, multiple for split.
 	uint32_t draw_list_subpass_count = 0;
 	uint32_t draw_list_count = 0;
-	VkRenderPass draw_list_render_pass;
-	VkFramebuffer draw_list_vkframebuffer;
+	VkRenderPass draw_list_render_pass = VK_NULL_HANDLE;
+	VkFramebuffer draw_list_vkframebuffer = VK_NULL_HANDLE;
 #ifdef DEBUG_ENABLED
 	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
 #endif

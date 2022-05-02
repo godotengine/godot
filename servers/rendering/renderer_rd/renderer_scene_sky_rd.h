@@ -106,7 +106,7 @@ private:
 	};
 
 	struct SkyShaderData : public RendererRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		PipelineCacheRD pipelines[SKY_VERSION_MAX];
@@ -114,17 +114,17 @@ private:
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
 		Map<StringName, Map<int, RID>> default_texture_params;
 
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
+		bool uses_time = false;
+		bool uses_position = false;
+		bool uses_half_res = false;
+		bool uses_quarter_res = false;
+		bool uses_light = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
@@ -135,7 +135,8 @@ private:
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		SkyShaderData();
+
+		SkyShaderData() {}
 		virtual ~SkyShaderData();
 	};
 

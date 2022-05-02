@@ -101,10 +101,10 @@ protected:
 	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
 	PackedByteArray vertex_buffer;
 	PackedByteArray attribute_buffer;
-	uint32_t vertex_stride;
-	uint32_t attrib_stride;
-	uint32_t skin_stride;
-	uint32_t mesh_surface_format;
+	uint32_t vertex_stride = 0;
+	uint32_t attrib_stride = 0;
+	uint32_t skin_stride = 0;
+	uint32_t mesh_surface_format = 0;
 
 	void _queue_update();
 

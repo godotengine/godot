@@ -31,11 +31,11 @@
 #include "variant_construct.h"
 
 struct VariantConstructData {
-	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error);
-	Variant::ValidatedConstructor validated_construct;
-	Variant::PTRConstructor ptr_construct;
-	Variant::Type (*get_argument_type)(int);
-	int argument_count;
+	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedConstructor validated_construct = nullptr;
+	Variant::PTRConstructor ptr_construct = nullptr;
+	Variant::Type (*get_argument_type)(int) = nullptr;
+	int argument_count = 0;
 	Vector<String> arg_names;
 };
 

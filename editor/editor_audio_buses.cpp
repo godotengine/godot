@@ -1263,7 +1263,6 @@ void EditorAudioBuses::_bind_methods() {
 }
 
 EditorAudioBuses::EditorAudioBuses() {
-	drop_end = nullptr;
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 

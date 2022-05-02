@@ -782,7 +782,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	graph = memnew(TextureRect);
 	graph->set_ignore_texture_size(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	//graph->set_ignore_mouse(false);
 	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
 	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
@@ -792,11 +791,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 1024);
 	frame_metrics.resize(metric_size);
-	last_metric = -1;
-	//cursor_metric=-1;
-	hover_metric = -1;
-
-	//display_mode=DISPLAY_FRAME_TIME;
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
@@ -809,12 +803,4 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
 	plot_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_plot));
-
-	seeking = false;
-	graph_height_cpu = 1;
-	graph_height_gpu = 1;
-
-	graph_limit = 1000 / 60.0;
-
-	//activate->set_disabled(true);
 }

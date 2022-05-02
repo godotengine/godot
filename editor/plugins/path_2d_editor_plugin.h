@@ -82,11 +82,11 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Action action;
-	int action_point;
+	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
-	float orig_in_length;
-	float orig_out_length;
+	float orig_in_length = 0.0f;
+	float orig_out_length = 0.0f;
 	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);

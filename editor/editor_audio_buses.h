@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORAUDIOBUSES_H
-#define EDITORAUDIOBUSES_H
+#ifndef EDITOR_AUDIO_BUSES_H
+#define EDITOR_AUDIO_BUSES_H
 
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -192,7 +192,7 @@ class EditorAudioBuses : public VBoxContainer {
 	void _new_layout();
 
 	EditorFileDialog *file_dialog = nullptr;
-	bool new_layout;
+	bool new_layout = false;
 
 	void _file_dialog_callback(const String &p_string);
 
@@ -275,4 +275,4 @@ public:
 	~AudioBusesEditorPlugin();
 };
 
-#endif // EDITORAUDIOBUSES_H
+#endif // EDITOR_AUDIO_BUSES_H

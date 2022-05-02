@@ -40,19 +40,19 @@ class ProceduralSkyMaterial : public Material {
 private:
 	Color sky_top_color;
 	Color sky_horizon_color;
-	float sky_curve;
-	float sky_energy;
+	float sky_curve = 0.0f;
+	float sky_energy = 0.0f;
 	Ref<Texture2D> sky_cover;
 	Color sky_cover_modulate;
 
 	Color ground_bottom_color;
 	Color ground_horizon_color;
-	float ground_curve;
-	float ground_energy;
+	float ground_curve = 0.0f;
+	float ground_energy = 0.0f;
 
-	float sun_angle_max;
-	float sun_curve;
-	float dither_strength;
+	float sun_angle_max = 0.0f;
+	float sun_curve = 0.0f;
+	float dither_strength = 0.0f;
 
 	static Mutex shader_mutex;
 	static RID shader;
@@ -158,16 +158,16 @@ private:
 	static Mutex shader_mutex;
 	static RID shader;
 
-	float rayleigh;
+	float rayleigh = 0.0f;
 	Color rayleigh_color;
-	float mie;
-	float mie_eccentricity;
+	float mie = 0.0f;
+	float mie_eccentricity = 0.0f;
 	Color mie_color;
-	float turbidity;
-	float sun_disk_scale;
+	float turbidity = 0.0f;
+	float sun_disk_scale = 0.0f;
 	Color ground_color;
-	float exposure;
-	float dither_strength;
+	float exposure = 0.0f;
+	float dither_strength = 0.0f;
 	Ref<Texture2D> night_sky;
 	static void _update_shader();
 	mutable bool shader_set = false;

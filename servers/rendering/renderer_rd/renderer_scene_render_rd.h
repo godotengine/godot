@@ -47,10 +47,10 @@
 #include "servers/rendering/rendering_device.h"
 
 struct RenderDataRD {
-	RID render_buffers = RID();
+	RID render_buffers;
 
-	Transform3D cam_transform = Transform3D();
-	CameraMatrix cam_projection = CameraMatrix();
+	Transform3D cam_transform;
+	CameraMatrix cam_projection;
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
@@ -67,18 +67,18 @@ struct RenderDataRD {
 	const PagedArray<RID> *decals = nullptr;
 	const PagedArray<RID> *lightmaps = nullptr;
 	const PagedArray<RID> *fog_volumes = nullptr;
-	RID environment = RID();
-	RID camera_effects = RID();
-	RID shadow_atlas = RID();
-	RID reflection_atlas = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_effects;
+	RID shadow_atlas;
+	RID reflection_atlas;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
-	Plane lod_camera_plane = Plane();
+	Plane lod_camera_plane;
 	float screen_mesh_lod_threshold = 0.0;
 
-	RID cluster_buffer = RID();
+	RID cluster_buffer;
 	uint32_t cluster_size = 0;
 	uint32_t cluster_max_elements = 0;
 
@@ -95,8 +95,8 @@ class RendererSceneRenderRD : public RendererSceneRender {
 protected:
 	RendererStorageRD *storage = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
-	double time;
-	double time_step = 0;
+	double time = 0.0;
+	double time_step = 0.0;
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
@@ -236,7 +236,7 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform3D transform;
-		uint32_t cull_mask;
+		uint32_t cull_mask = 0;
 		ForwardID forward_id = -1;
 	};
 
@@ -256,7 +256,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -268,27 +268,20 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0;
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				Shadow() {}
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
-
+			Quadrant() {}
 		} quadrants[4];
 
 		int size_order[4] = { 0, 1, 2, 3 };
@@ -337,7 +330,6 @@ private:
 		int size = 0;
 		bool use_16_bits = true;
 		int current_light = 0;
-
 	} directional_shadow;
 
 	void _update_directional_shadow_atlas();
@@ -910,7 +902,7 @@ private:
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
 	struct FogShaderData : public RendererRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		RID pipeline;
@@ -918,13 +910,13 @@ private:
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
 		Map<StringName, Map<int, RID>> default_texture_params;
 
-		bool uses_time;
+		bool uses_time = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
@@ -935,7 +927,8 @@ private:
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		FogShaderData();
+
+		FogShaderData() {}
 		virtual ~FogShaderData();
 	};
 

@@ -64,7 +64,7 @@ class RenameDialog : public ConfirmationDialog {
 
 	SceneTreeEditor *scene_tree_editor = nullptr;
 	UndoRedo *undo_redo = nullptr;
-	int global_count;
+	int global_count = 0;
 
 	LineEdit *lne_search = nullptr;
 	LineEdit *lne_replace = nullptr;
@@ -97,9 +97,9 @@ class RenameDialog : public ConfirmationDialog {
 
 	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node = nullptr;
-	bool lock_preview_update;
+	bool lock_preview_update = false;
 	ErrorHandlerList eh;
-	bool has_errors;
+	bool has_errors = false;
 
 protected:
 	static void _bind_methods();

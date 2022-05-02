@@ -1886,10 +1886,7 @@ void AnimationTimelineEdit::_bind_methods() {
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
 	name_limit = 150 * EDSCALE;
-	zoom = nullptr;
-	track_edit = nullptr;
 
-	play_position_pos = 0;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -3217,17 +3214,6 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
-	undo_redo = nullptr;
-	timeline = nullptr;
-	root = nullptr;
-	path = nullptr;
-	path_popup = nullptr;
-	menu = nullptr;
-	dropping_at = 0;
-
-	select_single_attempt = -1;
-
-	play_position_pos = 0;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -6238,8 +6224,6 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
-	root = nullptr;
-
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	main_panel = memnew(PanelContainer);
@@ -6452,8 +6436,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_reset->set_text(TTR("Create RESET Track(s)", ""));
 	insert_confirm_reset->set_pressed(EDITOR_GET("editors/animation/default_create_reset_tracks"));
 	ichb->add_child(insert_confirm_reset);
-	key_edit = nullptr;
-	multi_key_edit = nullptr;
 
 	box_selection = memnew(Control);
 	add_child(box_selection);

@@ -105,7 +105,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	EditorFileDialog *file_split_sheet = nullptr;
 	Set<int> frames_selected;
 	Set<int> frames_toggled_by_mouse_hover;
-	int last_frame_selected;
+	int last_frame_selected = 0;
 
 	float scale_ratio;
 	int thumbnail_default_size;

@@ -131,7 +131,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	EditorFileDialog *file_dialog = nullptr;
 
-	bool keyable;
+	bool keyable = false;
 
 	static Skeleton3DEditor *singleton;
 

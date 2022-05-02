@@ -74,7 +74,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	bool updating;
+	bool updating = false;
 
 	UndoRedo *undo_redo = nullptr;
 
@@ -93,14 +93,14 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Vector2 add_node_pos;
 
-	bool dragging_selected_attempt;
-	bool dragging_selected;
+	bool dragging_selected_attempt = false;
+	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 	StringName snap_x;
 	StringName snap_y;
 
-	bool connecting;
+	bool connecting = false;
 	StringName connecting_from;
 	Vector2 connecting_to;
 	StringName connecting_to_node;
@@ -139,7 +139,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName selected_transition_to;
 
 	StringName over_node;
-	int over_node_what;
+	int over_node_what = -1;
 
 	String prev_name;
 	void _name_edited(const String &p_text);
@@ -155,15 +155,15 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _autoplay_selected();
 	void _end_selected();
 
-	bool last_active;
+	bool last_active = false;
 	StringName last_blend_from_node;
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
-	float last_play_pos;
-	float play_pos;
-	float current_length;
+	float last_play_pos = 0.0f;
+	float play_pos = 0.0f;
+	float current_length = 0.0f;
 
-	float error_time;
+	float error_time = 0.0f;
 	String error_text;
 
 	EditorFileDialog *open_file = nullptr;

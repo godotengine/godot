@@ -108,8 +108,8 @@ private:
 		DRAG_TYPE_PAN,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
-	int drag_polygon_index;
-	int drag_point_index;
+	int drag_polygon_index = 0;
+	int drag_point_index = 0;
 	Vector2 drag_last_pos;
 	PackedVector2Array drag_old_polygon;
 
@@ -132,9 +132,9 @@ private:
 	Ref<Texture2D> background_texture;
 	Rect2 background_region;
 	Vector2 background_offset;
-	bool background_h_flip;
-	bool background_v_flip;
-	bool background_transpose;
+	bool background_h_flip = false;
+	bool background_v_flip = false;
+	bool background_transpose = false;
 	Color background_modulate;
 
 	Color polygon_color = Color(1.0, 0.0, 0.0);

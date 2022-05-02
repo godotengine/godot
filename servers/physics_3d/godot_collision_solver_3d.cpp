@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "godot_collision_solver_3d.h"
+
 #include "godot_collision_solver_3d_sat.h"
 #include "godot_soft_body_3d.h"
 
@@ -276,19 +277,20 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 }
 
 struct _ConcaveCollisionInfo {
-	const Transform3D *transform_A;
-	const GodotShape3D *shape_A;
-	const Transform3D *transform_B;
-	GodotCollisionSolver3D::CallbackResult result_callback;
-	void *userdata;
-	bool swap_result;
-	bool collided;
-	int aabb_tests;
-	int collisions;
-	bool tested;
-	real_t margin_A;
-	real_t margin_B;
-	Vector3 close_A, close_B;
+	const Transform3D *transform_A = nullptr;
+	const GodotShape3D *shape_A = nullptr;
+	const Transform3D *transform_B = nullptr;
+	GodotCollisionSolver3D::CallbackResult result_callback = nullptr;
+	void *userdata = nullptr;
+	bool swap_result = false;
+	bool collided = false;
+	int aabb_tests = 0;
+	int collisions = 0;
+	bool tested = false;
+	real_t margin_A = 0.0f;
+	real_t margin_B = 0.0f;
+	Vector3 close_A;
+	Vector3 close_B;
 };
 
 bool GodotCollisionSolver3D::concave_callback(void *p_userdata, GodotShape3D *p_convex) {

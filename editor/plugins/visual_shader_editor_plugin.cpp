@@ -5864,7 +5864,7 @@ public:
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
 	Ref<Resource> parent_resource;
-	int node_id;
+	int node_id = 0;
 	VisualShader::Type shader_type;
 
 public:
@@ -5927,7 +5927,7 @@ public:
 		InspectorDock::get_inspector_singleton()->edit(p_resource.ptr());
 	}
 
-	bool updating;
+	bool updating = false;
 	Ref<VisualShaderNode> node;
 	Vector<EditorProperty *> properties;
 	Vector<Label *> prop_names;

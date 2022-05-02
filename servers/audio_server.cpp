@@ -164,17 +164,6 @@ Array AudioDriver::capture_get_device_list() {
 	return list;
 }
 
-AudioDriver::AudioDriver() {
-	_last_mix_time = 0;
-	_last_mix_frames = 0;
-	input_position = 0;
-	input_size = 0;
-
-#ifdef DEBUG_ENABLED
-	prof_time = 0;
-#endif
-}
-
 AudioDriverDummy AudioDriverManager::dummy_driver;
 AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS] = {
 	&AudioDriverManager::dummy_driver,
@@ -1748,15 +1737,6 @@ void AudioServer::_bind_methods() {
 
 AudioServer::AudioServer() {
 	singleton = this;
-	mix_frames = 0;
-	channel_count = 0;
-	to_mix = 0;
-#ifdef DEBUG_ENABLED
-	prof_time = 0;
-#endif
-	mix_time = 0;
-	mix_size = 0;
-	playback_speed_scale = 1;
 }
 
 AudioServer::~AudioServer() {

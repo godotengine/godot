@@ -966,7 +966,6 @@ void AnimationTrackEditTypeAudio::_bind_methods() {
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
-	len_resizing = false;
 }
 
 bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Variant &p_data) const {

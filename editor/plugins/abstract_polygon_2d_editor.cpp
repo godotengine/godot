@@ -703,10 +703,8 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 }
 
 AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
-	canvas_item_editor = nullptr;
 	undo_redo = EditorNode::get_undo_redo();
 
-	wip_active = false;
 	edited_point = PosVertex();
 	wip_destructive = p_wip_destructive;
 
@@ -736,8 +734,6 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
 	create_resource->get_ok_button()->set_text(TTR("Create"));
-
-	mode = MODE_EDIT;
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {

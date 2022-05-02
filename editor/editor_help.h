@@ -56,7 +56,7 @@ class FindBar : public HBoxContainer {
 
 	RichTextLabel *rich_text_label = nullptr;
 
-	int results_count;
+	int results_count = 0;
 
 	void _hide_bar();
 
@@ -112,7 +112,7 @@ class EditorHelp : public VBoxContainer {
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
 	Map<String, Map<String, int>> enum_values_line;
-	int description_line;
+	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;

@@ -211,7 +211,7 @@ private:
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;
 	Camera3D *camera = nullptr;
-	bool transforming;
+	bool transforming = false;
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
@@ -271,7 +271,7 @@ private:
 
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
-	bool clicked_wants_append;
+	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu = nullptr;
@@ -551,12 +551,12 @@ private:
 
 	RID origin;
 	RID origin_instance;
-	bool origin_enabled;
+	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
 	bool grid_visible[3]; //currently visible
 	bool grid_enable[3]; //should be always visible if true
-	bool grid_enabled;
+	bool grid_enabled = false;
 	bool grid_init_draw = false;
 	Camera3D::Projection grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
 	Vector3 grid_camera_last_update_position = Vector3();

@@ -230,7 +230,6 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg = false;
-	bool filter;
 	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;

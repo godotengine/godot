@@ -50,11 +50,11 @@ class RendererCompositorRD : public RendererCompositor {
 protected:
 	UniformSetCacheRD *uniform_set_cache = nullptr;
 	RendererCanvasRenderRD *canvas = nullptr;
-	RendererRD::LightStorage *light_storage;
-	RendererRD::MaterialStorage *material_storage;
-	RendererRD::MeshStorage *mesh_storage;
-	RendererRD::ParticlesStorage *particles_storage;
-	RendererRD::TextureStorage *texture_storage;
+	RendererRD::LightStorage *light_storage = nullptr;
+	RendererRD::MaterialStorage *material_storage = nullptr;
+	RendererRD::MeshStorage *mesh_storage = nullptr;
+	RendererRD::ParticlesStorage *particles_storage = nullptr;
+	RendererRD::TextureStorage *texture_storage = nullptr;
 	RendererStorageRD *storage = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
@@ -92,8 +92,8 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
-	double time;
-	double delta;
+	double time = 0.0;
+	double delta = 0.0;
 
 	static uint64_t frame;
 

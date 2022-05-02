@@ -5909,7 +5909,6 @@ EditorNode::EditorNode() {
 	}
 
 	singleton = this;
-	last_checked_version = 0;
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.
@@ -6263,8 +6262,6 @@ EditorNode::EditorNode() {
 	dock_vb->add_child(dock_float);
 
 	dock_select_popup->reset_size();
-	dock_select_rect_over_idx = -1;
-	dock_popup_selected_idx = -1;
 
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		dock_slot[i]->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
@@ -6811,7 +6808,6 @@ EditorNode::EditorNode() {
 	// Define corresponding default layout.
 
 	const String docks_section = "docks";
-	overridden_default_layout = -1;
 	default_layout.instantiate();
 	// Dock numbers are based on DockSlot enum value + 1.
 	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
@@ -6889,8 +6885,6 @@ EditorNode::EditorNode() {
 	log = memnew(EditorLog);
 	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
 	log->set_tool_button(output_button);
-
-	old_split_ofs = 0;
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
 
@@ -7157,7 +7151,6 @@ EditorNode::EditorNode() {
 	}
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
 	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
-	update_spinner_step = 0;
 
 	editor_plugin_screen = nullptr;
 	editor_plugins_over = memnew(EditorPluginList);
@@ -7190,9 +7183,6 @@ EditorNode::EditorNode() {
 	open_imported->connect("confirmed", callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);
-
-	saved_version = 1;
-	_last_instantiated_scene = nullptr;
 
 	quick_open = memnew(EditorQuickOpen);
 	gui_base->add_child(quick_open);

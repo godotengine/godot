@@ -84,10 +84,10 @@ class FindReplaceBar : public HBoxContainer {
 
 	uint32_t flags = 0;
 
-	int result_line;
-	int result_col;
-	int results_count;
-	int results_count_to_current;
+	int result_line = 0;
+	int result_col = 0;
+	int results_count = -1;
+	int results_count_to_current = -1;
 
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
