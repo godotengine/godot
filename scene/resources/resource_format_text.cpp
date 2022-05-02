@@ -890,19 +890,12 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		fw->store_8(c);
 		c = f->get_8();
 	}
-	f.unref();
 
 	bool all_ok = fw->get_error() == OK;
 
 	if (!all_ok) {
 		return ERR_CANT_CREATE;
 	}
-
-	fw.unref();
-
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	da->remove(p_path);
-	da->rename(p_path + ".depren", p_path);
 
 	return OK;
 }
@@ -1439,15 +1432,26 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 }
 
 Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	if (f.is_null()) {
-		ERR_FAIL_V(ERR_CANT_OPEN);
+	Error err = OK;
+	{
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+		if (f.is_null()) {
+			ERR_FAIL_V(ERR_CANT_OPEN);
+		}
+
+		ResourceLoaderText loader;
+		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+		loader.res_path = loader.local_path;
+		err = loader.rename_dependencies(f, p_path, p_map);
 	}
 
-	ResourceLoaderText loader;
-	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-	loader.res_path = loader.local_path;
-	return loader.rename_dependencies(f, p_path, p_map);
+	if (err == OK) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		da->remove(p_path);
+		da->rename(p_path + ".depren", p_path);
+	}
+
+	return err;
 }
 
 ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
