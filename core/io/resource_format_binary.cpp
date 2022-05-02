@@ -1287,6 +1287,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		fw->store_8(b);
 		b = f->get_8();
 	}
+	f.unref();
 
 	bool all_ok = fw->get_error() == OK;
 
