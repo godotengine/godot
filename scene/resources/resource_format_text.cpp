@@ -1198,9 +1198,12 @@ void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &
 		return;
 	}
 
-	if (p_type == "PackedScene") {
+	if (ClassDB::is_parent_class("PackedScene", p_type)) {
 		p_extensions->push_back("tscn");
-	} else {
+	}
+
+	// Don't allow .tres for PackedScenes.
+	if (p_type != "PackedScene") {
 		p_extensions->push_back("tres");
 	}
 }
