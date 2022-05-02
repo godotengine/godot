@@ -716,7 +716,7 @@ private:
 protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const override;
-	Transform2D _stretch_transform();
+	Transform2D _stretch_transform(const Size2i &p_size, const Size2i &p_view_size_2d_override);
 	void _notification(int p_what);
 
 public:

@@ -3922,7 +3922,7 @@ Viewport::~Viewport() {
 /////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
-	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(p_size, _get_size_2d_override()), true);
 
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
@@ -3935,7 +3935,7 @@ Size2i SubViewport::get_size() const {
 }
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
-	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(), true);
+	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(_get_size(), p_size), true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
@@ -3948,7 +3948,7 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 	}
 
 	size_2d_override_stretch = p_enable;
-	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), _stretch_transform(_get_size(), _get_size_2d_override()), true);
 }
 
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
@@ -3977,14 +3977,11 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 	return DisplayServer::INVALID_WINDOW_ID;
 }
 
-Transform2D SubViewport::_stretch_transform() {
+Transform2D SubViewport::_stretch_transform(const Size2i &p_size, const Size2i &p_view_size_2d_override) {
 	Transform2D transform = Transform2D();
-	Size2i view_size_2d_override = _get_size_2d_override();
-	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
-		Size2 scale = _get_size() / view_size_2d_override;
-		transform.scale(scale);
+	if (size_2d_override_stretch && p_view_size_2d_override.width > 0 && p_view_size_2d_override.height > 0) {
+		transform.scale(Vector2(p_size) / p_view_size_2d_override);
 	}
-
 	return transform;
 }
 
