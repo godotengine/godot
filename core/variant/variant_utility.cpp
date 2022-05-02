@@ -560,6 +560,22 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
+	static inline void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		String s;
+		for (int i = 0; i < p_arg_count; i++) {
+			String os = p_args[i]->operator String();
+
+			if (i == 0) {
+				s = os;
+			} else {
+				s += os;
+			}
+		}
+
+		print_line_rich(s);
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			String s;
@@ -1306,6 +1322,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);

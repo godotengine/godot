@@ -657,6 +657,16 @@
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
+		<method name="print_rich" qualifiers="vararg">
+			<description>
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+				[codeblock]
+				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
+				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
 		<method name="print_verbose" qualifiers="vararg">
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.

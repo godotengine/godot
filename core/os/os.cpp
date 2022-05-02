@@ -100,6 +100,21 @@ void OS::print(const char *p_format, ...) {
 	va_end(argp);
 }
 
+void OS::print_rich(const char *p_format, ...) {
+	if (!_stdout_enabled) {
+		return;
+	}
+
+	va_list argp;
+	va_start(argp, p_format);
+
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
+
+	va_end(argp);
+}
+
 void OS::printerr(const char *p_format, ...) {
 	if (!_stderr_enabled) {
 		return;

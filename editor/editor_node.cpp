@@ -5829,9 +5829,15 @@ static Node *_resource_get_edited_scene() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
+void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	EditorNode *en = static_cast<EditorNode *>(p_this);
-	en->log->add_message(p_string, p_error ? EditorLog::MSG_TYPE_ERROR : EditorLog::MSG_TYPE_STD);
+	if (p_error) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
+	} else if (p_rich) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD_RICH);
+	} else {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
+	}
 }
 
 static void _execute_thread(void *p_ud) {
