@@ -195,8 +195,6 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	Color bgcolor = RSG::storage->get_default_clear_color();
-
 	if (!p_viewport->disable_2d && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
@@ -207,15 +205,6 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;
 
-	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
-		if (p_viewport->transparent_bg) {
-			bgcolor = Color(0, 0, 0, 0);
-		}
-		if (p_viewport->clear_mode == RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
-			p_viewport->clear_mode = RS::VIEWPORT_CLEAR_NEVER;
-		}
-	}
-
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene->render_buffers_create();
@@ -223,7 +212,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::storage->get_default_clear_color();
+
+	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
+		RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+		if (p_viewport->clear_mode == RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
+			p_viewport->clear_mode = RS::VIEWPORT_CLEAR_NEVER;
+		}
+	}
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
 		_draw_3d(p_viewport);
