@@ -228,6 +228,8 @@ public:
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
+	virtual Array get_display_cutouts() const { return Array(); }
+
 	enum {
 		SCREEN_OF_MAIN_WINDOW = -1
 	};

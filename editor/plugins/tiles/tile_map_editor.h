@@ -92,7 +92,7 @@ private:
 
 	VSeparator *tools_settings_vsep_2 = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
-	CheckBox *random_tile_checkbox = nullptr;
+	Button *random_tile_toggle = nullptr;
 	float scattering = 0.0;
 	Label *scatter_label = nullptr;
 	SpinBox *scatter_spinbox = nullptr;

@@ -144,6 +144,15 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 	return sun_curve;
 }
 
+void ProceduralSkyMaterial::set_dither_strength(float p_dither_strength) {
+	dither_strength = p_dither_strength;
+	RS::get_singleton()->material_set_param(_get_material(), "dither_strength", dither_strength);
+}
+
+float ProceduralSkyMaterial::get_dither_strength() const {
+	return dither_strength;
+}
+
 Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -199,6 +208,9 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sun_curve", "curve"), &ProceduralSkyMaterial::set_sun_curve);
 	ClassDB::bind_method(D_METHOD("get_sun_curve"), &ProceduralSkyMaterial::get_sun_curve);
 
+	ClassDB::bind_method(D_METHOD("set_dither_strength", "strength"), &ProceduralSkyMaterial::set_dither_strength);
+	ClassDB::bind_method(D_METHOD("get_dither_strength"), &ProceduralSkyMaterial::get_dither_strength);
+
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_top_color", "get_sky_top_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_horizon_color", "get_sky_horizon_color");
@@ -216,6 +228,9 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_GROUP("Sun", "sun_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
+
+	ADD_GROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dither_strength", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_dither_strength", "get_dither_strength");
 }
 
 void ProceduralSkyMaterial::cleanup_shader() {
@@ -247,6 +262,14 @@ uniform float ground_curve : hint_range(0, 1) = 0.02;
 uniform float ground_energy = 1.0;
 uniform float sun_angle_max = 30.0;
 uniform float sun_curve : hint_range(0, 1) = 0.15;
+uniform float dither_strength : hint_range(0, 10) = 1.0;
+
+// From: https://www.shadertoy.com/view/4sfGzS credit to iq
+float hash(vec3 p) {
+	p  = fract( p * 0.3183099 + 0.1 );
+	p *= 17.0;
+	return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
 
 void sky() {
 	float v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));
@@ -302,6 +325,9 @@ void sky() {
 	ground *= ground_energy;
 
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
+
+	// Make optional, eliminates banding.
+	COLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.016 * dither_strength;
 }
 )");
 	}
@@ -322,6 +348,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 
 	set_sun_angle_max(30.0);
 	set_sun_curve(0.15);
+	set_dither_strength(1.0);
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {

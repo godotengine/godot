@@ -31,6 +31,8 @@
 #include "noise.h"
 
 Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt) const {
+	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0, Ref<Image>());
+
 	int skirt_width = p_width * p_blend_skirt;
 	int skirt_height = p_height * p_blend_skirt;
 	int src_width = p_width + skirt_width;
@@ -55,6 +57,8 @@ uint8_t Noise::_alpha_blend<uint8_t>(uint8_t p_bg, uint8_t p_fg, int p_alpha) co
 }
 
 Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space) const {
+	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0, Ref<Image>());
+
 	Vector<uint8_t> data;
 	data.resize(p_width * p_height);
 

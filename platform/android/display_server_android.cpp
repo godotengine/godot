@@ -136,6 +136,12 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
+Array DisplayServerAndroid::get_display_cutouts() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, Array());
+	return godot_io_java->get_display_cutouts();
+}
+
 void DisplayServerAndroid::screen_set_keep_on(bool p_enable) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_COND(!godot_java);
