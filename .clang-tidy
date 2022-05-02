@@ -1,7 +1,7 @@
 ---
-Checks: 'clang-diagnostic-*,clang-analyzer-*,-*,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr,readability-braces-around-statements,readability-redundant-member-init'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr,readability-braces-around-statements'
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: none
 CheckOptions:

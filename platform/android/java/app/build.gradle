@@ -127,7 +127,7 @@ android {
                 storeFile new File(getDebugKeystoreFile())
                 storePassword getDebugKeystorePassword()
                 keyAlias getDebugKeyAlias()
-                keyPassword getDebugKeystorePassword()
+                keyPassword getDebugAliasPassword()
             }
         }
 
@@ -137,7 +137,7 @@ android {
                 storeFile keystoreFile
                 storePassword getReleaseKeystorePassword()
                 keyAlias getReleaseKeyAlias()
-                keyPassword getReleaseKeystorePassword()
+                keyPassword getReleaseAliasPassword()
             }
         }
     }

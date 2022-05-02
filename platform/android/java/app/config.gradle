@@ -289,6 +289,14 @@ ext.getDebugKeyAlias = { ->
     return keyAlias
 }
 
+ext.getDebugAliasPassword = { ->
+    String keyAliasPassword = project.hasProperty("debug_keystore_alias_password") ? project.property("debug_keystore_alias_password") : ""
+    if (keyAliasPassword == null || keyAliasPassword.isEmpty()) {
+        keyAliasPassword = getDebugKeystorePassword()
+    }
+    return keyAliasPassword
+}
+
 ext.getReleaseKeystoreFile = { ->
     String keystoreFile = project.hasProperty("release_keystore_file") ? project.property("release_keystore_file") : ""
     if (keystoreFile == null || keystoreFile.isEmpty()) {
@@ -305,6 +313,14 @@ ext.getReleaseKeystorePassword = { ->
 ext.getReleaseKeyAlias = { ->
     String keyAlias = project.hasProperty("release_keystore_alias") ? project.property("release_keystore_alias") : ""
     return keyAlias
+}
+
+ext.getReleaseAliasPassword = { ->
+    String keyAliasPassword = project.hasProperty("release_keystore_alias_password") ? project.property("release_keystore_alias_password") : ""
+    if (keyAliasPassword == null || keyAliasPassword.isEmpty()) {
+        keyAliasPassword = getDebugKeystorePassword()
+    }
+    return keyAliasPassword
 }
 
 ext.isAndroidStudio = { ->
