@@ -87,6 +87,7 @@
 			<argument index="0" name="action" type="String" />
 			<description>
 				Returns an array of [InputEvent]s associated with a given action.
+				[b]Note:[/b] When used in the editor (e.g. a tool script or [EditorPlugin]), this method will return events for the editor action. If you want to access your project's input binds from the editor, read the [code]input/*[/code] settings from [ProjectSettings].
 			</description>
 		</method>
 		<method name="get_actions">
