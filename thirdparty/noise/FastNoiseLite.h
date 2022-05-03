@@ -1611,6 +1611,12 @@ private:
         }
     }
 
+// GCC raises warnings when integer overflows occur, which are needed for hashing here.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
+#endif
+
     template <typename FNfloat>
     float SingleCellular(int seed, FNfloat x, FNfloat y, FNfloat z) const
     {
@@ -1765,6 +1771,9 @@ private:
         }
     }
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     // Perlin Noise
 
