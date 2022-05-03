@@ -370,6 +370,36 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		state_machine_draw->update();
 	}
 
+	// Move mouse while moving box select
+	if (mm.is_valid() && box_selecting) {
+		box_selecting_to = state_machine_draw->get_local_mouse_position();
+
+		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
+				MIN(box_selecting_from.y, box_selecting_to.y),
+				ABS(box_selecting_from.x - box_selecting_to.x),
+				ABS(box_selecting_from.y - box_selecting_to.y));
+
+		for (int i = 0; i < node_rects.size(); i++) {
+			bool in_box = node_rects[i].node.intersects(box_selecting_rect);
+
+			if (in_box) {
+				if (previous_selected.has(node_rects[i].node_name)) {
+					selected_nodes.erase(node_rects[i].node_name);
+				} else {
+					selected_nodes.insert(node_rects[i].node_name);
+				}
+			} else {
+				if (previous_selected.has(node_rects[i].node_name)) {
+					selected_nodes.insert(node_rects[i].node_name);
+				} else {
+					selected_nodes.erase(node_rects[i].node_name);
+				}
+			}
+		}
+
+		state_machine_draw->update();
+	}
+
 	if (mm.is_valid()) {
 		state_machine_draw->grab_focus();
 
