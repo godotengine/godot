@@ -17,7 +17,7 @@
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="12">
 			Number of vertical slices for the sphere.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			Radius of the sphere.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="6">
