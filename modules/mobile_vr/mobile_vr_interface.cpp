@@ -175,9 +175,9 @@ void MobileVRInterface::set_position_from_sensors() {
 	if (has_gyro) {
 		// start with applying our gyro (do NOT smooth our gyro!)
 		Basis rotate;
-		rotate.rotate(orientation.get_axis(0), gyro.x * delta_time);
-		rotate.rotate(orientation.get_axis(1), gyro.y * delta_time);
-		rotate.rotate(orientation.get_axis(2), gyro.z * delta_time);
+		rotate.rotate(orientation.get_column(0), gyro.x * delta_time);
+		rotate.rotate(orientation.get_column(1), gyro.y * delta_time);
+		rotate.rotate(orientation.get_column(2), gyro.z * delta_time);
 		orientation = rotate * orientation;
 
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;

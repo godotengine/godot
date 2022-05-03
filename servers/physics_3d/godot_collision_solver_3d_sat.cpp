@@ -792,7 +792,7 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 	// test faces
 
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_b.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_b.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -819,7 +819,7 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 	// test edges
 
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = point_axis.cross(p_transform_b.basis.get_axis(i)).cross(p_transform_b.basis.get_axis(i)).normalized();
+		Vector3 axis = point_axis.cross(p_transform_b.basis.get_column(i)).cross(p_transform_b.basis.get_column(i)).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -842,7 +842,7 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 
 	//capsule sphere 1, sphere
 
-	Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
+	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 	Vector3 capsule_ball_1 = p_transform_b.origin + capsule_axis;
 
@@ -883,7 +883,7 @@ static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3
 	}
 
 	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1).normalized();
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
 	if (!separator.test_axis(cylinder_B_axis)) {
 		return;
 	}
@@ -897,8 +897,8 @@ static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3
 
 	// Closest point to cylinder caps.
 	const Vector3 &sphere_center = p_transform_a.origin;
-	Vector3 cyl_axis = p_transform_b.basis.get_axis(1);
-	Vector3 cap_axis = p_transform_b.basis.get_axis(0);
+	Vector3 cyl_axis = p_transform_b.basis.get_column(1);
+	Vector3 cap_axis = p_transform_b.basis.get_column(0);
 	real_t height_scale = cyl_axis.length();
 	real_t cap_dist = cylinder_B->get_height() * 0.5 * height_scale;
 	cyl_axis /= height_scale;
@@ -1063,7 +1063,7 @@ static void _collision_box_box(const GodotShape3D *p_a, const Transform3D &p_tra
 	// test faces of A
 
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1073,7 +1073,7 @@ static void _collision_box_box(const GodotShape3D *p_a, const Transform3D &p_tra
 	// test faces of B
 
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_b.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_b.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1083,7 +1083,7 @@ static void _collision_box_box(const GodotShape3D *p_a, const Transform3D &p_tra
 	// test combined edges
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			Vector3 axis = p_transform_a.basis.get_axis(i).cross(p_transform_b.basis.get_axis(j));
+			Vector3 axis = p_transform_a.basis.get_column(i).cross(p_transform_b.basis.get_column(j));
 
 			if (Math::is_zero_approx(axis.length_squared())) {
 				continue;
@@ -1129,14 +1129,14 @@ static void _collision_box_box(const GodotShape3D *p_a, const Transform3D &p_tra
 
 		for (int i = 0; i < 3; i++) {
 			//a ->b
-			Vector3 axis_a = p_transform_a.basis.get_axis(i);
+			Vector3 axis_a = p_transform_a.basis.get_column(i);
 
 			if (!separator.test_axis(axis_ab.cross(axis_a).cross(axis_a).normalized())) {
 				return;
 			}
 
 			//b ->a
-			Vector3 axis_b = p_transform_b.basis.get_axis(i);
+			Vector3 axis_b = p_transform_b.basis.get_column(i);
 
 			if (!separator.test_axis(axis_ab.cross(axis_b).cross(axis_b).normalized())) {
 				return;
@@ -1160,20 +1160,20 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
 
-	Vector3 cyl_axis = p_transform_b.basis.get_axis(1).normalized();
+	Vector3 cyl_axis = p_transform_b.basis.get_column(1).normalized();
 
 	// edges of A, capsule cylinder
 
 	for (int i = 0; i < 3; i++) {
 		// cylinder
-		Vector3 box_axis = p_transform_a.basis.get_axis(i);
+		Vector3 box_axis = p_transform_a.basis.get_column(i);
 		Vector3 axis = box_axis.cross(cyl_axis);
 		if (Math::is_zero_approx(axis.length_squared())) {
 			continue;
@@ -1196,7 +1196,7 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 				he.z *= (k * 2 - 1);
 				Vector3 point = p_transform_a.origin;
 				for (int l = 0; l < 3; l++) {
-					point += p_transform_a.basis.get_axis(l) * he[l];
+					point += p_transform_a.basis.get_column(l) * he[l];
 				}
 
 				//Vector3 axis = (point - cyl_axis * cyl_axis.dot(point)).normalized();
@@ -1212,7 +1212,7 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 	// capsule balls, edges of A
 
 	for (int i = 0; i < 2; i++) {
-		Vector3 capsule_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
+		Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 		Vector3 sphere_pos = p_transform_b.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1234,7 +1234,7 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 		// test edges of A
 
 		for (int j = 0; j < 3; j++) {
-			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(j)).cross(p_transform_a.basis.get_axis(j)).normalized();
+			Vector3 axis = point_axis.cross(p_transform_a.basis.get_column(j)).cross(p_transform_a.basis.get_column(j)).normalized();
 
 			if (!separator.test_axis(axis)) {
 				return;
@@ -1258,14 +1258,14 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 
 	// Faces of A.
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
 
-	Vector3 cyl_axis = p_transform_b.basis.get_axis(1).normalized();
+	Vector3 cyl_axis = p_transform_b.basis.get_column(1).normalized();
 
 	// Cylinder end caps.
 	{
@@ -1276,7 +1276,7 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 
 	// Edges of A, cylinder lateral surface.
 	for (int i = 0; i < 3; i++) {
-		Vector3 box_axis = p_transform_a.basis.get_axis(i);
+		Vector3 box_axis = p_transform_a.basis.get_column(i);
 		Vector3 axis = box_axis.cross(cyl_axis);
 		if (Math::is_zero_approx(axis.length_squared())) {
 			continue;
@@ -1300,7 +1300,7 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 				Vector3 &point = vertices_A[i * 2 * 2 + j * 2 + k];
 				point = p_transform_a.origin;
 				for (int l = 0; l < 3; l++) {
-					point += p_transform_a.basis.get_axis(l) * extent[l];
+					point += p_transform_a.basis.get_column(l) * extent[l];
 				}
 			}
 		}
@@ -1380,7 +1380,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1401,7 +1401,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 
 	// A<->B edges
 	for (int i = 0; i < 3; i++) {
-		Vector3 e1 = p_transform_a.basis.get_axis(i);
+		Vector3 e1 = p_transform_a.basis.get_column(i);
 
 		for (int j = 0; j < edge_count; j++) {
 			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
@@ -1438,7 +1438,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 
 			for (int i = 0; i < 3; i++) {
 				//a ->b
-				Vector3 axis_a = p_transform_a.basis.get_axis(i);
+				Vector3 axis_a = p_transform_a.basis.get_column(i);
 
 				if (!separator.test_axis(axis_ab.cross(axis_a).cross(axis_a).normalized())) {
 					return;
@@ -1456,7 +1456,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 					he.z *= (k * 2 - 1);
 					Vector3 point = p_transform_a.origin;
 					for (int l = 0; l < 3; l++) {
-						point += p_transform_a.basis.get_axis(l) * he[l];
+						point += p_transform_a.basis.get_column(l) * he[l];
 					}
 
 					for (int e = 0; e < edge_count; e++) {
@@ -1497,7 +1497,7 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
+		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
 		if (axis.dot(normal) < 0.0) {
 			axis *= -1.0;
 		}
@@ -1513,7 +1513,7 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 		Vector3 e = vertex[i] - vertex[(i + 1) % 3];
 
 		for (int j = 0; j < 3; j++) {
-			Vector3 axis = e.cross(p_transform_a.basis.get_axis(j)).normalized();
+			Vector3 axis = e.cross(p_transform_a.basis.get_column(j)).normalized();
 			if (axis.dot(normal) < 0.0) {
 				axis *= -1.0;
 			}
@@ -1550,7 +1550,7 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 
 			for (int i = 0; i < 3; i++) {
 				//a ->b
-				Vector3 axis_a = p_transform_a.basis.get_axis(i);
+				Vector3 axis_a = p_transform_a.basis.get_column(i);
 
 				Vector3 axis = axis_ab.cross(axis_a).cross(axis_a).normalized();
 				if (axis.dot(normal) < 0.0) {
@@ -1573,7 +1573,7 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 					he.z *= (k * 2 - 1);
 					Vector3 point = p_transform_a.origin;
 					for (int l = 0; l < 3; l++) {
-						point += p_transform_a.basis.get_axis(l) * he[l];
+						point += p_transform_a.basis.get_column(l) * he[l];
 					}
 
 					for (int e = 0; e < 3; e++) {
@@ -1623,8 +1623,8 @@ static void _collision_capsule_capsule(const GodotShape3D *p_a, const Transform3
 
 	// some values
 
-	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-	Vector3 capsule_B_axis = p_transform_b.basis.get_axis(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 capsule_B_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
 	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis;
 	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis;
@@ -1686,14 +1686,14 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	}
 
 	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1).normalized();
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
 	if (!separator.test_axis(cylinder_B_axis)) {
 		return;
 	}
 
 	// Cylinder edge against capsule balls.
 
-	Vector3 capsule_A_axis = p_transform_a.basis.get_axis(1);
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1);
 
 	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
@@ -1772,7 +1772,7 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 	for (int i = 0; i < edge_count; i++) {
 		// cylinder
 		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
-		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_axis(1)).normalized();
+		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
 
 		if (!separator.test_axis(axis)) {
 			return;
@@ -1784,7 +1784,7 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 	for (int i = 0; i < 2; i++) {
 		// edges of B, capsule cylinder
 
-		Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+		Vector3 capsule_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
@@ -1824,7 +1824,7 @@ static void _collision_capsule_face(const GodotShape3D *p_a, const Transform3D &
 
 	// edges of B, capsule cylinder
 
-	Vector3 capsule_axis = p_transform_a.basis.get_axis(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 capsule_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
 
 	for (int i = 0; i < 3; i++) {
 		// edge-cylinder
@@ -1895,8 +1895,8 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 
 	SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin> separator(cylinder_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
-	Vector3 cylinder_A_axis = p_transform_a.basis.get_axis(1);
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_axis(1);
+	Vector3 cylinder_A_axis = p_transform_a.basis.get_column(1);
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1983,7 +1983,7 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 		return;
 	}
 
-	Vector3 cyl_axis = p_transform_a.basis.get_axis(1).normalized();
+	Vector3 cyl_axis = p_transform_a.basis.get_column(1).normalized();
 	if (cyl_axis.dot(normal) < 0.0) {
 		cyl_axis *= -1.0;
 	}

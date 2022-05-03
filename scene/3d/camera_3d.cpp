@@ -144,8 +144,8 @@ void Camera3D::_notification(int p_what) {
 
 Transform3D Camera3D::get_camera_transform() const {
 	Transform3D tr = get_global_transform().orthonormalized();
-	tr.origin += tr.basis.get_axis(1) * v_offset;
-	tr.origin += tr.basis.get_axis(0) * h_offset;
+	tr.origin += tr.basis.get_column(1) * v_offset;
+	tr.origin += tr.basis.get_column(0) * h_offset;
 	return tr;
 }
 
@@ -307,7 +307,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 	Transform3D t = get_global_transform();
-	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	Vector3 eyedir = -t.basis.get_column(2).normalized();
 	return eyedir.dot(p_pos - t.origin) < near;
 }
 

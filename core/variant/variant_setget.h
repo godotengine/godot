@@ -308,9 +308,9 @@ SETGET_NUMBER_STRUCT(Quaternion, double, y)
 SETGET_NUMBER_STRUCT(Quaternion, double, z)
 SETGET_NUMBER_STRUCT(Quaternion, double, w)
 
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_column, get_column, 0)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_column, get_column, 1)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_column, get_column, 2)
 
 SETGET_STRUCT(Transform3D, Basis, basis)
 SETGET_STRUCT(Transform3D, Vector3, origin)

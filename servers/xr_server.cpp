@@ -131,13 +131,13 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	// remove our tilt
 	if (p_rotation_mode == 1) {
 		// take the Y out of our Z
-		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.rows[0][2], 0.0, new_reference_frame.basis.rows[2][2]).normalized());
+		new_reference_frame.basis.set_column(2, Vector3(new_reference_frame.basis.rows[0][2], 0.0, new_reference_frame.basis.rows[2][2]).normalized());
 
 		// Y is straight up
-		new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
+		new_reference_frame.basis.set_column(1, Vector3(0.0, 1.0, 0.0));
 
 		// and X is our cross reference
-		new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
+		new_reference_frame.basis.set_column(0, new_reference_frame.basis.get_column(1).cross(new_reference_frame.basis.get_column(2)).normalized());
 	} else if (p_rotation_mode == 2) {
 		// remove our rotation, we're only interesting in centering on position
 		new_reference_frame.basis = Basis();

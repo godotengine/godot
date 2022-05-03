@@ -90,8 +90,8 @@ void VehicleWheel3D::_notification(int p_what) {
 			cb->wheels.push_back(this);
 
 			m_chassisConnectionPointCS = get_transform().origin;
-			m_wheelDirectionCS = -get_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
-			m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
+			m_wheelDirectionCS = -get_transform().basis.get_column(Vector3::AXIS_Y).normalized();
+			m_wheelAxleCS = get_transform().basis.get_column(Vector3::AXIS_X).normalized();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -684,7 +684,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
 
-				m_axle.write[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
+				m_axle.write[i] = wheelBasis0.get_column(Vector3::AXIS_X);
 				//m_axle[i] = wheelInfo.m_raycastInfo.m_wheelAxleWS;
 
 				const Vector3 &surfNormalWS = wheelInfo.m_raycastInfo.m_contactNormalWS;

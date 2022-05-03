@@ -58,17 +58,6 @@ struct _NO_DISCARD_ Basis {
 
 	void from_z(const Vector3 &p_z);
 
-	_FORCE_INLINE_ Vector3 get_axis(int p_axis) const {
-		// get actual basis axis column (we store transposed as rows for performance)
-		return Vector3(rows[0][p_axis], rows[1][p_axis], rows[2][p_axis]);
-	}
-	_FORCE_INLINE_ void set_axis(int p_axis, const Vector3 &p_value) {
-		// get actual basis axis column (we store transposed as rows for performance)
-		rows[0][p_axis] = p_value.x;
-		rows[1][p_axis] = p_value.y;
-		rows[2][p_axis] = p_value.z;
-	}
-
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	Basis rotated(const Vector3 &p_axis, real_t p_phi) const;
 
@@ -186,26 +175,26 @@ struct _NO_DISCARD_ Basis {
 		rows[2][1] = zy;
 		rows[2][2] = zz;
 	}
-	_FORCE_INLINE_ void set(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z) {
-		set_axis(0, p_x);
-		set_axis(1, p_y);
-		set_axis(2, p_z);
-	}
-	_FORCE_INLINE_ Vector3 get_column(int i) const {
-		return Vector3(rows[0][i], rows[1][i], rows[2][i]);
+	_FORCE_INLINE_ void set_columns(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z) {
+		set_column(0, p_x);
+		set_column(1, p_y);
+		set_column(2, p_z);
 	}
 
-	_FORCE_INLINE_ Vector3 get_row(int i) const {
-		return Vector3(rows[i][0], rows[i][1], rows[i][2]);
+	_FORCE_INLINE_ Vector3 get_column(int p_index) const {
+		// Get actual basis axis column (we store transposed as rows for performance).
+		return Vector3(rows[0][p_index], rows[1][p_index], rows[2][p_index]);
 	}
+
+	_FORCE_INLINE_ void set_column(int p_index, const Vector3 &p_value) {
+		// Set actual basis axis column (we store transposed as rows for performance).
+		rows[0][p_index] = p_value.x;
+		rows[1][p_index] = p_value.y;
+		rows[2][p_index] = p_value.z;
+	}
+
 	_FORCE_INLINE_ Vector3 get_main_diagonal() const {
 		return Vector3(rows[0][0], rows[1][1], rows[2][2]);
-	}
-
-	_FORCE_INLINE_ void set_row(int i, const Vector3 &p_row) {
-		rows[i][0] = p_row.x;
-		rows[i][1] = p_row.y;
-		rows[i][2] = p_row.z;
 	}
 
 	_FORCE_INLINE_ void set_zero() {

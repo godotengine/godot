@@ -662,7 +662,7 @@ GodotCapsuleShape3D::GodotCapsuleShape3D() {}
 /********** CYLINDER *************/
 
 void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
+	Vector3 cylinder_axis = p_transform.basis.get_column(1).normalized();
 	real_t axis_dot = cylinder_axis.dot(p_normal);
 
 	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);

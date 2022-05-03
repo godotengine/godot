@@ -194,9 +194,9 @@ Transform3D Transform3D::operator*(const real_t p_val) const {
 }
 
 Transform3D::operator String() const {
-	return "[X: " + basis.get_axis(0).operator String() +
-			", Y: " + basis.get_axis(1).operator String() +
-			", Z: " + basis.get_axis(2).operator String() +
+	return "[X: " + basis.get_column(0).operator String() +
+			", Y: " + basis.get_column(1).operator String() +
+			", Z: " + basis.get_column(2).operator String() +
 			", O: " + origin.operator String() + "]";
 }
 
@@ -207,9 +207,9 @@ Transform3D::Transform3D(const Basis &p_basis, const Vector3 &p_origin) :
 
 Transform3D::Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
 		origin(p_origin) {
-	basis.set_axis(0, p_x);
-	basis.set_axis(1, p_y);
-	basis.set_axis(2, p_z);
+	basis.set_column(0, p_x);
+	basis.set_column(1, p_y);
+	basis.set_column(2, p_z);
 }
 
 Transform3D::Transform3D(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {

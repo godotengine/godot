@@ -73,9 +73,9 @@ void Basis::invert() {
 void Basis::orthonormalize() {
 	// Gram-Schmidt Process
 
-	Vector3 x = get_axis(0);
-	Vector3 y = get_axis(1);
-	Vector3 z = get_axis(2);
+	Vector3 x = get_column(0);
+	Vector3 y = get_column(1);
+	Vector3 z = get_column(2);
 
 	x.normalize();
 	y = (y - x * (x.dot(y)));
@@ -83,9 +83,9 @@ void Basis::orthonormalize() {
 	z = (z - x * (x.dot(z)) - y * (y.dot(z)));
 	z.normalize();
 
-	set_axis(0, x);
-	set_axis(1, y);
-	set_axis(2, z);
+	set_column(0, x);
+	set_column(1, y);
+	set_column(2, z);
 }
 
 Basis Basis::orthonormalized() const {
@@ -260,7 +260,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Basis b;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			dots[j] += s[i] * abs(m.get_axis(i).normalized().dot(b.get_axis(j)));
+			dots[j] += s[i] * abs(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
 	}
 	m.scale_local(Vector3(1, 1, 1) + dots);
@@ -708,9 +708,9 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 }
 
 Basis::operator String() const {
-	return "[X: " + get_axis(0).operator String() +
-			", Y: " + get_axis(1).operator String() +
-			", Z: " + get_axis(2).operator String() + "]";
+	return "[X: " + get_column(0).operator String() +
+			", Y: " + get_column(1).operator String() +
+			", Z: " + get_column(2).operator String() + "]";
 }
 
 Quaternion Basis::get_quaternion() const {
@@ -1107,6 +1107,6 @@ Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
 	Vector3 v_y = v_z.cross(v_x);
 
 	Basis basis;
-	basis.set(v_x, v_y, v_z);
+	basis.set_columns(v_x, v_y, v_z);
 	return basis;
 }

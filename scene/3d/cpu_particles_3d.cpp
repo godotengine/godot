@@ -833,8 +833,8 @@ void CPUParticles3D::_particles_process(double p_delta) {
 							Vector3 normal = emission_normals.get(random_idx);
 							Vector2 normal_2d(normal.x, normal.y);
 							Transform2D m2;
-							m2.set_axis(0, normal_2d);
-							m2.set_axis(1, normal_2d.orthogonal());
+							m2.columns[0] = normal_2d;
+							m2.columns[1] = normal_2d.orthogonal();
 							Vector2 velocity_2d(p.velocity.x, p.velocity.y);
 							velocity_2d = m2.basis_xform(velocity_2d);
 							p.velocity.x = velocity_2d.x;
@@ -845,9 +845,9 @@ void CPUParticles3D::_particles_process(double p_delta) {
 							Vector3 tangent = v0.cross(normal).normalized();
 							Vector3 bitangent = tangent.cross(normal).normalized();
 							Basis m3;
-							m3.set_axis(0, tangent);
-							m3.set_axis(1, bitangent);
-							m3.set_axis(2, normal);
+							m3.set_column(0, tangent);
+							m3.set_column(1, bitangent);
+							m3.set_column(2, normal);
 							p.velocity = m3.xform(p.velocity);
 						}
 					}
@@ -1068,33 +1068,33 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 				if (p.velocity.length() > 0.0) {
-					p.transform.basis.set_axis(1, p.velocity.normalized());
+					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
-					p.transform.basis.set_axis(1, p.transform.basis.get_axis(1));
+					p.transform.basis.set_column(1, p.transform.basis.get_column(1));
 				}
-				p.transform.basis.set_axis(0, p.transform.basis.get_axis(1).cross(p.transform.basis.get_axis(2)).normalized());
-				p.transform.basis.set_axis(2, Vector3(0, 0, 1));
+				p.transform.basis.set_column(0, p.transform.basis.get_column(1).cross(p.transform.basis.get_column(2)).normalized());
+				p.transform.basis.set_column(2, Vector3(0, 0, 1));
 
 			} else {
-				p.transform.basis.set_axis(0, Vector3(Math::cos(p.custom[0]), -Math::sin(p.custom[0]), 0.0));
-				p.transform.basis.set_axis(1, Vector3(Math::sin(p.custom[0]), Math::cos(p.custom[0]), 0.0));
-				p.transform.basis.set_axis(2, Vector3(0, 0, 1));
+				p.transform.basis.set_column(0, Vector3(Math::cos(p.custom[0]), -Math::sin(p.custom[0]), 0.0));
+				p.transform.basis.set_column(1, Vector3(Math::sin(p.custom[0]), Math::cos(p.custom[0]), 0.0));
+				p.transform.basis.set_column(2, Vector3(0, 0, 1));
 			}
 
 		} else {
 			//orient particle Y towards velocity
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 				if (p.velocity.length() > 0.0) {
-					p.transform.basis.set_axis(1, p.velocity.normalized());
+					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
-					p.transform.basis.set_axis(1, p.transform.basis.get_axis(1).normalized());
+					p.transform.basis.set_column(1, p.transform.basis.get_column(1).normalized());
 				}
-				if (p.transform.basis.get_axis(1) == p.transform.basis.get_axis(0)) {
-					p.transform.basis.set_axis(0, p.transform.basis.get_axis(1).cross(p.transform.basis.get_axis(2)).normalized());
-					p.transform.basis.set_axis(2, p.transform.basis.get_axis(0).cross(p.transform.basis.get_axis(1)).normalized());
+				if (p.transform.basis.get_column(1) == p.transform.basis.get_column(0)) {
+					p.transform.basis.set_column(0, p.transform.basis.get_column(1).cross(p.transform.basis.get_column(2)).normalized());
+					p.transform.basis.set_column(2, p.transform.basis.get_column(0).cross(p.transform.basis.get_column(1)).normalized());
 				} else {
-					p.transform.basis.set_axis(2, p.transform.basis.get_axis(0).cross(p.transform.basis.get_axis(1)).normalized());
-					p.transform.basis.set_axis(0, p.transform.basis.get_axis(1).cross(p.transform.basis.get_axis(2)).normalized());
+					p.transform.basis.set_column(2, p.transform.basis.get_column(0).cross(p.transform.basis.get_column(1)).normalized());
+					p.transform.basis.set_column(0, p.transform.basis.get_column(1).cross(p.transform.basis.get_column(2)).normalized());
 				}
 			} else {
 				p.transform.basis.orthonormalize();
@@ -1159,7 +1159,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			ERR_FAIL_NULL(get_viewport());
 			Camera3D *c = get_viewport()->get_camera_3d();
 			if (c) {
-				Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
+				Vector3 dir = c->get_global_transform().basis.get_column(2); //far away to close
 
 				if (local_coords) {
 					// will look different from Particles in editor as this is based on the camera in the scenetree
