@@ -2726,6 +2726,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &RenderingServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &RenderingServer::get_video_adapter_vendor);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_type"), &RenderingServer::get_video_adapter_type);
+	ClassDB::bind_method(D_METHOD("get_video_adapter_api_version"), &RenderingServer::get_video_adapter_api_version);
 
 	ClassDB::bind_method(D_METHOD("make_sphere_mesh", "latitudes", "longitudes", "radius"), &RenderingServer::make_sphere_mesh);
 	ClassDB::bind_method(D_METHOD("get_test_cube"), &RenderingServer::get_test_cube);

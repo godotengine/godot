@@ -2364,12 +2364,17 @@ void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_objec
 String VulkanContext::get_device_vendor_name() const {
 	return device_vendor;
 }
+
 String VulkanContext::get_device_name() const {
 	return device_name;
 }
 
 RenderingDevice::DeviceType VulkanContext::get_device_type() const {
 	return RenderingDevice::DeviceType(device_type);
+}
+
+String VulkanContext::get_device_api_version() const {
+	return vformat("%d.%d.%d", vulkan_major, vulkan_minor, vulkan_patch);
 }
 
 String VulkanContext::get_device_pipeline_cache_uuid() const {

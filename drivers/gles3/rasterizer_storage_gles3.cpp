@@ -627,6 +627,10 @@ RenderingDevice::DeviceType RasterizerStorageGLES3::get_video_adapter_type() con
 	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
 }
 
+String RasterizerStorageGLES3::get_video_adapter_api_version() const {
+	return (const char *)glGetString(GL_VERSION);
+}
+
 void RasterizerStorageGLES3::initialize() {
 	config = GLES3::Config::get_singleton();
 
