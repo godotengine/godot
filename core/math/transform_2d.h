@@ -58,15 +58,6 @@ struct _NO_DISCARD_ Transform2D {
 	const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
 	Vector2 &operator[](int p_idx) { return columns[p_idx]; }
 
-	_FORCE_INLINE_ Vector2 get_axis(int p_axis) const {
-		ERR_FAIL_INDEX_V(p_axis, 3, Vector2());
-		return columns[p_axis];
-	}
-	_FORCE_INLINE_ void set_axis(int p_axis, const Vector2 &p_vec) {
-		ERR_FAIL_INDEX(p_axis, 3);
-		columns[p_axis] = p_vec;
-	}
-
 	void invert();
 	Transform2D inverse() const;
 

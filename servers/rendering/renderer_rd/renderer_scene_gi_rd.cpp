@@ -1469,7 +1469,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				continue;
 			}
 
-			Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+			Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 			dir.y *= y_mult;
 			dir.normalize();
 			lights[idx].direction[0] = dir.x;
@@ -1508,7 +1508,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				continue;
 			}
 
-			Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+			Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 			//faster to not do this here
 			//dir.y *= y_mult;
 			//dir.normalize();
@@ -1946,7 +1946,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 
 				lights[idx].type = RSG::light_storage->light_get_type(li->light);
 
-				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+				Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 				if (lights[idx].type == RS::LIGHT_DIRECTIONAL) {
 					dir.y *= y_mult; //only makes sense for directional
 					dir.normalize();
@@ -2416,7 +2416,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Transform3D xform = p_scene_render->light_instance_get_base_transform(light_instance);
 
 				Vector3 pos = to_probe_xform.xform(xform.origin);
-				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_axis(2)).normalized();
+				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_column(2)).normalized();
 
 				l.position[0] = pos.x;
 				l.position[1] = pos.y;
@@ -2593,17 +2593,17 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Transform3D xform;
 				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
 
-				Vector3 x_dir = xform.basis.get_axis(0).abs();
+				Vector3 x_dir = xform.basis.get_column(0).abs();
 				int x_axis = int(Vector3(0, 1, 2).dot(x_dir));
-				Vector3 y_dir = xform.basis.get_axis(1).abs();
+				Vector3 y_dir = xform.basis.get_column(1).abs();
 				int y_axis = int(Vector3(0, 1, 2).dot(y_dir));
-				Vector3 z_dir = -xform.basis.get_axis(2);
+				Vector3 z_dir = -xform.basis.get_column(2);
 				int z_axis = int(Vector3(0, 1, 2).dot(z_dir.abs()));
 
 				Rect2i rect(aabb.position[x_axis], aabb.position[y_axis], aabb.size[x_axis], aabb.size[y_axis]);
-				bool x_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(0)) < 0);
-				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(1)) < 0);
-				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(2)) > 0);
+				bool x_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(0)) < 0);
+				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(1)) < 0);
+				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(2)) > 0);
 
 				CameraMatrix cm;
 				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);

@@ -94,7 +94,7 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	const GodotSeparationRayShape3D *ray = static_cast<const GodotSeparationRayShape3D *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
-	Vector3 to = from + p_transform_A.basis.get_axis(2) * (ray->get_length() + p_margin);
+	Vector3 to = from + p_transform_A.basis.get_column(2) * (ray->get_length() + p_margin);
 	Vector3 support_A = to;
 
 	Transform3D ai = p_transform_B.affine_inverse();
@@ -252,7 +252,7 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 		// Calculate AABB for internal concave shape query (in local space).
 		AABB local_aabb;
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis(p_transform_A.basis.get_axis(i));
+			Vector3 axis(p_transform_A.basis.get_column(i));
 			real_t axis_scale = 1.0 / axis.length();
 
 			real_t smin = soft_body_aabb.position[i];
@@ -333,7 +333,7 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 
 	AABB local_aabb;
 	for (int i = 0; i < 3; i++) {
-		Vector3 axis(p_transform_B.basis.get_axis(i));
+		Vector3 axis(p_transform_B.basis.get_column(i));
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
 
@@ -542,7 +542,7 @@ bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const
 
 		AABB local_aabb;
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis(p_transform_B.basis.get_axis(i));
+			Vector3 axis(p_transform_B.basis.get_column(i));
 			real_t axis_scale = ((real_t)1.0) / axis.length();
 			axis *= axis_scale;
 

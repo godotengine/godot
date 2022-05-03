@@ -1336,9 +1336,9 @@ CSGBrushOperation::Build2DFaces::Build2DFaces(const CSGBrush &p_brush, int p_fac
 
 	plane = Plane(points_3D[0], points_3D[1], points_3D[2]);
 	to_3D.origin = points_3D[0];
-	to_3D.basis.set_axis(2, plane.normal);
-	to_3D.basis.set_axis(0, (points_3D[1] - points_3D[2]).normalized());
-	to_3D.basis.set_axis(1, to_3D.basis.get_axis(0).cross(to_3D.basis.get_axis(2)).normalized());
+	to_3D.basis.set_column(2, plane.normal);
+	to_3D.basis.set_column(0, (points_3D[1] - points_3D[2]).normalized());
+	to_3D.basis.set_column(1, to_3D.basis.get_column(0).cross(to_3D.basis.get_column(2)).normalized());
 	to_2D = to_3D.affine_inverse();
 
 	Face2D face;

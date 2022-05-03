@@ -203,7 +203,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// Check one-way collision based on motion direction.
 	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
-		Vector2 direction = p_xform_B.get_axis(1).normalized();
+		Vector2 direction = p_xform_B.columns[1].normalized();
 		if (direction.dot(mnormal) < CMP_EPSILON) {
 			collided = false;
 			oneway_disabled = true;
@@ -300,7 +300,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 	if (!prev_collided) {
 		if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
-			Vector2 direction = xform_A.get_axis(1).normalized();
+			Vector2 direction = xform_A.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
@@ -318,7 +318,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		}
 
 		if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
-			Vector2 direction = xform_B.get_axis(1).normalized();
+			Vector2 direction = xform_B.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];

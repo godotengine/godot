@@ -114,8 +114,8 @@ void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 void GPUParticles2D::_update_particle_emission_transform() {
 	Transform2D xf2d = get_global_transform();
 	Transform3D xf;
-	xf.basis.set_axis(0, Vector3(xf2d.get_axis(0).x, xf2d.get_axis(0).y, 0));
-	xf.basis.set_axis(1, Vector3(xf2d.get_axis(1).x, xf2d.get_axis(1).y, 0));
+	xf.basis.set_column(0, Vector3(xf2d.columns[0].x, xf2d.columns[0].y, 0));
+	xf.basis.set_column(1, Vector3(xf2d.columns[1].x, xf2d.columns[1].y, 0));
 	xf.set_origin(Vector3(xf2d.get_origin().x, xf2d.get_origin().y, 0));
 
 	RS::get_singleton()->particles_set_emission_transform(particles, xf);
@@ -346,8 +346,8 @@ void GPUParticles2D::_validate_property(PropertyInfo &property) const {
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	Transform3D transform;
-	transform.basis.set_axis(0, Vector3(p_transform2d.get_axis(0).x, p_transform2d.get_axis(0).y, 0));
-	transform.basis.set_axis(1, Vector3(p_transform2d.get_axis(1).x, p_transform2d.get_axis(1).y, 0));
+	transform.basis.set_column(0, Vector3(p_transform2d.columns[0].x, p_transform2d.columns[0].y, 0));
+	transform.basis.set_column(1, Vector3(p_transform2d.columns[1].x, p_transform2d.columns[1].y, 0));
 	transform.set_origin(Vector3(p_transform2d.get_origin().x, p_transform2d.get_origin().y, 0));
 	Vector3 velocity = Vector3(p_velocity2d.x, p_velocity2d.y, 0);
 

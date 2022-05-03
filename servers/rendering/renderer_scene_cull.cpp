@@ -2065,9 +2065,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 		Transform3D transform = light_transform; //discard scale and stabilize light
 
-		Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
-		Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
-		Vector3 z_vec = transform.basis.get_axis(Vector3::AXIS_Z).normalized();
+		Vector3 x_vec = transform.basis.get_column(Vector3::AXIS_X).normalized();
+		Vector3 y_vec = transform.basis.get_column(Vector3::AXIS_Y).normalized();
+		Vector3 z_vec = transform.basis.get_column(Vector3::AXIS_Z).normalized();
 		//z_vec points against the camera, like in default opengl
 
 		real_t x_min = 0.f, x_max = 0.f;
@@ -2721,7 +2721,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							cull_data.cull->lock.lock();
 							RSG::particles_storage->particles_request_process(idata.base_rid);
 							cull_data.cull->lock.unlock();
-							RSG::particles_storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_axis(2).normalized(), cull_data.cam_transform.basis.get_axis(1).normalized());
+							RSG::particles_storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_column(2).normalized(), cull_data.cam_transform.basis.get_column(1).normalized());
 							//particles visible? request redraw
 							RenderingServerDefault::redraw_request();
 						}
@@ -3082,7 +3082,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 				Transform3D cam_xf = p_camera_data->main_transform;
 				float zn = p_camera_data->main_projection.get_z_near();
-				Plane p(-cam_xf.basis.get_axis(2), cam_xf.origin + cam_xf.basis.get_axis(2) * -zn); //camera near plane
+				Plane p(-cam_xf.basis.get_column(2), cam_xf.origin + cam_xf.basis.get_column(2) * -zn); //camera near plane
 
 				// near plane half width and height
 				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
@@ -3094,7 +3094,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						//get two points parallel to near plane
 						Vector3 points[2] = {
 							ins->transform.origin,
-							ins->transform.origin + cam_xf.basis.get_axis(0) * radius
+							ins->transform.origin + cam_xf.basis.get_column(0) * radius
 						};
 
 						if (!p_camera_data->is_orthogonal) {
@@ -3118,11 +3118,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						float w = radius * Math::sin(Math::deg2rad(angle));
 						float d = radius * Math::cos(Math::deg2rad(angle));
 
-						Vector3 base = ins->transform.origin - ins->transform.basis.get_axis(2).normalized() * d;
+						Vector3 base = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * d;
 
 						Vector3 points[2] = {
 							base,
-							base + cam_xf.basis.get_axis(0) * w
+							base + cam_xf.basis.get_column(0) * w
 						};
 
 						if (!p_camera_data->is_orthogonal) {

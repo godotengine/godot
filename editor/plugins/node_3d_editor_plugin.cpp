@@ -159,7 +159,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
-		Vector3 axis_3d = camera_basis.get_axis(i);
+		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
 		if (Math::abs(axis_3d.z) < 1.0) {
@@ -440,7 +440,7 @@ Vector3 Node3DEditorViewport::_get_ray_pos(const Vector2 &p_pos) const {
 }
 
 Vector3 Node3DEditorViewport::_get_camera_normal() const {
-	return -_get_camera_transform().basis.get_axis(2);
+	return -_get_camera_transform().basis.get_column(2);
 }
 
 Vector3 Node3DEditorViewport::_get_ray(const Vector2 &p_pos) const {
@@ -983,7 +983,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		real_t col_d = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
 			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
 
 			Vector3 r;
@@ -1003,15 +1003,15 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			col_d = 1e20;
 
 			for (int i = 0; i < 3; i++) {
-				Vector3 ivec2 = gt.basis.get_axis((i + 1) % 3).normalized();
-				Vector3 ivec3 = gt.basis.get_axis((i + 2) % 3).normalized();
+				Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
+				Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
 
 				// Allow some tolerance to make the plane easier to click,
 				// even if the click is actually slightly outside the plane.
 				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
 
 				Vector3 r;
-				Plane plane(gt.basis.get_axis(i).normalized(), gt.origin);
+				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
@@ -1064,7 +1064,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			float col_d = 1e20;
 
 			for (int i = 0; i < 3; i++) {
-				Plane plane(gt.basis.get_axis(i).normalized(), gt.origin);
+				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
 				Vector3 r;
 				if (!plane.intersects_ray(ray_pos, ray, &r)) {
 					continue;
@@ -1103,7 +1103,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		float col_d = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i).normalized() * gizmo_scale * GIZMO_SCALE_OFFSET;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * GIZMO_SCALE_OFFSET;
 			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
 
 			Vector3 r;
@@ -1123,15 +1123,15 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			col_d = 1e20;
 
 			for (int i = 0; i < 3; i++) {
-				const Vector3 ivec2 = gt.basis.get_axis((i + 1) % 3).normalized();
-				const Vector3 ivec3 = gt.basis.get_axis((i + 2) % 3).normalized();
+				const Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
+				const Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
 
 				// Allow some tolerance to make the plane easier to click,
 				// even if the click is actually slightly outside the plane.
 				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
 
 				Vector3 r;
-				Plane plane(gt.basis.get_axis(i).normalized(), gt.origin);
+				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
@@ -3389,8 +3389,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	const Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
-	const Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
+	const Vector3 camz = -camera_xform.get_basis().get_column(2).normalized();
+	const Vector3 camy = -camera_xform.get_basis().get_column(1).normalized();
 	const Plane p = Plane(camz, camera_xform.origin);
 	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
 	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
@@ -3424,8 +3424,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	for (int i = 0; i < 3; i++) {
 		Transform3D axis_angle = Transform3D();
-		if (xform.basis.get_axis(i).normalized().dot(xform.basis.get_axis((i + 1) % 3).normalized()) < 1.0) {
-			axis_angle = axis_angle.looking_at(xform.basis.get_axis(i).normalized(), xform.basis.get_axis((i + 1) % 3).normalized());
+		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
+			axis_angle = axis_angle.looking_at(xform.basis.get_column(i).normalized(), xform.basis.get_column((i + 1) % 3).normalized());
 		}
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
@@ -4087,30 +4087,30 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 					plane = Plane(_get_camera_normal(), _edit.center);
 					break;
 				case TRANSFORM_X_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_Y_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_Z_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_YZ:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(0).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 				case TRANSFORM_XZ:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(1).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 				case TRANSFORM_XY:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(2).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 			}
@@ -4209,27 +4209,27 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 					plane = Plane(_get_camera_normal(), _edit.center);
 					break;
 				case TRANSFORM_X_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_Y_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_Z_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized();
 					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 					break;
 				case TRANSFORM_YZ:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(0).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 				case TRANSFORM_XZ:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(1).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 				case TRANSFORM_XY:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(2).normalized(), _edit.center);
 					plane_mv = true;
 					break;
 			}
@@ -6469,7 +6469,7 @@ void Node3DEditor::_init_grid() {
 
 		if (orthogonal) {
 			camera_distance = camera->get_size() / 2.0;
-			Vector3 camera_direction = -camera->get_global_transform().get_basis().get_axis(2);
+			Vector3 camera_direction = -camera->get_global_transform().get_basis().get_column(2);
 			Plane grid_plane = Plane(normal);
 			Vector3 intersection;
 			if (grid_plane.intersects_ray(camera_position, camera_direction, &intersection)) {
@@ -7338,7 +7338,7 @@ void Node3DEditor::clear() {
 
 void Node3DEditor::_sun_direction_draw() {
 	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
-	Vector3 z_axis = preview_sun->get_transform().basis.get_axis(Vector3::AXIS_Z);
+	Vector3 z_axis = preview_sun->get_transform().basis.get_column(Vector3::AXIS_Z);
 	z_axis = get_editor_viewport(0)->camera->get_camera_transform().basis.xform_inv(z_axis);
 	sun_direction_material->set_shader_param("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
 	Color color = sun_color->get_pick_color() * sun_energy->get_value();

@@ -788,8 +788,8 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
 						Vector2 normal = emission_normals.get(random_idx);
 						Transform2D m2;
-						m2.set_axis(0, normal);
-						m2.set_axis(1, normal.orthogonal());
+						m2.columns[0] = normal;
+						m2.columns[1] = normal.orthogonal();
 						p.velocity = m2.basis_xform(p.velocity);
 					}
 
