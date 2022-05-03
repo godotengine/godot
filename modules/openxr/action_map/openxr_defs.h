@@ -33,7 +33,6 @@
 
 #include "openxr_action.h"
 
-///////////////////////////////////////////////////////////////////////////
 // Stores available interaction profiles
 //
 // OpenXR defines and hardcodes all the supported input devices and their

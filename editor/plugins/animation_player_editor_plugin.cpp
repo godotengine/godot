@@ -47,8 +47,6 @@
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
-///////////////////////////////////
-
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	if (player && player == p_node) {
 		player = nullptr;

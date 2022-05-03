@@ -139,8 +139,6 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
 }
 
-////////////////////////////////////////////////////////////////////////////
-
 bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 	return p_type == "Image";
 }
@@ -187,8 +185,6 @@ EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
-
-////////////////////////////////////////////////////////////////////////////
 
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "BitMap");
@@ -255,8 +251,6 @@ bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
 EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
 }
 
-///////////////////////////////////////////////////////////////////////////
-
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "PackedScene");
 }
@@ -295,8 +289,6 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 
 EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 }
-
-//////////////////////////////////////////////////////////////////
 
 void EditorMaterialPreviewPlugin::_generate_frame_started() {
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
@@ -461,8 +453,6 @@ EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->free(scenario);
 }
 
-///////////////////////////////////////////////////////////////////////////
-
 bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
@@ -603,8 +593,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
 }
 
-///////////////////////////////////////////////////////////////////
-
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "AudioStream");
 }
@@ -686,8 +674,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 
 EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 }
-
-///////////////////////////////////////////////////////////////////////////
 
 void EditorMeshPreviewPlugin::_generate_frame_started() {
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
@@ -799,8 +785,6 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	RS::get_singleton()->free(scenario);
 }
 
-///////////////////////////////////////////////////////////////////////////
-
 void EditorFontPreviewPlugin::_generate_frame_started() {
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
@@ -904,8 +888,6 @@ EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	RS::get_singleton()->free(canvas);
 	RS::get_singleton()->free(viewport);
 }
-
-////////////////////////////////////////////////////////////////////////////
 
 static const real_t GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR = 4.0;
 

@@ -680,5 +680,3 @@ void BitMap::_bind_methods() {
 }
 
 BitMap::BitMap() {}
-
-//////////////////////////////////////

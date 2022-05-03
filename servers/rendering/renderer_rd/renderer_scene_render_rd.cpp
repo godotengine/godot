@@ -554,8 +554,6 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	return Ref<Image>();
 }
 
-////////////////////////////////////////////////////////////
-
 RID RendererSceneRenderRD::fog_volume_instance_create(RID p_fog_volume) {
 	FogVolumeInstance fvi;
 	fvi.volume = p_fog_volume;
@@ -584,8 +582,6 @@ Vector3 RendererSceneRenderRD::fog_volume_instance_get_position(RID p_fog_volume
 
 	return fvi->transform.get_origin();
 }
-
-////////////////////////////////////////////////////////////
 
 RID RendererSceneRenderRD::reflection_atlas_create() {
 	ReflectionAtlas ra;
@@ -645,7 +641,6 @@ int RendererSceneRenderRD::reflection_atlas_get_size(RID p_ref_atlas) const {
 	return ra->size;
 }
 
-////////////////////////
 RID RendererSceneRenderRD::reflection_probe_instance_create(RID p_probe) {
 	ReflectionProbeInstance rpi;
 	rpi.probe = p_probe;
@@ -888,8 +883,6 @@ RID RendererSceneRenderRD::reflection_probe_instance_get_depth_framebuffer(RID p
 	ERR_FAIL_COND_V(!atlas, RID());
 	return atlas->depth_fb;
 }
-
-///////////////////////////////////////////////////////////
 
 RID RendererSceneRenderRD::shadow_atlas_create() {
 	return shadow_atlas_owner.make_rid(ShadowAtlas());
@@ -1359,8 +1352,6 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 	return MAX(r.size.width, r.size.height);
 }
 
-//////////////////////////////////////////////////
-
 RID RendererSceneRenderRD::camera_effects_allocate() {
 	return camera_effects_owner.allocate_rid();
 }
@@ -1479,8 +1470,6 @@ RendererSceneRenderRD::ShadowCubemap *RendererSceneRenderRD::_get_shadow_cubemap
 	return &shadow_cubemaps[p_size];
 }
 
-//////////////////////////
-
 RID RendererSceneRenderRD::decal_instance_create(RID p_decal) {
 	DecalInstance di;
 	di.decal = p_decal;
@@ -1494,8 +1483,6 @@ void RendererSceneRenderRD::decal_instance_set_transform(RID p_decal, const Tran
 	di->transform = p_transform;
 }
 
-/////////////////////////////////
-
 RID RendererSceneRenderRD::lightmap_instance_create(RID p_lightmap) {
 	LightmapInstance li;
 	li.lightmap = p_lightmap;
@@ -1506,8 +1493,6 @@ void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, cons
 	ERR_FAIL_COND(!li);
 	li->transform = p_transform;
 }
-
-/////////////////////////////////
 
 RID RendererSceneRenderRD::voxel_gi_instance_create(RID p_base) {
 	return gi.voxel_gi_instance_create(p_base);
@@ -1544,7 +1529,6 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawLi
 	rb->sdfgi->debug_probes(p_draw_list, p_framebuffer, p_camera_with_transform);
 }
 
-////////////////////////////////
 RID RendererSceneRenderRD::render_buffers_create() {
 	RenderBuffers rb;
 	rb.data = _create_render_buffer_data();
@@ -3845,7 +3829,6 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // FOG SHADER
 
 void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
@@ -3985,7 +3968,6 @@ RendererSceneRenderRD::FogShaderData::~FogShaderData() {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Fog material
 
 bool RendererSceneRenderRD::FogMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
@@ -4020,7 +4002,6 @@ RendererRD::MaterialData *RendererSceneRenderRD::_create_fog_material_funcs(Rend
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->_create_fog_material_func(static_cast<FogShaderData *>(p_shader));
 };
 
-////////////////////////////////////////////////////////////////////////////////
 // Volumetric Fog
 
 void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {

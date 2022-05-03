@@ -114,8 +114,6 @@ void SyntaxHighlighter::_bind_methods() {
 	GDVIRTUAL_BIND(_update_cache)
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 

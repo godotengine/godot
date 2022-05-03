@@ -34,9 +34,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 
-///////////////////////////////////////
 // SkeletonModificationStack2D
-///////////////////////////////////////
 
 class Skeleton2D;
 class SkeletonModification2D;

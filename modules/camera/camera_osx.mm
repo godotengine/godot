@@ -36,7 +36,6 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-//////////////////////////////////////////////////////////////////////////
 // MyCaptureSession - This is a little helper class so we can capture our frames
 
 @interface MyCaptureSession : AVCaptureSession <AVCaptureVideoDataOutputSampleBufferDelegate> {
@@ -190,7 +189,6 @@
 
 @end
 
-//////////////////////////////////////////////////////////////////////////
 // CameraFeedOSX - Subclass for camera feeds in OSX
 
 class CameraFeedOSX : public CameraFeed {
@@ -266,7 +264,6 @@ void CameraFeedOSX::deactivate_feed() {
 	};
 };
 
-//////////////////////////////////////////////////////////////////////////
 // MyDeviceNotifications - This is a little helper class gets notifications
 // when devices are connected/disconnected
 
@@ -302,7 +299,6 @@ void CameraFeedOSX::deactivate_feed() {
 
 MyDeviceNotifications *device_notifications = nil;
 
-//////////////////////////////////////////////////////////////////////////
 // CameraOSX - Subclass for our camera server on OSX
 
 void CameraOSX::update_feeds() {

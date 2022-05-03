@@ -151,8 +151,6 @@ void Translation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
-///////////////////////////////////////////////
-
 struct _character_accent_pair {
 	const char32_t character;
 	const char32_t *accented_character;

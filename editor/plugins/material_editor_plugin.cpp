@@ -234,8 +234,6 @@ MaterialEditor::MaterialEditor() {
 	}
 }
 
-///////////////////////
-
 bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
 	Material *material = Object::cast_to<Material>(p_object);
 	if (!material) {

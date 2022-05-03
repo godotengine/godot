@@ -536,8 +536,6 @@ Bone2D::~Bone2D() {
 #endif // TOOLS_ENABLED
 }
 
-//////////////////////////////////////
-
 bool Skeleton2D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 

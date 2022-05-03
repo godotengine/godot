@@ -314,8 +314,6 @@ Light2D::~Light2D() {
 	RenderingServer::get_singleton()->free(canvas_light);
 }
 
-//////////////////////////////
-
 #ifdef TOOLS_ENABLED
 
 Dictionary PointLight2D::_edit_get_state() const {
@@ -433,8 +431,6 @@ void PointLight2D::_bind_methods() {
 PointLight2D::PointLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
 }
-
-//////////
 
 void DirectionalLight2D::set_max_distance(real_t p_distance) {
 	max_distance = p_distance;

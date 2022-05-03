@@ -150,8 +150,6 @@ Material::~Material() {
 	RenderingServer::get_singleton()->free(material);
 }
 
-///////////////////////////////////
-
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_param(p_name);
@@ -343,8 +341,6 @@ ShaderMaterial::ShaderMaterial() {
 
 ShaderMaterial::~ShaderMaterial() {
 }
-
-/////////////////////////////////
 
 Mutex BaseMaterial3D::material_mutex;
 SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = nullptr;
@@ -2911,8 +2907,6 @@ BaseMaterial3D::~BaseMaterial3D() {
 		RS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
 }
-
-//////////////////////
 
 #ifndef DISABLE_DEPRECATED
 // Kept for compatibility from 3.x to 4.0.

@@ -1205,8 +1205,6 @@ uint32_t RenderingDeviceVulkan::get_image_required_mipmaps(uint32_t p_width, uin
 	return mipmaps;
 }
 
-///////////////////////
-
 const VkCompareOp RenderingDeviceVulkan::compare_operators[RenderingDevice::COMPARE_OP_MAX] = {
 	VK_COMPARE_OP_NEVER,
 	VK_COMPARE_OP_LESS,

@@ -81,8 +81,6 @@ void EditorTranslationParserPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 
-/////////////////////////
-
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
 	Set<String> extensions;
 	List<String> temp;

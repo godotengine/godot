@@ -343,8 +343,6 @@ public:
 	AnimationNodeOutput();
 };
 
-/////
-
 class AnimationNodeBlendTree : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendTree, AnimationRootNode);
 

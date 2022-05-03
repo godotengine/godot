@@ -30,8 +30,6 @@
 
 #include "audio_stream_preview.h"
 
-/////////////////////
-
 float AudioStreamPreview::get_length() const {
 	return length;
 }
@@ -93,8 +91,6 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 AudioStreamPreview::AudioStreamPreview() {
 	length = 0;
 }
-
-////
 
 void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
 	emit_signal(SNAME("preview_updated"), p_id);

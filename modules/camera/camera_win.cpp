@@ -37,7 +37,6 @@
 // windows for me...I've gutted the classes I implemented DirectShow in just to have
 // a skeleton for someone to work on, mail me for more details or if you want a copy....
 
-//////////////////////////////////////////////////////////////////////////
 // CameraFeedWindows - Subclass for our camera feed on windows
 
 /// @TODO need to implement this
@@ -79,7 +78,6 @@ void CameraFeedWindows::deactivate_feed() {
 	///@TODO this should deactivate our camera and stop the process of capturing frames
 }
 
-//////////////////////////////////////////////////////////////////////////
 // CameraWindows - Subclass for our camera server on windows
 
 void CameraWindows::add_active_cameras() {

@@ -116,8 +116,6 @@
 		}                                                                  \
 	}
 
-///////////////////////////////////////////////
-
 #define FUNC1R(m_r, m_type, m_arg1)                                                 \
 	virtual m_r m_type(m_arg1 p1) override {                                        \
 		WRITE_ACTION                                                                \

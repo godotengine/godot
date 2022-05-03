@@ -498,8 +498,6 @@ Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int
 JavaClass::JavaClass() {
 }
 
-/////////////////////
-
 Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	return Variant();
 }
@@ -509,8 +507,6 @@ JavaObject::JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance) {
 
 JavaObject::~JavaObject() {
 }
-
-////////////////////
 
 bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig) {
 	jstring name2 = (jstring)env->CallObjectMethod(obj, Class_getName);

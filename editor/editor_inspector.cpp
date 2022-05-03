@@ -999,9 +999,6 @@ void EditorProperty::_update_popup() {
 	}
 }
 
-////////////////////////////////////////////////
-////////////////////////////////////////////////
-
 void EditorInspectorPlugin::add_custom_control(Control *control) {
 	AddedEditor ae;
 	ae.property_editor = control;
@@ -1070,9 +1067,6 @@ void EditorInspectorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_parse_end, "object")
 }
 
-////////////////////////////////////////////////
-////////////////////////////////////////////////
-
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -1133,9 +1127,6 @@ String EditorInspectorCategory::get_tooltip_text() const {
 
 EditorInspectorCategory::EditorInspectorCategory() {
 }
-
-////////////////////////////////////////////////
-////////////////////////////////////////////////
 
 void EditorInspectorSection::_test_unfold() {
 	if (!vbox_added) {
@@ -1477,9 +1468,6 @@ EditorInspectorSection::~EditorInspectorSection() {
 		memdelete(vbox);
 	}
 }
-
-////////////////////////////////////////////////
-////////////////////////////////////////////////
 
 int EditorInspectorArray::_get_array_count() {
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
@@ -2140,9 +2128,6 @@ EditorInspectorArray::EditorInspectorArray() {
 	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
 }
 
-////////////////////////////////////////////////
-////////////////////////////////////////////////
-
 void EditorPaginator::_first_page_button_pressed() {
 	emit_signal("page_changed", 0);
 }
@@ -2233,9 +2218,6 @@ EditorPaginator::EditorPaginator() {
 	last_page_button->connect("pressed", callable_mp(this, &EditorPaginator::_last_page_button_pressed));
 	add_child(last_page_button);
 }
-
-////////////////////////////////////////////////
-////////////////////////////////////////////////
 
 Ref<EditorInspectorPlugin> EditorInspector::inspector_plugins[MAX_PLUGINS];
 int EditorInspector::inspector_plugin_count = 0;

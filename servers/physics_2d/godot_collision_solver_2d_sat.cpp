@@ -607,8 +607,6 @@ static void _collision_segment_convex_polygon(const GodotShape2D *p_a, const Tra
 	separator.generate_contacts();
 }
 
-/////////
-
 template <bool castA, bool castB, bool withMargin>
 static void _collision_circle_circle(const GodotShape2D *p_a, const Transform2D &p_transform_a, const GodotShape2D *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
 	const GodotCircleShape2D *circle_A = static_cast<const GodotCircleShape2D *>(p_a);
@@ -750,8 +748,6 @@ static void _collision_circle_convex_polygon(const GodotShape2D *p_a, const Tran
 
 	separator.generate_contacts();
 }
-
-/////////
 
 template <bool castA, bool castB, bool withMargin>
 static void _collision_rectangle_rectangle(const GodotShape2D *p_a, const Transform2D &p_transform_a, const GodotShape2D *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
@@ -965,8 +961,6 @@ static void _collision_rectangle_convex_polygon(const GodotShape2D *p_a, const T
 	separator.generate_contacts();
 }
 
-/////////
-
 template <bool castA, bool castB, bool withMargin>
 static void _collision_capsule_capsule(const GodotShape2D *p_a, const Transform2D &p_transform_a, const GodotShape2D *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
 	const GodotCapsuleShape2D *capsule_A = static_cast<const GodotCapsuleShape2D *>(p_a);
@@ -1059,8 +1053,6 @@ static void _collision_capsule_convex_polygon(const GodotShape2D *p_a, const Tra
 	separator.generate_contacts();
 }
 
-/////////
-
 template <bool castA, bool castB, bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const GodotShape2D *p_a, const Transform2D &p_transform_a, const GodotShape2D *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
 	const GodotConvexPolygonShape2D *convex_A = static_cast<const GodotConvexPolygonShape2D *>(p_a);
@@ -1100,8 +1092,6 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape2D *p_a, co
 
 	separator.generate_contacts();
 }
-
-////////
 
 bool sat_2d_calculate_penetration(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, GodotCollisionSolver2D::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
 	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();

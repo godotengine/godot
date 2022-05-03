@@ -34,7 +34,6 @@
 
 using namespace RendererRD;
 
-///////////////////////////////////////////////////////////////////////////
 // CanvasTexture
 
 void CanvasTexture::clear_sets() {
@@ -56,7 +55,6 @@ CanvasTexture::~CanvasTexture() {
 	clear_sets();
 }
 
-///////////////////////////////////////////////////////////////////////////
 // Texture
 
 void Texture::cleanup() {
@@ -72,7 +70,6 @@ void Texture::cleanup() {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////
 // TextureStorage
 
 TextureStorage *TextureStorage::singleton = nullptr;

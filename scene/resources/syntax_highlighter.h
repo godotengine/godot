@@ -70,8 +70,6 @@ public:
 	virtual ~SyntaxHighlighter() {}
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
 class CodeHighlighter : public SyntaxHighlighter {
 	GDCLASS(CodeHighlighter, SyntaxHighlighter)
 

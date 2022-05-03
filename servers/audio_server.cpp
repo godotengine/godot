@@ -224,11 +224,6 @@ AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 	return drivers[p_driver];
 }
 
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-
 void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	mix_count++;
 	int todo = p_frames;
@@ -1742,8 +1737,6 @@ AudioServer::AudioServer() {
 AudioServer::~AudioServer() {
 	singleton = nullptr;
 }
-
-/////////////////////////////////
 
 bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 	String s = p_name;

@@ -175,8 +175,6 @@ void AnimationNodeAnimation::_bind_methods() {
 AnimationNodeAnimation::AnimationNodeAnimation() {
 }
 
-////////////////////////////////////////////////////////
-
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::BOOL, active));
 	r_list->push_back(PropertyInfo(Variant::BOOL, prev_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -394,8 +392,6 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	add_input("shot");
 }
 
-////////////////////////////////////////////////
-
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
 }
@@ -439,8 +435,6 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 	add_input("in");
 	add_input("add");
 }
-
-////////////////////////////////////////////////
 
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
@@ -488,8 +482,6 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 	add_input("+add");
 }
 
-/////////////////////////////////////////////
-
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
 }
@@ -535,8 +527,6 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 	add_input("blend");
 }
 
-//////////////////////////////////////
-
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
 }
@@ -581,8 +571,6 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 	sync = false;
 }
 
-/////////////////////////////////
-
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
 }
@@ -610,8 +598,6 @@ void AnimationNodeTimeScale::_bind_methods() {
 AnimationNodeTimeScale::AnimationNodeTimeScale() {
 	add_input("in");
 }
-
-////////////////////////////////////
 
 void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
@@ -644,8 +630,6 @@ void AnimationNodeTimeSeek::_bind_methods() {
 AnimationNodeTimeSeek::AnimationNodeTimeSeek() {
 	add_input("in");
 }
-
-/////////////////////////////////////////////////
 
 void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) const {
 	String anims;
@@ -838,8 +822,6 @@ AnimationNodeTransition::AnimationNodeTransition() {
 	}
 }
 
-/////////////////////
-
 String AnimationNodeOutput::get_caption() const {
 	return "Output";
 }
@@ -852,7 +834,6 @@ AnimationNodeOutput::AnimationNodeOutput() {
 	add_input("output");
 }
 
-///////////////////////////////////////////////////////
 void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());

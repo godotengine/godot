@@ -250,8 +250,6 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
-///////////////////////////////////
-
 void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
@@ -1414,8 +1412,6 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 EditorExportPlatform::EditorExportPlatform() {
 }
 
-////
-
 EditorExport *EditorExport::singleton = nullptr;
 
 void EditorExport::_save() {
@@ -1737,8 +1733,6 @@ EditorExport::EditorExport() {
 EditorExport::~EditorExport() {
 }
 
-//////////
-
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
@@ -1944,8 +1938,6 @@ int EditorExportPlatformPC::get_chmod_flags() const {
 void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
 	chmod_flags = p_flags;
 }
-
-///////////////////////
 
 void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
 	String extension = p_path.get_extension().to_lower();

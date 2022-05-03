@@ -40,7 +40,6 @@
 
 using namespace GLES3;
 
-///////////////////////////////////////////////////////////////////////////
 // UBI helper functions
 
 _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_array_size, const Variant &value, uint8_t *data, bool p_linear_color) {
@@ -897,7 +896,6 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////
 // MaterialData
 
 void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
@@ -1263,7 +1261,6 @@ void MaterialData::update_parameters_internal(const Map<StringName, Variant> &p_
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////
 // Material Storage
 
 MaterialStorage *MaterialStorage::singleton = nullptr;

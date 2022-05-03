@@ -54,8 +54,6 @@
 #include "editor/editor_settings.h"
 #endif
 
-///////////////////////////
-
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 	name = p_name;
 }
@@ -1275,9 +1273,7 @@ GDScript::~GDScript() {
 #endif
 }
 
-//////////////////////////////
-//         INSTANCE         //
-//////////////////////////////
+// INSTANCE
 
 bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	//member

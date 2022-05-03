@@ -464,8 +464,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 EditorOBJImporter::EditorOBJImporter() {
 }
 
-////////////////////////////////////////////////////
-
 String ResourceImporterOBJ::get_importer_name() const {
 	return "wavefront_obj";
 }

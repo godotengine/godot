@@ -346,8 +346,6 @@ void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 	polygon_buffers.polygons.erase(p_polygon);
 }
 
-////////////////////
-
 void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size) {
 	if (p_texture == RID()) {
 		p_texture = default_canvas_texture;

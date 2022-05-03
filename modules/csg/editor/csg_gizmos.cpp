@@ -36,8 +36,6 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
-///////////
-
 CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.0, 0.4, 1, 0.15));
 	create_material("shape_union_material", gizmo_color);

@@ -39,9 +39,7 @@
 #include "editor/editor_settings.h"
 #endif // TOOLS_ENABLED
 
-///////////////////////////////////////
 // Modification2D
-///////////////////////////////////////
 
 void SkeletonModification2D::_execute(float p_delta) {
 	GDVIRTUAL_CALL(_execute, p_delta);

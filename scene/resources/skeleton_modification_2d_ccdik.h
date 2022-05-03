@@ -34,9 +34,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 
-///////////////////////////////////////
 // SkeletonModification2DCCDIK
-///////////////////////////////////////
 
 class SkeletonModification2DCCDIK : public SkeletonModification2D {
 	GDCLASS(SkeletonModification2DCCDIK, SkeletonModification2D);

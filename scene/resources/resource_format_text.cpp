@@ -44,8 +44,6 @@
 
 #define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
 
-///
-
 void ResourceLoaderText::set_local_path(const String &p_local_path) {
 	res_path = p_local_path;
 }
@@ -1324,8 +1322,6 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 
 	return ResourceUID::INVALID_ID;
 }
-
-/////////////////////
 
 Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {

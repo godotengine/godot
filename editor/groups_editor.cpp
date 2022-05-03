@@ -569,8 +569,6 @@ GroupDialog::GroupDialog() {
 	_add_group_text_changed("");
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 void GroupsEditor::_add_group(const String &p_group) {
 	if (!node) {
 		return;

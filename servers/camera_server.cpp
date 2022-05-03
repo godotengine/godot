@@ -32,7 +32,6 @@
 #include "rendering_server.h"
 #include "servers/camera/camera_feed.h"
 
-////////////////////////////////////////////////////////
 // CameraServer
 
 CameraServer::CreateFunc CameraServer::create_func = nullptr;

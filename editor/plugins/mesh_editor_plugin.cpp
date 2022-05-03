@@ -160,8 +160,6 @@ MeshEditor::MeshEditor() {
 	rot_y = 0;
 }
 
-///////////////////////
-
 bool EditorInspectorPluginMesh::can_handle(Object *p_object) {
 	return Object::cast_to<Mesh>(p_object) != nullptr;
 }

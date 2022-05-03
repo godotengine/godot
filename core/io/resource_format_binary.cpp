@@ -1340,10 +1340,6 @@ ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_pat
 	return loader.uid;
 }
 
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
-
 void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_bytes) {
 	int extra = 4 - (p_bytes % 4);
 	if (extra < 4) {

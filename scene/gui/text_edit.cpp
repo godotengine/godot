@@ -43,9 +43,7 @@
 
 #include "scene/main/window.h"
 
-///////////////////////////////////////////////////////////////////////////////
-///                            TEXT                                         ///
-///////////////////////////////////////////////////////////////////////////////
+// TEXT
 
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 	if (font == p_font) {
@@ -416,9 +414,7 @@ void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
 	text.write[p_from_line].gutters.resize(gutter_count);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///                            TEXT EDIT                                    ///
-///////////////////////////////////////////////////////////////////////////////
+// TEXT EDIT
 
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {

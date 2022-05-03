@@ -101,8 +101,6 @@ VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
 	RS::get_singleton()->free(base);
 }
 
-//////////////////////////////////////
-
 void VisibleOnScreenEnabler3D::_screen_enter() {
 	_update_enable_mode(true);
 }

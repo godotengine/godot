@@ -414,8 +414,6 @@ void VisualShaderNode::_bind_methods() {
 VisualShaderNode::VisualShaderNode() {
 }
 
-/////////////////////////////////////////////////////////
-
 void VisualShaderNodeCustom::update_ports() {
 	{
 		input_ports.clear();
@@ -635,8 +633,6 @@ void VisualShaderNodeCustom::_bind_methods() {
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
 	simple_decl = false;
 }
-
-/////////////////////////////////////////////////////////
 
 void VisualShader::set_shader_type(Type p_type) {
 	current_type = p_type;
@@ -2652,8 +2648,6 @@ VisualShader::VisualShader() {
 	}
 }
 
-///////////////////////////////////////////////////////////
-
 const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	// Node3D
 
@@ -3471,8 +3465,6 @@ Vector<StringName> VisualShaderNodeUniformRef::get_editable_properties() const {
 VisualShaderNodeUniformRef::VisualShaderNodeUniformRef() {
 }
 
-////////////////////////////////////////////
-
 const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	////////////////////////////////////////////////////////////////////////
 	// Node3D.
@@ -3672,8 +3664,6 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 
 VisualShaderNodeOutput::VisualShaderNodeOutput() {
 }
-
-///////////////////////////
 
 void VisualShaderNodeUniform::set_uniform_name(const String &p_name) {
 	uniform_name = p_name;
@@ -4622,8 +4612,6 @@ VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type_by_inde
 	}
 	return PORT_TYPE_SCALAR;
 }
-
-//////////////
 
 void VisualShaderNodeVarying::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_varying_name", "name"), &VisualShaderNodeVarying::set_varying_name);

@@ -644,8 +644,6 @@ GodotTypeInfo::Metadata call_get_argument_metadata(int p_arg) {
 
 #endif // DEBUG_METHODS_ENABLED
 
-//////////////////////
-
 template <class T, class R, class... P, size_t... Is>
 void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;

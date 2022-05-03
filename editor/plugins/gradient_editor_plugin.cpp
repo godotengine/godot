@@ -88,8 +88,6 @@ GradientEditor::GradientEditor() {
 	editing = false;
 }
 
-///////////////////////
-
 void GradientReverseButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -106,8 +104,6 @@ void GradientReverseButton::_notification(int p_what) {
 Size2 GradientReverseButton::get_minimum_size() const {
 	return (get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"))->get_size() + Size2(margin * 2, margin * 2));
 }
-
-///////////////////////
 
 bool EditorInspectorPluginGradient::can_handle(Object *p_object) {
 	return Object::cast_to<Gradient>(p_object) != nullptr;

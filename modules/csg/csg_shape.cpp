@@ -662,16 +662,12 @@ CSGShape3D::~CSGShape3D() {
 	}
 }
 
-//////////////////////////////////
-
 CSGBrush *CSGCombiner3D::_build_brush() {
 	return memnew(CSGBrush); //does not build anything
 }
 
 CSGCombiner3D::CSGCombiner3D() {
 }
-
-/////////////////////
 
 CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials) {
 	CSGBrush *brush = memnew(CSGBrush);
@@ -714,8 +710,6 @@ bool CSGPrimitive3D::is_inverting_faces() {
 CSGPrimitive3D::CSGPrimitive3D() {
 	invert_faces = false;
 }
-
-/////////////////////
 
 CSGBrush *CSGMesh3D::_build_brush() {
 	if (!mesh.is_valid()) {
@@ -911,8 +905,6 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 Ref<Mesh> CSGMesh3D::get_mesh() {
 	return mesh;
 }
-
-////////////////////////////////
 
 CSGBrush *CSGSphere3D::_build_brush() {
 	// set our bounding box
@@ -1116,8 +1108,6 @@ CSGSphere3D::CSGSphere3D() {
 	smooth_faces = true;
 }
 
-///////////////
-
 CSGBrush *CSGBox3D::_build_brush() {
 	// set our bounding box
 
@@ -1248,8 +1238,6 @@ void CSGBox3D::set_material(const Ref<Material> &p_material) {
 Ref<Material> CSGBox3D::get_material() const {
 	return material;
 }
-
-///////////////
 
 CSGBrush *CSGCylinder3D::_build_brush() {
 	// set our bounding box
@@ -1481,8 +1469,6 @@ CSGCylinder3D::CSGCylinder3D() {
 	smooth_faces = true;
 }
 
-///////////////
-
 CSGBrush *CSGTorus3D::_build_brush() {
 	// set our bounding box
 
@@ -1706,8 +1692,6 @@ CSGTorus3D::CSGTorus3D() {
 	ring_sides = 6;
 	smooth_faces = true;
 }
-
-///////////////
 
 CSGBrush *CSGPolygon3D::_build_brush() {
 	CSGBrush *brush = memnew(CSGBrush);

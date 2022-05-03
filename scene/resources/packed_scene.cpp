@@ -1597,8 +1597,6 @@ void SceneState::_bind_methods() {
 SceneState::SceneState() {
 }
 
-////////////////
-
 void PackedScene::_set_bundled_scene(const Dictionary &p_scene) {
 	state->set_bundled_scene(p_scene);
 }

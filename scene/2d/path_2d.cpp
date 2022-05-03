@@ -161,8 +161,6 @@ void Path2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-
 void PathFollow2D::_update_transform() {
 	if (!path) {
 		return;

@@ -70,8 +70,6 @@ static FloatConstantDef float_constant_defs[] = {
 
 const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConstantDef);
 
-///////////////////
-
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 	Object *ret;
 	if (GDVIRTUAL_CALL(_create_editor, p_parent_resource, p_node, ret)) {
@@ -84,8 +82,6 @@ void VisualShaderNodePlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_create_editor, "parent_resource", "visual_shader_node");
 }
 
-///////////////////
-
 static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxEmpty> style(memnew(StyleBoxEmpty));
 	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
@@ -94,8 +90,6 @@ static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_
 	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
 	return style;
 }
-
-///////////////////
 
 VisualShaderGraphPlugin::VisualShaderGraphPlugin() {
 }
@@ -1071,8 +1065,6 @@ void VisualShaderGraphPlugin::disconnect_nodes(VisualShader::Type p_type, int p_
 
 VisualShaderGraphPlugin::~VisualShaderGraphPlugin() {
 }
-
-/////////////////
 
 void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	bool changed = false;
@@ -5638,8 +5630,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	property_editor->connect("variant_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
 }
 
-/////////////////
-
 void VisualShaderEditorPlugin::edit(Object *p_object) {
 	visual_shader_editor->edit(Object::cast_to<VisualShader>(p_object));
 }
@@ -5677,8 +5667,6 @@ VisualShaderEditorPlugin::VisualShaderEditorPlugin() {
 
 VisualShaderEditorPlugin::~VisualShaderEditorPlugin() {
 }
-
-////////////////
 
 class VisualShaderNodePluginInputEditor : public OptionButton {
 	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton);
@@ -5728,8 +5716,6 @@ public:
 		}
 	}
 };
-
-////////////////
 
 class VisualShaderNodePluginVaryingEditor : public OptionButton {
 	GDCLASS(VisualShaderNodePluginVaryingEditor, OptionButton);
@@ -5806,8 +5792,6 @@ public:
 	}
 };
 
-////////////////
-
 class VisualShaderNodePluginUniformRefEditor : public OptionButton {
 	GDCLASS(VisualShaderNodePluginUniformRefEditor, OptionButton);
 
@@ -5858,8 +5842,6 @@ public:
 		}
 	}
 };
-
-////////////////
 
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
@@ -6191,8 +6173,6 @@ bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Var
 	return false;
 }
 
-//////////////////////////////////
-
 void VisualShaderNodePortPreview::_shader_changed() {
 	if (shader.is_null()) {
 		return;
@@ -6286,8 +6266,6 @@ void VisualShaderNodePortPreview::_notification(int p_what) {
 
 void VisualShaderNodePortPreview::_bind_methods() {
 }
-
-//////////////////////////////////
 
 String VisualShaderConversionPlugin::converts_to() const {
 	return "Shader";

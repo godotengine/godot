@@ -30,8 +30,6 @@
 
 #include "animation_node_state_machine.h"
 
-/////////////////////////////////////////////////
-
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
 	switch_mode = p_mode;
 }
@@ -131,8 +129,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 }
-
-////////////////////////////////////////////////////////
 
 void AnimationNodeStateMachinePlayback::travel(const StringName &p_state) {
 	start_request_travel = true;
@@ -594,8 +590,6 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 	set_local_to_scene(true); //only one per instantiated scene
 }
-
-///////////////////////////////////////////////////////
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));

@@ -129,8 +129,6 @@ RayCast2DEditor::RayCast2DEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 }
 
-///////////////////////
-
 void RayCast2DEditorPlugin::edit(Object *p_object) {
 	ray_cast_2d_editor->edit(Object::cast_to<RayCast2D>(p_object));
 }

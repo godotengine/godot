@@ -37,7 +37,6 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
-////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
 
 void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
@@ -233,7 +232,6 @@ RendererSceneSkyRD::SkyShaderData::~SkyShaderData() {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Sky material
 
 bool RendererSceneSkyRD::SkyMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
@@ -248,7 +246,6 @@ RendererSceneSkyRD::SkyMaterialData::~SkyMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Render sky
 
 static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
@@ -314,7 +311,6 @@ void RendererSceneSkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // ReflectionData
 
 void RendererSceneSkyRD::ReflectionData::clear_reflection_data() {
@@ -587,7 +583,6 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_mipmaps(RendererStora
 	RD::get_singleton()->draw_command_end_label();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // RendererSceneSkyRD::Sky
 
 void RendererSceneSkyRD::Sky::free(RendererStorageRD *p_storage) {
@@ -761,7 +756,6 @@ Ref<Image> RendererSceneSkyRD::Sky::bake_panorama(RendererStorageRD *p_storage, 
 	return Ref<Image>();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // RendererSceneSkyRD
 
 RendererRD::ShaderData *RendererSceneSkyRD::_create_sky_shader_func() {

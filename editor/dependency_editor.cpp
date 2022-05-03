@@ -270,7 +270,6 @@ DependencyEditor::DependencyEditor() {
 	add_child(search);
 }
 
-/////////////////////////////////////
 void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->clear();
 	file_options->reset_size();
@@ -357,8 +356,6 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	owners->set_allow_rmb_select(true);
 	add_child(owners);
 }
-
-///////////////////////
 
 void DependencyRemoveDialog::_find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder) {
 	if (!efsd) {
@@ -582,8 +579,6 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
-//////////////
-
 void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Vector<String> &report) {
 	mode = p_mode;
 	for_file = p_for_file;
@@ -647,8 +642,6 @@ DependencyErrorDialog::DependencyErrorDialog() {
 
 	set_title(TTR("Errors loading!"));
 }
-
-//////////////////////////////////////////////////////////////////////
 
 void OrphanResourcesDialog::ok_pressed() {
 	paths.clear();

@@ -82,8 +82,6 @@ public:
 	~Joint3D();
 };
 
-///////////////////////////////////////////
-
 class PinJoint3D : public Joint3D {
 	GDCLASS(PinJoint3D, Joint3D);
 

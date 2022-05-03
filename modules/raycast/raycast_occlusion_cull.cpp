@@ -201,8 +201,6 @@ RaycastOcclusionCull::RaycastHZBuffer::~RaycastHZBuffer() {
 	}
 }
 
-////////////////////////////////////////////////////////
-
 bool RaycastOcclusionCull::is_occluder(RID p_rid) {
 	return occluder_owner.owns(p_rid);
 }
@@ -243,8 +241,6 @@ void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 	memdelete(occluder);
 	occluder_owner.free(p_occluder);
 }
-
-////////////////////////////////////////////////////////
 
 void RaycastOcclusionCull::add_scenario(RID p_scenario) {
 	if (scenarios.has(p_scenario)) {
@@ -502,8 +498,6 @@ void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32
 	p_thread_pool.do_work(p_tile_count, this, &Scenario::_raycast, &td);
 }
 
-////////////////////////////////////////////////////////
-
 void RaycastOcclusionCull::add_buffer(RID p_buffer) {
 	ERR_FAIL_COND(buffers.has(p_buffer));
 	buffers[p_buffer] = RaycastHZBuffer();
@@ -563,8 +557,6 @@ RID RaycastOcclusionCull::buffer_get_debug_texture(RID p_buffer) {
 	ERR_FAIL_COND_V(!buffers.has(p_buffer), RID());
 	return buffers[p_buffer].get_debug_texture();
 }
-
-////////////////////////////////////////////////////////
 
 void RaycastOcclusionCull::set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) {
 	if (build_quality == p_quality) {

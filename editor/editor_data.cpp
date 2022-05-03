@@ -220,8 +220,6 @@ EditorSelectionHistory::EditorSelectionHistory() {
 	current_elem_idx = -1;
 }
 
-////////////////////////////////////////////////////////////
-
 EditorPlugin *EditorData::get_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
 	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
@@ -995,8 +993,6 @@ EditorData::EditorData() {
 	current_edited_scene = -1;
 	script_class_load_icon_paths();
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 void EditorSelection::_node_removed(Node *p_node) {
 	if (!selection.has(p_node)) {

@@ -34,9 +34,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 
-///////////////////////////////////////
 // SkeletonModification2DJIGGLE
-///////////////////////////////////////
 
 class SkeletonModification2DJiggle : public SkeletonModification2D {
 	GDCLASS(SkeletonModification2DJiggle, SkeletonModification2D);

@@ -329,8 +329,6 @@ CallableCustom::CallableCustom() {
 	ref_count.init();
 }
 
-//////////////////////////////////
-
 Object *Signal::get_object() const {
 	return ObjectDB::get_instance(object);
 }

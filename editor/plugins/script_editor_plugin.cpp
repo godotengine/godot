@@ -89,8 +89,6 @@ void EditorSyntaxHighlighter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_supported_languages)
 }
 
-////
-
 void EditorStandardSyntaxHighlighter::_update_cache() {
 	highlighter->set_text_edit(text_edit);
 	highlighter->clear_keyword_colors();
@@ -202,15 +200,11 @@ Ref<EditorSyntaxHighlighter> EditorStandardSyntaxHighlighter::_create() const {
 	return syntax_highlighter;
 }
 
-////
-
 Ref<EditorSyntaxHighlighter> EditorPlainTextSyntaxHighlighter::_create() const {
 	Ref<EditorPlainTextSyntaxHighlighter> syntax_highlighter;
 	syntax_highlighter.instantiate();
 	return syntax_highlighter;
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 /*** SCRIPT EDITOR ****/
 
@@ -386,8 +380,6 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	search_options->set_hide_folding(true);
 	search_options->add_theme_constant_override("draw_guides", 1);
 }
-
-/////////////////////////////////
 
 ScriptEditor *ScriptEditor::script_editor = nullptr;
 

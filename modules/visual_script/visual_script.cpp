@@ -139,10 +139,6 @@ Ref<VisualScript> VisualScriptNode::get_visual_script() const {
 VisualScriptNode::VisualScriptNode() {
 }
 
-////////////////
-
-/////////////////////
-
 VisualScriptNodeInstance::VisualScriptNodeInstance() {
 }
 
@@ -724,8 +720,6 @@ int VisualScript::get_available_id() const {
 	return (max + 1);
 }
 
-/////////////////////////////////
-
 bool VisualScript::can_instantiate() const {
 	return true; // ScriptServer::is_scripting_enabled();
 }
@@ -1202,8 +1196,6 @@ VisualScript::~VisualScript() {
 		remove_node(E);
 	}
 }
-
-////////////////////////////////////////////
 
 bool VisualScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	Map<StringName, Variant>::Element *E = variables.find(p_name);
@@ -2093,10 +2085,6 @@ VisualScriptInstance::~VisualScriptInstance() {
 	}
 }
 
-/////////////////////////////////////////////
-
-/////////////////////
-
 Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(function == StringName(), Variant());
 
@@ -2196,8 +2184,6 @@ VisualScriptFunctionState::~VisualScriptFunctionState() {
 		}
 	}
 }
-
-///////////////////////////////////////////////
 
 String VisualScriptLanguage::get_name() const {
 	return "VisualScript";

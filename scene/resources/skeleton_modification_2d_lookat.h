@@ -34,9 +34,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 
-///////////////////////////////////////
 // SkeletonModification2DLookAt
-///////////////////////////////////////
 
 class SkeletonModification2DLookAt : public SkeletonModification2D {
 	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);

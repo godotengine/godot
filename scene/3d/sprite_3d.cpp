@@ -442,8 +442,6 @@ SpriteBase3D::~SpriteBase3D() {
 	RenderingServer::get_singleton()->free(material);
 }
 
-///////////////////////////////////////////
-
 void Sprite3D::_draw() {
 	if (get_base() != get_mesh()) {
 		set_base(get_mesh());
@@ -803,8 +801,6 @@ void Sprite3D::_bind_methods() {
 
 Sprite3D::Sprite3D() {
 }
-
-////////////////////////////////////////
 
 void AnimatedSprite3D::_draw() {
 	if (get_base() != get_mesh()) {

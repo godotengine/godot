@@ -115,8 +115,6 @@ GodotAreaPair3D::~GodotAreaPair3D() {
 	area->remove_constraint(this);
 }
 
-////////////////////////////////////////////////////
-
 bool GodotArea2Pair3D::setup(real_t p_step) {
 	bool result_a = area_a->collides_with(area_b);
 	bool result_b = area_b->collides_with(area_a);
@@ -199,8 +197,6 @@ GodotArea2Pair3D::~GodotArea2Pair3D() {
 	area_a->remove_constraint(this);
 	area_b->remove_constraint(this);
 }
-
-////////////////////////////////////////////////////
 
 bool GodotAreaSoftBodyPair3D::setup(real_t p_step) {
 	bool result = false;

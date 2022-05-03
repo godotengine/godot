@@ -113,8 +113,6 @@ private:
 	}
 };
 
-/////////////////////////////////////////////////////////////////////////////////
-
 class NoiseEditorInspectorPlugin : public EditorInspectorPlugin {
 	GDCLASS(NoiseEditorInspectorPlugin, EditorInspectorPlugin)
 public:
@@ -133,8 +131,6 @@ public:
 		}
 	}
 };
-
-/////////////////////////////////////////////////////////////////////////////////
 
 String NoiseEditorPlugin::get_name() const {
 	return Noise::get_class_static();

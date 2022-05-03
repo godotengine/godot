@@ -35,8 +35,6 @@
 #include "editor/editor_scale.h"
 #include "scene/gui/separator.h"
 
-/////////////////////////////////////////
-
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Left Stick Left, Joystick 0 Left"),
@@ -755,8 +753,6 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	// Default to first tab
 	tab_container->set_current_tab(0);
 }
-
-/////////////////////////////////////////
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();

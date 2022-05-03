@@ -30,8 +30,6 @@
 
 #include "fog_volume.h"
 
-///////////////////////////
-
 void FogVolume::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &FogVolume::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &FogVolume::get_extents);

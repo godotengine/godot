@@ -35,9 +35,7 @@
 #include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
 
-//////////////////////////////////////////
 ////////////////YIELD///////////
-//////////////////////////////////////////
 
 int VisualScriptYield::get_output_sequence_port_count() const {
 	return 1;
@@ -207,9 +205,7 @@ static Ref<VisualScriptNode> create_yield_node(const String &p_name) {
 	return node;
 }
 
-///////////////////////////////////////////////////
 ////////////////YIELD SIGNAL//////////////////////
-//////////////////////////////////////////////////
 
 int VisualScriptYieldSignal::get_output_sequence_port_count() const {
 	return 1;

@@ -185,8 +185,6 @@ GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 	add_child(checkerboard);
 }
 
-///////////////////////
-
 void GradientTexture2DEditor::_reverse_button_pressed() {
 	undo_redo->create_action(TTR("Swap GradientTexture2D Fill Points"));
 	undo_redo->add_do_property(texture.ptr(), "fill_from", texture->get_fill_to());
@@ -257,8 +255,6 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	_set_snap_size(snap_size_edit->get_value());
 }
 
-///////////////////////
-
 bool EditorInspectorPluginGradientTexture2D::can_handle(Object *p_object) {
 	return Object::cast_to<GradientTexture2D>(p_object) != nullptr;
 }
@@ -274,8 +270,6 @@ void EditorInspectorPluginGradientTexture2D::parse_begin(Object *p_object) {
 	editor->set_texture(t);
 	add_custom_control(editor);
 }
-
-///////////////////////
 
 GradientTexture2DEditorPlugin::GradientTexture2DEditorPlugin() {
 	Ref<EditorInspectorPluginGradientTexture2D> plugin;

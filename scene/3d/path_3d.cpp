@@ -76,8 +76,6 @@ void Path3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
-//////////////
-
 void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	if (!path) {
 		return;

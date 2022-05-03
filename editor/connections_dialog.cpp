@@ -549,8 +549,6 @@ ConnectDialog::~ConnectDialog() {
 	memdelete(cdbinds);
 }
 
-//////////////////////////////////////////
-
 // Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);

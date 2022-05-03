@@ -84,8 +84,6 @@ AudioStreamGenerator::AudioStreamGenerator() {
 	buffer_len = 0.5;
 }
 
-////////////////
-
 bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 	if (buffer.space_left() < 1) {
 		return false;

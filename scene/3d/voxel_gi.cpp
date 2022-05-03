@@ -244,9 +244,6 @@ VoxelGIData::~VoxelGIData() {
 	RS::get_singleton()->free(probe);
 }
 
-//////////////////////
-//////////////////////
-
 void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	if (p_data.is_valid()) {
 		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());

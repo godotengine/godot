@@ -755,9 +755,7 @@ public:
 	EditorPropertyResource();
 };
 
-///////////////////////////////////////////////////
-/// \brief The EditorInspectorDefaultPlugin class
-///
+// The EditorInspectorDefaultPlugin class
 class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorDefaultPlugin, EditorInspectorPlugin);
 

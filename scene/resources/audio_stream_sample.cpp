@@ -408,8 +408,6 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
 
-/////////////////////
-
 void AudioStreamSample::set_format(Format p_format) {
 	format = p_format;
 }

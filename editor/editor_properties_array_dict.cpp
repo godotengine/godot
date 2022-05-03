@@ -76,8 +76,6 @@ Variant EditorPropertyArrayObject::get_array() {
 EditorPropertyArrayObject::EditorPropertyArrayObject() {
 }
 
-///////////////////
-
 bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 

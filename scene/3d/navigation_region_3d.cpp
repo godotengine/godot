@@ -77,8 +77,6 @@ RID NavigationRegion3D::get_region_rid() const {
 	return region;
 }
 
-/////////////////////////////
-
 void NavigationRegion3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

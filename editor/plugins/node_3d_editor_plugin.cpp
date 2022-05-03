@@ -4723,8 +4723,6 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 	memdelete(frame_time_gradient);
 }
 
-//////////////////////////////////////////////////////////////
-
 void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -5033,8 +5031,6 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	dragging_v = false;
 	dragging_h = false;
 }
-
-///////////////////////////////////////////////////////////////////
 
 Node3DEditor *Node3DEditor::singleton = nullptr;
 

@@ -37,7 +37,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/text_edit.h"
 
-///////////////////////////////////////////////////////////////////////////
 // Interaction profile editor base
 
 void OpenXRInteractionProfileEditorBase::_bind_methods() {
@@ -119,7 +118,6 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase(Ref<OpenX
 	set_v_size_flags(SIZE_EXPAND_FILL);
 }
 
-///////////////////////////////////////////////////////////////////////////
 // Default interaction profile editor
 
 void OpenXRInteractionProfileEditor::select_action_for(const String p_io_path) {

@@ -354,7 +354,6 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
 }
 
-/////////////////////////////////////////
 /* PanoramaSkyMaterial */
 
 void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
@@ -453,7 +452,6 @@ PanoramaSkyMaterial::PanoramaSkyMaterial() {
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {
 }
 
-//////////////////////////////////
 /* PhysicalSkyMaterial */
 
 void PhysicalSkyMaterial::set_rayleigh_coefficient(float p_rayleigh) {

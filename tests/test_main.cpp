@@ -154,8 +154,6 @@ int test_main(int argc, char *argv[]) {
 	return test_context.run();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 struct GodotTestCaseListener : public doctest::IReporter {
 	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}
 

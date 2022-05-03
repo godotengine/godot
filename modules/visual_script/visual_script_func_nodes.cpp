@@ -38,9 +38,7 @@
 #include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
 
-//////////////////////////////////////////
 ////////////////CALL//////////////////////
-//////////////////////////////////////////
 
 int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 	if ((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_builtin_method_const(basic_type, function))) {
@@ -904,9 +902,7 @@ static Ref<VisualScriptNode> create_function_call_node(const String &p_name) {
 	return node;
 }
 
-//////////////////////////////////////////
 ////////////////SET//////////////////////
-//////////////////////////////////////////
 
 int VisualScriptPropertySet::get_output_sequence_port_count() const {
 	return 1;
@@ -1644,9 +1640,7 @@ static Ref<VisualScriptNode> create_property_set_node(const String &p_name) {
 	return node;
 }
 
-//////////////////////////////////////////
 ////////////////GET//////////////////////
-//////////////////////////////////////////
 
 int VisualScriptPropertyGet::get_output_sequence_port_count() const {
 	return 0; // (call_mode==CALL_MODE_SELF || call_mode==CALL_MODE_NODE_PATH)?0:1;
@@ -2253,9 +2247,7 @@ static Ref<VisualScriptNode> create_property_get_node(const String &p_name) {
 	return node;
 }
 
-//////////////////////////////////////////
 ////////////////EMIT//////////////////////
-//////////////////////////////////////////
 
 int VisualScriptEmitSignal::get_output_sequence_port_count() const {
 	return 1;

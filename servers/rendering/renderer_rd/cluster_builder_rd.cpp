@@ -215,8 +215,6 @@ ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
 	cluster_debug.cluster_debug_shader.version_free(cluster_debug.shader_version);
 }
 
-/////////////////////////////
-
 void ClusterBuilderRD::_clear() {
 	if (cluster_buffer.is_null()) {
 		return; //nothing to clear

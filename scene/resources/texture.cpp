@@ -127,8 +127,6 @@ void Texture2D::_bind_methods() {
 Texture2D::Texture2D() {
 }
 
-/////////////////////
-
 void ImageTexture::reload_from_file() {
 	String path = ResourceLoader::path_remap(get_path());
 	if (!path.is_resource_file()) {
@@ -337,8 +335,6 @@ ImageTexture::~ImageTexture() {
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
-
-/////////////////////
 
 void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	if (p_data.size() == 0) {
@@ -643,8 +639,6 @@ PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
-
-//////////////////////////////////////////
 
 Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_size_limit) {
 	uint32_t data_format = f->get_32();
@@ -1087,8 +1081,6 @@ String ResourceFormatLoaderCompressedTexture2D::get_resource_type(const String &
 	return "";
 }
 
-////////////////////////////////////
-
 TypedArray<Image> Texture3D::_get_datai() const {
 	Vector<Ref<Image>> data = get_data();
 
@@ -1168,7 +1160,6 @@ void Texture3D::_bind_methods() {
 	GDVIRTUAL_BIND(_has_mipmaps);
 	GDVIRTUAL_BIND(_get_data);
 }
-//////////////////////////////////////////
 
 Image::Format ImageTexture3D::get_format() const {
 	return format;
@@ -1252,8 +1243,6 @@ ImageTexture3D::~ImageTexture3D() {
 		RS::get_singleton()->free(texture);
 	}
 }
-
-////////////////////////////////////////////
 
 void CompressedTexture3D::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
@@ -1414,8 +1403,6 @@ CompressedTexture3D::~CompressedTexture3D() {
 	}
 }
 
-/////////////////////////////
-
 Ref<Resource> ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<CompressedTexture3D> st;
 	st.instantiate();
@@ -1444,8 +1431,6 @@ String ResourceFormatLoaderCompressedTexture3D::get_resource_type(const String &
 	}
 	return "";
 }
-
-////////////////////////////////////////////
 
 int AtlasTexture::get_width() const {
 	if (region.size.width == 0) {
@@ -1668,8 +1653,6 @@ Ref<Image> AtlasTexture::get_image() const {
 
 AtlasTexture::AtlasTexture() {}
 
-/////////////////////////////////////////
-
 int MeshTexture::get_width() const {
 	return size.width;
 }
@@ -1792,8 +1775,6 @@ void MeshTexture::_bind_methods() {
 
 MeshTexture::MeshTexture() {
 }
-
-//////////////////////////////////////////
 
 void CurveTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
@@ -1937,8 +1918,6 @@ CurveTexture::~CurveTexture() {
 		RS::get_singleton()->free(_texture);
 	}
 }
-
-//////////////////
 
 void CurveXYZTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveXYZTexture::set_width);
@@ -2136,8 +2115,6 @@ CurveXYZTexture::~CurveXYZTexture() {
 	}
 }
 
-//////////////////
-
 GradientTexture1D::GradientTexture1D() {
 	_queue_update();
 }
@@ -2277,8 +2254,6 @@ Ref<Image> GradientTexture1D::get_image() const {
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
-
-//////////////////
 
 GradientTexture2D::GradientTexture2D() {
 	_queue_update();
@@ -2535,8 +2510,6 @@ void GradientTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(REPEAT_MIRROR);
 }
 
-//////////////////////////////////////
-
 void ProxyTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
@@ -2606,8 +2579,6 @@ ProxyTexture::~ProxyTexture() {
 		RS::get_singleton()->free(proxy);
 	}
 }
-
-//////////////////////////////////////////////
 
 void AnimatedTexture::_update_proxy() {
 	RWLockRead r(rw_lock);
@@ -2856,8 +2827,6 @@ AnimatedTexture::~AnimatedTexture() {
 	RS::get_singleton()->free(proxy_ph);
 }
 
-///////////////////////////////
-
 Image::Format TextureLayered::get_format() const {
 	Image::Format ret;
 	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
@@ -2937,7 +2906,6 @@ void TextureLayered::_bind_methods() {
 	GDVIRTUAL_BIND(_get_layer_data, "layer_index");
 }
 
-///////////////////////////////
 Image::Format ImageTextureLayered::get_format() const {
 	return format;
 }
@@ -3073,8 +3041,6 @@ ImageTextureLayered::~ImageTextureLayered() {
 		RS::get_singleton()->free(texture);
 	}
 }
-
-///////////////////////////////////////////
 
 void CompressedTextureLayered::set_path(const String &p_path, bool p_take_over) {
 	if (texture.is_valid()) {
@@ -3241,8 +3207,6 @@ CompressedTextureLayered::~CompressedTextureLayered() {
 	}
 }
 
-/////////////////////////////////////////////////
-
 Ref<Resource> ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<CompressedTextureLayered> ct;
 	if (p_path.get_extension().to_lower() == "ctexarray") {
@@ -3296,8 +3260,6 @@ String ResourceFormatLoaderCompressedTextureLayered::get_resource_type(const Str
 	}
 	return "";
 }
-
-///////////////////////////////
 
 void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);

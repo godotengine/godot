@@ -391,7 +391,6 @@ RID NavigationRegion2D::get_region_rid() const {
 	return region;
 }
 
-/////////////////////////////
 #ifdef TOOLS_ENABLED
 Rect2 NavigationRegion2D::_edit_get_rect() const {
 	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();

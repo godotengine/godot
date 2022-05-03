@@ -246,9 +246,6 @@ public:
 VARIANT_ENUM_CAST(VisualShader::Type)
 VARIANT_ENUM_CAST(VisualShader::VaryingMode)
 VARIANT_ENUM_CAST(VisualShader::VaryingType)
-///
-///
-///
 
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
@@ -410,8 +407,6 @@ public:
 	void _set_initialized(bool p_enabled);
 };
 
-/////
-
 class VisualShaderNodeInput : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeInput, VisualShaderNode);
 
@@ -468,8 +463,6 @@ public:
 
 	VisualShaderNodeInput();
 };
-
-///
 
 class VisualShaderNodeOutput : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeOutput, VisualShaderNode);

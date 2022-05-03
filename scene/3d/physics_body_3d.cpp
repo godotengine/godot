@@ -1162,8 +1162,6 @@ void RigidDynamicBody3D::_reload_physics_characteristics() {
 	}
 }
 
-///////////////////////////////////////
-
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
@@ -2045,8 +2043,6 @@ CharacterBody3D::~CharacterBody3D() {
 	}
 }
 
-///////////////////////////////////////
-
 Vector3 KinematicCollision3D::get_travel() const {
 	return result.travel;
 }
@@ -2141,8 +2137,6 @@ void KinematicCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index", "collision_index"), &KinematicCollision3D::get_collider_shape_index, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collider_velocity", "collision_index"), &KinematicCollision3D::get_collider_velocity, DEFVAL(0));
 }
-
-///////////////////////////////////////
 
 bool PhysicalBone3D::JointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
 	return false;

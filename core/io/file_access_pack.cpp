@@ -124,8 +124,6 @@ PackedData::~PackedData() {
 	_free_packed_dirs(root);
 }
 
-//////////////////////////////////////////////////////////////////
-
 bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
@@ -256,8 +254,6 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
 }
-
-//////////////////////////////////////////////////////////////////
 
 Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -394,9 +390,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	eof = false;
 }
 
-//////////////////////////////////////////////////////////////////////////////////
 // DIR ACCESS
-//////////////////////////////////////////////////////////////////////////////////
 
 Error DirAccessPack::list_dir_begin() {
 	list_dirs.clear();

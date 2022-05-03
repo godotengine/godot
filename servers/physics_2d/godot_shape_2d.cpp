@@ -647,8 +647,6 @@ GodotConvexPolygonShape2D::~GodotConvexPolygonShape2D() {
 	}
 }
 
-//////////////////////////////////////////////////
-
 void GodotConcavePolygonShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	real_t d = -1e10;
 	int idx = -1;

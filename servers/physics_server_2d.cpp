@@ -145,8 +145,6 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 
 PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
 
-///////////////////////////////////////////////////////
-
 void PhysicsRayQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -195,8 +193,6 @@ void PhysicsRayQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 }
 
-///////////////////////////////////////////////////////
-
 void PhysicsPointQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -240,8 +236,6 @@ void PhysicsPointQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
-
-///////////////////////////////////////////////////////
 
 void PhysicsShapeQueryParameters2D::set_shape(const Ref<Resource> &p_shape_ref) {
 	ERR_FAIL_COND(p_shape_ref.is_null());
@@ -311,8 +305,6 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
-
-///////////////////////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {
 	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
@@ -446,8 +438,6 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState2D::_get_rest_info);
 }
 
-///////////////////////////////
-
 Vector<RID> PhysicsTestMotionParameters2D::get_exclude_bodies() const {
 	Vector<RID> exclude;
 	exclude.resize(parameters.exclude_bodies.size());
@@ -512,8 +502,6 @@ void PhysicsTestMotionParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
 }
-
-///////////////////////////////
 
 Vector2 PhysicsTestMotionResult2D::get_travel() const {
 	return result.travel;
@@ -582,8 +570,6 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult2D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult2D::get_collision_unsafe_fraction);
 }
-
-///////////////////////////////////////
 
 bool PhysicsServer2D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	ERR_FAIL_COND_V(!p_parameters.is_valid(), false);

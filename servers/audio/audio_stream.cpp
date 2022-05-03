@@ -92,7 +92,6 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 }
-//////////////////////////////
 
 void AudioStreamPlaybackResampled::begin_resample() {
 	//clear cubic interpolation history
@@ -188,8 +187,6 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 	return mixed_frames_total;
 }
 
-////////////////////////////////
-
 Ref<AudioStreamPlayback> AudioStream::instance_playback() {
 	Ref<AudioStreamPlayback> ret;
 	if (GDVIRTUAL_CALL(_instance_playback, ret)) {
@@ -230,8 +227,6 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
 }
-
-////////////////////////////////
 
 Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
 	Ref<AudioStreamPlaybackMicrophone> playback;
@@ -373,8 +368,6 @@ AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
 
 AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 }
-
-////////////////////////////////
 
 void AudioStreamRandomizer::add_stream(int p_index) {
 	if (p_index < 0) {
@@ -782,4 +775,3 @@ int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale,
 AudioStreamPlaybackRandomizer::~AudioStreamPlaybackRandomizer() {
 	randomizer->playbacks.erase(this);
 }
-/////////////////////////////////////////////

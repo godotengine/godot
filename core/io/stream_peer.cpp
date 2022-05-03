@@ -408,8 +408,6 @@ void StreamPeer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
 }
 
-////////////////////////////////
-
 int StreamPeerExtension::get_available_bytes() const {
 	int count;
 	if (GDVIRTUAL_CALL(_get_available_bytes, count)) {
@@ -464,8 +462,6 @@ void StreamPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_put_partial_data, "p_data", "p_bytes", "r_sent");
 	GDVIRTUAL_BIND(_get_available_bytes);
 }
-
-////////////////////////////////
 
 void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("seek", "position"), &StreamPeerBuffer::seek);

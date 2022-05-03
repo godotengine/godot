@@ -271,8 +271,6 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	//filters->connect("item_edited", this, "_filter_edited");
 }
 
-//////////////////////////
-
 bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {
 	return true; // Can handle everything.
 }

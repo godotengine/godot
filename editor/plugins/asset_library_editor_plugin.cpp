@@ -145,8 +145,6 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-
 void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
 	switch (p_type) {
 		case EditorAssetLibrary::IMAGE_QUEUE_ICON: {
@@ -311,8 +309,6 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	get_ok_button()->set_text(TTR("Download"));
 	get_cancel_button()->set_text(TTR("Close"));
 }
-
-///////////////////////////////////////////////////////////////////////////////////
 
 void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 	String error_text;
@@ -573,7 +569,6 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	external_install = false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -1548,8 +1543,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_installer = nullptr;
 }
-
-///////
 
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {

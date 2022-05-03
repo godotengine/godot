@@ -346,8 +346,6 @@ StyleBoxTexture::StyleBoxTexture() {}
 
 StyleBoxTexture::~StyleBoxTexture() {}
 
-////////////////
-
 void StyleBoxFlat::set_bg_color(const Color &p_color) {
 	bg_color = p_color;
 	emit_changed();

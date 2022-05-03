@@ -112,7 +112,6 @@ void EditorSceneFormatImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
 }
 
-/////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
 	GDVIRTUAL_BIND(_post_import, "scene")
 	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImport::get_source_file);
@@ -137,8 +136,6 @@ void EditorScenePostImport::init(const String &p_source_file) {
 
 EditorScenePostImport::EditorScenePostImport() {
 }
-
-///////////////////////////////////////////////////////
 
 Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(current_options == nullptr && current_options_dict == nullptr, Variant(), "get_option_value called from a function where option values are not available.");
@@ -234,8 +231,6 @@ void EditorScenePostImportPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE);
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_MAX);
 }
-
-/////////////////////////////////////////////////////////
 
 String ResourceImporterScene::get_importer_name() const {
 	return animation_importer ? "animation_library" : "scene";
@@ -2229,8 +2224,6 @@ void ResourceImporterScene::clean_up_importer_plugins() {
 	importers.clear();
 	post_importer_plugins.clear();
 }
-
-///////////////////////////////////////
 
 uint32_t EditorSceneFormatImporterESCN::get_import_flags() const {
 	return IMPORT_SCENE;

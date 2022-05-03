@@ -223,10 +223,6 @@ GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, Go
 	}
 }
 
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-
 static inline void
 k_tensor(GodotBody2D *a, GodotBody2D *b, Vector2 r1, Vector2 r2, Vector2 *k1, Vector2 *k2) {
 	// calculate mass matrix
@@ -378,10 +374,6 @@ GodotGrooveJoint2D::GodotGrooveJoint2D(const Vector2 &p_a_groove1, const Vector2
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
 }
-
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-//////////////////////////////////////////////
 
 bool GodotDampedSpringJoint2D::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);

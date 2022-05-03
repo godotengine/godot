@@ -1690,7 +1690,6 @@ MaterialData *ParticlesStorage::_create_particles_material_func(ParticlesShaderD
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
-////////
 
 /* PARTICLES COLLISION API */
 

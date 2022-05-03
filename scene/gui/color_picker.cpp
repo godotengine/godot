@@ -1279,8 +1279,6 @@ ColorPicker::ColorPicker() :
 	preset_container->add_child(btn_add_preset);
 }
 
-/////////////////
-
 void ColorPickerButton::_about_to_popup() {
 	set_pressed(true);
 	if (picker) {
@@ -1433,8 +1431,6 @@ ColorPickerButton::ColorPickerButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 }
-
-/////////////////
 
 void ColorPresetButton::_notification(int p_what) {
 	switch (p_what) {

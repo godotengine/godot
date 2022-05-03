@@ -161,8 +161,6 @@ GDScriptFunction::~GDScriptFunction() {
 #endif
 }
 
-/////////////////////
-
 Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	Variant arg;
 	r_error.error = Callable::CallError::CALL_OK;

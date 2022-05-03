@@ -1017,8 +1017,6 @@ void Animation::_clear(T &p_keys) {
 	p_keys.clear();
 }
 
-////
-
 int Animation::position_track_insert_key(int p_track, double p_time, const Vector3 &p_position) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -1089,8 +1087,6 @@ Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 
 	return OK;
 }
 
-////
-
 int Animation::rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -1160,8 +1156,6 @@ Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaterni
 	*r_interpolation = tk;
 	return OK;
 }
-
-////
 
 int Animation::scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);

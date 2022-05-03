@@ -60,8 +60,6 @@ GPUParticlesCollision3D::~GPUParticlesCollision3D() {
 	RS::get_singleton()->free(collision);
 }
 
-/////////////////////////////////
-
 void GPUParticlesCollisionSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GPUParticlesCollisionSphere3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &GPUParticlesCollisionSphere3D::get_radius);
@@ -90,8 +88,6 @@ GPUParticlesCollisionSphere3D::GPUParticlesCollisionSphere3D() :
 GPUParticlesCollisionSphere3D::~GPUParticlesCollisionSphere3D() {
 }
 
-///////////////////////////
-
 void GPUParticlesCollisionBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionBox3D::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionBox3D::get_extents);
@@ -119,9 +115,6 @@ GPUParticlesCollisionBox3D::GPUParticlesCollisionBox3D() :
 
 GPUParticlesCollisionBox3D::~GPUParticlesCollisionBox3D() {
 }
-
-///////////////////////////////
-///////////////////////////
 
 void GPUParticlesCollisionSDF3D::_find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
@@ -580,9 +573,6 @@ GPUParticlesCollisionSDF3D::GPUParticlesCollisionSDF3D() :
 GPUParticlesCollisionSDF3D::~GPUParticlesCollisionSDF3D() {
 }
 
-////////////////////////////
-////////////////////////////
-
 void GPUParticlesCollisionHeightField3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -724,9 +714,6 @@ GPUParticlesCollisionHeightField3D::GPUParticlesCollisionHeightField3D() :
 GPUParticlesCollisionHeightField3D::~GPUParticlesCollisionHeightField3D() {
 }
 
-////////////////////////////
-////////////////////////////
-
 void GPUParticlesAttractor3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;
 	RS::get_singleton()->particles_collision_set_cull_mask(collision, p_cull_mask);
@@ -792,8 +779,6 @@ GPUParticlesAttractor3D::~GPUParticlesAttractor3D() {
 	RS::get_singleton()->free(collision);
 }
 
-/////////////////////////////////
-
 void GPUParticlesAttractorSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GPUParticlesAttractorSphere3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &GPUParticlesAttractorSphere3D::get_radius);
@@ -822,8 +807,6 @@ GPUParticlesAttractorSphere3D::GPUParticlesAttractorSphere3D() :
 GPUParticlesAttractorSphere3D::~GPUParticlesAttractorSphere3D() {
 }
 
-///////////////////////////
-
 void GPUParticlesAttractorBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesAttractorBox3D::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesAttractorBox3D::get_extents);
@@ -851,8 +834,6 @@ GPUParticlesAttractorBox3D::GPUParticlesAttractorBox3D() :
 
 GPUParticlesAttractorBox3D::~GPUParticlesAttractorBox3D() {
 }
-
-///////////////////////////
 
 void GPUParticlesAttractorVectorField3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesAttractorVectorField3D::set_extents);

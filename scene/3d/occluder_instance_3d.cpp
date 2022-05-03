@@ -142,8 +142,6 @@ Occluder3D::~Occluder3D() {
 	}
 }
 
-/////////////////////////////////////////////////
-
 void ArrayOccluder3D::set_arrays(PackedVector3Array p_vertices, PackedInt32Array p_indices) {
 	vertices = p_vertices;
 	indices = p_indices;
@@ -183,8 +181,6 @@ ArrayOccluder3D::ArrayOccluder3D() {
 
 ArrayOccluder3D::~ArrayOccluder3D() {
 }
-
-/////////////////////////////////////////////////
 
 void QuadOccluder3D::set_size(const Vector2 &p_size) {
 	if (size == p_size) {
@@ -227,8 +223,6 @@ QuadOccluder3D::QuadOccluder3D() {
 
 QuadOccluder3D::~QuadOccluder3D() {
 }
-
-/////////////////////////////////////////////////
 
 void BoxOccluder3D::set_size(const Vector3 &p_size) {
 	if (size == p_size) {
@@ -293,8 +287,6 @@ BoxOccluder3D::BoxOccluder3D() {
 
 BoxOccluder3D::~BoxOccluder3D() {
 }
-
-/////////////////////////////////////////////////
 
 void SphereOccluder3D::set_radius(float p_radius) {
 	if (radius == p_radius) {
@@ -363,8 +355,6 @@ SphereOccluder3D::SphereOccluder3D() {
 SphereOccluder3D::~SphereOccluder3D() {
 }
 
-/////////////////////////////////////////////////
-
 void PolygonOccluder3D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	_update();
@@ -423,8 +413,6 @@ PolygonOccluder3D::PolygonOccluder3D() {
 
 PolygonOccluder3D::~PolygonOccluder3D() {
 }
-
-/////////////////////////////////////////////////
 
 AABB OccluderInstance3D::get_aabb() const {
 	if (occluder.is_valid()) {

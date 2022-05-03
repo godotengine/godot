@@ -451,8 +451,6 @@ void AnimationNode::_bind_methods() {
 AnimationNode::AnimationNode() {
 }
 
-////////////////////
-
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 	if (root.is_valid()) {
 		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));

@@ -66,8 +66,6 @@ SkinReference::~SkinReference() {
 	RS::get_singleton()->free(skeleton);
 }
 
-///////////////////////////////////////
-
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 

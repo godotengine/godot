@@ -97,8 +97,6 @@ public:
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 

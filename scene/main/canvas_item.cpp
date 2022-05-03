@@ -1157,8 +1157,6 @@ CanvasItem::~CanvasItem() {
 	RenderingServer::get_singleton()->free(canvas_item);
 }
 
-///////////////////////////////////////////////////////////////////
-
 void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	diffuse_texture = p_diffuse;

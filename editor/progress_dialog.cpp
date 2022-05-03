@@ -128,8 +128,6 @@ void BackgroundProgress::end_task(const String &p_task) {
 	MessageQueue::get_singleton()->push_call(this, "_end_task", p_task);
 }
 
-////////////////////////////////////////////////
-
 ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {

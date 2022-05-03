@@ -96,8 +96,6 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	add_child(config_dialog);
 }
 
-///////////////////////
-
 bool EditorInspectorPluginInputEvent::can_handle(Object *p_object) {
 	Ref<InputEventKey> k = Ref<InputEventKey>(p_object);
 	Ref<InputEventMouseButton> m = Ref<InputEventMouseButton>(p_object);
@@ -114,8 +112,6 @@ void EditorInspectorPluginInputEvent::parse_begin(Object *p_object) {
 	picker_controls->set_event(ie);
 	add_custom_control(picker_controls);
 }
-
-///////////////////////
 
 InputEventEditorPlugin::InputEventEditorPlugin() {
 	Ref<EditorInspectorPluginInputEvent> plugin;

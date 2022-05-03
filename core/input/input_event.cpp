@@ -123,8 +123,6 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 }
 
-///////////////////////////////////
-
 void InputEventFromWindow::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_window_id", "id"), &InputEventFromWindow::set_window_id);
 	ClassDB::bind_method(D_METHOD("get_window_id"), &InputEventFromWindow::get_window_id);
@@ -139,8 +137,6 @@ void InputEventFromWindow::set_window_id(int64_t p_id) {
 int64_t InputEventFromWindow::get_window_id() const {
 	return window_id;
 }
-
-///////////////////////////////////
 
 void InputEventWithModifiers::set_store_command(bool p_enabled) {
 	store_command = p_enabled;
@@ -295,8 +291,6 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
 		}
 	}
 }
-
-///////////////////////////////////
 
 void InputEventKey::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
@@ -487,8 +481,6 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
-///////////////////////////////////
-
 void InputEventMouse::set_button_mask(MouseButton p_mask) {
 	button_mask = p_mask;
 	emit_changed();
@@ -528,8 +520,6 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position"), "set_global_position", "get_global_position");
 }
-
-///////////////////////////////////
 
 void InputEventMouseButton::set_factor(float p_factor) {
 	factor = p_factor;
@@ -723,8 +713,6 @@ void InputEventMouseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
 }
 
-///////////////////////////////////
-
 void InputEventMouseMotion::set_tilt(const Vector2 &p_tilt) {
 	tilt = p_tilt;
 }
@@ -871,8 +859,6 @@ void InputEventMouseMotion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
-///////////////////////////////////
-
 void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
 	ERR_FAIL_COND(p_axis < JoyAxis::LEFT_X || p_axis > JoyAxis::MAX);
 
@@ -980,8 +966,6 @@ void InputEventJoypadMotion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
 }
-
-///////////////////////////////////
 
 void InputEventJoypadButton::set_button_index(JoyButton p_index) {
 	button_index = p_index;
@@ -1107,8 +1091,6 @@ void InputEventJoypadButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
-///////////////////////////////////
-
 void InputEventScreenTouch::set_index(int p_index) {
 	index = p_index;
 }
@@ -1170,8 +1152,6 @@ void InputEventScreenTouch::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
-
-///////////////////////////////////
 
 void InputEventScreenDrag::set_index(int p_index) {
 	index = p_index;
@@ -1265,8 +1245,6 @@ void InputEventScreenDrag::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
-///////////////////////////////////
-
 void InputEventAction::set_action(const StringName &p_action) {
 	action = p_action;
 }
@@ -1352,8 +1330,6 @@ void InputEventAction::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 }
 
-///////////////////////////////////
-
 void InputEventGesture::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
@@ -1368,8 +1344,6 @@ void InputEventGesture::_bind_methods() {
 Vector2 InputEventGesture::get_position() const {
 	return pos;
 }
-
-///////////////////////////////////
 
 void InputEventMagnifyGesture::set_factor(real_t p_factor) {
 	factor = p_factor;
@@ -1409,8 +1383,6 @@ void InputEventMagnifyGesture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 }
 
-///////////////////////////////////
-
 void InputEventPanGesture::set_delta(const Vector2 &p_delta) {
 	delta = p_delta;
 }
@@ -1448,8 +1420,6 @@ void InputEventPanGesture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "delta"), "set_delta", "get_delta");
 }
-
-///////////////////////////////////
 
 void InputEventMIDI::set_channel(const int p_channel) {
 	channel = p_channel;
@@ -1550,8 +1520,6 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
 }
-
-///////////////////////////////////
 
 void InputEventShortcut::set_shortcut(Ref<Shortcut> p_shortcut) {
 	shortcut = p_shortcut;

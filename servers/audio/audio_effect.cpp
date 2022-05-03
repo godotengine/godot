@@ -48,8 +48,6 @@ void AudioEffectInstance::_bind_methods() {
 	GDVIRTUAL_BIND(_process_silence);
 }
 
-////
-
 Ref<AudioEffectInstance> AudioEffect::instantiate() {
 	Ref<AudioEffectInstance> ret;
 	if (GDVIRTUAL_REQUIRED_CALL(_instantiate, ret)) {

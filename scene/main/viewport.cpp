@@ -161,8 +161,6 @@ ViewportTexture::~ViewportTexture() {
 	}
 }
 
-/////////////////////////////////////
-
 // Aliases used to provide custom styles to tooltips in the default
 // theme and editor theme.
 // TooltipPanel is also used for custom tooltips, while TooltipLabel
@@ -181,8 +179,6 @@ class TooltipLabel : public Label {
 public:
 	TooltipLabel() {}
 };
-
-/////////////////////////////////////
 
 void Viewport::_sub_window_update_order() {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
@@ -2357,8 +2353,6 @@ void Viewport::_post_gui_grab_click_focus() {
 	}
 }
 
-///////////////////////////////
-
 void Viewport::push_text_input(const String &p_text) {
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
@@ -3918,8 +3912,6 @@ Viewport::~Viewport() {
 	}
 	RenderingServer::get_singleton()->free(viewport);
 }
-
-/////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);

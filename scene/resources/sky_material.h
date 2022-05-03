@@ -112,7 +112,6 @@ public:
 	~ProceduralSkyMaterial();
 };
 
-//////////////////////////////////////////////////////
 /* PanoramaSkyMaterial */
 
 class PanoramaSkyMaterial : public Material {
@@ -148,7 +147,6 @@ public:
 	~PanoramaSkyMaterial();
 };
 
-//////////////////////////////////////////////////////
 /* PanoramaSkyMaterial */
 
 class PhysicalSkyMaterial : public Material {

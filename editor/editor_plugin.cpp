@@ -373,7 +373,6 @@ EditorInterface::EditorInterface() {
 	singleton = this;
 }
 
-///////////////////////////////////////////
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
 }

@@ -1099,8 +1099,6 @@ void RigidDynamicBody2D::_reload_physics_characteristics() {
 	}
 }
 
-//////////////////////////
-
 // So, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
@@ -1802,8 +1800,6 @@ CharacterBody2D::~CharacterBody2D() {
 		}
 	}
 }
-
-////////////////////////
 
 Vector2 KinematicCollision2D::get_position() const {
 	return result.collision_point;

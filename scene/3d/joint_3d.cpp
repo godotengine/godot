@@ -237,8 +237,6 @@ Joint3D::~Joint3D() {
 	PhysicsServer3D::get_singleton()->free(joint);
 }
 
-///////////////////////////////////
-
 void PinJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &PinJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &PinJoint3D::get_param);
@@ -287,10 +285,6 @@ PinJoint3D::PinJoint3D() {
 	params[PARAM_DAMPING] = 1;
 	params[PARAM_IMPULSE_CLAMP] = 0;
 }
-
-/////////////////////////////////////////////////
-
-///////////////////////////////////
 
 void HingeJoint3D::_set_upper_limit(real_t p_limit) {
 	set_param(PARAM_LIMIT_UPPER, Math::deg2rad(p_limit));
@@ -417,10 +411,6 @@ HingeJoint3D::HingeJoint3D() {
 	flags[FLAG_USE_LIMIT] = false;
 	flags[FLAG_ENABLE_MOTOR] = false;
 }
-
-/////////////////////////////////////////////////
-
-//////////////////////////////////
 
 void SliderJoint3D::_set_upper_limit_angular(real_t p_limit_angular) {
 	set_param(PARAM_ANGULAR_LIMIT_UPPER, Math::deg2rad(p_limit_angular));
@@ -560,8 +550,6 @@ SliderJoint3D::SliderJoint3D() {
 	params[PARAM_ANGULAR_ORTHOGONAL_DAMPING] = 1.0;
 }
 
-//////////////////////////////////
-
 void ConeTwistJoint3D::_set_swing_span(real_t p_limit_angular) {
 	set_param(PARAM_SWING_SPAN, Math::deg2rad(p_limit_angular));
 }
@@ -649,8 +637,6 @@ ConeTwistJoint3D::ConeTwistJoint3D() {
 	params[PARAM_SOFTNESS] = 0.8;
 	params[PARAM_RELAXATION] = 1.0;
 }
-
-/////////////////////////////////////////////////////////////////////
 
 void Generic6DOFJoint3D::_set_angular_hi_limit_x(real_t p_limit_angular) {
 	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));

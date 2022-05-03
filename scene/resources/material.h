@@ -804,6 +804,4 @@ public:
 	virtual Shader::Mode get_shader_mode() const override { return Shader::MODE_CANVAS_ITEM; }
 };
 
-//////////////////////
-
 #endif

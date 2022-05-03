@@ -387,8 +387,6 @@ Light3D::~Light3D() {
 	}
 }
 
-/////////////////////////////////////////
-
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
 	RS::get_singleton()->light_directional_set_shadow_mode(light, RS::LightDirectionalShadowMode(p_mode));

@@ -1212,8 +1212,6 @@ public:
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
 
-////
-
 template <class Left>
 class OperatorEvaluatorInStringFind {
 public:

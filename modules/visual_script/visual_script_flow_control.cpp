@@ -34,9 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 
-//////////////////////////////////////////
-////////////////RETURN////////////////////
-//////////////////////////////////////////
+// RETURN
 
 int VisualScriptReturn::get_output_sequence_port_count() const {
 	return 0;
@@ -159,9 +157,7 @@ static Ref<VisualScriptNode> create_return_node(const String &p_name) {
 	return node;
 }
 
-//////////////////////////////////////////
-////////////////CONDITION/////////////////
-//////////////////////////////////////////
+// CONDITION
 
 int VisualScriptCondition::get_output_sequence_port_count() const {
 	return 3;
@@ -241,9 +237,7 @@ VisualScriptNodeInstance *VisualScriptCondition::instantiate(VisualScriptInstanc
 VisualScriptCondition::VisualScriptCondition() {
 }
 
-//////////////////////////////////////////
-////////////////WHILE/////////////////
-//////////////////////////////////////////
+// WHILE
 
 int VisualScriptWhile::get_output_sequence_port_count() const {
 	return 2;
@@ -321,9 +315,7 @@ VisualScriptNodeInstance *VisualScriptWhile::instantiate(VisualScriptInstance *p
 VisualScriptWhile::VisualScriptWhile() {
 }
 
-//////////////////////////////////////////
-////////////////ITERATOR/////////////////
-//////////////////////////////////////////
+// ITERATOR
 
 int VisualScriptIterator::get_output_sequence_port_count() const {
 	return 2;
@@ -445,9 +437,7 @@ VisualScriptNodeInstance *VisualScriptIterator::instantiate(VisualScriptInstance
 VisualScriptIterator::VisualScriptIterator() {
 }
 
-//////////////////////////////////////////
-////////////////SEQUENCE/////////////////
-//////////////////////////////////////////
+// SEQUENCE
 
 int VisualScriptSequence::get_output_sequence_port_count() const {
 	return steps;
@@ -546,9 +536,7 @@ VisualScriptSequence::VisualScriptSequence() {
 	steps = 1;
 }
 
-//////////////////////////////////////////
-////////////////EVENT TYPE FILTER///////////
-//////////////////////////////////////////
+// EVENT TYPE FILTER
 
 int VisualScriptSwitch::get_output_sequence_port_count() const {
 	return case_values.size() + 1;
@@ -687,9 +675,7 @@ void VisualScriptSwitch::_bind_methods() {
 VisualScriptSwitch::VisualScriptSwitch() {
 }
 
-//////////////////////////////////////////
-////////////////TYPE CAST///////////
-//////////////////////////////////////////
+// TYPE CAST
 
 int VisualScriptTypeCast::get_output_sequence_port_count() const {
 	return 2;

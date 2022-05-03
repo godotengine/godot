@@ -163,8 +163,6 @@ public:
 	~ConnectDialog();
 };
 
-//////////////////////////////////////////
-
 // Custom Tree needed to use a RichTextLabel as tooltip control
 // when display signal documentation.
 class ConnectionsDockTree : public Tree {

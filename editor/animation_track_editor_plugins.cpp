@@ -790,8 +790,6 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 	draw_line(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2);
 }
 
-////////////////////////
-
 /// AUDIO ///
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
@@ -1135,7 +1133,6 @@ Control::CursorShape AnimationTrackEditTypeAudio::get_cursor_shape(const Point2 
 	}
 }
 
-////////////////////
 /// SUB ANIMATION ///
 
 int AnimationTrackEditTypeAnimation::get_key_height() const {
@@ -1302,7 +1299,6 @@ void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 }
 
-/////////
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (p_property == "playing" && (p_object->is_class("AudioStreamPlayer") || p_object->is_class("AudioStreamPlayer2D") || p_object->is_class("AudioStreamPlayer3D"))) {
 		AnimationTrackEditAudio *audio = memnew(AnimationTrackEditAudio);

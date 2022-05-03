@@ -34,8 +34,6 @@
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void XRCamera3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -224,7 +222,6 @@ XRCamera3D::~XRCamera3D() {
 	xr_server->disconnect("tracker_removed", callable_mp(this, &XRCamera3D::_removed_tracker));
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // XRNode3D is a node that has it's transform updated by an XRPositionalTracker.
 // Note that trackers are only available in runtime and only after an XRInterface registers one.
 // So we bind by name and as long as a tracker isn't available, our node remains inactive.
@@ -438,8 +435,6 @@ TypedArray<String> XRNode3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void XRController3D::_bind_methods() {
 	// passthroughs to information about our related joystick
 	ClassDB::bind_method(D_METHOD("is_button_pressed", "name"), &XRController3D::is_button_pressed);
@@ -562,8 +557,6 @@ XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	return tracker->get_tracker_hand();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void XRAnchor3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &XRAnchor3D::get_size);
 	ClassDB::bind_method(D_METHOD("get_plane"), &XRAnchor3D::get_plane);
@@ -581,8 +574,6 @@ Plane XRAnchor3D::get_plane() const {
 
 	return plane;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();

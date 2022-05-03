@@ -38,7 +38,6 @@
 
 const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
 
-////////////////////////////////////////////////////////////////////////////////
 // SDFGI
 
 void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, RendererSceneGIRD *p_gi) {
@@ -2022,7 +2021,6 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 	RD::get_singleton()->draw_command_end_label();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // VoxelGIInstance
 
 void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
@@ -2808,7 +2806,6 @@ void RendererSceneGIRD::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, 36);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // GIRD
 
 RendererSceneGIRD::RendererSceneGIRD() {

@@ -364,8 +364,6 @@ void PackedDataContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "__data__"), "_set_data", "_get_data");
 }
 
-//////////////////
-
 Variant PackedDataContainerRef::_iter_init(const Array &p_iter) {
 	return from->_iter_init_ofs(p_iter, offset);
 }

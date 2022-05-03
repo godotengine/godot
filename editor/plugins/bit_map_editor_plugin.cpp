@@ -59,8 +59,6 @@ BitMapEditor::BitMapEditor() {
 	size_label->add_theme_style_override("normal", stylebox);
 }
 
-///////////////////////
-
 bool EditorInspectorPluginBitMap::can_handle(Object *p_object) {
 	return Object::cast_to<BitMap>(p_object) != nullptr;
 }
@@ -76,8 +74,6 @@ void EditorInspectorPluginBitMap::parse_begin(Object *p_object) {
 	editor->setup(bm);
 	add_custom_control(editor);
 }
-
-///////////////////////
 
 BitMapEditorPlugin::BitMapEditorPlugin() {
 	Ref<EditorInspectorPluginBitMap> plugin;

@@ -38,8 +38,6 @@ void MainFrameTime::clamp_process_step(double min_process_step, double max_proce
 	}
 }
 
-/////////////////////////////////
-
 // returns the fraction of p_physics_step required for the timer to overshoot
 // before advance_core considers changing the physics_steps return from
 // the typical values as defined by typical_physics_steps

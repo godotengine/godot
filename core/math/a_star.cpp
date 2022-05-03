@@ -566,8 +566,6 @@ AStar3D::~AStar3D() {
 	clear();
 }
 
-/////////////////////////////////////////////////////////////
-
 int AStar2D::get_available_point_id() const {
 	return astar.get_available_point_id();
 }

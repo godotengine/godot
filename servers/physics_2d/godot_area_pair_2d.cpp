@@ -114,8 +114,6 @@ GodotAreaPair2D::~GodotAreaPair2D() {
 	area->remove_constraint(this);
 }
 
-//////////////////////////////////
-
 bool GodotArea2Pair2D::setup(real_t p_step) {
 	bool result_a = area_a->collides_with(area_b);
 	bool result_b = area_b->collides_with(area_a);

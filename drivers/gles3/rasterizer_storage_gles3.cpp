@@ -528,8 +528,6 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 	return false;
 }
 
-////////////////////////////////////////////
-
 void RasterizerStorageGLES3::set_debug_generate_wireframes(bool p_generate) {
 }
 

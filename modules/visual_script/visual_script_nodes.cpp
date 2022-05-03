@@ -38,9 +38,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
-//////////////////////////////////////////
 ////////////////FUNCTION//////////////////
-//////////////////////////////////////////
 
 bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "argument_count") {
@@ -347,9 +345,7 @@ int VisualScriptFunction::get_stack_size() const {
 	return stack_size;
 }
 
-//////////////////////////////////////////
 /////////////////LISTS////////////////////
-//////////////////////////////////////////
 
 int VisualScriptLists::get_output_sequence_port_count() const {
 	if (sequenced) {
@@ -723,9 +719,7 @@ void VisualScriptLists::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_output_data_port", "index"), &VisualScriptLists::remove_output_data_port);
 }
 
-//////////////////////////////////////////
 //////////////COMPOSEARRAY////////////////
-//////////////////////////////////////////
 
 int VisualScriptComposeArray::get_output_sequence_port_count() const {
 	if (sequenced) {
@@ -806,9 +800,7 @@ VisualScriptComposeArray::VisualScriptComposeArray() {
 	flags = INPUT_EDITABLE;
 }
 
-//////////////////////////////////////////
 ////////////////OPERATOR//////////////////
-//////////////////////////////////////////
 
 int VisualScriptOperator::get_output_sequence_port_count() const {
 	return 0;
@@ -1147,9 +1139,7 @@ static Ref<VisualScriptNode> create_op_node(const String &p_name) {
 	return node;
 }
 
-//////////////////////////////////////////
 ////////////////OPERATOR//////////////////
-//////////////////////////////////////////
 
 int VisualScriptSelect::get_output_sequence_port_count() const {
 	return 0;
@@ -1243,9 +1233,7 @@ VisualScriptSelect::VisualScriptSelect() {
 	typed = Variant::NIL;
 }
 
-//////////////////////////////////////////
 ////////////////VARIABLE GET//////////////////
-//////////////////////////////////////////
 
 int VisualScriptVariableGet::get_output_sequence_port_count() const {
 	return 0;
@@ -1353,9 +1341,7 @@ VisualScriptNodeInstance *VisualScriptVariableGet::instantiate(VisualScriptInsta
 VisualScriptVariableGet::VisualScriptVariableGet() {
 }
 
-//////////////////////////////////////////
 ////////////////VARIABLE SET//////////////////
-//////////////////////////////////////////
 
 int VisualScriptVariableSet::get_output_sequence_port_count() const {
 	return 1;
@@ -1465,9 +1451,7 @@ VisualScriptNodeInstance *VisualScriptVariableSet::instantiate(VisualScriptInsta
 VisualScriptVariableSet::VisualScriptVariableSet() {
 }
 
-//////////////////////////////////////////
 ////////////////CONSTANT//////////////////
-//////////////////////////////////////////
 
 int VisualScriptConstant::get_output_sequence_port_count() const {
 	return 0;
@@ -1579,9 +1563,7 @@ VisualScriptConstant::VisualScriptConstant() {
 	type = Variant::NIL;
 }
 
-//////////////////////////////////////////
 ////////////////PRELOAD//////////////////
-//////////////////////////////////////////
 
 int VisualScriptPreload::get_output_sequence_port_count() const {
 	return 0;
@@ -1671,9 +1653,7 @@ VisualScriptNodeInstance *VisualScriptPreload::instantiate(VisualScriptInstance 
 VisualScriptPreload::VisualScriptPreload() {
 }
 
-//////////////////////////////////////////
 ////////////////INDEX////////////////////
-//////////////////////////////////////////
 
 int VisualScriptIndexGet::get_output_sequence_port_count() const {
 	return 0;
@@ -1735,9 +1715,7 @@ VisualScriptNodeInstance *VisualScriptIndexGet::instantiate(VisualScriptInstance
 VisualScriptIndexGet::VisualScriptIndexGet() {
 }
 
-//////////////////////////////////////////
 ////////////////INDEXSET//////////////////
-//////////////////////////////////////////
 
 int VisualScriptIndexSet::get_output_sequence_port_count() const {
 	return 1;
@@ -1802,9 +1780,7 @@ VisualScriptNodeInstance *VisualScriptIndexSet::instantiate(VisualScriptInstance
 VisualScriptIndexSet::VisualScriptIndexSet() {
 }
 
-//////////////////////////////////////////
 ////////////////GLOBALCONSTANT///////////
-//////////////////////////////////////////
 
 int VisualScriptGlobalConstant::get_output_sequence_port_count() const {
 	return 0;
@@ -1884,9 +1860,7 @@ VisualScriptGlobalConstant::VisualScriptGlobalConstant() {
 	index = 0;
 }
 
-//////////////////////////////////////////
 ////////////////CLASSCONSTANT///////////
-//////////////////////////////////////////
 
 int VisualScriptClassConstant::get_output_sequence_port_count() const {
 	return 0;
@@ -2012,9 +1986,7 @@ VisualScriptClassConstant::VisualScriptClassConstant() {
 	base_type = "Object";
 }
 
-//////////////////////////////////////////
 ////////////////BASICTYPECONSTANT///////////
-//////////////////////////////////////////
 
 int VisualScriptBasicTypeConstant::get_output_sequence_port_count() const {
 	return 0;
@@ -2154,9 +2126,7 @@ VisualScriptBasicTypeConstant::VisualScriptBasicTypeConstant() {
 	type = Variant::NIL;
 }
 
-//////////////////////////////////////////
 ////////////////MATHCONSTANT///////////
-//////////////////////////////////////////
 
 const char *VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX] = {
 	"One",
@@ -2267,9 +2237,7 @@ VisualScriptMathConstant::VisualScriptMathConstant() {
 	constant = MATH_CONSTANT_ONE;
 }
 
-//////////////////////////////////////////
 ////////////////ENGINESINGLETON///////////
-//////////////////////////////////////////
 
 int VisualScriptEngineSingleton::get_output_sequence_port_count() const {
 	return 0;
@@ -2377,9 +2345,7 @@ VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
 	singleton = String();
 }
 
-//////////////////////////////////////////
 ////////////////GETNODE///////////
-//////////////////////////////////////////
 
 int VisualScriptSceneNode::get_output_sequence_port_count() const {
 	return 0;
@@ -2568,9 +2534,7 @@ VisualScriptSceneNode::VisualScriptSceneNode() {
 	path = String(".");
 }
 
-//////////////////////////////////////////
 ////////////////SceneTree///////////
-//////////////////////////////////////////
 
 int VisualScriptSceneTree::get_output_sequence_port_count() const {
 	return 0;
@@ -2655,9 +2619,7 @@ void VisualScriptSceneTree::_bind_methods() {
 VisualScriptSceneTree::VisualScriptSceneTree() {
 }
 
-//////////////////////////////////////////
 ////////////////RESPATH///////////
-//////////////////////////////////////////
 
 int VisualScriptResourcePath::get_output_sequence_port_count() const {
 	return 0;
@@ -2730,9 +2692,7 @@ VisualScriptResourcePath::VisualScriptResourcePath() {
 	path = "";
 }
 
-//////////////////////////////////////////
 ////////////////SELF///////////
-//////////////////////////////////////////
 
 int VisualScriptSelf::get_output_sequence_port_count() const {
 	return 0;
@@ -2813,9 +2773,7 @@ void VisualScriptSelf::_bind_methods() {
 VisualScriptSelf::VisualScriptSelf() {
 }
 
-//////////////////////////////////////////
 ////////////////CUSTOM (SCRIPTED)///////////
-//////////////////////////////////////////
 
 int VisualScriptCustomNode::get_output_sequence_port_count() const {
 	int ret;
@@ -3083,9 +3041,7 @@ VisualScriptCustomNode::VisualScriptCustomNode() {
 	connect("script_changed", callable_mp(this, &VisualScriptCustomNode::_script_changed));
 }
 
-//////////////////////////////////////////
 ////////////////SUBCALL///////////
-//////////////////////////////////////////
 
 int VisualScriptSubCall::get_output_sequence_port_count() const {
 	return 1;
@@ -3195,9 +3151,7 @@ void VisualScriptSubCall::_bind_methods() {
 VisualScriptSubCall::VisualScriptSubCall() {
 }
 
-//////////////////////////////////////////
 ////////////////Comment///////////
-//////////////////////////////////////////
 
 int VisualScriptComment::get_output_sequence_port_count() const {
 	return 0;
@@ -3312,9 +3266,7 @@ VisualScriptComment::VisualScriptComment() {
 	size = Size2(150, 150);
 }
 
-//////////////////////////////////////////
 ////////////////Constructor///////////
-//////////////////////////////////////////
 
 int VisualScriptConstructor::get_output_sequence_port_count() const {
 	return 0;
@@ -3429,9 +3381,7 @@ static Ref<VisualScriptNode> create_constructor_node(const String &p_name) {
 	return vsc;
 }
 
-//////////////////////////////////////////
 ////////////////LocalVar///////////
-//////////////////////////////////////////
 
 int VisualScriptLocalVar::get_output_sequence_port_count() const {
 	return 0;
@@ -3532,9 +3482,7 @@ VisualScriptLocalVar::VisualScriptLocalVar() {
 	type = Variant::NIL;
 }
 
-//////////////////////////////////////////
 ////////////////LocalVar///////////
-//////////////////////////////////////////
 
 int VisualScriptLocalVarSet::get_output_sequence_port_count() const {
 	return 1;
@@ -3640,9 +3588,7 @@ VisualScriptLocalVarSet::VisualScriptLocalVarSet() {
 	type = Variant::NIL;
 }
 
-//////////////////////////////////////////
 ////////////////LocalVar///////////
-//////////////////////////////////////////
 
 int VisualScriptInputAction::get_output_sequence_port_count() const {
 	return 0;
@@ -3810,9 +3756,7 @@ VisualScriptInputAction::VisualScriptInputAction() {
 	mode = MODE_PRESSED;
 }
 
-//////////////////////////////////////////
 ////////////////Constructor///////////
-//////////////////////////////////////////
 
 int VisualScriptDeconstruct::get_output_sequence_port_count() const {
 	return 0;

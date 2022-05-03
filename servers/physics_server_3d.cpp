@@ -164,8 +164,6 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 
 PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 
-///////////////////////////////////////////////////////
-
 void PhysicsRayQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -218,8 +216,6 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 }
 
-///////////////////////////////////////////////////////
-
 void PhysicsPointQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -259,8 +255,6 @@ void PhysicsPointQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
-
-///////////////////////////////////////////////////////
 
 void PhysicsShapeQueryParameters3D::set_shape(const Ref<Resource> &p_shape_ref) {
 	ERR_FAIL_COND(p_shape_ref.is_null());
@@ -330,8 +324,6 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
-
-/////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
 	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
@@ -465,8 +457,6 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
 
-///////////////////////////////
-
 Vector<RID> PhysicsTestMotionParameters3D::get_exclude_bodies() const {
 	Vector<RID> exclude;
 	exclude.resize(parameters.exclude_bodies.size());
@@ -535,8 +525,6 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
 }
-
-///////////////////////////////
 
 Vector3 PhysicsTestMotionResult3D::get_travel() const {
 	return result.travel;
@@ -619,8 +607,6 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision_index"), &PhysicsTestMotionResult3D::get_collision_local_shape, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collision_depth", "collision_index"), &PhysicsTestMotionResult3D::get_collision_depth, DEFVAL(0));
 }
-
-///////////////////////////////////////
 
 bool PhysicsServer3D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters3D> &p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
 	ERR_FAIL_COND_V(!p_parameters.is_valid(), false);

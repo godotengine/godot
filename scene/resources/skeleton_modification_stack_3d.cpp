@@ -31,9 +31,7 @@
 #include "skeleton_modification_stack_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
-///////////////////////////////////////
 // ModificationStack3D
-///////////////////////////////////////
 
 void SkeletonModificationStack3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (uint32_t i = 0; i < modifications.size(); i++) {

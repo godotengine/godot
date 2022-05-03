@@ -282,8 +282,6 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 #undef ADD_OPTION_ENUM
 }
 
-///////////////////////////
-
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	String path = p_path;
 #ifdef WINDOWS_ENABLED

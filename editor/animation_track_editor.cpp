@@ -1935,8 +1935,6 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
 
-////////////////////////////////////
-
 void AnimationTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -3223,8 +3221,6 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
 }
 
-//////////////////////////////////////
-
 AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (get_script_instance()) {
 		Variant args[6] = {
@@ -3264,8 +3260,6 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 	}
 	return nullptr;
 }
-
-///////////////////////////////////////
 
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
@@ -3344,8 +3338,6 @@ void AnimationTrackEditGroup::_bind_methods() {
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
-
-//////////////////////////////////////
 
 void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
 	if (track_edit_plugins.has(p_plugin)) {

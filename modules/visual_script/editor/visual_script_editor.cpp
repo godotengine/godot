@@ -2606,8 +2606,6 @@ void VisualScriptEditor::_button_resource_previewed(const String &p_path, const 
 	}
 }
 
-/////////////////////////
-
 void VisualScriptEditor::apply_code() {
 }
 

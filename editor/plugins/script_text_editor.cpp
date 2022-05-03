@@ -106,8 +106,6 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	tree->set_allow_rmb_select(true);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 Vector<String> ScriptTextEditor::get_functions() {
 	CodeEdit *te = code_editor->get_text_editor();
 	String text = te->get_text();
