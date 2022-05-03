@@ -55,7 +55,6 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
-#include "core/extension/native_extension_manager.h"
 #include "debugger/servers_debugger.h"
 #include "display_server.h"
 #include "navigation_server_2d.h"
@@ -257,15 +256,10 @@ void register_server_types() {
 
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics3D");
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 }
 
 void unregister_server_types() {
 	ServersDebugger::deinitialize();
-
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
-
 	memdelete(shader_types);
 }
 

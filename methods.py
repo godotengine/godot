@@ -266,25 +266,19 @@ def write_disabled_classes(class_list):
 
 def write_modules(modules):
     includes_cpp = ""
-    preregister_cpp = ""
-    register_cpp = ""
-    unregister_cpp = ""
+    initialize_cpp = ""
+    uninitialize_cpp = ""
 
     for name, path in modules.items():
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
-                preregister_cpp += "\tpreregister_" + name + "_types();\n"
-                preregister_cpp += "#endif\n"
-                preregister_cpp += "#endif\n"
-                register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                register_cpp += "\tregister_" + name + "_types();\n"
-                register_cpp += "#endif\n"
-                unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                unregister_cpp += "\tunregister_" + name + "_types();\n"
-                unregister_cpp += "#endif\n"
+                initialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                initialize_cpp += "\tinitialize_" + name + "_module(p_level);\n"
+                initialize_cpp += "#endif\n"
+                uninitialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                uninitialize_cpp += "\tuninitialize_" + name + "_module(p_level);\n"
+                uninitialize_cpp += "#endif\n"
         except OSError:
             pass
 
@@ -296,22 +290,17 @@ def write_modules(modules):
 
 %s
 
-void preregister_module_types() {
+void initialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 
-void register_module_types() {
-%s
-}
-
-void unregister_module_types() {
+void uninitialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 """ % (
         includes_cpp,
-        preregister_cpp,
-        register_cpp,
-        unregister_cpp,
+        initialize_cpp,
+        uninitialize_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially

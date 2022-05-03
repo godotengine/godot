@@ -51,21 +51,29 @@ NavigationServer3D *new_server() {
 	return memnew(GodotNavigationServer);
 }
 
-void register_navigation_types() {
-	NavigationServer3DManager::set_default_server(new_server);
+void initialize_navigation_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		NavigationServer3DManager::set_default_server(new_server);
 
 #ifndef _3D_DISABLED
-	_nav_mesh_generator = memnew(NavigationMeshGenerator);
-	GDREGISTER_CLASS(NavigationMeshGenerator);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
+		_nav_mesh_generator = memnew(NavigationMeshGenerator);
+		GDREGISTER_CLASS(NavigationMeshGenerator);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
 #endif
+	}
 
 #ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	}
 #endif
 }
 
-void unregister_navigation_types() {
+void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		return;
+	}
+
 #ifndef _3D_DISABLED
 	if (_nav_mesh_generator) {
 		memdelete(_nav_mesh_generator);

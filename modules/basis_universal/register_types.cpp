@@ -266,7 +266,11 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	return basis_universal_unpacker_ptr(r, size);
 }
 
-void register_basis_universal_types() {
+void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef TOOLS_ENABLED
 	using namespace basisu;
 	using namespace basist;
@@ -277,7 +281,11 @@ void register_basis_universal_types() {
 	Image::basis_universal_unpacker_ptr = basis_universal_unpacker_ptr;
 }
 
-void unregister_basis_universal_types() {
+void uninitialize_basis_universal_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef TOOLS_ENABLED
 	Image::basis_universal_packer = nullptr;
 #endif

@@ -54,49 +54,55 @@ static void _editor_init() {
 
 #endif
 
-OpenXRAPI *openxr_api = nullptr;
-Ref<OpenXRInterface> openxr_interface;
+static OpenXRAPI *openxr_api = nullptr;
+static Ref<OpenXRInterface> openxr_interface;
 
-void preregister_openxr_types() {
-	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
+void initialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-	if (OpenXRAPI::openxr_is_enabled()) {
-		openxr_api = memnew(OpenXRAPI);
-		ERR_FAIL_NULL(openxr_api);
+		if (OpenXRAPI::openxr_is_enabled()) {
+			openxr_api = memnew(OpenXRAPI);
+			ERR_FAIL_NULL(openxr_api);
 
-		if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
-			memdelete(openxr_api);
-			openxr_api = nullptr;
-			return;
+			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+				memdelete(openxr_api);
+				openxr_api = nullptr;
+				return;
+			}
 		}
 	}
-}
 
-void register_openxr_types() {
-	GDREGISTER_CLASS(OpenXRInterface);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(OpenXRInterface);
 
-	GDREGISTER_CLASS(OpenXRAction);
-	GDREGISTER_CLASS(OpenXRActionSet);
-	GDREGISTER_CLASS(OpenXRActionMap);
-	GDREGISTER_CLASS(OpenXRIPBinding);
-	GDREGISTER_CLASS(OpenXRInteractionProfile);
+		GDREGISTER_CLASS(OpenXRAction);
+		GDREGISTER_CLASS(OpenXRActionSet);
+		GDREGISTER_CLASS(OpenXRActionMap);
+		GDREGISTER_CLASS(OpenXRIPBinding);
+		GDREGISTER_CLASS(OpenXRInteractionProfile);
 
-	XRServer *xr_server = XRServer::get_singleton();
-	if (xr_server) {
-		openxr_interface.instantiate();
-		xr_server->add_interface(openxr_interface);
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server) {
+			openxr_interface.instantiate();
+			xr_server->add_interface(openxr_interface);
 
-		if (openxr_interface->initialize_on_startup()) {
-			openxr_interface->initialize();
+			if (openxr_interface->initialize_on_startup()) {
+				openxr_interface->initialize();
+			}
 		}
-	}
 
 #ifdef TOOLS_ENABLED
-	EditorNode::add_init_callback(_editor_init);
+		EditorNode::add_init_callback(_editor_init);
 #endif
+	}
 }
 
-void unregister_openxr_types() {
+void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (openxr_interface.is_valid()) {
 		// uninitialize just in case
 		if (openxr_interface->is_initialized()) {

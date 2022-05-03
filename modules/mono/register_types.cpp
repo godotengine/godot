@@ -40,7 +40,11 @@ Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
 mono_bind::GodotSharp *_godotsharp = nullptr;
 
-void register_mono_types() {
+void initialize_mono_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GDREGISTER_CLASS(CSharpScript);
 
 	_godotsharp = memnew(mono_bind::GodotSharp);
@@ -59,7 +63,11 @@ void register_mono_types() {
 	ResourceSaver::add_resource_format_saver(resource_saver_cs);
 }
 
-void unregister_mono_types() {
+void uninitialize_mono_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	ScriptServer::unregister_language(script_language_cs);
 
 	if (script_language_cs) {

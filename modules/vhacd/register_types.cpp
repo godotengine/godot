@@ -89,10 +89,18 @@ static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_
 	return ret;
 }
 
-void register_vhacd_types() {
+void initialize_vhacd_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	Mesh::convex_decomposition_function = convex_decompose;
 }
 
-void unregister_vhacd_types() {
+void uninitialize_vhacd_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	Mesh::convex_decomposition_function = nullptr;
 }

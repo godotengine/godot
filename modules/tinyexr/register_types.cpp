@@ -35,14 +35,22 @@
 
 static ImageLoaderTinyEXR *image_loader_tinyexr = nullptr;
 
-void register_tinyexr_types() {
+void initialize_tinyexr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	image_loader_tinyexr = memnew(ImageLoaderTinyEXR);
 	ImageLoader::add_image_format_loader(image_loader_tinyexr);
 
 	Image::save_exr_func = save_exr;
 }
 
-void unregister_tinyexr_types() {
+void uninitialize_tinyexr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	memdelete(image_loader_tinyexr);
 
 	Image::save_exr_func = nullptr;

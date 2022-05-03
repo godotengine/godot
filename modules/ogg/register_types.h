@@ -31,7 +31,9 @@
 #ifndef OGG_REGISTER_TYPES_H
 #define OGG_REGISTER_TYPES_H
 
-void register_ogg_types();
-void unregister_ogg_types();
+#include "modules/register_module_types.h"
+
+void initialize_ogg_module(ModuleInitializationLevel p_level);
+void uninitialize_ogg_module(ModuleInitializationLevel p_level);
 
 #endif // OGG_REGISTER_TYPES_H

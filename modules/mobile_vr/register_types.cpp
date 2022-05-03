@@ -34,7 +34,11 @@
 
 Ref<MobileVRInterface> mobile_vr;
 
-void register_mobile_vr_types() {
+void initialize_mobile_vr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GDREGISTER_CLASS(MobileVRInterface);
 
 	if (XRServer::get_singleton()) {
@@ -43,7 +47,11 @@ void register_mobile_vr_types() {
 	}
 }
 
-void unregister_mobile_vr_types() {
+void uninitialize_mobile_vr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (mobile_vr.is_valid()) {
 		// uninitialise our interface if it is initialised
 		if (mobile_vr->is_initialized()) {
