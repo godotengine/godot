@@ -3388,6 +3388,35 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] End Key State") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	/* Check end key state. */
+	code_edit->set_text("shorter line:\n    longer line to test end key state\nmore longer line to test end key state");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(0);
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_line_end");
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_down");
+	CHECK(code_edit->get_caret_column() == code_edit->get_line(1).length());
+
+	/* Check clearing end key state. */
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_up");
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_left");
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_right");
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_down");
+	CHECK(code_edit->get_caret_column() - 1 == code_edit->get_line(0).length());
+
+	/* Check end key state behaviour on folded block. */
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_line_end");
+	code_edit->fold_line(0);
+	SEND_GUI_ACTION(code_edit, "ui_text_caret_down");
+	CHECK(code_edit->get_caret_column() - 1 == code_edit->get_line(1).length());
+
+	memdelete(code_edit);
+}
+
 } // namespace TestCodeEdit
 
 #endif // TEST_CODE_EDIT_H
