@@ -1329,7 +1329,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
-		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform.elements[0][1]);
+		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform.columns[0][1]);
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.

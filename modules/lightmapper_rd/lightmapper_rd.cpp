@@ -1028,17 +1028,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		push_constant.atlas_slice = 0;
 		push_constant.region_ofs[0] = 0;
 		push_constant.region_ofs[1] = 0;
-		push_constant.environment_xform[0] = p_environment_transform.elements[0][0];
-		push_constant.environment_xform[1] = p_environment_transform.elements[1][0];
-		push_constant.environment_xform[2] = p_environment_transform.elements[2][0];
+		push_constant.environment_xform[0] = p_environment_transform.rows[0][0];
+		push_constant.environment_xform[1] = p_environment_transform.rows[1][0];
+		push_constant.environment_xform[2] = p_environment_transform.rows[2][0];
 		push_constant.environment_xform[3] = 0;
-		push_constant.environment_xform[4] = p_environment_transform.elements[0][1];
-		push_constant.environment_xform[5] = p_environment_transform.elements[1][1];
-		push_constant.environment_xform[6] = p_environment_transform.elements[2][1];
+		push_constant.environment_xform[4] = p_environment_transform.rows[0][1];
+		push_constant.environment_xform[5] = p_environment_transform.rows[1][1];
+		push_constant.environment_xform[6] = p_environment_transform.rows[2][1];
 		push_constant.environment_xform[7] = 0;
-		push_constant.environment_xform[8] = p_environment_transform.elements[0][2];
-		push_constant.environment_xform[9] = p_environment_transform.elements[1][2];
-		push_constant.environment_xform[10] = p_environment_transform.elements[2][2];
+		push_constant.environment_xform[8] = p_environment_transform.rows[0][2];
+		push_constant.environment_xform[9] = p_environment_transform.rows[1][2];
+		push_constant.environment_xform[10] = p_environment_transform.rows[2][2];
 		push_constant.environment_xform[11] = 0;
 	}
 

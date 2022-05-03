@@ -96,7 +96,7 @@ void CanvasLayer::_update_xform() {
 }
 
 void CanvasLayer::_update_locrotscale() {
-	ofs = transform.elements[2];
+	ofs = transform.columns[2];
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
 	locrotscale_dirty = false;

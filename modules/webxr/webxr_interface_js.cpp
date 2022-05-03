@@ -291,15 +291,15 @@ void WebXRInterfaceJS::uninitialize() {
 Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	Transform3D transform;
 
-	transform.basis.elements[0].x = p_js_matrix[0];
-	transform.basis.elements[1].x = p_js_matrix[1];
-	transform.basis.elements[2].x = p_js_matrix[2];
-	transform.basis.elements[0].y = p_js_matrix[4];
-	transform.basis.elements[1].y = p_js_matrix[5];
-	transform.basis.elements[2].y = p_js_matrix[6];
-	transform.basis.elements[0].z = p_js_matrix[8];
-	transform.basis.elements[1].z = p_js_matrix[9];
-	transform.basis.elements[2].z = p_js_matrix[10];
+	transform.basis.rows[0].x = p_js_matrix[0];
+	transform.basis.rows[1].x = p_js_matrix[1];
+	transform.basis.rows[2].x = p_js_matrix[2];
+	transform.basis.rows[0].y = p_js_matrix[4];
+	transform.basis.rows[1].y = p_js_matrix[5];
+	transform.basis.rows[2].y = p_js_matrix[6];
+	transform.basis.rows[0].z = p_js_matrix[8];
+	transform.basis.rows[1].z = p_js_matrix[9];
+	transform.basis.rows[2].z = p_js_matrix[10];
 	transform.origin.x = p_js_matrix[12];
 	transform.origin.y = p_js_matrix[13];
 	transform.origin.z = p_js_matrix[14];

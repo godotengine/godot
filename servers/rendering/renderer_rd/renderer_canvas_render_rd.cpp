@@ -41,57 +41,57 @@
 #include "servers/rendering/rendering_server_default.h"
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
-	p_mat4[0] = p_transform.elements[0][0];
-	p_mat4[1] = p_transform.elements[0][1];
+	p_mat4[0] = p_transform.columns[0][0];
+	p_mat4[1] = p_transform.columns[0][1];
 	p_mat4[2] = 0;
 	p_mat4[3] = 0;
-	p_mat4[4] = p_transform.elements[1][0];
-	p_mat4[5] = p_transform.elements[1][1];
+	p_mat4[4] = p_transform.columns[1][0];
+	p_mat4[5] = p_transform.columns[1][1];
 	p_mat4[6] = 0;
 	p_mat4[7] = 0;
 	p_mat4[8] = 0;
 	p_mat4[9] = 0;
 	p_mat4[10] = 1;
 	p_mat4[11] = 0;
-	p_mat4[12] = p_transform.elements[2][0];
-	p_mat4[13] = p_transform.elements[2][1];
+	p_mat4[12] = p_transform.columns[2][0];
+	p_mat4[13] = p_transform.columns[2][1];
 	p_mat4[14] = 0;
 	p_mat4[15] = 1;
 }
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4) {
-	p_mat2x4[0] = p_transform.elements[0][0];
-	p_mat2x4[1] = p_transform.elements[1][0];
+	p_mat2x4[0] = p_transform.columns[0][0];
+	p_mat2x4[1] = p_transform.columns[1][0];
 	p_mat2x4[2] = 0;
-	p_mat2x4[3] = p_transform.elements[2][0];
+	p_mat2x4[3] = p_transform.columns[2][0];
 
-	p_mat2x4[4] = p_transform.elements[0][1];
-	p_mat2x4[5] = p_transform.elements[1][1];
+	p_mat2x4[4] = p_transform.columns[0][1];
+	p_mat2x4[5] = p_transform.columns[1][1];
 	p_mat2x4[6] = 0;
-	p_mat2x4[7] = p_transform.elements[2][1];
+	p_mat2x4[7] = p_transform.columns[2][1];
 }
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3) {
-	p_mat2x3[0] = p_transform.elements[0][0];
-	p_mat2x3[1] = p_transform.elements[0][1];
-	p_mat2x3[2] = p_transform.elements[1][0];
-	p_mat2x3[3] = p_transform.elements[1][1];
-	p_mat2x3[4] = p_transform.elements[2][0];
-	p_mat2x3[5] = p_transform.elements[2][1];
+	p_mat2x3[0] = p_transform.columns[0][0];
+	p_mat2x3[1] = p_transform.columns[0][1];
+	p_mat2x3[2] = p_transform.columns[1][0];
+	p_mat2x3[3] = p_transform.columns[1][1];
+	p_mat2x3[4] = p_transform.columns[2][0];
+	p_mat2x3[5] = p_transform.columns[2][1];
 }
 
 void RendererCanvasRenderRD::_update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4) {
-	p_mat4[0] = p_transform.basis.elements[0][0];
-	p_mat4[1] = p_transform.basis.elements[1][0];
-	p_mat4[2] = p_transform.basis.elements[2][0];
+	p_mat4[0] = p_transform.basis.rows[0][0];
+	p_mat4[1] = p_transform.basis.rows[1][0];
+	p_mat4[2] = p_transform.basis.rows[2][0];
 	p_mat4[3] = 0;
-	p_mat4[4] = p_transform.basis.elements[0][1];
-	p_mat4[5] = p_transform.basis.elements[1][1];
-	p_mat4[6] = p_transform.basis.elements[2][1];
+	p_mat4[4] = p_transform.basis.rows[0][1];
+	p_mat4[5] = p_transform.basis.rows[1][1];
+	p_mat4[6] = p_transform.basis.rows[2][1];
 	p_mat4[7] = 0;
-	p_mat4[8] = p_transform.basis.elements[0][2];
-	p_mat4[9] = p_transform.basis.elements[1][2];
-	p_mat4[10] = p_transform.basis.elements[2][2];
+	p_mat4[8] = p_transform.basis.rows[0][2];
+	p_mat4[9] = p_transform.basis.rows[1][2];
+	p_mat4[10] = p_transform.basis.rows[2][2];
 	p_mat4[11] = 0;
 	p_mat4[12] = p_transform.origin.x;
 	p_mat4[13] = p_transform.origin.y;
@@ -1175,7 +1175,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				ERR_CONTINUE(!clight);
 			}
 
-			Vector2 canvas_light_dir = l->xform_cache.elements[1].normalized();
+			Vector2 canvas_light_dir = l->xform_cache.columns[1].normalized();
 
 			state.light_uniforms[index].position[0] = -canvas_light_dir.x;
 			state.light_uniforms[index].position[1] = -canvas_light_dir.y;
@@ -1246,7 +1246,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			_update_transform_2d_to_mat2x4(to_light_xform, state.light_uniforms[index].matrix);
 			_update_transform_2d_to_mat2x4(l->xform_cache.affine_inverse(), state.light_uniforms[index].shadow_matrix);
 
-			state.light_uniforms[index].height = l->height * (p_canvas_transform.elements[0].length() + p_canvas_transform.elements[1].length()) * 0.5; //approximate height conversion to the canvas size, since all calculations are done in canvas coords to avoid precision loss
+			state.light_uniforms[index].height = l->height * (p_canvas_transform.columns[0].length() + p_canvas_transform.columns[1].length()) * 0.5; //approximate height conversion to the canvas size, since all calculations are done in canvas coords to avoid precision loss
 			for (int i = 0; i < 4; i++) {
 				state.light_uniforms[index].shadow_color[i] = uint8_t(CLAMP(int32_t(l->shadow_color[i] * 255.0), 0, 255));
 				state.light_uniforms[index].color[i] = l->color[i];
@@ -1310,9 +1310,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
 
 		Transform2D normal_transform = p_canvas_transform;
-		normal_transform.elements[0].normalize();
-		normal_transform.elements[1].normalize();
-		normal_transform.elements[2] = Vector2();
+		normal_transform.columns[0].normalize();
+		normal_transform.columns[1].normalize();
+		normal_transform.columns[2] = Vector2();
 		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
 
 		state_buffer.canvas_modulate[0] = p_modulate.r;
@@ -1645,7 +1645,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 
 	_update_shadow_atlas();
 
-	Vector2 light_dir = p_light_xform.elements[1].normalized();
+	Vector2 light_dir = p_light_xform.columns[1].normalized();
 
 	Vector2 center = p_clip_rect.get_center();
 
@@ -1713,8 +1713,8 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	RD::get_singleton()->draw_list_end();
 
 	Transform2D to_shadow;
-	to_shadow.elements[0].x = 1.0 / -(half_size * 2.0);
-	to_shadow.elements[2].x = 0.5;
+	to_shadow.columns[0].x = 1.0 / -(half_size * 2.0);
+	to_shadow.columns[2].x = 0.5;
 
 	cl->shadow.directional_xform = to_shadow * to_light_xform;
 }
@@ -1726,14 +1726,14 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	Rect2i rect = texture_storage->render_target_get_sdf_rect(p_render_target);
 
 	Transform2D to_sdf;
-	to_sdf.elements[0] *= rect.size.width;
-	to_sdf.elements[1] *= rect.size.height;
-	to_sdf.elements[2] = rect.position;
+	to_sdf.columns[0] *= rect.size.width;
+	to_sdf.columns[1] *= rect.size.height;
+	to_sdf.columns[2] = rect.position;
 
 	Transform2D to_clip;
-	to_clip.elements[0] *= 2.0;
-	to_clip.elements[1] *= 2.0;
-	to_clip.elements[2] = -Vector2(1.0, 1.0);
+	to_clip.columns[0] *= 2.0;
+	to_clip.columns[1] *= 2.0;
+	to_clip.columns[2] = -Vector2(1.0, 1.0);
 
 	to_clip = to_clip * to_sdf.affine_inverse();
 

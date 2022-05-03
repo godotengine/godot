@@ -260,7 +260,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 	Transform2D xform_Bu = B->get_transform();
-	xform_Bu.elements[2] -= offset_A;
+	xform_Bu.columns[2] -= offset_A;
 	Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	GodotShape2D *shape_A_ptr = A->get_shape(shape_A);
@@ -351,7 +351,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 			Transform2D xform_Bu = B->get_transform();
-			xform_Bu.elements[2] -= offset_A;
+			xform_Bu.columns[2] -= offset_A;
 			Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 			if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {

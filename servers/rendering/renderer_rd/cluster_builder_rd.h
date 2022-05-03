@@ -331,9 +331,9 @@ public:
 		//extract scale and scale the matrix by it, makes things simpler
 		Vector3 scale = p_half_extents;
 		for (uint32_t i = 0; i < 3; i++) {
-			float s = xform.basis.elements[i].length();
+			float s = xform.basis.rows[i].length();
 			scale[i] *= s;
-			xform.basis.elements[i] /= s;
+			xform.basis.rows[i] /= s;
 		};
 
 		float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));

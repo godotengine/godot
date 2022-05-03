@@ -1187,17 +1187,17 @@ void CPUParticles3D::_update_particle_data_buffer() {
 		}
 
 		if (r[idx].active) {
-			ptr[0] = t.basis.elements[0][0];
-			ptr[1] = t.basis.elements[0][1];
-			ptr[2] = t.basis.elements[0][2];
+			ptr[0] = t.basis.rows[0][0];
+			ptr[1] = t.basis.rows[0][1];
+			ptr[2] = t.basis.rows[0][2];
 			ptr[3] = t.origin.x;
-			ptr[4] = t.basis.elements[1][0];
-			ptr[5] = t.basis.elements[1][1];
-			ptr[6] = t.basis.elements[1][2];
+			ptr[4] = t.basis.rows[1][0];
+			ptr[5] = t.basis.rows[1][1];
+			ptr[6] = t.basis.rows[1][2];
 			ptr[7] = t.origin.y;
-			ptr[8] = t.basis.elements[2][0];
-			ptr[9] = t.basis.elements[2][1];
-			ptr[10] = t.basis.elements[2][2];
+			ptr[8] = t.basis.rows[2][0];
+			ptr[9] = t.basis.rows[2][1];
+			ptr[10] = t.basis.rows[2][2];
 			ptr[11] = t.origin.z;
 		} else {
 			memset(ptr, 0, sizeof(Transform3D));
@@ -1293,17 +1293,17 @@ void CPUParticles3D::_notification(int p_what) {
 					Transform3D t = inv_emission_transform * r[i].transform;
 
 					if (r[i].active) {
-						ptr[0] = t.basis.elements[0][0];
-						ptr[1] = t.basis.elements[0][1];
-						ptr[2] = t.basis.elements[0][2];
+						ptr[0] = t.basis.rows[0][0];
+						ptr[1] = t.basis.rows[0][1];
+						ptr[2] = t.basis.rows[0][2];
 						ptr[3] = t.origin.x;
-						ptr[4] = t.basis.elements[1][0];
-						ptr[5] = t.basis.elements[1][1];
-						ptr[6] = t.basis.elements[1][2];
+						ptr[4] = t.basis.rows[1][0];
+						ptr[5] = t.basis.rows[1][1];
+						ptr[6] = t.basis.rows[1][2];
 						ptr[7] = t.origin.y;
-						ptr[8] = t.basis.elements[2][0];
-						ptr[9] = t.basis.elements[2][1];
-						ptr[10] = t.basis.elements[2][2];
+						ptr[8] = t.basis.rows[2][0];
+						ptr[9] = t.basis.rows[2][1];
+						ptr[10] = t.basis.rows[2][2];
 						ptr[11] = t.origin.z;
 					} else {
 						memset(ptr, 0, sizeof(float) * 12);

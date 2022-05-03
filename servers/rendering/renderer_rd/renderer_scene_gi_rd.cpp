@@ -1228,17 +1228,17 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 	push_constant.cam_extent[1] = vp_half.y;
 	push_constant.cam_extent[2] = -p_projection.get_z_near();
 
-	push_constant.cam_transform[0] = p_transform.basis.elements[0][0];
-	push_constant.cam_transform[1] = p_transform.basis.elements[1][0];
-	push_constant.cam_transform[2] = p_transform.basis.elements[2][0];
+	push_constant.cam_transform[0] = p_transform.basis.rows[0][0];
+	push_constant.cam_transform[1] = p_transform.basis.rows[1][0];
+	push_constant.cam_transform[2] = p_transform.basis.rows[2][0];
 	push_constant.cam_transform[3] = 0;
-	push_constant.cam_transform[4] = p_transform.basis.elements[0][1];
-	push_constant.cam_transform[5] = p_transform.basis.elements[1][1];
-	push_constant.cam_transform[6] = p_transform.basis.elements[2][1];
+	push_constant.cam_transform[4] = p_transform.basis.rows[0][1];
+	push_constant.cam_transform[5] = p_transform.basis.rows[1][1];
+	push_constant.cam_transform[6] = p_transform.basis.rows[2][1];
 	push_constant.cam_transform[7] = 0;
-	push_constant.cam_transform[8] = p_transform.basis.elements[0][2];
-	push_constant.cam_transform[9] = p_transform.basis.elements[1][2];
-	push_constant.cam_transform[10] = p_transform.basis.elements[2][2];
+	push_constant.cam_transform[8] = p_transform.basis.rows[0][2];
+	push_constant.cam_transform[9] = p_transform.basis.rows[1][2];
+	push_constant.cam_transform[10] = p_transform.basis.rows[2][2];
 	push_constant.cam_transform[11] = 0;
 	push_constant.cam_transform[12] = p_transform.origin.x;
 	push_constant.cam_transform[13] = p_transform.origin.y;
@@ -3070,17 +3070,17 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 
 				Transform3D to_cell = storage->voxel_gi_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
 
-				gipd.xform[0] = to_cell.basis.elements[0][0];
-				gipd.xform[1] = to_cell.basis.elements[1][0];
-				gipd.xform[2] = to_cell.basis.elements[2][0];
+				gipd.xform[0] = to_cell.basis.rows[0][0];
+				gipd.xform[1] = to_cell.basis.rows[1][0];
+				gipd.xform[2] = to_cell.basis.rows[2][0];
 				gipd.xform[3] = 0;
-				gipd.xform[4] = to_cell.basis.elements[0][1];
-				gipd.xform[5] = to_cell.basis.elements[1][1];
-				gipd.xform[6] = to_cell.basis.elements[2][1];
+				gipd.xform[4] = to_cell.basis.rows[0][1];
+				gipd.xform[5] = to_cell.basis.rows[1][1];
+				gipd.xform[6] = to_cell.basis.rows[2][1];
 				gipd.xform[7] = 0;
-				gipd.xform[8] = to_cell.basis.elements[0][2];
-				gipd.xform[9] = to_cell.basis.elements[1][2];
-				gipd.xform[10] = to_cell.basis.elements[2][2];
+				gipd.xform[8] = to_cell.basis.rows[0][2];
+				gipd.xform[9] = to_cell.basis.rows[1][2];
+				gipd.xform[10] = to_cell.basis.rows[2][2];
 				gipd.xform[11] = 0;
 				gipd.xform[12] = to_cell.origin.x;
 				gipd.xform[13] = to_cell.origin.y;

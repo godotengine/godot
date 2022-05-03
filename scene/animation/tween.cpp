@@ -456,12 +456,12 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Transform2D d = p_delta_val;
 			Transform2D r;
 
-			APPLY_EQUATION(elements[0][0]);
-			APPLY_EQUATION(elements[0][1]);
-			APPLY_EQUATION(elements[1][0]);
-			APPLY_EQUATION(elements[1][1]);
-			APPLY_EQUATION(elements[2][0]);
-			APPLY_EQUATION(elements[2][1]);
+			APPLY_EQUATION(columns[0][0]);
+			APPLY_EQUATION(columns[0][1]);
+			APPLY_EQUATION(columns[1][0]);
+			APPLY_EQUATION(columns[1][1]);
+			APPLY_EQUATION(columns[2][0]);
+			APPLY_EQUATION(columns[2][1]);
 			return r;
 		}
 
@@ -496,15 +496,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Basis d = p_delta_val;
 			Basis r;
 
-			APPLY_EQUATION(elements[0][0]);
-			APPLY_EQUATION(elements[0][1]);
-			APPLY_EQUATION(elements[0][2]);
-			APPLY_EQUATION(elements[1][0]);
-			APPLY_EQUATION(elements[1][1]);
-			APPLY_EQUATION(elements[1][2]);
-			APPLY_EQUATION(elements[2][0]);
-			APPLY_EQUATION(elements[2][1]);
-			APPLY_EQUATION(elements[2][2]);
+			APPLY_EQUATION(rows[0][0]);
+			APPLY_EQUATION(rows[0][1]);
+			APPLY_EQUATION(rows[0][2]);
+			APPLY_EQUATION(rows[1][0]);
+			APPLY_EQUATION(rows[1][1]);
+			APPLY_EQUATION(rows[1][2]);
+			APPLY_EQUATION(rows[2][0]);
+			APPLY_EQUATION(rows[2][1]);
+			APPLY_EQUATION(rows[2][2]);
 			return r;
 		}
 
@@ -513,15 +513,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Transform3D d = p_delta_val;
 			Transform3D r;
 
-			APPLY_EQUATION(basis.elements[0][0]);
-			APPLY_EQUATION(basis.elements[0][1]);
-			APPLY_EQUATION(basis.elements[0][2]);
-			APPLY_EQUATION(basis.elements[1][0]);
-			APPLY_EQUATION(basis.elements[1][1]);
-			APPLY_EQUATION(basis.elements[1][2]);
-			APPLY_EQUATION(basis.elements[2][0]);
-			APPLY_EQUATION(basis.elements[2][1]);
-			APPLY_EQUATION(basis.elements[2][2]);
+			APPLY_EQUATION(basis.rows[0][0]);
+			APPLY_EQUATION(basis.rows[0][1]);
+			APPLY_EQUATION(basis.rows[0][2]);
+			APPLY_EQUATION(basis.rows[1][0]);
+			APPLY_EQUATION(basis.rows[1][1]);
+			APPLY_EQUATION(basis.rows[1][2]);
+			APPLY_EQUATION(basis.rows[2][0]);
+			APPLY_EQUATION(basis.rows[2][1]);
+			APPLY_EQUATION(basis.rows[2][2]);
 			APPLY_EQUATION(origin.x);
 			APPLY_EQUATION(origin.y);
 			APPLY_EQUATION(origin.z);
@@ -570,12 +570,12 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 		case Variant::TRANSFORM2D: {
 			Transform2D i = p_intial_val;
 			Transform2D f = p_final_val;
-			return Transform2D(f.elements[0][0] - i.elements[0][0],
-					f.elements[0][1] - i.elements[0][1],
-					f.elements[1][0] - i.elements[1][0],
-					f.elements[1][1] - i.elements[1][1],
-					f.elements[2][0] - i.elements[2][0],
-					f.elements[2][1] - i.elements[2][1]);
+			return Transform2D(f.columns[0][0] - i.columns[0][0],
+					f.columns[0][1] - i.columns[0][1],
+					f.columns[1][0] - i.columns[1][0],
+					f.columns[1][1] - i.columns[1][1],
+					f.columns[2][0] - i.columns[2][0],
+					f.columns[2][1] - i.columns[2][1]);
 		}
 
 		case Variant::AABB: {
@@ -587,29 +587,29 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 		case Variant::BASIS: {
 			Basis i = p_intial_val;
 			Basis f = p_final_val;
-			return Basis(f.elements[0][0] - i.elements[0][0],
-					f.elements[0][1] - i.elements[0][1],
-					f.elements[0][2] - i.elements[0][2],
-					f.elements[1][0] - i.elements[1][0],
-					f.elements[1][1] - i.elements[1][1],
-					f.elements[1][2] - i.elements[1][2],
-					f.elements[2][0] - i.elements[2][0],
-					f.elements[2][1] - i.elements[2][1],
-					f.elements[2][2] - i.elements[2][2]);
+			return Basis(f.rows[0][0] - i.rows[0][0],
+					f.rows[0][1] - i.rows[0][1],
+					f.rows[0][2] - i.rows[0][2],
+					f.rows[1][0] - i.rows[1][0],
+					f.rows[1][1] - i.rows[1][1],
+					f.rows[1][2] - i.rows[1][2],
+					f.rows[2][0] - i.rows[2][0],
+					f.rows[2][1] - i.rows[2][1],
+					f.rows[2][2] - i.rows[2][2]);
 		}
 
 		case Variant::TRANSFORM3D: {
 			Transform3D i = p_intial_val;
 			Transform3D f = p_final_val;
-			return Transform3D(f.basis.elements[0][0] - i.basis.elements[0][0],
-					f.basis.elements[0][1] - i.basis.elements[0][1],
-					f.basis.elements[0][2] - i.basis.elements[0][2],
-					f.basis.elements[1][0] - i.basis.elements[1][0],
-					f.basis.elements[1][1] - i.basis.elements[1][1],
-					f.basis.elements[1][2] - i.basis.elements[1][2],
-					f.basis.elements[2][0] - i.basis.elements[2][0],
-					f.basis.elements[2][1] - i.basis.elements[2][1],
-					f.basis.elements[2][2] - i.basis.elements[2][2],
+			return Transform3D(f.basis.rows[0][0] - i.basis.rows[0][0],
+					f.basis.rows[0][1] - i.basis.rows[0][1],
+					f.basis.rows[0][2] - i.basis.rows[0][2],
+					f.basis.rows[1][0] - i.basis.rows[1][0],
+					f.basis.rows[1][1] - i.basis.rows[1][1],
+					f.basis.rows[1][2] - i.basis.rows[1][2],
+					f.basis.rows[2][0] - i.basis.rows[2][0],
+					f.basis.rows[2][1] - i.basis.rows[2][1],
+					f.basis.rows[2][2] - i.basis.rows[2][2],
 					f.origin.x - i.origin.x,
 					f.origin.y - i.origin.y,
 					f.origin.z - i.origin.z);

@@ -252,17 +252,17 @@ RendererSceneSkyRD::SkyMaterialData::~SkyMaterialData() {
 // Render sky
 
 static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
-	p_array[0] = p_basis.elements[0][0];
-	p_array[1] = p_basis.elements[1][0];
-	p_array[2] = p_basis.elements[2][0];
+	p_array[0] = p_basis.rows[0][0];
+	p_array[1] = p_basis.rows[1][0];
+	p_array[2] = p_basis.rows[2][0];
 	p_array[3] = 0;
-	p_array[4] = p_basis.elements[0][1];
-	p_array[5] = p_basis.elements[1][1];
-	p_array[6] = p_basis.elements[2][1];
+	p_array[4] = p_basis.rows[0][1];
+	p_array[5] = p_basis.rows[1][1];
+	p_array[6] = p_basis.rows[2][1];
 	p_array[7] = 0;
-	p_array[8] = p_basis.elements[0][2];
-	p_array[9] = p_basis.elements[1][2];
-	p_array[10] = p_basis.elements[2][2];
+	p_array[8] = p_basis.rows[0][2];
+	p_array[9] = p_basis.rows[1][2];
+	p_array[10] = p_basis.rows[2][2];
 	p_array[11] = 0;
 }
 

@@ -112,9 +112,9 @@ Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p
 
 	// We use our gravity and magnetometer vectors to construct our matrix
 	Basis acc_mag_m3;
-	acc_mag_m3.elements[0] = -magneto_east;
-	acc_mag_m3.elements[1] = up;
-	acc_mag_m3.elements[2] = magneto;
+	acc_mag_m3.rows[0] = -magneto_east;
+	acc_mag_m3.rows[1] = up;
+	acc_mag_m3.rows[2] = magneto;
 
 	return acc_mag_m3;
 };

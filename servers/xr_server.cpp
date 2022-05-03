@@ -131,7 +131,7 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	// remove our tilt
 	if (p_rotation_mode == 1) {
 		// take the Y out of our Z
-		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
+		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.rows[0][2], 0.0, new_reference_frame.basis.rows[2][2]).normalized());
 
 		// Y is straight up
 		new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
