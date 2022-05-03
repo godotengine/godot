@@ -2092,3 +2092,17 @@ ArrayMesh::~ArrayMesh() {
 		RenderingServer::get_singleton()->free(mesh);
 	}
 }
+///////////////
+
+void PlaceholderMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PlaceholderMesh::set_aabb);
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, ""), "set_aabb", "get_aabb");
+}
+
+PlaceholderMesh::PlaceholderMesh() {
+	rid = RS::get_singleton()->mesh_create();
+}
+
+PlaceholderMesh::~PlaceholderMesh() {
+	RS::get_singleton()->free(rid);
+}

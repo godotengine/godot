@@ -797,6 +797,13 @@ public:
 			BaseMaterial3D(true) {}
 };
 
+class PlaceholderMaterial : public Material {
+	GDCLASS(PlaceholderMaterial, Material)
+public:
+	virtual RID get_shader_rid() const override { return RID(); }
+	virtual Shader::Mode get_shader_mode() const override { return Shader::MODE_CANVAS_ITEM; }
+};
+
 //////////////////////
 
 #endif
