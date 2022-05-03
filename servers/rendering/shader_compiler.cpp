@@ -685,9 +685,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				vcode += ";\n";
-
-				r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
-				r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
+				// GLSL ES 3.0 does not allow layout qualifiers for varyings
+				if (!RS::get_singleton()->is_low_end()) {
+					r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
+					r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+				}
+				r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
+				r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
 
 				index += inc;
 			}

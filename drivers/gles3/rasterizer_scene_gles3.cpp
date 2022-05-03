@@ -708,6 +708,10 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 		//ERR_FAIL_COND(!rt);
 	}
 
+	///////////
+	// Fill Light lists here
+	//////////
+
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
 		clear_color = texture_storage->render_target_get_clear_request_color(rb->render_target);
@@ -1053,6 +1057,38 @@ RasterizerSceneGLES3::RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage) {
 	storage = p_storage;
 
 	{
+		String global_defines;
+		global_defines += "#define MAX_GLOBAL_VARIABLES 256\n"; // TODO: this is arbitrary for now
+		material_storage->shaders.scene_shader.initialize(global_defines);
+		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
+		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);
+	}
+
+	{
+		//default material and shader
+		scene_globals.default_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(scene_globals.default_shader);
+		material_storage->shader_set_code(scene_globals.default_shader, R"(
+// Default 3D material shader (clustered).
+
+shader_type spatial;
+
+void vertex() {
+	ROUGHNESS = 0.8;
+}
+
+void fragment() {
+	ALBEDO = vec3(0.6);
+	ROUGHNESS = 0.8;
+	METALLIC = 0.2;
+}
+)");
+		scene_globals.default_material = material_storage->material_allocate();
+		material_storage->material_initialize(scene_globals.default_material);
+		material_storage->material_set_shader(scene_globals.default_material, scene_globals.default_shader);
+	}
+
+	{
 		// Initialize Sky stuff
 		sky_globals.roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 		sky_globals.ggx_samples = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
@@ -1060,9 +1096,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage) {
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_VARIABLES 256\n"; // TODO: this is arbitrary for now
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_globals.max_directional_lights) + "\n";
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.initialize(global_defines);
-		sky_globals.shader_default_version = GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_create();
-		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
+		material_storage->shaders.sky_shader.initialize(global_defines);
+		sky_globals.shader_default_version = material_storage->shaders.sky_shader.version_create();
+		material_storage->shaders.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
 	}
 
 	{
@@ -1149,6 +1185,9 @@ void sky() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
+	GLES3::MaterialStorage::get_singleton()->shaders.scene_shader.version_free(scene_globals.shader_default_version);
+	storage->free(scene_globals.default_material);
+	storage->free(scene_globals.default_shader);
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
 	storage->free(sky_globals.default_material);
 	storage->free(sky_globals.default_shader);

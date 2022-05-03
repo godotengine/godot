@@ -1,5 +1,5 @@
-//TODO: only needed by GLES_OVER_GL
 
+#ifdef USE_GLES_OVER_GL
 uint float2half(uint f) {
 	return ((f >> uint(16)) & uint(0x8000)) |
 			((((f & uint(0x7f800000)) - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
@@ -56,3 +56,4 @@ vec4 unpackSnorm4x8(uint p) {
 	vec4 v = vec4(float(p & uint(0xffff)), float((p >> uint(8)) & uint(0xffff)), float((p >> uint(16)) & uint(0xffff)), float(p >> uint(24)));
 	return clamp((v - vec4(127.0)) * vec4(0.00787401574), vec4(-1.0), vec4(1.0));
 }
+#endif

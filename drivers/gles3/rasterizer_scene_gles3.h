@@ -91,9 +91,7 @@ private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	uint64_t scene_pass = 0;
 
-	/* Sky */
 	struct SkyGlobals {
-		RID shader_current_version;
 		RID shader_default_version;
 		RID default_material;
 		RID default_shader;
@@ -105,6 +103,12 @@ private:
 		uint32_t roughness_layers = 8;
 		uint32_t ggx_samples = 128;
 	} sky_globals;
+
+	struct SceneGlobals {
+		RID shader_default_version;
+		RID default_material;
+		RID default_shader;
+	} scene_globals;
 
 protected:
 	double time;

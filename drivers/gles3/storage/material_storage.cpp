@@ -900,6 +900,42 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 ///////////////////////////////////////////////////////////////////////////
 // MaterialData
 
+// Look up table to translate ShaderLanguage::DataType to GL_TEXTURE_*
+static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
+	GL_TEXTURE_2D, // TYPE_VOID,
+	GL_TEXTURE_2D, // TYPE_BOOL,
+	GL_TEXTURE_2D, // TYPE_BVEC2,
+	GL_TEXTURE_2D, // TYPE_BVEC3,
+	GL_TEXTURE_2D, // TYPE_BVEC4,
+	GL_TEXTURE_2D, // TYPE_INT,
+	GL_TEXTURE_2D, // TYPE_IVEC2,
+	GL_TEXTURE_2D, // TYPE_IVEC3,
+	GL_TEXTURE_2D, // TYPE_IVEC4,
+	GL_TEXTURE_2D, // TYPE_UINT,
+	GL_TEXTURE_2D, // TYPE_UVEC2,
+	GL_TEXTURE_2D, // TYPE_UVEC3,
+	GL_TEXTURE_2D, // TYPE_UVEC4,
+	GL_TEXTURE_2D, // TYPE_FLOAT,
+	GL_TEXTURE_2D, // TYPE_VEC2,
+	GL_TEXTURE_2D, // TYPE_VEC3,
+	GL_TEXTURE_2D, // TYPE_VEC4,
+	GL_TEXTURE_2D, // TYPE_MAT2,
+	GL_TEXTURE_2D, // TYPE_MAT3,
+	GL_TEXTURE_2D, // TYPE_MAT4,
+	GL_TEXTURE_2D, // TYPE_SAMPLER2D,
+	GL_TEXTURE_2D, // TYPE_ISAMPLER2D,
+	GL_TEXTURE_2D, // TYPE_USAMPLER2D,
+	GL_TEXTURE_2D_ARRAY, // TYPE_SAMPLER2DARRAY,
+	GL_TEXTURE_2D_ARRAY, // TYPE_ISAMPLER2DARRAY,
+	GL_TEXTURE_2D_ARRAY, // TYPE_USAMPLER2DARRAY,
+	GL_TEXTURE_3D, // TYPE_SAMPLER3D,
+	GL_TEXTURE_3D, // TYPE_ISAMPLER3D,
+	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
+	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
+	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
+	GL_TEXTURE_2D, // TYPE_STRUCT
+};
+
 void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	bool uses_global_buffer = false;
@@ -1275,13 +1311,13 @@ MaterialStorage *MaterialStorage::get_singleton() {
 MaterialStorage::MaterialStorage() {
 	singleton = this;
 
-	shader_data_request_func[RS::SHADER_SPATIAL] = nullptr;
+	shader_data_request_func[RS::SHADER_SPATIAL] = _create_scene_shader_func;
 	shader_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_shader_func;
 	shader_data_request_func[RS::SHADER_PARTICLES] = nullptr;
 	shader_data_request_func[RS::SHADER_SKY] = _create_sky_shader_func;
 	shader_data_request_func[RS::SHADER_FOG] = nullptr;
 
-	material_data_request_func[RS::SHADER_SPATIAL] = nullptr;
+	material_data_request_func[RS::SHADER_SPATIAL] = _create_scene_material_func;
 	material_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_material_func;
 	material_data_request_func[RS::SHADER_PARTICLES] = nullptr;
 	material_data_request_func[RS::SHADER_SKY] = _create_sky_material_func;
@@ -1365,16 +1401,12 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["light_only"] = "#define MODE_LIGHT_ONLY\n";
 
-		actions.base_texture_binding_index = 0;
-		actions.base_uniform_string = "";
-		actions.global_buffer_array_variable = "";
-
 		shaders.compiler_canvas.initialize(actions);
 	}
 
 	{
 		// Setup Scene compiler
-		/*
+
 		//shader compiler
 		ShaderCompiler::DefaultIdentifierActions actions;
 
@@ -1529,11 +1561,6 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
 		actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
-
-		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; // linear filter with mipmaps
-		actions.custom_samplers["DEPTH_TEXTURE"] = "material_samplers[3]";
-		actions.custom_samplers["NORMAL_ROUGHNESS_TEXTURE"] = "material_samplers[1]"; // linear filter
-
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 		actions.render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 		actions.render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
@@ -1541,19 +1568,10 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 
-		actions.sampler_array_name = "material_samplers";
-		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
-		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 10;
-
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
-		actions.global_buffer_array_variable = "global_variables.data";
-		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
-		compiler.initialize(actions);
-		*/
+		shaders.compiler_scene.initialize(actions);
 	}
 
 	{
@@ -1664,13 +1682,8 @@ ShaderCompiler::DefaultIdentifierActions actions;
 		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
 		actions.render_mode_defines["disable_fog"] = "#define DISABLE_FOG\n";
 
-		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = 1;
-		actions.base_varying_index = 10;
-
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
-		actions.global_buffer_array_variable = "global_variables";
 
 		shaders.compiler_sky.initialize(actions);
 	}
@@ -2914,42 +2927,6 @@ void CanvasMaterialData::update_parameters(const Map<StringName, Variant> &p_par
 	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 
-// Look up table to translate ShaderLanguage::DataType to GL_TEXTURE_*
-static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
-	GL_TEXTURE_2D, // TYPE_VOID,
-	GL_TEXTURE_2D, // TYPE_BOOL,
-	GL_TEXTURE_2D, // TYPE_BVEC2,
-	GL_TEXTURE_2D, // TYPE_BVEC3,
-	GL_TEXTURE_2D, // TYPE_BVEC4,
-	GL_TEXTURE_2D, // TYPE_INT,
-	GL_TEXTURE_2D, // TYPE_IVEC2,
-	GL_TEXTURE_2D, // TYPE_IVEC3,
-	GL_TEXTURE_2D, // TYPE_IVEC4,
-	GL_TEXTURE_2D, // TYPE_UINT,
-	GL_TEXTURE_2D, // TYPE_UVEC2,
-	GL_TEXTURE_2D, // TYPE_UVEC3,
-	GL_TEXTURE_2D, // TYPE_UVEC4,
-	GL_TEXTURE_2D, // TYPE_FLOAT,
-	GL_TEXTURE_2D, // TYPE_VEC2,
-	GL_TEXTURE_2D, // TYPE_VEC3,
-	GL_TEXTURE_2D, // TYPE_VEC4,
-	GL_TEXTURE_2D, // TYPE_MAT2,
-	GL_TEXTURE_2D, // TYPE_MAT3,
-	GL_TEXTURE_2D, // TYPE_MAT4,
-	GL_TEXTURE_2D, // TYPE_SAMPLER2D,
-	GL_TEXTURE_2D, // TYPE_ISAMPLER2D,
-	GL_TEXTURE_2D, // TYPE_USAMPLER2D,
-	GL_TEXTURE_2D_ARRAY, // TYPE_SAMPLER2DARRAY,
-	GL_TEXTURE_2D_ARRAY, // TYPE_ISAMPLER2DARRAY,
-	GL_TEXTURE_2D_ARRAY, // TYPE_USAMPLER2DARRAY,
-	GL_TEXTURE_3D, // TYPE_SAMPLER3D,
-	GL_TEXTURE_3D, // TYPE_ISAMPLER3D,
-	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
-	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
-	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
-	GL_TEXTURE_2D, // TYPE_STRUCT
-};
-
 void CanvasMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, RasterizerCanvasGLES3::MATERIAL_UNIFORM_BUFFER_OBJECT, uniform_buffer);
@@ -2958,7 +2935,7 @@ void CanvasMaterialData::bind_uniforms() {
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
 	for (int ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE1 + ti);
+		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags
@@ -3184,6 +3161,299 @@ GLES3::MaterialData *GLES3::_create_sky_material_func(ShaderData *p_shader) {
 }
 
 void SkyMaterialData::bind_uniforms() {
+	// Bind Material Uniforms
+	glBindBufferBase(GL_UNIFORM_BUFFER, 3, uniform_buffer);
+
+	RID *textures = texture_cache.ptrw();
+	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
+	for (int ti = 0; ti < texture_cache.size(); ti++) {
+		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
+		glActiveTexture(GL_TEXTURE0 + ti);
+		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+
+		// Set sampler state here as the same texture can be used in multiple places with different flags
+		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
+		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
+		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+		texture->gl_set_filter(filter);
+		texture->gl_set_repeat(repeat);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Scene SHADER
+
+void SceneShaderData::set_code(const String &p_code) {
+	//compile
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+	uses_screen_texture = false;
+
+	if (code.is_empty()) {
+		return; //just invalid, but no error
+	}
+
+	ShaderCompiler::GeneratedCode gen_code;
+
+	int blend_modei = BLEND_MODE_MIX;
+	int depth_testi = DEPTH_TEST_ENABLED;
+	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
+	int cull_modei = CULL_BACK;
+	int depth_drawi = DEPTH_DRAW_OPAQUE;
+
+	uses_point_size = false;
+	uses_alpha = false;
+	uses_alpha_clip = false;
+	uses_blend_alpha = false;
+	uses_depth_pre_pass = false;
+	uses_discard = false;
+	uses_roughness = false;
+	uses_normal = false;
+	wireframe = false;
+
+	unshaded = false;
+	uses_vertex = false;
+	uses_position = false;
+	uses_sss = false;
+	uses_transmittance = false;
+	uses_screen_texture = false;
+	uses_depth_texture = false;
+	uses_normal_texture = false;
+	uses_time = false;
+	writes_modelview_or_projection = false;
+	uses_world_coordinates = false;
+	uses_particle_trails = false;
+
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
+	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
+
+	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
+	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
+	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
+	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
+
+	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_modei, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
+	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_modei, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
+
+	actions.render_mode_values["depth_draw_never"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_DISABLED);
+	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
+	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
+
+	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, CULL_BACK);
+
+	actions.render_mode_flags["unshaded"] = &unshaded;
+	actions.render_mode_flags["wireframe"] = &wireframe;
+	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
+
+	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
+	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
+	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
+
+	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
+	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+
+	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
+	actions.usage_flag_pointers["DEPTH_TEXTURE"] = &uses_depth_texture;
+	actions.usage_flag_pointers["NORMAL_TEXTURE"] = &uses_normal_texture;
+	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
+	actions.usage_flag_pointers["TIME"] = &uses_time;
+	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
+	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
+	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal;
+
+	actions.usage_flag_pointers["POINT_SIZE"] = &uses_point_size;
+	actions.usage_flag_pointers["POINT_COORD"] = &uses_point_size;
+
+	actions.write_flag_pointers["MODELVIEW_MATRIX"] = &writes_modelview_or_projection;
+	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
+	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
+	actions.write_flag_pointers["POSITION"] = &uses_position;
+
+	actions.uniforms = &uniforms;
+
+	Error err = MaterialStorage::get_singleton()->shaders.compiler_scene.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (version.is_null()) {
+		version = MaterialStorage::get_singleton()->shaders.scene_shader.version_create();
+	}
+
+	depth_draw = DepthDraw(depth_drawi);
+	depth_test = DepthTest(depth_testi);
+	cull_mode = Cull(cull_modei);
+	blend_mode = BlendMode(blend_modei);
+	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
+
+#if 0
+	print_line("**compiling shader:");
+	print_line("**defines:\n");
+	for (int i = 0; i < gen_code.defines.size(); i++) {
+		print_line(gen_code.defines[i]);
+	}
+
+	Map<String, String>::Element *el = gen_code.code.front();
+	while (el) {
+		print_line("\n**code " + el->key() + ":\n" + el->value());
+
+		el = el->next();
+	}
+
+	print_line("\n**uniforms:\n" + gen_code.uniforms);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
+#endif
+
+	Vector<StringName> texture_uniform_names;
+	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
+		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
+	}
+
+	MaterialStorage::get_singleton()->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.scene_shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	// if any form of Alpha Antialiasing is enabled, set the blend mode to alpha to coverage
+	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) {
+		blend_mode = BLEND_MODE_ALPHA_TO_COVERAGE;
+	}
+
+	valid = true;
+}
+
+void SceneShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
+	if (!p_texture.is_valid()) {
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
+	} else {
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
+	}
+}
+
+void SceneShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+	Map<int, StringName> order;
+
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+			continue;
+		}
+
+		if (E.value.texture_order >= 0) {
+			order[E.value.texture_order + 100000] = E.key;
+		} else {
+			order[E.value.order] = E.key;
+		}
+	}
+
+	for (const KeyValue<int, StringName> &E : order) {
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
+		pi.name = E.value;
+		p_param_list->push_back(pi);
+	}
+}
+
+void SceneShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RendererMaterialStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
+		p_param_list->push_back(p);
+	}
+}
+
+bool SceneShaderData::is_param_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+bool SceneShaderData::is_animated() const {
+	return false;
+}
+
+bool SceneShaderData::casts_shadows() const {
+	return false;
+}
+
+Variant SceneShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
+	}
+	return Variant();
+}
+
+RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
+	return MaterialStorage::get_singleton()->shaders.scene_shader.version_get_native_source_code(version);
+}
+
+SceneShaderData::SceneShaderData() {
+	valid = false;
+	uses_screen_texture = false;
+}
+
+SceneShaderData::~SceneShaderData() {
+	if (version.is_valid()) {
+		MaterialStorage::get_singleton()->shaders.scene_shader.version_free(version);
+	}
+}
+
+GLES3::ShaderData *GLES3::_create_scene_shader_func() {
+	SceneShaderData *shader_data = memnew(SceneShaderData);
+	return shader_data;
+}
+
+void SceneMaterialData::set_render_priority(int p_priority) {
+	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+}
+
+void SceneMaterialData::set_next_pass(RID p_pass) {
+	next_pass = p_pass;
+}
+
+void SceneMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
+}
+
+SceneMaterialData::~SceneMaterialData() {
+}
+
+GLES3::MaterialData *GLES3::_create_scene_material_func(ShaderData *p_shader) {
+	SceneMaterialData *material_data = memnew(SceneMaterialData);
+	material_data->shader_data = static_cast<SceneShaderData *>(p_shader);
+	//update will happen later anyway so do nothing.
+	return material_data;
+}
+
+void SceneMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, 3, uniform_buffer);
 
