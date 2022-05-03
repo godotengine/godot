@@ -2070,7 +2070,7 @@ Point2 Control::get_global_position() const {
 
 Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
-	Point2 global_pos = get_viewport()->get_canvas_transform().xform(get_global_position());
+	Point2 global_pos = get_global_transform_with_canvas().get_origin();
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
 		global_pos += w->get_position();
