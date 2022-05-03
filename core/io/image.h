@@ -290,6 +290,7 @@ public:
 	Vector<uint8_t> get_data() const;
 
 	Error load(const String &p_path);
+	static Ref<Image> load_from_file(const String &p_path);
 	Error save_png(const String &p_path) const;
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Vector<uint8_t> save_png_to_buffer() const;

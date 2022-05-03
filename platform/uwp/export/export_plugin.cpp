@@ -503,7 +503,5 @@ void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<Edit
 }
 
 EditorExportPlatformUWP::EditorExportPlatformUWP() {
-	Ref<Image> img = memnew(Image(_uwp_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_uwp_logo)));
 }

@@ -3118,13 +3118,8 @@ void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<
 }
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
-	Ref<Image> img = memnew(Image(_android_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
-
-	img = Ref<Image>(memnew(Image(_android_run_icon)));
-	run_icon.instantiate();
-	run_icon->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_android_logo)));
+	run_icon = ImageTexture::create_from_image(memnew(Image(_android_run_icon)));
 
 	devices_changed.set();
 	plugins_changed.set();

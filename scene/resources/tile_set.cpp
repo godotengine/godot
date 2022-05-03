@@ -1809,11 +1809,8 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 				image->create(1, 1, false, Image::FORMAT_RGBA8);
 				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
 			}
-			Ref<ImageTexture> icon;
-			icon.instantiate();
-			icon->create_from_image(image);
+			Ref<ImageTexture> icon = ImageTexture::create_from_image(image);
 			icon->set_size_override(p_size);
-
 			output.write[terrain_set].write[terrain] = icon;
 		}
 	}
@@ -4594,7 +4591,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 	if (!padded_texture.is_valid()) {
 		padded_texture.instantiate();
 	}
-	padded_texture->create_from_image(image);
+	padded_texture->set_image(image);
 	emit_changed();
 }
 

@@ -121,12 +121,9 @@ void TilesEditorPlugin::_thread() {
 				pattern_preview_done.wait();
 
 				Ref<Image> image = viewport->get_texture()->get_image();
-				Ref<ImageTexture> image_texture;
-				image_texture.instantiate();
-				image_texture->create_from_image(image);
 
 				// Find the index for the given pattern. TODO: optimize.
-				Variant args[] = { item.pattern, image_texture };
+				Variant args[] = { item.pattern, ImageTexture::create_from_image(image) };
 				const Variant *args_ptr[] = { &args[0], &args[1] };
 				Variant r;
 				Callable::CallError error;

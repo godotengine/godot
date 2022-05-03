@@ -661,13 +661,8 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	server.instantiate();
 	server_thread.start(_server_thread_poll, this);
 
-	Ref<Image> img = memnew(Image(_javascript_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
-
-	img = Ref<Image>(memnew(Image(_javascript_run_icon)));
-	run_icon.instantiate();
-	run_icon->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_javascript_logo)));
+	run_icon = ImageTexture::create_from_image(memnew(Image(_javascript_run_icon)));
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {

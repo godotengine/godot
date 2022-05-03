@@ -76,7 +76,6 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 
 // See also `editor_generate_icon()` in `editor/editor_themes.cpp`.
 static Ref<ImageTexture> generate_icon(int p_index) {
-	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
 #ifdef MODULE_SVG_ENABLED
@@ -87,9 +86,8 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	ImageLoaderSVG img_loader;
 	img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, false);
 #endif
-	icon->create_from_image(img);
 
-	return icon;
+	return ImageTexture::create_from_image(img);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {

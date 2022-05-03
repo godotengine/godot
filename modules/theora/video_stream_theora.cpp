@@ -331,7 +331,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		Ref<Image> img;
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8);
-		texture->create_from_image(img);
+		texture->set_image(img);
 
 	} else {
 		/* tear down the partial theora setup */
