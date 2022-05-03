@@ -150,8 +150,6 @@ public:
 	~Resource();
 };
 
-typedef Ref<Resource> RES;
-
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; //need the lock

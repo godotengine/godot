@@ -363,7 +363,7 @@ void NativeExtension::initialize_native_extensions() {
 	gdnative_interface.get_library_path = _get_library_path;
 }
 
-RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
@@ -374,14 +374,14 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	if (!config->has_section_key("configuration", "entry_symbol")) {
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
@@ -413,7 +413,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	if (!library_path.is_resource_file()) {
@@ -430,7 +430,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return lib;

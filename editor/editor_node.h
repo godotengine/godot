@@ -503,8 +503,8 @@ private:
 	static void _file_access_close_error_notify(const String &p_str);
 
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
-	static void _resource_saved(RES p_resource, const String &p_path);
-	static void _resource_loaded(RES p_resource, const String &p_path);
+	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
+	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _build_icon_type_cache();
 
@@ -593,9 +593,9 @@ private:
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
-	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
-	bool _find_and_save_edited_subresources(Object *obj, Map<RES, bool> &processed, int32_t flags);
-	void _save_edited_subresources(Node *scene, Map<RES, bool> &processed, int32_t flags);
+	bool _find_and_save_resource(Ref<Resource> p_res, Map<Ref<Resource>, bool> &processed, int32_t flags);
+	bool _find_and_save_edited_subresources(Object *obj, Map<Ref<Resource>, bool> &processed, int32_t flags);
+	void _save_edited_subresources(Node *scene, Map<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
@@ -755,14 +755,14 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
-	void edit_item_resource(RES p_resource);
+	void edit_item_resource(Ref<Resource> p_resource);
 	bool item_has_editor(Object *p_object);
 	void hide_top_editors();
 
 	void select_editor_by_name(const String &p_name);
 
 	void open_request(const String &p_path);
-	void edit_foreign_resource(RES p_resource);
+	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_changing_scene() const;
 

@@ -212,7 +212,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				const Variant &default_value = m.constant->initializer->reduced_value;
 				String value_text;
 				if (default_value.get_type() == Variant::OBJECT) {
-					RES res = default_value;
+					Ref<Resource> res = default_value;
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
 						if (symbol.documentation.is_empty()) {

@@ -5881,18 +5881,18 @@ public:
 		undo_redo->add_undo_property(node.ptr(), p_property, node->get(p_property));
 
 		if (p_value.get_type() == Variant::OBJECT) {
-			RES prev_res = node->get(p_property);
-			RES curr_res = p_value;
+			Ref<Resource> prev_res = node->get(p_property);
+			Ref<Resource> curr_res = p_value;
 
 			if (curr_res.is_null()) {
-				undo_redo->add_do_method(this, "_open_inspector", (RES)parent_resource.ptr());
+				undo_redo->add_do_method(this, "_open_inspector", (Ref<Resource>)parent_resource.ptr());
 			} else {
-				undo_redo->add_do_method(this, "_open_inspector", (RES)curr_res.ptr());
+				undo_redo->add_do_method(this, "_open_inspector", (Ref<Resource>)curr_res.ptr());
 			}
 			if (!prev_res.is_null()) {
-				undo_redo->add_undo_method(this, "_open_inspector", (RES)prev_res.ptr());
+				undo_redo->add_undo_method(this, "_open_inspector", (Ref<Resource>)prev_res.ptr());
 			} else {
-				undo_redo->add_undo_method(this, "_open_inspector", (RES)parent_resource.ptr());
+				undo_redo->add_undo_method(this, "_open_inspector", (Ref<Resource>)parent_resource.ptr());
 			}
 		}
 		if (p_property != "constant") {
@@ -5919,11 +5919,11 @@ public:
 		}
 	}
 
-	void _resource_selected(const String &p_path, RES p_resource) {
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource) {
 		_open_inspector(p_resource);
 	}
 
-	void _open_inspector(RES p_resource) {
+	void _open_inspector(Ref<Resource> p_resource) {
 		InspectorDock::get_inspector_singleton()->edit(p_resource.ptr());
 	}
 

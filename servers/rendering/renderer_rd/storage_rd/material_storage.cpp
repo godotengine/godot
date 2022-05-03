@@ -2091,7 +2091,7 @@ void MaterialStorage::global_variables_load_settings(bool p_load_textures) {
 				}
 
 				String path = value;
-				RES resource = ResourceLoader::load(path);
+				Ref<Resource> resource = ResourceLoader::load(path);
 				ERR_CONTINUE(resource.is_null());
 				value = resource;
 			}

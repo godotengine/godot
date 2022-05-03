@@ -37,7 +37,7 @@
 
 #include <string.h>
 
-RES ResourceFormatGLES2Texture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatGLES2Texture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	unsigned int width = 8;
 	unsigned int height = 8;
 

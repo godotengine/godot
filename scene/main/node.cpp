@@ -2288,10 +2288,10 @@ Node *Node::duplicate(int p_flags) const {
 
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, Map<RES, RES>());
+	return duplicate_from_editor(r_duplimap, Map<Ref<Resource>, Ref<Resource>>());
 }
 
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const {
+Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
@@ -2307,7 +2307,7 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const M
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2318,7 +2318,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 
 		Variant v = p_node->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
 					p_node->set(E.name, p_resource_remap[res]);
@@ -2333,7 +2333,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 	}
 }
 
-void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
@@ -2344,7 +2344,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 
 		Variant v = p_resource->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
 					p_resource->set(E.name, p_resource_remap[res]);
@@ -2493,7 +2493,7 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 	if (!has_node(p_path)) {
 		return false;
 	}
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 
@@ -2501,7 +2501,7 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 }
 
 Array Node::_get_node_and_resource(const NodePath &p_path) {
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 	Array result;
@@ -2523,9 +2523,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 	return result;
 }
 
-Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
+Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 	Node *node = get_node(p_path);
-	r_res = RES();
+	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
 	if (!node) {
 		return nullptr;
@@ -2541,7 +2541,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 				return nullptr;
 			}
 
-			RES new_res = new_res_v;
+			Ref<Resource> new_res = new_res_v;
 
 			if (new_res.is_null()) { // No longer a resource, assume property
 				break;

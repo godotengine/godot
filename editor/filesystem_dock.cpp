@@ -2080,7 +2080,7 @@ void FileSystemDock::_resource_created() {
 	}
 
 	EditorNode::get_singleton()->push_item(r);
-	EditorNode::get_singleton()->save_resource_as(RES(r), fpath);
+	EditorNode::get_singleton()->save_resource_as(Ref<Resource>(r), fpath);
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {

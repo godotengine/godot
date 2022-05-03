@@ -358,7 +358,7 @@ public:
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					RES prev = animation->audio_track_get_key_stream(track, key);
+					Ref<Resource> prev = animation->audio_track_get_key_stream(track, key);
 					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_stream", track, key, stream);
 					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
@@ -992,7 +992,7 @@ public:
 								setting = true;
 								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							RES prev = animation->audio_track_get_key_stream(track, key);
+							Ref<Resource> prev = animation->audio_track_get_key_stream(track, key);
 							undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_stream", track, key, stream);
 							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
 							update_obj = true;
@@ -2528,7 +2528,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 		return false;
 	}
 
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
 
@@ -2689,7 +2689,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 				} break;
 				case Animation::TYPE_AUDIO: {
 					String stream_name = "null";
-					RES stream = animation->audio_track_get_key_stream(track, key_idx);
+					Ref<Resource> stream = animation->audio_track_get_key_stream(track, key_idx);
 					if (stream.is_valid()) {
 						if (stream->get_path().is_resource_file()) {
 							stream_name = stream->get_path().get_file();
@@ -4114,7 +4114,7 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		return PropertyInfo();
 	}
 
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = root->get_node_and_resource(path, res, leftover_path, true);
 
@@ -4410,7 +4410,7 @@ void AnimationTrackEditor::_update_tracks() {
 			NodePath path = animation->track_get_path(i);
 
 			if (root && root->has_node_and_resource(path)) {
-				RES res;
+				Ref<Resource> res;
 				NodePath base_path;
 				Vector<StringName> leftover_path;
 				Node *node = root->get_node_and_resource(path, res, leftover_path, true);
@@ -5016,7 +5016,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		} break;
 		case Animation::TYPE_AUDIO: {
 			Dictionary ak;
-			ak["stream"] = RES();
+			ak["stream"] = Ref<Resource>();
 			ak["start_offset"] = 0;
 			ak["end_offset"] = 0;
 
@@ -6015,7 +6015,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		Variant::Type valid_type = Variant::NIL;
 		Object *obj = nullptr;
 
-		RES res;
+		Ref<Resource> res;
 		Vector<StringName> leftover_path;
 
 		Node *node = root->get_node_and_resource(p_animation->track_get_path(i), res, leftover_path);

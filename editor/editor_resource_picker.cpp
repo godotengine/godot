@@ -50,7 +50,7 @@ void EditorResourcePicker::_update_resource() {
 	preview_rect->set_texture(Ref<Texture2D>());
 	assign_button->set_custom_minimum_size(Size2(1, 1));
 
-	if (edited_resource == RES()) {
+	if (edited_resource == Ref<Resource>()) {
 		assign_button->set_icon(Ref<Texture2D>());
 		assign_button->set_text(TTR("[empty]"));
 		assign_button->set_tooltip("");
@@ -117,7 +117,7 @@ void EditorResourcePicker::_resource_selected() {
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
-	RES loaded_resource = ResourceLoader::load(p_path);
+	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
 	if (!base_type.is_empty()) {
@@ -184,7 +184,7 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to copy/paste resource.
-	RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
+	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
 	if (cb.is_valid()) {
 		if (base_type.is_empty()) {
@@ -278,7 +278,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_CLEAR: {
-			edited_resource = RES();
+			edited_resource = Ref<Resource>();
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
@@ -391,7 +391,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
-			edited_resource = RES(resp);
+			edited_resource = Ref<Resource>(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
@@ -809,9 +809,9 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	return types;
 }
 
-void EditorResourcePicker::set_edited_resource(RES p_resource) {
+void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	if (!p_resource.is_valid()) {
-		edited_resource = RES();
+		edited_resource = Ref<Resource>();
 		_update_resource();
 		return;
 	}
@@ -837,7 +837,7 @@ void EditorResourcePicker::set_edited_resource(RES p_resource) {
 	_update_resource();
 }
 
-RES EditorResourcePicker::get_edited_resource() {
+Ref<Resource> EditorResourcePicker::get_edited_resource() {
 	return edited_resource;
 }
 

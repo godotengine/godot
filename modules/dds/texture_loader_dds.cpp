@@ -94,7 +94,7 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "GRAYSCALE_ALPHA", false, false, 1, 2, Image::FORMAT_LA8 }
 };
 
-RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -102,7 +102,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (f.is_null()) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	Ref<FileAccess> fref(f);
@@ -110,7 +110,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Unable to open DDS texture file '" + p_path + "'.");
 
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
@@ -131,7 +131,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	// We don't check DDSD_CAPS or DDSD_PIXELFORMAT, as they're mandatory when writing,
 	// but non-mandatory when reading (as some writers don't set them)...
 	if (magic != DDS_MAGIC || hsize != 124) {
-		ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
 	}
 
 	/* uint32_t format_size = */ f->get_32();
@@ -204,7 +204,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		dds_format = DDS_BGR565;
 	} else {
 		printf("unrecognized fourcc %x format_flags: %x - rgbbits %i - red_mask %x green mask %x blue mask %x alpha mask %x\n", format_fourcc, format_flags, format_rgb_bits, format_red_mask, format_green_mask, format_blue_mask, format_alpha_mask);
-		ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
 	}
 
 	if (!(flags & DDSD_MIPMAPCOUNT)) {
@@ -221,8 +221,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		//compressed bc
 
 		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
-		ERR_FAIL_COND_V(size != pitch, RES());
-		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), RES());
+		ERR_FAIL_COND_V(size != pitch, Ref<Resource>());
+		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), Ref<Resource>());
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
 			w = MAX(1u, w >> 1);
@@ -238,11 +238,11 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	} else if (info.palette) {
 		//indexed
-		ERR_FAIL_COND_V(!(flags & DDSD_PITCH), RES());
-		ERR_FAIL_COND_V(format_rgb_bits != 8, RES());
+		ERR_FAIL_COND_V(!(flags & DDSD_PITCH), Ref<Resource>());
+		ERR_FAIL_COND_V(format_rgb_bits != 8, Ref<Resource>());
 
 		uint32_t size = pitch * height;
-		ERR_FAIL_COND_V(size != width * height * info.block_size, RES());
+		ERR_FAIL_COND_V(size != width * height * info.block_size, Ref<Resource>());
 
 		uint8_t palette[256 * 4];
 		f->get_buffer(palette, 256 * 4);

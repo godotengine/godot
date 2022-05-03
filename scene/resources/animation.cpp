@@ -3455,7 +3455,7 @@ real_t Animation::bezier_track_interpolate(int p_track, double p_time) const {
 	return low_pos.lerp(high_pos, c).y;
 }
 
-int Animation::audio_track_insert_key(int p_track, double p_time, const RES &p_stream, real_t p_start_offset, real_t p_end_offset) {
+int Animation::audio_track_insert_key(int p_track, double p_time, const Ref<Resource> &p_stream, real_t p_start_offset, real_t p_end_offset) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, -1);
@@ -3481,7 +3481,7 @@ int Animation::audio_track_insert_key(int p_track, double p_time, const RES &p_s
 	return key;
 }
 
-void Animation::audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream) {
+void Animation::audio_track_set_key_stream(int p_track, int p_key, const Ref<Resource> &p_stream) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND(t->type != TYPE_AUDIO);
@@ -3531,14 +3531,14 @@ void Animation::audio_track_set_key_end_offset(int p_track, int p_key, real_t p_
 	emit_changed();
 }
 
-RES Animation::audio_track_get_key_stream(int p_track, int p_key) const {
-	ERR_FAIL_INDEX_V(p_track, tracks.size(), RES());
+Ref<Resource> Animation::audio_track_get_key_stream(int p_track, int p_key) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), Ref<Resource>());
 	const Track *t = tracks[p_track];
-	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, RES());
+	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, Ref<Resource>());
 
 	const AudioTrack *at = static_cast<const AudioTrack *>(t);
 
-	ERR_FAIL_INDEX_V(p_key, at->values.size(), RES());
+	ERR_FAIL_INDEX_V(p_key, at->values.size(), Ref<Resource>());
 
 	return at->values[p_key].value.stream;
 }

@@ -455,7 +455,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
 
-			RES res = ResourceLoader::load(file);
+			Ref<Resource> res = ResourceLoader::load(file);
 			if (res.is_valid()) {
 				array.call("push_back", res);
 			}

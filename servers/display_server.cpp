@@ -421,7 +421,7 @@ DisplayServer::CursorShape DisplayServer::cursor_get_shape() const {
 	return CURSOR_ARROW;
 }
 
-void DisplayServer::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServer::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
 
@@ -833,7 +833,7 @@ Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 	return (Input::CursorShape)singleton->cursor_get_shape();
 }
 
-void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
+void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
 }
 

@@ -724,13 +724,13 @@ class EditorPropertyResource : public EditorProperty {
 	bool updating_theme = false;
 	bool opened_editor = false;
 
-	void _resource_selected(const RES &p_resource, bool p_edit);
-	void _resource_changed(const RES &p_resource);
+	void _resource_selected(const Ref<Resource> &p_resource, bool p_edit);
+	void _resource_changed(const Ref<Resource> &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
-	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
+	void _sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
 	void _open_editor_pressed();

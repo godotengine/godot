@@ -631,7 +631,7 @@ OS::CursorShape OS_UWP::get_cursor_shape() const {
 	return cursor_shape;
 }
 
-void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void OS_UWP::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 }
 

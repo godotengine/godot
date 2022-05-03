@@ -157,7 +157,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 				if (path.contains("::")) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
-					RES dependency = ResourceLoader::load(base_path);
+					Ref<Resource> dependency = ResourceLoader::load(base_path);
 					if (dependency.is_valid()) {
 						remote_dependencies.insert(dependency);
 					}
@@ -166,7 +166,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 				if (pinfo.hint_string == "Script") {
 					if (debugObj->get_script() != var) {
-						debugObj->set_script(REF());
+						debugObj->set_script(Ref<RefCounted>());
 						Ref<Script> script(var);
 						if (!script.is_null()) {
 							ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);

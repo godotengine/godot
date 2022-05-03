@@ -138,14 +138,14 @@ class SceneTreeDock : public VBoxContainer {
 
 	Node *property_drop_node = nullptr;
 	String resource_drop_path;
-	void _perform_property_drop(Node *p_node, String p_property, RES p_res);
+	void _perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res);
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
 
 	List<Node *> node_clipboard;
 	String clipboard_source_scene;
-	HashMap<String, Map<RES, RES>> clipboard_resource_remap;
+	HashMap<String, Map<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	ShaderCreateDialog *shader_create_dialog = nullptr;
@@ -258,8 +258,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _feature_profile_changed();
 
 	void _clear_clipboard();
-	void _create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap);
-	void _create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap);
+	void _create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<Resource>> &r_remap);
+	void _create_remap_for_resource(Ref<Resource> p_resource, Map<Ref<Resource>, Ref<Resource>> &r_remap);
 
 	bool profile_allow_editing = true;
 	bool profile_allow_script_editing = true;

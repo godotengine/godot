@@ -82,7 +82,7 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	_Object o;
 	if (r) {
-		o.ref = REF(r);
+		o.ref = Ref<RefCounted>(r);
 	}
 	o.object = p_object;
 	o.property = p_property;

@@ -2324,7 +2324,7 @@ bool Main::start() {
 				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
 					const ProjectSettings::AutoloadInfo &info = E.get();
 
-					RES res = ResourceLoader::load(info.path);
+					Ref<Resource> res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
 					Ref<PackedScene> scn = res;

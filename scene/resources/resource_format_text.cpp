@@ -150,7 +150,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		if (ext_resources[id].cache.is_valid()) {
 			r_res = ext_resources[id].cache;
 		} else if (use_sub_threads) {
-			RES res = ResourceLoader::load_threaded_get(path);
+			Ref<Resource> res = ResourceLoader::load_threaded_get(path);
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
 					error = ERR_FILE_MISSING_DEPENDENCIES;
@@ -171,7 +171,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			return error;
 		}
 	} else {
-		r_res = RES();
+		r_res = Ref<Resource>();
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -460,7 +460,7 @@ Error ResourceLoaderText::load() {
 			}
 
 		} else {
-			RES res = ResourceLoader::load(path, type);
+			Ref<Resource> res = ResourceLoader::load(path, type);
 
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
@@ -1327,7 +1327,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 
 /////////////////////
 
-RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -1336,7 +1336,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderText loader;
 	String path = !p_original_path.is_empty() ? p_original_path : p_path;
@@ -1353,7 +1353,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 	if (err == OK) {
 		return loader.get_resource();
 	} else {
-		return RES();
+		return Ref<Resource>();
 	}
 }
 
@@ -1484,12 +1484,12 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
+String ResourceFormatSaverTextInstance::_write_resources(void *ud, const Ref<Resource> &p_resource) {
 	ResourceFormatSaverTextInstance *rsi = static_cast<ResourceFormatSaverTextInstance *>(ud);
 	return rsi->_write_resource(p_resource);
 }
 
-String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
+String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res) {
 	if (external_resources.has(res)) {
 		return "ExtResource( \"" + external_resources[res] + "\" )";
 	} else {
@@ -1512,7 +1512,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
-			RES res = p_variant;
+			Ref<Resource> res = p_variant;
 
 			if (res.is_null() || external_resources.has(res)) {
 				return;
@@ -1549,7 +1549,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 					Variant v = res->get(I->get().name);
 
 					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
-						RES sres = v;
+						Ref<Resource> sres = v;
 						if (sres.is_valid()) {
 							NonPersistentKey npk;
 							npk.base = res;
@@ -1593,7 +1593,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 	}
 }
 
-Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn")) {
 		packed_scene = p_resource;
 	}
@@ -1656,7 +1656,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #ifdef TOOLS_ENABLED
 	// Keep order from cached ids.
 	Set<String> cached_ids_found;
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		String cached_id = E.key->get_id_for_path(local_path);
 		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
 			int sep_pos = E.value.find("_");
@@ -1672,7 +1672,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 	// Create IDs for non cached resources.
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		if (cached_ids_found.has(E.value)) { // Already cached, go on.
 			continue;
 		}
@@ -1694,14 +1694,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #else
 	// Make sure to start from one, as it makes format more readable.
 	int counter = 1;
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		E.value = itos(counter++);
 	}
 #endif
 
 	Vector<ResourceSort> sorted_er;
 
-	for (const KeyValue<RES, String> &E : external_resources) {
+	for (const KeyValue<Ref<Resource>, String> &E : external_resources) {
 		ResourceSort rs;
 		rs.resource = E.key;
 		rs.id = E.value;
@@ -1729,8 +1729,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	Set<String> used_unique_ids;
 
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES res = E->get();
+	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
+		Ref<Resource> res = E->get();
 		if (E->next() && res->is_built_in()) {
 			if (!res->get_scene_unique_id().is_empty()) {
 				if (used_unique_ids.has(res->get_scene_unique_id())) {
@@ -1742,8 +1742,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES res = E->get();
+	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
+		Ref<Resource> res = E->get();
 		ERR_CONTINUE(!resource_set.has(res));
 		bool main = (E->next() == nullptr);
 
@@ -1944,7 +1944,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	return OK;
 }
 
-Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverText::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}
@@ -1953,11 +1953,11 @@ Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource,
 	return saver.save(p_path, p_resource, p_flags);
 }
 
-bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
 	return true; // All resources recognized!
 }
 
-void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Ref<PackedScene>(p_resource).is_valid()) {
 		p_extensions->push_back("tscn"); // Text scene.
 	} else {

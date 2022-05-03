@@ -435,7 +435,7 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_OK;
 			if (obj.is_ref_counted()) {
 				Ref<WeakRef> wref = memnew(WeakRef);
-				REF r = obj;
+				Ref<RefCounted> r = obj;
 				if (r.is_valid()) {
 					wref->set_ref(r);
 				}
