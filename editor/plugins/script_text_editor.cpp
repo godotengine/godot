@@ -1497,6 +1497,8 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 }
 
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+
 	Dictionary d = p_data;
 
 	TextEdit *te = code_editor->get_text_edit();
@@ -1520,7 +1522,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1552,19 +1553,47 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 		String text_to_drop;
-		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ",";
-			}
 
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+		if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-			String path = sn->get_path_to(node);
-			text_to_drop += "\"" + path.c_escape() + "\"";
+				String path = sn->get_path_to(node);
+				Vector<String> segments = path.split("/");
+				for (int j = 0; j < segments.size(); j++) {
+					if (!segments[j].is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+
+				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				if (use_type) {
+					text_to_drop += vformat("onready var %s: %s = $%s\n", variable_name, node->get_class_name(), path);
+				} else {
+					text_to_drop += vformat("onready var %s = $%s\n", variable_name, path);
+				}
+			}
+		} else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if (i > 0) {
+					text_to_drop += ",";
+				}
+
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String path = sn->get_path_to(node);
+				text_to_drop += path.c_escape().quote(quote_style);
+			}
 		}
 
 		te->cursor_set_line(row);
@@ -1573,7 +1602,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
 
 		te->cursor_set_line(row);
