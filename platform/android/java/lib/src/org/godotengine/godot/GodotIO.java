@@ -240,7 +240,7 @@ public class GodotIO {
 		return fallback;
 	}
 
-	public int[] screenGetUsableRect() {
+	public int[] getDisplaySafeArea() {
 		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
 		Display display = activity.getWindowManager().getDefaultDisplay();
 		Point size = new Point();
