@@ -38,8 +38,9 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed.
 				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="clear">
@@ -108,7 +109,8 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content.
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
