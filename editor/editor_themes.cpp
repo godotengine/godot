@@ -552,7 +552,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
 	}
 
-	editor_register_fonts(theme);
+	EditorFonts::get_singleton()->load_fonts(theme);
 
 	// Ensure borders are visible when using an editor scale below 100%.
 	const int border_width = CLAMP(border_size, 0, 2) * MAX(1, EDSCALE);

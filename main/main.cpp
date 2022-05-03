@@ -82,6 +82,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_fonts.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -125,6 +126,9 @@ static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
+#ifdef TOOLS_ENABLED
+static EditorFonts *ed_font_cache = nullptr;
+#endif
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -1613,6 +1617,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (editor || project_manager || cmdline_tool) {
 		EditorPaths::create();
 	}
+	if (editor || project_manager) {
+		ed_font_cache = memnew(EditorFonts);
+	}
 #endif
 
 	/* Initialize Input */
@@ -2876,8 +2883,12 @@ void Main::cleanup(bool p_force) {
 #ifdef TOOLS_ENABLED
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
-	EditorNode::unregister_editor_types();
 
+	if (ed_font_cache) {
+		memdelete(ed_font_cache);
+	}
+
+	EditorNode::unregister_editor_types();
 #endif
 
 	ImageLoader::cleanup();

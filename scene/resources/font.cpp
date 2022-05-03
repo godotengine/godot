@@ -38,6 +38,10 @@
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_fonts.h"
+#endif
+
 _FORCE_INLINE_ void FontData::_clear_cache() {
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
@@ -75,6 +79,9 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &FontData::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &FontData::get_data);
+
+	ClassDB::bind_method(D_METHOD("_set_editor_font_id", "id"), &FontData::_set_editor_font_id);
+	ClassDB::bind_method(D_METHOD("_get_editor_font_id"), &FontData::_get_editor_font_id);
 
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &FontData::set_antialiased);
 	ClassDB::bind_method(D_METHOD("is_antialiased"), &FontData::is_antialiased);
@@ -216,6 +223,7 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &FontData::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_editor_font_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_editor_font_id", "_get_editor_font_id");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_antialiased", "is_antialiased");
@@ -1216,7 +1224,51 @@ Error FontData::load_dynamic_font(const String &p_path) {
 	return OK;
 }
 
+void FontData::_set_editor_font_id(const String &p_id) {
+	editor_font_id = p_id;
+#ifdef TOOLS_ENABLED
+	if (EditorFonts::get_singleton()) {
+		if (EditorFonts::get_singleton()->has_external_editor_font_data(editor_font_id)) {
+			data = EditorFonts::get_singleton()->get_external_editor_font_data(editor_font_id);
+			data_ptr = data.ptr();
+			data_size = data.size();
+
+			if (data_ptr != nullptr) {
+				for (int i = 0; i < cache.size(); i++) {
+					if (cache[i].is_valid()) {
+						TS->font_set_data_ptr(cache[i], data_ptr, data_size);
+					}
+				}
+			}
+			return;
+		}
+		if (EditorFonts::get_singleton()->has_internal_editor_font_data(editor_font_id)) {
+			data.clear();
+			data_ptr = EditorFonts::get_singleton()->get_internal_editor_font_data_ptr(editor_font_id);
+			data_size = EditorFonts::get_singleton()->get_internal_editor_font_data_size(editor_font_id);
+
+			if (data_ptr != nullptr) {
+				for (int i = 0; i < cache.size(); i++) {
+					if (cache[i].is_valid()) {
+						TS->font_set_data_ptr(cache[i], data_ptr, data_size);
+					}
+				}
+			}
+			return;
+		}
+	}
+#endif
+}
+
+String FontData::_get_editor_font_id() const {
+	return editor_font_id;
+}
+
 void FontData::set_data_ptr(const uint8_t *p_data, size_t p_size) {
+	if (!editor_font_id.is_empty()) { // Do not store or load data for built-in fonts.
+		return;
+	}
+
 	data.clear();
 	data_ptr = p_data;
 	data_size = p_size;
@@ -1231,6 +1283,10 @@ void FontData::set_data_ptr(const uint8_t *p_data, size_t p_size) {
 }
 
 void FontData::set_data(const PackedByteArray &p_data) {
+	if (!editor_font_id.is_empty()) { // Do not store or load data for editor fonts.
+		return;
+	}
+
 	data = p_data;
 	data_ptr = data.ptr();
 	data_size = data.size();
@@ -1245,10 +1301,8 @@ void FontData::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontData::get_data() const {
-	if (unlikely((size_t)data.size() != data_size)) {
-		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
-		data_w->resize(data_size);
-		memcpy(data_w->ptrw(), data_ptr, data_size);
+	if (!editor_font_id.is_empty()) { // Do not store or load data for editor fonts.
+		return PackedByteArray();
 	}
 	return data;
 }

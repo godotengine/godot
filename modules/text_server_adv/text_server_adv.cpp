@@ -1017,10 +1017,12 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
+		work_pool_mutex.lock();
+		if (work_pool.get_thread_count() == 0) {
+			work_pool.init();
 		}
-		p_font_data->work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
+		work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
+		work_pool_mutex.unlock();
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
@@ -5634,6 +5636,7 @@ TextServerAdvanced::TextServerAdvanced() {
 }
 
 TextServerAdvanced::~TextServerAdvanced() {
+	work_pool.finish();
 	_bmp_free_font_funcs();
 	if (ft_library != nullptr) {
 		FT_Done_FreeType(ft_library);

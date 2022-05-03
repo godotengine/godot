@@ -47,6 +47,7 @@ class FontData : public Resource {
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
 	PackedByteArray data;
+	String editor_font_id;
 
 	bool antialiased = true;
 	bool mipmaps = false;
@@ -87,6 +88,9 @@ public:
 	Error load_dynamic_font(const String &p_path);
 
 	// Font source data.
+	virtual void _set_editor_font_id(const String &p_id);
+	virtual String _get_editor_font_id() const;
+
 	virtual void set_data_ptr(const uint8_t *p_data, size_t p_size);
 	virtual void set_data(const PackedByteArray &p_data);
 	virtual PackedByteArray get_data() const;

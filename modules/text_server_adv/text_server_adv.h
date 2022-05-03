@@ -247,16 +247,17 @@ class TextServerAdvanced : public TextServerExtension {
 		PackedByteArray data;
 		const uint8_t *data_ptr;
 		size_t data_size;
-		mutable ThreadWorkPool work_pool;
 
 		~FontDataAdvanced() {
-			work_pool.finish();
 			for (const KeyValue<Vector2i, FontDataForSizeAdvanced *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
 		}
 	};
+
+	Mutex work_pool_mutex;
+	mutable ThreadWorkPool work_pool;
 
 	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontDataForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED

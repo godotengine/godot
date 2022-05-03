@@ -561,6 +561,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="_editor_font_id" type="String" setter="_set_editor_font_id" getter="_get_editor_font_id" default="&quot;&quot;">
+			This property is used by the editor to identify the built-in font cache, and should not be changed.
+		</member>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
 			If set to [code]true[/code], font 8-bit anitialiased glyph rendering is supported and enabled.
 		</member>
