@@ -791,6 +791,24 @@ void ActionMapEditor::_add_action_pressed() {
 	_add_action(add_edit->get_text());
 }
 
+String ActionMapEditor::_check_new_action_name(const String &p_name) {
+	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
+		return TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'");
+	}
+
+	if (_has_action(p_name)) {
+		return vformat(TTR("An action with the name '%s' already exists."), p_name);
+	}
+
+	return "";
+}
+
+void ActionMapEditor::_add_edit_text_changed(const String &p_name) {
+	String error = _check_new_action_name(p_name);
+	add_button->set_tooltip(error);
+	add_button->set_disabled(!error.is_empty());
+}
+
 bool ActionMapEditor::_has_action(const String &p_name) const {
 	for (const ActionInfo &action_info : actions_cache) {
 		if (p_name == action_info.name) {
@@ -801,13 +819,9 @@ bool ActionMapEditor::_has_action(const String &p_name) const {
 }
 
 void ActionMapEditor::_add_action(const String &p_name) {
-	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
-		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
-		return;
-	}
-
-	if (_has_action(p_name)) {
-		show_message(vformat(TTR("An action with the name '%s' already exists."), p_name));
+	String error = _check_new_action_name(p_name);
+	if (!error.is_empty()) {
+		show_message(error);
 		return;
 	}
 
@@ -1208,13 +1222,16 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
+	add_edit->connect("text_changed", callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
 	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
-	Button *add_button = memnew(Button);
+	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->connect("pressed", callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
+	// Disable the button and set its tooltip.
+	_add_edit_text_changed(add_edit->get_text());
 
 	main_vbox->add_child(add_hbox);
 
