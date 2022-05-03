@@ -374,7 +374,7 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 void DisplayServerWayland::_delete_window(WindowID p_window) {
 	WindowData &wd = wls.windows[p_window];
 
-	if (window_get_flag(WINDOW_FLAG_POPUP, p_window)) {
+	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
 		print_verbose(vformat("Deleting popup %d.", p_window));
 	} else {
 		print_verbose(vformat("Deleting window %d.", p_window));
@@ -1516,7 +1516,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
 		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 
-		if (window_get_flag(WINDOW_FLAG_POPUP, p_id)) {
+		if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
 			ERR_FAIL_COND_MSG(wd.parent == INVALID_WINDOW_ID, "Popups must have a parent.");
 
 			WindowData &parent_wd = wls.windows[wd.parent];
@@ -1720,7 +1720,7 @@ void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window
 		parent_wd.children.insert(p_window);
 		wd.parent = p_parent;
 
-		ERR_FAIL_COND_MSG(!window_get_flag(WINDOW_FLAG_POPUP, p_window) && window_get_flag(WINDOW_FLAG_POPUP, p_parent), "Toplevels can't be parented to a popup.");
+		ERR_FAIL_COND_MSG(!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && window_get_flag(WINDOW_FLAG_BORDERLESS, p_parent), "Toplevels can't be parented to a popup.");
 	}
 
 	if (wd.xdg_toplevel) {
@@ -1797,7 +1797,7 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 	print_verbose(vformat("Window %d set flag %d", p_window, p_flag));
 
 	switch (p_flag) {
-		case WINDOW_FLAG_POPUP: {
+		case WINDOW_FLAG_BORDERLESS: {
 			ERR_FAIL_COND_MSG(wd.visible, "Popup flag can't changed while window is opened.");
 		} break;
 
