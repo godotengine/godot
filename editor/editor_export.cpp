@@ -1820,7 +1820,11 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
+	if (err == OK) {
+		err = modify_template(p_preset, p_debug, p_path, p_flags);
+	}
 	if (err == OK) {
 		err = export_project_data(p_preset, p_debug, p_path, p_flags);
 	}

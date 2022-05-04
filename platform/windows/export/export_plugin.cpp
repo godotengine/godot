@@ -53,21 +53,24 @@ Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPr
 	return OK;
 }
 
+Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	if (p_preset->get("application/modify_resources")) {
+		return _rcedit_add_data(p_preset, p_path);
+	} else {
+		return OK;
+	}
+}
+
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	String pck_path = p_path;
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path.get_basename() + ".tmp";
 	}
-	Error err = EditorExportPlatformPC::prepare_template(p_preset, p_debug, pck_path, p_flags);
-	if (p_preset->get("application/modify_resources") && err == OK) {
-		err = _rcedit_add_data(p_preset, pck_path);
-	}
-	if (err == OK) {
-		err = EditorExportPlatformPC::export_project_data(p_preset, p_debug, pck_path, p_flags);
-	}
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
 	if (p_preset->get("codesign/enable") && err == OK) {
 		err = _code_sign(p_preset, pck_path);
 	}
+
 	if (p_preset->get("binary_format/embed_pck") && err == OK) {
 		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
 		err = tmp_dir->rename(pck_path, p_path);
