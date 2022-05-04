@@ -81,7 +81,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint1
 	_sock->set_blocking_enabled(false);
 
 	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
-	status = STATUS_CONNECTING;
+	status = STATUS_CONNECTED;
 
 	peer_host = p_host;
 	peer_port = p_port;
