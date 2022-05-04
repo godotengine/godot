@@ -948,10 +948,6 @@ void AnimationNodeStateMachine::add_transition(const StringName &p_from, const S
 	ERR_FAIL_COND(!_can_connect(to));
 	ERR_FAIL_COND(p_transition.is_null());
 
-	for (int i = 0; i < transitions.size(); i++) {
-		ERR_FAIL_COND(transitions[i].from == from && transitions[i].to == to);
-	}
-
 	if (path_from.size() > 1 || path_to.size() > 1) {
 		ERR_FAIL_COND(path_from[0] == path_to[0]);
 	}

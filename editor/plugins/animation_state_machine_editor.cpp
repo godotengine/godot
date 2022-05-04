@@ -267,15 +267,10 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			Ref<AnimationNodeStateMachine> anodesm = node;
 			Ref<AnimationNodeEndState> end_node = node;
 
-			if (state_machine->has_transition(connecting_from, connecting_to_node) && state_machine->can_edit_node(connecting_to_node) && !anodesm.is_valid()) {
-				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
-				connecting = false;
+			if (anodesm.is_valid() || end_node.is_valid()) {
+				_open_connect_menu(mb->get_position());
 			} else {
-				if (anodesm.is_valid() || end_node.is_valid()) {
-					_open_connect_menu(mb->get_position());
-				} else {
-					_add_transition();
-				}
+				_add_transition();
 			}
 		} else {
 			_open_menu(mb->get_position());
@@ -1047,12 +1042,6 @@ void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
 
 void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action) {
 	if (connecting_from != StringName() && connecting_to_node != StringName()) {
-		if (state_machine->has_transition(connecting_from, connecting_to_node)) {
-			EditorNode::get_singleton()->show_warning("Transition exists!");
-			connecting = false;
-			return;
-		}
-
 		Ref<AnimationNodeStateMachineTransition> tr;
 		tr.instantiate();
 		tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(transition_mode->get_selected()));
