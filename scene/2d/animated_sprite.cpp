@@ -33,6 +33,10 @@
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 #define NORMAL_SUFFIX "_normal"
 
 #ifdef TOOLS_ENABLED
@@ -649,6 +653,23 @@ String AnimatedSprite::get_configuration_warning() const {
 	}
 
 	return warning;
+}
+
+void AnimatedSprite::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
+			r_options->push_back(quote_style + String(E->get()) + quote_style);
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimatedSprite::_bind_methods() {
