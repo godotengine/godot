@@ -288,7 +288,7 @@ void ScrollContainer::_update_dimensions() {
 		child_max_size.y = MAX(child_max_size.y, minsize.y);
 
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
-		if (horizontal_scroll_mode == SCROLL_MODE_DISABLED || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
+		if (horizontal_scroll_mode == SCROLL_MODE_DISABLED || !h_scroll->is_visible_in_tree() || !need_h_scroll) {
 			r.position.x = 0;
 			if (c->get_h_size_flags() & SIZE_EXPAND) {
 				r.size.width = MAX(size.width, minsize.width);
@@ -296,7 +296,7 @@ void ScrollContainer::_update_dimensions() {
 				r.size.width = minsize.width;
 			}
 		}
-		if (vertical_scroll_mode == SCROLL_MODE_DISABLED || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
+		if (vertical_scroll_mode == SCROLL_MODE_DISABLED || !v_scroll->is_visible_in_tree() || !need_v_scroll) {
 			r.position.y = 0;
 			if (c->get_v_size_flags() & SIZE_EXPAND) {
 				r.size.height = MAX(size.height, minsize.height);
@@ -429,8 +429,10 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 min = child_max_size;
 
-	bool hide_scroll_h = horizontal_scroll_mode != SCROLL_MODE_SHOW_ALWAYS && (horizontal_scroll_mode == SCROLL_MODE_DISABLED || horizontal_scroll_mode == SCROLL_MODE_SHOW_NEVER || (horizontal_scroll_mode == SCROLL_MODE_AUTO && min.width <= size.width));
-	bool hide_scroll_v = vertical_scroll_mode != SCROLL_MODE_SHOW_ALWAYS && (vertical_scroll_mode == SCROLL_MODE_DISABLED || vertical_scroll_mode == SCROLL_MODE_SHOW_NEVER || (vertical_scroll_mode == SCROLL_MODE_AUTO && min.height <= size.height));
+	need_h_scroll = min.width > size.width;
+	need_v_scroll = min.height > size.height;
+	bool hide_scroll_h = horizontal_scroll_mode != SCROLL_MODE_SHOW_ALWAYS && (horizontal_scroll_mode == SCROLL_MODE_DISABLED || horizontal_scroll_mode == SCROLL_MODE_SHOW_NEVER || (horizontal_scroll_mode == SCROLL_MODE_AUTO && !need_h_scroll));
+	bool hide_scroll_v = vertical_scroll_mode != SCROLL_MODE_SHOW_ALWAYS && (vertical_scroll_mode == SCROLL_MODE_DISABLED || vertical_scroll_mode == SCROLL_MODE_SHOW_NEVER || (vertical_scroll_mode == SCROLL_MODE_AUTO && !need_v_scroll));
 
 	h_scroll->set_max(min.width);
 	h_scroll->set_page(size.width - (hide_scroll_v ? 0 : vmin.width));

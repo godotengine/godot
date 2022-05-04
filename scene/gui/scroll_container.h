@@ -49,6 +49,8 @@ public:
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+	bool need_h_scroll = false;
+	bool need_v_scroll = false;
 
 	Size2 child_max_size;
 
