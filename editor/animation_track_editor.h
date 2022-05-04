@@ -53,6 +53,8 @@ class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
+	bool read_only = false;
+
 	AnimationTrackEdit *track_edit = nullptr;
 	int name_limit = 0;
 	Range *zoom = nullptr;
@@ -103,7 +105,7 @@ public:
 	float get_zoom_scale() const;
 
 	virtual Size2 get_minimum_size() const override;
-	void set_animation(const Ref<Animation> &p_animation);
+	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
@@ -156,6 +158,7 @@ class AnimationTrackEdit : public Control {
 	NodePath node_path;
 
 	Ref<Animation> animation;
+	bool read_only = false;
 	int track = 0;
 
 	Rect2 check_rect;
@@ -229,7 +232,7 @@ public:
 	AnimationTrackEditor *get_editor() const { return editor; }
 	UndoRedo *get_undo_redo() const { return undo_redo; }
 	NodePath get_path() const;
-	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
+	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
@@ -287,6 +290,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
 	Ref<Animation> animation;
+	bool read_only = false;
 	Node *root = nullptr;
 
 	MenuButton *edit = nullptr;
@@ -529,7 +533,7 @@ public:
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
-	void set_animation(const Ref<Animation> &p_anim);
+	void set_animation(const Ref<Animation> &p_anim, bool p_read_only);
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
