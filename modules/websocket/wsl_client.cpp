@@ -91,6 +91,7 @@ void WSLClient::_do_handshake() {
 				data->id = 1;
 				_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 				_peer->set_no_delay(true);
+				_status = CONNECTION_CONNECTED;
 				_on_connect(protocol);
 				break;
 			}
@@ -231,6 +232,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	}
 	request += "\r\n";
 	_request = request.utf8();
+	_status = CONNECTION_CONNECTING;
 
 	return OK;
 }
@@ -337,21 +339,19 @@ Ref<WebSocketPeer> WSLClient::get_peer(int p_peer_id) const {
 }
 
 MultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
+	// This is surprising, but keeps the current behaviour to allow clean close requests.
+	// TODO Refactor WebSocket and split Client/Server/Multiplayer like done in other peers.
 	if (_peer->is_connected_to_host()) {
 		return CONNECTION_CONNECTED;
 	}
-
-	if (_tcp->get_status() == StreamPeerTCP::STATUS_CONNECTING || _resolver_id != IP::RESOLVER_INVALID_ID) {
-		return CONNECTION_CONNECTING;
-	}
-
-	return CONNECTION_DISCONNECTED;
+	return _status;
 }
 
 void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	_peer->close(p_code, p_reason);
 	_connection = Ref<StreamPeer>(nullptr);
 	_tcp = Ref<StreamPeerTCP>(memnew(StreamPeerTCP));
+	_status = CONNECTION_DISCONNECTED;
 
 	_key = "";
 	_host = "";

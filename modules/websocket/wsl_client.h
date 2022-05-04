@@ -52,14 +52,13 @@ private:
 	Ref<WSLPeer> _peer;
 	Ref<StreamPeerTCP> _tcp;
 	Ref<StreamPeer> _connection;
+	ConnectionStatus _status = CONNECTION_DISCONNECTED;
 
 	CharString _request;
 	int _requested = 0;
 
 	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
 	int _resp_pos = 0;
-
-	String _response;
 
 	String _key;
 	String _host;
