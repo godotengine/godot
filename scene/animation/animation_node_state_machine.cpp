@@ -292,7 +292,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	return true;
 }
 
-double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek) {
+double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root) {
 	//if not playing and it can restart, then restart
 	if (!playing && start_request == StringName()) {
 		if (!stop_request && p_state_machine->start_node) {
@@ -356,7 +356,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current = p_state_machine->start_node;
 		}
 
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
+		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
 	}
 
@@ -381,10 +381,10 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 	}
 
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, fade_blend, AnimationNode::FILTER_IGNORE, false);
+	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, false);
 
 	if (fading_from != StringName()) {
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, false);
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_seek_root, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, false);
 	}
 
 	//guess playback position
@@ -538,12 +538,12 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			}
 			current = next;
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, 0, AnimationNode::FILTER_IGNORE, false);
+				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, false);
 
 			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = 0;
 			}
 
@@ -1071,11 +1071,11 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-double AnimationNodeStateMachine::process(double p_time, bool p_seek) {
+double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_seek_root) {
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
 
-	return playback->process(this, p_time, p_seek);
+	return playback->process(this, p_time, p_seek, p_seek_root);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
