@@ -32,7 +32,11 @@
 #include "scene/resources/surface_tool.h"
 #include "thirdparty/meshoptimizer/meshoptimizer.h"
 
-void register_meshoptimizer_types() {
+void initialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	SurfaceTool::optimize_vertex_cache_func = meshopt_optimizeVertexCache;
 	SurfaceTool::simplify_func = meshopt_simplify;
 	SurfaceTool::simplify_with_attrib_func = meshopt_simplifyWithAttributes;
@@ -43,7 +47,11 @@ void register_meshoptimizer_types() {
 	SurfaceTool::remap_index_func = meshopt_remapIndexBuffer;
 }
 
-void unregister_meshoptimizer_types() {
+void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	SurfaceTool::optimize_vertex_cache_func = nullptr;
 	SurfaceTool::simplify_func = nullptr;
 	SurfaceTool::simplify_scale_func = nullptr;

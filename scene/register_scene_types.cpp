@@ -1093,8 +1093,6 @@ void register_scene_types() {
 	SceneReplicationInterface::make_default();
 	SceneRPCInterface::make_default();
 	SceneCacheInterface::make_default();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void initialize_theme() {
@@ -1147,8 +1145,6 @@ void initialize_theme() {
 }
 
 void unregister_scene_types() {
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

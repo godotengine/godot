@@ -222,9 +222,16 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	return true;
 }
 
-void register_xatlas_unwrap_types() {
+void initialize_xatlas_unwrap_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	array_mesh_lightmap_unwrap_callback = xatlas_mesh_lightmap_unwrap_callback;
 }
 
-void unregister_xatlas_unwrap_types() {
+void uninitialize_xatlas_unwrap_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

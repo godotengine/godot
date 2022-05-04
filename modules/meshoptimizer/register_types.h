@@ -31,7 +31,9 @@
 #ifndef MESHOPTIMIZER_REGISTER_TYPES_H
 #define MESHOPTIMIZER_REGISTER_TYPES_H
 
-void register_meshoptimizer_types();
-void unregister_meshoptimizer_types();
+#include "modules/register_module_types.h"
+
+void initialize_meshoptimizer_module(ModuleInitializationLevel p_level);
+void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level);
 
 #endif // PVR_REGISTER_TYPES_H

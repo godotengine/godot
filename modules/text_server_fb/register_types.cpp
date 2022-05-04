@@ -32,7 +32,11 @@
 
 #include "text_server_fb.h"
 
-void preregister_text_server_fb_types() {
+void initialize_text_server_fb_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		return;
+	}
+
 	GDREGISTER_CLASS(TextServerFallback);
 	TextServerManager *tsman = TextServerManager::get_singleton();
 	if (tsman) {
@@ -42,10 +46,10 @@ void preregister_text_server_fb_types() {
 	}
 }
 
-void register_text_server_fb_types() {
-}
-
-void unregister_text_server_fb_types() {
+void uninitialize_text_server_fb_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		return;
+	}
 }
 
 #ifdef GDEXTENSION
@@ -61,8 +65,9 @@ extern "C" {
 GDNativeBool GDN_EXPORT textserver_fallback_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
 	GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
 
-	init_obj.register_server_initializer(&preregister_text_server_fb_types);
-	init_obj.register_server_terminator(&unregister_text_server_fb_types);
+	init_obj.register_initializer(&initialize_text_server_fb_module);
+	init_obj.register_terminator(&uninitialize_text_server_fb_module);
+	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SERVERS);
 
 	return init_obj.init();
 }

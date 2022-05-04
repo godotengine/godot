@@ -35,6 +35,7 @@
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -406,15 +407,18 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
+	// From `Main::setup2()`.
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
 
-	// From `Main::setup2()`.
-	preregister_module_types();
 	preregister_server_types();
 
 	register_core_singletons();
 
+	/** INITIALIZE SERVERS **/
 	register_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	translation_server->setup(); //register translations, load them, etc.
 	if (!locale.is_empty()) {
@@ -428,15 +432,19 @@ Error Main::test_setup() {
 	register_scene_types();
 	register_driver_types();
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
+
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
 	register_platform_apis();
-
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -479,13 +487,19 @@ void Main::test_cleanup() {
 	ResourceSaver::remove_custom_savers();
 
 #ifdef TOOLS_ENABLED
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	EditorNode::unregister_editor_types();
 #endif
 
-	unregister_module_types();
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
@@ -507,6 +521,7 @@ void Main::test_cleanup() {
 	}
 
 	unregister_core_driver_types();
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_extensions();
 	unregister_core_types();
 
@@ -1166,6 +1181,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
@@ -1584,7 +1600,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		tsman->add_interface(ts);
 	}
 
-	preregister_module_types();
 	preregister_server_types();
 
 	// Print engine name and version
@@ -1751,6 +1766,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	register_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	MAIN_PRINT("Main: Load Boot Image");
 
@@ -1925,14 +1942,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
-
-	MAIN_PRINT("Main: Load Driver Types");
-
 	register_driver_types();
+
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
@@ -1941,7 +1960,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Modules");
 
 	register_platform_apis();
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -2852,15 +2870,23 @@ void Main::cleanup(bool p_force) {
 	}
 
 #ifdef TOOLS_ENABLED
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	EditorNode::unregister_editor_types();
+
 #endif
 
 	ImageLoader::cleanup();
 
-	unregister_module_types();
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
+
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
 	EngineDebugger::deinitialize();
@@ -2929,6 +2955,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
