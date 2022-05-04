@@ -891,6 +891,19 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
+	library_error->hide();
+	library_info->set_text(TTR("Loading..."));
+	library_info->show();
+
+	asset_top_page->hide();
+	asset_bottom_page->hide();
+	asset_items->hide();
+
+	filter->set_editable(false);
+	sort->set_disabled(true);
+	categories->set_disabled(true);
+	support->set_disabled(true);
+
 	host = repository->get_item_metadata(p_repository_id);
 	if (templates_only) {
 		_api_request("configure", REQUESTING_CONFIG, "?type=project");
@@ -957,6 +970,10 @@ void EditorAssetLibrary::_search_text_changed(const String &p_text) {
 
 void EditorAssetLibrary::_filter_debounce_timer_timeout() {
 	_search();
+}
+
+void EditorAssetLibrary::_request_current_config() {
+	_repository_changed(repository->get_selected());
 }
 
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
@@ -1100,6 +1117,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	}
 
 	if (error_abort) {
+		if (requesting == REQUESTING_CONFIG) {
+			library_info->hide();
+			library_error->show();
+		}
 		error_hb->show();
 		return;
 	}
@@ -1136,16 +1157,15 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
+			filter->set_editable(true);
+			sort->set_disabled(false);
+			categories->set_disabled(false);
+			support->set_disabled(false);
+
 			_search();
 		} break;
 		case REQUESTING_SEARCH: {
 			initial_loading = false;
-
-			// The loading text only needs to be displayed before the first page is loaded.
-			// Therefore, we don't need to show it again.
-			library_loading->hide();
-
-			library_error->hide();
 
 			if (asset_items) {
 				memdelete(asset_items);
@@ -1195,8 +1215,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_bottom_page);
 
 			if (result.empty()) {
-				library_error->set_text(vformat(TTR("No results for \"%s\"."), filter->get_text()));
-				library_error->show();
+				library_info->set_text(vformat(TTR("No results for \"%s\"."), filter->get_text()));
+				library_info->show();
+			} else {
+				library_info->hide();
 			}
 
 			for (int i = 0; i < result.size(); i++) {
@@ -1328,6 +1350,7 @@ void EditorAssetLibrary::_bind_methods() {
 	ClassDB::bind_method("_search", &EditorAssetLibrary::_search, DEFVAL(0));
 	ClassDB::bind_method("_search_text_changed", &EditorAssetLibrary::_search_text_changed);
 	ClassDB::bind_method("_filter_debounce_timer_timeout", &EditorAssetLibrary::_filter_debounce_timer_timeout);
+	ClassDB::bind_method("_request_current_config", &EditorAssetLibrary::_request_current_config);
 	ClassDB::bind_method("_install_asset", &EditorAssetLibrary::_install_asset);
 	ClassDB::bind_method("_manage_plugins", &EditorAssetLibrary::_manage_plugins);
 	ClassDB::bind_method("_asset_open", &EditorAssetLibrary::_asset_open);
@@ -1469,14 +1492,22 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
-	library_loading = memnew(Label(TTR("Loading...")));
-	library_loading->set_align(Label::ALIGN_CENTER);
-	library_vb->add_child(library_loading);
+	library_info = memnew(Label);
+	library_info->set_align(Label::ALIGN_CENTER);
+	library_vb->add_child(library_info);
 
-	library_error = memnew(Label);
-	library_error->set_align(Label::ALIGN_CENTER);
+	library_error = memnew(VBoxContainer);
 	library_error->hide();
 	library_vb->add_child(library_error);
+
+	library_error_label = memnew(Label(TTR("Failed to get repository configuration.")));
+	library_error_label->set_align(Label::ALIGN_CENTER);
+	library_error->add_child(library_error_label);
+
+	library_error_retry = memnew(Button(TTR("Retry")));
+	library_error_retry->set_h_size_flags(SIZE_SHRINK_CENTER);
+	library_error_retry->connect("pressed", this, "_request_current_config");
+	library_error->add_child(library_error_retry);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
