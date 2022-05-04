@@ -131,6 +131,10 @@ int OS_JavaScript::get_process_id() const {
 	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
 }
 
+bool OS_JavaScript::is_process_running(const ProcessID &p_pid) const {
+	return false;
+}
+
 int OS_JavaScript::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
