@@ -237,92 +237,141 @@ ShaderLanguage::Token ShaderLanguage::_make_token(TokenType p_type, const String
 	return tk;
 }
 
+enum ContextFlag : uint32_t {
+	CF_UNSPECIFIED = 0U,
+	CF_BLOCK = 1U, // "void test() { <x> }"
+	CF_FUNC_DECL_PARAM_SPEC = 2U, // "void test(<x> int param) {}"
+	CF_FUNC_DECL_PARAM_TYPE = 4U, // "void test(<x> param) {}"
+	CF_IF_DECL = 8U, // "if(<x>) {}"
+	CF_BOOLEAN = 16U, // "bool t = <x>;"
+	CF_GLOBAL_SPACE = 32U, // "struct", "const", "void" etc.
+	CF_DATATYPE = 64U, // "<x> value;"
+	CF_UNIFORM_TYPE = 128U, // "uniform <x> myUniform;"
+	CF_VARYING_TYPE = 256U, // "varying <x> myVarying;"
+	CF_PRECISION_MODIFIER = 512U, // "<x> vec4 a = vec4(0.0, 1.0, 2.0, 3.0);"
+	CF_INTERPOLATION_QUALIFIER = 1024U, // "varying <x> vec3 myColor;"
+	CF_UNIFORM_KEYWORD = 2048U, // "uniform"
+	CF_CONST_KEYWORD = 4096U, // "const"
+	CF_UNIFORM_QUALIFIER = 8192U, // "<x> uniform float t;"
+};
+
+const uint32_t KCF_DATATYPE = CF_BLOCK | CF_GLOBAL_SPACE | CF_DATATYPE | CF_FUNC_DECL_PARAM_TYPE | CF_UNIFORM_TYPE;
+const uint32_t KCF_SAMPLER_DATATYPE = CF_FUNC_DECL_PARAM_TYPE | CF_UNIFORM_TYPE;
+
 const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
-	{ TK_TRUE, "true" },
-	{ TK_FALSE, "false" },
-	{ TK_TYPE_VOID, "void" },
-	{ TK_TYPE_BOOL, "bool" },
-	{ TK_TYPE_BVEC2, "bvec2" },
-	{ TK_TYPE_BVEC3, "bvec3" },
-	{ TK_TYPE_BVEC4, "bvec4" },
-	{ TK_TYPE_INT, "int" },
-	{ TK_TYPE_IVEC2, "ivec2" },
-	{ TK_TYPE_IVEC3, "ivec3" },
-	{ TK_TYPE_IVEC4, "ivec4" },
-	{ TK_TYPE_UINT, "uint" },
-	{ TK_TYPE_UVEC2, "uvec2" },
-	{ TK_TYPE_UVEC3, "uvec3" },
-	{ TK_TYPE_UVEC4, "uvec4" },
-	{ TK_TYPE_FLOAT, "float" },
-	{ TK_TYPE_VEC2, "vec2" },
-	{ TK_TYPE_VEC3, "vec3" },
-	{ TK_TYPE_VEC4, "vec4" },
-	{ TK_TYPE_MAT2, "mat2" },
-	{ TK_TYPE_MAT3, "mat3" },
-	{ TK_TYPE_MAT4, "mat4" },
-	{ TK_TYPE_SAMPLER2D, "sampler2D" },
-	{ TK_TYPE_ISAMPLER2D, "isampler2D" },
-	{ TK_TYPE_USAMPLER2D, "usampler2D" },
-	{ TK_TYPE_SAMPLER2DARRAY, "sampler2DArray" },
-	{ TK_TYPE_ISAMPLER2DARRAY, "isampler2DArray" },
-	{ TK_TYPE_USAMPLER2DARRAY, "usampler2DArray" },
-	{ TK_TYPE_SAMPLER3D, "sampler3D" },
-	{ TK_TYPE_ISAMPLER3D, "isampler3D" },
-	{ TK_TYPE_USAMPLER3D, "usampler3D" },
-	{ TK_TYPE_SAMPLERCUBE, "samplerCube" },
-	{ TK_TYPE_SAMPLERCUBEARRAY, "samplerCubeArray" },
-	{ TK_INTERPOLATION_FLAT, "flat" },
-	{ TK_INTERPOLATION_SMOOTH, "smooth" },
-	{ TK_CONST, "const" },
-	{ TK_STRUCT, "struct" },
-	{ TK_PRECISION_LOW, "lowp" },
-	{ TK_PRECISION_MID, "mediump" },
-	{ TK_PRECISION_HIGH, "highp" },
-	{ TK_CF_IF, "if" },
-	{ TK_CF_ELSE, "else" },
-	{ TK_CF_FOR, "for" },
-	{ TK_CF_WHILE, "while" },
-	{ TK_CF_DO, "do" },
-	{ TK_CF_SWITCH, "switch" },
-	{ TK_CF_CASE, "case" },
-	{ TK_CF_DEFAULT, "default" },
-	{ TK_CF_BREAK, "break" },
-	{ TK_CF_CONTINUE, "continue" },
-	{ TK_CF_RETURN, "return" },
-	{ TK_CF_DISCARD, "discard" },
-	{ TK_UNIFORM, "uniform" },
-	{ TK_INSTANCE, "instance" },
-	{ TK_GLOBAL, "global" },
-	{ TK_VARYING, "varying" },
-	{ TK_ARG_IN, "in" },
-	{ TK_ARG_OUT, "out" },
-	{ TK_ARG_INOUT, "inout" },
-	{ TK_RENDER_MODE, "render_mode" },
-	{ TK_HINT_WHITE_TEXTURE, "hint_white" },
-	{ TK_HINT_BLACK_TEXTURE, "hint_black" },
-	{ TK_HINT_NORMAL_TEXTURE, "hint_normal" },
-	{ TK_HINT_ROUGHNESS_NORMAL_TEXTURE, "hint_roughness_normal" },
-	{ TK_HINT_ROUGHNESS_R, "hint_roughness_r" },
-	{ TK_HINT_ROUGHNESS_G, "hint_roughness_g" },
-	{ TK_HINT_ROUGHNESS_B, "hint_roughness_b" },
-	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a" },
-	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray" },
-	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy" },
-	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo" },
-	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
-	{ TK_HINT_COLOR, "hint_color" },
-	{ TK_HINT_RANGE, "hint_range" },
-	{ TK_HINT_INSTANCE_INDEX, "instance_index" },
-	{ TK_FILTER_NEAREST, "filter_nearest" },
-	{ TK_FILTER_LINEAR, "filter_linear" },
-	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap" },
-	{ TK_FILTER_LINEAR_MIPMAP, "filter_linear_mipmap" },
-	{ TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC, "filter_nearest_mipmap_anisotropic" },
-	{ TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC, "filter_linear_mipmap_anisotropic" },
-	{ TK_REPEAT_ENABLE, "repeat_enable" },
-	{ TK_REPEAT_DISABLE, "repeat_disable" },
-	{ TK_SHADER_TYPE, "shader_type" },
-	{ TK_ERROR, nullptr }
+	{ TK_TRUE, "true", CF_BLOCK | CF_IF_DECL | CF_BOOLEAN, {}, {} },
+	{ TK_FALSE, "false", CF_BLOCK | CF_IF_DECL | CF_BOOLEAN, {}, {} },
+
+	// data types
+
+	{ TK_TYPE_VOID, "void", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_TYPE_BOOL, "bool", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_BVEC2, "bvec2", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_BVEC3, "bvec3", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_BVEC4, "bvec4", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_INT, "int", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_IVEC2, "ivec2", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_IVEC3, "ivec3", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_IVEC4, "ivec4", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_UINT, "uint", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_UVEC2, "uvec2", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_UVEC3, "uvec3", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_UVEC4, "uvec4", KCF_DATATYPE, {}, {} },
+	{ TK_TYPE_FLOAT, "float", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_VEC2, "vec2", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_VEC3, "vec3", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_VEC4, "vec4", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_MAT2, "mat2", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_MAT3, "mat3", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_MAT4, "mat4", KCF_DATATYPE | CF_VARYING_TYPE, {}, {} },
+	{ TK_TYPE_SAMPLER2D, "sampler2D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_ISAMPLER2D, "isampler2D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_USAMPLER2D, "usampler2D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_SAMPLER2DARRAY, "sampler2DArray", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_ISAMPLER2DARRAY, "isampler2DArray", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_USAMPLER2DARRAY, "usampler2DArray", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_SAMPLER3D, "sampler3D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_ISAMPLER3D, "isampler3D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_USAMPLER3D, "usampler3D", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_SAMPLERCUBE, "samplerCube", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_SAMPLERCUBEARRAY, "samplerCubeArray", KCF_SAMPLER_DATATYPE, {}, {} },
+
+	// interpolation qualifiers
+
+	{ TK_INTERPOLATION_FLAT, "flat", CF_INTERPOLATION_QUALIFIER, {}, {} },
+	{ TK_INTERPOLATION_SMOOTH, "smooth", CF_INTERPOLATION_QUALIFIER, {}, {} },
+
+	// precision modifiers
+
+	{ TK_PRECISION_LOW, "lowp", CF_BLOCK | CF_PRECISION_MODIFIER, {}, {} },
+	{ TK_PRECISION_MID, "mediump", CF_BLOCK | CF_PRECISION_MODIFIER, {}, {} },
+	{ TK_PRECISION_HIGH, "highp", CF_BLOCK | CF_PRECISION_MODIFIER, {}, {} },
+
+	// global space keywords
+
+	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD, {}, {} },
+	{ TK_VARYING, "varying", CF_GLOBAL_SPACE, { "particles", "sky", "fog" }, {} },
+	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
+	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_SHADER_TYPE, "shader_type", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
+
+	// uniform qualifiers
+
+	{ TK_INSTANCE, "instance", CF_GLOBAL_SPACE | CF_UNIFORM_QUALIFIER, {}, {} },
+	{ TK_GLOBAL, "global", CF_GLOBAL_SPACE | CF_UNIFORM_QUALIFIER, {}, {} },
+
+	// block keywords
+
+	{ TK_CF_IF, "if", CF_BLOCK, {}, {} },
+	{ TK_CF_ELSE, "else", CF_BLOCK, {}, {} },
+	{ TK_CF_FOR, "for", CF_BLOCK, {}, {} },
+	{ TK_CF_WHILE, "while", CF_BLOCK, {}, {} },
+	{ TK_CF_DO, "do", CF_BLOCK, {}, {} },
+	{ TK_CF_SWITCH, "switch", CF_BLOCK, {}, {} },
+	{ TK_CF_CASE, "case", CF_BLOCK, {}, {} },
+	{ TK_CF_DEFAULT, "default", CF_BLOCK, {}, {} },
+	{ TK_CF_BREAK, "break", CF_BLOCK, {}, {} },
+	{ TK_CF_CONTINUE, "continue", CF_BLOCK, {}, {} },
+	{ TK_CF_RETURN, "return", CF_BLOCK, {}, {} },
+	{ TK_CF_DISCARD, "discard", CF_BLOCK, { "particles", "sky", "fog" }, { "fragment" } },
+
+	// function specifier keywords
+
+	{ TK_ARG_IN, "in", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_ARG_OUT, "out", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_ARG_INOUT, "inout", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+
+	// hints
+
+	{ TK_HINT_RANGE, "hint_range", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_COLOR, "hint_color", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_INSTANCE_INDEX, "instance_index", CF_UNSPECIFIED, {}, {} },
+
+	// sampler hints
+
+	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_NORMAL_TEXTURE, "hint_normal", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_WHITE_TEXTURE, "hint_white", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_BLACK_TEXTURE, "hint_black", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_R, "hint_roughness_r", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_G, "hint_roughness_g", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_B, "hint_roughness_b", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_NORMAL_TEXTURE, "hint_roughness_normal", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_NEAREST, "filter_nearest", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_LINEAR, "filter_linear", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_LINEAR_MIPMAP, "filter_linear_mipmap", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC, "filter_nearest_mipmap_anisotropic", CF_UNSPECIFIED, {}, {} },
+	{ TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC, "filter_linear_mipmap_anisotropic", CF_UNSPECIFIED, {}, {} },
+	{ TK_REPEAT_ENABLE, "repeat_enable", CF_UNSPECIFIED, {}, {} },
+	{ TK_REPEAT_DISABLE, "repeat_disable", CF_UNSPECIFIED, {}, {} },
+
+	{ TK_ERROR, nullptr, CF_UNSPECIFIED, {}, {} }
 };
 
 ShaderLanguage::Token ShaderLanguage::_get_token() {
@@ -752,6 +801,19 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 #undef GETCHAR
 }
 
+bool ShaderLanguage::_lookup_next(Token &r_tk) {
+	TkPos pre_pos = _get_tkpos();
+	int line = pre_pos.tk_line;
+	_get_token();
+	Token tk = _get_token();
+	_set_tkpos(pre_pos);
+	if (tk.line == line) {
+		r_tk = tk;
+		return true;
+	}
+	return false;
+}
+
 String ShaderLanguage::token_debug(const String &p_code) {
 	clear();
 
@@ -850,6 +912,13 @@ bool ShaderLanguage::is_token_precision(TokenType p_type) {
 			p_type == TK_PRECISION_LOW ||
 			p_type == TK_PRECISION_MID ||
 			p_type == TK_PRECISION_HIGH);
+}
+
+bool ShaderLanguage::is_token_arg_qual(TokenType p_type) {
+	return (
+			p_type == TK_ARG_IN ||
+			p_type == TK_ARG_OUT ||
+			p_type == TK_ARG_INOUT);
 }
 
 ShaderLanguage::DataPrecision ShaderLanguage::get_token_precision(TokenType p_type) {
@@ -967,6 +1036,7 @@ void ShaderLanguage::clear() {
 	completion_base_array = false;
 
 #ifdef DEBUG_ENABLED
+	keyword_completion_context = CF_GLOBAL_SPACE;
 	used_constants.clear();
 	used_varyings.clear();
 	used_uniforms.clear();
@@ -6395,8 +6465,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_
 Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one, bool p_can_break, bool p_can_continue) {
 	while (true) {
 		TkPos pos = _get_tkpos();
-
 		Token tk = _get_token();
+#ifdef DEBUG_ENABLED
+		Token next;
+#endif // DEBUG_ENABLED
 
 		if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_SWITCH) {
 			if (tk.type != TK_CF_CASE && tk.type != TK_CF_DEFAULT && tk.type != TK_CURLY_BRACKET_CLOSE) {
@@ -6429,6 +6501,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 #endif // DEBUG_ENABLED
 			}
+#ifdef DEBUG_ENABLED
+			uint32_t precision_flag = CF_PRECISION_MODIFIER;
+
+			keyword_completion_context = CF_DATATYPE;
+			if (!is_token_precision(tk.type)) {
+				if (!is_struct) {
+					keyword_completion_context |= precision_flag;
+				}
+			}
+#endif // DEBUG_ENABLED
 
 			bool is_const = false;
 
@@ -6450,6 +6532,26 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (!is_struct) {
 					is_struct = shader->structs.has(tk.text); // check again.
 				}
+
+#ifdef DEBUG_ENABLED
+				if (keyword_completion_context & precision_flag) {
+					keyword_completion_context ^= precision_flag;
+				}
+#endif // DEBUG_ENABLED
+			}
+
+#ifdef DEBUG_ENABLED
+			if (is_const && _lookup_next(next)) {
+				if (is_token_precision(next.type)) {
+					keyword_completion_context = CF_UNSPECIFIED;
+				}
+				if (is_token_datatype(next.type)) {
+					keyword_completion_context ^= CF_DATATYPE;
+				}
+			}
+#endif // DEBUG_ENABLED
+
+			if (precision != PRECISION_DEFAULT) {
 				if (!is_token_nonvoid_datatype(tk.type)) {
 					_set_error(RTR("Expected variable type after precision modifier."));
 					return ERR_PARSE_ERROR;
@@ -6472,6 +6574,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
 				return ERR_PARSE_ERROR;
 			}
+
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
 			int array_size = 0;
 			bool fixed_array_size = false;
@@ -6576,7 +6682,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 					tk = _get_token();
 				}
-
+#ifdef DEBUG_ENABLED
+				if (var.type == DataType::TYPE_BOOL) {
+					keyword_completion_context = CF_BOOLEAN;
+				}
+#endif // DEBUG_ENABLED
 				if (var.array_size > 0 || unknown_size) {
 					bool full_def = false;
 
@@ -6823,7 +6933,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					return ERR_PARSE_ERROR;
 				}
 			} while (tk.type == TK_COMMA); //another variable
-
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_BLOCK;
+#endif // DEBUG_ENABLED
 			p_block->statements.push_back(static_cast<Node *>(vdnode));
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
@@ -6843,10 +6955,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
 			cf->flow_op = FLOW_OP_IF;
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_IF_DECL;
+#endif // DEBUG_ENABLED
 			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_BLOCK;
+#endif // DEBUG_ENABLED
 
 			if (n->get_datatype() != TYPE_BOOL) {
 				_set_error(RTR("Expected a boolean expression."));
@@ -7184,10 +7302,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
 			cf->blocks.push_back(init_block);
+
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_DATATYPE;
+#endif // DEBUG_ENABLED
 			Error err = _parse_block(init_block, p_function_info, true, false, false);
 			if (err != OK) {
 				return err;
 			}
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
 			BlockNode *condition_block = alloc_node<BlockNode>();
 			condition_block->block_type = BlockNode::BLOCK_TYPE_FOR_CONDITION;
@@ -7216,6 +7341,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
+#ifdef DEBUG_ENABLED
+			keyword_completion_context = CF_BLOCK;
+#endif // DEBUG_ENABLED
 			err = _parse_block(block, p_function_info, true, true, true);
 			if (err != OK) {
 				return err;
@@ -7260,6 +7388,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			} else {
 				_set_tkpos(pos); //rollback, wants expression
 
+#ifdef DEBUG_ENABLED
+				if (b->parent_function->return_type == DataType::TYPE_BOOL) {
+					keyword_completion_context = CF_BOOLEAN;
+				}
+#endif // DEBUG_ENABLED
+
 				Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 				if (!expr) {
 					return ERR_PARSE_ERROR;
@@ -7275,6 +7409,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					_set_expected_after_error(";", "return");
 					return ERR_PARSE_ERROR;
 				}
+
+#ifdef DEBUG_ENABLED
+				if (b->parent_function->return_type == DataType::TYPE_BOOL) {
+					keyword_completion_context = CF_BLOCK;
+				}
+#endif // DEBUG_ENABLED
 
 				flow->expressions.push_back(expr);
 			}
@@ -7502,15 +7642,17 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types) {
 	Token tk = _get_token();
 	TkPos prev_pos;
+	Token next;
 
 	if (tk.type != TK_SHADER_TYPE) {
 		_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
 		return ERR_PARSE_ERROR;
 	}
+#ifdef DEBUG_ENABLED
+	keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
-	StringName shader_type_identifier;
 	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
-
 	if (shader_type_identifier == StringName()) {
 		_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
 		return ERR_PARSE_ERROR;
@@ -7528,6 +7670,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		return ERR_PARSE_ERROR;
 	}
 
+#ifdef DEBUG_ENABLED
+	keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
 	tk = _get_token();
 
 	int texture_uniforms = 0;
@@ -7621,7 +7766,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 			case TK_STRUCT: {
 				ShaderNode::Struct st;
 				DataType type;
-
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
@@ -7644,7 +7791,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				int member_count = 0;
 				Set<String> member_names;
+
 				while (true) { // variables list
+#ifdef DEBUG_ENABLED
+					keyword_completion_context = CF_DATATYPE | CF_PRECISION_MODIFIER;
+#endif // DEBUG_ENABLED
+
 					tk = _get_token();
 					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						break;
@@ -7661,6 +7813,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (is_token_precision(tk.type)) {
 						precision = get_token_precision(tk.type);
 						tk = _get_token();
+#ifdef DEBUG_ENABLED
+						keyword_completion_context ^= CF_PRECISION_MODIFIER;
+#endif // DEBUG_ENABLED
 					}
 
 					if (shader->structs.has(tk.text)) {
@@ -7687,6 +7842,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							_set_error(vformat(RTR("A '%s' data type is not allowed here."), get_datatype_name(type)));
 							return ERR_PARSE_ERROR;
 						}
+#ifdef DEBUG_ENABLED
+						keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
 						bool first = true;
 						bool fixed_array_size = false;
@@ -7758,12 +7916,19 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					_set_error(RTR("Empty structs are not allowed."));
 					return ERR_PARSE_ERROR;
 				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
 				tk = _get_token();
 				if (tk.type != TK_SEMICOLON) {
 					_set_expected_error(";");
 					return ERR_PARSE_ERROR;
 				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
+
 				shader->structs[st.name] = st;
 				shader->vstructs.push_back(st); // struct's order is important!
 #ifdef DEBUG_ENABLED
@@ -7773,6 +7938,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 #endif // DEBUG_ENABLED
 			} break;
 			case TK_GLOBAL: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNIFORM_KEYWORD;
+				if (_lookup_next(next)) {
+					if (next.type == TK_UNIFORM) {
+						keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+					}
+				}
+#endif // DEBUG_ENABLED
 				tk = _get_token();
 				if (tk.type != TK_UNIFORM) {
 					_set_expected_after_error("uniform", "global");
@@ -7782,6 +7955,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 			};
 				[[fallthrough]];
 			case TK_INSTANCE: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNIFORM_KEYWORD;
+				if (_lookup_next(next)) {
+					if (next.type == TK_UNIFORM) {
+						keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+					}
+				}
+#endif // DEBUG_ENABLED
 				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
 					tk = _get_token();
 					if (tk.type != TK_UNIFORM) {
@@ -7795,14 +7976,15 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 			case TK_UNIFORM:
 			case TK_VARYING: {
 				bool uniform = tk.type == TK_UNIFORM;
-
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 				if (!uniform) {
 					if (shader_type_identifier == "particles" || shader_type_identifier == "sky" || shader_type_identifier == "fog") {
 						_set_error(vformat(RTR("Varyings cannot be used in '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
 				}
-
 				DataPrecision precision = PRECISION_DEFAULT;
 				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
@@ -7810,18 +7992,81 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				int array_size = 0;
 
 				tk = _get_token();
+#ifdef DEBUG_ENABLED
+				bool temp_error = false;
+				uint32_t datatype_flag;
+
+				if (!uniform) {
+					datatype_flag = CF_VARYING_TYPE;
+					keyword_completion_context = CF_INTERPOLATION_QUALIFIER | CF_PRECISION_MODIFIER | datatype_flag;
+
+					if (_lookup_next(next)) {
+						if (is_token_interpolation(next.type)) {
+							keyword_completion_context ^= (CF_INTERPOLATION_QUALIFIER | datatype_flag);
+						} else if (is_token_precision(next.type)) {
+							keyword_completion_context ^= (CF_PRECISION_MODIFIER | datatype_flag);
+						} else if (is_token_datatype(next.type)) {
+							keyword_completion_context ^= datatype_flag;
+						}
+					}
+				} else {
+					datatype_flag = CF_UNIFORM_TYPE;
+					keyword_completion_context = CF_PRECISION_MODIFIER | datatype_flag;
+
+					if (_lookup_next(next)) {
+						if (is_token_precision(next.type)) {
+							keyword_completion_context ^= (CF_PRECISION_MODIFIER | datatype_flag);
+						} else if (is_token_datatype(next.type)) {
+							keyword_completion_context ^= datatype_flag;
+						}
+					}
+				}
+#endif // DEBUG_ENABLED
+
 				if (is_token_interpolation(tk.type)) {
 					if (uniform) {
 						_set_error(RTR("Interpolation qualifiers are not supported for uniforms."));
+#ifdef DEBUG_ENABLED
+						temp_error = true;
+#else
 						return ERR_PARSE_ERROR;
+#endif // DEBUG_ENABLED
 					}
 					interpolation = get_token_interpolation(tk.type);
 					tk = _get_token();
+#ifdef DEBUG_ENABLED
+					if (keyword_completion_context & CF_INTERPOLATION_QUALIFIER) {
+						keyword_completion_context ^= CF_INTERPOLATION_QUALIFIER;
+					}
+					if (_lookup_next(next)) {
+						if (is_token_precision(next.type)) {
+							keyword_completion_context ^= CF_PRECISION_MODIFIER;
+						} else if (is_token_datatype(next.type)) {
+							keyword_completion_context ^= datatype_flag;
+						}
+					}
+					if (temp_error) {
+						return ERR_PARSE_ERROR;
+					}
+#endif // DEBUG_ENABLED
 				}
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
 					tk = _get_token();
+#ifdef DEBUG_ENABLED
+					if (keyword_completion_context & CF_INTERPOLATION_QUALIFIER) {
+						keyword_completion_context ^= CF_INTERPOLATION_QUALIFIER;
+					}
+					if (keyword_completion_context & CF_PRECISION_MODIFIER) {
+						keyword_completion_context ^= CF_PRECISION_MODIFIER;
+					}
+					if (_lookup_next(next)) {
+						if (is_token_datatype(next.type)) {
+							keyword_completion_context = CF_UNSPECIFIED;
+						}
+					}
+#endif // DEBUG_ENABLED
 				}
 
 				if (shader->structs.has(tk.text)) {
@@ -7855,6 +8100,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 				tk = _get_token();
 
 				if (tk.type != TK_IDENTIFIER && tk.type != TK_BRACKET_OPEN) {
@@ -8226,6 +8474,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
+#ifdef DEBUG_ENABLED
+					keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
 					completion_type = COMPLETION_NONE;
 				} else { // varying
 					ShaderNode::Varying varying;
@@ -8291,6 +8542,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					is_struct = true;
 					struct_name = tk.text;
 				} else {
+#ifdef DEBUG_ENABLED
+					if (_lookup_next(next)) {
+						if (next.type == TK_UNIFORM) {
+							keyword_completion_context = CF_UNIFORM_QUALIFIER;
+						}
+					}
+#endif // DEBUG_ENABLED
 					if (!is_token_datatype(tk.type)) {
 						_set_error(RTR("Expected constant, function, uniform or varying."));
 						return ERR_PARSE_ERROR;
@@ -8318,6 +8576,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				prev_pos = _get_tkpos();
 				tk = _get_token();
+
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 
 				bool unknown_size = false;
 				bool fixed_array_size = false;
@@ -8555,11 +8817,22 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								constant.initializer = static_cast<ConstantNode *>(expr);
 							} else {
+#ifdef DEBUG_ENABLED
+								if (constant.type == DataType::TYPE_BOOL) {
+									keyword_completion_context = CF_BOOLEAN;
+								}
+#endif // DEBUG_ENABLED
+
 								//variable created with assignment! must parse an expression
 								Node *expr = _parse_and_reduce_expression(nullptr, constants);
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
+#ifdef DEBUG_ENABLED
+								if (constant.type == DataType::TYPE_BOOL) {
+									keyword_completion_context = CF_GLOBAL_SPACE;
+								}
+#endif // DEBUG_ENABLED
 								if (expr->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(expr)->op == OP_CALL) {
 									OperatorNode *op = static_cast<OperatorNode *>(expr);
 									for (int i = 1; i < op->arguments.size(); i++) {
@@ -8691,31 +8964,88 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (tk.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					}
+#ifdef DEBUG_ENABLED
+					keyword_completion_context = CF_CONST_KEYWORD | CF_FUNC_DECL_PARAM_SPEC | CF_PRECISION_MODIFIER | CF_FUNC_DECL_PARAM_TYPE; // eg. const in mediump float
+
+					if (_lookup_next(next)) {
+						if (next.type == TK_CONST) {
+							keyword_completion_context = CF_UNSPECIFIED;
+						} else if (is_token_arg_qual(next.type)) {
+							keyword_completion_context = CF_CONST_KEYWORD;
+						} else if (is_token_precision(next.type)) {
+							keyword_completion_context = (CF_CONST_KEYWORD | CF_FUNC_DECL_PARAM_SPEC | CF_FUNC_DECL_PARAM_TYPE);
+						} else if (is_token_datatype(next.type)) {
+							keyword_completion_context = (CF_CONST_KEYWORD | CF_FUNC_DECL_PARAM_SPEC | CF_PRECISION_MODIFIER);
+						}
+					}
+#endif // DEBUG_ENABLED
 
 					bool param_is_const = false;
 					if (tk.type == TK_CONST) {
 						param_is_const = true;
 						tk = _get_token();
+#ifdef DEBUG_ENABLED
+						if (keyword_completion_context & CF_CONST_KEYWORD) {
+							keyword_completion_context ^= CF_CONST_KEYWORD;
+						}
+
+						if (_lookup_next(next)) {
+							if (is_token_arg_qual(next.type)) {
+								keyword_completion_context = CF_UNSPECIFIED;
+							} else if (is_token_precision(next.type)) {
+								keyword_completion_context = (CF_FUNC_DECL_PARAM_SPEC | CF_FUNC_DECL_PARAM_TYPE);
+							} else if (is_token_datatype(next.type)) {
+								keyword_completion_context = (CF_FUNC_DECL_PARAM_SPEC | CF_PRECISION_MODIFIER);
+							}
+						}
+#endif // DEBUG_ENABLED
 					}
 
 					ArgumentQualifier param_qualifier = ARGUMENT_QUALIFIER_IN;
-					if (tk.type == TK_ARG_IN) {
-						param_qualifier = ARGUMENT_QUALIFIER_IN;
+					if (is_token_arg_qual(tk.type)) {
+						bool error = false;
+						switch (tk.type) {
+							case TK_ARG_IN: {
+								param_qualifier = ARGUMENT_QUALIFIER_IN;
+							} break;
+							case TK_ARG_OUT: {
+								if (param_is_const) {
+									_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "out", "const"));
+									error = true;
+								}
+								param_qualifier = ARGUMENT_QUALIFIER_OUT;
+							} break;
+							case TK_ARG_INOUT: {
+								if (param_is_const) {
+									_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "inout", "const"));
+									error = true;
+								}
+								param_qualifier = ARGUMENT_QUALIFIER_INOUT;
+							} break;
+							default:
+								error = true;
+								break;
+						}
 						tk = _get_token();
-					} else if (tk.type == TK_ARG_OUT) {
-						if (param_is_const) {
-							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "out", "const"));
+#ifdef DEBUG_ENABLED
+						if (keyword_completion_context & CF_CONST_KEYWORD) {
+							keyword_completion_context ^= CF_CONST_KEYWORD;
+						}
+						if (keyword_completion_context & CF_FUNC_DECL_PARAM_SPEC) {
+							keyword_completion_context ^= CF_FUNC_DECL_PARAM_SPEC;
+						}
+
+						if (_lookup_next(next)) {
+							if (is_token_precision(next.type)) {
+								keyword_completion_context = CF_FUNC_DECL_PARAM_TYPE;
+							} else if (is_token_datatype(next.type)) {
+								keyword_completion_context = CF_PRECISION_MODIFIER;
+							}
+						}
+#endif // DEBUG_ENABLED
+						if (error) {
 							return ERR_PARSE_ERROR;
 						}
-						param_qualifier = ARGUMENT_QUALIFIER_OUT;
-						tk = _get_token();
-					} else if (tk.type == TK_ARG_INOUT) {
-						if (param_is_const) {
-							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "inout", "const"));
-							return ERR_PARSE_ERROR;
-						}
-						param_qualifier = ARGUMENT_QUALIFIER_INOUT;
-						tk = _get_token();
 					}
 
 					DataType param_type;
@@ -8727,6 +9057,23 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (is_token_precision(tk.type)) {
 						param_precision = get_token_precision(tk.type);
 						tk = _get_token();
+#ifdef DEBUG_ENABLED
+						if (keyword_completion_context & CF_CONST_KEYWORD) {
+							keyword_completion_context ^= CF_CONST_KEYWORD;
+						}
+						if (keyword_completion_context & CF_FUNC_DECL_PARAM_SPEC) {
+							keyword_completion_context ^= CF_FUNC_DECL_PARAM_SPEC;
+						}
+						if (keyword_completion_context & CF_PRECISION_MODIFIER) {
+							keyword_completion_context ^= CF_PRECISION_MODIFIER;
+						}
+
+						if (_lookup_next(next)) {
+							if (is_token_datatype(next.type)) {
+								keyword_completion_context = CF_UNSPECIFIED;
+							}
+						}
+#endif // DEBUG_ENABLED
 					}
 
 					is_struct = false;
@@ -8769,7 +9116,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (param_precision != PRECISION_DEFAULT && _validate_precision(param_type, param_precision) != OK) {
 						return ERR_PARSE_ERROR;
 					}
-
+#ifdef DEBUG_ENABLED
+					keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 					tk = _get_token();
 
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -8853,11 +9202,16 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				current_function = name;
 
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_BLOCK;
+#endif // DEBUG_ENABLED
 				Error err = _parse_block(func_node->body, builtins);
 				if (err) {
 					return err;
 				}
-
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
 				if (func_node->return_type != DataType::TYPE_VOID) {
 					BlockNode *block = func_node->body;
 					if (_find_last_flow_op_in_block(block, FlowOperation::FLOW_OP_RETURN) != OK) {
@@ -9091,6 +9445,28 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 	shader = alloc_node<ShaderNode>();
 	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+
+#ifdef DEBUG_ENABLED
+	// Adds context keywords.
+	if (keyword_completion_context != CF_UNSPECIFIED) {
+		int sz = sizeof(keyword_list) / sizeof(KeyWord);
+		for (int i = 0; i < sz; i++) {
+			if (keyword_list[i].flags == CF_UNSPECIFIED) {
+				break; // Ignore hint keywords (parsed below).
+			}
+			if (keyword_list[i].flags & keyword_completion_context) {
+				if (keyword_list[i].excluded_shader_types.has(shader_type_identifier)) {
+					continue;
+				}
+				if (!keyword_list[i].functions.is_empty() && !keyword_list[i].functions.has(current_function)) {
+					continue;
+				}
+				ScriptLanguage::CodeCompletionOption option(keyword_list[i].text, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+		}
+	}
+#endif // DEBUG_ENABLED
 
 	switch (completion_type) {
 		case COMPLETION_NONE: {

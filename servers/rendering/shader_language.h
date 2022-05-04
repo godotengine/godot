@@ -756,6 +756,7 @@ public:
 	static bool is_token_interpolation(TokenType p_type);
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
+	static bool is_token_arg_qual(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_datatype_name(DataType p_type);
@@ -870,6 +871,9 @@ private:
 	struct KeyWord {
 		TokenType token;
 		const char *text;
+		uint32_t flags;
+		const Vector<String> excluded_shader_types;
+		const Vector<String> functions;
 	};
 
 	static const KeyWord keyword_list[];
@@ -920,6 +924,7 @@ private:
 	int char_idx = 0;
 	int tk_line = 0;
 
+	StringName shader_type_identifier;
 	StringName current_function;
 	bool last_const = false;
 	StringName last_name;
@@ -972,6 +977,7 @@ private:
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
+	bool _lookup_next(Token &r_tk);
 
 	ShaderNode *shader = nullptr;
 
@@ -1028,6 +1034,10 @@ private:
 	StringName completion_function;
 	StringName completion_struct;
 	int completion_argument = 0;
+
+#ifdef DEBUG_ENABLED
+	uint32_t keyword_completion_context;
+#endif // DEBUG_ENABLED
 
 	const Map<StringName, FunctionInfo> *stages = nullptr;
 
