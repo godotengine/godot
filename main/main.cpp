@@ -2257,6 +2257,8 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+		OS::get_singleton()->get_main_loop()->iteration_end();
+
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 		Engine::get_singleton()->_physics_frames++;
