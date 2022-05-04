@@ -118,7 +118,7 @@ void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_tr
 				// Effectively a WARN_PRINT_ONCE but after a certain number of occurrences.
 				static int32_t warn_count = -256;
 				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("Interpolated Camera transform should usually be set during physics process (possibly benign).");
+					WARN_PRINT("[Physics interpolation] Camera interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
 				}
 				warn_count++;
 			}
@@ -128,7 +128,7 @@ void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_tr
 			if (Engine::get_singleton()->is_in_physics_frame()) {
 				static int32_t warn_count = -256;
 				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("Non-interpolated Camera transform should not usually be set during physics process (possibly benign).");
+					WARN_PRINT("[Physics interpolation] Non-interpolated Camera is being triggered from physics process, this might lead to issues (possibly benign).");
 				}
 				warn_count++;
 			}
@@ -842,15 +842,15 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 				if (id != 0) {
 					if (ObjectDB::get_instance(id)) {
 						Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-						if (node) {
-							node_name = "\"" + node->get_name() + "\"";
+						if (node && node->is_inside_tree()) {
+							node_name = "\"" + String(node->get_path()) + "\"";
 						} else {
 							node_name = "\"unknown\"";
 						}
 					}
 				}
 
-				WARN_PRINT("Non-interpolated Instance " + node_name + " transform should usually not be set during physics process (possibly benign).");
+				WARN_PRINT("[Physics interpolation] Non-interpolated Instance is being triggered from physics process, this might lead to issues: " + node_name + " (possibly benign).");
 			}
 		}
 #endif
@@ -919,15 +919,15 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 			if (id != 0) {
 				if (ObjectDB::get_instance(id)) {
 					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-					if (node) {
-						node_name = "\"" + node->get_name() + "\"";
+					if (node && node->is_inside_tree()) {
+						node_name = "\"" + String(node->get_path()) + "\"";
 					} else {
 						node_name = "\"unknown\"";
 					}
 				}
 			}
 
-			WARN_PRINT("Interpolated Instance " + node_name + " transform should usually be set during physics process (possibly benign).");
+			WARN_PRINT("[Physics interpolation] Instance interpolation is being triggered from outside physics process, this might lead to issues: " + node_name + " (possibly benign).");
 		}
 	}
 #endif
