@@ -360,7 +360,7 @@ void RasterizerStorage::multimesh_instance_set_transform(RID p_multimesh, int p_
 				static int32_t warn_count = 0;
 				warn_count++;
 				if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("Interpolated MultiMesh transform should usually be set during physics process (possibly benign).");
+					WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
 				}
 			}
 #endif
@@ -517,7 +517,7 @@ void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh
 			static int32_t warn_count = 0;
 			warn_count++;
 			if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-				WARN_PRINT("Interpolated MultiMesh transform should usually be set during physics process (possibly benign).");
+				WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
 			}
 		}
 #endif
@@ -535,7 +535,7 @@ void RasterizerStorage::multimesh_set_as_bulk_array(RID p_multimesh, const PoolV
 				static int32_t warn_count = 0;
 				warn_count++;
 				if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-					WARN_PRINT("Interpolated MultiMesh transform should usually be set during physics process (possibly benign).");
+					WARN_PRINT("[Physics interpolation] MultiMesh interpolation is being triggered from outside physics process, this might lead to issues (possibly benign).");
 				}
 			}
 #endif
