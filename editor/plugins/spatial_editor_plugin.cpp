@@ -2042,7 +2042,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_numpad")) {
-			const uint32_t code = k->get_scancode();
+			const uint32_t code = k->get_physical_scancode();
 			if (code >= KEY_0 && code <= KEY_9) {
 				k->set_scancode(code - KEY_0 + KEY_KP_0);
 			}
