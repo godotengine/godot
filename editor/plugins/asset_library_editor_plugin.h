@@ -181,8 +181,10 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
-	Label *library_loading;
-	Label *library_error;
+	Label *library_info;
+	VBoxContainer *library_error;
+	Label *library_error_label;
+	Button *library_error_retry;
 	LineEdit *filter;
 	Timer *filter_debounce_timer;
 	OptionButton *categories;
@@ -285,6 +287,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	void _filter_debounce_timer_timeout();
+	void _request_current_config();
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);
