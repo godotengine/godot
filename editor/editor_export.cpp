@@ -1627,6 +1627,9 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
+		err = modify_template(p_preset, p_debug, p_path, p_flags);
+	}
+	if (err == OK) {
 		err = export_project_data(p_preset, p_debug, p_path, p_flags);
 	}
 
