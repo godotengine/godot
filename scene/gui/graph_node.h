@@ -67,6 +67,8 @@ private:
 	Vector2 position_offset;
 	bool comment = false;
 	bool resizable = false;
+	bool draggable = true;
+	bool selectable = true;
 
 	bool resizing = false;
 	Vector2 resizing_from;
@@ -182,6 +184,12 @@ public:
 
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
+
+	void set_draggable(bool p_draggable);
+	bool is_draggable();
+
+	void set_selectable(bool p_selectable);
+	bool is_selectable();
 
 	virtual Size2 get_minimum_size() const override;
 

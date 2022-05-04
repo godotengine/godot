@@ -149,6 +149,10 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
+	if (read_only) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (grabbing_grabber) {

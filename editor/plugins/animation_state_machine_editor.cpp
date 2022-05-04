@@ -56,7 +56,11 @@ bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node)
 void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 	state_machine = p_node;
 
+	read_only = false;
+
 	if (state_machine.is_valid()) {
+		read_only = EditorNode::get_singleton()->is_resource_read_only(state_machine);
+
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
@@ -66,6 +70,9 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		_update_mode();
 		_update_graph();
 	}
+
+	tool_create->set_disabled(read_only);
+	tool_connect->set_disabled(read_only);
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEvent> &p_event) {
@@ -77,7 +84,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && !k->is_echo()) {
 		if (selected_node != StringName() || !selected_nodes.is_empty() || selected_transition_to != StringName() || selected_transition_from != StringName()) {
-			_erase_selected();
+			if (!read_only) {
+				_erase_selected();
+			}
 			accept_event();
 		}
 	}
@@ -95,9 +104,11 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventMouseButton> mb = p_event;
 
 	// Add new node
-	if (mb.is_valid() && mb->is_pressed() && !box_selecting && !connecting && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (tool_create->is_pressed() && mb->get_button_index() == MouseButton::LEFT))) {
-		connecting_from = StringName();
-		_open_menu(mb->get_position());
+	if (!read_only) {
+		if (mb.is_valid() && mb->is_pressed() && !box_selecting && !connecting && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (tool_create->is_pressed() && mb->get_button_index() == MouseButton::LEFT))) {
+			connecting_from = StringName();
+			_open_menu(mb->get_position());
+		}
 	}
 
 	// Select node or push a field inside
@@ -121,22 +132,24 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				return;
 			}
 
-			if (node_rects[i].name.has_point(mb->get_position()) && state_machine->can_edit_node(node_rects[i].node_name)) { // edit name
-				Ref<StyleBox> line_sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
+			if (!read_only) {
+				if (node_rects[i].name.has_point(mb->get_position()) && state_machine->can_edit_node(node_rects[i].node_name)) { // edit name
+					Ref<StyleBox> line_sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
 
-				Rect2 edit_rect = node_rects[i].name;
-				edit_rect.position -= line_sb->get_offset();
-				edit_rect.size += line_sb->get_minimum_size();
+					Rect2 edit_rect = node_rects[i].name;
+					edit_rect.position -= line_sb->get_offset();
+					edit_rect.size += line_sb->get_minimum_size();
 
-				name_edit_popup->set_position(state_machine_draw->get_screen_position() + edit_rect.position);
-				name_edit_popup->set_size(edit_rect.size);
-				name_edit->set_text(node_rects[i].node_name);
-				name_edit_popup->popup();
-				name_edit->grab_focus();
-				name_edit->select_all();
+					name_edit_popup->set_position(state_machine_draw->get_screen_position() + edit_rect.position);
+					name_edit_popup->set_size(edit_rect.size);
+					name_edit->set_text(node_rects[i].node_name);
+					name_edit_popup->popup();
+					name_edit->grab_focus();
+					name_edit->select_all();
 
-				prev_name = node_rects[i].node_name;
-				return;
+					prev_name = node_rects[i].node_name;
+					return;
+				}
 			}
 
 			if (node_rects[i].edit.has_point(mb->get_position())) { //edit name
@@ -319,7 +332,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Move mouse while connecting
-	if (mm.is_valid() && connecting) {
+	if (mm.is_valid() && connecting && !read_only) {
 		connecting_to = mm->get_position();
 		connecting_to_node = StringName();
 		state_machine_draw->update();
@@ -333,7 +346,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Move mouse while moving a node
-	if (mm.is_valid() && dragging_selected_attempt) {
+	if (mm.is_valid() && dragging_selected_attempt && !read_only) {
 		dragging_selected = true;
 		drag_ofs = mm->get_position() - drag_from;
 		snap_x = StringName();
@@ -478,17 +491,21 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 }
 
 Control::CursorShape AnimationNodeStateMachineEditor::get_cursor_shape(const Point2 &p_pos) const {
-	// Put ibeam (text cursor) over names to make it clearer that they are editable.
-	Transform2D xform = panel->get_transform() * state_machine_draw->get_transform();
-	Point2 pos = xform.xform_inv(p_pos);
 	Control::CursorShape cursor_shape = get_default_cursor_shape();
+	if (!read_only) {
+		// Put ibeam (text cursor) over names to make it clearer that they are editable.
+		Transform2D xform = panel->get_transform() * state_machine_draw->get_transform();
+		Point2 pos = xform.xform_inv(p_pos);
 
-	for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
-		if (node_rects[i].node.has_point(pos)) {
-			if (node_rects[i].name.has_point(pos)) {
-				cursor_shape = Control::CURSOR_IBEAM;
+		for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
+			if (node_rects[i].node.has_point(pos)) {
+				if (node_rects[i].name.has_point(pos)) {
+					if (state_machine->can_edit_node(node_rects[i].node_name)) {
+						cursor_shape = Control::CURSOR_IBEAM;
+					}
+				}
+				break;
 			}
-			break;
 		}
 	}
 	return cursor_shape;
@@ -1848,9 +1865,9 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 		tool_erase_hb->show();
 		bool nothing_selected = selected_nodes.is_empty() && selected_transition_from == StringName() && selected_transition_to == StringName();
 		bool start_end_selected = selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node);
-		tool_erase->set_disabled(nothing_selected || start_end_selected);
+		tool_erase->set_disabled(nothing_selected || start_end_selected || read_only);
 
-		if (selected_nodes.is_empty() || start_end_selected) {
+		if (selected_nodes.is_empty() || start_end_selected || read_only) {
 			tool_group->set_disabled(true);
 			tool_group->set_visible(true);
 			tool_ungroup->set_visible(false);

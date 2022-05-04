@@ -46,6 +46,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace1D> blend_space;
+	bool read_only = false;
 
 	HBoxContainer *goto_parent_hb = nullptr;
 	Button *goto_parent = nullptr;
