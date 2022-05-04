@@ -3735,12 +3735,13 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		float fade = 1.0;
 
 		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
-			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
-			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
+			const real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
+			const float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
+			const float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
-				fade = 1.0 - (distance - fade_begin) / fade_length;
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - fade_begin) / fade_length);
 			}
 		}
 
