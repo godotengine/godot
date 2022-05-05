@@ -118,11 +118,11 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	CHECK_MESSAGE((Time::Weekday)(int)time->get_datetime_dict_from_unix_time(0)[WEEKDAY_KEY] == Time::Weekday::WEEKDAY_THURSDAY, "Time get_datetime_dict_from_unix_time: The weekday for the Unix epoch is a Thursday as expected.");
 	CHECK_MESSAGE((Time::Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Time::Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for GODOT IS OPEN SOURCE is a Sunday as expected.");
 
-	CHECK_MESSAGE(time->get_datetime_dict_from_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(!time->get_datetime_dict_from_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_dict(datetime) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The string from dictionary for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_dict(time->get_datetime_dict_from_string("2014-02-09T22:10:30")) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_dict(time->get_datetime_dict_from_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE with spaces works as expected.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(datetime) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The string from dictionary for GODOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30")) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE with spaces works as expected.");
 }
 
 TEST_CASE("[Time] System time methods") {
