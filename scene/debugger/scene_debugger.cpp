@@ -100,7 +100,7 @@ public:
 		}
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_profile_time > 100) {
 			last_profile_time = pt;
