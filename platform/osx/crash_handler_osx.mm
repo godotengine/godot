@@ -31,6 +31,7 @@
 #include "crash_handler_osx.h"
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/version.h"
 #include "main/main.h"
@@ -71,7 +72,7 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL) {
+	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
 
@@ -85,20 +86,22 @@ static void handle_crash(int sig) {
 		msg = proj_settings->get("debug/settings/crash_handler/message");
 	}
 
-	// Dump the backtrace to stderr with a message to the user
-	fprintf(stderr, "\n================================================================\n");
-	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
-
-	if (OS::get_singleton()->get_main_loop())
+	// Tell MainLoop about the crash. This can be handled by users too in Node.
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	}
+
+	// Dump the backtrace to stderr with a message to the user
+	print_error("\n================================================================");
+	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).empty()) {
-		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
+		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
 	} else {
-		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
+		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
 	}
-	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
+	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
 		void *load_addr = (void *)load_address();
@@ -113,14 +116,15 @@ static void handle_crash(int sig) {
 			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
 				if (info.dli_sname[0] == '_') {
 					int status;
-					char *demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
 
 					if (status == 0 && demangled) {
 						snprintf(fname, 1024, "%s", demangled);
 					}
 
-					if (demangled)
+					if (demangled) {
 						free(demangled);
+					}
 				}
 			}
 
@@ -148,20 +152,20 @@ static void handle_crash(int sig) {
 
 				int ret;
 				String out = "";
-				Error err = OS::get_singleton()->execute(String("atos"), args, true, NULL, &out, &ret);
+				Error err = OS::get_singleton()->execute(String("atos"), args, true, nullptr, &out, &ret);
 				if (err == OK && out.substr(0, 2) != "0x") {
 					out.erase(out.length() - 1, 1);
 					output = out;
 				}
 			}
 
-			fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
+			print_error(vformat("[%d] %s", (int64_t)i, output));
 		}
 
 		free(strings);
 	}
-	fprintf(stderr, "-- END OF BACKTRACE --\n");
-	fprintf(stderr, "================================================================\n");
+	print_error("-- END OF BACKTRACE --");
+	print_error("================================================================");
 
 	// Abort to pass the error to the OS
 	abort();
@@ -177,13 +181,14 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::disable() {
-	if (disabled)
+	if (disabled) {
 		return;
+	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, NULL);
-	signal(SIGFPE, NULL);
-	signal(SIGILL, NULL);
+	signal(SIGSEGV, nullptr);
+	signal(SIGFPE, nullptr);
+	signal(SIGILL, nullptr);
 #endif
 
 	disabled = true;
