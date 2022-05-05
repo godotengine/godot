@@ -1763,7 +1763,7 @@ void register_variant_methods() {
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "to", REAL, "weight", varray());
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "weight", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, move_toward, VECTOR2, "to", REAL, "delta", varray());
-	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "angle", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, floor, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, ceil, varray());
@@ -1809,7 +1809,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR3, BOOL, Vector3, is_equal_approx, VECTOR3, "v", varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
-	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "angle", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "to", REAL, "weight", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "to", REAL, "weight", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "weight", varray());
@@ -2059,7 +2059,7 @@ void register_variant_methods() {
 	ADDFUNC0R(TRANSFORM2D, VECTOR2, Transform2D, get_origin, varray());
 	ADDFUNC0R(TRANSFORM2D, VECTOR2, Transform2D, get_scale, varray());
 	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, orthonormalized, varray());
-	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, rotated, REAL, "phi", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, rotated, REAL, "angle", varray());
 	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, scaled, VECTOR2, "scale", varray());
 	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, translated, VECTOR2, "offset", varray());
 	ADDFUNC1R(TRANSFORM2D, NIL, Transform2D, xform, NIL, "v", varray());
@@ -2073,7 +2073,7 @@ void register_variant_methods() {
 	ADDFUNC0R(BASIS, BASIS, Basis, transposed, varray());
 	ADDFUNC0R(BASIS, BASIS, Basis, orthonormalized, varray());
 	ADDFUNC0R(BASIS, REAL, Basis, determinant, varray());
-	ADDFUNC2R(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC2R(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "angle", varray());
 	ADDFUNC1R(BASIS, BASIS, Basis, scaled, VECTOR3, "scale", varray());
 	ADDFUNC0R(BASIS, VECTOR3, Basis, get_scale, varray());
 	ADDFUNC0R(BASIS, VECTOR3, Basis, get_euler, varray());
@@ -2091,7 +2091,7 @@ void register_variant_methods() {
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, affine_inverse, varray());
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, orthonormalized, varray());
-	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, rotated, VECTOR3, "axis", REAL, "angle", varray());
 	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, scaled, VECTOR3, "scale", varray());
 	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "offset", varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
@@ -2126,7 +2126,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "angle", Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);

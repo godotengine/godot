@@ -32,13 +32,13 @@
 
 #include "core/math/basis.h"
 
-void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = Basis(p_axis, p_phi).xform(*this);
+void Vector3::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = Basis(p_axis, p_angle).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_angle) const {
 	Vector3 r = *this;
-	r.rotate(p_axis, p_phi);
+	r.rotate(p_axis, p_angle);
 	return r;
 }
 

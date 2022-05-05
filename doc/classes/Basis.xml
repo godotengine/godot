@@ -37,9 +37,9 @@
 		<method name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
+				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="Basis">
@@ -107,9 +107,9 @@
 		<method name="rotated">
 			<return type="Basis" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Introduce an additional rotation around the given axis by phi (radians). The axis must be a normalized vector.
+				Introduce an additional rotation around the given axis by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">

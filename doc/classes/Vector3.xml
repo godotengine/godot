@@ -217,9 +217,9 @@
 		<method name="rotated">
 			<return type="Vector3" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Rotates this vector around a given axis by [code]phi[/code] radians. The axis must be a normalized vector.
+				Rotates this vector around a given axis by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="round">

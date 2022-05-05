@@ -297,9 +297,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform by <paramref name="phi"/> (in radians), using matrix multiplication.
+        /// Rotates the transform by <paramref name="angle"/> (in radians), using matrix multiplication.
         /// </summary>
-        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
         public Transform2D Rotated(real_t phi)
         {

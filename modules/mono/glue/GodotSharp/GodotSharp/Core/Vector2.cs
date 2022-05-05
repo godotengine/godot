@@ -484,9 +484,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates this vector by <paramref name="phi"/> radians.
+        /// Rotates this vector by <paramref name="angle"/> radians.
         /// </summary>
-        /// <param name="phi">The angle to rotate by, in radians.</param>
+        /// <param name="angle">The angle to rotate by, in radians.</param>
         /// <returns>The rotated vector.</returns>
         public Vector2 Rotated(real_t phi)
         {

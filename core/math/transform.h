@@ -47,10 +47,10 @@ public:
 	void affine_invert();
 	Transform affine_inverse() const;
 
-	Transform rotated(const Vector3 &p_axis, real_t p_phi) const;
+	Transform rotated(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
 
 	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up);
 	Transform looking_at(const Vector3 &p_target, const Vector3 &p_up) const;

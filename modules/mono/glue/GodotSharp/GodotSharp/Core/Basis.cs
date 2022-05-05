@@ -501,10 +501,10 @@ namespace Godot
 
         /// <summary>
         /// Introduce an additional rotation around the given <paramref name="axis"/>
-        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
+        /// by <paramref name="angle"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated basis matrix.</returns>
         public Basis Rotated(Vector3 axis, real_t phi)
         {
@@ -803,10 +803,10 @@ namespace Godot
 
         /// <summary>
         /// Constructs a pure rotation basis matrix, rotated around the given <paramref name="axis"/>
-        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
+        /// by <paramref name="angle"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
         public Basis(Vector3 axis, real_t phi)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);

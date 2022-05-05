@@ -224,9 +224,9 @@
 		</method>
 		<method name="rotated">
 			<return type="Vector2" />
-			<argument index="0" name="phi" type="float" />
+			<argument index="0" name="angle" type="float" />
 			<description>
-				Returns the vector rotated by [code]phi[/code] radians. See also [method @GDScript.deg2rad].
+				Returns the vector rotated by [code]angle[/code] (in radians). See also [method @GDScript.deg2rad].
 			</description>
 		</method>
 		<method name="round">

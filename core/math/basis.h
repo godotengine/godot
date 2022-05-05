@@ -70,11 +70,11 @@ public:
 		elements[2][p_axis] = p_value.z;
 	}
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	Basis rotated(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate_local(const Vector3 &p_axis, real_t p_phi);
-	Basis rotated_local(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate_local(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated_local(const Vector3 &p_axis, real_t p_angle) const;
 
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
@@ -115,7 +115,7 @@ public:
 	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); }
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
-	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);
+	void set_axis_angle(const Vector3 &p_axis, real_t p_angle);
 
 	void scale(const Vector3 &p_scale);
 	Basis scaled(const Vector3 &p_scale) const;
@@ -127,7 +127,7 @@ public:
 	Vector3 get_scale_abs() const;
 	Vector3 get_scale_local() const;
 
-	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
+	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
 	void set_quat_scale(const Quat &p_quat, const Vector3 &p_scale);
 
@@ -260,8 +260,8 @@ public:
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
 	Basis(const Vector3 &p_euler, const Vector3 &p_scale) { set_euler_scale(p_euler, p_scale); }
 
-	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
-	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
+	Basis(const Vector3 &p_axis, real_t p_angle) { set_axis_angle(p_axis, p_angle); }
+	Basis(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_angle, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;

@@ -94,8 +94,8 @@ struct _NO_DISCARD_CLASS_ Vector3 {
 	void snap(Vector3 p_val);
 	Vector3 snapped(Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Vector3 rotated(const Vector3 &p_axis, real_t p_angle) const;
 
 	/* Static Methods between 2 vector3s */
 
