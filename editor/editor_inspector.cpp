@@ -3723,6 +3723,8 @@ void EditorInspector::_check_meta_name(String name) {
 		error = TTR("Invalid metadata identifier.");
 	} else if (object->has_meta(name)) {
 		error = TTR("Metadata already exists.");
+	} else if (name[0] == '_') {
+		error = TTR("Names starting with _ are reserved for editor-only metadata.");
 	}
 
 	if (error != "") {
