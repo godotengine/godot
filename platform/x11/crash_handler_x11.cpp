@@ -31,6 +31,7 @@
 #include "crash_handler_x11.h"
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/version.h"
 #include "main/main.h"
@@ -61,21 +62,22 @@ static void handle_crash(int sig) {
 		msg = proj_settings->get("debug/settings/crash_handler/message");
 	}
 
-	// Dump the backtrace to stderr with a message to the user
-	fprintf(stderr, "\n================================================================\n");
-	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
-
+	// Tell MainLoop about the crash. This can be handled by users too in Node.
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
+	// Dump the backtrace to stderr with a message to the user
+	print_error("\n================================================================");
+	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
+
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).empty()) {
-		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
+		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
 	} else {
-		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
+		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
 	}
-	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
+	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
 		for (size_t i = 1; i < size; i++) {
@@ -117,13 +119,13 @@ static void handle_crash(int sig) {
 				output.erase(output.length() - 1, 1);
 			}
 
-			fprintf(stderr, "[%ld] %s (%ls)\n", (long int)i, fname, output.c_str());
+			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, output));
 		}
 
 		free(strings);
 	}
-	fprintf(stderr, "-- END OF BACKTRACE --\n");
-	fprintf(stderr, "================================================================\n");
+	print_error("-- END OF BACKTRACE --");
+	print_error("================================================================");
 
 	// Abort to pass the error to the OS
 	abort();
