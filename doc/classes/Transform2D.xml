@@ -107,9 +107,9 @@
 		</method>
 		<method name="rotated">
 			<return type="Transform2D" />
-			<argument index="0" name="phi" type="float" />
+			<argument index="0" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated by the given [code]phi[/code] angle (in radians), using matrix multiplication.
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled">

@@ -101,9 +101,9 @@
 		<method name="rotated">
 			<return type="Transform" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]phi[/code] angle (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
+				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">

@@ -57,16 +57,16 @@ Transform Transform::inverse() const {
 	return ret;
 }
 
-void Transform::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = rotated(p_axis, p_phi);
+void Transform::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = rotated(p_axis, p_angle);
 }
 
-Transform Transform::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Transform(Basis(p_axis, p_phi), Vector3()) * (*this);
+Transform Transform::rotated(const Vector3 &p_axis, real_t p_angle) const {
+	return Transform(Basis(p_axis, p_angle), Vector3()) * (*this);
 }
 
-void Transform::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
-	basis.rotate(p_axis, p_phi);
+void Transform::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
+	basis.rotate(p_axis, p_angle);
 }
 
 Transform Transform::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
