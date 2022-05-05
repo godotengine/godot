@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=Godot Engine
 GenericName=Libre game engine
+GenericName[zh_CN]=自由的游戏引擎
 Comment=Multi-platform 2D and 3D game engine with a feature-rich editor
+Comment[zh_CN]=多平台 2D 和 3D 游戏引擎，带有功能丰富的编辑器
 Exec=godot %f
 Icon=godot
 Terminal=false
