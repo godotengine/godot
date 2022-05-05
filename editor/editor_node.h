@@ -544,6 +544,7 @@ private:
 	Set<EditorFileDialog *> editor_file_dialogs;
 
 	Map<String, Ref<Texture>> icon_type_cache;
+	Map<Ref<Script>, Ref<Texture>> script_icon_cache;
 	void _build_icon_type_cache();
 
 	bool _initializing_addons;
@@ -801,7 +802,7 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
 	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
