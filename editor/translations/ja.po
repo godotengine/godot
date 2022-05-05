@@ -144,8 +144,7 @@ msgid "Position"
 msgstr "位置"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -394,37 +393,6 @@ msgstr "メッセージキュー"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "最大サイズ (KB)"
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-msgid "Text Editor"
-msgstr "テキストエディター"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-msgid "Completion"
-msgstr "完了"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-msgid "Use Single Quotes"
-msgstr "シングルクォートを使用"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -754,6 +722,8 @@ msgid "Physics"
 msgstr " (物理的)"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -978,7 +948,9 @@ msgstr "キャンバスのポリゴンインデックスのバッファサイズ
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1317,7 +1289,6 @@ msgid "Remove Anim Track"
 msgstr "アニメーショントラックを除去"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3300,6 +3271,14 @@ msgstr ""
 "現在、このメソッドの説明はありません。[color=$color][url=$url]貢献[/url][/"
 "color]して私たちを助けてください！"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+msgid "Text Editor"
+msgstr "テキストエディター"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -4135,14 +4114,6 @@ msgstr "実行時には常に出力を開く"
 msgid "Always Close Output On Stop"
 msgstr "停止時には常に出力を閉じる"
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Auto Save"
-msgstr "自動保存"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Save Before Running"
-msgstr "実行前に保存"
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr "フォーカスが外れたときに保存"
@@ -4614,7 +4585,9 @@ msgstr "重要な変更点を更新"
 msgid "Hide Update Spinner"
 msgstr "アップデートスピナーを非表示"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "ファイルシステム"
 
@@ -5135,7 +5108,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5189,11 +5161,6 @@ msgstr "カスタムテーマ"
 #: editor/editor_settings.cpp
 msgid "Show Script Button"
 msgstr "スクリプトボタンを表示"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-msgid "Filesystem"
-msgstr "ファイルシステム"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5263,9 +5230,7 @@ msgstr "サブリソース"
 msgid "Color Theme"
 msgstr "カラーテーマ"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr "行間隔"
 
@@ -5290,14 +5255,12 @@ msgstr "現在の行をハイライトする"
 msgid "Highlight Type Safe Lines"
 msgstr "型安全な行をハイライトする"
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 msgid "Indent"
 msgstr "インデント"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5398,7 +5361,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Files"
 msgstr "ファイル"
@@ -5416,6 +5378,14 @@ msgid "Restore Scripts On Load"
 msgstr "読み込み時にスクリプトを復元"
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr "保存時にスクリプトを自動再読み込みし解析する"
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr "外部変更時にスクリプトを自動再読み込み"
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr "シグナルのコールバックを作成"
 
@@ -5423,8 +5393,7 @@ msgstr "シグナルのコールバックを作成"
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr "カーソル"
 
@@ -5436,17 +5405,23 @@ msgstr ""
 msgid "Block Caret"
 msgstr "四角形のキャレット"
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr "キャレットの点滅"
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr "キャレットの点滅速度"
 
 #: editor/editor_settings.cpp
 msgid "Right Click Moves Caret"
 msgstr "右クリックでキャレットを移動"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion"
+msgstr "完了"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5479,6 +5454,10 @@ msgid "Add Type Hints"
 msgstr "タイプを追加"
 
 #: editor/editor_settings.cpp
+msgid "Use Single Quotes"
+msgstr "シングルクォートを使用"
+
+#: editor/editor_settings.cpp
 msgid "Show Help Index"
 msgstr "ヘルプのインデックスを表示"
 
@@ -5494,8 +5473,7 @@ msgstr "ヘルプのソースのフォントサイズ"
 msgid "Help Title Font Size"
 msgstr "ヘルプのタイトルのフォントサイズ"
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "グリッドマップ"
 
@@ -5503,6 +5481,10 @@ msgstr "グリッドマップ"
 #, fuzzy
 msgid "Pick Distance"
 msgstr "距離を取得:"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+msgid "Preview Size"
+msgstr "プレビューサイズ"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5516,6 +5498,35 @@ msgstr "グリッドのセカンダリの色"
 #, fuzzy
 msgid "Selection Box Color"
 msgstr "選択範囲のみ"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "3D Gizmos"
+msgstr "3Dギズモ"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "Gizmo Colors"
+msgstr "ギズモの色"
+
+#: editor/editor_settings.cpp
+msgid "Instanced"
+msgstr "インスタンス化済"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "点"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5554,15 +5565,15 @@ msgstr "GridMap ペイント"
 msgid "Grid YZ Plane"
 msgstr "GridMap ペイント"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default FOV"
 msgstr "デフォルトの視野角"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Near"
 msgstr "デフォルトのZ Near"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Far"
 msgstr "デフォルトのZ Far"
 
@@ -5793,6 +5804,14 @@ msgstr "曲線のOut-Controlの位置を指定"
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Save"
+msgstr "自動保存"
+
+#: editor/editor_settings.cpp
+msgid "Save Before Running"
+msgstr "実行前に保存"
 
 #: editor/editor_settings.cpp
 msgid "Font Size"
@@ -6688,6 +6707,11 @@ msgid "Delimiter"
 msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "Color関数。"
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr ""
 
@@ -7005,6 +7029,15 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "保存中..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid "2D, Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "凝集ピクセル"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8278,6 +8311,10 @@ msgid "License (Z-A)"
 msgstr "ライセンス (ZからA)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "読み込み中..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgctxt "Pagination"
 msgid "First"
@@ -8346,8 +8383,8 @@ msgid "Testing"
 msgstr "試験的"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "読み込み中..."
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9548,12 +9585,6 @@ msgstr "トランスフォーム以外を適用"
 msgid "Apply with Transforms"
 msgstr "トランスフォームを含め適用"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Preview Size"
-msgstr "プレビューサイズ"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
@@ -9866,18 +9897,6 @@ msgstr "曲線のIn-ハンドルを除去"
 msgid "Split Segment (in curve)"
 msgstr "セグメントを分割する(曲線内)"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "3D Gizmos"
-msgstr "3Dギズモ"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "Gizmo Colors"
-msgstr "ギズモの色"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "ジョイントを移動"
@@ -10088,6 +10107,10 @@ msgstr "グリッドのステップ Y:"
 msgid "Sync Bones to Polygon"
 msgstr "ボーンをポリゴンに同期させる"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "エラー: リソースを読み込めませんでした！"
@@ -10179,11 +10202,6 @@ msgid "Close and save changes?"
 msgstr "変更を保存して閉じますか？"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr "外部変更時にスクリプトを自動再読み込み"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "テキストファイルの書き込みエラー:"
 
@@ -10262,10 +10280,6 @@ msgstr "テーマを名前をつけて保存..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "%s クラスリファレンス"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr "保存時にスクリプトを自動再読み込みし解析する"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -11315,10 +11329,6 @@ msgstr ""
 #, fuzzy
 msgid "Show Viewport Rotation Gizmo"
 msgstr "ビュー回転を固定"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Instanced"
-msgstr "インスタンス化済"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -15012,6 +15022,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "ローカルにする"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "ノード名:"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "ノード名:"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "新しいシーンのルート"
@@ -15083,6 +15107,10 @@ msgstr "保存のためシーンを複製する際にエラーが発生しまし
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "サブリソース"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15218,6 +15246,13 @@ msgstr "(接続元)"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "ノードの設定に関する警告:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15641,21 +15676,6 @@ msgstr "カメラのFOVを変更"
 msgid "Change Camera Size"
 msgstr "カメラサイズを変更"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "点"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr ""
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16035,6 +16055,16 @@ msgstr ""
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "補間モード"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "フィルタリングを有効化"
 
 #: main/main.cpp
 #, fuzzy
@@ -19799,6 +19829,11 @@ msgstr "デバッガー"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
+msgid "Modify Resources"
+msgstr "リソースをコピー"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
 msgid "File Version"
 msgstr "バージョン"
 
@@ -22085,8 +22120,9 @@ msgstr ""
 "これはナビゲーションデータのみ提供します。"
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr "ナビメッシュ"
+#, fuzzy
+msgid "NavMesh"
+msgstr "NavMeshを焼き込む"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -24347,6 +24383,12 @@ msgid "Timeout"
 msgstr "タイムアウト。"
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 msgid "Name Num Separator"
 msgstr "名前の数字の区切り文字"
 
@@ -24373,6 +24415,11 @@ msgstr "パンモード"
 #, fuzzy
 msgid "Display Folded"
 msgstr "シェーディングなしで表示"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "ノード名:"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24436,11 +24483,6 @@ msgstr ""
 #, fuzzy
 msgid "Multiplayer Poll"
 msgstr "複数設定:"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "補間モード"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -26615,6 +26657,10 @@ msgstr "マージンを設定する"
 #, fuzzy
 msgid "Expand Margin"
 msgstr "すべて展開"
+
+#: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
 
 #: scene/resources/style_box.cpp
 #, fuzzy

@@ -83,8 +83,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-25 15:02+0000\n"
-"Last-Translator: Ventura Pérez García <vetu@protonmail.com>\n"
+"PO-Revision-Date: 2022-05-03 07:13+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -184,8 +184,7 @@ msgid "Position"
 msgstr "Posición"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -433,37 +432,6 @@ msgstr "Cola de Mensajes"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "Tamaño Máximo (KB)"
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-msgid "Text Editor"
-msgstr "Editor de Textos"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-msgid "Completion"
-msgstr "Completar"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-msgid "Use Single Quotes"
-msgstr "Utilizar Comillas Simples"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -780,6 +748,8 @@ msgid "Physics"
 msgstr "Física"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -998,7 +968,9 @@ msgstr "Tamaño del buffer del índice del polígono del lienzo (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1336,7 +1308,6 @@ msgid "Remove Anim Track"
 msgstr "Eliminar Pista de Animación"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -2752,7 +2723,7 @@ msgstr "64 Bits"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
-msgstr ""
+msgstr "PCK Embebido"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "Texture Format"
@@ -2760,19 +2731,19 @@ msgstr "Formato de Textura"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
-msgstr ""
+msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "S3TC"
-msgstr ""
+msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC"
-msgstr ""
+msgstr "ETC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC2"
-msgstr ""
+msgstr "ETC2"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3326,6 +3297,14 @@ msgstr ""
 "Actualmente no existe descripción para este método. Por favor ¡ayúdanos con "
 "[color=$color][url=$url] contribuyendo con una[ /url][/color]!"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+msgid "Text Editor"
+msgstr "Editor de Textos"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -3563,8 +3542,8 @@ msgid ""
 "disable it."
 msgstr ""
 "Gira cuando la ventana del editor se vuelve a dibujar.\n"
-"Si Update Continuously está habilitado puede incrementarse el consumo. Clica "
-"para deshabilitarlo."
+"Si Update Continuously está activado, puede incrementarse el consumo de "
+"energía. Haz clic para desactivarlo."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -4166,14 +4145,6 @@ msgstr "Siempre Abrir la Salida en la Reproducción"
 msgid "Always Close Output On Stop"
 msgstr "Siempre Cerrar la Salida al Detener"
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Auto Save"
-msgstr "Guardado Automático"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Save Before Running"
-msgstr "Guardar Antes de Ejecutar"
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr "Guardar Al Perder El Foco"
@@ -4642,7 +4613,9 @@ msgstr "Actualizar cambios vitales"
 msgid "Hide Update Spinner"
 msgstr "Ocultar Spinner de Actualización"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "Sistema de Archivos"
 
@@ -5163,7 +5136,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5216,11 +5188,6 @@ msgstr "Tema Personalizado"
 #: editor/editor_settings.cpp
 msgid "Show Script Button"
 msgstr "Mostrar Botón de Script"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-msgid "Filesystem"
-msgstr "Sistema de Archivos"
 
 #: editor/editor_settings.cpp
 msgid "Directories"
@@ -5288,9 +5255,7 @@ msgstr "Sub-Recursos"
 msgid "Color Theme"
 msgstr "Editor de Themes"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr "Espaciado de Línea"
 
@@ -5315,14 +5280,12 @@ msgstr "Resaltar la Línea Actual"
 msgid "Highlight Type Safe Lines"
 msgstr ""
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 msgid "Indent"
 msgstr "Indentar"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5424,7 +5387,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 msgid "Files"
 msgstr "Archivos"
 
@@ -5441,6 +5403,14 @@ msgid "Restore Scripts On Load"
 msgstr ""
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr ""
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr "Crear Llamadas de la Señal"
 
@@ -5448,8 +5418,7 @@ msgstr "Crear Llamadas de la Señal"
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr ""
 
@@ -5461,17 +5430,23 @@ msgstr ""
 msgid "Block Caret"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Right Click Moves Caret"
 msgstr "Clic Derecho Mueve el Carrete"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion"
+msgstr "Completar"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5503,6 +5478,10 @@ msgid "Add Type Hints"
 msgstr "Añadir Tipo"
 
 #: editor/editor_settings.cpp
+msgid "Use Single Quotes"
+msgstr "Utilizar Comillas Simples"
+
+#: editor/editor_settings.cpp
 msgid "Show Help Index"
 msgstr "Mostrar Índice de Ayuda"
 
@@ -5518,14 +5497,18 @@ msgstr ""
 msgid "Help Title Font Size"
 msgstr ""
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Mapeo de Cuadrícula"
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance"
 msgstr "Distancia de Selección"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "Vista Previa"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5538,6 +5521,38 @@ msgstr ""
 #: editor/editor_settings.cpp
 msgid "Selection Box Color"
 msgstr "Color de Caja de Selección"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "3D Gizmos"
+msgstr "Gizmos"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Gizmo Colors"
+msgstr "Colores de Emisión"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "Instanciar"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "Punto"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Steps"
@@ -5571,15 +5586,15 @@ msgstr "Cuadrícula Plano XY"
 msgid "Grid YZ Plane"
 msgstr "Cuadrícula Plano YZ"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default FOV"
 msgstr "Campo de Visión por Defecto"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Near"
 msgstr "Z Cercana por Defecto"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Far"
 msgstr "Z Lejana por Defecto"
 
@@ -5800,6 +5815,14 @@ msgstr "Establecer Posición de Salida de Curva"
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Save"
+msgstr "Guardado Automático"
+
+#: editor/editor_settings.cpp
+msgid "Save Before Running"
+msgstr "Guardar Antes de Ejecutar"
 
 #: editor/editor_settings.cpp
 msgid "Font Size"
@@ -6711,6 +6734,10 @@ msgstr "Delimitador"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
+msgid "ColorCorrect"
+msgstr "Corrección del Color"
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr "No BPTC Si RGB"
 
@@ -6719,9 +6746,8 @@ msgstr "No BPTC Si RGB"
 #: scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Flags"
-msgstr "Banderas"
+msgstr "Flags"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
@@ -6743,9 +6769,8 @@ msgstr "Señales"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Anisotropic"
-msgstr "Anisótropo"
+msgstr "Anisotrópico"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -6753,7 +6778,6 @@ msgid "sRGB"
 msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
-#, fuzzy
 msgid "Slices"
 msgstr "Trozos"
 
@@ -7023,6 +7047,15 @@ msgstr "¿Devolviste un objeto derivado de Node en el método `post_import()`?"
 msgid "Saving..."
 msgstr "Guardando..."
 
+#: editor/import/resource_importer_texture.cpp
+msgid "2D, Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "Pixeles Sólidos"
+
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
 msgstr ""
@@ -7244,9 +7277,8 @@ msgid "Property Name Style"
 msgstr "Estilo de Nombre de Propiedad"
 
 #: editor/inspector_dock.cpp scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw"
-msgstr "Crudo"
+msgstr "Raw"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -8302,6 +8334,10 @@ msgid "License (Z-A)"
 msgstr "Licencia (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "Cargar..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgctxt "Pagination"
 msgid "First"
@@ -8370,8 +8406,8 @@ msgid "Testing"
 msgstr "Prueba"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "Cargar..."
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9584,13 +9620,6 @@ msgstr "Aplicar Transformaciones al MeshInstance"
 msgid "Apply with Transforms"
 msgstr "Aplicar Transformaciones al MeshInstance"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Preview Size"
-msgstr "Vista Previa"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
@@ -9906,20 +9935,6 @@ msgstr "Eliminar Punto In-Control"
 msgid "Split Segment (in curve)"
 msgstr "Dividir Segmento (en curva)"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "3D Gizmos"
-msgstr "Gizmos"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "Gizmo Colors"
-msgstr "Colores de Emisión"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "Mover Unión"
@@ -10134,6 +10149,10 @@ msgstr "Paso de Cuadrícula en Y:"
 msgid "Sync Bones to Polygon"
 msgstr "Sincronizar Huesos con el Polígono"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "¡ERROR: No se pudo cargar el recurso!"
@@ -10225,11 +10244,6 @@ msgid "Close and save changes?"
 msgstr "¿Cerrar y guardar cambios?"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "Error al escribir el TextFile:"
 
@@ -10307,10 +10321,6 @@ msgstr "Guardar Theme Como..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "%s Referencia de Clase"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -10529,9 +10539,8 @@ msgid "Sort Scripts By"
 msgstr "Crear Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "List Script Names As"
-msgstr "Listar Nombres de Scripts Como"
+msgstr "Lista de Nombres de Script Como"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Exec Flags"
@@ -11252,12 +11261,10 @@ msgid "2 Viewports"
 msgstr "2 Ventanas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "2 Viewports (Alt)"
 msgstr "2 Ventanas (Alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "3 Viewports"
 msgstr "3 Ventanas"
 
@@ -11366,11 +11373,6 @@ msgstr ""
 #, fuzzy
 msgid "Show Viewport Rotation Gizmo"
 msgstr "Bloquear Rotación de Vista"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Instanced"
-msgstr "Instanciar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -15099,6 +15101,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "Crear Local"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "Nombre Único"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nombre Único"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "Nueva Raíz de Escena"
@@ -15170,6 +15186,10 @@ msgstr "Error al duplicar escena para guardarla."
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "Sub-Recursos"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15304,6 +15324,13 @@ msgstr "(Conectando Desde)"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "Alerta de configuración de nodos:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15727,21 +15754,6 @@ msgstr "Cambiar FOV de Cámara"
 msgid "Change Camera Size"
 msgstr "Cambiar Tamaño de Cámara"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "Punto"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr ""
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16136,6 +16148,16 @@ msgstr ""
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "Modo de Interpolación"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "Habilitar Filtrado"
 
 #: main/main.cpp
 #, fuzzy
@@ -17025,7 +17047,6 @@ msgid "Lights"
 msgstr "Luz"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Unique Animation Names"
 msgstr "Nombres Únicos de Animación"
 
@@ -18990,7 +19011,6 @@ msgid "Access Wi-Fi"
 msgstr "Acceso"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Push Notifications"
 msgstr "Notificaciones Push"
 
@@ -19760,9 +19780,8 @@ msgid "Publisher Display Name"
 msgstr "Nombre a Mostrar del Publisher"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Product GUID"
-msgstr "GUID de producto inválido."
+msgstr "GUID del producto"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -19960,6 +19979,11 @@ msgstr ""
 #, fuzzy
 msgid "Digest Algorithm"
 msgstr "Depurador"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Modify Resources"
+msgstr "Copiar Recurso"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20291,7 +20315,6 @@ msgid "Draw Screen"
 msgstr "Dibujar Pantalla"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Limits"
 msgstr "Límites de Dibujo"
 
@@ -20721,7 +20744,6 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Hue Variation"
 msgstr "Variación de Hue"
 
@@ -22165,7 +22187,6 @@ msgid "Split 3"
 msgstr "Dividir"
 
 #: scene/3d/light.cpp
-#, fuzzy
 msgid "Blend Splits"
 msgstr "Mezclar Divisiones"
 
@@ -22247,8 +22268,9 @@ msgstr ""
 "sólo proporciona los datos de navegación."
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr ""
+#, fuzzy
+msgid "NavMesh"
+msgstr "Calcular NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -23114,7 +23136,6 @@ msgid "Material Override"
 msgstr "Anulaciones"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Material Overlay"
 msgstr "Superposición de Materiales"
 
@@ -23261,7 +23282,6 @@ msgstr "Añadir Puerto de Entrada"
 
 #: scene/animation/animation_blend_tree.cpp
 #: scene/animation/animation_node_state_machine.cpp
-#, fuzzy
 msgid "Xfade Time"
 msgstr "Tiempo de Fundido Cruzado"
 
@@ -24103,9 +24123,8 @@ msgid "Env"
 msgstr "Fin"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Character"
-msgstr "Caracter"
+msgstr "Carácter"
 
 #: scene/gui/rich_text_label.cpp
 msgid "BBCode"
@@ -24116,7 +24135,6 @@ msgid "Meta Underlined"
 msgstr ""
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Tab Size"
 msgstr "Tamaño de Tabulación"
 
@@ -24190,9 +24208,8 @@ msgid "Tick Count"
 msgstr "Seleccionar Color"
 
 #: scene/gui/slider.cpp
-#, fuzzy
 msgid "Ticks On Borders"
-msgstr "Ticks en Bordes"
+msgstr "Ticks En Bordes"
 
 #: scene/gui/spin_box.cpp
 msgid "Prefix"
@@ -24203,7 +24220,6 @@ msgid "Suffix"
 msgstr "Sufijo"
 
 #: scene/gui/split_container.cpp
-#, fuzzy
 msgid "Split Offset"
 msgstr "Desplazamiento de División"
 
@@ -24265,7 +24281,6 @@ msgid "Breakpoint Gutter"
 msgstr "Saltar Breakpoints"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Fold Gutter"
 msgstr "Plegar Gutter"
 
@@ -24280,14 +24295,12 @@ msgid "Wrap Enabled"
 msgstr "Activar"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Scroll Vertical"
-msgstr "Desplazarse Verticalmente"
+msgstr "Desplazamiento Vertical"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Scroll Horizontal"
-msgstr "Desplazarse Horizontalmente"
+msgstr "Desplazamiento Horizontal"
 
 #: scene/gui/text_edit.cpp
 msgid "Draw"
@@ -24477,6 +24490,12 @@ msgid "Timeout"
 msgstr "Tiempo de Espera"
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 #, fuzzy
 msgid "Name Num Separator"
 msgstr "Separador con nombre"
@@ -24504,6 +24523,11 @@ msgstr "Modo desplazamiento lateral"
 #, fuzzy
 msgid "Display Folded"
 msgstr "Mostrar Sin Sombreado"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "Nombre Único"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24565,11 +24589,6 @@ msgstr ""
 #, fuzzy
 msgid "Multiplayer Poll"
 msgstr "Multiplicar %s"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "Modo de Interpolación"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -24756,7 +24775,6 @@ msgid "Debug Draw"
 msgstr "Depurar"
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid "Render Target"
 msgstr "Objetivo de Renderizado"
 
@@ -25253,9 +25271,8 @@ msgid "Font Color Accel"
 msgstr "Color Hueso 1"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Separator"
-msgstr "Operador Color."
+msgstr "Separador de Color de Fuentes"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25548,9 +25565,8 @@ msgid "Label Width"
 msgstr "Ancho Izquierda"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Screen Picker"
-msgstr "Operador Screen."
+msgstr "Selector de Pantalla"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25886,9 +25902,8 @@ msgid "Fade In"
 msgstr "Fundido de entrada (s):"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Fade Out"
-msgstr "Fundido de salida"
+msgstr "Fundido de Salida"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26356,7 +26371,6 @@ msgid "Transmission Texture"
 msgstr "Transmisión"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Refraction"
 msgstr "Refracción"
 
@@ -26652,7 +26666,6 @@ msgid "Custom Solver Bias"
 msgstr ""
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Radiance Size"
 msgstr "Tamaño de Resplandor"
 
@@ -26711,6 +26724,10 @@ msgid "Expand Margin"
 msgstr "Expandir Todo"
 
 #: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
+
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Corner Radius"
 msgstr "Cambiar Radio Interno de Torus"
@@ -26764,7 +26781,6 @@ msgid "Fill From"
 msgstr "Rellene Desde"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Fill To"
 msgstr "Rellenar Hasta"
 
@@ -26920,7 +26936,6 @@ msgid "Audio Stream"
 msgstr "Radio Elemento"
 
 #: servers/audio/audio_stream.cpp
-#, fuzzy
 msgid "Random Pitch"
 msgstr "Tono Aleatorio"
 
@@ -27070,7 +27085,6 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
-#, fuzzy
 msgid "FFT Size"
 msgstr "Tamaño de FFT"
 
@@ -27167,9 +27181,8 @@ msgid "Time Before Sleep"
 msgstr ""
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
-#, fuzzy
 msgid "BP Hash Table Size"
-msgstr "Tamaño de Table Hash BP"
+msgstr "Tamaño de Tabla Hash BP"
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
 msgid "Large Object Surface Threshold In Cells"

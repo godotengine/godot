@@ -145,8 +145,7 @@ msgid "Position"
 msgstr "Posisi"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -392,37 +391,6 @@ msgstr "Antrian Pesan"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "Ukuran Maksimum (KB)"
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-msgid "Text Editor"
-msgstr "Editor Teks"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-msgid "Completion"
-msgstr "Penyelesaian"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-msgid "Use Single Quotes"
-msgstr "Gunakan Kutip Satu"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -742,6 +710,8 @@ msgid "Physics"
 msgstr "Fisika"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -962,7 +932,9 @@ msgstr "Ukuran Penyangga Indeks Poligon Kanvas (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1302,7 +1274,6 @@ msgid "Remove Anim Track"
 msgstr "Hapus Trek Anim"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3300,6 +3271,14 @@ msgstr ""
 "Untuk saat ini tidak ada deskripsi metode ini. Tolong bantu kita dengan "
 "[color=$color][url=$url]kontribusi[/url][/color]!"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+msgid "Text Editor"
+msgstr "Editor Teks"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -4142,14 +4121,6 @@ msgstr "Selalu Buka Luaran Ketika Bermain"
 msgid "Always Close Output On Stop"
 msgstr "Selalu Tutup Luaran Ketika Berhenti"
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Auto Save"
-msgstr "Simpan Otomatis"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Save Before Running"
-msgstr "Simpan Sebelum Menjalankan"
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr "Simpan Ketika Kehilangan Fokus"
@@ -4628,7 +4599,9 @@ msgstr "Perubahan Material:"
 msgid "Hide Update Spinner"
 msgstr "Sembunyikan Spinner Pembaruan"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "Berkas Sistem"
 
@@ -5157,7 +5130,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5218,12 +5190,6 @@ msgstr "Sunting Tema"
 #: editor/editor_settings.cpp
 msgid "Show Script Button"
 msgstr "Tampilkan Tombol Skrip"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
-msgid "Filesystem"
-msgstr "Berkas Sistem"
 
 #: editor/editor_settings.cpp
 msgid "Directories"
@@ -5297,9 +5263,7 @@ msgstr "Sub-Resource"
 msgid "Color Theme"
 msgstr "Sunting Tema"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr "Jarak Baris"
 
@@ -5326,14 +5290,12 @@ msgstr "Tandai Baris Saat Ini"
 msgid "Highlight Type Safe Lines"
 msgstr ""
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 msgid "Indent"
 msgstr "Indentasi"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5438,7 +5400,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Files"
 msgstr "Berkas"
@@ -5457,6 +5418,14 @@ msgid "Restore Scripts On Load"
 msgstr "Pulihkan Skrip Saat Dimuat"
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr "Muat Ulang Otomatis Dan Tata Skrip Saat Disimpan"
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr "Muat Ulang Otomatis Skrip Pada Perubahan Eksternal"
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr ""
 
@@ -5464,8 +5433,7 @@ msgstr ""
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr "Kursor"
 
@@ -5478,11 +5446,11 @@ msgstr "Gulir Melewati Akhir File"
 msgid "Block Caret"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
@@ -5490,6 +5458,12 @@ msgstr ""
 #, fuzzy
 msgid "Right Click Moves Caret"
 msgstr "Klik kanan untuk menambah titik"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion"
+msgstr "Penyelesaian"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5522,6 +5496,10 @@ msgid "Add Type Hints"
 msgstr "Tipe"
 
 #: editor/editor_settings.cpp
+msgid "Use Single Quotes"
+msgstr "Gunakan Kutip Satu"
+
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Show Help Index"
 msgstr "Tampilkan Bantuan-bantuan"
@@ -5538,8 +5516,7 @@ msgstr ""
 msgid "Help Title Font Size"
 msgstr "Ukuran Font Judul Bantuan"
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Peta Kisi Kisi-kisi"
 
@@ -5547,6 +5524,11 @@ msgstr "Peta Kisi Kisi-kisi"
 #, fuzzy
 msgid "Pick Distance"
 msgstr "Pilih Jarak:"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "Pratinjau"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5559,6 +5541,38 @@ msgstr "Warna Kisi-kisi Sekunder"
 #: editor/editor_settings.cpp
 msgid "Selection Box Color"
 msgstr "Warna Kotak Pilihan"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "3D Gizmos"
+msgstr "Gizmo"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Gizmo Colors"
+msgstr "Warna Emisi"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "Instansi"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "Titik"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr "Bentuk"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5596,16 +5610,16 @@ msgstr "Cat GridMap"
 msgid "Grid YZ Plane"
 msgstr "Cat GridMap"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default FOV"
 msgstr "Jarak Pandang Baku"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Near"
 msgstr "Bawaan"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Far"
 msgstr "Bawaan"
@@ -5841,6 +5855,14 @@ msgstr "Posisi Kotak Kustom"
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr "Layar"
+
+#: editor/editor_settings.cpp
+msgid "Auto Save"
+msgstr "Simpan Otomatis"
+
+#: editor/editor_settings.cpp
+msgid "Save Before Running"
+msgstr "Simpan Sebelum Menjalankan"
 
 #: editor/editor_settings.cpp
 msgid "Font Size"
@@ -6746,6 +6768,11 @@ msgid "Delimiter"
 msgstr "Pembatasan"
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "Fungsi warna."
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr ""
 
@@ -7055,6 +7082,16 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Menyimpan..."
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D, Detect 3D"
+msgstr "Deteksi 3D"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "Piksel Solid"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8326,6 +8363,10 @@ msgid "License (Z-A)"
 msgstr "Lisensi (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "Sedang memuat…"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgctxt "Pagination"
 msgid "First"
@@ -8394,8 +8435,8 @@ msgid "Testing"
 msgstr "Menguji"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "Sedang memuat…"
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9606,13 +9647,6 @@ msgstr "Aplikasi Transformasi MeshInstance"
 msgid "Apply with Transforms"
 msgstr "Aplikasi Transformasi MeshInstance"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Preview Size"
-msgstr "Pratinjau"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
@@ -9925,20 +9959,6 @@ msgstr "Hapus Titik Kontrol-Dalam"
 msgid "Split Segment (in curve)"
 msgstr "Pisahkan Segmen (dalam kurva)"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "3D Gizmos"
-msgstr "Gizmo"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "Gizmo Colors"
-msgstr "Warna Emisi"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "Geser Persendian"
@@ -10151,6 +10171,10 @@ msgstr "Jarak Y Kisi:"
 msgid "Sync Bones to Polygon"
 msgstr "Sinkronkan Tulang ke Poligon"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "KESALAHAN: Tidak dapat memuat resource!"
@@ -10242,11 +10266,6 @@ msgid "Close and save changes?"
 msgstr "Tutup dan simpan perubahan?"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr "Muat Ulang Otomatis Skrip Pada Perubahan Eksternal"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "Galat saat menulis TextFile:"
 
@@ -10324,10 +10343,6 @@ msgstr "Simpan Tema sebagai..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "Referensi Kelas %s"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr "Muat Ulang Otomatis Dan Tata Skrip Saat Disimpan"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -11386,11 +11401,6 @@ msgstr ""
 #, fuzzy
 msgid "Show Viewport Rotation Gizmo"
 msgstr "Kunci Rotasi Tampilan"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Instanced"
-msgstr "Instansi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -15201,6 +15211,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "Jadikan Local"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "Nama Unik"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nama Unik"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "Skena Dasar Baru"
@@ -15274,6 +15298,10 @@ msgstr "Galat menduplikasi skena untuk menyimpannya."
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "Sub-Resource"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15408,6 +15436,13 @@ msgstr "(Menghubungkan dari)"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "Peringatan pengaturan node:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15831,21 +15866,6 @@ msgstr "Ubah FOV Kamera"
 msgid "Change Camera Size"
 msgstr "Ubah Ukuran Kamera"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "Titik"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr "Bentuk"
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16236,6 +16256,16 @@ msgstr "Cetak jumlah Bingkai Per Detik"
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "Mode Interpolasi"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "Aktifkan Penyaringan"
 
 #: main/main.cpp
 #, fuzzy
@@ -19993,6 +20023,11 @@ msgid "Digest Algorithm"
 msgstr "Pengawakutu"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Modify Resources"
+msgstr "Salin Resource"
+
+#: platform/windows/export/export.cpp
 msgid "File Version"
 msgstr "Versi Berkas"
 
@@ -22202,8 +22237,9 @@ msgstr ""
 "Navigation. Ini hanya menyediakan data navigasi."
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr ""
+#, fuzzy
+msgid "NavMesh"
+msgstr "Panggang NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -24449,6 +24485,12 @@ msgid "Timeout"
 msgstr "Tenggat waktu habis."
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 #, fuzzy
 msgid "Name Num Separator"
 msgstr "Pemisah yang diberi nama"
@@ -24476,6 +24518,11 @@ msgstr "Mode Geser Pandangan"
 #, fuzzy
 msgid "Display Folded"
 msgstr "Tampilan Tak Berbayang"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "Nama Unik"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24539,11 +24586,6 @@ msgstr ""
 #, fuzzy
 msgid "Multiplayer Poll"
 msgstr "Terapkan Bersamaan:"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "Mode Interpolasi"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -26716,6 +26758,10 @@ msgstr "Atur Batas"
 #, fuzzy
 msgid "Expand Margin"
 msgstr "Bentangkan Semua"
+
+#: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
 
 #: scene/resources/style_box.cpp
 #, fuzzy

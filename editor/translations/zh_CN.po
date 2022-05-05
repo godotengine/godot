@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-04-20 11:33+0000\n"
+"PO-Revision-Date: 2022-04-28 11:12+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -190,8 +190,7 @@ msgid "Position"
 msgstr "位置"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -436,37 +435,6 @@ msgstr "消息队列"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "最大大小（KB）"
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-msgid "Text Editor"
-msgstr "文本编辑器"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-msgid "Completion"
-msgstr "补全"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-msgid "Use Single Quotes"
-msgstr "使用单引号"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -783,6 +751,8 @@ msgid "Physics"
 msgstr "物理"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -1001,7 +971,9 @@ msgstr "画布多边形索引缓冲大小（KB）"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1339,7 +1311,6 @@ msgid "Remove Anim Track"
 msgstr "移除动画轨道"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3281,6 +3252,14 @@ msgstr ""
 "当前没有此方法的说明。请帮我们[color=$color][url=$url]贡献一个[/url][/"
 "color]！"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+msgid "Text Editor"
+msgstr "文本编辑器"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -4081,14 +4060,6 @@ msgstr "运行时打开输出"
 msgid "Always Close Output On Stop"
 msgstr "停止时关闭输出"
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Auto Save"
-msgstr "自动保存"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Save Before Running"
-msgstr "运行前保存"
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr "焦点丢失时保存"
@@ -4540,7 +4511,9 @@ msgstr "更新关键修改"
 msgid "Hide Update Spinner"
 msgstr "隐藏更新旋转图"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "文件系统"
 
@@ -5047,7 +5020,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr "每页最大数组字典条目数"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5100,11 +5072,6 @@ msgstr "自定义主题"
 #: editor/editor_settings.cpp
 msgid "Show Script Button"
 msgstr "显示脚本按钮"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-msgid "Filesystem"
-msgstr "文件系统"
 
 #: editor/editor_settings.cpp
 msgid "Directories"
@@ -5170,9 +5137,7 @@ msgstr "子资源彩色显示"
 msgid "Color Theme"
 msgstr "颜色主题"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr "行间距"
 
@@ -5197,14 +5162,12 @@ msgstr "高亮当前行"
 msgid "Highlight Type Safe Lines"
 msgstr "高亮类型安全的行"
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 msgid "Indent"
 msgstr "缩进"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5304,7 +5267,6 @@ msgid "Show Members Overview"
 msgstr "显示成员概览"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 msgid "Files"
 msgstr "文件"
 
@@ -5321,6 +5283,14 @@ msgid "Restore Scripts On Load"
 msgstr "加载时恢复脚本"
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr "保存时自动重新加载并解析脚本"
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr "外部修改时自动重新加载脚本"
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr "创建信号回调"
 
@@ -5328,8 +5298,7 @@ msgstr "创建信号回调"
 msgid "Sort Members Outline Alphabetically"
 msgstr "按字母序排列成员大纲"
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr "光标"
 
@@ -5341,17 +5310,23 @@ msgstr "滚动超过文件末尾"
 msgid "Block Caret"
 msgstr "方形光标"
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr "光标闪烁"
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr "光标闪烁速度"
 
 #: editor/editor_settings.cpp
 msgid "Right Click Moves Caret"
 msgstr "单击右键移动光标"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion"
+msgstr "补全"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5382,6 +5357,10 @@ msgid "Add Type Hints"
 msgstr "添加类型提示"
 
 #: editor/editor_settings.cpp
+msgid "Use Single Quotes"
+msgstr "使用单引号"
+
+#: editor/editor_settings.cpp
 msgid "Show Help Index"
 msgstr "显示帮助索引"
 
@@ -5397,14 +5376,17 @@ msgstr "帮助源码字体大小"
 msgid "Help Title Font Size"
 msgstr "帮助标题字体大小"
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "网格地图"
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance"
 msgstr "拾取距离"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+msgid "Preview Size"
+msgstr "预览大小"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5417,6 +5399,34 @@ msgstr "次网格颜色"
 #: editor/editor_settings.cpp
 msgid "Selection Box Color"
 msgstr "选择框颜色"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "3D Gizmos"
+msgstr "3D 控制器"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "Gizmo Colors"
+msgstr "控制器颜色"
+
+#: editor/editor_settings.cpp
+msgid "Instanced"
+msgstr "实例"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+msgid "Joint"
+msgstr "关节"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr "形状"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Steps"
@@ -5450,15 +5460,15 @@ msgstr "网格 XY 平面"
 msgid "Grid YZ Plane"
 msgstr "网格 YZ 平面"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default FOV"
 msgstr "默认 FOV"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Near"
 msgstr "默认 Z Near"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 msgid "Default Z Far"
 msgstr "默认 Z Far"
 
@@ -5671,6 +5681,14 @@ msgstr "矩形自定义位置"
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr "屏幕"
+
+#: editor/editor_settings.cpp
+msgid "Auto Save"
+msgstr "自动保存"
+
+#: editor/editor_settings.cpp
+msgid "Save Before Running"
+msgstr "运行前保存"
 
 #: editor/editor_settings.cpp
 msgid "Font Size"
@@ -6545,6 +6563,11 @@ msgid "Delimiter"
 msgstr "分隔符"
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "颜色校正"
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr "RGB 时不使用 BPTC"
 
@@ -6827,6 +6850,16 @@ msgstr "有在 `post_import()` 方法中返回继承了 Node 的对象吗？"
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "保存中..."
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D, Detect 3D"
+msgstr "检测 3D"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "实体像素"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -7576,9 +7609,8 @@ msgid "New"
 msgstr "新建"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Paste As Reference"
-msgstr "%s 类参考"
+msgstr "粘贴为引用"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -8070,6 +8102,10 @@ msgid "License (Z-A)"
 msgstr "许可证（Z-A）"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "载入中..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgctxt "Pagination"
 msgid "First"
 msgstr "首页"
@@ -8134,8 +8170,8 @@ msgid "Testing"
 msgstr "测试"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "载入中..."
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9311,12 +9347,6 @@ msgstr "不带变换应用"
 msgid "Apply with Transforms"
 msgstr "带变换应用"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Preview Size"
-msgstr "预览大小"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr "未指定网格源（且节点中没有设置 MultiMesh 集）。"
@@ -9626,18 +9656,6 @@ msgstr "移除内控点"
 msgid "Split Segment (in curve)"
 msgstr "拆分线段（在曲线中）"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "3D Gizmos"
-msgstr "3D 控制器"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "Gizmo Colors"
-msgstr "控制器颜色"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "移动关节"
@@ -9846,6 +9864,10 @@ msgstr "网格 Y 步进："
 msgid "Sync Bones to Polygon"
 msgstr "同步骨骼到多边形"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "错误：无法加载资源！"
@@ -9937,11 +9959,6 @@ msgid "Close and save changes?"
 msgstr "关闭并保存更改吗？"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr "外部修改时自动重新加载脚本"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "写入文本文件时出错："
 
@@ -10017,10 +10034,6 @@ msgstr "主题另存为..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "%s 类参考"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr "保存时自动重新加载并解析脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -11061,10 +11074,6 @@ msgid "Show Viewport Rotation Gizmo"
 msgstr "显示视区旋转控制器"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Instanced"
-msgstr "实例"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
 msgstr "未命名控制器"
 
@@ -11272,7 +11281,7 @@ msgstr "垂直："
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Separation:"
-msgstr "分隔："
+msgstr "间距："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -11511,9 +11520,8 @@ msgstr ""
 "仍然关闭吗？"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Type"
-msgstr "移除图块"
+msgstr "移除类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -11556,14 +11564,12 @@ msgstr ""
 "请手动添加或者从其他主题导入更多项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Theme Type"
-msgstr "添加项目类型"
+msgstr "添加主题类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Theme Type"
-msgstr "移除远程仓库"
+msgstr "移除主题类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Color Item"
@@ -12008,9 +12014,8 @@ msgid "Palette Min Width"
 msgstr "调色板最小宽度"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Palette Item H Separation"
-msgstr "调色器条目水平间距"
+msgstr "调色板项目水平间距"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Show Tile Names"
@@ -14676,6 +14681,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "转为本地"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "唯一名称"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "唯一名称"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "新建场景根"
@@ -14745,6 +14764,10 @@ msgstr "复制场景出错。"
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "子资源"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -14873,6 +14896,13 @@ msgstr "（连接来源）"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "节点配置警告："
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15291,20 +15321,6 @@ msgstr "修改摄像机视角"
 msgid "Change Camera Size"
 msgstr "修改摄像机尺寸"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-msgid "Joint"
-msgstr "关节"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr "形状"
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr "VisibilityNotifier"
@@ -15668,6 +15684,15 @@ msgstr "打印 FPS"
 msgid "Verbose stdout"
 msgstr "冗长标准输出"
 
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+msgid "Physics Interpolation"
+msgstr "物理插值"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "启用筛选"
+
 #: main/main.cpp
 msgid "Frame Delay Msec"
 msgstr "帧延迟毫秒"
@@ -16029,12 +16054,11 @@ msgstr "使用 DTLS"
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FBX"
-msgstr ""
+msgstr "FBX"
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
 msgid "Use FBX"
-msgstr "使用 FXAA"
+msgstr "使用 FBX"
 
 #: modules/gdnative/gdnative.cpp
 msgid "Config File"
@@ -17637,12 +17661,11 @@ msgstr "写模式"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "WebRTC"
-msgstr ""
+msgstr "WebRTC"
 
 #: modules/webrtc/webrtc_data_channel.h
-#, fuzzy
 msgid "Max Channel In Buffer (KB)"
-msgstr "画布多边形索引缓冲大小（KB）"
+msgstr "通道输入缓冲大小上限（KB）"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
@@ -17653,33 +17676,28 @@ msgid "Trusted SSL Certificate"
 msgstr "信任 SSL 证书"
 
 #: modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "WebSocket Client"
-msgstr "网络客户端"
+msgstr "WebSocket 客户端"
 
 #: modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "Max In Buffer (KB)"
-msgstr "最大大小（KB）"
+msgstr "输入缓冲上限（KB）"
 
 #: modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "Max In Packets"
-msgstr "最大空间"
+msgstr "输入包上限"
 
 #: modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "Max Out Buffer (KB)"
-msgstr "最大大小（KB）"
+msgstr "输出缓冲上限（KB）"
 
 #: modules/websocket/websocket_macros.h
 msgid "Max Out Packets"
-msgstr ""
+msgstr "输出包上限"
 
 #: modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "WebSocket Server"
-msgstr "网络服务器"
+msgstr "WebSocket 服务器"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Bind IP"
@@ -17730,9 +17748,8 @@ msgid "Bounds Geometry"
 msgstr "界限几何体"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "XR Standard Mapping"
-msgstr "智能吸附"
+msgstr "XR 标准映射"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
@@ -18316,7 +18333,6 @@ msgid "Accessible From Files App"
 msgstr "可从文件 App 访问"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Accessible From iTunes Sharing"
 msgstr "可从 iTunes 分享访问"
 
@@ -18454,14 +18470,13 @@ msgstr "对移动平台"
 
 #: platform/javascript/export/export.cpp
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: platform/javascript/export/export.cpp
 msgid "Export Icon"
 msgstr "导出图标"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Custom HTML Shell"
 msgstr "自定义 HTML Shell"
 
@@ -18731,7 +18746,6 @@ msgid "Network Client"
 msgstr "网络客户端"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Device USB"
 msgstr "设备 USB"
 
@@ -18994,12 +19008,10 @@ msgid "Publisher Display Name"
 msgstr "发行商显示名称"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Product GUID"
 msgstr "产品 GUID"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Publisher GUID"
 msgstr "发行商 GUID"
 
@@ -19170,6 +19182,11 @@ msgstr "时间戳服务器 URL"
 #: platform/windows/export/export.cpp
 msgid "Digest Algorithm"
 msgstr "摘要算法"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Modify Resources"
+msgstr "复制资源"
 
 #: platform/windows/export/export.cpp
 msgid "File Version"
@@ -21191,8 +21208,9 @@ msgstr ""
 "提供导航数据。"
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr "导航网格"
+#, fuzzy
+msgid "NavMesh"
+msgstr "烘焙导航网格"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -21475,7 +21493,7 @@ msgstr "角度限制 X"
 
 #: scene/3d/physics_joint.cpp
 msgid "ERP"
-msgstr ""
+msgstr "ERP"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Motor X"
@@ -22391,9 +22409,8 @@ msgstr ""
 "如果您不想添加脚本，请改用普通的 Control 节点。"
 
 #: scene/gui/control.cpp
-#, fuzzy
 msgid "Theme Overrides"
-msgstr "重写"
+msgstr "主题覆盖"
 
 #: scene/gui/control.cpp
 msgid ""
@@ -22619,9 +22636,8 @@ msgid "Fixed Icon Size"
 msgstr "固定图标大小"
 
 #: scene/gui/label.cpp
-#, fuzzy
 msgid "V Align"
-msgstr "对齐"
+msgstr "垂直对齐"
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
 msgid "Visible Characters"
@@ -23171,6 +23187,12 @@ msgid "Timeout"
 msgstr "超时"
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 msgid "Name Num Separator"
 msgstr "名称数字分隔"
 
@@ -23193,6 +23215,11 @@ msgstr "暂停模式"
 #: scene/main/node.cpp
 msgid "Display Folded"
 msgstr "显示折叠"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "唯一名称"
 
 #: scene/main/node.cpp
 msgid "Filename"
@@ -23245,10 +23272,6 @@ msgstr "根"
 #: scene/main/scene_tree.cpp
 msgid "Multiplayer Poll"
 msgstr "多人轮询"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-msgid "Physics Interpolation"
-msgstr "物理插值"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -23477,29 +23500,24 @@ msgid "Swap OK Cancel"
 msgstr "交换确定取消"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "Layer Names"
-msgstr "变量名称"
+msgstr "层名称"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Render"
-msgstr "渲染"
+msgstr "2D 渲染"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Render"
-msgstr "渲染"
+msgstr "3D 渲染"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Physics"
-msgstr "物理"
+msgstr "2D 物理"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Physics"
-msgstr "物理"
+msgstr "3D 物理"
 
 #: scene/register_scene_types.cpp
 msgid "Use hiDPI"
@@ -23536,7 +23554,7 @@ msgstr "烘焙间隔"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Panel"
-msgstr ""
+msgstr "面板"
 
 #: scene/resources/default_theme/default_theme.cpp
 #: scene/resources/dynamic_font.cpp
@@ -23544,177 +23562,148 @@ msgid "Font"
 msgstr "字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color"
-msgstr "注释颜色"
+msgstr "字体颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Pressed"
-msgstr "骨骼颜色 1"
+msgstr "字体颜色按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Hover"
-msgstr "骨骼颜色 1"
+msgstr "字体颜色悬停"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Focus"
-msgstr "跟随焦点"
+msgstr "字体颜色聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Disabled"
-msgstr "禁用裁剪"
+msgstr "字体颜色禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "H Separation"
-msgstr "分隔："
+msgstr "水平间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Underline Spacing"
-msgstr "行间距"
+msgstr "下划线间距"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Arrow"
-msgstr ""
+msgstr "箭头"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Arrow Margin"
-msgstr "绘制边距"
+msgstr "箭头边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Hover Pressed"
-msgstr "按下"
+msgstr "悬停且按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Checked Disabled"
-msgstr "可勾选"
+msgstr "已勾选且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Unchecked"
-msgstr "已勾选"
+msgstr "未勾选"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Unchecked Disabled"
-msgstr "禁用"
+msgstr "未勾选且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Radio Checked"
-msgstr "已勾选"
+msgstr "单选选中"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Radio Checked Disabled"
-msgstr "（编辑器已禁用）"
+msgstr "单选选中且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Radio Unchecked"
-msgstr ""
+msgstr "单选未选中"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Radio Unchecked Disabled"
-msgstr ""
+msgstr "单选未选中且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Hover Pressed"
-msgstr ""
+msgstr "字体颜色悬停且按下"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Check V Adjust"
-msgstr ""
+msgstr "选框垂直调整"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "On Disabled"
-msgstr "禁用"
+msgstr "启用且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Off"
-msgstr "偏移"
+msgstr "关闭"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Off Disabled"
-msgstr "禁用"
+msgstr "关闭且禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Shadow"
-msgstr "骨骼颜色 1"
+msgstr "字体颜色阴影"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Outline Modulate"
-msgstr "强制用白色调和"
+msgstr "字体轮廓调制"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Shadow Offset X"
-msgstr "网格 X 偏移："
+msgstr "阴影 X 偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Shadow Offset Y"
-msgstr "网格 Y 偏移："
+msgstr "阴影 Y 偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Shadow As Outline"
-msgstr "显示旧有轮廓"
+msgstr "阴影作为轮廓"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Selected"
-msgstr "解锁所选项"
+msgstr "字体颜色选中"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Uneditable"
-msgstr ""
+msgstr "字体颜色不可编辑"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Cursor Color"
-msgstr "自定义颜色"
+msgstr "光标颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Clear Button Color"
-msgstr "清除按钮启用"
+msgstr "清除按钮颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Clear Button Color Pressed"
-msgstr "清除按钮启用"
+msgstr "清除按钮颜色按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Minimum Spaces"
-msgstr "最小空间"
+msgstr "最小间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "BG"
-msgstr "B"
+msgstr "背景"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "FG"
-msgstr ""
+msgstr "前景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab"
-msgstr "选项卡 1"
+msgstr "选项卡"
 
 #: scene/resources/default_theme/default_theme.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/world.cpp
@@ -23723,625 +23712,512 @@ msgid "Space"
 msgstr "空间"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folded"
-msgstr "文件夹："
+msgstr "已折叠"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Fold"
-msgstr "文件夹："
+msgstr "折叠"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Readonly"
-msgstr ""
+msgstr "字体颜色只读"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Lines"
-msgstr "补全"
+msgstr "补全行数"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Max Width"
-msgstr "补全"
+msgstr "补全最大宽度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Scroll Width"
-msgstr "补全滚动条颜色"
+msgstr "补全滚动条宽度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Focus"
-msgstr "跟随焦点"
+msgstr "滚动条聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Grabber"
-msgstr ""
+msgstr "手柄"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Highlight"
-msgstr "语法高亮器"
+msgstr "手柄高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Pressed"
-msgstr "按下"
+msgstr "手柄按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Increment"
-msgstr "乐器"
+msgstr "增加"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Increment Highlight"
-msgstr "语法高亮器"
+msgstr "增加高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Increment Pressed"
-msgstr ""
+msgstr "增加按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Decrement"
-msgstr "秘密"
+msgstr "减少"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Decrement Highlight"
-msgstr "语法高亮器"
+msgstr "减少高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Decrement Pressed"
-msgstr "深度前置阶段"
+msgstr "减少按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Slider"
-msgstr "碰撞体"
+msgstr "滑动条"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Grabber Area"
-msgstr ""
+msgstr "手柄区域"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Grabber Area Highlight"
-msgstr ""
+msgstr "手柄区域高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Disabled"
-msgstr "禁用"
+msgstr "手柄禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Tick"
-msgstr ""
+msgstr "刻度"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Updown"
-msgstr ""
+msgstr "上下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scaleborder Size"
-msgstr "边框大小"
+msgstr "缩放边框大小"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Font"
-msgstr "帮助标题字体大小"
+msgstr "标题字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Color"
-msgstr "文本颜色"
+msgstr "标题颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Height"
-msgstr "测试高度"
+msgstr "标题高度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Highlight"
-msgstr "高亮"
+msgstr "关闭高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close H Offset"
-msgstr "噪声偏移"
+msgstr "关闭水平偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close V Offset"
-msgstr "噪声偏移"
+msgstr "关闭垂直偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Parent Folder"
-msgstr "创建文件夹"
+msgstr "父文件夹"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Toggle Hidden"
-msgstr "切换显示隐藏文件"
+msgstr "切换隐藏"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Panel Disabled"
-msgstr "禁用裁剪"
+msgstr "面板禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separator"
-msgstr "分隔："
+msgstr "分隔线"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Labeled Separator Left"
-msgstr "带名称的分隔线"
+msgstr "带名称分隔线左侧"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Labeled Separator Right"
-msgstr "带名称的分隔线"
+msgstr "带名称分隔线右侧"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Accel"
-msgstr "骨骼颜色 1"
+msgstr "快捷键字体颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Separator"
-msgstr "颜色运算符。"
+msgstr "分隔线字体颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "V Separation"
-msgstr "分隔："
+msgstr "垂直间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selected Frame"
-msgstr "选择帧"
+msgstr "选中框架"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Default Frame"
-msgstr "默认 Z Far"
+msgstr "默认框架"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Default Focus"
-msgstr "默认字体"
+msgstr "默认聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Comment Focus"
-msgstr "注释"
+msgstr "注释聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Breakpoint"
 msgstr "断点"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separation"
-msgstr "分隔："
+msgstr "间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Resizer"
-msgstr "可调整大小"
+msgstr "大小调整器"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Color"
-msgstr "使用颜色"
+msgstr "关闭颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Resizer Color"
-msgstr "使用颜色"
+msgstr "大小调整器颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Offset"
-msgstr "字节偏移"
+msgstr "标题偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Offset"
-msgstr "噪声偏移"
+msgstr "关闭偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Port Offset"
-msgstr "轴心偏移"
+msgstr "端口偏移"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "BG Focus"
-msgstr "聚焦"
+msgstr "背景聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selected Focus"
-msgstr "选中"
+msgstr "选中项聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Cursor Unfocused"
-msgstr ""
+msgstr "光标未聚焦"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Button Pressed"
-msgstr "按下"
+msgstr "按钮按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Normal"
-msgstr "切换按钮"
+msgstr "标题按钮正常"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Pressed"
-msgstr "切换按钮"
+msgstr "标题按钮按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Hover"
-msgstr "切换按钮"
+msgstr "标题按钮悬停"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button"
-msgstr "自定字体"
+msgstr "自定义按钮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button Pressed"
-msgstr "自定义选项"
+msgstr "自定义按钮按下"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button Hover"
-msgstr "自定义背景色"
+msgstr "自定义按钮悬停"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Select Arrow"
-msgstr "全选"
+msgstr "选择箭头"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Arrow Collapsed"
-msgstr "折叠"
+msgstr "箭头折叠"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Font"
-msgstr "切换按钮"
+msgstr "标题按钮字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Color"
-msgstr "选中颜色"
+msgstr "标题按钮颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Guide Color"
 msgstr "参考线颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Drop Position Color"
-msgstr "面板位置"
+msgstr "放置位置颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Relationship Line Color"
-msgstr "关系线不透明度"
+msgstr "关系线颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Custom Button Font Highlight"
-msgstr ""
+msgstr "自定义按钮字体高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Item Margin"
-msgstr "设置边距"
+msgstr "项目边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Button Margin"
-msgstr "按钮遮罩"
+msgstr "按钮边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Draw Relationship Lines"
-msgstr "关系线不透明度"
+msgstr "绘制关系线"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Draw Guides"
-msgstr "显示辅助线"
+msgstr "绘制参考线"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Border"
-msgstr "垂直滚动"
+msgstr "滚动边框"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Speed"
-msgstr "垂直滚动速度"
+msgstr "滚动速度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Icon Margin"
-msgstr "内容边距"
+msgstr "图标边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Line Separation"
-msgstr "分隔："
+msgstr "行间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab FG"
-msgstr "选项卡 1"
+msgstr "选项卡前景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab BG"
-msgstr "选项卡 1"
+msgstr "选项卡背景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab Disabled"
-msgstr "禁用"
+msgstr "选项卡禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Menu"
-msgstr ""
+msgstr "菜单"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Menu Highlight"
-msgstr "高亮"
+msgstr "菜单高亮"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color FG"
-msgstr "骨骼颜色 1"
+msgstr "字体颜色前景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color BG"
-msgstr "骨骼颜色 1"
+msgstr "字体颜色背景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Side Margin"
-msgstr "设置边距"
+msgstr "侧边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Top Margin"
-msgstr "边距"
+msgstr "顶边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Label V Align FG"
-msgstr "选项卡对齐"
+msgstr "标签垂直对齐前景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Label V Align BG"
-msgstr "选项卡对齐"
+msgstr "标签垂直对齐背景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Large"
-msgstr "目标"
+msgstr "大号"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder"
-msgstr "文件夹："
+msgstr "文件夹"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder Icon Modulate"
-msgstr "强制用白色调和"
+msgstr "文件夹图标调制"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "File Icon Modulate"
-msgstr "图标模式"
+msgstr "文件图标调制"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Files Disabled"
-msgstr "禁用裁剪"
+msgstr "文件禁用"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "SV Width"
-msgstr "宽度"
+msgstr "SV 宽度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "SV Height"
-msgstr "高度"
+msgstr "SV 高度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "H Width"
-msgstr "宽度"
+msgstr "H 宽度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Label Width"
-msgstr "线宽度"
+msgstr "标签宽度"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Screen Picker"
-msgstr "屏幕"
+msgstr "屏幕取色器"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Add Preset"
-msgstr "载入预设"
+msgstr "添加预设"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Color Hue"
-msgstr "颜色纹理"
+msgstr "颜色色相"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Color Sample"
-msgstr "颜色映射"
+msgstr "颜色样本"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset BG"
-msgstr "预设"
+msgstr "预设背景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Overbright Indicator"
-msgstr "环绕惯性"
+msgstr "过亮指示器"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset FG"
-msgstr "预设"
+msgstr "预设前景"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset BG Icon"
-msgstr "预设"
+msgstr "预设背景图标"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Normal Font"
-msgstr "入口正面"
+msgstr "正常字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bold Font"
-msgstr "代码字体"
+msgstr "加粗字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Italics Font"
-msgstr "主字体"
+msgstr "斜体字体"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Bold Italics Font"
-msgstr ""
+msgstr "加粗斜体字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Mono Font"
-msgstr "主字体"
+msgstr "等宽字体"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Table H Separation"
-msgstr "分隔："
+msgstr "表格水平间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Table V Separation"
-msgstr "分隔："
+msgstr "表格垂直间距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Margin Left"
-msgstr "拉伸左边距"
+msgstr "左边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Margin Top"
-msgstr "边距"
+msgstr "上边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Margin Right"
-msgstr "最低光照"
+msgstr "右边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Margin Bottom"
-msgstr "拉伸底边距"
+msgstr "下边距"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Autohide"
-msgstr "自动裁剪"
+msgstr "自动隐藏"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Minus"
-msgstr ""
+msgstr "减号"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "More"
-msgstr ""
+msgstr "更多"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grid Minor"
-msgstr "网格颜色"
+msgstr "次网格"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grid Major"
-msgstr "网格地图"
+msgstr "主网格"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Fill"
-msgstr "仅选中"
+msgstr "选中项填充"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Stroke"
-msgstr "反射探针"
+msgstr "选中项描边"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Activity"
-msgstr "激活"
+msgstr "活动"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bezier Len Pos"
-msgstr "移动贝塞尔顶点"
+msgstr "贝塞尔长度位置"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bezier Len Neg"
-msgstr "贝塞尔"
+msgstr "贝塞尔长度负值"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Port Grab Distance Horizontal"
-msgstr ""
+msgstr "端口抓取水平距离"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Port Grab Distance Vertical"
-msgstr "重力距离缩放"
+msgstr "端口抓取垂直距离"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Hinting"
@@ -25256,6 +25132,10 @@ msgid "Expand Margin"
 msgstr "扩展边距"
 
 #: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
+
+#: scene/resources/style_box.cpp
 msgid "Corner Radius"
 msgstr "圆角半径"
 
@@ -26008,9 +25888,8 @@ msgid "Disable Half Float"
 msgstr "禁用半精度浮点数"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Enable High Float"
-msgstr "禁用半精度浮点数"
+msgstr "启用高精度浮点数"
 
 #: servers/visual_server.cpp
 msgid "Precision"
