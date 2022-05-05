@@ -3543,6 +3543,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		int id = tileset_editor->get_current_tile();
 		p_list->push_back(PropertyInfo(Variant::NIL, "Selected Tile", PROPERTY_HINT_NONE, "tile_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::STRING, "tile_name"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_tex_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"));

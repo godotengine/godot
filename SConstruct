@@ -482,8 +482,8 @@ if selected_platform in platform_list:
 
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
-        else:  # always enable those errors
-            env.Append(CCFLAGS=["-Werror=return-type"])
+            if methods.using_gcc(env) and version[0] >= 12:  # False positives in our error macros, see GH-58747.
+                env.Append(CCFLAGS=["-Wno-error=return-type"])
 
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()
