@@ -804,10 +804,11 @@
 			<argument index="0" name="from" type="float" />
 			<argument index="1" name="to" type="float" />
 			<description>
-				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				Returns a random floating point value between [code]from[/code] and [code]to[/code] (both endpoints inclusive).
 				[codeblock]
 				prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263
 				[/codeblock]
+				[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code].
 			</description>
 		</method>
 		<method name="rand_seed">
