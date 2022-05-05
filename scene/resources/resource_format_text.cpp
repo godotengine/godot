@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource_format_binary.h"
 #include "core/version.h"
 
@@ -535,6 +536,8 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		MissingResource *missing_resource = nullptr;
+
 		if (res.is_null()) { //not reuse
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && ResourceCache::has(path)) { //only if it doesn't exist
 				//cached, do not assign
@@ -545,10 +548,17 @@ Error ResourceLoaderText::load() {
 
 				Object *obj = ClassDB::instantiate(type);
 				if (!obj) {
-					error_text += "Can't create sub resource of type: " + type;
-					_printerr();
-					error = ERR_FILE_CORRUPT;
-					return error;
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error_text += "Can't create sub resource of type: " + type;
+						_printerr();
+						error = ERR_FILE_CORRUPT;
+						return error;
+					}
 				}
 
 				Resource *r = Object::cast_to<Resource>(obj);
@@ -572,6 +582,8 @@ Error ResourceLoaderText::load() {
 			res->set_scene_unique_id(id);
 		}
 
+		Dictionary missing_resource_properties;
+
 		while (true) {
 			String assign;
 			Variant value;
@@ -585,7 +597,23 @@ Error ResourceLoaderText::load() {
 
 			if (!assign.is_empty()) {
 				if (do_assign) {
-					res->set(assign, value);
+					bool set_valid = true;
+
+					if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+						// If the property being set is a missing resource (and the parent is not),
+						// then setting it will most likely not work.
+						// Instead, save it as metadata.
+
+						Ref<MissingResource> mr = value;
+						if (mr.is_valid()) {
+							missing_resource_properties[assign] = mr;
+							set_valid = false;
+						}
+					}
+
+					if (set_valid) {
+						res->set(assign, value);
+					}
 				}
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
@@ -597,6 +625,14 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			}
+		}
+
+		if (missing_resource) {
+			missing_resource->set_recording_properties(false);
+		}
+
+		if (!missing_resource_properties.is_empty()) {
+			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
 
 		if (progress && resources_total > 0) {
@@ -624,13 +660,22 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		MissingResource *missing_resource = nullptr;
+
 		if (!resource.is_valid()) {
 			Object *obj = ClassDB::instantiate(res_type);
 			if (!obj) {
-				error_text += "Can't create sub resource of type: " + res_type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
+				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+					missing_resource = memnew(MissingResource);
+					missing_resource->set_original_class(res_type);
+					missing_resource->set_recording_properties(true);
+					obj = missing_resource;
+				} else {
+					error_text += "Can't create sub resource of type: " + res_type;
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
 			}
 
 			Resource *r = Object::cast_to<Resource>(obj);
@@ -645,6 +690,8 @@ Error ResourceLoaderText::load() {
 		}
 
 		resource_current++;
+
+		Dictionary missing_resource_properties;
 
 		while (true) {
 			String assign;
@@ -668,7 +715,23 @@ Error ResourceLoaderText::load() {
 			}
 
 			if (!assign.is_empty()) {
-				resource->set(assign, value);
+				bool set_valid = true;
+
+				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+					// If the property being set is a missing resource (and the parent is not),
+					// then setting it will most likely not work.
+					// Instead, save it as metadata.
+
+					Ref<MissingResource> mr = value;
+					if (mr.is_valid()) {
+						missing_resource_properties[assign] = mr;
+						set_valid = false;
+					}
+				}
+
+				if (set_valid) {
+					resource->set(assign, value);
+				}
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
 				error = ERR_FILE_CORRUPT;
@@ -676,14 +739,24 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			} else {
-				error = OK;
-				if (progress && resources_total > 0) {
-					*progress = resource_current / float(resources_total);
-				}
-
-				return error;
+				break;
 			}
 		}
+
+		if (missing_resource) {
+			missing_resource->set_recording_properties(false);
+		}
+
+		if (!missing_resource_properties.is_empty()) {
+			resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+		}
+
+		error = OK;
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
+		return error;
 	}
 
 	//for scene files
@@ -1593,6 +1666,15 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 	}
 }
 
+static String _resource_get_class(Ref<Resource> p_resource) {
+	Ref<MissingResource> missing_resource = p_resource;
+	if (missing_resource.is_valid()) {
+		return missing_resource->get_original_class();
+	} else {
+		return p_resource->get_class();
+	}
+}
+
 Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn")) {
 		packed_scene = p_resource;
@@ -1634,7 +1716,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null()) {
-			title += "type=\"" + p_resource->get_class() + "\" ";
+			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
 		}
 		int load_steps = saved_resources.size() + external_resources.size();
 
@@ -1758,7 +1840,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (res->get_scene_unique_id().is_empty()) {
 				String new_id;
 				while (true) {
-					new_id = res->get_class() + "_" + Resource::generate_scene_unique_id();
+					new_id = _resource_get_class(res) + "_" + Resource::generate_scene_unique_id();
 
 					if (!used_unique_ids.has(new_id)) {
 						break;
@@ -1770,7 +1852,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 
 			String id = res->get_scene_unique_id();
-			line += "type=\"" + res->get_class() + "\" id=\"" + id;
+			line += "type=\"" + _resource_get_class(res) + "\" id=\"" + id;
 			f->store_line(line + "\"]");
 			if (takeover_paths) {
 				res->set_path(p_path + "::" + id, true);
@@ -1782,10 +1864,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 #endif
 		}
 
+		Dictionary missing_resource_properties = p_resource->get_meta(META_MISSING_RESOURCES, Dictionary());
+
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
 		for (List<PropertyInfo>::Element *PE = property_list.front(); PE; PE = PE->next()) {
 			if (skip_editor && PE->get().name.begins_with("__editor")) {
+				continue;
+			}
+			if (PE->get().name == META_PROPERTY_MISSING_RESOURCES) {
 				continue;
 			}
 
@@ -1802,6 +1889,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				} else {
 					value = res->get(name);
 				}
+
+				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
+					// Was this missing resource overriden? If so do not save the old value.
+					Ref<Resource> ures = value;
+					if (ures.is_null()) {
+						value = missing_resource_properties[PE->get().name];
+					}
+				}
+
 				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {

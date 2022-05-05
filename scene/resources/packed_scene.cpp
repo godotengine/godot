@@ -33,11 +33,13 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
+#include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
 
 #define PACKED_SCENE_VERSION 2
@@ -130,6 +132,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 
 		Node *node = nullptr;
+		MissingNode *missing_node = nullptr;
 
 		if (i == 0 && base_scene_idx >= 0) {
 			//scene inheritance on root node
@@ -184,24 +187,33 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					memdelete(obj);
 					obj = nullptr;
 				}
-				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
-				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
-					if (Object::cast_to<Control>(ret_nodes[n.parent])) {
-						obj = memnew(Control);
-					} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
-						obj = memnew(Node2D);
+
+				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+					missing_node = memnew(MissingNode);
+					missing_node->set_original_class(snames[n.type]);
+					missing_node->set_recording_properties(true);
+					node = missing_node;
+					obj = missing_node;
+				} else {
+					WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
+					if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
+						if (Object::cast_to<Control>(ret_nodes[n.parent])) {
+							obj = memnew(Control);
+						} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
+							obj = memnew(Node2D);
 #ifndef _3D_DISABLED
-					} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
-						obj = memnew(Node3D);
+						} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
+							obj = memnew(Node3D);
 #endif // _3D_DISABLED
+						}
 					}
-				}
 
-				if (!obj) {
-					obj = memnew(Node);
-				}
+					if (!obj) {
+						obj = memnew(Node);
+					}
 
-				node = Object::cast_to<Node>(obj);
+					node = Object::cast_to<Node>(obj);
+				}
 			}
 		}
 
@@ -213,6 +225,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			int nprop_count = n.properties.size();
 			if (nprop_count) {
 				const NodeData::Property *nprops = &n.properties[0];
+
+				Dictionary missing_resource_properties;
 
 				for (int j = 0; j < nprop_count; j++) {
 					bool valid;
@@ -270,8 +284,23 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						} else if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
 							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor
 						}
-						node->set(snames[nprops[j].name], value, &valid);
+
+						bool set_valid = true;
+						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && value.get_type() == Variant::OBJECT) {
+							Ref<MissingResource> mr = value;
+							if (mr.is_valid()) {
+								missing_resource_properties[snames[nprops[j].name]] = mr;
+								set_valid = false;
+							}
+						}
+
+						if (set_valid) {
+							node->set(snames[nprops[j].name], value, &valid);
+						}
 					}
+				}
+				if (!missing_resource_properties.is_empty()) {
+					node->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 				}
 			}
 
@@ -322,6 +351,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			} else {
 				node->remove_meta("_edit_pinned_properties_");
 			}
+		}
+
+		if (missing_node) {
+			missing_node->set_recording_properties(false);
 		}
 
 		ret_nodes[i] = node;
@@ -485,6 +518,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	p_node->get_property_list(&plist);
 
 	Array pinned_props = _sanitize_node_pinned_properties(p_node);
+	Dictionary missing_resource_properties = p_node->get_meta(META_MISSING_RESOURCES, Dictionary());
 
 	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
@@ -492,6 +526,10 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		}
 
 		Variant forced_value;
+
+		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
+			continue; //ignore this property when packing
+		}
 
 		// If instance or inheriting, not saving if property requested so, or it's meta
 		if (states_stack.size()) {
@@ -510,6 +548,14 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 		StringName name = E.name;
 		Variant value = forced_value.get_type() == Variant::NIL ? p_node->get(name) : forced_value;
+
+		if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
+			// Was this missing resource overriden? If so do not save the old value.
+			Ref<Resource> ures = value;
+			if (ures.is_null()) {
+				value = missing_resource_properties[E.name];
+			}
+		}
 
 		if (!pinned_props.has(name) && forced_value.get_type() == Variant::NIL) {
 			bool is_valid_default = false;
@@ -566,11 +612,18 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		nd.owner = -1;
 	}
 
+	MissingNode *missing_node = Object::cast_to<MissingNode>(p_node);
+
 	// Save the right type. If this node was created by an instance
 	// then flag that the node should not be created but reused
 	if (states_stack.is_empty() && !is_editable_instance) {
 		//this node is not part of an instancing process, so save the type
-		nd.type = _nm_get_string(p_node->get_class(), name_map);
+		if (missing_node != nullptr) {
+			// Its a missing node (type non existant on load).
+			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
+		} else {
+			nd.type = _nm_get_string(p_node->get_class(), name_map);
+		}
 	} else {
 		// this node is part of an instantiated process, so do not save the type.
 		// instead, save that it was instantiated
