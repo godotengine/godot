@@ -347,22 +347,22 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
 // The main use of Basis is as Transform.basis, which is used by the transformation matrix
 // of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
 // not the matrix itself (which is R * (*this) * R.transposed()).
-Basis Basis::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Basis(p_axis, p_phi) * (*this);
+Basis Basis::rotated(const Vector3 &p_axis, real_t p_angle) const {
+	return Basis(p_axis, p_angle) * (*this);
 }
 
-void Basis::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = rotated(p_axis, p_phi);
+void Basis::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = rotated(p_axis, p_angle);
 }
 
-void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
+void Basis::rotate_local(const Vector3 &p_axis, real_t p_angle) {
 	// performs a rotation in object-local coordinate system:
 	// M -> (M.R.Minv).M = M.R.
-	*this = rotated_local(p_axis, p_phi);
+	*this = rotated_local(p_axis, p_angle);
 }
 
-Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
-	return (*this) * Basis(p_axis, p_phi);
+Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_angle) const {
+	return (*this) * Basis(p_axis, p_angle);
 }
 
 Basis Basis::rotated(const Vector3 &p_euler) const {
@@ -900,18 +900,18 @@ void Basis::set_quaternion(const Quaternion &p_quaternion) {
 			xz - wy, yz + wx, 1.0f - (xx + yy));
 }
 
-void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
+void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
-	real_t cosine = Math::cos(p_phi);
+	real_t cosine = Math::cos(p_angle);
 	rows[0][0] = axis_sq.x + cosine * (1.0f - axis_sq.x);
 	rows[1][1] = axis_sq.y + cosine * (1.0f - axis_sq.y);
 	rows[2][2] = axis_sq.z + cosine * (1.0f - axis_sq.z);
 
-	real_t sine = Math::sin(p_phi);
+	real_t sine = Math::sin(p_angle);
 	real_t t = 1 - cosine;
 
 	real_t xyzt = p_axis.x * p_axis.y * t;
@@ -930,9 +930,9 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 	rows[2][1] = xyzt + zyxs;
 }
 
-void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
+void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) {
 	_set_diagonal(p_scale);
-	rotate(p_axis, p_phi);
+	rotate(p_axis, p_angle);
 }
 
 void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {

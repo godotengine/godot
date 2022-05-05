@@ -57,16 +57,16 @@ Transform3D Transform3D::inverse() const {
 	return ret;
 }
 
-void Transform3D::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = rotated(p_axis, p_phi);
+void Transform3D::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = rotated(p_axis, p_angle);
 }
 
-Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Transform3D(Basis(p_axis, p_phi), Vector3()) * (*this);
+Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_angle) const {
+	return Transform3D(Basis(p_axis, p_angle), Vector3()) * (*this);
 }
 
-void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
-	basis.rotate(p_axis, p_phi);
+void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_angle) {
+	basis.rotate(p_axis, p_angle);
 }
 
 Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
