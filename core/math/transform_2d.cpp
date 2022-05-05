@@ -65,8 +65,8 @@ Transform2D Transform2D::affine_inverse() const {
 	return inv;
 }
 
-void Transform2D::rotate(const real_t p_phi) {
-	*this = Transform2D(p_phi, Vector2()) * (*this);
+void Transform2D::rotate(const real_t p_angle) {
+	*this = Transform2D(p_angle, Vector2()) * (*this);
 }
 
 real_t Transform2D::get_skew() const {
@@ -241,9 +241,9 @@ Transform2D Transform2D::translated(const Vector2 &p_offset) const {
 	return copy;
 }
 
-Transform2D Transform2D::rotated(const real_t p_phi) const {
+Transform2D Transform2D::rotated(const real_t p_angle) const {
 	Transform2D copy = *this;
-	copy.rotate(p_phi);
+	copy.rotate(p_angle);
 	return copy;
 }
 

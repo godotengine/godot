@@ -140,7 +140,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<Basis>>(sarray());
 	add_constructor<VariantConstructor<Basis, Basis>>(sarray("from"));
 	add_constructor<VariantConstructor<Basis, Quaternion>>(sarray("from"));
-	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "phi"));
+	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "angle"));
 	add_constructor<VariantConstructor<Basis, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis"));
 
 	add_constructor<VariantConstructNoArgs<Transform3D>>(sarray());

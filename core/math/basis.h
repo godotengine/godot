@@ -58,11 +58,11 @@ struct _NO_DISCARD_ Basis {
 
 	void from_z(const Vector3 &p_z);
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	Basis rotated(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate_local(const Vector3 &p_axis, real_t p_phi);
-	Basis rotated_local(const Vector3 &p_axis, real_t p_phi) const;
+	void rotate_local(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated_local(const Vector3 &p_axis, real_t p_angle) const;
 
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
@@ -100,7 +100,7 @@ struct _NO_DISCARD_ Basis {
 	void set_quaternion(const Quaternion &p_quaternion);
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
-	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);
+	void set_axis_angle(const Vector3 &p_axis, real_t p_angle);
 
 	void scale(const Vector3 &p_scale);
 	Basis scaled(const Vector3 &p_scale) const;
@@ -118,7 +118,7 @@ struct _NO_DISCARD_ Basis {
 	Vector3 get_scale_abs() const;
 	Vector3 get_scale_local() const;
 
-	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
+	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
 	void set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale);
 
@@ -237,8 +237,8 @@ struct _NO_DISCARD_ Basis {
 	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
 	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
 
-	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
-	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
+	Basis(const Vector3 &p_axis, real_t p_angle) { set_axis_angle(p_axis, p_angle); }
+	Basis(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_angle, p_scale); }
 	static Basis from_scale(const Vector3 &p_scale);
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
