@@ -515,12 +515,12 @@ void ProjectSettingsEditor::_update_theme() {
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+			// These types can't be serialized properly, so skip them.
+			continue;
 		}
+		String type = Variant::get_type_name(Variant::Type(i));
+		type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
 	}
 }
 

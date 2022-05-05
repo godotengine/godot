@@ -478,6 +478,11 @@ void EditorPropertyArray::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+					// These types can't be constructed or serialized properly, so skip them.
+					continue;
+				}
+
 				String type = Variant::get_type_name(Variant::Type(i));
 				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
 			}
@@ -1127,6 +1132,11 @@ void EditorPropertyDictionary::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+					// These types can't be constructed or serialized properly, so skip them.
+					continue;
+				}
+
 				String type = Variant::get_type_name(Variant::Type(i));
 				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
 			}
