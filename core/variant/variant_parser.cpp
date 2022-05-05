@@ -162,6 +162,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						return OK;
 					}
 					if (ch == '\n') {
+						line++;
 						break;
 					}
 				}
@@ -1401,6 +1402,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return ERR_FILE_EOF;
 				}
 				if (ch == '\n') {
+					line++;
 					break;
 				}
 			}
