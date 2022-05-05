@@ -44,7 +44,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	String config;
 
 	uint32_t magic = f->get_32();
-	if (magic == 0x950412de) {
+	if (magic == 0x9504'12de) {
 		// Load binary MO file.
 
 		uint16_t version_maj = f->get_16();

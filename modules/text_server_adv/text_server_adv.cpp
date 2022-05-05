@@ -774,7 +774,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			continue;
 		}
 
-		ret.y = 0x7fffffff;
+		ret.y = 0x7fff'ffff;
 		ret.x = 0;
 
 		for (int j = 0; j < ct.texture_w - mw; j++) {
@@ -793,7 +793,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			}
 		}
 
-		if (ret.y == 0x7fffffff || ret.y + mh > ct.texture_h) {
+		if (ret.y == 0x7fff'ffff || ret.y + mh > ct.texture_h) {
 			continue; // Fail, could not fit it here.
 		}
 
@@ -5599,7 +5599,7 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 		if (c == 0xfffc) {
 			continue;
 		}
-		if (u_ispunct(c) && c != 0x005F) {
+		if (u_ispunct(c) && c != 0x005f) {
 			ret.push_back(i);
 			continue;
 		}

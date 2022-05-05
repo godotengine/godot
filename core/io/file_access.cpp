@@ -397,7 +397,7 @@ String FileAccess::get_as_utf8_string() const {
 void FileAccess::store_16(uint16_t p_dest) {
 	uint8_t a, b;
 
-	a = p_dest & 0xFF;
+	a = p_dest & 0xff;
 	b = p_dest >> 8;
 
 	if (big_endian) {
@@ -411,7 +411,7 @@ void FileAccess::store_16(uint16_t p_dest) {
 void FileAccess::store_32(uint32_t p_dest) {
 	uint16_t a, b;
 
-	a = p_dest & 0xFFFF;
+	a = p_dest & 0xffff;
 	b = p_dest >> 16;
 
 	if (big_endian) {
@@ -425,7 +425,7 @@ void FileAccess::store_32(uint32_t p_dest) {
 void FileAccess::store_64(uint64_t p_dest) {
 	uint32_t a, b;
 
-	a = p_dest & 0xFFFFFFFF;
+	a = p_dest & 0xffff'ffff;
 	b = p_dest >> 32;
 
 	if (big_endian) {

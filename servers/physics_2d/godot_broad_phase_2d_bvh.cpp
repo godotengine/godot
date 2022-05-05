@@ -74,11 +74,11 @@ int GodotBroadPhase2DBVH::get_subindex(ID p_id) const {
 }
 
 int GodotBroadPhase2DBVH::cull_segment(const Vector2 &p_from, const Vector2 &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
-	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
+	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, nullptr, 0xffff'ffff, p_result_indices);
 }
 
 int GodotBroadPhase2DBVH::cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices) {
-	return bvh.cull_aabb(p_aabb, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
+	return bvh.cull_aabb(p_aabb, p_results, p_max_results, nullptr, 0xffff'ffff, p_result_indices);
 }
 
 void *GodotBroadPhase2DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollisionObject2D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject2D *p_object_B, int subindex_B) {

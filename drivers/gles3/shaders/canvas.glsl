@@ -534,7 +534,7 @@ void main() {
 		color *= texture(color_texture, uv);
 	}
 
-	uint light_count = (draw_data[draw_data_instance].flags >> FLAGS_LIGHT_COUNT_SHIFT) & uint(0xF); //max 16 lights
+	uint light_count = (draw_data[draw_data_instance].flags >> FLAGS_LIGHT_COUNT_SHIFT) & uint(0xf); //max 16 lights
 	bool using_light = light_count > uint(0) || directional_light_count > uint(0);
 
 	vec3 normal;
@@ -669,7 +669,7 @@ void main() {
 			}
 		}
 		light_base >>= (i & uint(3)) * uint(8);
-		light_base &= uint(0xFF);
+		light_base &= uint(0xff);
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_data[light_base].texture_matrix[0], light_data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec2 tex_uv_atlas = tex_uv * light_data[light_base].atlas_rect.zw + light_data[light_base].atlas_rect.xy;

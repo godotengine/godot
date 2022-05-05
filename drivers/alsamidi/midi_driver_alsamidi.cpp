@@ -38,34 +38,34 @@
 #include <errno.h>
 
 static int get_message_size(uint8_t message) {
-	switch (message & 0xF0) {
+	switch (message & 0xf0) {
 		case 0x80: // note off
 		case 0x90: // note on
-		case 0xA0: // aftertouch
-		case 0xB0: // continuous controller
-		case 0xE0: // pitch bend
-		case 0xF2: // song position pointer
+		case 0xa0: // aftertouch
+		case 0xb0: // continuous controller
+		case 0xe0: // pitch bend
+		case 0xf2: // song position pointer
 			return 3;
 
-		case 0xC0: // patch change
-		case 0xD0: // channel pressure
-		case 0xF1: // time code quarter frame
-		case 0xF3: // song select
+		case 0xc0: // patch change
+		case 0xd0: // channel pressure
+		case 0xf1: // time code quarter frame
+		case 0xf3: // song select
 			return 2;
 
-		case 0xF0: // SysEx start
-		case 0xF4: // reserved
-		case 0xF5: // reserved
-		case 0xF6: // tune request
-		case 0xF7: // SysEx end
-		case 0xF8: // timing clock
-		case 0xF9: // reserved
-		case 0xFA: // start
-		case 0xFB: // continue
-		case 0xFC: // stop
-		case 0xFD: // reserved
-		case 0xFE: // active sensing
-		case 0xFF: // reset
+		case 0xf0: // SysEx start
+		case 0xf4: // reserved
+		case 0xf5: // reserved
+		case 0xf6: // tune request
+		case 0xf7: // SysEx end
+		case 0xf8: // timing clock
+		case 0xf9: // reserved
+		case 0xfa: // start
+		case 0xfb: // continue
+		case 0xfc: // stop
+		case 0xfd: // reserved
+		case 0xfe: // active sensing
+		case 0xff: // reset
 			return 1;
 	}
 

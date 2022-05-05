@@ -38,7 +38,7 @@
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
 
-#define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
+#define DAP_MAX_BUFFER_SIZE 4'194'304 // 4MB
 #define DAP_MAX_CLIENTS 8
 
 class DebugAdapterParser;

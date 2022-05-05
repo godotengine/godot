@@ -435,7 +435,7 @@ void OpenXRInterface::trigger_haptic_pulse(const String &p_action_name, const St
 
 	// TODO OpenXR does not support delay, so we may need to add support for that somehow...
 
-	XrDuration duration = XrDuration(p_duration_sec * 1000000000.0); // seconds -> nanoseconds
+	XrDuration duration = XrDuration(p_duration_sec * 1'000'000'000.0); // seconds -> nanoseconds
 
 	openxr_api->trigger_haptic_pulse(action->action_rid, tracker->tracker_rid, p_frequency, p_amplitude, duration);
 }

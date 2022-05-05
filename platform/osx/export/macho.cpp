@@ -106,7 +106,7 @@ bool MachO::is_macho(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
 	uint32_t magic = fb->get_32();
-	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
+	return (magic == 0xcefa'edfe || magic == 0xfeed'face || magic == 0xcffa'edfe || magic == 0xfeed'facf);
 }
 
 bool MachO::open_file(const String &p_path) {
@@ -116,11 +116,11 @@ bool MachO::open_file(const String &p_path) {
 	MachHeader mach_header;
 
 	// Read MachO header.
-	swap = (magic == 0xcffaedfe || magic == 0xcefaedfe);
-	if (magic == 0xcefaedfe || magic == 0xfeedface) {
+	swap = (magic == 0xcffa'edfe || magic == 0xcefa'edfe);
+	if (magic == 0xcefa'edfe || magic == 0xfeed'face) {
 		// Thin 32-bit binary.
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
+	} else if (magic == 0xcffa'edfe || magic == 0xfeed'facf) {
 		// Thin 64-bit binary.
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
 		fa->get_32(); // Skip extra reserved field.
@@ -303,7 +303,7 @@ bool MachO::is_signed() {
 
 	fa->seek(get_signature_offset());
 	uint32_t magic = BSWAP32(fa->get_32());
-	if (magic != 0xfade0cc0) {
+	if (magic != 0xfade'0cc0) {
 		return false; // No SuperBlob found.
 	}
 	fa->get_32(); // Skip size field, unused.
@@ -311,7 +311,7 @@ bool MachO::is_signed() {
 	for (uint32_t i = 0; i < count; i++) {
 		uint32_t index_type = BSWAP32(fa->get_32());
 		uint32_t offset = BSWAP32(fa->get_32());
-		if (index_type == 0x00000000) { // CodeDirectory index type.
+		if (index_type == 0x0000'0000) { // CodeDirectory index type.
 			fa->seek(get_signature_offset() + offset + 12);
 			uint32_t flags = BSWAP32(fa->get_32());
 			if (flags & 0x20000) {
@@ -332,7 +332,7 @@ PackedByteArray MachO::get_cdhash_sha1() {
 
 	fa->seek(get_signature_offset());
 	uint32_t magic = BSWAP32(fa->get_32());
-	if (magic != 0xfade0cc0) {
+	if (magic != 0xfade'0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
 	fa->get_32(); // Skip size field, unused.
@@ -345,7 +345,7 @@ PackedByteArray MachO::get_cdhash_sha1() {
 		fa->seek(get_signature_offset() + offset);
 		uint32_t cdmagic = BSWAP32(fa->get_32());
 		uint32_t cdsize = BSWAP32(fa->get_32());
-		if (cdmagic == 0xfade0c02) { // CodeDirectory.
+		if (cdmagic == 0xfade'0c02) { // CodeDirectory.
 			fa->seek(get_signature_offset() + offset + 36);
 			uint8_t hash_size = fa->get_8();
 			uint8_t hash_type = fa->get_8();
@@ -379,7 +379,7 @@ PackedByteArray MachO::get_cdhash_sha256() {
 
 	fa->seek(get_signature_offset());
 	uint32_t magic = BSWAP32(fa->get_32());
-	if (magic != 0xfade0cc0) {
+	if (magic != 0xfade'0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
 	fa->get_32(); // Skip size field, unused.
@@ -392,7 +392,7 @@ PackedByteArray MachO::get_cdhash_sha256() {
 		fa->seek(get_signature_offset() + offset);
 		uint32_t cdmagic = BSWAP32(fa->get_32());
 		uint32_t cdsize = BSWAP32(fa->get_32());
-		if (cdmagic == 0xfade0c02) { // CodeDirectory.
+		if (cdmagic == 0xfade'0c02) { // CodeDirectory.
 			fa->seek(get_signature_offset() + offset + 36);
 			uint8_t hash_size = fa->get_8();
 			uint8_t hash_type = fa->get_8();
@@ -426,7 +426,7 @@ PackedByteArray MachO::get_requirements() {
 
 	fa->seek(get_signature_offset());
 	uint32_t magic = BSWAP32(fa->get_32());
-	if (magic != 0xfade0cc0) {
+	if (magic != 0xfade'0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
 	fa->get_32(); // Skip size field, unused.
@@ -439,7 +439,7 @@ PackedByteArray MachO::get_requirements() {
 		fa->seek(get_signature_offset() + offset);
 		uint32_t rqmagic = BSWAP32(fa->get_32());
 		uint32_t rqsize = BSWAP32(fa->get_32());
-		if (rqmagic == 0xfade0c01) { // Requirements.
+		if (rqmagic == 0xfade'0c01) { // Requirements.
 			PackedByteArray blob;
 			fa->seek(get_signature_offset() + offset);
 			blob.resize(rqsize);

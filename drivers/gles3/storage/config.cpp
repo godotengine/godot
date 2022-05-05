@@ -36,7 +36,7 @@
 
 using namespace GLES3;
 
-#define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84ff
 
 Config *Config::singleton = nullptr;
 

@@ -294,8 +294,8 @@ TEST_CASE("[Animation] Create Bezier track") {
 
 	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, -0.2), real_t(-1.0)));
 	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.0), real_t(-1.0)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.2), real_t(-0.76057207584381)));
-	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.4), real_t(-0.39975279569626)));
+	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.2), real_t(-0.760'572'075'843'81)));
+	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.4), real_t(-0.399'752'795'696'26)));
 	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.5), real_t(1.0)));
 	CHECK(Math::is_equal_approx(animation->bezier_track_interpolate(0, 0.6), real_t(1.0)));
 

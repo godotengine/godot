@@ -2407,7 +2407,7 @@ Rect2 Image::get_used_rect() const {
 		return Rect2();
 	}
 
-	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
+	int minx = 0xffffff, miny = 0xfffffff;
 	int maxx = -1, maxy = -1;
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
@@ -2799,17 +2799,17 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 		}
 		case FORMAT_RGBA4444: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = ((u >> 12) & 0xF) / 15.0;
-			float g = ((u >> 8) & 0xF) / 15.0;
-			float b = ((u >> 4) & 0xF) / 15.0;
-			float a = (u & 0xF) / 15.0;
+			float r = ((u >> 12) & 0xf) / 15.0;
+			float g = ((u >> 8) & 0xf) / 15.0;
+			float b = ((u >> 4) & 0xf) / 15.0;
+			float a = (u & 0xf) / 15.0;
 			return Color(r, g, b, a);
 		}
 		case FORMAT_RGB565: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 31.0;
-			float g = ((u >> 5) & 0x3F) / 63.0;
-			float b = ((u >> 11) & 0x1F) / 31.0;
+			float r = (u & 0x1f) / 31.0;
+			float g = ((u >> 5) & 0x3f) / 63.0;
+			float b = ((u >> 11) & 0x1f) / 31.0;
 			return Color(r, g, b, 1.0);
 		}
 		case FORMAT_RF: {
@@ -3424,7 +3424,7 @@ void Image::fix_alpha_edges() {
 
 	const int max_radius = 4;
 	const int alpha_threshold = 20;
-	const int max_dist = 0x7FFFFFFF;
+	const int max_dist = 0x7fff'ffff;
 
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {

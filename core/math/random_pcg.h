@@ -65,7 +65,7 @@ class RandomPCG {
 	uint64_t current_inc = 0;
 
 public:
-	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
+	static const uint64_t DEFAULT_SEED = 12'047'754'176'567'800'795U;
 	static const uint64_t DEFAULT_INC = PCG_DEFAULT_INC_64;
 
 	RandomPCG(uint64_t p_seed = DEFAULT_SEED, uint64_t p_inc = DEFAULT_INC);
@@ -105,11 +105,11 @@ public:
 		if (unlikely(proto_exp_offset == 0)) {
 			return 0;
 		}
-		uint64_t significand = (((uint64_t)rand()) << 32) | rand() | 0x8000000000000001U;
+		uint64_t significand = (((uint64_t)rand()) << 32) | rand() | 0x8000'0000'0000'0001U;
 		return LDEXP((double)significand, -64 - CLZ32(proto_exp_offset));
 #else
 #pragma message("RandomPCG::randd - intrinsic clz is not available, falling back to bit truncation")
-		return (double)(((((uint64_t)rand()) << 32) | rand()) & 0x1FFFFFFFFFFFFFU) / (double)0x1FFFFFFFFFFFFFU;
+		return (double)(((((uint64_t)rand()) << 32) | rand()) & 0x1f'ffff'ffff'ffffU) / (double)0x1f'ffff'ffff'ffffU;
 #endif
 	}
 	_FORCE_INLINE_ float randf() {
@@ -118,10 +118,10 @@ public:
 		if (unlikely(proto_exp_offset == 0)) {
 			return 0;
 		}
-		return LDEXPF((float)(rand() | 0x80000001), -32 - CLZ32(proto_exp_offset));
+		return LDEXPF((float)(rand() | 0x8000'0001), -32 - CLZ32(proto_exp_offset));
 #else
 #pragma message("RandomPCG::randf - intrinsic clz is not available, falling back to bit truncation")
-		return (float)(rand() & 0xFFFFFF) / (float)0xFFFFFF;
+		return (float)(rand() & 0xffffff) / (float)0xffffff;
 #endif
 	}
 

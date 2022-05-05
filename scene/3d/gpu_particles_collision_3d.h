@@ -37,7 +37,7 @@
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);
 
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t cull_mask = 0xffff'ffff;
 	RID collision;
 
 protected:
@@ -247,7 +247,7 @@ VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);
 
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t cull_mask = 0xffff'ffff;
 	RID collision;
 	real_t strength = 1.0;
 	real_t attenuation = 1.0;

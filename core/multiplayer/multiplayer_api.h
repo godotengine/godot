@@ -108,7 +108,7 @@ public:
 
 	// This is the mask that will be used to extract the command.
 	enum {
-		CMD_MASK = 7, // 0x7 -> 0b00001111
+		CMD_MASK = 7, // 0x7 -> 0b0000'1111
 	};
 
 private:

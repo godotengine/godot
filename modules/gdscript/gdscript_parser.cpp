@@ -320,7 +320,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 			bool found = false;
 			const String &line = lines[i];
 			for (int j = 0; j < line.size(); j++) {
-				if (line[j] == char32_t(0xFFFF)) {
+				if (line[j] == char32_t(0xffff)) {
 					found = true;
 					break;
 				} else if (line[j] == '\t') {
@@ -335,7 +335,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 			cursor_column = 1;
 		}
 
-		source = source.replace_first(String::chr(0xFFFF), String());
+		source = source.replace_first(String::chr(0xffff), String());
 	}
 
 	tokenizer.set_source_code(source);

@@ -187,7 +187,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
-	float delta_t = tdiff / 1000000.0;
+	float delta_t = tdiff / 1'000'000.0;
 	last_tick = tick;
 
 	if (delta_t > max_ref_frame) {

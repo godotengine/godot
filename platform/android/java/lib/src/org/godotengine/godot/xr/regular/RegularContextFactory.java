@@ -46,7 +46,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static final String TAG = RegularContextFactory.class.getSimpleName();
 
-	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
+	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30fc;
 	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
 
 	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;

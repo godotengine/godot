@@ -130,7 +130,7 @@ void MobileVRInterface::set_position_from_sensors() {
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
-	float delta_time = (double)ticks_elapsed / 1000000.0;
+	float delta_time = (double)ticks_elapsed / 1'000'000.0;
 
 	// few things we need
 	Input *input = Input::get_singleton();

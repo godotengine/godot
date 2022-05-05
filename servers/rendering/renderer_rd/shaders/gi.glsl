@@ -266,7 +266,7 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 
 	// helper constants, compute once
 
-	uint cascade = 0xFFFFFFFF;
+	uint cascade = 0xffffffff;
 	vec3 cascade_pos;
 	vec3 cascade_normal;
 
@@ -332,12 +332,12 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 			float blend_size = (sdfgi.grid_size.x / float(sdfgi.probe_axis_size - 1)) * 0.5;
 
 			float radius_sizes[SDFGI_MAX_CASCADES];
-			cascade = 0xFFFF;
+			cascade = 0xffff;
 
 			float base_distance = length(cam_pos);
 			for (uint i = 0; i < sdfgi.max_cascades; i++) {
 				radius_sizes[i] = (1.0 / sdfgi.cascades[i].to_cell) * (sdfgi.grid_size.x * 0.5 - blend_size);
-				if (cascade == 0xFFFF && base_distance < radius_sizes[i]) {
+				if (cascade == 0xffff && base_distance < radius_sizes[i]) {
 					cascade = i;
 				}
 			}

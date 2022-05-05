@@ -512,7 +512,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		f->store_buffer(data.ptr(), data.size());
 		f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
-		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01ff);
 #endif
 
 		ret = unzGoToNextFile(pkg);
@@ -726,7 +726,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 				f->store_buffer(data.ptr(), data.size());
 				f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
-				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01ff);
 #endif
 			} else {
 				ERR_PRINT("Can't uncompress file: " + to_write);

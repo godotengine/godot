@@ -5674,7 +5674,7 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 
 void EditorNode::_update_rendering_driver_color() {
 	if (rendering_driver->get_text() == "opengl3") {
-		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
+		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586'a4ff));
 	} else if (rendering_driver->get_text() == "vulkan") {
 		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 	}

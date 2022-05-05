@@ -2775,7 +2775,7 @@ bool Main::iteration() {
 	frames++;
 	Engine::get_singleton()->_process_frames++;
 
-	if (frame > 1000000) {
+	if (frame > 1'000'000) {
 		if (editor || project_manager) {
 			if (print_fps) {
 				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
@@ -2790,7 +2790,7 @@ bool Main::iteration() {
 		process_max = 0;
 		physics_process_max = 0;
 
-		frame %= 1000000;
+		frame %= 1'000'000;
 		frames = 0;
 	}
 

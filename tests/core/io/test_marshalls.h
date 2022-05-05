@@ -49,7 +49,7 @@ TEST_CASE("[Marshalls] Unsigned 16 bit integer encoding") {
 TEST_CASE("[Marshalls] Unsigned 32 bit integer encoding") {
 	uint8_t arr[4];
 
-	unsigned int actual_size = encode_uint32(0x12345678, arr);
+	unsigned int actual_size = encode_uint32(0x1234'5678, arr);
 	CHECK(actual_size == sizeof(uint32_t));
 	CHECK_MESSAGE(arr[0] == 0x78, "First encoded byte value should be equal to low order byte value.");
 	CHECK(arr[1] == 0x56);
@@ -60,7 +60,7 @@ TEST_CASE("[Marshalls] Unsigned 32 bit integer encoding") {
 TEST_CASE("[Marshalls] Unsigned 64 bit integer encoding") {
 	uint8_t arr[8];
 
-	unsigned int actual_size = encode_uint64(0x0f123456789abcdef, arr);
+	unsigned int actual_size = encode_uint64(0x0'f123'4567'89ab'cdef, arr);
 	CHECK(actual_size == sizeof(uint64_t));
 	CHECK_MESSAGE(arr[0] == 0xef, "First encoded byte value should be equal to low order byte value.");
 	CHECK(arr[1] == 0xcd);
@@ -81,13 +81,13 @@ TEST_CASE("[Marshalls] Unsigned 16 bit integer decoding") {
 TEST_CASE("[Marshalls] Unsigned 32 bit integer decoding") {
 	uint8_t arr[] = { 0x78, 0x56, 0x34, 0x12 };
 
-	CHECK(decode_uint32(arr) == 0x12345678);
+	CHECK(decode_uint32(arr) == 0x1234'5678);
 }
 
 TEST_CASE("[Marshalls] Unsigned 64 bit integer decoding") {
 	uint8_t arr[] = { 0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0xf1 };
 
-	CHECK(decode_uint64(arr) == 0x0f123456789abcdef);
+	CHECK(decode_uint64(arr) == 0x0f'123'4567'89ab'cdef);
 }
 
 TEST_CASE("[Marshalls] Floating point single precision encoding") {
@@ -97,7 +97,7 @@ TEST_CASE("[Marshalls] Floating point single precision encoding") {
 	// IEEE 754 single-precision binary floating-point format:
 	// sign exponent (8 bits)    fraction (23 bits)
 	//  0       01111100      01000000000000000000000
-	// Hexadecimal: 0x3E200000
+	// Hexadecimal: 0x3e200000
 	unsigned int actual_size = encode_float(0.15625f, arr);
 	CHECK(actual_size == sizeof(uint32_t));
 	CHECK(arr[0] == 0x00);
@@ -113,8 +113,8 @@ TEST_CASE("[Marshalls] Floating point double precision encoding") {
 	// IEEE 754 double-precision binary floating-point format:
 	// sign exponent (11 bits)                  fraction (52 bits)
 	//  0      01111111101     0101010101010101010101010101010101010101010101010101
-	// Hexadecimal: 0x3FD5555555555555
-	unsigned int actual_size = encode_double(0.33333333333333333, arr);
+	// Hexadecimal: 0x3fd5555555555555
+	unsigned int actual_size = encode_double(0.333'333'333'333'333'33, arr);
 	CHECK(actual_size == sizeof(uint64_t));
 	CHECK(arr[0] == 0x55);
 	CHECK(arr[1] == 0x55);
@@ -137,7 +137,7 @@ TEST_CASE("[Marshalls] Floating point double precision decoding") {
 	uint8_t arr[] = { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0xd5, 0x3f };
 
 	// See floating point encoding test case for details behind expected values
-	CHECK(decode_double(arr) == 0.33333333333333333);
+	CHECK(decode_double(arr) == 0.333'333'333'333'333'33);
 }
 
 TEST_CASE("[Marshalls] C string encoding") {
@@ -170,7 +170,7 @@ TEST_CASE("[Marshalls] NIL Variant encoding") {
 
 TEST_CASE("[Marshalls] INT 32 bit Variant encoding") {
 	int r_len;
-	Variant variant(0x12345678);
+	Variant variant(0x1234'5678);
 	uint8_t buffer[8];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
@@ -188,7 +188,7 @@ TEST_CASE("[Marshalls] INT 32 bit Variant encoding") {
 
 TEST_CASE("[Marshalls] INT 64 bit Variant encoding") {
 	int r_len;
-	Variant variant(uint64_t(0x0f123456789abcdef));
+	Variant variant(uint64_t(0x0'f123'4567'89ab'cdef));
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
@@ -228,7 +228,7 @@ TEST_CASE("[Marshalls] FLOAT single precision Variant encoding") {
 
 TEST_CASE("[Marshalls] FLOAT double precision Variant encoding") {
 	int r_len;
-	Variant variant(0.33333333333333333);
+	Variant variant(0.333'333'333'333'333'33);
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
@@ -283,7 +283,7 @@ TEST_CASE("[Marshalls] INT 32 bit Variant decoding") {
 
 	CHECK(decode_variant(variant, buffer, 8, &r_len) == OK);
 	CHECK(r_len == 8);
-	CHECK(variant == Variant(0x12345678));
+	CHECK(variant == Variant(0x1234'5678));
 }
 
 TEST_CASE("[Marshalls] INT 64 bit Variant decoding") {
@@ -296,7 +296,7 @@ TEST_CASE("[Marshalls] INT 64 bit Variant decoding") {
 
 	CHECK(decode_variant(variant, buffer, 12, &r_len) == OK);
 	CHECK(r_len == 12);
-	CHECK(variant == Variant(uint64_t(0x0f123456789abcdef)));
+	CHECK(variant == Variant(uint64_t(0x0'f123'4567'89ab'cdef)));
 }
 
 TEST_CASE("[Marshalls] FLOAT single precision Variant decoding") {
@@ -322,7 +322,7 @@ TEST_CASE("[Marshalls] FLOAT double precision Variant decoding") {
 
 	CHECK(decode_variant(variant, buffer, 12, &r_len) == OK);
 	CHECK(r_len == 12);
-	CHECK(variant == Variant(0.33333333333333333));
+	CHECK(variant == Variant(0.333'333'333'333'333'33));
 }
 } // namespace TestMarshalls
 

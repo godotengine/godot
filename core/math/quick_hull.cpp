@@ -32,7 +32,7 @@
 
 #include "core/templates/map.h"
 
-uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
+uint32_t QuickHull::debug_stop_after = 0xffff'ffff;
 
 Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	/* CREATE AABB VOLUME */

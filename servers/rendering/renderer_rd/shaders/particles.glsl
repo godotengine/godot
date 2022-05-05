@@ -103,7 +103,7 @@ frame_history;
 #define PARTICLE_FLAG_ACTIVE uint(1)
 #define PARTICLE_FLAG_STARTED uint(2)
 #define PARTICLE_FLAG_TRAILED uint(4)
-#define PARTICLE_FRAME_MASK uint(0xFFFF)
+#define PARTICLE_FRAME_MASK uint(0xffff)
 #define PARTICLE_FRAME_SHIFT uint(16)
 
 struct ParticleData {

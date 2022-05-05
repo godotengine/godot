@@ -78,7 +78,7 @@ void main() {
 #else
 	uint cell_index = gl_InstanceIndex + params.cell_offset;
 
-	uvec3 posu = uvec3(cell_data.data[cell_index].position & 0x7FF, (cell_data.data[cell_index].position >> 11) & 0x3FF, cell_data.data[cell_index].position >> 21);
+	uvec3 posu = uvec3(cell_data.data[cell_index].position & 0x7ff, (cell_data.data[cell_index].position >> 11) & 0x3ff, cell_data.data[cell_index].position >> 21);
 #endif
 
 #ifdef MODE_DEBUG_EMISSION

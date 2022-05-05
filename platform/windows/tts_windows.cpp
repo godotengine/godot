@@ -48,7 +48,7 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 				int pos = 0;
 				for (int i = 0; i < MIN(event.lParam, string.length()); i++) {
 					char16_t c = string[i];
-					if ((c & 0xfffffc00) == 0xd800) {
+					if ((c & 0xffff'fc00) == 0xd800) {
 						i++;
 					}
 					pos++;

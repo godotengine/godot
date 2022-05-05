@@ -400,7 +400,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		split_vertex_indices.reserve(index_count / 3);
 
 		RandomPCG pcg;
-		pcg.seed(123456789); // Keep seed constant across imports
+		pcg.seed(123'456'789); // Keep seed constant across imports
 
 		Ref<StaticRaycaster> raycaster = StaticRaycaster::create();
 		if (raycaster.is_valid()) {

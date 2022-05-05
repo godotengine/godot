@@ -209,7 +209,7 @@ void main() {
 		}
 	}
 
-	int depth_least = 0xFFFF;
+	int depth_least = 0xffff;
 	int best_index = 0;
 	for (int j = 0; j < depth_count; j++) {
 		if (depth_amount[j] < depth_least) {

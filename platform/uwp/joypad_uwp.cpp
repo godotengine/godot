@@ -155,7 +155,7 @@ void JoypadUWP::joypad_vibration_start(int p_device, float p_weak_magnitude, flo
 		((Gamepad ^) joy.controller_reference)->Vibration = vibration;
 
 		joy.ff_timestamp = p_timestamp;
-		joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1000000.0);
+		joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1'000'000.0);
 		joy.vibrating = true;
 	}
 }

@@ -165,7 +165,7 @@ class OccluderInstance3D : public VisualInstance3D {
 
 private:
 	Ref<Occluder3D> occluder;
-	uint32_t bake_mask = 0xFFFFFFFF;
+	uint32_t bake_mask = 0xffff'ffff;
 	float bake_simplification_dist = 0.1f;
 
 	void _occluder_changed();

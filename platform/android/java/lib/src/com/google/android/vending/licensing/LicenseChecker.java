@@ -133,7 +133,7 @@ public class LicenseChecker implements ServiceConnection {
      * <p>
      * source string: "com.android.vending.licensing.ILicensingService"
      * <p>
-     * 
+     *
      * @param callback
      */
     public synchronized void checkAccess(LicenseCheckerCallback callback) {

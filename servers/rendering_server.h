@@ -223,7 +223,7 @@ public:
 		ARRAY_CUSTOM3 = 9,
 		ARRAY_BONES = 10, // RGBA16UI (x2 if 8 weights)
 		ARRAY_WEIGHTS = 11, // RGBA16UNORM (x2 if 8 weights)
-		ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xFFFF.
+		ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xffff.
 		ARRAY_MAX = 13
 	};
 

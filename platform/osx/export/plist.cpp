@@ -167,7 +167,7 @@ void PListNode::store_asn1_size(PackedByteArray &p_stream, uint8_t p_len_octets)
 		p_stream.push_back(0x80 + p_len_octets);
 	}
 	for (int i = p_len_octets - 1; i >= 0; i--) {
-		uint8_t x = (size >> i * 8) & 0xFF;
+		uint8_t x = (size >> i * 8) & 0xff;
 		p_stream.push_back(x);
 	}
 }
@@ -184,7 +184,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 			ERR_FAIL_V_MSG(false, "PList: DATE and DATA nodes are not supported by ASN.1 serialization.");
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
-			p_stream.push_back(0x0C);
+			p_stream.push_back(0x0c);
 			store_asn1_size(p_stream, p_len_octets);
 			for (int i = 0; i < data_string.size(); i++) {
 				p_stream.push_back(data_string[i]);
@@ -203,7 +203,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 			p_stream.push_back(0x02);
 			store_asn1_size(p_stream, p_len_octets);
 			for (int i = 4; i >= 0; i--) {
-				uint8_t x = (data_int >> i * 8) & 0xFF;
+				uint8_t x = (data_int >> i * 8) & 0xff;
 				p_stream.push_back(x);
 			}
 		} break;
@@ -211,7 +211,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 			p_stream.push_back(0x03);
 			store_asn1_size(p_stream, p_len_octets);
 			for (int i = 4; i >= 0; i--) {
-				uint8_t x = (data_int >> i * 8) & 0xFF;
+				uint8_t x = (data_int >> i * 8) & 0xff;
 				p_stream.push_back(x);
 			}
 		} break;
@@ -236,16 +236,16 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 					p_stream.push_back(0x80 + p_len_octets);
 				}
 				for (int i = p_len_octets - 1; i >= 0; i--) {
-					uint8_t x = (seq_size >> i * 8) & 0xFF;
+					uint8_t x = (seq_size >> i * 8) & 0xff;
 					p_stream.push_back(x);
 				}
 				// Key.
-				p_stream.push_back(0x0C);
+				p_stream.push_back(0x0c);
 				if (p_len_octets > 1) {
 					p_stream.push_back(0x80 + p_len_octets);
 				}
 				for (int i = p_len_octets - 1; i >= 0; i--) {
-					uint8_t x = (size >> i * 8) & 0xFF;
+					uint8_t x = (size >> i * 8) & 0xff;
 					p_stream.push_back(x);
 				}
 				for (uint32_t i = 0; i < size; i++) {
@@ -522,15 +522,15 @@ PackedByteArray PList::save_asn1() const {
 		len_octets = 1;
 	} else {
 		size = root->get_asn1_size(2);
-		if (size < 0xFFFF) {
+		if (size < 0xffff) {
 			len_octets = 2;
 		} else {
 			size = root->get_asn1_size(3);
-			if (size < 0xFFFFFF) {
+			if (size < 0xffffff) {
 				len_octets = 3;
 			} else {
 				size = root->get_asn1_size(4);
-				if (size < 0xFFFFFFFF) {
+				if (size < 0xffff'ffff) {
 					len_octets = 4;
 				} else {
 					ERR_FAIL_V_MSG(PackedByteArray(), "PList: Data is too big for ASN.1 serializer, should be < 4 GiB.");

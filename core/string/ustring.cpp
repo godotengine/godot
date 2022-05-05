@@ -1576,7 +1576,7 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 	for (int i = 0; i < p_len; i++) {
 		v[0] = hex[p_buffer[i] >> 4];
 		ret += v;
-		v[0] = hex[p_buffer[i] & 0xF];
+		v[0] = hex[p_buffer[i] & 0xf];
 		ret += v;
 	}
 
@@ -1709,7 +1709,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 			return true; //not enough space
 		}
 
-		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
+		if (len == 2 && (*p_utf8 & 0x1e) == 0) {
 			UNICERROR("no space left");
 			return true; //reject overlong
 		}
@@ -1765,7 +1765,7 @@ CharString String::utf8() const {
 			fl += 2;
 		} else if (c <= 0xffff) { // 16 bits
 			fl += 3;
-		} else if (c <= 0x0010ffff) { // 21 bits
+		} else if (c <= 0x0010'ffff) { // 21 bits
 			fl += 4;
 		} else {
 			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(c, 16) + ".");
@@ -1857,9 +1857,9 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
 			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
 			if (skip == 0) {
-				if ((c & 0xfffffc00) == 0xd800) {
+				if ((c & 0xffff'fc00) == 0xd800) {
 					skip = 1; // lead surrogate
-				} else if ((c & 0xfffffc00) == 0xdc00) {
+				} else if ((c & 0xffff'fc00) == 0xdc00) {
 					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				} else {
@@ -1867,7 +1867,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				}
 				str_size++;
 			} else {
-				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
+				if ((c & 0xffff'fc00) == 0xdc00) { // trail surrogate
 					--skip;
 				} else {
 					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
@@ -1898,7 +1898,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		int len = 0;
 		uint32_t c = (byteswap) ? BSWAP16(*p_utf16) : *p_utf16;
 
-		if ((c & 0xfffffc00) == 0xd800) {
+		if ((c & 0xffff'fc00) == 0xd800) {
 			len = 2;
 		} else {
 			len = 1;

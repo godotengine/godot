@@ -350,14 +350,14 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 		}
 		if (size) {
 			uint32_t net_id = rep_state->get_net_id(oid);
-			if (net_id == 0 || (net_id & 0x80000000)) {
+			if (net_id == 0 || (net_id & 0x8000'0000)) {
 				// First time path based ID.
 				NodePath rel_path = multiplayer->get_root_path().rel_path_to(sync->get_path());
 				int path_id = 0;
 				multiplayer->send_object_cache(sync, rel_path, p_peer, path_id);
-				ERR_CONTINUE_MSG(net_id && net_id != (uint32_t(path_id) | 0x80000000), "This should never happen!");
+				ERR_CONTINUE_MSG(net_id && net_id != (uint32_t(path_id) | 0x8000'0000), "This should never happen!");
 				net_id = path_id;
-				rep_state->set_net_id(oid, net_id | 0x80000000);
+				rep_state->set_net_id(oid, net_id | 0x8000'0000);
 			}
 			ofs += encode_uint32(rep_state->get_net_id(oid), &ptr[ofs]);
 			ofs += encode_uint32(size, &ptr[ofs]);
@@ -382,8 +382,8 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
 		Node *node = nullptr;
-		if (net_id & 0x80000000) {
-			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_cached_object(p_from, net_id & 0x7FFFFFFF));
+		if (net_id & 0x8000'0000) {
+			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_cached_object(p_from, net_id & 0x7fff'ffff));
 			ERR_FAIL_COND_V(!sync || sync->get_multiplayer_authority() != p_from, ERR_UNAUTHORIZED);
 			node = sync->get_node(sync->get_root_path());
 		} else {

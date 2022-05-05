@@ -75,15 +75,15 @@ int GodotBroadPhase3DBVH::get_subindex(ID p_id) const {
 }
 
 int GodotBroadPhase3DBVH::cull_point(const Vector3 &p_point, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices) {
-	return bvh.cull_point(p_point, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
+	return bvh.cull_point(p_point, p_results, p_max_results, nullptr, 0xffff'ffff, p_result_indices);
 }
 
 int GodotBroadPhase3DBVH::cull_segment(const Vector3 &p_from, const Vector3 &p_to, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices) {
-	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
+	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, nullptr, 0xffff'ffff, p_result_indices);
 }
 
 int GodotBroadPhase3DBVH::cull_aabb(const AABB &p_aabb, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices) {
-	return bvh.cull_aabb(p_aabb, p_results, p_max_results, nullptr, 0xFFFFFFFF, p_result_indices);
+	return bvh.cull_aabb(p_aabb, p_results, p_max_results, nullptr, 0xffff'ffff, p_result_indices);
 }
 
 void *GodotBroadPhase3DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollisionObject3D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject3D *p_object_B, int subindex_B) {

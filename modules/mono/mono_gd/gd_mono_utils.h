@@ -72,7 +72,7 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 } // namespace Marshal
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {
-	p_hash ^= p_with_hash + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
+	p_hash ^= p_with_hash + 0x9e37'79b9 + (p_hash << 6) + (p_hash >> 2);
 }
 
 /**

@@ -47,7 +47,7 @@ public:
 	Math() {} // useless to instance
 
 	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
-	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
+	static const uint64_t RANDOM_32BIT_MAX = 0xffff'ffff;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -121,8 +121,7 @@ public:
 			double f;
 		} ieee754;
 		ieee754.f = p_val;
-		// (unsigned)(0x7ff0000000000001 >> 32) : 0x7ff00000
-		return ((((unsigned)(ieee754.u >> 32) & 0x7fffffff) + ((unsigned)ieee754.u != 0)) > 0x7ff00000);
+		return ((((unsigned)(ieee754.u >> 32) & 0x7fff'ffff) + ((unsigned)ieee754.u != 0)) > 0x7ff0'0000);
 #else
 		return isnan(p_val);
 #endif
@@ -140,12 +139,12 @@ public:
 		// -----------------------------------
 		// (single-precision floating-point)
 		// NaN : s111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
-		//     : (> 0x7f800000)
+		//     : (> 0x7f80'0000)
 		// where,
 		//   s : sign
 		//   x : non-zero number
 		// -----------------------------------
-		return ((ieee754.u & 0x7fffffff) > 0x7f800000);
+		return ((ieee754.u & 0x7fff'ffff) > 0x7f80'0000);
 #else
 		return isnan(p_val);
 #endif
@@ -161,7 +160,7 @@ public:
 			double f;
 		} ieee754;
 		ieee754.f = p_val;
-		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
+		return ((unsigned)(ieee754.u >> 32) & 0x7fff'ffff) == 0x7ff0'0000 &&
 				((unsigned)ieee754.u == 0);
 #else
 		return isinf(p_val);
@@ -178,7 +177,7 @@ public:
 			float f;
 		} ieee754;
 		ieee754.f = p_val;
-		return (ieee754.u & 0x7fffffff) == 0x7f800000;
+		return (ieee754.u & 0x7fff'ffff) == 0x7f80'0000;
 #else
 		return isinf(p_val);
 #endif
@@ -401,7 +400,7 @@ public:
 		} u;
 
 		u.f = g;
-		u.i &= 2147483647u;
+		u.i &= 2'147'483'647u;
 		return u.f;
 	}
 
@@ -411,7 +410,7 @@ public:
 			uint64_t i;
 		} u;
 		u.d = g;
-		u.i &= (uint64_t)9223372036854775807ll;
+		u.i &= (uint64_t)9'223'372'036'854'775'807ll;
 		return u.d;
 	}
 
@@ -445,7 +444,7 @@ public:
 				return f_sgn + f_exp + f_sig;
 			case 0x7c00u: /* inf or NaN */
 				/* All-ones exponent and a copy of the significand */
-				return f_sgn + 0x7f800000u + (((uint32_t)(h & 0x03ffu)) << 13);
+				return f_sgn + 0x7f80'0000u + (((uint32_t)(h & 0x03ffu)) << 13);
 			default: /* normalized */
 				/* Just need to adjust the exponent and shift */
 				return f_sgn + (((uint32_t)(h & 0x7fffu) + 0x1c000u) << 13);
@@ -482,24 +481,24 @@ public:
 		// get mantissa
 		mantissa = x & ((1 << 23) - 1);
 		// get exponent bits
-		exponent = x & (0xFF << 23);
-		if (exponent >= 0x47800000) {
+		exponent = x & (0xff << 23);
+		if (exponent >= 0x4780'0000) {
 			// check if the original single precision float number is a NaN
-			if (mantissa && (exponent == (0xFF << 23))) {
+			if (mantissa && (exponent == (0xff << 23))) {
 				// we have a single precision NaN
 				mantissa = (1 << 23) - 1;
 			} else {
 				// 16-bit half-float representation stores number as Inf
 				mantissa = 0;
 			}
-			hf = (((uint16_t)sign) << 15) | (uint16_t)((0x1F << 10)) |
+			hf = (((uint16_t)sign) << 15) | (uint16_t)((0x1f << 10)) |
 					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
-		else if (exponent <= 0x38000000) {
+		else if (exponent <= 0x3800'0000) {
 			/*
 			// store a denorm half-float value or zero
-			exponent = (0x38000000 - exponent) >> 23;
+			exponent = (0x3800'0000 - exponent) >> 23;
 			mantissa >>= (14 + exponent);
 
 			hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
@@ -507,7 +506,7 @@ public:
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-					(uint16_t)((exponent - 0x38000000) >> 13) |
+					(uint16_t)((exponent - 0x3800'0000) >> 13) |
 					(uint16_t)(mantissa >> 13);
 		}
 

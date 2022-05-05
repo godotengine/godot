@@ -440,8 +440,8 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 /*************************************************************************/
 
 CodeSignRequirements::CodeSignRequirements() {
-	blob.append_array({ 0xFA, 0xDE, 0x0C, 0x01 }); // Requirement set magic.
-	blob.append_array({ 0x00, 0x00, 0x00, 0x0C }); // Length of requirements set (12 bytes).
+	blob.append_array({ 0xfa, 0xde, 0x0c, 0x01 }); // Requirement set magic.
+	blob.append_array({ 0x00, 0x00, 0x00, 0x0c }); // Length of requirements set (12 bytes).
 	blob.append_array({ 0x00, 0x00, 0x00, 0x00 }); // Empty.
 }
 
@@ -454,9 +454,9 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_certificate_slot(uint32_t &r_po
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
 	r_out += "certificate ";
 	uint32_t tag_slot = _R(r_pos);
-	if (tag_slot == 0x00000000) {
+	if (tag_slot == 0x0000'0000) {
 		r_out += "leaf";
-	} else if (tag_slot == 0xffffffff) {
+	} else if (tag_slot == 0xffff'ffff) {
 		r_out += "root";
 	} else {
 		r_out += itos((int32_t)tag_slot);
@@ -493,13 +493,13 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_oid_key(uint32_t &r_pos, String
 			r_out += itos(blob[spos]);
 			spos += 1;
 		} else {
-			uint32_t x = (0x7F & blob[spos]) << 7;
+			uint32_t x = (0x7f & blob[spos]) << 7;
 			spos += 1;
 			while (blob[spos] > 127) {
-				x = (x + (0x7F & blob[spos])) << 7;
+				x = (x + (0x7f & blob[spos])) << 7;
 				spos += 1;
 			}
-			x = (x + (0x7F & blob[spos]));
+			x = (x + (0x7f & blob[spos]));
 			r_out += itos(x);
 			spos += 1;
 		}
@@ -539,7 +539,7 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_date(uint32_t &r_pos, String &r
 #define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
 	uint32_t date = _R(r_pos);
-	time_t t = 978307200 + date;
+	time_t t = 978'307'200 + date;
 	struct tm lt;
 #ifdef WINDOWS_ENABLED
 	gmtime_s(&lt, &t);
@@ -556,63 +556,63 @@ _FORCE_INLINE_ bool CodeSignRequirements::_parse_match(uint32_t &r_pos, String &
 	uint32_t match = _R(r_pos);
 	r_pos += 4;
 	switch (match) {
-		case 0x00000000: {
+		case 0x0000'0000: {
 			r_out += "exists";
 		} break;
-		case 0x00000001: {
+		case 0x0000'0001: {
 			r_out += "= ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000002: {
+		case 0x0000'0002: {
 			r_out += "~ ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000003: {
+		case 0x0000'0003: {
 			r_out += "= *";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000004: {
+		case 0x0000'0004: {
 			r_out += "= ";
 			_parse_value(r_pos, r_out, p_rq_size);
 			r_out += "*";
 		} break;
-		case 0x00000005: {
+		case 0x0000'0005: {
 			r_out += "< ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000006: {
+		case 0x0000'0006: {
 			r_out += "> ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000007: {
+		case 0x0000'0007: {
 			r_out += "<= ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000008: {
+		case 0x0000'0008: {
 			r_out += ">= ";
 			_parse_value(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x00000009: {
+		case 0x0000'0009: {
 			r_out += "= ";
 			_parse_date(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x0000000A: {
+		case 0x0000'000a: {
 			r_out += "< ";
 			_parse_date(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x0000000B: {
+		case 0x0000'000b: {
 			r_out += "> ";
 			_parse_date(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x0000000C: {
+		case 0x0000'000c: {
 			r_out += "<= ";
 			_parse_date(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x0000000D: {
+		case 0x0000'000d: {
 			r_out += ">= ";
 			_parse_date(r_pos, r_out, p_rq_size);
 		} break;
-		case 0x0000000E: {
+		case 0x0000'000e: {
 			r_out += "absent";
 		} break;
 		default: {
@@ -630,7 +630,7 @@ Vector<String> CodeSignRequirements::parse_requirements() const {
 	// Read requirements set header.
 	ERR_FAIL_COND_V_MSG(blob.size() < 12, list, "CodeSign/Requirements: Blob is too small.");
 	uint32_t magic = _R(0);
-	ERR_FAIL_COND_V_MSG(magic != 0xfade0c01, list, "CodeSign/Requirements: Invalid set magic.");
+	ERR_FAIL_COND_V_MSG(magic != 0xfade'0c01, list, "CodeSign/Requirements: Invalid set magic.");
 	uint32_t size = _R(4);
 	ERR_FAIL_COND_V_MSG(size != (uint32_t)blob.size(), list, "CodeSign/Requirements: Invalid set size.");
 	uint32_t count = _R(8);
@@ -643,19 +643,19 @@ Vector<String> CodeSignRequirements::parse_requirements() const {
 		uint32_t rq_offset = _R(12 + i * 8 + 4);
 		ERR_FAIL_COND_V_MSG(rq_offset + 12 >= (uint32_t)blob.size(), list, "CodeSign/Requirements: Invalid requirement offset.");
 		switch (rq_type) {
-			case 0x00000001: {
+			case 0x0000'0001: {
 				out += "host => ";
 			} break;
-			case 0x00000002: {
+			case 0x0000'0002: {
 				out += "guest => ";
 			} break;
-			case 0x00000003: {
+			case 0x0000'0003: {
 				out += "designated => ";
 			} break;
-			case 0x00000004: {
+			case 0x0000'0004: {
 				out += "library => ";
 			} break;
-			case 0x00000005: {
+			case 0x0000'0005: {
 				out += "plugin => ";
 			} break;
 			default: {
@@ -666,8 +666,8 @@ Vector<String> CodeSignRequirements::parse_requirements() const {
 		uint32_t rq_size = _R(rq_offset + 4);
 		uint32_t rq_ver = _R(rq_offset + 8);
 		uint32_t pos = rq_offset + 12;
-		ERR_FAIL_COND_V_MSG(rq_magic != 0xfade0c00, list, "CodeSign/Requirements: Invalid requirement magic.");
-		ERR_FAIL_COND_V_MSG(rq_ver != 0x00000001, list, "CodeSign/Requirements: Invalid requirement version.");
+		ERR_FAIL_COND_V_MSG(rq_magic != 0xfade'0c00, list, "CodeSign/Requirements: Invalid requirement magic.");
+		ERR_FAIL_COND_V_MSG(rq_ver != 0x0000'0001, list, "CodeSign/Requirements: Invalid requirement version.");
 
 		// Read requirement tokens.
 		List<String> tokens;
@@ -676,69 +676,69 @@ Vector<String> CodeSignRequirements::parse_requirements() const {
 			pos += 4;
 			String token;
 			switch (rq_tag) {
-				case 0x00000000: {
+				case 0x0000'0000: {
 					token = "false";
 				} break;
-				case 0x00000001: {
+				case 0x0000'0001: {
 					token = "true";
 				} break;
-				case 0x00000002: {
+				case 0x0000'0002: {
 					token = "identifier ";
 					_parse_value(pos, token, rq_offset + rq_size);
 				} break;
-				case 0x00000003: {
+				case 0x0000'0003: {
 					token = "anchor apple";
 				} break;
-				case 0x00000004: {
+				case 0x0000'0004: {
 					_parse_certificate_slot(pos, token, rq_offset + rq_size);
 					token += " ";
 					_parse_hash_string(pos, token, rq_offset + rq_size);
 				} break;
-				case 0x00000005: {
+				case 0x0000'0005: {
 					token = "info";
 					_parse_key(pos, token, rq_offset + rq_size);
 					token += " = ";
 					_parse_value(pos, token, rq_offset + rq_size);
 				} break;
-				case 0x00000006: {
+				case 0x0000'0006: {
 					token = "and";
 				} break;
-				case 0x00000007: {
+				case 0x0000'0007: {
 					token = "or";
 				} break;
-				case 0x00000008: {
+				case 0x0000'0008: {
 					token = "cdhash ";
 					_parse_hash_string(pos, token, rq_offset + rq_size);
 				} break;
-				case 0x00000009: {
+				case 0x0000'0009: {
 					token = "!";
 				} break;
-				case 0x0000000A: {
+				case 0x0000'000a: {
 					token = "info";
 					_parse_key(pos, token, rq_offset + rq_size);
 					token += " ";
 					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
 				} break;
-				case 0x0000000B: {
+				case 0x0000'000b: {
 					_parse_certificate_slot(pos, token, rq_offset + rq_size);
 					_parse_key(pos, token, rq_offset + rq_size);
 					token += " ";
 					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
 				} break;
-				case 0x0000000C: {
+				case 0x0000'000c: {
 					_parse_certificate_slot(pos, token, rq_offset + rq_size);
 					token += " trusted";
 				} break;
-				case 0x0000000D: {
+				case 0x0000'000d: {
 					token = "anchor trusted";
 				} break;
-				case 0x0000000E: {
+				case 0x0000'000e: {
 					_parse_certificate_slot(pos, token, rq_offset + rq_size);
 					_parse_oid_key(pos, token, rq_offset + rq_size);
 					token += " ";
 					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
 				} break;
-				case 0x0000000F: {
+				case 0x0000'000f: {
 					token = "anchor apple generic";
 				} break;
 				default: {
@@ -814,15 +814,15 @@ void CodeSignRequirements::write_to_file(Ref<FileAccess> p_file) const {
 /*************************************************************************/
 
 CodeSignEntitlementsText::CodeSignEntitlementsText() {
-	blob.append_array({ 0xFA, 0xDE, 0x71, 0x71 }); // Text Entitlements set magic.
+	blob.append_array({ 0xfa, 0xde, 0x71, 0x71 }); // Text Entitlements set magic.
 	blob.append_array({ 0x00, 0x00, 0x00, 0x08 }); // Length (8 bytes).
 }
 
 CodeSignEntitlementsText::CodeSignEntitlementsText(const String &p_string) {
 	CharString utf8 = p_string.utf8();
-	blob.append_array({ 0xFA, 0xDE, 0x71, 0x71 }); // Text Entitlements set magic.
+	blob.append_array({ 0xfa, 0xde, 0x71, 0x71 }); // Text Entitlements set magic.
 	for (int i = 3; i >= 0; i--) {
-		uint8_t x = ((utf8.length() + 8) >> i * 8) & 0xFF; // Size.
+		uint8_t x = ((utf8.length() + 8) >> i * 8) & 0xff; // Size.
 		blob.push_back(x);
 	}
 	for (int i = 0; i < utf8.length(); i++) { // Write data.
@@ -868,7 +868,7 @@ void CodeSignEntitlementsText::write_to_file(Ref<FileAccess> p_file) const {
 /*************************************************************************/
 
 CodeSignEntitlementsBinary::CodeSignEntitlementsBinary() {
-	blob.append_array({ 0xFA, 0xDE, 0x71, 0x72 }); // Binary Entitlements magic.
+	blob.append_array({ 0xfa, 0xde, 0x71, 0x72 }); // Binary Entitlements magic.
 	blob.append_array({ 0x00, 0x00, 0x00, 0x08 }); // Length (8 bytes).
 }
 
@@ -876,10 +876,10 @@ CodeSignEntitlementsBinary::CodeSignEntitlementsBinary(const String &p_string) {
 	PList pl = PList(p_string);
 
 	PackedByteArray asn1 = pl.save_asn1();
-	blob.append_array({ 0xFA, 0xDE, 0x71, 0x72 }); // Binary Entitlements magic.
+	blob.append_array({ 0xfa, 0xde, 0x71, 0x72 }); // Binary Entitlements magic.
 	uint32_t size = asn1.size() + 8;
 	for (int i = 3; i >= 0; i--) {
-		uint8_t x = (size >> i * 8) & 0xFF; // Size.
+		uint8_t x = (size >> i * 8) & 0xff; // Size.
 		blob.push_back(x);
 	}
 	blob.append_array(asn1); // Write data.
@@ -923,7 +923,7 @@ void CodeSignEntitlementsBinary::write_to_file(Ref<FileAccess> p_file) const {
 /*************************************************************************/
 
 CodeSignCodeDirectory::CodeSignCodeDirectory() {
-	blob.append_array({ 0xFA, 0xDE, 0x0C, 0x02 }); // Code Directory magic.
+	blob.append_array({ 0xfa, 0xde, 0x0c, 0x02 }); // Code Directory magic.
 	blob.append_array({ 0x00, 0x00, 0x00, 0x00 }); // Size (8 bytes).
 }
 
@@ -935,9 +935,9 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 
 	int cd_size = 8 + sizeof(CodeDirectoryHeader) + (code_slots + special_slots) * p_hash_size + p_id.size() + p_team_id.size();
 	int cd_off = 8 + sizeof(CodeDirectoryHeader);
-	blob.append_array({ 0xFA, 0xDE, 0x0C, 0x02 }); // Code Directory magic.
+	blob.append_array({ 0xfa, 0xde, 0x0c, 0x02 }); // Code Directory magic.
 	for (int i = 3; i >= 0; i--) {
-		uint8_t x = (cd_size >> i * 8) & 0xFF; // Size.
+		uint8_t x = (cd_size >> i * 8) & 0xff; // Size.
 		blob.push_back(x);
 	}
 	blob.resize(cd_size);
@@ -1045,10 +1045,10 @@ void CodeSignCodeDirectory::write_to_file(Ref<FileAccess> p_file) const {
 /*************************************************************************/
 
 CodeSignSignature::CodeSignSignature() {
-	blob.append_array({ 0xFA, 0xDE, 0x0B, 0x01 }); // Signature magic.
+	blob.append_array({ 0xfa, 0xde, 0x0b, 0x01 }); // Signature magic.
 	uint32_t sign_size = 8; // Ad-hoc signature is empty.
 	for (int i = 3; i >= 0; i--) {
-		uint8_t x = (sign_size >> i * 8) & 0xFF; // Size.
+		uint8_t x = (sign_size >> i * 8) & 0xff; // Size.
 		blob.push_back(x);
 	}
 }
@@ -1116,7 +1116,7 @@ void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
 	uint32_t data_offset = 12 + blobs.size() * 8;
 
 	// Write header.
-	p_file->store_32(BSWAP32(0xfade0cc0));
+	p_file->store_32(BSWAP32(0xfade'0cc0));
 	p_file->store_32(BSWAP32(size));
 	p_file->store_32(BSWAP32(blobs.size()));
 

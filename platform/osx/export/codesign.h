@@ -167,7 +167,7 @@ public:
 
 	virtual int get_size() const override;
 
-	virtual uint32_t get_index_type() const override { return 0x00000002; };
+	virtual uint32_t get_index_type() const override { return 0x0000'0002; };
 	virtual void write_to_file(Ref<FileAccess> p_file) const override;
 };
 
@@ -189,7 +189,7 @@ public:
 
 	virtual int get_size() const override;
 
-	virtual uint32_t get_index_type() const override { return 0x00000005; };
+	virtual uint32_t get_index_type() const override { return 0x0000'0005; };
 	virtual void write_to_file(Ref<FileAccess> p_file) const override;
 };
 
@@ -211,7 +211,7 @@ public:
 
 	virtual int get_size() const override;
 
-	virtual uint32_t get_index_type() const override { return 0x00000007; };
+	virtual uint32_t get_index_type() const override { return 0x0000'0007; };
 	virtual void write_to_file(Ref<FileAccess> p_file) const override;
 };
 
@@ -312,7 +312,7 @@ public:
 	virtual PackedByteArray get_hash_sha256() const override;
 
 	virtual int get_size() const override;
-	virtual uint32_t get_index_type() const override { return 0x00000000; };
+	virtual uint32_t get_index_type() const override { return 0x0000'0000; };
 
 	virtual void write_to_file(Ref<FileAccess> p_file) const override;
 };
@@ -331,7 +331,7 @@ public:
 	virtual PackedByteArray get_hash_sha256() const override;
 
 	virtual int get_size() const override;
-	virtual uint32_t get_index_type() const override { return 0x00010000; };
+	virtual uint32_t get_index_type() const override { return 0x0001'0000; };
 
 	virtual void write_to_file(Ref<FileAccess> p_file) const override;
 };

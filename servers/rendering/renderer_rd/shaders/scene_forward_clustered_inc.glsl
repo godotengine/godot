@@ -75,7 +75,7 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
-#define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
+#define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xff
 
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2

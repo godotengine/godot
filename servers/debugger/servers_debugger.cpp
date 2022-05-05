@@ -261,8 +261,8 @@ public:
 				w[i].sig_id = sig_map[ptrs[i]->signature];
 			}
 			w[i].call_count = ptrs[i]->call_count;
-			w[i].total_time = ptrs[i]->total_time / 1000000.0;
-			w[i].self_time = ptrs[i]->self_time / 1000000.0;
+			w[i].total_time = ptrs[i]->total_time / 1'000'000.0;
+			w[i].self_time = ptrs[i]->self_time / 1'000'000.0;
 		}
 	}
 
@@ -402,7 +402,7 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 		// For camera override to stay live when the game is paused from the editor.
 		double delta = 0.0;
 		if (singleton->last_draw_time) {
-			delta = (OS::get_singleton()->get_ticks_usec() - singleton->last_draw_time) / 1000000.0;
+			delta = (OS::get_singleton()->get_ticks_usec() - singleton->last_draw_time) / 1'000'000.0;
 		}
 		singleton->last_draw_time = OS::get_singleton()->get_ticks_usec();
 		RenderingServer::get_singleton()->sync();

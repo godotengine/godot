@@ -42,7 +42,7 @@ void AudioStreamPlaybackSample::start(float p_from_pos) {
 			ima_adpcm[i].loop_step_index = 0;
 			ima_adpcm[i].loop_predictor = 0;
 			ima_adpcm[i].last_nibble = -1;
-			ima_adpcm[i].loop_pos = 0x7FFFFFFF;
+			ima_adpcm[i].loop_pos = 0x7fff'ffff;
 			ima_adpcm[i].window_ofs = 0;
 		}
 
@@ -127,7 +127,7 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 					src_ptr += AudioStreamSample::DATA_PAD;
 
 					uint8_t nbb = src_ptr[(ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
-					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
+					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xf);
 					step = _ima_adpcm_step_table[ima_adpcm[i].step_index];
 
 					ima_adpcm[i].step_index += _ima_adpcm_index_table[nibble];
@@ -155,8 +155,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 					ima_adpcm[i].predictor += diff;
 					if (ima_adpcm[i].predictor < -0x8000) {
 						ima_adpcm[i].predictor = -0x8000;
-					} else if (ima_adpcm[i].predictor > 0x7FFF) {
-						ima_adpcm[i].predictor = 0x7FFF;
+					} else if (ima_adpcm[i].predictor > 0x7fff) {
+						ima_adpcm[i].predictor = 0x7fff;
 					}
 
 					/* store loop if there */

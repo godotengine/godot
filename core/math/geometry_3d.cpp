@@ -243,7 +243,7 @@ Vector<Vector<Face3>> Geometry3D::separate_objects(Vector<Face3> p_array) {
 enum _CellFlags {
 	_CELL_SOLID = 1,
 	_CELL_EXTERIOR = 2,
-	_CELL_STEP_MASK = 0x1C,
+	_CELL_STEP_MASK = 0x1c,
 	_CELL_STEP_NONE = 0 << 2,
 	_CELL_STEP_Y_POS = 1 << 2,
 	_CELL_STEP_Y_NEG = 2 << 2,
@@ -252,7 +252,7 @@ enum _CellFlags {
 	_CELL_STEP_Z_POS = 5 << 2,
 	_CELL_STEP_Z_NEG = 6 << 2,
 	_CELL_STEP_DONE = 7 << 2,
-	_CELL_PREV_MASK = 0xE0,
+	_CELL_PREV_MASK = 0xe0,
 	_CELL_PREV_NONE = 0 << 5,
 	_CELL_PREV_Y_POS = 1 << 5,
 	_CELL_PREV_Y_NEG = 2 << 5,

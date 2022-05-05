@@ -724,7 +724,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 		String segment;
 		if (list_items[i]->list_type == LIST_DOTS) {
-			static const char32_t _prefix[2] = { 0x25CF, 0 };
+			static const char32_t _prefix[2] = { 0x25cf, 0 };
 			prefix = _prefix;
 			break;
 		} else if (list_items[i]->list_type == LIST_NUMBERS) {
@@ -988,7 +988,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!cprev) {
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
-						uint64_t max_rand = 2147483647;
+						uint64_t max_rand = 2'147'483'647;
 						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
@@ -1203,7 +1203,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!cprev) {
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
-						uint64_t max_rand = 2147483647;
+						uint64_t max_rand = 2'147'483'647;
 						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
@@ -3356,25 +3356,25 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			add_text("]");
 			pos = brk_end + 1;
 		} else if (tag == "lrm") {
-			add_text(String::chr(0x200E));
+			add_text(String::chr(0x200e));
 			pos = brk_end + 1;
 		} else if (tag == "rlm") {
-			add_text(String::chr(0x200F));
+			add_text(String::chr(0x200f));
 			pos = brk_end + 1;
 		} else if (tag == "lre") {
-			add_text(String::chr(0x202A));
+			add_text(String::chr(0x202a));
 			pos = brk_end + 1;
 		} else if (tag == "rle") {
-			add_text(String::chr(0x202B));
+			add_text(String::chr(0x202b));
 			pos = brk_end + 1;
 		} else if (tag == "lro") {
-			add_text(String::chr(0x202D));
+			add_text(String::chr(0x202d));
 			pos = brk_end + 1;
 		} else if (tag == "rlo") {
-			add_text(String::chr(0x202E));
+			add_text(String::chr(0x202e));
 			pos = brk_end + 1;
 		} else if (tag == "pdf") {
-			add_text(String::chr(0x202C));
+			add_text(String::chr(0x202c));
 			pos = brk_end + 1;
 		} else if (tag == "alm") {
 			add_text(String::chr(0x061c));
@@ -3392,16 +3392,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			add_text(String::chr(0x2069));
 			pos = brk_end + 1;
 		} else if (tag == "zwj") {
-			add_text(String::chr(0x200D));
+			add_text(String::chr(0x200d));
 			pos = brk_end + 1;
 		} else if (tag == "zwnj") {
-			add_text(String::chr(0x200C));
+			add_text(String::chr(0x200c));
 			pos = brk_end + 1;
 		} else if (tag == "wj") {
 			add_text(String::chr(0x2060));
 			pos = brk_end + 1;
 		} else if (tag == "shy") {
-			add_text(String::chr(0x00AD));
+			add_text(String::chr(0x00ad));
 			pos = brk_end + 1;
 		} else if (tag == "center") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_CENTER);

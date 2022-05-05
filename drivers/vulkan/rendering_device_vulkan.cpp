@@ -4189,7 +4189,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 
 	vertex_array.vertex_count = p_vertex_count;
 	vertex_array.description = p_vertex_format;
-	vertex_array.max_instances_allowed = 0xFFFFFFFF; //by default as many as you want
+	vertex_array.max_instances_allowed = 0xffff'ffff; //by default as many as you want
 	for (int i = 0; i < p_src_buffers.size(); i++) {
 		Buffer *buffer = vertex_buffer_owner.get_or_null(p_src_buffers[i]);
 
@@ -4252,7 +4252,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		if (p_format == INDEX_BUFFER_FORMAT_UINT16) {
 			const uint16_t *index16 = (const uint16_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
-				if (p_use_restart_indices && index16[i] == 0xFFFF) {
+				if (p_use_restart_indices && index16[i] == 0xffff) {
 					continue; //restart index, ignore
 				}
 				index_buffer.max_index = MAX(index16[i], index_buffer.max_index);
@@ -4260,17 +4260,17 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		} else {
 			const uint32_t *index32 = (const uint32_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
-				if (p_use_restart_indices && index32[i] == 0xFFFFFFFF) {
+				if (p_use_restart_indices && index32[i] == 0xffff'ffff) {
 					continue; //restart index, ignore
 				}
 				index_buffer.max_index = MAX(index32[i], index_buffer.max_index);
 			}
 		}
 	} else {
-		index_buffer.max_index = 0xFFFFFFFF;
+		index_buffer.max_index = 0xffff'ffff;
 	}
 #else
-	index_buffer.max_index = 0xFFFFFFFF;
+	index_buffer.max_index = 0xffff'ffff;
 #endif
 	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	if (p_data.size()) {
@@ -9285,15 +9285,15 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamps_frame() const {
 }
 
 static void mult64to128(uint64_t u, uint64_t v, uint64_t &h, uint64_t &l) {
-	uint64_t u1 = (u & 0xffffffff);
-	uint64_t v1 = (v & 0xffffffff);
+	uint64_t u1 = (u & 0xffff'ffff);
+	uint64_t v1 = (v & 0xffff'ffff);
 	uint64_t t = (u1 * v1);
-	uint64_t w3 = (t & 0xffffffff);
+	uint64_t w3 = (t & 0xffff'ffff);
 	uint64_t k = (t >> 32);
 
 	u >>= 32;
 	t = (u * v1) + k;
-	k = (t & 0xffffffff);
+	k = (t & 0xffff'ffff);
 	uint64_t w1 = (t >> 32);
 
 	v >>= 32;

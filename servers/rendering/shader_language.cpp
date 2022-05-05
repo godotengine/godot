@@ -382,7 +382,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 		switch (GETCHAR(-1)) {
 			case 0:
 				return _make_token(TK_EOF);
-			case 0xFFFF:
+			case 0xffff:
 				return _make_token(TK_CURSOR); //for completion
 			case '\t':
 			case '\r':
@@ -627,7 +627,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 								error = true;
 							}
 						} else {
-							if (symbol < 0x7F && suffix_lut[lut_case][symbol]) {
+							if (symbol < 0x7f && suffix_lut[lut_case][symbol]) {
 								if (symbol == 'x') {
 									hexa_found = true;
 									lut_case = CASE_HEXA_PERIOD;
@@ -683,7 +683,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char32_t last_char = str[str.length() - 1];
 
 					if (hexa_found) { // Integer (hex).
-						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
+						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xffff'ffff
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
 					} else if (period_found || exponent_found || float_suffix_found) { // Float
@@ -3383,7 +3383,7 @@ bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_ty
 		}
 		return true;
 	} else if (p_constant->datatype == TYPE_UINT && p_to_type == TYPE_INT) {
-		if (p_constant->values[0].uint > 0x7FFFFFFF) {
+		if (p_constant->values[0].uint > 0x7fff'ffff) {
 			return false;
 		}
 		if (p_value) {
@@ -6037,7 +6037,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 	while (expression.size() > 1) {
 		int next_op = -1;
-		int min_priority = 0xFFFFF;
+		int min_priority = 0xfffff;
 		bool is_unary = false;
 		bool is_ternary = false;
 
@@ -9702,7 +9702,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 
 						if (j == completion_argument) {
-							calltip += char32_t(0xFFFF);
+							calltip += char32_t(0xffff);
 						}
 
 						if (shader->functions[i].function->arguments[j].is_const) {
@@ -9728,7 +9728,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 
 						if (j == completion_argument) {
-							calltip += char32_t(0xFFFF);
+							calltip += char32_t(0xffff);
 						}
 					}
 
@@ -9763,7 +9763,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							}
 
 							if (i == completion_argument) {
-								calltip += char32_t(0xFFFF);
+								calltip += char32_t(0xffff);
 							}
 
 							calltip += get_datatype_name(E.value.arguments[i].type);
@@ -9771,7 +9771,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							calltip += E.value.arguments[i].name;
 
 							if (i == completion_argument) {
-								calltip += char32_t(0xFFFF);
+								calltip += char32_t(0xffff);
 							}
 						}
 
@@ -9836,7 +9836,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 
 						if (i == completion_argument) {
-							calltip += char32_t(0xFFFF);
+							calltip += char32_t(0xffff);
 						}
 
 						if (out_args.has(i)) {
@@ -9852,7 +9852,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 
 						if (i == completion_argument) {
-							calltip += char32_t(0xFFFF);
+							calltip += char32_t(0xffff);
 						}
 
 						found_arg = true;

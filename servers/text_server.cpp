@@ -548,7 +548,7 @@ void TextServer::_bind_methods() {
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int w = ((p_index <= 0xff) ? 1 : ((p_index <= 0xffff) ? 2 : 3));
 	int sp = MAX(0, w - 1);
 	int sz = MAX(1, Math::round(p_size / 15.f));
 
@@ -556,7 +556,7 @@ Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const
 }
 
 void TextServer::_draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
-	static uint8_t chars[] = { 0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B, 0x77, 0x1F, 0x4E, 0x3D, 0x4F, 0x47, 0x00 };
+	static uint8_t chars[] = { 0x7e, 0x30, 0x6d, 0x79, 0x33, 0x5b, 0x5f, 0x70, 0x7f, 0x7b, 0x77, 0x1f, 0x4e, 0x3d, 0x4f, 0x47, 0x00 };
 	uint8_t x = chars[p_index];
 	if (x & (1 << 6)) {
 		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos, Size2(3, 1) * p_size), p_color);
@@ -586,7 +586,7 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 		return;
 	}
 
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int w = ((p_index <= 0xff) ? 1 : ((p_index <= 0xffff) ? 2 : 3));
 	int sp = MAX(0, w - 1);
 	int sz = MAX(1, Math::round(p_size / 15.f));
 
@@ -599,18 +599,18 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(size.x, sz)), p_color);
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, size.y - sz), Size2(size.x, sz)), p_color);
 
-	uint8_t a = p_index & 0x0F;
-	uint8_t b = (p_index >> 4) & 0x0F;
-	uint8_t c = (p_index >> 8) & 0x0F;
-	uint8_t d = (p_index >> 12) & 0x0F;
-	uint8_t e = (p_index >> 16) & 0x0F;
-	uint8_t f = (p_index >> 20) & 0x0F;
+	uint8_t a = p_index & 0x0f;
+	uint8_t b = (p_index >> 4) & 0x0f;
+	uint8_t c = (p_index >> 8) & 0x0f;
+	uint8_t d = (p_index >> 12) & 0x0f;
+	uint8_t e = (p_index >> 16) & 0x0f;
+	uint8_t f = (p_index >> 20) & 0x0f;
 
 	// Draw hex code.
-	if (p_index <= 0xFF) {
+	if (p_index <= 0xff) {
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, b, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, a, p_color);
-	} else if (p_index <= 0xFFFF) {
+	} else if (p_index <= 0xffff) {
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, d, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 2) * sz, c, p_color);
 		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, b, p_color);
@@ -1541,7 +1541,7 @@ void TextServer::_init_diacritics_map() {
 String TextServer::strip_diacritics(const String &p_string) const {
 	String result;
 	for (int i = 0; i < p_string.length(); i++) {
-		if (p_string[i] < 0x02B0 || p_string[i] > 0x036F) { // Skip combining diacritics.
+		if (p_string[i] < 0x02b0 || p_string[i] > 0x036f) { // Skip combining diacritics.
 			if (diacritics_map.has(p_string[i])) {
 				result += diacritics_map[p_string[i]];
 			} else {

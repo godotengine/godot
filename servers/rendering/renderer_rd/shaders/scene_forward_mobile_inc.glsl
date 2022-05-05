@@ -67,7 +67,7 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 #define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
-#define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
+#define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xff
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer OmniLights {
 	LightData data[];

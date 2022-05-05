@@ -586,7 +586,7 @@ vec4 fog_process(vec3 vertex) {
 
 void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
 	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFF;
+	item_min = item_min_max & 0xffff;
 	item_max = item_min_max >> 16;
 
 	item_from = item_min >> 5;
@@ -596,7 +596,7 @@ void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max,
 uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
 	int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
-	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
+	return bitfieldInsert(uint(0), uint(0xffffffff), local_min, mask_width);
 }
 
 #endif //!MODE_RENDER DEPTH
@@ -1062,10 +1062,10 @@ void main() {
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
-		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint ofs = instances.data[instance_index].gi_offset & 0xffff;
 		vec3 uvw;
 		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
-		uvw.z = float((instances.data[instance_index].gi_offset >> 16) & 0xFFFF);
+		uvw.z = float((instances.data[instance_index].gi_offset >> 16) & 0xffff);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1119,7 +1119,7 @@ void main() {
 
 		// helper constants, compute once
 
-		uint cascade = 0xFFFFFFFF;
+		uint cascade = 0xffffffff;
 		vec3 cascade_pos;
 		vec3 cascade_normal;
 
@@ -1168,7 +1168,7 @@ void main() {
 
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index1 = instances.data[instance_index].gi_offset & 0xffff;
 		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -1182,7 +1182,7 @@ void main() {
 
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
-		if (index2 != 0xFFFF) {
+		if (index2 != 0xffff) {
 			voxel_gi_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 		}
 
@@ -1631,9 +1631,9 @@ void main() {
 			float shadow = 1.0;
 #ifndef SHADOWS_DISABLED
 			if (i < 4) {
-				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
+				shadow = float(shadow0 >> (i * 8) & 0xff) / 255.0;
 			} else {
-				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+				shadow = float(shadow1 >> ((i - 4) * 8) & 0xff) / 255.0;
 			}
 #endif
 
@@ -1919,7 +1919,7 @@ void main() {
 			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
 			//store as 8985 to have 2 extra neighbour bits
-			uint light_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
+			uint light_rgbe = ((uint(sRed) & 0x1ff) >> 1) | ((uint(sGreen) & 0x1ff) << 8) | (((uint(sBlue) & 0x1ff) >> 1) << 17) | ((uint(exps) & 0x1f) << 25);
 
 			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
 			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
@@ -1951,13 +1951,13 @@ void main() {
 
 #ifdef MODE_RENDER_VOXEL_GI
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
-		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index1 = instances.data[instance_index].gi_offset & 0xffff;
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
-		voxel_gi_buffer.x = index1 & 0xFF;
-		voxel_gi_buffer.y = index2 & 0xFF;
+		voxel_gi_buffer.x = index1 & 0xff;
+		voxel_gi_buffer.y = index2 & 0xff;
 	} else {
-		voxel_gi_buffer.x = 0xFF;
-		voxel_gi_buffer.y = 0xFF;
+		voxel_gi_buffer.x = 0xff;
+		voxel_gi_buffer.y = 0xff;
 	}
 #endif
 

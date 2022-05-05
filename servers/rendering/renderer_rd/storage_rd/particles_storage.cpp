@@ -936,7 +936,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						col.extents[1] = extents.y;
 						col.extents[2] = extents.z;
 						col.texture_index = collision_3d_textures_used;
-						col.scale = (scale.x + scale.y + scale.z) * 0.333333333333; //non uniform scale non supported
+						col.scale = (scale.x + scale.y + scale.z) * 0.333'333'333'333; //non uniform scale non supported
 
 						collision_3d_textures[collision_3d_textures_used] = pc->field_texture;
 						collision_3d_textures_used++;

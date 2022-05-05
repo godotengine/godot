@@ -81,7 +81,7 @@ void EditorFileServer::_subthread_start(void *s) {
 		if (s2 != cd->efs->password) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
-			OS::get_singleton()->delay_usec(1000000);
+			OS::get_singleton()->delay_usec(1'000'000);
 			_close_client(cd);
 			ERR_PRINT("CLIENT PASSWORD MISMATCH");
 			ERR_FAIL();
@@ -90,7 +90,7 @@ void EditorFileServer::_subthread_start(void *s) {
 		if (!cd->efs->password.is_empty()) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
-			OS::get_singleton()->delay_usec(1000000);
+			OS::get_singleton()->delay_usec(1'000'000);
 			_close_client(cd);
 			ERR_PRINT("CLIENT PASSWORD MISMATCH (should be empty!)");
 			ERR_FAIL();

@@ -514,7 +514,7 @@ uint64_t OS_UWP::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
-	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
+	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10'000'000;
 }
 
 void OS_UWP::delay_usec(uint32_t p_usec) const {
@@ -536,7 +536,7 @@ uint64_t OS_UWP::get_ticks_usec() const {
 	// Divide by frequency to get the time in seconds
 	// original calculation shown below is subject to overflow
 	// with high ticks_per_second and a number of days since the last reboot.
-	// time = ticks * 1000000L / ticks_per_second;
+	// time = ticks * 1'000'000L / ticks_per_second;
 
 	// we can prevent this by either using 128 bit math
 	// or separating into a calculation for seconds, and the fraction
@@ -546,10 +546,10 @@ uint64_t OS_UWP::get_ticks_usec() const {
 	uint64_t leftover = ticks % ticks_per_second;
 
 	// remainder
-	uint64_t time = (leftover * 1000000L) / ticks_per_second;
+	uint64_t time = (leftover * 1'000'000L) / ticks_per_second;
 
 	// seconds
-	time += seconds * 1000000L;
+	time += seconds * 1'000'000L;
 
 	return time;
 }

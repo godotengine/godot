@@ -2625,8 +2625,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
 
-	uint32_t sdfgi_last_light_index = 0xFFFFFFFF;
-	uint32_t sdfgi_last_light_cascade = 0xFFFFFFFF;
+	uint32_t sdfgi_last_light_index = 0xffff'ffff;
+	uint32_t sdfgi_last_light_cascade = 0xffff'ffff;
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
@@ -2969,7 +2969,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		if (p_render_buffers.is_valid()) {
 			cull.sdfgi.cascade_light_count = 0;
 
-			uint32_t prev_cascade = 0xFFFFFFFF;
+			uint32_t prev_cascade = 0xffff'ffff;
 			uint32_t pending_region_count = scene_render->sdfgi_get_pending_region_count(p_render_buffers);
 
 			for (uint32_t i = 0; i < pending_region_count; i++) {

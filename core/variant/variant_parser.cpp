@@ -295,7 +295,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						}
 
 						// Parse UTF-16 pair.
-						if ((res & 0xfffffc00) == 0xd800) {
+						if ((res & 0xffff'fc00) == 0xd800) {
 							if (prev == 0) {
 								prev = res;
 								continue;
@@ -304,7 +304,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 								r_token.type = TK_ERROR;
 								return ERR_PARSE_ERROR;
 							}
-						} else if ((res & 0xfffffc00) == 0xdc00) {
+						} else if ((res & 0xffff'fc00) == 0xdc00) {
 							if (prev == 0) {
 								r_err_str = "Invalid UTF-16 sequence in string, unpaired trail surrogate";
 								r_token.type = TK_ERROR;

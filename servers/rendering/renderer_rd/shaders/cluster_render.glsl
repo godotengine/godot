@@ -110,7 +110,7 @@ void main() {
 
 	//find the current element in the list and plot the bit to mark it as used
 	uint usage_write_offset = cluster_offset + (element_index >> 5);
-	uint usage_write_bit = 1 << (element_index & 0x1F);
+	uint usage_write_bit = 1 << (element_index & 0x1f);
 
 #ifdef USE_SUBGROUPS
 

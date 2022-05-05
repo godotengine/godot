@@ -436,7 +436,7 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
 	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
 
-	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size
+	if (p_embedded_size + p_embedded_start >= 0x1'0000'0000) { // Check for total executable size
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Windows executables cannot be >= 4 GiB.");
 	}
 
@@ -452,7 +452,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
-		if (magic != 0x00004550) {
+		if (magic != 0x0000'4550) {
 			return ERR_FILE_CORRUPT;
 		}
 	}

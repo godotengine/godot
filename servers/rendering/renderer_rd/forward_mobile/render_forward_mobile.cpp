@@ -51,7 +51,7 @@ RenderForwardMobile::ForwardID RenderForwardMobile::_allocate_forward_id(Forward
 	if (index == -1) {
 		index = forward_id_allocators[p_type].allocations.size();
 		forward_id_allocators[p_type].allocations.push_back(true);
-		forward_id_allocators[p_type].map.push_back(0xFF);
+		forward_id_allocators[p_type].map.push_back(0xff);
 	} else {
 		forward_id_allocators[p_type].allocations[index] = true;
 	}
@@ -1393,7 +1393,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					}
 					uses_lightmap = true;
 				} else {
-					inst->gi_offset_cache = 0xFFFFFFFF;
+					inst->gi_offset_cache = 0xffff'ffff;
 				}
 
 			} else if (inst->lightmap_sh) {
@@ -1772,17 +1772,17 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 void RenderForwardMobile::_fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, uint32_t &spec_constants, const GeometryInstanceForwardMobile *p_instance) {
 	// first zero out our indices
 
-	p_push_constant->omni_lights[0] = 0xFFFF;
-	p_push_constant->omni_lights[1] = 0xFFFF;
+	p_push_constant->omni_lights[0] = 0xffff;
+	p_push_constant->omni_lights[1] = 0xffff;
 
-	p_push_constant->spot_lights[0] = 0xFFFF;
-	p_push_constant->spot_lights[1] = 0xFFFF;
+	p_push_constant->spot_lights[0] = 0xffff;
+	p_push_constant->spot_lights[1] = 0xffff;
 
-	p_push_constant->decals[0] = 0xFFFF;
-	p_push_constant->decals[1] = 0xFFFF;
+	p_push_constant->decals[0] = 0xffff;
+	p_push_constant->decals[1] = 0xffff;
 
-	p_push_constant->reflection_probes[0] = 0xFFFF;
-	p_push_constant->reflection_probes[1] = 0xFFFF;
+	p_push_constant->reflection_probes[0] = 0xffff;
+	p_push_constant->reflection_probes[1] = 0xffff;
 
 	if (p_instance->omni_light_count == 0) {
 		spec_constants |= 1 << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
@@ -1800,7 +1800,7 @@ void RenderForwardMobile::_fill_push_constant_instance_indices(GeometryInstanceF
 	for (uint32_t i = 0; i < MAX_RDL_CULL; i++) {
 		uint32_t ofs = i < 4 ? 0 : 1;
 		uint32_t shift = (i & 0x3) << 3;
-		uint32_t mask = ~(0xFF << shift);
+		uint32_t mask = ~(0xff << shift);
 		if (i < p_instance->omni_light_count) {
 			p_push_constant->omni_lights[ofs] &= mask;
 			p_push_constant->omni_lights[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_OMNI_LIGHT].map[p_instance->omni_lights[i]]) << shift;
@@ -2383,7 +2383,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.sort_key2 = 0;
 
 	sdcache->sort.surface_index = p_surface;
-	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
+	sdcache->sort.material_id_low = p_material_id & 0x0000'ffff;
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();

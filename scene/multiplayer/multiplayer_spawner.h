@@ -42,7 +42,7 @@ class MultiplayerSpawner : public Node {
 
 public:
 	enum {
-		INVALID_ID = 0xFF,
+		INVALID_ID = 0xff,
 	};
 
 private:

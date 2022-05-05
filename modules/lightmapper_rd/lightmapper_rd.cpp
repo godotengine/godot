@@ -182,7 +182,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 
 	Size2i best_atlas_size;
 	int best_atlas_slices = 0;
-	int best_atlas_memory = 0x7FFFFFFF;
+	int best_atlas_memory = 0x7fff'ffff;
 	Vector<Vector3i> best_atlas_offsets;
 
 	//determine best texture array atlas size by bruteforce fitting
@@ -438,7 +438,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 	{
 		uint32_t *tiw = triangle_indices.ptrw();
-		uint32_t last_cell = 0xFFFFFFFF;
+		uint32_t last_cell = 0xffff'ffff;
 		uint32_t *giw = grid_indices.ptrw();
 		bool *solidw = solid.ptrw();
 		for (uint32_t i = 0; i < triangle_sort.size(); i++) {

@@ -79,7 +79,7 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 			return INVALID_ID;
 		}
 	}
-	return ID(uid & 0x7FFFFFFFFFFFFFFF);
+	return ID(uid & 0x7fff'ffff'ffff'ffff);
 }
 
 ResourceUID::ID ResourceUID::create_id() {
@@ -88,7 +88,7 @@ ResourceUID::ID ResourceUID::create_id() {
 		MutexLock lock(mutex);
 		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
 		ERR_FAIL_COND_V(err != OK, INVALID_ID);
-		id &= 0x7FFFFFFFFFFFFFFF;
+		id &= 0x7fff'ffff'ffff'ffff;
 		bool exists = unique_ids.has(id);
 		if (!exists) {
 			return id;

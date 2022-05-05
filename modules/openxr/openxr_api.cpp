@@ -1341,7 +1341,7 @@ bool OpenXRAPI::acquire_image(XrSwapchain p_swapchain, uint32_t &r_image_index) 
 	XrSwapchainImageWaitInfo swapchain_image_wait_info = {
 		XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO, // type
 		nullptr, // next
-		17000000 // timeout in nanoseconds
+		17'000'000 // timeout in nanoseconds
 	};
 
 	result = xrWaitSwapchainImage(p_swapchain, &swapchain_image_wait_info);
@@ -1391,7 +1391,7 @@ void OpenXRAPI::pre_render() {
 		return;
 	}
 
-	if (frame_state.predictedDisplayPeriod > 500000000) {
+	if (frame_state.predictedDisplayPeriod > 500'000'000) {
 		// display period more then 0.5 seconds? must be wrong data
 		print_verbose("OpenXR resetting invalid display period " + rtos(frame_state.predictedDisplayPeriod));
 		frame_state.predictedDisplayPeriod = 0;
@@ -2312,15 +2312,15 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_tracke
 
 	// print_verbose("Checking " + action->name + " => " + tracker->name + " (" + itos(tracker->toplevel_path) + ")");
 
-	uint64_t index = 0xFFFFFFFF;
+	uint64_t index = 0xffff'ffff;
 	uint64_t size = uint64_t(action->trackers.size());
-	for (uint64_t i = 0; i < size && index == 0xFFFFFFFF; i++) {
+	for (uint64_t i = 0; i < size && index == 0xffff'ffff; i++) {
 		if (action->trackers[i].tracker_rid == p_tracker) {
 			index = i;
 		}
 	}
 
-	if (index == 0xFFFFFFFF) {
+	if (index == 0xffff'ffff) {
 		// couldn't find it?
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}

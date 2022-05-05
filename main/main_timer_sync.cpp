@@ -236,7 +236,7 @@ double MainTimerSync::get_cpu_process_step() {
 	uint64_t cpu_ticks_elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
 	last_cpu_ticks_usec = current_cpu_ticks_usec;
 
-	return cpu_ticks_elapsed / 1000000.0;
+	return cpu_ticks_elapsed / 1'000'000.0;
 }
 
 MainTimerSync::MainTimerSync() {

@@ -8,7 +8,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define MAX_DISTANCE 100000.0
 
-#define NO_CHILDREN 0xFFFFFFFF
+#define NO_CHILDREN 0xffffffff
 
 struct CellChildren {
 	uint children[8];
@@ -46,7 +46,7 @@ void main() {
 	float closest_dist = MAX_DISTANCE;
 
 	for (uint i = params.offset; i < params.end; i++) {
-		vec3 posu = vec3(uvec3(cell_data.data[i].position & 0x7FF, (cell_data.data[i].position >> 11) & 0x3FF, cell_data.data[i].position >> 21));
+		vec3 posu = vec3(uvec3(cell_data.data[i].position & 0x7ff, (cell_data.data[i].position >> 11) & 0x3ff, cell_data.data[i].position >> 21));
 		float dist = length(pos - posu);
 		if (dist < closest_dist) {
 			closest_dist = dist;

@@ -4335,7 +4335,7 @@ struct AnimationCompressionDataState {
 		r_buffer |= p_value << r_bits_used;
 		r_bits_used += p_bits;
 		while (r_bits_used >= 8) {
-			uint8_t byte = r_buffer & 0xFF;
+			uint8_t byte = r_buffer & 0xff;
 			data.push_back(byte);
 			r_buffer >>= 8;
 			r_bits_used -= 8;
@@ -4416,7 +4416,7 @@ struct AnimationCompressionDataState {
 			}
 		}
 		if (bits_used != 0) {
-			ERR_FAIL_COND(bit_buffer > 0xFF); // Sanity check
+			ERR_FAIL_COND(bit_buffer > 0xff); // Sanity check
 			data.push_back(bit_buffer);
 		}
 
@@ -4641,7 +4641,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 	while (true) {
 		// Begin by finding the keyframe in all tracks with the time closest to the current time
-		const uint32_t FRAME_MAX = 0xFFFFFFFF;
+		const uint32_t FRAME_MAX = 0xffff'ffff;
 		const int32_t NO_TRACK_FOUND = -1;
 		uint32_t best_frame = FRAME_MAX;
 		uint32_t best_invalid_frame = FRAME_MAX;
@@ -5048,7 +5048,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 	const uint8_t *data_keys_base = (const uint8_t *)&page_data[indices[p_compressed_track * 3 + 2]];
 
 	uint16_t time_key_data = time_keys[packet_idx * 2 + 1];
-	uint32_t data_offset = (time_key_data & 0xFFF) * 4; // lower 12 bits
+	uint32_t data_offset = (time_key_data & 0xfff) * 4; // lower 12 bits
 	uint32_t data_count = (time_key_data >> 12) + 1;
 
 	const uint16_t *data_key = (const uint16_t *)(data_keys_base + data_offset);
@@ -5068,7 +5068,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 			//decode forward
 			uint32_t bit_width[COMPONENTS];
 			for (uint32_t i = 0; i < COMPONENTS; i++) {
-				bit_width[i] = (data_key[COMPONENTS] >> (i * 4)) & 0xF;
+				bit_width[i] = (data_key[COMPONENTS] >> (i * 4)) & 0xf;
 			}
 
 			uint32_t frame_bit_width = (data_key[COMPONENTS] >> 12) + 1;
@@ -5119,7 +5119,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 			if ((uint32_t)packet_idx < time_key_count - 1) { // Sanity check but should not matter much, otherwise current next packet is last packet
 
 				uint16_t time_key_data_next = time_keys[(packet_idx + 1) * 2 + 1];
-				uint32_t data_offset_next = (time_key_data_next & 0xFFF) * 4; // Lower 12 bits
+				uint32_t data_offset_next = (time_key_data_next & 0xfff) * 4; // Lower 12 bits
 
 				const uint16_t *data_key_next = (const uint16_t *)(data_keys_base + data_offset_next);
 				base_frame = time_keys[(packet_idx + 1) * 2 + 0];
@@ -5183,7 +5183,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 			const uint8_t *data_keys_base = (const uint8_t *)&page_data[indices[p_compressed_track * 3 + 2]];
 
 			uint16_t time_key_data = time_keys[i * 2 + 1];
-			uint32_t data_offset = (time_key_data & 0xFFF) * 4; // lower 12 bits
+			uint32_t data_offset = (time_key_data & 0xfff) * 4; // lower 12 bits
 			uint32_t data_count = (time_key_data >> 12) + 1;
 
 			const uint16_t *data_key = (const uint16_t *)(data_keys_base + data_offset);
@@ -5192,7 +5192,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 				//decode forward
 				uint32_t bit_width[COMPONENTS];
 				for (uint32_t j = 0; j < COMPONENTS; j++) {
-					bit_width[j] = (data_key[COMPONENTS] >> (j * 4)) & 0xF;
+					bit_width[j] = (data_key[COMPONENTS] >> (j * 4)) & 0xf;
 				}
 
 				uint32_t frame_bit_width = (data_key[COMPONENTS] >> 12) + 1;
@@ -5281,7 +5281,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 		for (uint32_t j = 0; j < time_key_count; j++) {
 			uint32_t subkeys = (time_keys[j * 2 + 1] >> 12) + 1;
 			if ((uint32_t)p_index < subkeys) {
-				uint16_t data_offset = (time_keys[j * 2 + 1] & 0xFFF) * 4;
+				uint16_t data_offset = (time_keys[j * 2 + 1] & 0xfff) * 4;
 
 				const uint16_t *data_key = (const uint16_t *)(data_keys_base + data_offset);
 
@@ -5295,7 +5295,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 				if (p_index > 0) {
 					uint32_t bit_width[COMPONENTS];
 					for (uint32_t k = 0; k < COMPONENTS; k++) {
-						bit_width[k] = (data_key[COMPONENTS] >> (k * 4)) & 0xF;
+						bit_width[k] = (data_key[COMPONENTS] >> (k * 4)) & 0xf;
 					}
 					uint32_t frame_bit_width = (data_key[COMPONENTS] >> 12) + 1;
 

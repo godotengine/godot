@@ -267,7 +267,7 @@ Vector<uint8_t> AppxPackager::make_end_of_central_record() {
 		buf.write[offs++] = 0x0;
 	}
 	for (int i = 0; i < 12; i++) {
-		buf.write[offs++] = 0xFF;
+		buf.write[offs++] = 0xff;
 	}
 
 	// Size of comments

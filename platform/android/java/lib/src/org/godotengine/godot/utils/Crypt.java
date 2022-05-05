@@ -44,7 +44,7 @@ public class Crypt {
 			// Create Hex String
 			StringBuilder hexString = new StringBuilder();
 			for (byte b : messageDigest)
-				hexString.append(Integer.toHexString(0xFF & b));
+				hexString.append(Integer.toHexString(0xff & b));
 			return hexString.toString();
 
 		} catch (Exception e) {

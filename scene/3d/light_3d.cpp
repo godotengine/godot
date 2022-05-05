@@ -350,7 +350,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
 	set_negative(false);
-	set_cull_mask(0xFFFFFFFF);
+	set_cull_mask(0xffff'ffff);
 
 	set_param(PARAM_ENERGY, 1);
 	set_param(PARAM_INDIRECT_ENERGY, 1);

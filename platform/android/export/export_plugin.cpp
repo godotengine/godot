@@ -371,7 +371,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 								d.description += "Chipset: " + p.get_slice("=", 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.opengles.version=")) {
 								uint32_t opengl = p.get_slice("=", 1).to_int();
-								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl)&0xFF) + "\n";
+								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xff) + "." + itos((opengl)&0xff) + "\n";
 							}
 						}
 
@@ -390,7 +390,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		}
 
 		uint64_t sleep = 200;
-		uint64_t wait = 3000000;
+		uint64_t wait = 3'000'000;
 		uint64_t time = OS::get_singleton()->get_ticks_usec();
 		while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 			OS::get_singleton()->delay_usec(1000 * sleep);
@@ -819,15 +819,15 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 	// Leaving the unused types commented because looking these constants up
 	// again later would be annoying
-	// const int CHUNK_AXML_FILE = 0x00080003;
-	// const int CHUNK_RESOURCEIDS = 0x00080180;
-	const int CHUNK_STRINGS = 0x001C0001;
-	// const int CHUNK_XML_END_NAMESPACE = 0x00100101;
-	const int CHUNK_XML_END_TAG = 0x00100103;
-	// const int CHUNK_XML_START_NAMESPACE = 0x00100100;
-	const int CHUNK_XML_START_TAG = 0x00100102;
-	// const int CHUNK_XML_TEXT = 0x00100104;
-	const int UTF8_FLAG = 0x00000100;
+	// const int CHUNK_AXML_FILE = 0x0008'0003;
+	// const int CHUNK_RESOURCEIDS = 0x0008'0180;
+	const int CHUNK_STRINGS = 0x001c'0001;
+	// const int CHUNK_XML_END_NAMESPACE = 0x0010'0101;
+	const int CHUNK_XML_END_TAG = 0x0010'0103;
+	// const int CHUNK_XML_START_NAMESPACE = 0x0010'0100;
+	const int CHUNK_XML_START_TAG = 0x0010'0102;
+	// const int CHUNK_XML_TEXT = 0x0010'0104;
+	const int UTF8_FLAG = 0x0000'0100;
 
 	Vector<String> string_table;
 
@@ -932,9 +932,9 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
 					uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-					const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
+					const String value = (attr_value != 0xffff'ffff) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 					String attrname = string_table[attr_name];
-					const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
+					const String nspace = (attr_nspace != 0xffff'ffff) ? string_table[attr_nspace] : "";
 
 					//replace project information
 					if (tname == "manifest" && attrname == "package") {
@@ -946,7 +946,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					}
 
 					if (tname == "manifest" && attrname == "versionName") {
-						if (attr_value == 0xFFFFFFFF) {
+						if (attr_value == 0xffff'ffff) {
 							WARN_PRINT("Version name in a resource, should be plain text");
 						} else {
 							string_table.write[attr_value] = version_name;
@@ -954,7 +954,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					}
 
 					if (tname == "application" && attrname == "requestLegacyExternalStorage") {
-						encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+						encode_uint32(has_storage_permission ? 0xffff'ffff : 0, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "application" && attrname == "allowBackup") {
@@ -987,16 +987,16 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "supports-screens") {
 						if (attrname == "smallScreens") {
-							encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_support_small ? 0xffff'ffff : 0, &p_manifest.write[iofs + 16]);
 
 						} else if (attrname == "normalScreens") {
-							encode_uint32(screen_support_normal ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_support_normal ? 0xffff'ffff : 0, &p_manifest.write[iofs + 16]);
 
 						} else if (attrname == "largeScreens") {
-							encode_uint32(screen_support_large ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_support_large ? 0xffff'ffff : 0, &p_manifest.write[iofs + 16]);
 
 						} else if (attrname == "xlargeScreens") {
-							encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_support_xlarge ? 0xffff'ffff : 0, &p_manifest.write[iofs + 16]);
 						}
 					}
 
@@ -1349,7 +1349,7 @@ String EditorExportPlatformAndroid::_parse_string(const uint8_t *p_bytes, bool p
 		byte = p_bytes[offset];
 		offset++;
 		if (byte & 0x80) {
-			len = byte & 0x7F;
+			len = byte & 0x7f;
 			len = (len << 8) + p_bytes[offset];
 			offset++;
 		} else {
@@ -1359,7 +1359,7 @@ String EditorExportPlatformAndroid::_parse_string(const uint8_t *p_bytes, bool p
 		len = decode_uint16(&p_bytes[offset]);
 		offset += 2;
 		if (len & 0x8000) {
-			len &= 0x7FFF;
+			len &= 0x7fff;
 			len = (len << 16) + decode_uint16(&p_bytes[offset]);
 			offset += 2;
 		}
@@ -1389,7 +1389,7 @@ String EditorExportPlatformAndroid::_parse_string(const uint8_t *p_bytes, bool p
 }
 
 void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest) {
-	const int UTF8_FLAG = 0x00000100;
+	const int UTF8_FLAG = 0x0000'0100;
 
 	uint32_t string_block_len = decode_uint32(&r_manifest[16]);
 	uint32_t string_count = decode_uint32(&r_manifest[20]);

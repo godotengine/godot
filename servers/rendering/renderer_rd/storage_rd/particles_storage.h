@@ -241,7 +241,7 @@ struct Particles {
 
 struct ParticlesCollision {
 	RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t cull_mask = 0xffff'ffff;
 	float radius = 1.0;
 	Vector3 extents = Vector3(1, 1, 1);
 	float attractor_strength = 1.0;

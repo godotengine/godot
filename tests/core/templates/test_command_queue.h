@@ -391,7 +391,7 @@ TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
 
 	RandomNumberGenerator rng;
 
-	rng.set_seed(1837267);
+	rng.set_seed(1'837'267);
 
 	int msgs_to_add = 2048;
 

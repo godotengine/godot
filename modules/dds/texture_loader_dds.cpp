@@ -37,14 +37,14 @@
 // Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
 
 enum {
-	DDS_MAGIC = 0x20534444,
-	DDSD_PITCH = 0x00000008,
-	DDSD_LINEARSIZE = 0x00080000,
-	DDSD_MIPMAPCOUNT = 0x00020000,
-	DDPF_FOURCC = 0x00000004,
-	DDPF_ALPHAPIXELS = 0x00000001,
-	DDPF_INDEXED = 0x00000020,
-	DDPF_RGB = 0x00000040,
+	DDS_MAGIC = 0x20'53'44'44, // "DDS "
+	DDSD_PITCH = 0x0000'0008,
+	DDSD_LINEARSIZE = 0x0008'0000,
+	DDSD_MIPMAPCOUNT = 0x0002'0000,
+	DDPF_FOURCC = 0x0000'0004,
+	DDPF_ALPHAPIXELS = 0x0000'0001,
+	DDPF_INDEXED = 0x0000'0020,
+	DDPF_RGB = 0x0000'0040,
 };
 
 enum DDSFormat {
@@ -181,20 +181,20 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("A2XY")) {
 		dds_format = DDS_A2XY;
 
-	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff000000) {
+	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff00'0000) {
 		dds_format = DDS_BGRA8;
 	} else if (format_flags & DDPF_RGB && !(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 24 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
 		dds_format = DDS_BGR8;
-	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000 && format_alpha_mask == 0xff000000) {
+	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000 && format_alpha_mask == 0xff00'0000) {
 		dds_format = DDS_RGBA8;
 	} else if (format_flags & DDPF_RGB && !(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 24 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
 		dds_format = DDS_RGB8;
 
-	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 16 && format_red_mask == 0x00007c00 && format_green_mask == 0x000003e0 && format_blue_mask == 0x0000001f && format_alpha_mask == 0x00008000) {
+	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 16 && format_red_mask == 0x000'07c00 && format_green_mask == 0x000'003e0 && format_blue_mask == 0x0000'001f && format_alpha_mask == 0x0000'8000) {
 		dds_format = DDS_BGR5A1;
-	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0x3ff00000 && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff && format_alpha_mask == 0xc0000000) {
+	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0x3ff0'0000 && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff && format_alpha_mask == 0xc000'0000) {
 		dds_format = DDS_BGR10A2;
-	} else if (format_flags & DDPF_RGB && !(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 16 && format_red_mask == 0x0000f800 && format_green_mask == 0x000007e0 && format_blue_mask == 0x0000001f) {
+	} else if (format_flags & DDPF_RGB && !(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 16 && format_red_mask == 0x0000'f800 && format_green_mask == 0x000'007e0 && format_blue_mask == 0x0000'001f) {
 		dds_format = DDS_BGR565;
 	} else if (!(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 8 && format_red_mask == 0xff && format_green_mask == 0xff && format_blue_mask == 0xff) {
 		dds_format = DDS_LUMINANCE;
@@ -308,9 +308,9 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 					int dst_ofs = i * 4;
 
 					uint8_t a = wb[src_ofs + 1] & 0x80;
-					uint8_t b = wb[src_ofs] & 0x1F;
+					uint8_t b = wb[src_ofs] & 0x1f;
 					uint8_t g = (wb[src_ofs] >> 5) | ((wb[src_ofs + 1] & 0x3) << 3);
-					uint8_t r = (wb[src_ofs + 1] >> 2) & 0x1F;
+					uint8_t r = (wb[src_ofs + 1] >> 2) & 0x1f;
 					wb[dst_ofs + 0] = r << 3;
 					wb[dst_ofs + 1] = g << 3;
 					wb[dst_ofs + 2] = b << 3;
@@ -324,7 +324,7 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 					int src_ofs = i * 2;
 					int dst_ofs = i * 3;
 
-					uint8_t b = wb[src_ofs] & 0x1F;
+					uint8_t b = wb[src_ofs] & 0x1f;
 					uint8_t g = (wb[src_ofs] >> 5) | ((wb[src_ofs + 1] & 0x7) << 3);
 					uint8_t r = wb[src_ofs + 1] >> 3;
 					wb[dst_ofs + 0] = r << 3;
@@ -342,8 +342,8 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 
 					uint32_t w32 = uint32_t(wb[ofs + 0]) | (uint32_t(wb[ofs + 1]) << 8) | (uint32_t(wb[ofs + 2]) << 16) | (uint32_t(wb[ofs + 3]) << 24);
 
-					uint8_t a = (w32 & 0xc0000000) >> 24;
-					uint8_t r = (w32 & 0x3ff00000) >> 22;
+					uint8_t a = (w32 & 0xc000'0000) >> 24;
+					uint8_t r = (w32 & 0x3ff0'0000) >> 22;
 					uint8_t g = (w32 & 0xffc00) >> 12;
 					uint8_t b = (w32 & 0x3ff) >> 2;
 

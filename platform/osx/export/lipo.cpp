@@ -38,7 +38,7 @@ bool LipO::is_lipo(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 	uint32_t magic = fb->get_32();
-	return (magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf);
+	return (magic == 0xbeba'feca || magic == 0xcafe'babe || magic == 0xbfba'feca || magic == 0xcafe'babf);
 }
 
 bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_files) {
@@ -74,9 +74,9 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 	// Write header.
 	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
 	if (is_64) {
-		fa->store_32(0xbfbafeca);
+		fa->store_32(0xbfba'feca);
 	} else {
-		fa->store_32(0xbebafeca);
+		fa->store_32(0xbeba'feca);
 	}
 	fa->store_32(BSWAP32(archs.size()));
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
@@ -134,7 +134,7 @@ bool LipO::open_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 
 	uint32_t magic = fa->get_32();
-	if (magic == 0xbebafeca) {
+	if (magic == 0xbeba'feca) {
 		// 32-bit fat binary, bswap.
 		uint32_t nfat_arch = BSWAP32(fa->get_32());
 		for (uint32_t i = 0; i < nfat_arch; i++) {
@@ -147,7 +147,7 @@ bool LipO::open_file(const String &p_path) {
 
 			archs.push_back(arch);
 		}
-	} else if (magic == 0xcafebabe) {
+	} else if (magic == 0xcafe'babe) {
 		// 32-bit fat binary.
 		uint32_t nfat_arch = fa->get_32();
 		for (uint32_t i = 0; i < nfat_arch; i++) {
@@ -160,7 +160,7 @@ bool LipO::open_file(const String &p_path) {
 
 			archs.push_back(arch);
 		}
-	} else if (magic == 0xbfbafeca) {
+	} else if (magic == 0xbfba'feca) {
 		// 64-bit fat binary, bswap.
 		uint32_t nfat_arch = BSWAP32(fa->get_32());
 		for (uint32_t i = 0; i < nfat_arch; i++) {
@@ -174,7 +174,7 @@ bool LipO::open_file(const String &p_path) {
 
 			archs.push_back(arch);
 		}
-	} else if (magic == 0xcafebabf) {
+	} else if (magic == 0xcafe'babf) {
 		// 64-bit fat binary.
 		uint32_t nfat_arch = fa->get_32();
 		for (uint32_t i = 0; i < nfat_arch; i++) {

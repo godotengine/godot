@@ -2891,7 +2891,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(completion_prefixes.has(","));
 
 		code_edit->set_text("test\ntest");
-		CHECK(code_edit->get_text_for_code_completion() == String::chr(0xFFFF) + "test\ntest");
+		CHECK(code_edit->get_text_for_code_completion() == String::chr(0xffff) + "test\ntest");
 	}
 
 	SUBCASE("[CodeEdit] autocomplete request") {
@@ -3247,7 +3247,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
 		caret_pos.x += 58;
 		SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE, Key::NONE);
-		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
+		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xffff) + "ome text");
 
 		SIGNAL_WATCH(code_edit, "symbol_validate");
 

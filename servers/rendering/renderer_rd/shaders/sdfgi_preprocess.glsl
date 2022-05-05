@@ -75,7 +75,7 @@ shared uint occlusion_facing[((OCCLUSION_SIZE * 2) * (OCCLUSION_SIZE * 2) * (OCC
 uint get_facing(ivec3 p_pos) {
 	uint ofs = uint(p_pos.z * OCCLUSION_SIZE * 2 * OCCLUSION_SIZE * 2 + p_pos.y * OCCLUSION_SIZE * 2 + p_pos.x);
 	uint v = occlusion_facing[ofs / 4];
-	return (v >> ((ofs % 4) * 8)) & 0xFF;
+	return (v >> ((ofs % 4) * 8)) & 0xff;
 }
 
 #endif
@@ -179,17 +179,17 @@ void main() {
 		return;
 	}
 
-	ivec3 read_pos = (ivec3(src_process_voxels.data[index].position) >> ivec3(0, 7, 14)) & ivec3(0x7F);
+	ivec3 read_pos = (ivec3(src_process_voxels.data[index].position) >> ivec3(0, 7, 14)) & ivec3(0x7f);
 	ivec3 write_pos = read_pos + params.scroll;
 
 	if (any(lessThan(write_pos, ivec3(0))) || any(greaterThanEqual(write_pos, ivec3(params.grid_size)))) {
 		return; // Fits outside the 3D texture, don't do anything.
 	}
 
-	uint albedo = ((src_process_voxels.data[index].albedo & 0x7FFF) << 1) | 1; //add solid bit
+	uint albedo = ((src_process_voxels.data[index].albedo & 0x7fff) << 1) | 1; //add solid bit
 	imageStore(dst_albedo, write_pos, uvec4(albedo));
 
-	uint facing = (src_process_voxels.data[index].albedo >> 15) & 0x3F; //6 anisotropic facing bits
+	uint facing = (src_process_voxels.data[index].albedo >> 15) & 0x3f; //6 anisotropic facing bits
 	imageStore(dst_facing, write_pos, uvec4(facing));
 
 	uint light = src_process_voxels.data[index].light & 0x3fffffff; //30 bits of RGBE8985
@@ -218,7 +218,7 @@ void main() {
 	const uint occlusion_shift[8] = uint[](12, 8, 4, 0, 28, 24, 20, 16);
 
 	for (uint i = 0; i < 8; i++) {
-		float o = float((occlusion >> occlusion_shift[i]) & 0xF) / 15.0;
+		float o = float((occlusion >> occlusion_shift[i]) & 0xf) / 15.0;
 		imageStore(dst_occlusion[i], write_pos, vec4(o));
 	}
 
@@ -542,7 +542,7 @@ void main() {
 
 		if (invocation_idx < group_size_offset[occ_step].x) {
 			uint pv = group_pos[group_size_offset[occ_step].y + invocation_idx];
-			ivec3 proc_abs = (ivec3(int(pv)) >> ivec3(0, 8, 16)) & ivec3(0xFF);
+			ivec3 proc_abs = (ivec3(int(pv)) >> ivec3(0, 8, 16)) & ivec3(0xff);
 
 			if (shrink) {
 				proc_abs = ivec3(OCCLUSION_SIZE) - proc_abs - ivec3(1);
@@ -970,7 +970,7 @@ void main() {
 	{
 		ivec3 occ_pos = pos;
 		occ_pos.z += params.cascade * params.grid_size;
-		imageStore(dst_occlusion, occ_pos, uvec4(occlusion & 0xFFFF));
+		imageStore(dst_occlusion, occ_pos, uvec4(occlusion & 0xffff));
 		occ_pos.x += params.grid_size;
 		imageStore(dst_occlusion, occ_pos, uvec4(occlusion >> 16));
 	}
@@ -1014,7 +1014,7 @@ void main() {
 		uint facing = imageLoad(src_facing, pos).r;
 
 		store_positions[index].albedo = rgb >> 1; //store as it comes (555) to avoid precision loss (and move away the alpha bit)
-		store_positions[index].albedo |= (facing & 0x3F) << 15; // store facing in bits 15-21
+		store_positions[index].albedo |= (facing & 0x3f) << 15; // store facing in bits 15-21
 
 		store_positions[index].albedo |= neighbour_bits << 21; //store lower 11 bits of neighbours with remaining albedo
 		store_positions[index].position |= (neighbour_bits >> 11) << 21; //store 11 bits more of neighbours with position

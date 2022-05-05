@@ -238,13 +238,13 @@ static inline uint16_t BSWAP16(uint16_t x) {
 }
 
 static inline uint32_t BSWAP32(uint32_t x) {
-	return ((x << 24) | ((x << 8) & 0x00FF0000) | ((x >> 8) & 0x0000FF00) | (x >> 24));
+	return ((x << 24) | ((x << 8) & 0x00ff'0000) | ((x >> 8) & 0x0000'ff00) | (x >> 24));
 }
 
 static inline uint64_t BSWAP64(uint64_t x) {
-	x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
-	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
-	x = (x & 0x00FF00FF00FF00FF) << 8 | (x & 0xFF00FF00FF00FF00) >> 8;
+	x = (x & 0x0000'0000'ffff'ffff) << 32 | (x & 0xffff'ffff'0000'0000) >> 32;
+	x = (x & 0x0000'ffff'0000'ffff) << 16 | (x & 0xffff'0000'ffff'0000) >> 16;
+	x = (x & 0x00ff'00ff'00ff'00ff) << 8 | (x & 0xff00'ff00'ff00'ff00) >> 8;
 	return x;
 }
 #endif

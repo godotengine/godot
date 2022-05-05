@@ -98,7 +98,7 @@ protected:
 
 	SamplePartitionType partition_type = SAMPLE_PARTITION_WATERSHED;
 	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	uint32_t collision_mask = 0xFFFFFFFF;
+	uint32_t collision_mask = 0xffff'ffff;
 
 	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
 	StringName source_group_name = "navmesh";

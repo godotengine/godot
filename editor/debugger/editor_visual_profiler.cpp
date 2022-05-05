@@ -123,7 +123,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
 	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
-	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
+	double rot = ABS(double(p_signature.hash()) / double(0x7fff'ffff));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
 	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);

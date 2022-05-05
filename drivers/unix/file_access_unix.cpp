@@ -316,7 +316,7 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
-		return flags.st_mode & 0x7FF; //only permissions
+		return flags.st_mode & 0x7ff; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
 	}

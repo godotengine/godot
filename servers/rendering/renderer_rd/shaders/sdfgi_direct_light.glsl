@@ -136,7 +136,7 @@ void main() {
 	uint voxel_position = process_voxels.data[voxel_index].position;
 
 	//keep for storing to texture
-	ivec3 positioni = ivec3((uvec3(voxel_position, voxel_position, voxel_position) >> uvec3(0, 7, 14)) & uvec3(0x7F));
+	ivec3 positioni = ivec3((uvec3(voxel_position, voxel_position, voxel_position) >> uvec3(0, 7, 14)) & uvec3(0x7f));
 
 	vec3 position = vec3(positioni) + vec3(0.5);
 	position /= cascades.data[params.cascade].to_cell;
@@ -144,9 +144,9 @@ void main() {
 
 	uint voxel_albedo = process_voxels.data[voxel_index].albedo;
 
-	vec3 albedo = vec3(uvec3(voxel_albedo >> 10, voxel_albedo >> 5, voxel_albedo) & uvec3(0x1F)) / float(0x1F);
+	vec3 albedo = vec3(uvec3(voxel_albedo >> 10, voxel_albedo >> 5, voxel_albedo) & uvec3(0x1f)) / float(0x1f);
 	vec3 light_accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-	uint valid_aniso = (voxel_albedo >> 15) & 0x3F;
+	uint valid_aniso = (voxel_albedo >> 15) & 0x3f;
 
 	const vec3 aniso_dir[6] = vec3[](
 			vec3(1, 0, 0),
@@ -242,14 +242,14 @@ void main() {
 		float r = float((rgbe & 0xff) << 1);
 		float g = float((rgbe >> 8) & 0x1ff);
 		float b = float(((rgbe >> 17) & 0xff) << 1);
-		float e = float((rgbe >> 25) & 0x1F);
+		float e = float((rgbe >> 25) & 0x1f);
 		float m = pow(2.0, e - 15.0 - 9.0);
 
 		vec3 l = vec3(r, g, b) * m;
 
 		uint aniso = process_voxels.data[voxel_index].light_aniso;
 		for (uint i = 0; i < 6; i++) {
-			float strength = ((aniso >> (i * 5)) & 0x1F) / float(0x1F);
+			float strength = ((aniso >> (i * 5)) & 0x1f) / float(0x1f);
 			light_accum[i] += l * strength;
 		}
 	}
@@ -418,10 +418,10 @@ void main() {
 		float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
 #ifdef MODE_PROCESS_STATIC
 		//since its self-save, use RGBE8985
-		light_total_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
+		light_total_rgbe = ((uint(sRed) & 0x1ff) >> 1) | ((uint(sGreen) & 0x1ff) << 8) | (((uint(sBlue) & 0x1ff) >> 1) << 17) | ((uint(exps) & 0x1f) << 25);
 
 #else
-		light_total_rgbe = (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
+		light_total_rgbe = (uint(sRed) & 0x1ff) | ((uint(sGreen) & 0x1ff) << 9) | ((uint(sBlue) & 0x1ff) << 18) | ((uint(exps) & 0x1f) << 27);
 #endif
 	}
 

@@ -67,7 +67,7 @@ void main_loop_callback() {
 
 	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps > 0) {
-		if (current_ticks - target_ticks > 1000000) {
+		if (current_ticks - target_ticks > 1'000'000) {
 			// When the window loses focus, we stop getting updates and accumulate delay.
 			// For this reason, if the difference is too big, we reset target ticks to the current ticks.
 			target_ticks = current_ticks;

@@ -1358,7 +1358,7 @@ Rect2i Window::get_parent_rect() const {
 		return p->get_visible_rect();
 	} else {
 		int x = get_position().x;
-		int closest_dist = 0x7FFFFFFF;
+		int closest_dist = 0x7fff'ffff;
 		Rect2i closest_rect;
 		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 			Rect2i s(DisplayServer::get_singleton()->screen_get_position(i), DisplayServer::get_singleton()->screen_get_size(i));

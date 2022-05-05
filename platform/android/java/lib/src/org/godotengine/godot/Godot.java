@@ -385,7 +385,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			if (r < 4) {
 				return new String[0];
 			}
-			int argc = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
+			int argc = ((int)(len[3] & 0xff) << 24) | ((int)(len[2] & 0xff) << 16) | ((int)(len[1] & 0xff) << 8) | ((int)(len[0] & 0xff));
 			String[] cmdline = new String[argc];
 
 			for (int i = 0; i < argc; i++) {
@@ -393,7 +393,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				if (r < 4) {
 					return new String[0];
 				}
-				int strlen = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
+				int strlen = ((int)(len[3] & 0xff) << 24) | ((int)(len[2] & 0xff) << 16) | ((int)(len[1] & 0xff) << 8) | ((int)(len[0] & 0xff));
 				if (strlen > 65535) {
 					return new String[0];
 				}
@@ -886,7 +886,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			// Create Hex String
 			StringBuilder hexString = new StringBuilder();
 			for (byte b : messageDigest) {
-				String s = Integer.toHexString(0xFF & b);
+				String s = Integer.toHexString(0xff & b);
 				if (s.length() == 1) {
 					s = "0" + s;
 				}

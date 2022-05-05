@@ -36,7 +36,7 @@
 class Voxelizer {
 private:
 	enum {
-		CHILD_EMPTY = 0xFFFFFFFF
+		CHILD_EMPTY = 0xffff'ffff,
 
 	};
 

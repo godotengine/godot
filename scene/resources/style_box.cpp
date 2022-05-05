@@ -696,12 +696,12 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	// Adapt borders (prevent weird overlapping/glitchy drawings).
 	real_t width = MAX(style_rect.size.width, 0);
 	real_t height = MAX(style_rect.size.height, 0);
-	real_t adapted_border[4] = { 1000000.0, 1000000.0, 1000000.0, 1000000.0 };
+	real_t adapted_border[4] = { 1'000'000.0, 1'000'000.0, 1'000'000.0, 1'000'000.0 };
 	adapt_values(SIDE_TOP, SIDE_BOTTOM, adapted_border, border_width, height, height, height);
 	adapt_values(SIDE_LEFT, SIDE_RIGHT, adapted_border, border_width, width, width, width);
 
 	// Adapt corners (prevent weird overlapping/glitchy drawings).
-	real_t adapted_corner[4] = { 1000000.0, 1000000.0, 1000000.0, 1000000.0 };
+	real_t adapted_corner[4] = { 1'000'000.0, 1'000'000.0, 1'000'000.0, 1'000'000.0 };
 	adapt_values(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
 	adapt_values(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, adapted_corner, corner_radius, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
 	adapt_values(CORNER_TOP_LEFT, CORNER_TOP_RIGHT, adapted_corner, corner_radius, width, width - adapted_border[SIDE_RIGHT], width - adapted_border[SIDE_LEFT]);

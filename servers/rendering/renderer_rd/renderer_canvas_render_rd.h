@@ -68,7 +68,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	enum {
 
-		FLAGS_INSTANCING_MASK = 0x7F,
+		FLAGS_INSTANCING_MASK = 0x7f,
 		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
 		FLAGS_INSTANCING_HAS_CUSTOM_DATA = (1 << 8),
 
@@ -90,7 +90,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	enum {
-		LIGHT_FLAGS_TEXTURE_MASK = 0xFFFF,
+		LIGHT_FLAGS_TEXTURE_MASK = 0xffff,
 		LIGHT_FLAGS_BLEND_SHIFT = 16,
 		LIGHT_FLAGS_BLEND_MASK = (3 << 16),
 		LIGHT_FLAGS_BLEND_MODE_ADD = (0 << 16),

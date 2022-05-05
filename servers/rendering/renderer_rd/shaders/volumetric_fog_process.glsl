@@ -219,7 +219,7 @@ vec3 hash3f(uvec3 x) {
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = (x >> 16) ^ x;
-	return vec3(x & 0xFFFFF) / vec3(float(0xFFFFF));
+	return vec3(x & 0xfffff) / vec3(float(0xfffff));
 }
 
 float get_omni_attenuation(float dist, float inv_range, float decay) {
@@ -233,7 +233,7 @@ float get_omni_attenuation(float dist, float inv_range, float decay) {
 
 void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
 	uint item_min_max = cluster_buffer.data[p_offset];
-	item_min = item_min_max & 0xFFFF;
+	item_min = item_min_max & 0xffff;
 	item_max = item_min_max >> 16;
 
 	item_from = item_min >> 5;
@@ -243,7 +243,7 @@ void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max,
 uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
 	int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
-	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
+	return bitfieldInsert(uint(0), uint(0xffffffff), local_min, mask_width);
 }
 
 float henyey_greenstein(float cos_theta, float g) {

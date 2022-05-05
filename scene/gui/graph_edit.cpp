@@ -1900,7 +1900,7 @@ void GraphEdit::_calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictio
 }
 
 float GraphEdit::_calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
-#define MAX_ORDER 2147483647
+#define MAX_ORDER 2'147'483'647
 #define ORDER(node, layers)                            \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
 		int index = layers[i].find(node);              \

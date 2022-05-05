@@ -73,7 +73,7 @@ void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
 			const Char16String &string = ids[p_id];
 			for (int i = 0; i < MIN(p_pos, string.length()); i++) {
 				char16_t c = string[i];
-				if ((c & 0xfffffc00) == 0xd800) {
+				if ((c & 0xffff'fc00) == 0xd800) {
 					i++;
 				}
 				pos++;

@@ -4333,7 +4333,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
-	windowAttributes.background_pixel = 0xFFFFFFFF;
+	windowAttributes.background_pixel = 0xffff'ffff;
 	windowAttributes.border_pixel = 0;
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 

@@ -657,7 +657,7 @@ namespace Godot
             for (int i = 0; i < 2; i++)
             {
                 char c;
-                int lv = b & 0xF;
+                int lv = b & 0xf;
 
                 if (lv < 10)
                 {

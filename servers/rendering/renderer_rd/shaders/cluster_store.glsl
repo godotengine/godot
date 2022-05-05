@@ -94,10 +94,10 @@ void main() {
 					uint minmax = cluster_store.data[slice_ofs];
 
 					if (minmax == 0) {
-						minmax = 0xFFFF; //min 0, max 0xFFFF
+						minmax = 0xffff; //min 0, max 0xffff
 					}
 
-					uint elem_min = min(orig_index, minmax & 0xFFFF);
+					uint elem_min = min(orig_index, minmax & 0xffff);
 					uint elem_max = max(orig_index + 1, minmax >> 16); //always store plus one, so zero means range is empty when not written to
 
 					minmax = elem_min | (elem_max << 16);
@@ -105,7 +105,7 @@ void main() {
 				}
 
 				uint store_word = orig_index >> 5;
-				uint store_bit = orig_index & 0x1F;
+				uint store_bit = orig_index & 0x1f;
 
 				//store the actual render_element index at the end, so the rendering code can reference it
 				cluster_store.data[dst_offset + store_word] |= 1 << store_bit;

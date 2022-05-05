@@ -770,10 +770,10 @@ void Camera2D::_bind_methods() {
 }
 
 Camera2D::Camera2D() {
-	limit[SIDE_LEFT] = -10000000;
-	limit[SIDE_TOP] = -10000000;
-	limit[SIDE_RIGHT] = 10000000;
-	limit[SIDE_BOTTOM] = 10000000;
+	limit[SIDE_LEFT] = -10'000'000;
+	limit[SIDE_TOP] = -10'000'000;
+	limit[SIDE_RIGHT] = 10'000'000;
+	limit[SIDE_BOTTOM] = 10'000'000;
 
 	drag_margin[SIDE_LEFT] = 0.2;
 	drag_margin[SIDE_TOP] = 0.2;

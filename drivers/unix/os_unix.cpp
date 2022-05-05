@@ -100,7 +100,7 @@ static void _setup_clock() {
 static void _setup_clock() {
 	struct timespec tv_now = { 0, 0 };
 	ERR_FAIL_COND_MSG(clock_gettime(GODOT_CLOCK, &tv_now) != 0, "OS CLOCK IS NOT WORKING!");
-	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1'000'000L;
 }
 #endif
 
@@ -197,7 +197,7 @@ String OS_Unix::get_name() const {
 double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
-	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
+	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1'000'000;
 }
 
 OS::Date OS_Unix::get_date(bool p_utc) const {
@@ -266,7 +266,7 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 }
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
-	struct timespec requested = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
+	struct timespec requested = { static_cast<time_t>(p_usec / 1'000'000), (static_cast<long>(p_usec) % 1'000'000) * 1000 };
 	struct timespec remaining;
 	while (nanosleep(&requested, &remaining) == -1 && errno == EINTR) {
 		requested.tv_sec = remaining.tv_sec;
@@ -282,7 +282,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	// If _setup_clock() succeeded, we assume clock_gettime() works.
 	struct timespec tv_now = { 0, 0 };
 	clock_gettime(GODOT_CLOCK, &tv_now);
-	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1'000'000L;
 #endif
 	longtime -= _clock_start;
 

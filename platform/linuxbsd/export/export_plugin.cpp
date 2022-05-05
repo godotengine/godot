@@ -109,7 +109,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	// Read and check ELF magic number
 	{
 		uint32_t magic = f->get_32();
-		if (magic != 0x464c457f) { // 0x7F + "ELF"
+		if (magic != 0x464c'457f) { // 0x7f + "ELF"
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -118,7 +118,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 	int bits = f->get_8() * 32;
 
-	if (bits == 32 && p_embedded_size >= 0x100000000) {
+	if (bits == 32 && p_embedded_size >= 0x1'0000'0000) {
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
 	}
 

@@ -55,7 +55,7 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 #define ERR_FAIL_ADD_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(b)) < 0 || ((int32_t)(a)) < 0 || ((int32_t)(a)) > INT_MAX - ((int32_t)(b)), err)
 #define ERR_FAIL_MUL_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(a)) < 0 || ((int32_t)(b)) <= 0 || ((int32_t)(a)) > INT_MAX / ((int32_t)(b)), err)
 
-#define ENCODE_MASK 0xFF
+#define ENCODE_MASK 0xff
 #define ENCODE_FLAG_64 1 << 16
 #define ENCODE_FLAG_OBJECT_AS_ID 1 << 16
 
@@ -485,13 +485,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t strlen = decode_uint32(buf);
 
-			if (strlen & 0x80000000) {
+			if (strlen & 0x8000'0000) {
 				//new format
 				ERR_FAIL_COND_V(len < 12, ERR_INVALID_DATA);
 				Vector<StringName> names;
 				Vector<StringName> subnames;
 
-				uint32_t namecount = strlen &= 0x7FFFFFFF;
+				uint32_t namecount = strlen &= 0x7fff'ffff;
 				uint32_t subnamecount = decode_uint32(buf + 4);
 				uint32_t flags = decode_uint32(buf + 8);
 
@@ -620,8 +620,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::DICTIONARY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
-			//  bool shared = count&0x80000000;
-			count &= 0x7FFFFFFF;
+			count &= 0x7fff'ffff;
 
 			buf += 4;
 			len -= 4;
@@ -663,8 +662,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
-			//  bool shared = count&0x80000000;
-			count &= 0x7FFFFFFF;
+			count &= 0x7fff'ffff;
 
 			buf += 4;
 			len -= 4;
@@ -1141,7 +1139,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		case Variant::NODE_PATH: {
 			NodePath np = p_variant;
 			if (buf) {
-				encode_uint32(uint32_t(np.get_name_count()) | 0x80000000, buf); //for compatibility with the old format
+				encode_uint32(uint32_t(np.get_name_count()) | 0x8000'0000, buf); //for compatibility with the old format
 				encode_uint32(np.get_subname_count(), buf + 4);
 				uint32_t np_flags = 0;
 				if (np.is_absolute()) {
