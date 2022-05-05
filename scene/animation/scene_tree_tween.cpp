@@ -332,7 +332,7 @@ bool SceneTreeTween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
 		Node *bound_node = get_bound_node();
 		if (bound_node) {
-			return bound_node->can_process();
+			return bound_node->is_inside_tree() && bound_node->can_process();
 		}
 	}
 
