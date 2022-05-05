@@ -87,8 +87,13 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		ur->add_undo_property(n, name, n->get(name));
 	}
-	ur->add_do_method(InspectorDock::get_inspector_singleton(), "refresh");
-	ur->add_undo_method(InspectorDock::get_inspector_singleton(), "refresh");
+	if (name == "script") {
+		ur->add_do_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, "scripts");
+		ur->add_undo_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, "scripts");
+	} else {
+		ur->add_do_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, name);
+		ur->add_undo_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, name);
+	}
 
 	ur->commit_action();
 	return true;
