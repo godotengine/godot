@@ -810,7 +810,7 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skel
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled, depth_draw_always;
-uniform sampler2D texture_albedo : hint_albedo;
+uniform sampler2D texture_albedo : source_color;
 uniform float point_size : hint_range(0,128) = 32;
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
