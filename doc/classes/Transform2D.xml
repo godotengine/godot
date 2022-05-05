@@ -107,23 +107,23 @@
 		</method>
 		<method name="rotated">
 			<return type="Transform2D" />
-			<argument index="0" name="phi" type="float" />
+			<argument index="0" name="angle" type="float" />
 			<description>
-				Rotates the transform by the given angle (in radians), using matrix multiplication.
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled">
 			<return type="Transform2D" />
 			<argument index="0" name="scale" type="Vector2" />
 			<description>
-				Scales the transform by the given scale factor, using matrix multiplication.
+				Returns a copy of the transform scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
 			<return type="Transform2D" />
 			<argument index="0" name="offset" type="Vector2" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>

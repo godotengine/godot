@@ -57,6 +57,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	self.cancelsTouchesInView = YES;
 	self.delaysTouchesBegan = YES;
 	self.delaysTouchesEnded = YES;
+	self.requiresExclusiveTouchType = NO;
 
 	self.delayTimeInterval = GLOBAL_GET("input_devices/pointing/ios/touch_delay");
 

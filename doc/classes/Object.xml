@@ -127,7 +127,7 @@
 			<argument index="4" name="flags" type="int" default="0" />
 			<description>
 				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
-				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
+				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the [code]target[/code] is destroyed in the game's lifecycle, the connection will be lost.
 				Examples:
 				[codeblock]
@@ -151,7 +151,7 @@
 			<argument index="2" name="method" type="String" />
 			<description>
 				Disconnects a [code]signal[/code] from a [code]method[/code] on the given [code]target[/code].
-				If you try to disconnect a connection that does not exist, the method will throw an error. Use [method is_connected] to ensure that the connection exists.
+				If you try to disconnect a connection that does not exist, the method will print an error. Use [method is_connected] to ensure that the connection exists.
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">

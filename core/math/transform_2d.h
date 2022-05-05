@@ -72,7 +72,7 @@ struct _NO_DISCARD_CLASS_ Transform2D {
 	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
 	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
-	void rotate(real_t p_phi);
+	void rotate(real_t p_angle);
 
 	void scale(const Size2 &p_scale);
 	void scale_basis(const Size2 &p_scale);
@@ -90,7 +90,7 @@ struct _NO_DISCARD_CLASS_ Transform2D {
 	Transform2D scaled(const Size2 &p_scale) const;
 	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
-	Transform2D rotated(real_t p_phi) const;
+	Transform2D rotated(real_t p_angle) const;
 
 	Transform2D untranslated() const;
 

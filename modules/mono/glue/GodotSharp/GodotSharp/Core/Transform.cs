@@ -184,11 +184,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="phi"/> (in radians),
+        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="angle"/> (in radians),
         /// using matrix multiplication. The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="phi">The angle to rotate, in radians.</param>
+        /// <param name="angle">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
         public Transform Rotated(Vector3 axis, real_t phi)
         {
