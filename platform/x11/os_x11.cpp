@@ -1529,6 +1529,8 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	int old_h = xwa.height;
 
 	Size2 size = p_size;
+
+	ERR_FAIL_COND(Math::is_nan(size.x) || Math::is_nan(size.y));
 	size.x = MAX(1, size.x);
 	size.y = MAX(1, size.y);
 
