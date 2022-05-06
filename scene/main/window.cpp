@@ -681,7 +681,7 @@ void Window::_update_viewport_size() {
 
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
-				final_size = viewport_size;
+				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
 			} break;
