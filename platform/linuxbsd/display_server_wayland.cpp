@@ -372,6 +372,7 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 }
 
 void DisplayServerWayland::_delete_window(WindowID p_window) {
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
 	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
@@ -1317,6 +1318,7 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 		WindowID window_id = wls.current_seat->pointer_data.pointed_window_id;
 
 		while (window_id != INVALID_WINDOW_ID) {
+			ERR_FAIL_COND_V(!wls.windows.has(window_id), Point2i());
 			position += wls.windows[window_id].rect.position;
 			window_id = wls.windows[window_id].parent;
 		}
@@ -1501,6 +1503,7 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_id));
 	WindowData &wd = wls.windows[p_id];
 
 	ERR_FAIL_COND(!wls.windows.has(p_id));
@@ -1560,7 +1563,8 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
 		if (wls.context_vulkan) {
-			wls.context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = wls.context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 	}
@@ -1614,21 +1618,27 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
+
 	wd.rect_changed_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
+
 	wd.window_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
+
 	wd.input_event_callback = p_callable;
 }
 
@@ -1659,6 +1669,8 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Point2i());
+
 	if (wls.windows[p_window].xdg_toplevel) {
 		return Point2i();
 	} else {
@@ -1669,6 +1681,7 @@ Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_wind
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
 	wd.rect.position = p_position;
@@ -1695,9 +1708,10 @@ void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window
 	MutexLock mutex_lock(wls.mutex);
 
 	ERR_FAIL_COND(p_window == p_parent);
-	ERR_FAIL_COND(!wls.windows.has(p_window));
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
+
 	ERR_FAIL_COND(wd.parent == p_parent);
 
 	struct xdg_toplevel *parent_toplevel = nullptr;
@@ -1742,6 +1756,7 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
 	wd.rect.size = p_size;
@@ -1760,11 +1775,15 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
+
 	return wls.windows[p_window].rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
 
 	// I don't think there's a way of actually knowing the window size in wayland,
 	// other than the one requested by the compositor, which happens to be
@@ -1792,6 +1811,7 @@ bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_
 void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
 	print_verbose(vformat("Window %d set flag %d", p_window, p_flag));
