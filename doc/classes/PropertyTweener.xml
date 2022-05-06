@@ -52,14 +52,14 @@
 			<return type="PropertyTweener" />
 			<argument index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
-				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
+				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [SceneTreeTween] that contains this Tweener.
 			</description>
 		</method>
 		<method name="set_trans">
 			<return type="PropertyTweener" />
 			<argument index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
-				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
+				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [SceneTreeTween] that contains this Tweener.
 			</description>
 		</method>
 	</methods>
