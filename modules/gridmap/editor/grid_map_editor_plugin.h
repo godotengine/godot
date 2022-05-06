@@ -144,7 +144,7 @@ class GridMapEditor : public VBoxContainer {
 	bool cursor_visible = false;
 	Transform3D cursor_transform;
 
-	Vector3 cursor_origin;
+	Vector3 cursor_cell;
 
 	int display_mode = DISPLAY_THUMBNAIL;
 	int selected_palette = -1;
@@ -184,7 +184,9 @@ class GridMapEditor : public VBoxContainer {
 	Label *info_message = nullptr;
 
 	void update_grid(); // Change which and where the grid is displayed
-	void _draw_grids(const Vector3 &cell_size);
+	void _draw_floor_grid(RID grid, int floor);
+	void _draw_plane_grid(RID grid, int plane, Vector3 axis_n1, Vector3 axis_n2);
+	void _draw_grids();
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
