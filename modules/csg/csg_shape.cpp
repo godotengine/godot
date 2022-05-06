@@ -1110,7 +1110,7 @@ Ref<Material> CSGSphere3D::get_material() const {
 
 CSGSphere3D::CSGSphere3D() {
 	// defaults
-	radius = 1.0;
+	radius = 0.5;
 	radial_segments = 12;
 	rings = 6;
 	smooth_faces = true;

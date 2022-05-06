@@ -31,7 +31,9 @@
 #ifndef REGEX_REGISTER_TYPES_H
 #define REGEX_REGISTER_TYPES_H
 
-void register_regex_types();
-void unregister_regex_types();
+#include "modules/register_module_types.h"
+
+void initialize_regex_module(ModuleInitializationLevel p_level);
+void uninitialize_regex_module(ModuleInitializationLevel p_level);
 
 #endif // REGEX_REGISTER_TYPES_H

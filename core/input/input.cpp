@@ -74,7 +74,7 @@ void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
 void (*Input::warp_mouse_func)(const Vector2 &p_position) = nullptr;
 Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
-void (*Input::set_custom_mouse_cursor_func)(const RES &, Input::CursorShape, const Vector2 &) = nullptr;
+void (*Input::set_custom_mouse_cursor_func)(const Ref<Resource> &, Input::CursorShape, const Vector2 &) = nullptr;
 
 Input *Input::get_singleton() {
 	return singleton;
@@ -850,7 +850,7 @@ Input::CursorShape Input::get_current_cursor_shape() const {
 	return get_current_cursor_shape_func();
 }
 
-void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}

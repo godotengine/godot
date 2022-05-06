@@ -58,8 +58,8 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(String, _converts_to)
-	GDVIRTUAL1RC(bool, _handles, RES)
-	GDVIRTUAL1RC(RES, _convert, RES)
+	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
+	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
 
 public:
 	virtual String converts_to() const;
@@ -104,7 +104,7 @@ class CustomPropertyEditor : public PopupPanel {
 	Variant::Type type;
 	Variant v;
 	List<String> field_names;
-	int hint;
+	int hint = 0;
 	String hint_text;
 	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
 	VBoxContainer *value_vbox = nullptr;
@@ -120,7 +120,7 @@ class CustomPropertyEditor : public PopupPanel {
 	ColorPicker *color_picker = nullptr;
 	TextEdit *text_edit = nullptr;
 	bool read_only = false;
-	bool picking_viewport;
+	bool picking_viewport = false;
 	GridContainer *checks20gc = nullptr;
 	CheckBox *checks20[20];
 	SpinBox *spinbox = nullptr;

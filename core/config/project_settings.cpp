@@ -321,9 +321,9 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 struct _VCSort {
 	String name;
-	Variant::Type type;
-	int order;
-	uint32_t flags;
+	Variant::Type type = Variant::VARIANT_MAX;
+	int order = 0;
+	uint32_t flags = 0;
 
 	bool operator<(const _VCSort &p_vcs) const { return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order; }
 };

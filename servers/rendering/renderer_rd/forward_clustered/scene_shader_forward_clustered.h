@@ -130,9 +130,9 @@ public:
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask;
+		uint32_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_VERSION_MAX];
 		PipelineCacheRD color_pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_COLOR_PASS_FLAG_COUNT];
 
@@ -142,7 +142,7 @@ public:
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, Map<int, RID>> default_texture_params;
@@ -150,28 +150,28 @@ public:
 		DepthDraw depth_draw;
 		DepthTest depth_test;
 
-		bool uses_point_size;
-		bool uses_alpha;
-		bool uses_blend_alpha;
-		bool uses_alpha_clip;
-		bool uses_depth_pre_pass;
-		bool uses_discard;
-		bool uses_roughness;
-		bool uses_normal;
-		bool uses_particle_trails;
+		bool uses_point_size = false;
+		bool uses_alpha = false;
+		bool uses_blend_alpha = false;
+		bool uses_alpha_clip = false;
+		bool uses_depth_pre_pass = false;
+		bool uses_discard = false;
+		bool uses_roughness = false;
+		bool uses_normal = false;
+		bool uses_particle_trails = false;
 
-		bool unshaded;
-		bool uses_vertex;
-		bool uses_position;
-		bool uses_sss;
-		bool uses_transmittance;
-		bool uses_screen_texture;
-		bool uses_depth_texture;
-		bool uses_normal_texture;
-		bool uses_time;
-		bool writes_modelview_or_projection;
-		bool uses_world_coordinates;
-		Cull cull_mode;
+		bool unshaded = false;
+		bool uses_vertex = false;
+		bool uses_position = false;
+		bool uses_sss = false;
+		bool uses_transmittance = false;
+		bool uses_screen_texture = false;
+		bool uses_depth_texture = false;
+		bool uses_normal_texture = false;
+		bool uses_time = false;
+		bool writes_modelview_or_projection = false;
+		bool uses_world_coordinates = false;
+		Cull cull_mode = CULL_DISABLED;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;

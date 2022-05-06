@@ -31,7 +31,9 @@
 #ifndef DENOISE_REGISTER_TYPES_H
 #define DENOISE_REGISTER_TYPES_H
 
-void register_denoise_types();
-void unregister_denoise_types();
+#include "modules/register_module_types.h"
+
+void initialize_denoise_module(ModuleInitializationLevel p_level);
+void uninitialize_denoise_module(ModuleInitializationLevel p_level);
 
 #endif // DENOISE_REGISTER_TYPES_H

@@ -1620,6 +1620,27 @@ Variant::operator String() const {
 	return stringify(0);
 }
 
+String stringify_variant_clean(const Variant p_variant, int recursion_count) {
+	String s = p_variant.stringify(recursion_count);
+
+	// Wrap strings in quotes to avoid ambiguity.
+	switch (p_variant.get_type()) {
+		case Variant::STRING: {
+			s = s.c_escape().quote();
+		} break;
+		case Variant::STRING_NAME: {
+			s = "&" + s.c_escape().quote();
+		} break;
+		case Variant::NODE_PATH: {
+			s = "^" + s.c_escape().quote();
+		} break;
+		default: {
+		} break;
+	}
+
+	return s;
+}
+
 template <class T>
 String stringify_vector(const T &vec, int recursion_count) {
 	String str("[");
@@ -1627,7 +1648,8 @@ String stringify_vector(const T &vec, int recursion_count) {
 		if (i > 0) {
 			str += ", ";
 		}
-		str = str + Variant(vec[i]).stringify(recursion_count);
+
+		str += stringify_variant_clean(vec[i], recursion_count);
 	}
 	str += "]";
 	return str;
@@ -1691,8 +1713,8 @@ String Variant::stringify(int recursion_count) const {
 			recursion_count++;
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 				_VariantStrPair sp;
-				sp.key = E->get().stringify(recursion_count);
-				sp.value = d[E->get()].stringify(recursion_count);
+				sp.key = stringify_variant_clean(E->get(), recursion_count);
+				sp.value = stringify_variant_clean(d[E->get()], recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -1741,8 +1763,7 @@ String Variant::stringify(int recursion_count) const {
 				return "[...]";
 			}
 
-			String str = stringify_vector(arr, recursion_count);
-			return str;
+			return stringify_vector(arr, recursion_count);
 
 		} break;
 		case OBJECT: {
@@ -1908,12 +1929,12 @@ Variant::operator Transform3D() const {
 	} else if (type == TRANSFORM2D) {
 		const Transform2D &t = *_data._transform2d;
 		Transform3D m;
-		m.basis.elements[0][0] = t.elements[0][0];
-		m.basis.elements[1][0] = t.elements[0][1];
-		m.basis.elements[0][1] = t.elements[1][0];
-		m.basis.elements[1][1] = t.elements[1][1];
-		m.origin[0] = t.elements[2][0];
-		m.origin[1] = t.elements[2][1];
+		m.basis.rows[0][0] = t.columns[0][0];
+		m.basis.rows[1][0] = t.columns[0][1];
+		m.basis.rows[0][1] = t.columns[1][0];
+		m.basis.rows[1][1] = t.columns[1][1];
+		m.origin[0] = t.columns[2][0];
+		m.origin[1] = t.columns[2][1];
 		return m;
 	} else {
 		return Transform3D();
@@ -1926,12 +1947,12 @@ Variant::operator Transform2D() const {
 	} else if (type == TRANSFORM3D) {
 		const Transform3D &t = *_data._transform3d;
 		Transform2D m;
-		m.elements[0][0] = t.basis.elements[0][0];
-		m.elements[0][1] = t.basis.elements[1][0];
-		m.elements[1][0] = t.basis.elements[0][1];
-		m.elements[1][1] = t.basis.elements[1][1];
-		m.elements[2][0] = t.origin[0];
-		m.elements[2][1] = t.origin[1];
+		m.columns[0][0] = t.basis.rows[0][0];
+		m.columns[0][1] = t.basis.rows[1][0];
+		m.columns[1][0] = t.basis.rows[0][1];
+		m.columns[1][1] = t.basis.rows[1][1];
+		m.columns[2][0] = t.origin[0];
+		m.columns[2][1] = t.origin[1];
 		return m;
 	} else {
 		return Transform2D();
@@ -2790,7 +2811,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 2; j++) {
-					hash = hash_djb2_one_float(_data._transform2d->elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._transform2d->columns[i][j], hash);
 				}
 			}
 
@@ -2834,7 +2855,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._basis->elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._basis->rows[i][j], hash);
 				}
 			}
 
@@ -2845,7 +2866,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._transform3d->basis.elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._transform3d->basis.rows[i][j], hash);
 				}
 				hash = hash_djb2_one_float(_data._transform3d->origin[i], hash);
 			}
@@ -3112,7 +3133,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			Transform2D *r = p_variant._data._transform2d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector2(l->elements[i], r->elements[i]))) {
+				if (!(hash_compare_vector2(l->columns[i], r->columns[i]))) {
 					return false;
 				}
 			}
@@ -3162,7 +3183,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Basis *r = p_variant._data._basis;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->elements[i], r->elements[i]))) {
+				if (!(hash_compare_vector3(l->rows[i], r->rows[i]))) {
 					return false;
 				}
 			}
@@ -3175,7 +3196,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Transform3D *r = p_variant._data._transform3d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i]))) {
+				if (!(hash_compare_vector3(l->basis.rows[i], r->basis.rows[i]))) {
 					return false;
 				}
 			}

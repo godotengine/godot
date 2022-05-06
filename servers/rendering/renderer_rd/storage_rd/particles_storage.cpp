@@ -800,25 +800,25 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			Transform2D xform = p_particles->sdf_collision_transform; //will use dotproduct manually so invert beforehand
 			Transform2D revert = xform.affine_inverse();
 			frame_params.collider_count = 1;
-			frame_params.colliders[0].transform[0] = xform.elements[0][0];
-			frame_params.colliders[0].transform[1] = xform.elements[0][1];
+			frame_params.colliders[0].transform[0] = xform.columns[0][0];
+			frame_params.colliders[0].transform[1] = xform.columns[0][1];
 			frame_params.colliders[0].transform[2] = 0;
-			frame_params.colliders[0].transform[3] = xform.elements[2][0];
+			frame_params.colliders[0].transform[3] = xform.columns[2][0];
 
-			frame_params.colliders[0].transform[4] = xform.elements[1][0];
-			frame_params.colliders[0].transform[5] = xform.elements[1][1];
+			frame_params.colliders[0].transform[4] = xform.columns[1][0];
+			frame_params.colliders[0].transform[5] = xform.columns[1][1];
 			frame_params.colliders[0].transform[6] = 0;
-			frame_params.colliders[0].transform[7] = xform.elements[2][1];
+			frame_params.colliders[0].transform[7] = xform.columns[2][1];
 
-			frame_params.colliders[0].transform[8] = revert.elements[0][0];
-			frame_params.colliders[0].transform[9] = revert.elements[0][1];
+			frame_params.colliders[0].transform[8] = revert.columns[0][0];
+			frame_params.colliders[0].transform[9] = revert.columns[0][1];
 			frame_params.colliders[0].transform[10] = 0;
-			frame_params.colliders[0].transform[11] = revert.elements[2][0];
+			frame_params.colliders[0].transform[11] = revert.columns[2][0];
 
-			frame_params.colliders[0].transform[12] = revert.elements[1][0];
-			frame_params.colliders[0].transform[13] = revert.elements[1][1];
+			frame_params.colliders[0].transform[12] = revert.columns[1][0];
+			frame_params.colliders[0].transform[13] = revert.columns[1][1];
 			frame_params.colliders[0].transform[14] = 0;
-			frame_params.colliders[0].transform[15] = revert.elements[2][1];
+			frame_params.colliders[0].transform[15] = revert.columns[2][1];
 
 			frame_params.colliders[0].extents[0] = p_particles->sdf_collision_to_screen.size.x;
 			frame_params.colliders[0].extents[1] = p_particles->sdf_collision_to_screen.size.y;
@@ -1662,10 +1662,6 @@ Variant ParticlesStorage::ParticlesShaderData::get_default_parameter(const Strin
 
 RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
-}
-
-ParticlesStorage::ParticlesShaderData::ParticlesShaderData() {
-	valid = false;
 }
 
 ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {

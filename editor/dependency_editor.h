@@ -78,7 +78,7 @@ class DependencyEditorOwners : public AcceptDialog {
 	void _fill_owners(EditorFileSystemDirectory *efsd);
 
 	static void _bind_methods();
-	void _list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _select_file(int p_idx);
 	void _file_option(int p_option);
 

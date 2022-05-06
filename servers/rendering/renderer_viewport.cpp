@@ -43,7 +43,7 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
 		if (p_viewport->snap_2d_transforms_to_pixel) {
-			c_xform.elements[2] = c_xform.elements[2].floor();
+			c_xform.columns[2] = c_xform.columns[2].floor();
 		}
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
@@ -52,7 +52,7 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	Transform2D c_xform = p_canvas_data->transform;
 
 	if (p_viewport->snap_2d_transforms_to_pixel) {
-		c_xform.elements[2] = c_xform.elements[2].floor();
+		c_xform.columns[2] = c_xform.columns[2].floor();
 	}
 
 	xf = xf * c_xform;
@@ -195,8 +195,6 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	Color bgcolor = RSG::storage->get_default_clear_color();
-
 	if (!p_viewport->disable_2d && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
@@ -207,15 +205,6 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;
 
-	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
-		if (p_viewport->transparent_bg) {
-			bgcolor = Color(0, 0, 0, 0);
-		}
-		if (p_viewport->clear_mode == RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
-			p_viewport->clear_mode = RS::VIEWPORT_CLEAR_NEVER;
-		}
-	}
-
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene->render_buffers_create();
@@ -223,7 +212,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::storage->get_default_clear_color();
+
+	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
+		RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+		if (p_viewport->clear_mode == RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
+			p_viewport->clear_mode = RS::VIEWPORT_CLEAR_NEVER;
+		}
+	}
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
 		_draw_3d(p_viewport);
@@ -305,7 +301,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						//						cl->texture_cache = nullptr;
 						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
-						scale.elements[2] = cl->rect_cache.position;
+						scale.columns[2] = cl->rect_cache.position;
 						cl->light_shader_xform = cl->xform * scale;
 						//cl->light_shader_pos = cl->xform_cache[2];
 						if (cl->use_shadow) {
@@ -332,7 +328,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					cl->filter_next_ptr = directional_lights;
 					directional_lights = cl;
 					cl->xform_cache = xf * cl->xform;
-					cl->xform_cache.elements[2] = Vector2(); //translation is pointless
+					cl->xform_cache.columns[2] = Vector2(); //translation is pointless
 					if (cl->use_shadow) {
 						cl->shadows_next_ptr = directional_lights_with_shadow;
 						directional_lights_with_shadow = cl;
@@ -390,7 +386,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			//update shadows if any
 			RendererCanvasRender::Light *light = directional_lights_with_shadow;
 			while (light) {
-				Vector2 light_dir = -light->xform_cache.elements[1].normalized(); // Y is light direction
+				Vector2 light_dir = -light->xform_cache.columns[1].normalized(); // Y is light direction
 				float cull_distance = light->directional_distance;
 
 				Vector2 light_dir_sign;

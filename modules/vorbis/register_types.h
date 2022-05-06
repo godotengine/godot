@@ -31,7 +31,9 @@
 #ifndef VORBIS_REGISTER_TYPES_H
 #define VORBIS_REGISTER_TYPES_H
 
-void register_vorbis_types();
-void unregister_vorbis_types();
+#include "modules/register_module_types.h"
+
+void initialize_vorbis_module(ModuleInitializationLevel p_level);
+void uninitialize_vorbis_module(ModuleInitializationLevel p_level);
 
 #endif // VORBIS_REGISTER_TYPES_H

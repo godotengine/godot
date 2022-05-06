@@ -33,7 +33,11 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list) {
+void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	ItemList *item_list = Object::cast_to<ItemList>(p_item_list);
 	popup_menu->reset_size();
 	popup_menu->set_position(get_position() + item_list->get_global_mouse_position());
@@ -336,7 +340,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	source_level_list->set_allow_rmb_select(true);
-	source_level_list->connect("item_rmb_selected", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(source_level_list));
+	source_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(source_level_list));
 	vbox_container->add_child(source_level_list);
 
 	Label *coords_level_label = memnew(Label);
@@ -347,7 +351,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	coords_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	coords_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	coords_level_list->set_allow_rmb_select(true);
-	coords_level_list->connect("item_rmb_selected", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(coords_level_list));
+	coords_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(coords_level_list));
 	vbox_container->add_child(coords_level_list);
 
 	Label *alternative_level_label = memnew(Label);
@@ -358,7 +362,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	alternative_level_list->set_allow_rmb_select(true);
-	alternative_level_list->connect("item_rmb_selected", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(alternative_level_list));
+	alternative_level_list->connect("item_clicked", callable_mp(this, &TileProxiesManagerDialog::_right_clicked), varray(alternative_level_list));
 	vbox_container->add_child(alternative_level_list);
 
 	popup_menu = memnew(PopupMenu);

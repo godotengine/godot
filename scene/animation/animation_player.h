@@ -94,7 +94,7 @@ private:
 	struct TrackNodeCache {
 		NodePath path;
 		uint32_t id = 0;
-		RES resource;
+		Ref<Resource> resource;
 		Node *node = nullptr;
 		Node2D *node_2d = nullptr;
 #ifndef _3D_DISABLED

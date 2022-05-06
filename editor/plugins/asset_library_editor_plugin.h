@@ -60,9 +60,9 @@ class EditorAssetLibraryItem : public PanelContainer {
 	TextureRect *stars[5];
 	Label *price = nullptr;
 
-	int asset_id;
-	int category_id;
-	int author_id;
+	int asset_id = 0;
+	int category_id = 0;
+	int author_id = 0;
 
 	void _asset_clicked();
 	void _category_clicked();
@@ -102,7 +102,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id;
+	int asset_id = 0;
 	String download_url;
 	String title;
 	String sha256;
@@ -146,7 +146,7 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 
 	int prev_status;
 
-	int asset_id;
+	int asset_id = 0;
 
 	bool external_install;
 
@@ -186,8 +186,10 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg = nullptr;
 	ScrollContainer *library_scroll = nullptr;
 	VBoxContainer *library_vb = nullptr;
-	Label *library_loading = nullptr;
-	Label *library_error = nullptr;
+	Label *library_info = nullptr;
+	VBoxContainer *library_error = nullptr;
+	Label *library_error_label = nullptr;
+	Button *library_error_retry = nullptr;
 	LineEdit *filter = nullptr;
 	Timer *filter_debounce_timer = nullptr;
 	OptionButton *categories = nullptr;
@@ -291,6 +293,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _filter_debounce_timer_timeout();
+	void _request_current_config();
 	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
 
 	void _repository_changed(int p_repository_id);

@@ -32,11 +32,18 @@
 
 #include "image_compress_etcpak.h"
 
-void register_etcpak_types() {
+void initialize_etcpak_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	Image::_image_compress_etc1_func = _compress_etc1;
 	Image::_image_compress_etc2_func = _compress_etc2;
 	Image::_image_compress_bc_func = _compress_bc;
 }
 
-void unregister_etcpak_types() {
+void uninitialize_etcpak_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

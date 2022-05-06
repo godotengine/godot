@@ -33,8 +33,9 @@
 
 #define MODULE_GLSLANG_HAS_PREREGISTER
 
-void preregister_glslang_types();
-void register_glslang_types();
-void unregister_glslang_types();
+#include "modules/register_module_types.h"
+
+void initialize_glslang_module(ModuleInitializationLevel p_level);
+void uninitialize_glslang_module(ModuleInitializationLevel p_level);
 
 #endif // GLSLANG_REGISTER_TYPES_H

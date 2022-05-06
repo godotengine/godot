@@ -2611,11 +2611,11 @@ void VisualScriptEditor::_button_resource_previewed(const String &p_path, const 
 void VisualScriptEditor::apply_code() {
 }
 
-RES VisualScriptEditor::get_edited_resource() const {
+Ref<Resource> VisualScriptEditor::get_edited_resource() const {
 	return script;
 }
 
-void VisualScriptEditor::set_edited_resource(const RES &p_res) {
+void VisualScriptEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	ERR_FAIL_COND(script.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 	script = p_res;
@@ -4795,7 +4795,7 @@ VisualScriptEditor::~VisualScriptEditor() {
 	memdelete(variable_editor);
 }
 
-static ScriptEditorBase *create_editor(const RES &p_resource) {
+static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
 	if (Object::cast_to<VisualScript>(*p_resource)) {
 		return memnew(VisualScriptEditor);
 	}
@@ -4839,7 +4839,7 @@ Ref<VisualScriptNode> VisualScriptCustomNodes::create_node_custom(const String &
 }
 
 VisualScriptCustomNodes *VisualScriptCustomNodes::singleton = nullptr;
-Map<String, REF> VisualScriptCustomNodes::custom_nodes;
+Map<String, Ref<RefCounted>> VisualScriptCustomNodes::custom_nodes;
 
 VisualScriptCustomNodes::VisualScriptCustomNodes() {
 	singleton = this;

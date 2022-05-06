@@ -545,6 +545,9 @@ typedef struct {
 	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
 	void (*classdb_register_extension_class_signal)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
 	void (*classdb_unregister_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+
+	void (*get_library_path)(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
+
 } GDNativeInterface;
 
 /* INITIALIZATION */
@@ -553,7 +556,6 @@ typedef enum {
 	GDNATIVE_INITIALIZATION_CORE,
 	GDNATIVE_INITIALIZATION_SERVERS,
 	GDNATIVE_INITIALIZATION_SCENE,
-	GDNATIVE_INITIALIZATION_DRIVER,
 	GDNATIVE_INITIALIZATION_EDITOR,
 	GDNATIVE_MAX_INITIALIZATION_LEVEL,
 } GDNativeInitializationLevel;

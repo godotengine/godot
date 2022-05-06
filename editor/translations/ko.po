@@ -35,8 +35,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-04 08:19+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2022-05-03 07:13+0000\n"
+"Last-Translator: Lee Minhak <minarihak@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -94,12 +94,12 @@ msgstr "디버거 항상 열어놓기"
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Min Window Size"
-msgstr "윤곽선 크기:"
+msgstr "창의 최소 크기"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Max Window Size"
-msgstr "윤곽선 크기:"
+msgstr "창의 최대 크기"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -136,8 +136,9 @@ msgstr "초기화"
 
 #: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
+#, fuzzy
 msgid "Resizable"
-msgstr ""
+msgstr "크기 조정 가능"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -149,8 +150,7 @@ msgid "Position"
 msgstr "독 위치"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -215,7 +215,7 @@ msgstr "검색 결과"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "메모리"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -276,8 +276,9 @@ msgid "Page Size"
 msgstr "페이지: "
 
 #: core/io/file_access_network.cpp
+#, fuzzy
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "페이지 미리 읽기"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
@@ -343,8 +344,9 @@ msgid "Stream Peer"
 msgstr ""
 
 #: core/io/stream_peer.cpp
+#, fuzzy
 msgid "Big Endian"
-msgstr ""
+msgstr "빅 엔디안"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
@@ -419,41 +421,7 @@ msgstr ""
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Text Editor"
-msgstr "에디터 열기"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Completion"
-msgstr "선택 항목 복사"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
-msgid "Use Single Quotes"
-msgstr "새 단일 타일"
+msgstr "최대 크기(KB)"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -461,13 +429,12 @@ msgid "Device"
 msgstr "기기"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "모두"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -502,7 +469,7 @@ msgstr "물리 키"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "유니코드"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -530,7 +497,7 @@ msgstr "마우스 버튼 인덱스:"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "더블 클릭"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
@@ -741,14 +708,12 @@ msgid "UI Accept"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "선택"
+msgstr "UI 선택"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "취소"
+msgstr "UI 취소"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -763,12 +728,12 @@ msgstr "경로 포커스"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Left"
-msgstr "왼쪽 위"
+msgstr "UI 왼쪽"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Right"
-msgstr "오른쪽 위"
+msgstr "UI 오른쪽"
 
 #: core/project_settings.cpp
 msgid "UI Up"
@@ -809,12 +774,14 @@ msgid "Physics"
 msgstr " (물리)"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -830,9 +797,8 @@ msgstr "Trimesh 콜리전 동기 만들기"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "렌더러:"
+msgstr "렌더링"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -911,23 +877,23 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "모듈"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP (전송 제어 프로토콜)"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -944,7 +910,7 @@ msgstr ""
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
 #, fuzzy
@@ -970,14 +936,12 @@ msgid "Path"
 msgstr "경로"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "소스"
+msgstr "소스 코드"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Messages"
-msgstr "커밋 변경사항"
+msgstr "메시지"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
@@ -1026,7 +990,7 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "버퍼"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1040,12 +1004,14 @@ msgstr ""
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1055,9 +1021,8 @@ msgstr "스마트 스냅"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "픽셀 스냅 사용"
+msgstr "GPU 픽셀 스냅 사용"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -1123,7 +1088,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "고품질"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1384,7 +1349,6 @@ msgid "Remove Anim Track"
 msgstr "애니메이션 트랙 제거"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -2790,7 +2754,7 @@ msgstr "색상 연산자."
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64비트"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
@@ -3047,9 +3011,8 @@ msgid "Manage Editor Feature Profiles"
 msgstr "에디터 기능 프로필 관리"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Default Feature Profile"
-msgstr "Godot 기능 프로필"
+msgstr "기본 기능 프로필"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -3368,6 +3331,14 @@ msgid ""
 msgstr ""
 "현재 이 메서드의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하"
 "여[/url][/color] 개선할 수 있도록 도와주세요!"
+
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+msgid "Text Editor"
+msgstr "텍스트 에디터"
 
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -4193,7 +4164,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Minimum Width"
-msgstr ""
+msgstr "최소 너비"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Output"
@@ -4211,16 +4182,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Close Output On Stop"
 msgstr ""
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
-msgid "Auto Save"
-msgstr "자동 자르기"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
-msgid "Save Before Running"
-msgstr "씬을 실행하기 전에 저장..."
 
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
@@ -4309,9 +4270,8 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Username"
-msgstr "이름 바꾸기"
+msgstr "사용자 이름"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
@@ -4433,9 +4393,8 @@ msgid "Install Android Build Template..."
 msgstr "Android 빌드 템플릿 설치..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "에디터 데이터 폴더 열기"
+msgstr "사용자 데이터 폴더 열기"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -4693,7 +4652,9 @@ msgstr "머티리얼 바꾸기:"
 msgid "Hide Update Spinner"
 msgstr "업데이트 스피너 숨기기"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "파일시스템"
 
@@ -4950,7 +4911,7 @@ msgstr "디버거"
 
 #: editor/editor_profiler.cpp
 msgid "Profiler Frame History Size"
-msgstr ""
+msgstr "프로파일러 프레임 기록 크기"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
@@ -5146,9 +5107,8 @@ msgid "Did you forget the '_run' method?"
 msgstr "'_run' 메서드를 잊었나요?"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Editor Language"
-msgstr "에디터 레이아웃"
+msgstr "에디터 언어"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5161,11 +5121,11 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Main Font Size"
-msgstr ""
+msgstr "기본 글꼴 크기"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
-msgstr ""
+msgstr "코드 글꼴 크기"
 
 #: editor/editor_settings.cpp
 msgid "Font Antialiased"
@@ -5176,18 +5136,16 @@ msgid "Font Hinting"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Main Font"
-msgstr "메인 씬"
+msgstr "기본 글꼴"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
-msgstr ""
+msgstr "기본 글꼴 굵기"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Font"
-msgstr "노드 점 추가"
+msgstr "코드 글꼴"
 
 #: editor/editor_settings.cpp
 msgid "Dim Editor On Dialog Popup"
@@ -5208,14 +5166,13 @@ msgstr "집중 모드"
 
 #: editor/editor_settings.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "자동으로 스크린샷 열기"
 
 #: editor/editor_settings.cpp
 msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5227,21 +5184,19 @@ msgstr "프리셋"
 
 #: editor/editor_settings.cpp
 msgid "Icon And Font Color"
-msgstr ""
+msgstr "아이콘 및 글꼴 색"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Base Color"
-msgstr "색상"
+msgstr "기본 색"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Accent Color"
-msgstr "색상 선택"
+msgstr "강조 색"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
-msgstr ""
+msgstr "대비"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
@@ -5275,12 +5230,6 @@ msgstr "테마 에디터"
 #, fuzzy
 msgid "Show Script Button"
 msgstr "휠 오른쪽 버튼"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
-msgid "Filesystem"
-msgstr "파일시스템"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5317,9 +5266,8 @@ msgid "File Dialog"
 msgstr "XForm 대화 상자"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Thumbnail Size"
-msgstr "썸네일..."
+msgstr "썸네일 크기"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
@@ -5340,13 +5288,12 @@ msgid "Always Show Folders"
 msgstr "항상 격자 보이기"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Property Editor"
-msgstr "그룹 에디터"
+msgstr "속성 에디터"
 
 #: editor/editor_settings.cpp
 msgid "Auto Refresh Interval"
-msgstr ""
+msgstr "자동 새로 고침 간격"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5358,9 +5305,7 @@ msgstr "하위 리소스"
 msgid "Color Theme"
 msgstr "테마 에디터"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr ""
 
@@ -5387,15 +5332,12 @@ msgstr ""
 msgid "Highlight Type Safe Lines"
 msgstr ""
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
-#, fuzzy
+#: editor/editor_settings.cpp
 msgid "Indent"
-msgstr "내어쓰기"
+msgstr "들여쓰기"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5440,7 +5382,7 @@ msgstr "원점 보이기"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Width"
-msgstr ""
+msgstr "미니맵 너비"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
@@ -5503,7 +5445,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Files"
 msgstr "파일"
@@ -5522,6 +5463,14 @@ msgid "Restore Scripts On Load"
 msgstr ""
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr ""
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr ""
 
@@ -5529,8 +5478,7 @@ msgstr ""
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr ""
 
@@ -5542,11 +5490,11 @@ msgstr ""
 msgid "Block Caret"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
@@ -5554,6 +5502,13 @@ msgstr ""
 #, fuzzy
 msgid "Right Click Moves Caret"
 msgstr "점을 추가하려면 우클릭"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion"
+msgstr "선택 항목 복사"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5587,6 +5542,11 @@ msgstr "타입 추가"
 
 #: editor/editor_settings.cpp
 #, fuzzy
+msgid "Use Single Quotes"
+msgstr "새 단일 타일"
+
+#: editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Help Index"
 msgstr "도우미 보이기"
 
@@ -5602,8 +5562,7 @@ msgstr ""
 msgid "Help Title Font Size"
 msgstr ""
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "그리드맵"
 
@@ -5611,6 +5570,11 @@ msgstr "그리드맵"
 #, fuzzy
 msgid "Pick Distance"
 msgstr "거리 선택:"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "미리보기"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5624,6 +5588,38 @@ msgstr ""
 #, fuzzy
 msgid "Selection Box Color"
 msgstr "선택 영역만"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "3D Gizmos"
+msgstr "기즈모"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Gizmo Colors"
+msgstr "방출 색상"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "인스턴스하기"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "점"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5662,17 +5658,17 @@ msgstr "그리드맵 칠하기"
 msgid "Grid YZ Plane"
 msgstr "그리드맵 칠하기"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default FOV"
 msgstr "디폴트"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Near"
 msgstr "디폴트 테마"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Far"
 msgstr "디폴트"
@@ -5920,6 +5916,15 @@ msgid "Screen"
 msgstr ""
 
 #: editor/editor_settings.cpp
+msgid "Auto Save"
+msgstr "자동 저장"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Save Before Running"
+msgstr "씬을 실행하기 전에 저장..."
+
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Font Size"
 msgstr "정면 뷰"
@@ -5943,7 +5948,7 @@ msgstr "에디터 설정"
 
 #: editor/editor_settings.cpp
 msgid "HTTP Proxy"
-msgstr ""
+msgstr "HTTP 프록시"
 
 #: editor/editor_settings.cpp
 msgid "Host"
@@ -5966,7 +5971,7 @@ msgstr "폴더 이름 바꾸기:"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
-msgstr ""
+msgstr "상징 색"
 
 #: editor/editor_settings.cpp
 msgid "Keyword Color"
@@ -6829,6 +6834,11 @@ msgid "Delimiter"
 msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "색상 함수."
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr ""
 
@@ -7146,6 +7156,15 @@ msgstr "`post_import()` 메서드에서 Node에서 상속받은 오브젝트를 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "저장 중..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid "2D, Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "전면 픽셀"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8419,6 +8438,10 @@ msgid "License (Z-A)"
 msgstr "라이선스 (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "불러오는 중..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgctxt "Pagination"
 msgid "First"
@@ -8487,8 +8510,8 @@ msgid "Testing"
 msgstr "테스트"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "불러오는 중..."
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9687,13 +9710,6 @@ msgstr "MeshInstance 변형 적용"
 msgid "Apply with Transforms"
 msgstr "MeshInstance 변형 적용"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Preview Size"
-msgstr "미리보기"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
@@ -10005,20 +10021,6 @@ msgstr "인-컨트롤 점 제거"
 msgid "Split Segment (in curve)"
 msgstr "(곡선에서) 세그먼트 가르기"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "3D Gizmos"
-msgstr "기즈모"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "Gizmo Colors"
-msgstr "방출 색상"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "관절 이동"
@@ -10230,6 +10232,10 @@ msgstr "격자 스텝 Y:"
 msgid "Sync Bones to Polygon"
 msgstr "본을 폴리곤에 동기화"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "오류: 리소스를 불러올 수 없습니다!"
@@ -10321,11 +10327,6 @@ msgid "Close and save changes?"
 msgstr "변경사항을 저장하고 닫을까요?"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "텍스트 파일 작성 중 오류:"
 
@@ -10403,10 +10404,6 @@ msgstr "테마를 다른 이름으로 저장..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "%s 클래스 참조"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -11459,11 +11456,6 @@ msgstr ""
 #, fuzzy
 msgid "Show Viewport Rotation Gizmo"
 msgstr "뷰 회전 잠금"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Instanced"
-msgstr "인스턴스하기"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -15152,6 +15144,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "로컬로 만들기"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "노드 이름:"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "노드 이름:"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "새 씬 루트"
@@ -15222,6 +15228,10 @@ msgstr "저장하기 위해 씬 복제 중 오류."
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "하위 리소스"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15354,6 +15364,13 @@ msgstr "(연결 시작 지점)"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "노드 설정 경고:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15777,21 +15794,6 @@ msgstr "카메라 시야 바꾸기"
 msgid "Change Camera Size"
 msgstr "카메라 크기 바꾸기"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "점"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr ""
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16189,6 +16191,16 @@ msgstr ""
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "보간 모드"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "필터 활성화"
 
 #: main/main.cpp
 #, fuzzy
@@ -20000,6 +20012,11 @@ msgstr "디버거"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
+msgid "Modify Resources"
+msgstr "리소스 복사"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
 msgid "File Version"
 msgstr "버전"
 
@@ -22296,8 +22313,9 @@ msgstr ""
 "것은 내비게이션 데이터만 제공합니다."
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr ""
+#, fuzzy
+msgid "NavMesh"
+msgstr "NavMesh 굽기"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -24550,6 +24568,12 @@ msgid "Timeout"
 msgstr "시간 초과."
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 #, fuzzy
 msgid "Name Num Separator"
 msgstr "이름 있는 구분자"
@@ -24577,6 +24601,11 @@ msgstr "팬 모드"
 #, fuzzy
 msgid "Display Folded"
 msgstr "셰이더 없음 표시"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "노드 이름:"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24640,11 +24669,6 @@ msgstr ""
 #, fuzzy
 msgid "Multiplayer Poll"
 msgstr "다수 설정:"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "보간 모드"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -26817,6 +26841,10 @@ msgstr "여백 설정"
 #, fuzzy
 msgid "Expand Margin"
 msgstr "모두 펼치기"
+
+#: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
 
 #: scene/resources/style_box.cpp
 #, fuzzy

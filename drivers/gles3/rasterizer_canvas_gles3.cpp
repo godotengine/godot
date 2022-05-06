@@ -57,57 +57,57 @@
 //};
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
-	p_mat4[0] = p_transform.elements[0][0];
-	p_mat4[1] = p_transform.elements[0][1];
+	p_mat4[0] = p_transform.columns[0][0];
+	p_mat4[1] = p_transform.columns[0][1];
 	p_mat4[2] = 0;
 	p_mat4[3] = 0;
-	p_mat4[4] = p_transform.elements[1][0];
-	p_mat4[5] = p_transform.elements[1][1];
+	p_mat4[4] = p_transform.columns[1][0];
+	p_mat4[5] = p_transform.columns[1][1];
 	p_mat4[6] = 0;
 	p_mat4[7] = 0;
 	p_mat4[8] = 0;
 	p_mat4[9] = 0;
 	p_mat4[10] = 1;
 	p_mat4[11] = 0;
-	p_mat4[12] = p_transform.elements[2][0];
-	p_mat4[13] = p_transform.elements[2][1];
+	p_mat4[12] = p_transform.columns[2][0];
+	p_mat4[13] = p_transform.columns[2][1];
 	p_mat4[14] = 0;
 	p_mat4[15] = 1;
 }
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4) {
-	p_mat2x4[0] = p_transform.elements[0][0];
-	p_mat2x4[1] = p_transform.elements[1][0];
+	p_mat2x4[0] = p_transform.columns[0][0];
+	p_mat2x4[1] = p_transform.columns[1][0];
 	p_mat2x4[2] = 0;
-	p_mat2x4[3] = p_transform.elements[2][0];
+	p_mat2x4[3] = p_transform.columns[2][0];
 
-	p_mat2x4[4] = p_transform.elements[0][1];
-	p_mat2x4[5] = p_transform.elements[1][1];
+	p_mat2x4[4] = p_transform.columns[0][1];
+	p_mat2x4[5] = p_transform.columns[1][1];
 	p_mat2x4[6] = 0;
-	p_mat2x4[7] = p_transform.elements[2][1];
+	p_mat2x4[7] = p_transform.columns[2][1];
 }
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3) {
-	p_mat2x3[0] = p_transform.elements[0][0];
-	p_mat2x3[1] = p_transform.elements[0][1];
-	p_mat2x3[2] = p_transform.elements[1][0];
-	p_mat2x3[3] = p_transform.elements[1][1];
-	p_mat2x3[4] = p_transform.elements[2][0];
-	p_mat2x3[5] = p_transform.elements[2][1];
+	p_mat2x3[0] = p_transform.columns[0][0];
+	p_mat2x3[1] = p_transform.columns[0][1];
+	p_mat2x3[2] = p_transform.columns[1][0];
+	p_mat2x3[3] = p_transform.columns[1][1];
+	p_mat2x3[4] = p_transform.columns[2][0];
+	p_mat2x3[5] = p_transform.columns[2][1];
 }
 
 void RasterizerCanvasGLES3::_update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4) {
-	p_mat4[0] = p_transform.basis.elements[0][0];
-	p_mat4[1] = p_transform.basis.elements[1][0];
-	p_mat4[2] = p_transform.basis.elements[2][0];
+	p_mat4[0] = p_transform.basis.rows[0][0];
+	p_mat4[1] = p_transform.basis.rows[1][0];
+	p_mat4[2] = p_transform.basis.rows[2][0];
 	p_mat4[3] = 0;
-	p_mat4[4] = p_transform.basis.elements[0][1];
-	p_mat4[5] = p_transform.basis.elements[1][1];
-	p_mat4[6] = p_transform.basis.elements[2][1];
+	p_mat4[4] = p_transform.basis.rows[0][1];
+	p_mat4[5] = p_transform.basis.rows[1][1];
+	p_mat4[6] = p_transform.basis.rows[2][1];
 	p_mat4[7] = 0;
-	p_mat4[8] = p_transform.basis.elements[0][2];
-	p_mat4[9] = p_transform.basis.elements[1][2];
-	p_mat4[10] = p_transform.basis.elements[2][2];
+	p_mat4[8] = p_transform.basis.rows[0][2];
+	p_mat4[9] = p_transform.basis.rows[1][2];
+	p_mat4[10] = p_transform.basis.rows[2][2];
 	p_mat4[11] = 0;
 	p_mat4[12] = p_transform.origin.x;
 	p_mat4[13] = p_transform.origin.y;
@@ -142,9 +142,9 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
 
 		Transform2D normal_transform = p_canvas_transform;
-		normal_transform.elements[0].normalize();
-		normal_transform.elements[1].normalize();
-		normal_transform.elements[2] = Vector2();
+		normal_transform.columns[0].normalize();
+		normal_transform.columns[1].normalize();
+		normal_transform.columns[2] = Vector2();
 		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
 
 		state_buffer.canvas_modulate[0] = p_modulate.r;

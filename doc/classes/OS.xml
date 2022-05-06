@@ -434,6 +434,15 @@
 				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
 			</description>
 		</method>
+		<method name="is_process_running" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="pid" type="int" />
+			<description>
+				Returns [code]true[/code] if the child process ID ([code]pid[/code]) is still running or [code]false[/code] if it has terminated.
+				Must be a valid ID generated from [method create_process].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool" />
 			<description>

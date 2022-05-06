@@ -322,8 +322,8 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 struct MSContext {
 	msdfgen::Point2 position;
-	msdfgen::Shape *shape;
-	msdfgen::Contour *contour;
+	msdfgen::Shape *shape = nullptr;
+	msdfgen::Contour *contour = nullptr;
 };
 
 class DistancePixelConversion {

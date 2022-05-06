@@ -70,7 +70,7 @@ void init_autoloads() {
 			continue;
 		}
 
-		RES res = ResourceLoader::load(info.path);
+		Ref<Resource> res = ResourceLoader::load(info.path);
 		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 		Node *n = nullptr;
 		Ref<PackedScene> scn = res;

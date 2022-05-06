@@ -31,7 +31,9 @@
 #ifndef UPNP_REGISTER_TYPES_H
 #define UPNP_REGISTER_TYPES_H
 
-void register_upnp_types();
-void unregister_upnp_types();
+#include "modules/register_module_types.h"
+
+void initialize_upnp_module(ModuleInitializationLevel p_level);
+void uninitialize_upnp_module(ModuleInitializationLevel p_level);
 
 #endif // UPNP_REGISTER_TYPES_H

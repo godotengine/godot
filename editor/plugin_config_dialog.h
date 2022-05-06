@@ -54,7 +54,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	TextureRect *subfolder_validation = nullptr;
 	TextureRect *script_validation = nullptr;
 
-	bool _edit_mode;
+	bool _edit_mode = false;
 
 	void _clear_fields();
 	void _on_confirmed();

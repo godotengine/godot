@@ -45,7 +45,7 @@ class EditorResourcePicker : public HBoxContainer {
 	static HashMap<StringName, List<StringName>> allowed_types_cache;
 
 	String base_type;
-	RES edited_resource;
+	Ref<Resource> edited_resource;
 
 	bool editable = true;
 	bool dropping = false;
@@ -113,8 +113,8 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
-	void set_edited_resource(RES p_resource);
-	RES get_edited_resource();
+	void set_edited_resource(Ref<Resource> p_resource);
+	Ref<Resource> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

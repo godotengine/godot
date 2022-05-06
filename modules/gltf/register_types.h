@@ -28,5 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_gltf_types();
-void unregister_gltf_types();
+#include "modules/register_module_types.h"
+
+void initialize_gltf_module(ModuleInitializationLevel p_level);
+void uninitialize_gltf_module(ModuleInitializationLevel p_level);

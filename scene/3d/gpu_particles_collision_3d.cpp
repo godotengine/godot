@@ -594,8 +594,8 @@ void GPUParticlesCollisionHeightField3D::_notification(int p_what) {
 				Camera3D *cam = get_viewport()->get_camera_3d();
 				if (cam) {
 					Transform3D xform = get_global_transform();
-					Vector3 x_axis = xform.basis.get_axis(Vector3::AXIS_X).normalized();
-					Vector3 z_axis = xform.basis.get_axis(Vector3::AXIS_Z).normalized();
+					Vector3 x_axis = xform.basis.get_column(Vector3::AXIS_X).normalized();
+					Vector3 z_axis = xform.basis.get_column(Vector3::AXIS_Z).normalized();
 					float x_len = xform.basis.get_scale().x;
 					float z_len = xform.basis.get_scale().z;
 

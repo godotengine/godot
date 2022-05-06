@@ -75,17 +75,12 @@
 			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
-				[codeblocks]
-				[gdscript]
-				var img = get_viewport().get_texture().get_image()
-				img.flip_y()
-				[/gdscript]
-				[csharp]
-				Image img = GetViewport().GetTexture().GetImage();
-				img.FlipY();
-				[/csharp]
-				[/codeblocks]
+				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
+				[codeblock]
+				func _ready():
+				    await RenderingServer.frame_post_draw
+				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">

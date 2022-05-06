@@ -50,7 +50,7 @@ class ResourceLoaderBinary {
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
 
 	Vector<char> str_buf;
-	List<RES> resource_cache;
+	List<Ref<Resource>> resource_cache;
 
 	Vector<StringName> string_map;
 
@@ -60,7 +60,7 @@ class ResourceLoaderBinary {
 		String path;
 		String type;
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
-		RES cache;
+		Ref<Resource> cache;
 	};
 
 	bool using_named_scene_ids = false;
@@ -75,7 +75,7 @@ class ResourceLoaderBinary {
 	};
 
 	Vector<IntResource> internal_resources;
-	Map<String, RES> internal_index_cache;
+	Map<String, Ref<Resource>> internal_index_cache;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
@@ -89,7 +89,7 @@ class ResourceLoaderBinary {
 
 	Error parse_variant(Variant &r_v);
 
-	Map<String, RES> dependency_cache;
+	Map<String, Ref<Resource>> dependency_cache;
 
 public:
 	void set_local_path(const String &p_local_path);
@@ -107,7 +107,7 @@ public:
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -127,20 +127,20 @@ class ResourceFormatSaverBinaryInstance {
 	bool big_endian;
 	bool takeover_paths;
 	String magic;
-	Set<RES> resource_set;
+	Set<Ref<Resource>> resource_set;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
-		RES base;
+		Ref<Resource> base;
 		StringName property;
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
 	};
 
-	Map<NonPersistentKey, RES> non_persistent_map;
+	Map<NonPersistentKey, Ref<Resource>> non_persistent_map;
 	Map<StringName, int> string_map;
 	Vector<StringName> strings;
 
-	Map<RES, int> external_resources;
-	List<RES> saved_resources;
+	Map<Ref<Resource>, int> external_resources;
+	List<Ref<Resource>> saved_resources;
 
 	struct Property {
 		int name_idx;
@@ -167,16 +167,16 @@ public:
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11
 	};
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	static void write_variant(Ref<FileAccess> f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
+	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	static void write_variant(Ref<FileAccess> f, const Variant &p_property, Map<Ref<Resource>, int> &resource_map, Map<Ref<Resource>, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverBinary *singleton;
-	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	virtual bool recognize(const RES &p_resource) const;
-	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual bool recognize(const Ref<Resource> &p_resource) const;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 
 	ResourceFormatSaverBinary();
 };

@@ -236,7 +236,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 	} else if (part_of_subscene) {
 		if (valid_types.size() == 0) {
-			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		}
 	} else if (marked.has(p_node)) {
 		String node_name = p_node->get_name();
@@ -355,13 +355,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 
 		if (p_node->is_class("CanvasItem")) {
-			bool is_locked = p_node->has_meta("_edit_lock_"); //_edit_group_
-			if (is_locked) {
+			if (p_node->has_meta("_edit_lock_")) {
 				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped) {
+			if (p_node->has_meta("_edit_group_")) {
 				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
 			}
 
@@ -389,13 +387,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed), varray(p_node));
 			}
 		} else if (p_node->is_class("Node3D")) {
-			bool is_locked = p_node->has_meta("_edit_lock_");
-			if (is_locked) {
+			if (p_node->has_meta("_edit_lock_")) {
 				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped) {
+			if (p_node->has_meta("_edit_group_")) {
 				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
 			}
 

@@ -38,23 +38,29 @@
 #include "editor/csg_gizmos.h"
 #endif
 
-void register_csg_types() {
-	GDREGISTER_ABSTRACT_CLASS(CSGShape3D);
-	GDREGISTER_ABSTRACT_CLASS(CSGPrimitive3D);
-	GDREGISTER_CLASS(CSGMesh3D);
-	GDREGISTER_CLASS(CSGSphere3D);
-	GDREGISTER_CLASS(CSGBox3D);
-	GDREGISTER_CLASS(CSGCylinder3D);
-	GDREGISTER_CLASS(CSGTorus3D);
-	GDREGISTER_CLASS(CSGPolygon3D);
-	GDREGISTER_CLASS(CSGCombiner3D);
-
+void initialize_csg_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_ABSTRACT_CLASS(CSGShape3D);
+		GDREGISTER_ABSTRACT_CLASS(CSGPrimitive3D);
+		GDREGISTER_CLASS(CSGMesh3D);
+		GDREGISTER_CLASS(CSGSphere3D);
+		GDREGISTER_CLASS(CSGBox3D);
+		GDREGISTER_CLASS(CSGCylinder3D);
+		GDREGISTER_CLASS(CSGTorus3D);
+		GDREGISTER_CLASS(CSGPolygon3D);
+		GDREGISTER_CLASS(CSGCombiner3D);
+	}
 #ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<EditorPluginCSG>();
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<EditorPluginCSG>();
+	}
 #endif
 }
 
-void unregister_csg_types() {
+void uninitialize_csg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }
 
 #endif // _3D_DISABLED

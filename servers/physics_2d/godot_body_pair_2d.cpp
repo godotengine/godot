@@ -203,7 +203,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// Check one-way collision based on motion direction.
 	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
-		Vector2 direction = p_xform_B.get_axis(1).normalized();
+		Vector2 direction = p_xform_B.columns[1].normalized();
 		if (direction.dot(mnormal) < CMP_EPSILON) {
 			collided = false;
 			oneway_disabled = true;
@@ -260,7 +260,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 	Transform2D xform_Bu = B->get_transform();
-	xform_Bu.elements[2] -= offset_A;
+	xform_Bu.columns[2] -= offset_A;
 	Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	GodotShape2D *shape_A_ptr = A->get_shape(shape_A);
@@ -300,7 +300,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 	if (!prev_collided) {
 		if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
-			Vector2 direction = xform_A.get_axis(1).normalized();
+			Vector2 direction = xform_A.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
@@ -318,7 +318,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		}
 
 		if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
-			Vector2 direction = xform_B.get_axis(1).normalized();
+			Vector2 direction = xform_B.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
@@ -351,7 +351,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 			Transform2D xform_Bu = B->get_transform();
-			xform_Bu.elements[2] -= offset_A;
+			xform_Bu.columns[2] -= offset_A;
 			Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 			if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {

@@ -2356,7 +2356,7 @@ DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
 	return current_cursor;
 }
 
-void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
@@ -4531,23 +4531,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
-	current_cursor = CURSOR_ARROW;
-	mouse_mode = MOUSE_MODE_VISIBLE;
-
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
 		img[i] = nullptr;
 	}
-
-	xmbstring = nullptr;
-
-	last_click_ms = 0;
-	last_click_button_index = MouseButton::NONE;
-	last_click_pos = Point2i(-100, -100);
-
-	last_timestamp = 0;
-	last_mouse_pos_valid = false;
-	last_keyrelease_time = 0;
 
 	XInitThreads(); //always use threads
 
@@ -4583,8 +4570,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	const char *err;
-	xrr_get_monitors = nullptr;
-	xrr_free_monitors = nullptr;
 	int xrandr_major = 0;
 	int xrandr_minor = 0;
 	int event_base, error_base;
@@ -4660,11 +4645,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		XFree(imvalret);
 	}
 
-	/* Atorm internment */
+	/* Atom internment */
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
-	//Set Xdnd (drag & drop) support
+	// Set Xdnd (drag & drop) support.
 	xdnd_aware = XInternAtom(x11_display, "XdndAware", False);
-	xdnd_version = 5;
 	xdnd_enter = XInternAtom(x11_display, "XdndEnter", False);
 	xdnd_position = XInternAtom(x11_display, "XdndPosition", False);
 	xdnd_status = XInternAtom(x11_display, "XdndStatus", False);
@@ -4751,11 +4735,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 		driver_found = true;
 
-		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
-
 		if (true) {
-			//		if (RasterizerGLES3::is_viable() == OK) {
-			//		RasterizerGLES3::register_config();
 			RasterizerGLES3::make_current();
 		} else {
 			memdelete(gl_manager);
@@ -4929,12 +4909,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		null_cursor = cursor;
 	}
 	cursor_set_shape(CURSOR_BUSY);
-
-	requested = None;
-
-	/*if (p_desired.layered) {
-		set_window_per_pixel_transparency_enabled(true);
-	}*/
 
 	XEvent xevent;
 	while (XPending(x11_display) > 0) {

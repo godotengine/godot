@@ -31,7 +31,11 @@
 #ifndef ETCPAK_REGISTER_TYPES_H
 #define ETCPAK_REGISTER_TYPES_H
 
-void register_etcpak_types();
-void unregister_etcpak_types();
+#include "modules/register_module_types.h"
+
+#include "modules/register_module_types.h"
+
+void initialize_etcpak_module(ModuleInitializationLevel p_level);
+void uninitialize_etcpak_module(ModuleInitializationLevel p_level);
 
 #endif // ETCPAK_REGISTER_TYPES_H

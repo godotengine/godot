@@ -85,7 +85,7 @@ public:
 	struct ServersProfilerFrame {
 		int frame_number = 0;
 		double frame_time = 0;
-		double idle_time = 0;
+		double process_time = 0;
 		double physics_time = 0;
 		double physics_frame_time = 0;
 		double script_time = 0;

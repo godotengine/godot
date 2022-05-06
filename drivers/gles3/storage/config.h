@@ -51,47 +51,47 @@ private:
 	static Config *singleton;
 
 public:
-	bool use_nearest_mip_filter;
-	bool use_skeleton_software;
+	bool use_nearest_mip_filter = false;
+	bool use_skeleton_software = false;
 
-	int max_vertex_texture_image_units;
-	int max_texture_image_units;
-	int max_texture_size;
-	int max_uniform_buffer_size;
+	int max_vertex_texture_image_units = 0;
+	int max_texture_image_units = 0;
+	int max_texture_size = 0;
+	int max_uniform_buffer_size = 0;
 
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
 
 	Set<String> extensions;
 
-	bool float_texture_supported;
-	bool s3tc_supported;
-	bool latc_supported;
-	bool rgtc_supported;
-	bool bptc_supported;
-	bool etc_supported;
-	bool etc2_supported;
-	bool srgb_decode_supported;
+	bool float_texture_supported = false;
+	bool s3tc_supported = false;
+	bool latc_supported = false;
+	bool rgtc_supported = false;
+	bool bptc_supported = false;
+	bool etc_supported = false;
+	bool etc2_supported = false;
+	bool srgb_decode_supported = false;
 
-	bool keep_original_textures;
+	bool keep_original_textures = false;
 
-	bool force_vertex_shading;
+	bool force_vertex_shading = false;
 
-	bool use_rgba_2d_shadows;
-	bool use_rgba_3d_shadows;
+	bool use_rgba_2d_shadows = false;
+	bool use_rgba_3d_shadows = false;
 
-	bool support_32_bits_indices;
-	bool support_write_depth;
-	bool support_half_float_vertices;
-	bool support_npot_repeat_mipmap;
-	bool support_depth_cubemaps;
-	bool support_shadow_cubemaps;
-	bool support_anisotropic_filter;
-	float anisotropic_level;
+	bool support_32_bits_indices = false;
+	bool support_write_depth = false;
+	bool support_half_float_vertices = false;
+	bool support_npot_repeat_mipmap = false;
+	bool support_depth_cubemaps = false;
+	bool support_shadow_cubemaps = false;
+	bool support_anisotropic_filter = false;
+	float anisotropic_level = 0.0f;
 
-	GLuint depth_internalformat;
-	GLuint depth_type;
-	GLuint depth_buffer_internalformat;
+	GLuint depth_internalformat = 0;
+	GLuint depth_type = 0;
+	GLuint depth_buffer_internalformat = 0;
 
 	// in some cases the legacy render didn't orphan. We will mark these
 	// so the user can switch orphaning off for them.

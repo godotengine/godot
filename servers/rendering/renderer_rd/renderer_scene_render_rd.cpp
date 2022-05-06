@@ -3280,7 +3280,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
 
-	Plane camera_plane(-p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
+	Plane camera_plane(-p_camera_transform.basis.get_column(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
@@ -3735,12 +3735,13 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		float fade = 1.0;
 
 		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
-			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
-			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
+			const real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
+			const float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
+			const float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
-				fade = 1.0 - (distance - fade_begin) / fade_length;
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - fade_begin) / fade_length);
 			}
 		}
 
@@ -3753,7 +3754,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		Transform3D to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
 		RendererStorageRD::store_transform(to_decal_xform, dd.xform);
 
-		Vector3 normal = xform.basis.get_axis(Vector3::AXIS_Y).normalized();
+		Vector3 normal = xform.basis.get_column(Vector3::AXIS_Y).normalized();
 		normal = p_camera_inverse_xform.basis.xform(normal); //camera is normalized, so fine
 
 		dd.normal[0] = normal.x;
@@ -3974,10 +3975,6 @@ RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_sour
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
-}
-
-RendererSceneRenderRD::FogShaderData::FogShaderData() {
-	valid = false;
 }
 
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
@@ -4828,7 +4825,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	render_state.shadows.clear();
 	render_state.directional_shadows.clear();
 
-	Plane camera_plane(-p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
+	Plane camera_plane(-p_render_data->cam_transform.basis.get_column(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
 	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
@@ -5024,7 +5021,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 		// this should be the same for all cameras..
 		render_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
-		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
+		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_column(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			render_data.screen_mesh_lod_threshold = 0.0;
@@ -5343,7 +5340,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 	cam_pos.y += extents.y;
 
 	Transform3D cam_xform;
-	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_axis(Vector3::AXIS_Y), -p_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
+	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_column(Vector3::AXIS_Y), -p_transform.basis.get_column(Vector3::AXIS_Z).normalized());
 
 	RID fb = particles_storage->particles_collision_get_heightfield_framebuffer(p_collider);
 

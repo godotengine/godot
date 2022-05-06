@@ -101,10 +101,10 @@ protected:
 	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
 	PackedByteArray vertex_buffer;
 	PackedByteArray attribute_buffer;
-	uint32_t vertex_stride;
-	uint32_t attrib_stride;
-	uint32_t skin_stride;
-	uint32_t mesh_surface_format;
+	uint32_t vertex_stride = 0;
+	uint32_t attrib_stride = 0;
+	uint32_t skin_stride = 0;
+	uint32_t mesh_surface_format = 0;
 
 	void _queue_update();
 
@@ -248,6 +248,8 @@ public:
 	virtual Rect2 get_item_rect() const override;
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+
 	AnimatedSprite3D();
 };
 

@@ -35,7 +35,6 @@ CoreStringNames *CoreStringNames::singleton = nullptr;
 CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
 		changed(StaticCString::create("changed")),
-		_meta(StaticCString::create("__meta__")),
 		_script(StaticCString::create("script")),
 		script_changed(StaticCString::create("script_changed")),
 		___pdcdata(StaticCString::create("___pdcdata")),

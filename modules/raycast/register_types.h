@@ -28,5 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_raycast_types();
-void unregister_raycast_types();
+#include "modules/register_module_types.h"
+
+void initialize_raycast_module(ModuleInitializationLevel p_level);
+void uninitialize_raycast_module(ModuleInitializationLevel p_level);

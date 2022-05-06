@@ -140,7 +140,7 @@ struct _ConcaveCollisionInfo2D {
 	Vector2 motion_B;
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
-	GodotCollisionSolver2D::CallbackResult result_callback;
+	GodotCollisionSolver2D::CallbackResult result_callback = nullptr;
 	void *userdata = nullptr;
 	bool swap_result = false;
 	bool collided = false;
@@ -185,13 +185,13 @@ bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const 
 	cinfo.aabb_tests = 0;
 
 	Transform2D rel_transform = p_transform_A;
-	rel_transform.elements[2] -= p_transform_B.get_origin();
+	rel_transform.columns[2] -= p_transform_B.get_origin();
 
 	//quickly compute a local Rect2
 
 	Rect2 local_aabb;
 	for (int i = 0; i < 2; i++) {
-		Vector2 axis(p_transform_B.elements[i]);
+		Vector2 axis(p_transform_B.columns[i]);
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
 

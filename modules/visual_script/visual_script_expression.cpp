@@ -1299,8 +1299,8 @@ bool VisualScriptExpression::_compile_expression() {
 
 class VisualScriptNodeInstanceExpression : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	VisualScriptExpression *expression;
+	VisualScriptInstance *instance = nullptr;
+	VisualScriptExpression *expression = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 	//execute by parsing the tree directly

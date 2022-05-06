@@ -1228,17 +1228,17 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 	push_constant.cam_extent[1] = vp_half.y;
 	push_constant.cam_extent[2] = -p_projection.get_z_near();
 
-	push_constant.cam_transform[0] = p_transform.basis.elements[0][0];
-	push_constant.cam_transform[1] = p_transform.basis.elements[1][0];
-	push_constant.cam_transform[2] = p_transform.basis.elements[2][0];
+	push_constant.cam_transform[0] = p_transform.basis.rows[0][0];
+	push_constant.cam_transform[1] = p_transform.basis.rows[1][0];
+	push_constant.cam_transform[2] = p_transform.basis.rows[2][0];
 	push_constant.cam_transform[3] = 0;
-	push_constant.cam_transform[4] = p_transform.basis.elements[0][1];
-	push_constant.cam_transform[5] = p_transform.basis.elements[1][1];
-	push_constant.cam_transform[6] = p_transform.basis.elements[2][1];
+	push_constant.cam_transform[4] = p_transform.basis.rows[0][1];
+	push_constant.cam_transform[5] = p_transform.basis.rows[1][1];
+	push_constant.cam_transform[6] = p_transform.basis.rows[2][1];
 	push_constant.cam_transform[7] = 0;
-	push_constant.cam_transform[8] = p_transform.basis.elements[0][2];
-	push_constant.cam_transform[9] = p_transform.basis.elements[1][2];
-	push_constant.cam_transform[10] = p_transform.basis.elements[2][2];
+	push_constant.cam_transform[8] = p_transform.basis.rows[0][2];
+	push_constant.cam_transform[9] = p_transform.basis.rows[1][2];
+	push_constant.cam_transform[10] = p_transform.basis.rows[2][2];
 	push_constant.cam_transform[11] = 0;
 	push_constant.cam_transform[12] = p_transform.origin.x;
 	push_constant.cam_transform[13] = p_transform.origin.y;
@@ -1469,7 +1469,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				continue;
 			}
 
-			Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+			Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 			dir.y *= y_mult;
 			dir.normalize();
 			lights[idx].direction[0] = dir.x;
@@ -1508,7 +1508,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				continue;
 			}
 
-			Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+			Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 			//faster to not do this here
 			//dir.y *= y_mult;
 			//dir.normalize();
@@ -1946,7 +1946,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 
 				lights[idx].type = RSG::light_storage->light_get_type(li->light);
 
-				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+				Vector3 dir = -li->transform.basis.get_column(Vector3::AXIS_Z);
 				if (lights[idx].type == RS::LIGHT_DIRECTIONAL) {
 					dir.y *= y_mult; //only makes sense for directional
 					dir.normalize();
@@ -2416,7 +2416,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Transform3D xform = p_scene_render->light_instance_get_base_transform(light_instance);
 
 				Vector3 pos = to_probe_xform.xform(xform.origin);
-				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_axis(2)).normalized();
+				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_column(2)).normalized();
 
 				l.position[0] = pos.x;
 				l.position[1] = pos.y;
@@ -2593,17 +2593,17 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Transform3D xform;
 				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
 
-				Vector3 x_dir = xform.basis.get_axis(0).abs();
+				Vector3 x_dir = xform.basis.get_column(0).abs();
 				int x_axis = int(Vector3(0, 1, 2).dot(x_dir));
-				Vector3 y_dir = xform.basis.get_axis(1).abs();
+				Vector3 y_dir = xform.basis.get_column(1).abs();
 				int y_axis = int(Vector3(0, 1, 2).dot(y_dir));
-				Vector3 z_dir = -xform.basis.get_axis(2);
+				Vector3 z_dir = -xform.basis.get_column(2);
 				int z_axis = int(Vector3(0, 1, 2).dot(z_dir.abs()));
 
 				Rect2i rect(aabb.position[x_axis], aabb.position[y_axis], aabb.size[x_axis], aabb.size[y_axis]);
-				bool x_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(0)) < 0);
-				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(1)) < 0);
-				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(2)) > 0);
+				bool x_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(0)) < 0);
+				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(1)) < 0);
+				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(2)) > 0);
 
 				CameraMatrix cm;
 				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
@@ -3070,17 +3070,17 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 
 				Transform3D to_cell = storage->voxel_gi_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
 
-				gipd.xform[0] = to_cell.basis.elements[0][0];
-				gipd.xform[1] = to_cell.basis.elements[1][0];
-				gipd.xform[2] = to_cell.basis.elements[2][0];
+				gipd.xform[0] = to_cell.basis.rows[0][0];
+				gipd.xform[1] = to_cell.basis.rows[1][0];
+				gipd.xform[2] = to_cell.basis.rows[2][0];
 				gipd.xform[3] = 0;
-				gipd.xform[4] = to_cell.basis.elements[0][1];
-				gipd.xform[5] = to_cell.basis.elements[1][1];
-				gipd.xform[6] = to_cell.basis.elements[2][1];
+				gipd.xform[4] = to_cell.basis.rows[0][1];
+				gipd.xform[5] = to_cell.basis.rows[1][1];
+				gipd.xform[6] = to_cell.basis.rows[2][1];
 				gipd.xform[7] = 0;
-				gipd.xform[8] = to_cell.basis.elements[0][2];
-				gipd.xform[9] = to_cell.basis.elements[1][2];
-				gipd.xform[10] = to_cell.basis.elements[2][2];
+				gipd.xform[8] = to_cell.basis.rows[0][2];
+				gipd.xform[9] = to_cell.basis.rows[1][2];
+				gipd.xform[10] = to_cell.basis.rows[2][2];
 				gipd.xform[11] = 0;
 				gipd.xform[12] = to_cell.origin.x;
 				gipd.xform[13] = to_cell.origin.y;

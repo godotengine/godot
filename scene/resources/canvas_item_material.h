@@ -107,10 +107,10 @@ private:
 	LightMode light_mode = LIGHT_MODE_NORMAL;
 	bool particles_animation = false;
 
-	// Initialized in the constructor.
-	int particles_anim_h_frames;
-	int particles_anim_v_frames;
-	bool particles_anim_loop;
+	// Proper values set in constructor.
+	int particles_anim_h_frames = 0;
+	int particles_anim_v_frames = 0;
+	bool particles_anim_loop = false;
 
 protected:
 	static void _bind_methods();

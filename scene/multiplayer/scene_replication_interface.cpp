@@ -309,6 +309,9 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 	Error err = rep_state->peer_del_remote(p_from, net_id, &node);
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(!node, ERR_BUG);
+	if (node->get_parent() != nullptr) {
+		node->get_parent()->remove_child(node);
+	}
 	node->queue_delete();
 	return OK;
 }

@@ -3202,7 +3202,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (transform == Transform2D()) {
 				r_iarg.default_argument = "Transform2D.Identity";
 			} else {
-				r_iarg.default_argument = "new Transform2D(new Vector2" + transform.elements[0].operator String() + ", new Vector2" + transform.elements[1].operator String() + ", new Vector2" + transform.elements[2].operator String() + ")";
+				r_iarg.default_argument = "new Transform2D(new Vector2" + transform.columns[0].operator String() + ", new Vector2" + transform.columns[1].operator String() + ", new Vector2" + transform.columns[2].operator String() + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;

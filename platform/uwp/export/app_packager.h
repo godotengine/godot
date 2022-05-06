@@ -93,8 +93,8 @@ class AppxPackager {
 
 	Vector<FileMeta> file_metadata;
 
-	ZPOS64_T central_dir_offset;
-	ZPOS64_T end_of_central_dir_offset;
+	ZPOS64_T central_dir_offset = 0;
+	ZPOS64_T end_of_central_dir_offset = 0;
 	Vector<uint8_t> central_dir_data;
 
 	String hash_block(const uint8_t *p_block_data, size_t p_block_len);

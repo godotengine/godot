@@ -577,7 +577,7 @@ Plane XRAnchor3D::get_plane() const {
 	Vector3 location = get_position();
 	Basis orientation = get_transform().basis;
 
-	Plane plane(orientation.get_axis(1).normalized(), location);
+	Plane plane(orientation.get_column(1).normalized(), location);
 
 	return plane;
 }

@@ -271,8 +271,8 @@ Multiplayer::RPCMode VisualScriptFunction::get_rpc_mode() const {
 
 class VisualScriptNodeInstanceFunction : public VisualScriptNodeInstance {
 public:
-	VisualScriptFunction *node;
-	VisualScriptInstance *instance;
+	VisualScriptFunction *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -1097,7 +1097,7 @@ void VisualScriptOperator::_bind_methods() {
 
 class VisualScriptNodeInstanceOperator : public VisualScriptNodeInstance {
 public:
-	bool unary;
+	bool unary = false;
 	Variant::Operator op;
 
 	//virtual int get_working_memory_size() const override { return 0; }
@@ -1328,8 +1328,8 @@ void VisualScriptVariableGet::_bind_methods() {
 
 class VisualScriptNodeInstanceVariableGet : public VisualScriptNodeInstance {
 public:
-	VisualScriptVariableGet *node;
-	VisualScriptInstance *instance;
+	VisualScriptVariableGet *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 	StringName variable;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
@@ -1438,8 +1438,8 @@ void VisualScriptVariableSet::_bind_methods() {
 
 class VisualScriptNodeInstanceVariableSet : public VisualScriptNodeInstance {
 public:
-	VisualScriptVariableSet *node;
-	VisualScriptInstance *instance;
+	VisualScriptVariableSet *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 	StringName variable;
 
 	//virtual int get_working_memory_size() const override { return 0; }
@@ -1851,8 +1851,7 @@ int VisualScriptGlobalConstant::get_global_constant() {
 
 class VisualScriptNodeInstanceGlobalConstant : public VisualScriptNodeInstance {
 public:
-	int index;
-	//virtual int get_working_memory_size() const override { return 0; }
+	int index = 0;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
@@ -1963,9 +1962,8 @@ StringName VisualScriptClassConstant::get_base_type() {
 
 class VisualScriptNodeInstanceClassConstant : public VisualScriptNodeInstance {
 public:
-	int value;
-	bool valid;
-	//virtual int get_working_memory_size() const override { return 0; }
+	int value = 0;
+	bool valid = false;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
@@ -2098,8 +2096,7 @@ Variant::Type VisualScriptBasicTypeConstant::get_basic_type() const {
 class VisualScriptNodeInstanceBasicTypeConstant : public VisualScriptNodeInstance {
 public:
 	Variant value;
-	bool valid;
-	//virtual int get_working_memory_size() const override { return 0; }
+	bool valid = false;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
@@ -2227,8 +2224,7 @@ VisualScriptMathConstant::MathConstant VisualScriptMathConstant::get_math_consta
 
 class VisualScriptNodeInstanceMathConstant : public VisualScriptNodeInstance {
 public:
-	float value;
-	//virtual int get_working_memory_size() const override { return 0; }
+	float value = 0.0f;
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = value;
@@ -2320,7 +2316,7 @@ String VisualScriptEngineSingleton::get_singleton() {
 
 class VisualScriptNodeInstanceEngineSingleton : public VisualScriptNodeInstance {
 public:
-	Object *singleton;
+	Object *singleton = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -2429,8 +2425,8 @@ NodePath VisualScriptSceneNode::get_node_path() {
 
 class VisualScriptNodeInstanceSceneNode : public VisualScriptNodeInstance {
 public:
-	VisualScriptSceneNode *node;
-	VisualScriptInstance *instance;
+	VisualScriptSceneNode *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 	NodePath path;
 
 	//virtual int get_working_memory_size() const override { return 0; }
@@ -2610,8 +2606,8 @@ String VisualScriptSceneTree::get_caption() const {
 
 class VisualScriptNodeInstanceSceneTree : public VisualScriptNodeInstance {
 public:
-	VisualScriptSceneTree *node;
-	VisualScriptInstance *instance;
+	VisualScriptSceneTree *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -2779,7 +2775,7 @@ String VisualScriptSelf::get_caption() const {
 
 class VisualScriptNodeInstanceSelf : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -2965,11 +2961,11 @@ String VisualScriptCustomNode::get_category() const {
 
 class VisualScriptNodeInstanceCustomNode : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	VisualScriptCustomNode *node;
-	int in_count;
-	int out_count;
-	int work_mem_size;
+	VisualScriptInstance *instance = nullptr;
+	VisualScriptCustomNode *node = nullptr;
+	int in_count = 0;
+	int out_count = 0;
+	int work_mem_size = 0;
 
 	virtual int get_working_memory_size() const override { return work_mem_size; }
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
@@ -3161,10 +3157,10 @@ String VisualScriptSubCall::get_category() const {
 
 class VisualScriptNodeInstanceSubCall : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	VisualScriptSubCall *subcall;
-	int input_args;
-	bool valid;
+	VisualScriptInstance *instance = nullptr;
+	VisualScriptSubCall *subcall = nullptr;
+	int input_args = 0;
+	bool valid = false;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -3281,7 +3277,7 @@ String VisualScriptComment::get_category() const {
 
 class VisualScriptNodeInstanceComment : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -3380,9 +3376,9 @@ Dictionary VisualScriptConstructor::get_constructor() const {
 
 class VisualScriptNodeInstanceConstructor : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	Variant::Type type;
-	int argcount;
+	int argcount = 0;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 
@@ -3497,7 +3493,7 @@ Variant::Type VisualScriptLocalVar::get_var_type() const {
 
 class VisualScriptNodeInstanceLocalVar : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName name;
 
 	virtual int get_working_memory_size() const override { return 1; }
@@ -3604,7 +3600,7 @@ Variant::Type VisualScriptLocalVarSet::get_var_type() const {
 
 class VisualScriptNodeInstanceLocalVarSet : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName name;
 
 	virtual int get_working_memory_size() const override { return 1; }
@@ -3728,7 +3724,7 @@ VisualScriptInputAction::Mode VisualScriptInputAction::get_action_mode() const {
 
 class VisualScriptNodeInstanceInputAction : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName action;
 	VisualScriptInputAction::Mode mode;
 
@@ -3906,7 +3902,7 @@ Array VisualScriptDeconstruct::_get_elem_cache() const {
 
 class VisualScriptNodeInstanceDeconstruct : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	Vector<StringName> outputs;
 
 	//virtual int get_working_memory_size() const override { return 0; }

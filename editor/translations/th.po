@@ -132,8 +132,7 @@ msgid "Position"
 msgstr "ตำแหน่งแผง"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -402,40 +401,6 @@ msgstr ""
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr ""
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Text Editor"
-msgstr "เปิดตัวแก้ไข"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Completion"
-msgstr "คัดลอกที่เลือก"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
-msgid "Use Single Quotes"
-msgstr "ไทล์เดี่ยวใหม่"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -790,6 +755,8 @@ msgid "Physics"
 msgstr "% ของเฟรมฟิสิกส์"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -1021,7 +988,9 @@ msgstr ""
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1372,7 +1341,6 @@ msgid "Remove Anim Track"
 msgstr "ลบแทร็กแอนิเมชัน"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3364,6 +3332,15 @@ msgid ""
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr "เมท็อดนี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#, fuzzy
+msgid "Text Editor"
+msgstr "เปิดตัวแก้ไข"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -4187,16 +4164,6 @@ msgstr ""
 msgid "Always Close Output On Stop"
 msgstr ""
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
-msgid "Auto Save"
-msgstr "แบ่งอัตโนมัติ"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
-msgid "Save Before Running"
-msgstr "บันทึกฉากก่อนที่จะรัน..."
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr ""
@@ -4666,7 +4633,9 @@ msgstr "จำนวนครั้งที่เปลี่ยนวัสด
 msgid "Hide Update Spinner"
 msgstr "ซ่อนตัวหมุนการอัพเดท"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr "ระบบไฟล์"
 
@@ -5188,7 +5157,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5248,12 +5216,6 @@ msgstr "แก้ไขธีม"
 #, fuzzy
 msgid "Show Script Button"
 msgstr "หมุนปุ่มขวา"
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
-msgid "Filesystem"
-msgstr "ระบบไฟล์"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5331,9 +5293,7 @@ msgstr "รีซอร์สย่อย"
 msgid "Color Theme"
 msgstr "แก้ไขธีม"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr ""
 
@@ -5360,15 +5320,13 @@ msgstr ""
 msgid "Highlight Type Safe Lines"
 msgstr ""
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Indent"
 msgstr "ย่อหน้าซ้าย"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5476,7 +5434,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Files"
 msgstr "ไฟล์"
@@ -5495,6 +5452,14 @@ msgid "Restore Scripts On Load"
 msgstr ""
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr ""
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr ""
 
@@ -5502,8 +5467,7 @@ msgstr ""
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr ""
 
@@ -5515,11 +5479,11 @@ msgstr ""
 msgid "Block Caret"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
@@ -5527,6 +5491,13 @@ msgstr ""
 #, fuzzy
 msgid "Right Click Moves Caret"
 msgstr "คลิกขวาเพื่อเพิ่มจุด"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion"
+msgstr "คัดลอกที่เลือก"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5560,6 +5531,11 @@ msgstr "ชนิด"
 
 #: editor/editor_settings.cpp
 #, fuzzy
+msgid "Use Single Quotes"
+msgstr "ไทล์เดี่ยวใหม่"
+
+#: editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Help Index"
 msgstr "แสดงตัวช่วย"
 
@@ -5575,8 +5551,7 @@ msgstr ""
 msgid "Help Title Font Size"
 msgstr ""
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "จำกัดด้วยเส้นตาราง"
 
@@ -5584,6 +5559,11 @@ msgstr "จำกัดด้วยเส้นตาราง"
 #, fuzzy
 msgid "Pick Distance"
 msgstr "ระยะการเลือก:"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "ตัวอย่าง"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5597,6 +5577,38 @@ msgstr ""
 #, fuzzy
 msgid "Selection Box Color"
 msgstr "เฉพาะที่กำลังเลือก"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "3D Gizmos"
+msgstr "กิสโม"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Gizmo Colors"
+msgstr "สีการปะทุ"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "อินสแตนซ์"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "จุด"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5635,17 +5647,17 @@ msgstr "วาด GridMap"
 msgid "Grid YZ Plane"
 msgstr "วาด GridMap"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default FOV"
 msgstr "ค่าเริ่มต้น"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Near"
 msgstr "ค่าเริ่มต้น"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Far"
 msgstr "ค่าเริ่มต้น"
@@ -5891,6 +5903,16 @@ msgstr "กำหนดเส้นโค้งขาออก"
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Auto Save"
+msgstr "แบ่งอัตโนมัติ"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Save Before Running"
+msgstr "บันทึกฉากก่อนที่จะรัน..."
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6821,6 +6843,11 @@ msgid "Delimiter"
 msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "ฟังก์ชันสี"
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr ""
 
@@ -7138,6 +7165,15 @@ msgstr "คุณส่งคืนออบเจกต์โหนดย่อ
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "กำลังบันทึก..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid "2D, Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "2D Pixel"
+msgstr "พิกเซลรวม"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8406,6 +8442,10 @@ msgid "License (Z-A)"
 msgstr "สัญญาอนุญาต (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "กำลังโหลด..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgctxt "Pagination"
 msgid "First"
@@ -8474,8 +8514,8 @@ msgid "Testing"
 msgstr "กำลังทดสอบ"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Loading..."
-msgstr "กำลังโหลด..."
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9680,13 +9720,6 @@ msgstr "เคลื่อนย้ายแอนิเมชัน"
 msgid "Apply with Transforms"
 msgstr "เคลื่อนย้ายแอนิเมชัน"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Preview Size"
-msgstr "ตัวอย่าง"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr "ไม่ได้ระบุ mesh ต้นฉบับ (และไม่ได้ระบุ MultiMesh ไว้ในโหนด)"
@@ -9996,20 +10029,6 @@ msgstr "ลบจุดควบคุมขาเข้า"
 msgid "Split Segment (in curve)"
 msgstr "แยกส่วน (ในเส้นโค้ง)"
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "3D Gizmos"
-msgstr "กิสโม"
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-#, fuzzy
-msgid "Gizmo Colors"
-msgstr "สีการปะทุ"
-
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
 msgstr "เลื่อนข้อต่อ"
@@ -10220,6 +10239,10 @@ msgstr "ระยะห่างกริดแกน Y:"
 msgid "Sync Bones to Polygon"
 msgstr "ซิงค์โครงกับโพลีกอน"
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr "ผิดพลาด: โหลดรีซอร์สไม่ได้!"
@@ -10317,11 +10340,6 @@ msgid "Close and save changes?"
 msgstr "ปิดและบันทึก?"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "ผิดพลาดขณะย้ายไฟล์:"
 
@@ -10398,10 +10416,6 @@ msgstr "บันทึกธีมเป็น"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
 msgstr "%s อ้างอิงคลาส"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
-msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -11483,11 +11497,6 @@ msgstr ""
 #, fuzzy
 msgid "Show Viewport Rotation Gizmo"
 msgstr "ล็อคการหมุนวิว"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Instanced"
-msgstr "อินสแตนซ์"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -15223,6 +15232,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "ทำให้เป็นภายใน"
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "ชื่อโนด:"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "ชื่อโนด:"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr "ฉากแม่ใหม่"
@@ -15292,6 +15315,10 @@ msgstr "ผิดพลาดขณะทำซ้ำฉากเพื่อบ
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
 msgstr "รีซอร์สย่อย"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15422,6 +15449,13 @@ msgstr "(เชื่อมต่อจาก)"
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
 msgstr "คำเตือนการตั้งค่าโหนด:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15841,21 +15875,6 @@ msgstr "ปรับกล้อง FOV"
 msgid "Change Camera Size"
 msgstr "เปลี่ยนขนาดกล้อง"
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "จุด"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr ""
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16257,6 +16276,16 @@ msgstr ""
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "โหมดการแก้ไข"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "เปิดการใช้งานตัวกรอง"
 
 #: main/main.cpp
 #, fuzzy
@@ -20059,6 +20088,11 @@ msgstr "ตัวดีบัก"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
+msgid "Modify Resources"
+msgstr "คัดลอกรีซอร์ส"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
 msgid "File Version"
 msgstr "รุ่น:"
 
@@ -22329,8 +22363,9 @@ msgstr ""
 "โดยจะให้ข้อมูลการนำทางเท่านั้น"
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
-msgstr ""
+#, fuzzy
+msgid "NavMesh"
+msgstr "Bake NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -24555,6 +24590,12 @@ msgid "Timeout"
 msgstr "หมดเวลา"
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 #, fuzzy
 msgid "Name Num Separator"
 msgstr "หมวดชื่อ"
@@ -24582,6 +24623,11 @@ msgstr "โหมดมุมมอง"
 #, fuzzy
 msgid "Display Folded"
 msgstr "แสดงแบบไร้เงา"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "ชื่อโนด:"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24645,11 +24691,6 @@ msgstr ""
 #, fuzzy
 msgid "Multiplayer Poll"
 msgstr "กำหนด หลายอย่าง:"
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "โหมดการแก้ไข"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -26817,6 +26858,10 @@ msgstr "ตั้งระยะขอบ"
 #, fuzzy
 msgid "Expand Margin"
 msgstr "ขยายออก"
+
+#: scene/resources/style_box.cpp
+msgid "Skew"
+msgstr ""
 
 #: scene/resources/style_box.cpp
 #, fuzzy

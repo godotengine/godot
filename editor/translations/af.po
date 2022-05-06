@@ -120,8 +120,7 @@ msgid "Position"
 msgstr "Skep Nuwe"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
-#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
 #: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
@@ -380,39 +379,6 @@ msgstr ""
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
-
-#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: modules/gdscript/editor/gdscript_highlighter.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
-#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Text Editor"
-msgstr "Afhanklikheid Bewerker"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
-#: modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
-#: scene/resources/material.cpp
-#, fuzzy
-msgid "Completion"
-msgstr "Verwyder Seleksie"
-
-#: core/os/input.cpp editor/editor_settings.cpp
-#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/gdscript/language_server/gdscript_text_document.cpp
-#: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-msgid "Use Single Quotes"
 msgstr ""
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
@@ -750,6 +716,8 @@ msgid "Physics"
 msgstr ""
 
 #: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
@@ -975,7 +943,9 @@ msgstr ""
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
-#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp main/main.cpp
+#: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
@@ -1326,7 +1296,6 @@ msgid "Remove Anim Track"
 msgstr "Verwyder Anim Baan"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3373,6 +3342,15 @@ msgstr ""
 "Daar is tans geen beskrywing vir hierdie metode nie. Help ons asseblief deur "
 "[color=$color][url=$url]een by te dra[/url][/color]!"
 
+#: editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#, fuzzy
+msgid "Text Editor"
+msgstr "Afhanklikheid Bewerker"
+
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -4170,15 +4148,6 @@ msgstr ""
 msgid "Always Close Output On Stop"
 msgstr ""
 
-#: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
-msgid "Auto Save"
-msgstr "Stoor"
-
-#: editor/editor_node.cpp editor/editor_settings.cpp
-msgid "Save Before Running"
-msgstr ""
-
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
 msgstr ""
@@ -4632,7 +4601,9 @@ msgstr "Plaaslike veranderinge word gebêre..."
 msgid "Hide Update Spinner"
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FileSystem"
 msgstr ""
 
@@ -5137,7 +5108,6 @@ msgid "Max Array Dictionary Items Per Page"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
 #: scene/register_scene_types.cpp
 msgid "Theme"
@@ -5193,12 +5163,6 @@ msgstr "Lede"
 #: editor/editor_settings.cpp
 msgid "Show Script Button"
 msgstr ""
-
-#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
-msgid "Filesystem"
-msgstr "Deursoek Klasse"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5272,9 +5236,7 @@ msgstr "Hulpbron"
 msgid "Color Theme"
 msgstr "Lede"
 
-#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
-#: editor/plugins/text_editor.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr ""
 
@@ -5300,14 +5262,12 @@ msgstr ""
 msgid "Highlight Type Safe Lines"
 msgstr ""
 
-#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#: modules/mono/csharp_script.cpp
+#: editor/editor_settings.cpp
 msgid "Indent"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
-#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
@@ -5413,7 +5373,6 @@ msgid "Show Members Overview"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Files"
 msgstr "Lêer:"
@@ -5431,6 +5390,14 @@ msgid "Restore Scripts On Load"
 msgstr ""
 
 #: editor/editor_settings.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr ""
+
+#: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
 msgstr ""
 
@@ -5438,8 +5405,7 @@ msgstr ""
 msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
-#: scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr ""
 
@@ -5451,17 +5417,24 @@ msgstr ""
 msgid "Block Caret"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Right Click Moves Caret"
 msgstr ""
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion"
+msgstr "Verwyder Seleksie"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
@@ -5493,6 +5466,10 @@ msgid "Add Type Hints"
 msgstr "Anim Voeg Baan By"
 
 #: editor/editor_settings.cpp
+msgid "Use Single Quotes"
+msgstr ""
+
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Show Help Index"
 msgstr "Afhanklikhede"
@@ -5509,14 +5486,18 @@ msgstr ""
 msgid "Help Title Font Size"
 msgstr ""
 
-#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr ""
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance"
 msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "Voorskou:"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5530,6 +5511,36 @@ msgstr ""
 #, fuzzy
 msgid "Selection Box Color"
 msgstr "Slegs Seleksie"
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "3D Gizmos"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "Gizmo Colors"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "Installeer"
+
+#: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "Skuif Gunsteling Op"
+
+#: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Steps"
@@ -5563,17 +5574,17 @@ msgstr ""
 msgid "Grid YZ Plane"
 msgstr ""
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default FOV"
 msgstr "Verander Skikking Waarde-Soort"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Near"
 msgstr "Verander Skikking Waarde-Soort"
 
-#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Z Far"
 msgstr "Voorskou:"
@@ -5803,6 +5814,15 @@ msgstr "Hernoem AutoLaai"
 
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Auto Save"
+msgstr "Stoor"
+
+#: editor/editor_settings.cpp
+msgid "Save Before Running"
 msgstr ""
 
 #: editor/editor_settings.cpp
@@ -6731,6 +6751,11 @@ msgid "Delimiter"
 msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "ColorCorrect"
+msgstr "Maak Funksie"
+
+#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
 msgstr ""
 
@@ -7039,6 +7064,14 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid "2D, Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid "2D Pixel"
 msgstr ""
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
@@ -8343,6 +8376,11 @@ msgid "License (Z-A)"
 msgstr "Lisensie"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Loading..."
+msgstr "Laai"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgctxt "Pagination"
 msgid "First"
 msgstr ""
@@ -8410,9 +8448,8 @@ msgid "Testing"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Loading..."
-msgstr "Laai"
+msgid "Failed to get repository configuration."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9615,13 +9652,6 @@ msgstr "Anim Verander Transformasie"
 msgid "Apply with Transforms"
 msgstr "Anim Verander Transformasie"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Preview Size"
-msgstr "Voorskou:"
-
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
@@ -9933,18 +9963,6 @@ msgstr ""
 msgid "Split Segment (in curve)"
 msgstr ""
 
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "3D Gizmos"
-msgstr ""
-
-#: editor/plugins/path_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: modules/csg/csg_gizmos.cpp
-msgid "Gizmo Colors"
-msgstr ""
-
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move Joint"
@@ -10159,6 +10177,10 @@ msgstr ""
 msgid "Sync Bones to Polygon"
 msgstr ""
 
+#: editor/plugins/ray_cast_2d_editor_plugin.cpp
+msgid "Set cast_to"
+msgstr ""
+
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
 msgstr ""
@@ -10255,11 +10277,6 @@ msgid "Close and save changes?"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Auto Reload Scripts On External Change"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "Error writing TextFile:"
 msgstr "Leêr word gebêre:"
@@ -10343,10 +10360,6 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Auto Reload And Parse Scripts On Save"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -11420,11 +11433,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Show Viewport Rotation Gizmo"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Instanced"
-msgstr "Installeer"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -15102,6 +15110,20 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name"
+msgstr "Nodus Naam:"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nodus Naam:"
+
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
 msgstr ""
@@ -15175,6 +15197,10 @@ msgstr ""
 #, fuzzy
 msgid "Sub-Resources"
 msgstr "Hulpbron"
+
+#: editor/scene_tree_dock.cpp
+msgid "Access as Scene Unique Name"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15304,6 +15330,13 @@ msgstr "Koppel tans Sein:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -15729,21 +15762,6 @@ msgstr ""
 msgid "Change Camera Size"
 msgstr ""
 
-#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
-#: scene/3d/physics_body.cpp
-#, fuzzy
-msgid "Joint"
-msgstr "Skuif Gunsteling Op"
-
-#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
-#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
-#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Shape"
-msgstr ""
-
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
 msgstr ""
@@ -16122,6 +16140,15 @@ msgstr ""
 #: main/main.cpp
 msgid "Verbose stdout"
 msgstr ""
+
+#: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+msgid "Physics Interpolation"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable Warnings"
+msgstr "Verander Anim Lente"
 
 #: main/main.cpp
 #, fuzzy
@@ -19812,6 +19839,11 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 #, fuzzy
+msgid "Modify Resources"
+msgstr "Hulpbron"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
 msgid "File Version"
 msgstr "Moet 'n geldige uitbreiding gebruik."
 
@@ -21923,7 +21955,7 @@ msgid ""
 msgstr ""
 
 #: scene/3d/navigation_mesh_instance.cpp
-msgid "Navmesh"
+msgid "NavMesh"
 msgstr ""
 
 #: scene/3d/navigation_obstacle.cpp
@@ -24026,6 +24058,12 @@ msgid "Timeout"
 msgstr "Tyd:"
 
 #: scene/main/node.cpp
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'. This node is no longer set unique."
+msgstr ""
+
+#: scene/main/node.cpp
 msgid "Name Num Separator"
 msgstr ""
 
@@ -24052,6 +24090,11 @@ msgstr "Wissel Modus"
 #, fuzzy
 msgid "Display Folded"
 msgstr "Vervang Alles"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Unique Name In Owner"
+msgstr "Nodus Naam:"
 
 #: scene/main/node.cpp
 #, fuzzy
@@ -24109,10 +24152,6 @@ msgstr ""
 
 #: scene/main/scene_tree.cpp
 msgid "Multiplayer Poll"
-msgstr ""
-
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-msgid "Physics Interpolation"
 msgstr ""
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
@@ -26185,6 +26224,10 @@ msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Expand Margin"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Skew"
 msgstr ""
 
 #: scene/resources/style_box.cpp

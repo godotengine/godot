@@ -77,6 +77,7 @@
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_theme.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 

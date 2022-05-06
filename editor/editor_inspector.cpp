@@ -3472,7 +3472,7 @@ void EditorInspector::_object_id_selected(const String &p_path, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_id);
 }
 
-void EditorInspector::_resource_selected(const String &p_path, RES p_resource) {
+void EditorInspector::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
 	emit_signal(SNAME("resource_selected"), p_resource, p_path);
 }
 
@@ -3723,6 +3723,8 @@ void EditorInspector::_check_meta_name(String name) {
 		error = TTR("Invalid metadata identifier.");
 	} else if (object->has_meta(name)) {
 		error = TTR("Metadata already exists.");
+	} else if (name[0] == '_') {
+		error = TTR("Names starting with _ are reserved for editor-only metadata.");
 	}
 
 	if (error != "") {

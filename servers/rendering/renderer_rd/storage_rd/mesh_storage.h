@@ -614,7 +614,13 @@ public:
 
 	_FORCE_INLINE_ RID multimesh_get_3d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		if (multimesh == nullptr) {
+			return RID();
+		}
 		if (!multimesh->uniform_set_3d.is_valid()) {
+			if (!multimesh->buffer.is_valid()) {
+				return RID();
+			}
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
@@ -629,7 +635,13 @@ public:
 
 	_FORCE_INLINE_ RID multimesh_get_2d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		if (multimesh == nullptr) {
+			return RID();
+		}
 		if (!multimesh->uniform_set_2d.is_valid()) {
+			if (!multimesh->buffer.is_valid()) {
+				return RID();
+			}
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;

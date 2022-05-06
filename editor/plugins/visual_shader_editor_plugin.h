@@ -48,7 +48,7 @@ class VisualShaderNodePlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL2RC(Object *, _create_editor, RES, Ref<VisualShaderNode>)
+	GDVIRTUAL2RC(Object *, _create_editor, Ref<Resource>, Ref<VisualShaderNode>)
 
 public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);

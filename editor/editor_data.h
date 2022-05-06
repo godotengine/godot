@@ -46,7 +46,7 @@ class EditorPlugin;
 class EditorSelectionHistory {
 	// Stores the object & property (if relevant).
 	struct _Object {
-		REF ref;
+		Ref<RefCounted> ref;
 		ObjectID object;
 		String property;
 		bool inspector_only = false;

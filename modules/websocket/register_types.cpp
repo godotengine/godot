@@ -55,25 +55,33 @@ static void _editor_init_callback() {
 }
 #endif
 
-void register_websocket_types() {
+void initialize_websocket_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 #ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
+		EMWSPeer::make_default();
+		EMWSClient::make_default();
+		EMWSServer::make_default();
 #else
-	WSLPeer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
+		WSLPeer::make_default();
+		WSLClient::make_default();
+		WSLServer::make_default();
 #endif
 
-	GDREGISTER_ABSTRACT_CLASS(WebSocketMultiplayerPeer);
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
+		GDREGISTER_ABSTRACT_CLASS(WebSocketMultiplayerPeer);
+		ClassDB::register_custom_instance_class<WebSocketServer>();
+		ClassDB::register_custom_instance_class<WebSocketClient>();
+		ClassDB::register_custom_instance_class<WebSocketPeer>();
+	}
 
 #ifdef TOOLS_ENABLED
-	EditorNode::add_init_callback(&_editor_init_callback);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorNode::add_init_callback(&_editor_init_callback);
+	}
 #endif
 }
 
-void unregister_websocket_types() {}
+void uninitialize_websocket_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

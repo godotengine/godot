@@ -727,6 +727,10 @@ RenderingDevice::DeviceType RendererStorageRD::get_video_adapter_type() const {
 	return RenderingDevice::get_singleton()->get_device_type();
 }
 
+String RendererStorageRD::get_video_adapter_api_version() const {
+	return RenderingDevice::get_singleton()->get_device_api_version();
+}
+
 RendererStorageRD *RendererStorageRD::base_singleton = nullptr;
 
 RendererStorageRD::RendererStorageRD() {

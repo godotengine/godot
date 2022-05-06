@@ -46,7 +46,7 @@ class MultiMeshEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 	MenuButton *options = nullptr;
 	MultiMeshInstance3D *_last_pp_node = nullptr;
-	bool browsing_source;
+	bool browsing_source = false;
 
 	Panel *panel = nullptr;
 	MultiMeshInstance3D *node = nullptr;

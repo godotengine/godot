@@ -789,8 +789,8 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3i, int64_t, int32_t, 3)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
-INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .elements, 3)
-INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_axis, get_axis, 3)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .columns, 3)
+INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_column, get_column, 3)
 
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedByteArray, int64_t, uint8_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt32Array, int64_t, int32_t)
@@ -805,16 +805,16 @@ INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 INDEXED_SETGET_STRUCT_DICT(Dictionary)
 
 struct VariantIndexedSetterGetterInfo {
-	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob);
-	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob);
+	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) = nullptr;
+	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob) = nullptr;
 
-	Variant::ValidatedIndexedSetter validated_setter;
-	Variant::ValidatedIndexedGetter validated_getter;
+	Variant::ValidatedIndexedSetter validated_setter = nullptr;
+	Variant::ValidatedIndexedGetter validated_getter = nullptr;
 
-	Variant::PTRIndexedSetter ptr_setter;
-	Variant::PTRIndexedGetter ptr_getter;
+	Variant::PTRIndexedSetter ptr_setter = nullptr;
+	Variant::PTRIndexedGetter ptr_getter = nullptr;
 
-	uint64_t (*get_indexed_size)(const Variant *base);
+	uint64_t (*get_indexed_size)(const Variant *base) = nullptr;
 
 	Variant::Type index_type;
 
@@ -1018,13 +1018,13 @@ struct VariantKeyedSetGetObject {
 };
 
 struct VariantKeyedSetterGetterInfo {
-	Variant::ValidatedKeyedSetter validated_setter;
-	Variant::ValidatedKeyedGetter validated_getter;
-	Variant::ValidatedKeyedChecker validated_checker;
+	Variant::ValidatedKeyedSetter validated_setter = nullptr;
+	Variant::ValidatedKeyedGetter validated_getter = nullptr;
+	Variant::ValidatedKeyedChecker validated_checker = nullptr;
 
-	Variant::PTRKeyedSetter ptr_setter;
-	Variant::PTRKeyedGetter ptr_getter;
-	Variant::PTRKeyedChecker ptr_checker;
+	Variant::PTRKeyedSetter ptr_setter = nullptr;
+	Variant::PTRKeyedGetter ptr_getter = nullptr;
+	Variant::PTRKeyedChecker ptr_checker = nullptr;
 
 	bool valid = false;
 };

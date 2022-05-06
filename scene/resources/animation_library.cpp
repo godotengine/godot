@@ -30,15 +30,15 @@
 
 #include "animation_library.h"
 
-bool AnimationLibrary::is_valid_name(const String &p_name) {
+bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
 	return !(p_name.is_empty() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
 }
 
-String AnimationLibrary::validate_name(const String &p_name) {
-	if (p_name.is_empty()) {
-		return "_"; // Should always return a valid name.
-	}
+bool AnimationLibrary::is_valid_library_name(const String &p_name) {
+	return !(p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
+}
 
+String AnimationLibrary::validate_library_name(const String &p_name) {
 	String name = p_name;
 	const char *characters = "/:,[";
 	for (const char *p = characters; *p; p++) {
@@ -48,7 +48,7 @@ String AnimationLibrary::validate_name(const String &p_name) {
 }
 
 Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
-	ERR_FAIL_COND_V_MSG(!is_valid_name(p_name), ERR_INVALID_PARAMETER, "Invalid animation name: '" + String(p_name) + "'.");
+	ERR_FAIL_COND_V_MSG(!is_valid_animation_name(p_name), ERR_INVALID_PARAMETER, "Invalid animation name: '" + String(p_name) + "'.");
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
 
 	if (animations.has(p_name)) {
@@ -72,7 +72,7 @@ void AnimationLibrary::remove_animation(const StringName &p_name) {
 
 void AnimationLibrary::rename_animation(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!animations.has(p_name));
-	ERR_FAIL_COND_MSG(!is_valid_name(p_new_name), "Invalid animation name: '" + String(p_new_name) + "'.");
+	ERR_FAIL_COND_MSG(!is_valid_animation_name(p_new_name), "Invalid animation name: '" + String(p_new_name) + "'.");
 	ERR_FAIL_COND(animations.has(p_new_name));
 
 	animations.insert(p_new_name, animations[p_name]);

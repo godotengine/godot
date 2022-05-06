@@ -5548,9 +5548,9 @@ Transform3D VisualShaderNodeTransformUniform::get_default_value() const {
 String VisualShaderNodeTransformUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform mat4 " + get_uniform_name();
 	if (default_value_enabled) {
-		Vector3 row0 = default_value.basis.get_row(0);
-		Vector3 row1 = default_value.basis.get_row(1);
-		Vector3 row2 = default_value.basis.get_row(2);
+		Vector3 row0 = default_value.basis.rows[0];
+		Vector3 row1 = default_value.basis.rows[1];
+		Vector3 row2 = default_value.basis.rows[2];
 		Vector3 origin = default_value.origin;
 		code += " = mat4(" + vformat("vec4(%.6f, %.6f, %.6f, 0.0)", row0.x, row0.y, row0.z) + vformat(", vec4(%.6f, %.6f, %.6f, 0.0)", row1.x, row1.y, row1.z) + vformat(", vec4(%.6f, %.6f, %.6f, 0.0)", row2.x, row2.y, row2.z) + vformat(", vec4(%.6f, %.6f, %.6f, 1.0)", origin.x, origin.y, origin.z) + ")";
 	}

@@ -356,7 +356,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					class_node = class_node->outer;
 				}
 
-				RES res;
+				Ref<Resource> res;
 
 				if (class_node->identifier && class_node->identifier->name == identifier) {
 					res = Ref<GDScript>(main_script);

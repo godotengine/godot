@@ -545,7 +545,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 };
 
 struct GDScriptUtilityFunctionInfo {
-	GDScriptUtilityFunctions::FunctionPtr function;
+	GDScriptUtilityFunctions::FunctionPtr function = nullptr;
 	MethodInfo info;
 	bool is_constant = false;
 };
