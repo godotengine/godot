@@ -47,7 +47,7 @@ int AStar3D::get_available_point_id() const {
 
 void AStar3D::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
-	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't add a point with weight scale less than one: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
 
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
@@ -96,7 +96,7 @@ void AStar3D::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
-	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't set point's weight scale less than one: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
 
 	p->weight_scale = p_weight_scale;
 }
