@@ -80,6 +80,7 @@
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
+#include "editor/script_editor_debugger.h"
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
 #endif
@@ -133,6 +134,7 @@ static OS::ProcessID allow_focus_steal_pid = 0;
 static bool delta_sync_after_draw = false;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
+static String debug_server_uri;
 #endif
 
 // Display
@@ -257,6 +259,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                     Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager            Start the project manager, even if a project is auto-detected.\n");
+	OS::get_singleton()->print("  --debug-server <address>         Start the editor debug server (<IP>:<port>, e.g. 127.0.0.1:6007)\n");
 #endif
 	OS::get_singleton()->print("  -q, --quit                       Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
@@ -733,6 +736,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
+
+		} else if (I->get() == "--debug-server") {
+			if (I->next()) {
+				debug_server_uri = I->next()->get();
+				if (debug_server_uri.find(":") == -1) { // wrong address
+					OS::get_singleton()->print("Invalid debug server address. It should be of the form <bind_address>:<port>.\n");
+					goto error;
+				}
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing remote debug server server, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
@@ -2063,6 +2079,13 @@ bool Main::start() {
 						ERR_PRINT("Failed to load scene");
 				}
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
+				// Start debug server.
+				if (!debug_server_uri.empty()) {
+					int idx = debug_server_uri.rfind(":");
+					IP_Address addr = debug_server_uri.substr(0, idx);
+					int port = debug_server_uri.substr(idx + 1).to_int();
+					ScriptEditor::get_singleton()->get_debugger()->start(port, addr);
+				}
 			}
 #endif
 			if (!editor) {
