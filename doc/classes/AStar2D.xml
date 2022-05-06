@@ -33,7 +33,7 @@
 			<argument index="1" name="position" type="Vector2" />
 			<argument index="2" name="weight_scale" type="float" default="1.0" />
 			<description>
-				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 0.0 or greater.
 				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblock]
 				var astar = AStar2D.new()
