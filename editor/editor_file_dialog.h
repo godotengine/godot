@@ -165,11 +165,11 @@ private:
 
 	void _item_selected(int p_item);
 	void _multi_selected(int p_item, bool p_selected);
-	void _items_clear_selection();
+	void _items_clear_selection(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _item_dc_selected(int p_item);
 
-	void _item_list_item_rmb_selected(int p_item, const Vector2 &p_pos);
-	void _item_list_rmb_clicked(const Vector2 &p_pos);
+	void _item_list_item_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);

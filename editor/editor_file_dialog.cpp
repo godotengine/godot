@@ -529,7 +529,11 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 }
 
-void EditorFileDialog::_items_clear_selection() {
+void EditorFileDialog::_items_clear_selection(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+
 	item_list->deselect_all();
 
 	// If nothing is selected, then block Open button.
@@ -583,7 +587,11 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 	}
 }
 
-void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
+void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	// Right click on specific file(s) or folder(s).
 	item_menu->clear();
 	item_menu->reset_size();
@@ -624,10 +632,18 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 }
 
-void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
-	// Right click on folder background. Deselect all files so that actions are applied on the current folder.
+void EditorFileDialog::_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT && p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+
+	// Left or right click on folder background. Deselect all files so that actions are applied on the current folder.
 	for (int i = 0; i < item_list->get_item_count(); i++) {
 		item_list->deselect(i);
+	}
+
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
 	}
 
 	item_menu->clear();
@@ -1753,8 +1769,8 @@ EditorFileDialog::EditorFileDialog() {
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
-	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
+	item_list->connect("item_clicked", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_clicked));
+	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_item_list_empty_clicked));
 	item_list->set_allow_rmb_select(true);
 
 	list_vb->add_child(item_list);
@@ -1799,7 +1815,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_selected", callable_mp(this, &EditorFileDialog::_item_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected), varray());
-	item_list->connect("nothing_selected", callable_mp(this, &EditorFileDialog::_items_clear_selection));
+	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
 	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));

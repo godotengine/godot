@@ -606,7 +606,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT)) && mb->is_pressed()) {
+	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
 		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
@@ -631,7 +631,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (closest != -1) {
+		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_pressed()) {
@@ -654,59 +654,38 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 						emit_signal(SNAME("multi_selected"), j, true);
 					}
 				}
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::RIGHT) {
-					if (!CAN_SELECT(i)) {
-						return;
-					}
-					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-				}
 			} else {
 				if (!mb->is_double_click() && !mb->is_command_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MouseButton::LEFT) {
 					defer_select_single = i;
 					return;
 				}
 
-				if (items[i].selected && mb->get_button_index() == MouseButton::RIGHT) {
-					if (!CAN_SELECT(i)) {
-						return;
-					}
-					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-				} else {
-					if (!CAN_SELECT(i)) {
-						return;
-					}
-
-					bool selected = items[i].selected;
-
+				if (!items[i].selected || allow_reselect) {
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
 
-					if (!selected || allow_reselect) {
-						if (select_mode == SELECT_SINGLE) {
-							emit_signal(SNAME("item_selected"), i);
-						} else {
-							emit_signal(SNAME("multi_selected"), i, true);
-						}
+					if (select_mode == SELECT_SINGLE) {
+						emit_signal(SNAME("item_selected"), i);
+					} else {
+						emit_signal(SNAME("multi_selected"), i, true);
 					}
+				}
 
-					if (mb->get_button_index() == MouseButton::RIGHT) {
-						emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_double_click()) {
-						emit_signal(SNAME("item_activated"), i);
-					}
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+
+				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+					emit_signal(SNAME("item_activated"), i);
 				}
 			}
 
 			return;
+		} else if (closest != -1) {
+			emit_signal(SNAME("item_clicked"), closest, get_local_mouse_position(), mb->get_button_index());
+		} else {
+			// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
+			emit_signal(SNAME("empty_clicked"), get_local_mouse_position(), mb->get_button_index());
 		}
-		if (mb->get_button_index() == MouseButton::RIGHT) {
-			emit_signal(SNAME("rmb_clicked"), mb->get_position());
-
-			return;
-		}
-
-		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
-		emit_signal(SNAME("nothing_selected"));
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
@@ -1797,11 +1776,10 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECT_MULTI);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
+	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
-	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers
