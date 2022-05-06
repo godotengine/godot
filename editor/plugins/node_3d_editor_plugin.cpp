@@ -1265,7 +1265,7 @@ void Node3DEditorViewport::_surface_focus_exit() {
 }
 
 bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
-	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+	return p_node->get_meta("_edit_lock_", false);
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {

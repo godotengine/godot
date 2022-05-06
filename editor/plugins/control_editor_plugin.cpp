@@ -509,7 +509,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_to_keep_ratio() {
 			undo_redo->add_do_method(control, "set_anchor", SIDE_BOTTOM, bottom_right_anchor.y, false, true);
 			undo_redo->add_do_method(control, "set_meta", "_edit_use_anchors_", true);
 
-			const bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
+			const bool use_anchors = control->get_meta("_edit_use_anchors_", false);
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 			if (use_anchors) {
 				undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", true);
@@ -617,7 +617,7 @@ void ControlEditorToolbar::_button_toggle_anchor_mode(bool p_status) {
 }
 
 bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
-	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+	return p_node->get_meta("_edit_lock_", false);
 }
 
 List<Control *> ControlEditorToolbar::_get_edited_controls(bool retrieve_locked, bool remove_controls_if_parent_in_selection) {
@@ -798,7 +798,7 @@ void ControlEditorToolbar::_selection_changed() {
 		}
 
 		nb_valid_controls++;
-		if (control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_")) {
+		if (control->get_meta("_edit_use_anchors_", false)) {
 			nb_anchors_mode++;
 		}
 	}

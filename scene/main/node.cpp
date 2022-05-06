@@ -2012,35 +2012,28 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 #ifdef TOOLS_ENABLED
 void Node::set_property_pinned(const String &p_property, bool p_pinned) {
 	bool current_pinned = false;
-	bool has_pinned = has_meta("_edit_pinned_properties_");
-	Array pinned;
-	String psa = get_property_store_alias(p_property);
-	if (has_pinned) {
-		pinned = get_meta("_edit_pinned_properties_");
-		current_pinned = pinned.has(psa);
-	}
+	Array pinned = get_meta("_edit_pinned_properties_", Array());
+	StringName psa = get_property_store_alias(p_property);
+	current_pinned = pinned.has(psa);
 
 	if (current_pinned != p_pinned) {
 		if (p_pinned) {
 			pinned.append(psa);
-			if (!has_pinned) {
-				set_meta("_edit_pinned_properties_", pinned);
-			}
 		} else {
 			pinned.erase(psa);
-			if (pinned.is_empty()) {
-				remove_meta("_edit_pinned_properties_");
-			}
 		}
+	}
+
+	if (pinned.is_empty()) {
+		remove_meta("_edit_pinned_properties_");
+	} else {
+		set_meta("_edit_pinned_properties_", pinned);
 	}
 }
 
 bool Node::is_property_pinned(const StringName &p_property) const {
-	if (!has_meta("_edit_pinned_properties_")) {
-		return false;
-	}
-	Array pinned = get_meta("_edit_pinned_properties_");
-	String psa = get_property_store_alias(p_property);
+	Array pinned = get_meta("_edit_pinned_properties_", Array());
+	StringName psa = get_property_store_alias(p_property);
 	return pinned.has(psa);
 }
 

@@ -136,10 +136,9 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 				TreeItem *input_item = category->get_first_child();
 
 				if (input_item != nullptr) {
-					// has_type this should be always true, unless the tree structure has been misconfigured.
-					bool has_type = input_item->get_parent()->has_meta("__type");
-					int input_type = input_item->get_parent()->get_meta("__type");
-					if (!has_type) {
+					// input_type should always be > 0, unless the tree structure has been misconfigured.
+					int input_type = input_item->get_parent()->get_meta("__type", 0);
+					if (input_type == 0) {
 						return;
 					}
 
