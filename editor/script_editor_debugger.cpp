@@ -1560,8 +1560,10 @@ void ScriptEditorDebugger::_clear_execution() {
 	stack_script.unref();
 }
 
-void ScriptEditorDebugger::start() {
-	stop();
+void ScriptEditorDebugger::start(int p_port, const IP_Address &p_bind_address) {
+	if (is_inside_tree()) {
+		stop();
+	}
 
 	if (is_visible_in_tree()) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
@@ -1573,7 +1575,11 @@ void ScriptEditorDebugger::start() {
 	}
 
 	const int max_tries = 6;
-	remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	if (p_port < 0) {
+		remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	} else {
+		remote_port = p_port;
+	}
 	int current_try = 0;
 	// Find first available port.
 	Error err = server->listen(remote_port);
@@ -1582,7 +1588,7 @@ void ScriptEditorDebugger::start() {
 		current_try++;
 		remote_port++;
 		OS::get_singleton()->delay_usec(1000);
-		err = server->listen(remote_port);
+		err = server->listen(remote_port, p_bind_address);
 	}
 	// No suitable port found.
 	if (err != OK) {
@@ -1592,7 +1598,7 @@ void ScriptEditorDebugger::start() {
 	EditorNode::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
 
 	auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
-	if (auto_switch_remote_scene_tree) {
+	if (is_inside_tree() && auto_switch_remote_scene_tree) {
 		EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
 	}
 
