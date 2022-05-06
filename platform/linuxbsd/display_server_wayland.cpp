@@ -360,6 +360,16 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
+	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && p_event == WINDOW_EVENT_CLOSE_REQUEST) {
+		for (WindowID &child : wd.children) {
+			// If the window is a borderless window (Wayland popup) and it's getting
+			// asked to close, make absolutely sure to request it first to all of its
+			// children recursively and from top to bottom. The Wayland spec mandates
+			// this and otherwise the compositor might complain.
+			_send_window_event(child, WINDOW_EVENT_CLOSE_REQUEST);
+		}
+	}
+
 	if (wd.window_event_callback.is_valid()) {
 		Variant var_event = Variant(p_event);
 		Variant *arg = &var_event;
