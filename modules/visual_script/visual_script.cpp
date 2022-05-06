@@ -930,6 +930,9 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	get_variable_list(&vars);
 
 	for (const StringName &E : vars) {
+		if (!variables[E]._export) {
+			continue;
+		}
 		PropertyInfo pi = variables[E].info;
 		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_list->push_back(pi);
