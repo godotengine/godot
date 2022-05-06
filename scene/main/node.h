@@ -151,6 +151,9 @@ private:
 		// is switched on.
 		bool physics_interpolated : 1;
 
+		// We can auto-reset physics interpolation when e.g. adding a node for the first time
+		bool physics_interpolation_reset_requested : 1;
+
 		// Most nodes need not be interpolated in the scene tree, physics interpolation
 		// is normally only needed in the VisualServer. However if we need to read the
 		// interpolated transform of a node in the SceneTree, it is necessary to duplicate
@@ -197,6 +200,7 @@ private:
 	void _propagate_exit_tree();
 	void _propagate_after_exit_branch(bool p_exiting_tree);
 	void _propagate_physics_interpolated(bool p_interpolated);
+	void _propagate_physics_interpolation_reset_requested();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -243,6 +247,8 @@ protected:
 	void _set_name_nocheck(const StringName &p_name);
 	void _set_physics_interpolated_client_side(bool p_enable);
 	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
+	void _set_physics_interpolation_reset_requested(bool p_enable);
+	bool _is_physics_interpolation_reset_requested() const { return data.physics_interpolation_reset_requested; }
 	void _set_use_identity_transform(bool p_enable);
 	bool _is_using_identity_transform() const { return data.use_identity_transform; }
 

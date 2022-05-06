@@ -221,6 +221,18 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	data.blocked--;
 }
 
+void Node::_propagate_physics_interpolation_reset_requested() {
+	if (is_physics_interpolated()) {
+		data.physics_interpolation_reset_requested = true;
+	}
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_physics_interpolation_reset_requested();
+	}
+	data.blocked--;
+}
+
 void Node::_propagate_enter_tree() {
 	// this needs to happen to all children before any enter_tree
 
@@ -1014,6 +1026,10 @@ void Node::_set_physics_interpolated_client_side(bool p_enable) {
 	data.physics_interpolated_client_side = p_enable;
 }
 
+void Node::_set_physics_interpolation_reset_requested(bool p_enable) {
+	data.physics_interpolation_reset_requested = p_enable;
+}
+
 void Node::_set_use_identity_transform(bool p_enable) {
 	data.use_identity_transform = p_enable;
 }
@@ -1249,6 +1265,12 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//recognize children created in this node constructor
 	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
+
+	// Allow physics interpolated nodes to automatically reset when added to the tree
+	// (this is to save the user doing this manually each time)
+	if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) {
+		p_child->_propagate_physics_interpolation_reset_requested();
+	}
 }
 
 void Node::add_child(Node *p_child, bool p_legible_unique_name) {
@@ -3185,6 +3207,7 @@ Node::Node() {
 	data.inside_tree = false;
 	data.ready_notified = false;
 	data.physics_interpolated = true;
+	data.physics_interpolation_reset_requested = false;
 	data.physics_interpolated_client_side = false;
 	data.use_identity_transform = false;
 
