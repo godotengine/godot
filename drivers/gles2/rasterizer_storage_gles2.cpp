@@ -2493,7 +2493,13 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		uint32_t new_format = p_format;
 		PoolVector<uint8_t> unpacked_array = _unpack_half_floats(array, new_format, p_vertex_count);
 
-		mesh_add_surface(p_mesh, new_format, p_primitive, unpacked_array, p_vertex_count, p_index_array, p_index_count, p_aabb, p_blend_shapes, p_bone_aabbs);
+		Vector<PoolVector<uint8_t>> unpacked_blend_shapes;
+		for (int i = 0; i < p_blend_shapes.size(); i++) {
+			uint32_t temp_format = p_format; // Just throw this away as it will be the same as new_format
+			unpacked_blend_shapes.push_back(_unpack_half_floats(p_blend_shapes[i], temp_format, p_vertex_count));
+		}
+
+		mesh_add_surface(p_mesh, new_format, p_primitive, unpacked_array, p_vertex_count, p_index_array, p_index_count, p_aabb, unpacked_blend_shapes, p_bone_aabbs);
 		return; //do not go any further, above function used unpacked stuff will be used instead.
 	}
 
