@@ -104,6 +104,9 @@ public:
 	virtual String clipboard_get() const override;
 	virtual bool clipboard_has() const override;
 
+	virtual Array get_display_cutouts() const override;
+	virtual Rect2i get_display_safe_area() const override;
+
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 

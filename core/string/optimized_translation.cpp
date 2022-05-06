@@ -37,9 +37,9 @@ extern "C" {
 }
 
 struct CompressedString {
-	int orig_len;
+	int orig_len = 0;
 	CharString compressed;
-	int offset;
+	int offset = 0;
 };
 
 void OptimizedTranslation::generate(const Ref<Translation> &p_from) {

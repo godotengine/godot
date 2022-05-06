@@ -576,7 +576,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 	TreeItem *selected = shortcuts->get_selected();
 
 	// Only allow drag for events
-	if (!selected || !selected->has_meta("type") || selected->get_meta("type") != "event") {
+	if (!selected || (String)selected->get_meta("type", "") != "event") {
 		return Variant();
 	}
 
@@ -593,7 +593,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 bool EditorSettingsDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	TreeItem *selected = shortcuts->get_selected();
 	TreeItem *item = shortcuts->get_item_at_position(p_point);
-	if (!selected || !item || item == selected || !item->has_meta("type") || item->get_meta("type") != "event") {
+	if (!selected || !item || item == selected || (String)item->get_meta("type", "") != "event") {
 		return false;
 	}
 

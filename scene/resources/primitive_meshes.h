@@ -247,7 +247,7 @@ class PrismMesh : public PrimitiveMesh {
 
 private:
 	float left_to_right = 0.5;
-	Vector3 size = Vector3(2.0, 2.0, 2.0);
+	Vector3 size = Vector3(1.0, 1.0, 1.0);
 	int subdivide_w = 0;
 	int subdivide_h = 0;
 	int subdivide_d = 0;
@@ -309,8 +309,8 @@ class SphereMesh : public PrimitiveMesh {
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
 private:
-	float radius = 1.0;
-	float height = 2.0;
+	float radius = 0.5;
+	float height = 1.0;
 	int radial_segments = 64;
 	int rings = 32;
 	bool is_hemisphere = false;
@@ -358,7 +358,7 @@ class TubeTrailMesh : public PrimitiveMesh {
 	GDCLASS(TubeTrailMesh, PrimitiveMesh);
 
 private:
-	float radius = 1.0;
+	float radius = 0.5;
 	int radial_steps = 8;
 	int sections = 5;
 	float section_length = 0.2;

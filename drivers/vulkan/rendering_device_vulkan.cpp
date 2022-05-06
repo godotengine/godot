@@ -8649,12 +8649,17 @@ void RenderingDeviceVulkan::draw_command_end_label() {
 String RenderingDeviceVulkan::get_device_vendor_name() const {
 	return context->get_device_vendor_name();
 }
+
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
 
 RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
 	return context->get_device_type();
+}
+
+String RenderingDeviceVulkan::get_device_api_version() const {
+	return context->get_device_api_version();
 }
 
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {

@@ -78,7 +78,7 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
 	unsigned int internal_buffer_end = -1;
-	uint64_t mix_offset;
+	uint64_t mix_offset = 0;
 
 protected:
 	void begin_resample();
@@ -145,8 +145,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
-	bool active;
-	unsigned int input_ofs;
+	bool active = false;
+	unsigned int input_ofs = 0;
 
 	Ref<AudioStreamMicrophone> microphone;
 
@@ -194,8 +194,8 @@ private:
 
 	Set<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
-	float random_pitch_scale;
-	float random_volume_offset_db;
+	float random_pitch_scale = 1.1f;
+	float random_volume_offset_db = 5.0f;
 
 	Ref<AudioStreamPlayback> instance_playback_random();
 	Ref<AudioStreamPlayback> instance_playback_no_repeats();

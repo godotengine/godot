@@ -150,7 +150,7 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	}
 }
 
-Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -165,6 +165,11 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
 	return OK;
 }
 

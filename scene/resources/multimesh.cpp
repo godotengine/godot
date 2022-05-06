@@ -101,9 +101,9 @@ void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
 
 	for (int i = 0; i < len / 3; i++) {
 		Transform2D t;
-		t.elements[0] = r[i * 3 + 0];
-		t.elements[1] = r[i * 3 + 1];
-		t.elements[2] = r[i * 3 + 2];
+		t.columns[0] = r[i * 3 + 0];
+		t.columns[1] = r[i * 3 + 1];
+		t.columns[2] = r[i * 3 + 2];
 
 		set_instance_transform_2d(i, t);
 	}
@@ -125,9 +125,9 @@ Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
 
 	for (int i = 0; i < instance_count; i++) {
 		Transform2D t = get_instance_transform_2d(i);
-		w[i * 3 + 0] = t.elements[0];
-		w[i * 3 + 1] = t.elements[1];
-		w[i * 3 + 2] = t.elements[2];
+		w[i * 3 + 0] = t.columns[0];
+		w[i * 3 + 1] = t.columns[1];
+		w[i * 3 + 2] = t.columns[2];
 	}
 
 	return xforms;

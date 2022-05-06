@@ -111,7 +111,7 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 #endif
 
 void Node2D::_update_xform_values() {
-	position = transform.elements[2];
+	position = transform.columns[2];
 	rotation = transform.get_rotation();
 	scale = transform.get_scale();
 	skew = transform.get_skew();
@@ -120,7 +120,7 @@ void Node2D::_update_xform_values() {
 
 void Node2D::_update_transform() {
 	transform.set_rotation_scale_and_skew(rotation, scale, skew);
-	transform.elements[2] = position;
+	transform.columns[2] = position;
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 

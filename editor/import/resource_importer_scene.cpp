@@ -181,7 +181,7 @@ Variant EditorScenePostImportPlugin::get_internal_option_update_view_required(In
 	return ret;
 }
 
-void EditorScenePostImportPlugin::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options) {
+void EditorScenePostImportPlugin::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) {
 	current_options_dict = &p_options;
 	GDVIRTUAL_CALL(_internal_process, p_category, p_base_scene, p_node, p_resource);
 	current_options_dict = nullptr;
@@ -715,13 +715,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 
 	bool isroot = p_node == p_root;
 
-	String import_id;
-
-	if (p_node->has_meta("import_id")) {
-		import_id = p_node->get_meta("import_id");
-	} else {
-		import_id = "PATH:" + p_root->get_path_to(p_node);
-	}
+	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -736,7 +730,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 	{
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
-			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE, p_root, p_node, RES(), node_settings);
+			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
 			}
@@ -746,7 +740,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
-			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, p_root, p_node, RES(), node_settings);
+			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
 			}
@@ -763,12 +757,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				for (int i = 0; i < m->get_surface_count(); i++) {
 					Ref<Material> mat = m->get_surface_material(i);
 					if (mat.is_valid()) {
-						String mat_id;
-						if (mat->has_meta("import_id")) {
-							mat_id = mat->get_meta("import_id");
-						} else {
-							mat_id = mat->get_name();
-						}
+						String mat_id = mat->get_meta("import_id", mat->get_name());
 
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
@@ -953,7 +942,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 		}
 
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
-			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, RES(), node_settings);
+			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 		}
 
 		bool use_optimizer = node_settings["optimizer/enabled"];
@@ -1591,13 +1580,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
 
-				String mesh_id;
-
-				if (src_mesh_node->get_mesh()->has_meta("import_id")) {
-					mesh_id = src_mesh_node->get_mesh()->get_meta("import_id");
-				} else {
-					mesh_id = src_mesh_node->get_mesh()->get_name();
-				}
+				String mesh_id = src_mesh_node->get_mesh()->get_meta("import_id", src_mesh_node->get_mesh()->get_name());
 
 				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];

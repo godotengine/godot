@@ -271,7 +271,11 @@ DependencyEditor::DependencyEditor() {
 }
 
 /////////////////////////////////////
-void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
+void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	file_options->clear();
 	file_options->reset_size();
 	if (p_item >= 0) {
@@ -352,7 +356,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 
 	owners = memnew(ItemList);
 	owners->set_select_mode(ItemList::SELECT_SINGLE);
-	owners->connect("item_rmb_selected", callable_mp(this, &DependencyEditorOwners::_list_rmb_select));
+	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->set_allow_rmb_select(true);
 	add_child(owners);

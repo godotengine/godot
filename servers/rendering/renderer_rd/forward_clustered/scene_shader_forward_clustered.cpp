@@ -452,8 +452,6 @@ RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_s
 
 SceneShaderForwardClustered::ShaderData::ShaderData() :
 		shader_list_element(this) {
-	valid = false;
-	uses_screen_texture = false;
 }
 
 SceneShaderForwardClustered::ShaderData::~ShaderData() {

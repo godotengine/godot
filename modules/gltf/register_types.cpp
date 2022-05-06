@@ -101,45 +101,52 @@ static void _editor_init() {
 }
 #endif // TOOLS_ENABLED
 
-void register_gltf_types() {
-	// glTF API available at runtime.
-	GDREGISTER_CLASS(GLTFAccessor);
-	GDREGISTER_CLASS(GLTFAnimation);
-	GDREGISTER_CLASS(GLTFBufferView);
-	GDREGISTER_CLASS(GLTFCamera);
-	GDREGISTER_CLASS(GLTFDocument);
-	GDREGISTER_CLASS(GLTFDocumentExtension);
-	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
-	GDREGISTER_CLASS(GLTFLight);
-	GDREGISTER_CLASS(GLTFMesh);
-	GDREGISTER_CLASS(GLTFNode);
-	GDREGISTER_CLASS(GLTFSkeleton);
-	GDREGISTER_CLASS(GLTFSkin);
-	GDREGISTER_CLASS(GLTFSpecGloss);
-	GDREGISTER_CLASS(GLTFState);
-	GDREGISTER_CLASS(GLTFTexture);
+void initialize_gltf_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		// glTF API available at runtime.
+		GDREGISTER_CLASS(GLTFAccessor);
+		GDREGISTER_CLASS(GLTFAnimation);
+		GDREGISTER_CLASS(GLTFBufferView);
+		GDREGISTER_CLASS(GLTFCamera);
+		GDREGISTER_CLASS(GLTFDocument);
+		GDREGISTER_CLASS(GLTFDocumentExtension);
+		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
+		GDREGISTER_CLASS(GLTFLight);
+		GDREGISTER_CLASS(GLTFMesh);
+		GDREGISTER_CLASS(GLTFNode);
+		GDREGISTER_CLASS(GLTFSkeleton);
+		GDREGISTER_CLASS(GLTFSkin);
+		GDREGISTER_CLASS(GLTFSpecGloss);
+		GDREGISTER_CLASS(GLTFState);
+		GDREGISTER_CLASS(GLTFTexture);
+	}
 
 #ifdef TOOLS_ENABLED
-	// Editor-specific API.
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		// Editor-specific API.
+		ClassDB::APIType prev_api = ClassDB::get_current_api();
+		ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-	GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
-	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
+		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
+		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
-	// Project settings defined here so doctool finds them.
-	GLOBAL_DEF_RST("filesystem/import/blender/enabled", true);
-	GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
-	GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
-	GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
+		// Project settings defined here so doctool finds them.
+		GLOBAL_DEF_RST("filesystem/import/blender/enabled", true);
+		GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
+		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
+		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 
-	ClassDB::set_current_api(prev_api);
-	EditorNode::add_init_callback(_editor_init);
+		ClassDB::set_current_api(prev_api);
+		EditorNode::add_init_callback(_editor_init);
+	}
 
 #endif // TOOLS_ENABLED
 }
 
-void unregister_gltf_types() {
+void uninitialize_gltf_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }
 
 #endif // _3D_DISABLED

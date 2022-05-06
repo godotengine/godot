@@ -261,6 +261,27 @@ int Theme::get_fallback_font_size() {
 	return fallback_font_size;
 }
 
+bool Theme::is_valid_type_name(const String &p_name) {
+	for (int i = 0; i < p_name.length(); i++) {
+		if (!is_ascii_identifier_char(p_name[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Theme::is_valid_item_name(const String &p_name) {
+	if (p_name.is_empty()) {
+		return false;
+	}
+	for (int i = 0; i < p_name.length(); i++) {
+		if (!is_ascii_identifier_char(p_name[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // Fallback values for theme item types, configurable per theme.
 void Theme::set_default_base_scale(float p_base_scale) {
 	if (default_base_scale == p_base_scale) {
@@ -326,6 +347,9 @@ bool Theme::has_default_font_size() const {
 
 // Icons.
 void Theme::set_icon(const StringName &p_name, const StringName &p_theme_type, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = false;
 	if (icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
@@ -358,6 +382,8 @@ bool Theme::has_icon_nocheck(const StringName &p_name, const StringName &p_theme
 }
 
 void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!icon_map.has(p_theme_type), "Cannot rename the icon '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(icon_map[p_theme_type].has(p_name), "Cannot rename the icon '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!icon_map[p_theme_type].has(p_old_name), "Cannot rename the icon '" + String(p_old_name) + "' because it does not exist.");
@@ -396,6 +422,8 @@ void Theme::get_icon_list(StringName p_theme_type, List<StringName> *p_list) con
 }
 
 void Theme::add_icon_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (icon_map.has(p_theme_type)) {
 		return;
 	}
@@ -433,6 +461,9 @@ void Theme::get_icon_type_list(List<StringName> *p_list) const {
 
 // Styleboxes.
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_theme_type, const Ref<StyleBox> &p_style) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = false;
 	if (style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
@@ -465,6 +496,8 @@ bool Theme::has_stylebox_nocheck(const StringName &p_name, const StringName &p_t
 }
 
 void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!style_map.has(p_theme_type), "Cannot rename the stylebox '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(style_map[p_theme_type].has(p_name), "Cannot rename the stylebox '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!style_map[p_theme_type].has(p_old_name), "Cannot rename the stylebox '" + String(p_old_name) + "' because it does not exist.");
@@ -503,6 +536,8 @@ void Theme::get_stylebox_list(StringName p_theme_type, List<StringName> *p_list)
 }
 
 void Theme::add_stylebox_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (style_map.has(p_theme_type)) {
 		return;
 	}
@@ -540,6 +575,9 @@ void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
 
 // Fonts.
 void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = false;
 	if (font_map[p_theme_type][p_name].is_valid()) {
 		existing = true;
@@ -574,6 +612,8 @@ bool Theme::has_font_nocheck(const StringName &p_name, const StringName &p_theme
 }
 
 void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!font_map.has(p_theme_type), "Cannot rename the font '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(font_map[p_theme_type].has(p_name), "Cannot rename the font '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!font_map[p_theme_type].has(p_old_name), "Cannot rename the font '" + String(p_old_name) + "' because it does not exist.");
@@ -612,6 +652,8 @@ void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) con
 }
 
 void Theme::add_font_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (font_map.has(p_theme_type)) {
 		return;
 	}
@@ -649,6 +691,9 @@ void Theme::get_font_type_list(List<StringName> *p_list) const {
 
 // Font sizes.
 void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = has_font_size_nocheck(p_name, p_theme_type);
 	font_size_map[p_theme_type][p_name] = p_font_size;
 
@@ -674,6 +719,8 @@ bool Theme::has_font_size_nocheck(const StringName &p_name, const StringName &p_
 }
 
 void Theme::rename_font_size(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!font_size_map.has(p_theme_type), "Cannot rename the font size '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(font_size_map[p_theme_type].has(p_name), "Cannot rename the font size '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!font_size_map[p_theme_type].has(p_old_name), "Cannot rename the font size '" + String(p_old_name) + "' because it does not exist.");
@@ -708,6 +755,8 @@ void Theme::get_font_size_list(StringName p_theme_type, List<StringName> *p_list
 }
 
 void Theme::add_font_size_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (font_size_map.has(p_theme_type)) {
 		return;
 	}
@@ -733,6 +782,9 @@ void Theme::get_font_size_type_list(List<StringName> *p_list) const {
 
 // Colors.
 void Theme::set_color(const StringName &p_name, const StringName &p_theme_type, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = has_color_nocheck(p_name, p_theme_type);
 	color_map[p_theme_type][p_name] = p_color;
 
@@ -756,6 +808,8 @@ bool Theme::has_color_nocheck(const StringName &p_name, const StringName &p_them
 }
 
 void Theme::rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!color_map.has(p_theme_type), "Cannot rename the color '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(color_map[p_theme_type].has(p_name), "Cannot rename the color '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!color_map[p_theme_type].has(p_old_name), "Cannot rename the color '" + String(p_old_name) + "' because it does not exist.");
@@ -790,6 +844,8 @@ void Theme::get_color_list(StringName p_theme_type, List<StringName> *p_list) co
 }
 
 void Theme::add_color_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (color_map.has(p_theme_type)) {
 		return;
 	}
@@ -815,6 +871,9 @@ void Theme::get_color_type_list(List<StringName> *p_list) const {
 
 // Theme constants.
 void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	bool existing = has_constant_nocheck(p_name, p_theme_type);
 	constant_map[p_theme_type][p_name] = p_constant;
 
@@ -838,6 +897,8 @@ bool Theme::has_constant_nocheck(const StringName &p_name, const StringName &p_t
 }
 
 void Theme::rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 	ERR_FAIL_COND_MSG(!constant_map.has(p_theme_type), "Cannot rename the constant '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(constant_map[p_theme_type].has(p_name), "Cannot rename the constant '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
 	ERR_FAIL_COND_MSG(!constant_map[p_theme_type].has(p_old_name), "Cannot rename the constant '" + String(p_old_name) + "' because it does not exist.");
@@ -872,6 +933,8 @@ void Theme::get_constant_list(StringName p_theme_type, List<StringName> *p_list)
 }
 
 void Theme::add_constant_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
 	if (constant_map.has(p_theme_type)) {
 		return;
 	}
@@ -1154,6 +1217,8 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 
 // Theme type variations.
 void Theme::set_type_variation(const StringName &p_theme_type, const StringName &p_base_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_base_type), vformat("Invalid type name: '%s'", p_base_type));
 	ERR_FAIL_COND_MSG(p_theme_type == StringName(), "An empty theme type cannot be marked as a variation of another type.");
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), "A type associated with a built-in class cannot be marked as a variation of another type.");
 	ERR_FAIL_COND_MSG(p_base_type == StringName(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");

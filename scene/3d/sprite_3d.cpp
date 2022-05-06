@@ -1247,6 +1247,17 @@ TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote());
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
+}
+
 void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);

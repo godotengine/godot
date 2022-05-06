@@ -146,7 +146,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		Vector3 sideways = up.cross(forward).normalized();
 		up = forward.cross(sideways).normalized();
 
-		t.basis.set(sideways, up, forward);
+		t.basis.set_columns(sideways, up, forward);
 		t.basis.scale_local(scale);
 
 		t.origin = pos + sideways * h_offset + up * v_offset;

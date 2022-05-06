@@ -110,7 +110,7 @@ void CollisionShape3D::_notification(int p_what) {
 	}
 }
 
-void CollisionShape3D::resource_changed(RES res) {
+void CollisionShape3D::resource_changed(Ref<Resource> res) {
 	update_gizmos();
 }
 

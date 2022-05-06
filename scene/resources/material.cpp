@@ -3010,4 +3010,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 
 	return false;
 }
+
 #endif // DISABLE_DEPRECATED
+
+///////////////////////

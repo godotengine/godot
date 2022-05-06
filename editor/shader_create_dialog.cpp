@@ -135,7 +135,7 @@ void ShaderCreateDialog::ok_pressed() {
 }
 
 void ShaderCreateDialog::_create_new() {
-	RES shader;
+	Ref<Resource> shader;
 
 	if (language_menu->get_selected() == int(SHADER_TYPE_TEXT)) {
 		Ref<Shader> text_shader;
@@ -205,7 +205,7 @@ void ShaderCreateDialog::_create_new() {
 
 void ShaderCreateDialog::_load_exist() {
 	String path = file_path->get_text();
-	RES p_shader = ResourceLoader::load(path, "Shader");
+	Ref<Resource> p_shader = ResourceLoader::load(path, "Shader");
 	if (p_shader.is_null()) {
 		alert->set_text(vformat(TTR("Error loading shader from %s"), path));
 		alert->popup_centered();

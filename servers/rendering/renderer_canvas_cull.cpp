@@ -84,7 +84,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 			if (r_items) {
 				r_items[r_index] = child_items[i];
 				child_items[i]->ysort_xform = p_transform;
-				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
+				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.columns[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
 				child_items[i]->ysort_index = r_index;
 			}
@@ -236,7 +236,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 	Transform2D xform = ci->xform;
 	if (snapping_2d_transforms_to_pixel) {
-		xform.elements[2] = xform.elements[2].floor();
+		xform.columns[2] = xform.columns[2].floor();
 	}
 	xform = p_transform * xform;
 

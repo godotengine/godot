@@ -92,16 +92,16 @@ GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const V
 	m_rbAFrame.origin = pivotInA;
 
 	// since no frame is given, assume this to be zero angle and just pick rb transform axis
-	Vector3 rbAxisA1 = rbA->get_transform().basis.get_axis(0);
+	Vector3 rbAxisA1 = rbA->get_transform().basis.get_column(0);
 
 	Vector3 rbAxisA2;
 	real_t projection = axisInA.dot(rbAxisA1);
 	if (projection >= 1.0f - CMP_EPSILON) {
-		rbAxisA1 = -rbA->get_transform().basis.get_axis(2);
-		rbAxisA2 = rbA->get_transform().basis.get_axis(1);
+		rbAxisA1 = -rbA->get_transform().basis.get_column(2);
+		rbAxisA2 = rbA->get_transform().basis.get_column(1);
 	} else if (projection <= -1.0f + CMP_EPSILON) {
-		rbAxisA1 = rbA->get_transform().basis.get_axis(2);
-		rbAxisA2 = rbA->get_transform().basis.get_axis(1);
+		rbAxisA1 = rbA->get_transform().basis.get_column(2);
+		rbAxisA2 = rbA->get_transform().basis.get_column(1);
 	} else {
 		rbAxisA2 = axisInA.cross(rbAxisA1);
 		rbAxisA1 = rbAxisA2.cross(axisInA);
@@ -171,11 +171,11 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 	Vector3 jointAxis0local;
 	Vector3 jointAxis1local;
 
-	plane_space(m_rbAFrame.basis.get_axis(2), jointAxis0local, jointAxis1local);
+	plane_space(m_rbAFrame.basis.get_column(2), jointAxis0local, jointAxis1local);
 
 	Vector3 jointAxis0 = A->get_transform().basis.xform(jointAxis0local);
 	Vector3 jointAxis1 = A->get_transform().basis.xform(jointAxis1local);
-	Vector3 hingeAxisWorld = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
+	Vector3 hingeAxisWorld = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(2));
 
 	memnew_placement(
 			&m_jacAng[0],
@@ -226,7 +226,7 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 	}
 
 	//Compute K = J*W*J' for hinge axis
-	Vector3 axisA = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
+	Vector3 axisA = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(2));
 	m_kHinge = 1.0f / (A->compute_angular_impulse_denominator(axisA) + B->compute_angular_impulse_denominator(axisA));
 
 	return true;
@@ -271,8 +271,8 @@ void GodotHingeJoint3D::solve(real_t p_step) {
 		///solve angular part
 
 		// get axes in world space
-		Vector3 axisA = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
-		Vector3 axisB = B->get_transform().basis.xform(m_rbBFrame.basis.get_axis(2));
+		Vector3 axisA = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(2));
+		Vector3 axisB = B->get_transform().basis.xform(m_rbBFrame.basis.get_column(2));
 
 		const Vector3 &angVelA = A->get_angular_velocity();
 		const Vector3 &angVelB = B->get_angular_velocity();
@@ -384,9 +384,9 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 }
 
 real_t GodotHingeJoint3D::get_hinge_angle() {
-	const Vector3 refAxis0 = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(0));
-	const Vector3 refAxis1 = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(1));
-	const Vector3 swingAxis = B->get_transform().basis.xform(m_rbBFrame.basis.get_axis(1));
+	const Vector3 refAxis0 = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(0));
+	const Vector3 refAxis1 = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(1));
+	const Vector3 swingAxis = B->get_transform().basis.xform(m_rbBFrame.basis.get_column(1));
 
 	return atan2fast(swingAxis.dot(refAxis0), swingAxis.dot(refAxis1));
 }

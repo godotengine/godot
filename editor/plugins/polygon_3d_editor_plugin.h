@@ -66,14 +66,14 @@ class Polygon3DEditor : public HBoxContainer {
 
 	MenuButton *options = nullptr;
 
-	int edited_point;
+	int edited_point = 0;
 	Vector2 edited_point_pos;
 	PackedVector2Array pre_move_edit;
 	PackedVector2Array wip;
 	bool wip_active;
 	bool snap_ignore;
 
-	float prev_depth;
+	float prev_depth = 0.0f;
 
 	void _wip_close();
 	void _polygon_draw();

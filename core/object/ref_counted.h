@@ -234,8 +234,6 @@ public:
 	}
 };
 
-typedef Ref<RefCounted> REF;
-
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);
 
@@ -247,7 +245,7 @@ protected:
 public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
-	void set_ref(const REF &p_ref);
+	void set_ref(const Ref<RefCounted> &p_ref);
 
 	WeakRef() {}
 };

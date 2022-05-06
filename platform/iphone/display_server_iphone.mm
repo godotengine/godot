@@ -360,6 +360,22 @@ void DisplayServerIPhone::tts_stop() {
 	[tts stopSpeaking];
 }
 
+Rect2i DisplayServerIPhone::get_display_safe_area() const {
+	if (@available(iOS 11, *)) {
+		UIEdgeInsets insets = UIEdgeInsetsZero;
+		UIView *view = AppDelegate.viewController.godotView;
+		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+			insets = [view safeAreaInsets];
+		}
+		float scale = screen_get_scale();
+		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+		return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
+	} else {
+		return Rect2i(screen_get_position(), screen_get_size());
+	}
+}
+
 int DisplayServerIPhone::get_screen_count() const {
 	return 1;
 }
@@ -379,22 +395,7 @@ Size2i DisplayServerIPhone::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerIPhone::screen_get_usable_rect(int p_screen) const {
-	if (@available(iOS 11, *)) {
-		UIEdgeInsets insets = UIEdgeInsetsZero;
-		UIView *view = AppDelegate.viewController.godotView;
-
-		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
-			insets = [view safeAreaInsets];
-		}
-
-		float scale = screen_get_scale(p_screen);
-		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
-		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
-
-		return Rect2i(screen_get_position(p_screen) + insets_position, screen_get_size(p_screen) - insets_size);
-	} else {
-		return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
-	}
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerIPhone::screen_get_dpi(int p_screen) const {

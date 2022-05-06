@@ -137,6 +137,9 @@ public:
 	static Ref<Font> get_fallback_font();
 	static int get_fallback_font_size();
 
+	static bool is_valid_type_name(const String &p_name);
+	static bool is_valid_item_name(const String &p_name);
+
 	void set_default_base_scale(float p_base_scale);
 	float get_default_base_scale() const;
 	bool has_default_base_scale() const;

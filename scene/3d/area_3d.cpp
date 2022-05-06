@@ -175,7 +175,7 @@ void Area3D::_initialize_wind() {
 		Node3D *p_wind_source = Object::cast_to<Node3D>(get_node(wind_source_path));
 		ERR_FAIL_NULL(p_wind_source);
 		Transform3D global_transform = p_wind_source->get_transform();
-		wind_direction = -global_transform.basis.get_axis(Vector3::AXIS_Z).normalized();
+		wind_direction = -global_transform.basis.get_column(Vector3::AXIS_Z).normalized();
 		wind_source = global_transform.origin;
 		temp_magnitude = wind_force_magnitude;
 	}

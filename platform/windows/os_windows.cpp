@@ -202,7 +202,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -228,6 +228,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (cookie) {
 		remove_dll_directory(cookie);
+	}
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
 	}
 
 	return OK;
@@ -511,6 +515,25 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 
 int OS_Windows::get_process_id() const {
 	return _getpid();
+}
+
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {

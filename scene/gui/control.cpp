@@ -1501,14 +1501,15 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 	bool list_changed = false;
 
 	if (p_mode == LayoutMode::LAYOUT_MODE_POSITION || p_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
-		if (has_meta("_edit_layout_mode") && (int)get_meta("_edit_layout_mode") != (int)p_mode) {
+		if ((int)get_meta("_edit_layout_mode", p_mode) != (int)p_mode) {
 			list_changed = true;
 		}
 
 		set_meta("_edit_layout_mode", (int)p_mode);
 
 		if (p_mode == LayoutMode::LAYOUT_MODE_POSITION) {
-			set_meta("_edit_use_custom_anchors", false);
+			remove_meta("_edit_layout_mode");
+			remove_meta("_edit_use_custom_anchors");
 			set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
 			set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
 		}
@@ -1645,7 +1646,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 
 int Control::_get_anchors_layout_preset() const {
 	// If the custom preset was selected by user, use it.
-	if (has_meta("_edit_use_custom_anchors") && (bool)get_meta("_edit_use_custom_anchors")) {
+	if ((bool)get_meta("_edit_use_custom_anchors", false)) {
 		return -1;
 	}
 
@@ -2070,7 +2071,7 @@ Point2 Control::get_global_position() const {
 
 Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
-	Point2 global_pos = get_viewport()->get_canvas_transform().xform(get_global_position());
+	Point2 global_pos = get_global_transform_with_canvas().get_origin();
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
 		global_pos += w->get_position();

@@ -49,6 +49,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/io/missing_resource.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -151,6 +152,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
 	GDREGISTER_CLASS(Resource);
+	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 
 	GDREGISTER_CLASS(Shortcut);

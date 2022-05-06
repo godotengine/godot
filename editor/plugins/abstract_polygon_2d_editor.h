@@ -80,10 +80,10 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
-	bool wip_active;
-	bool wip_destructive;
+	bool wip_active = false;
+	bool wip_destructive = false;
 
-	bool _polygon_editing_enabled;
+	bool _polygon_editing_enabled = false;
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Panel *panel = nullptr;
@@ -97,7 +97,7 @@ protected:
 		MODE_CONT,
 	};
 
-	int mode;
+	int mode = MODE_EDIT;
 
 	UndoRedo *undo_redo = nullptr;
 

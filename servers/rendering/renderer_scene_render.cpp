@@ -65,7 +65,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Vector3 y = n0.cross(n1).normalized();
 	Vector3 x = y.cross(z).normalized();
 	y = z.cross(x).normalized();
-	main_transform.basis.set(x, y, z);
+	main_transform.basis.set_columns(x, y, z);
 
 	// 3. create a horizon plane with one of the eyes and the up vector as normal.
 	Plane horizon(y, p_transforms[0].origin);

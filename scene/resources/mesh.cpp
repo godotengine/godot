@@ -1827,7 +1827,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 	// Keep only the scale
 	Basis basis = p_base_transform.get_basis();
-	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
+	Vector3 scale = Vector3(basis.get_column(0).length(), basis.get_column(1).length(), basis.get_column(2).length());
 
 	Transform3D transform;
 	transform.scale(scale);
@@ -2091,4 +2091,18 @@ ArrayMesh::~ArrayMesh() {
 	if (mesh.is_valid()) {
 		RenderingServer::get_singleton()->free(mesh);
 	}
+}
+///////////////
+
+void PlaceholderMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PlaceholderMesh::set_aabb);
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, ""), "set_aabb", "get_aabb");
+}
+
+PlaceholderMesh::PlaceholderMesh() {
+	rid = RS::get_singleton()->mesh_create();
+}
+
+PlaceholderMesh::~PlaceholderMesh() {
+	RS::get_singleton()->free(rid);
 }

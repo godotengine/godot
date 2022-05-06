@@ -78,7 +78,7 @@ void TextureRegionEditor::_region_draw() {
 	}
 
 	Transform2D mtx;
-	mtx.elements[2] = -draw_ofs * draw_zoom;
+	mtx.columns[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
@@ -267,7 +267,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	}
 
 	Transform2D mtx;
-	mtx.elements[2] = -draw_ofs * draw_zoom;
+	mtx.columns[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
 	const real_t handle_radius = 8 * EDSCALE;

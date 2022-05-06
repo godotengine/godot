@@ -323,7 +323,7 @@ public:
 		String display;
 		String insert_text;
 		Color font_color;
-		RES icon;
+		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
 		int location = LOCATION_OTHER;

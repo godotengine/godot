@@ -204,12 +204,17 @@ void OSIPhone::finalize() {
 
 // MARK: Dynamic Libraries
 
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	if (p_path.length() == 0) {
 		p_library_handle = RTLD_SELF;
+
+		if (r_resolved_path != nullptr) {
+			*r_resolved_path = p_path;
+		}
+
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
+	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path, r_resolved_path);
 }
 
 Error OSIPhone::close_dynamic_library(void *p_library_handle) {

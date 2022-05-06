@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource_format_binary.h"
 #include "core/version.h"
 
@@ -150,7 +151,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		if (ext_resources[id].cache.is_valid()) {
 			r_res = ext_resources[id].cache;
 		} else if (use_sub_threads) {
-			RES res = ResourceLoader::load_threaded_get(path);
+			Ref<Resource> res = ResourceLoader::load_threaded_get(path);
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
 					error = ERR_FILE_MISSING_DEPENDENCIES;
@@ -171,7 +172,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			return error;
 		}
 	} else {
-		r_res = RES();
+		r_res = Ref<Resource>();
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -460,7 +461,7 @@ Error ResourceLoaderText::load() {
 			}
 
 		} else {
-			RES res = ResourceLoader::load(path, type);
+			Ref<Resource> res = ResourceLoader::load(path, type);
 
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
@@ -535,6 +536,8 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		MissingResource *missing_resource = nullptr;
+
 		if (res.is_null()) { //not reuse
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && ResourceCache::has(path)) { //only if it doesn't exist
 				//cached, do not assign
@@ -545,10 +548,17 @@ Error ResourceLoaderText::load() {
 
 				Object *obj = ClassDB::instantiate(type);
 				if (!obj) {
-					error_text += "Can't create sub resource of type: " + type;
-					_printerr();
-					error = ERR_FILE_CORRUPT;
-					return error;
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error_text += "Can't create sub resource of type: " + type;
+						_printerr();
+						error = ERR_FILE_CORRUPT;
+						return error;
+					}
 				}
 
 				Resource *r = Object::cast_to<Resource>(obj);
@@ -572,6 +582,8 @@ Error ResourceLoaderText::load() {
 			res->set_scene_unique_id(id);
 		}
 
+		Dictionary missing_resource_properties;
+
 		while (true) {
 			String assign;
 			Variant value;
@@ -585,7 +597,23 @@ Error ResourceLoaderText::load() {
 
 			if (!assign.is_empty()) {
 				if (do_assign) {
-					res->set(assign, value);
+					bool set_valid = true;
+
+					if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+						// If the property being set is a missing resource (and the parent is not),
+						// then setting it will most likely not work.
+						// Instead, save it as metadata.
+
+						Ref<MissingResource> mr = value;
+						if (mr.is_valid()) {
+							missing_resource_properties[assign] = mr;
+							set_valid = false;
+						}
+					}
+
+					if (set_valid) {
+						res->set(assign, value);
+					}
 				}
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
@@ -597,6 +625,14 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			}
+		}
+
+		if (missing_resource) {
+			missing_resource->set_recording_properties(false);
+		}
+
+		if (!missing_resource_properties.is_empty()) {
+			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
 
 		if (progress && resources_total > 0) {
@@ -624,13 +660,22 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		MissingResource *missing_resource = nullptr;
+
 		if (!resource.is_valid()) {
 			Object *obj = ClassDB::instantiate(res_type);
 			if (!obj) {
-				error_text += "Can't create sub resource of type: " + res_type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
+				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+					missing_resource = memnew(MissingResource);
+					missing_resource->set_original_class(res_type);
+					missing_resource->set_recording_properties(true);
+					obj = missing_resource;
+				} else {
+					error_text += "Can't create sub resource of type: " + res_type;
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
 			}
 
 			Resource *r = Object::cast_to<Resource>(obj);
@@ -645,6 +690,8 @@ Error ResourceLoaderText::load() {
 		}
 
 		resource_current++;
+
+		Dictionary missing_resource_properties;
 
 		while (true) {
 			String assign;
@@ -668,7 +715,23 @@ Error ResourceLoaderText::load() {
 			}
 
 			if (!assign.is_empty()) {
-				resource->set(assign, value);
+				bool set_valid = true;
+
+				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+					// If the property being set is a missing resource (and the parent is not),
+					// then setting it will most likely not work.
+					// Instead, save it as metadata.
+
+					Ref<MissingResource> mr = value;
+					if (mr.is_valid()) {
+						missing_resource_properties[assign] = mr;
+						set_valid = false;
+					}
+				}
+
+				if (set_valid) {
+					resource->set(assign, value);
+				}
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
 				error = ERR_FILE_CORRUPT;
@@ -676,14 +739,24 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			} else {
-				error = OK;
-				if (progress && resources_total > 0) {
-					*progress = resource_current / float(resources_total);
-				}
-
-				return error;
+				break;
 			}
 		}
+
+		if (missing_resource) {
+			missing_resource->set_recording_properties(false);
+		}
+
+		if (!missing_resource_properties.is_empty()) {
+			resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+		}
+
+		error = OK;
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
+		return error;
 	}
 
 	//for scene files
@@ -890,19 +963,12 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		fw->store_8(c);
 		c = f->get_8();
 	}
-	f.unref();
 
 	bool all_ok = fw->get_error() == OK;
 
 	if (!all_ok) {
 		return ERR_CANT_CREATE;
 	}
-
-	fw.unref();
-
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	da->remove(p_path);
-	da->rename(p_path + ".depren", p_path);
 
 	return OK;
 }
@@ -1334,7 +1400,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 
 /////////////////////
 
-RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -1343,7 +1409,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderText loader;
 	String path = !p_original_path.is_empty() ? p_original_path : p_path;
@@ -1360,7 +1426,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 	if (err == OK) {
 		return loader.get_resource();
 	} else {
-		return RES();
+		return Ref<Resource>();
 	}
 }
 
@@ -1370,9 +1436,12 @@ void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &
 		return;
 	}
 
-	if (p_type == "PackedScene") {
+	if (ClassDB::is_parent_class("PackedScene", p_type)) {
 		p_extensions->push_back("tscn");
-	} else {
+	}
+
+	// Don't allow .tres for PackedScenes.
+	if (p_type != "PackedScene") {
 		p_extensions->push_back("tres");
 	}
 }
@@ -1439,15 +1508,26 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 }
 
 Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	if (f.is_null()) {
-		ERR_FAIL_V(ERR_CANT_OPEN);
+	Error err = OK;
+	{
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+		if (f.is_null()) {
+			ERR_FAIL_V(ERR_CANT_OPEN);
+		}
+
+		ResourceLoaderText loader;
+		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+		loader.res_path = loader.local_path;
+		err = loader.rename_dependencies(f, p_path, p_map);
 	}
 
-	ResourceLoaderText loader;
-	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-	loader.res_path = loader.local_path;
-	return loader.rename_dependencies(f, p_path, p_map);
+	if (err == OK) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		da->remove(p_path);
+		da->rename(p_path + ".depren", p_path);
+	}
+
+	return err;
 }
 
 ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
@@ -1477,12 +1557,12 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
+String ResourceFormatSaverTextInstance::_write_resources(void *ud, const Ref<Resource> &p_resource) {
 	ResourceFormatSaverTextInstance *rsi = static_cast<ResourceFormatSaverTextInstance *>(ud);
 	return rsi->_write_resource(p_resource);
 }
 
-String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
+String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res) {
 	if (external_resources.has(res)) {
 		return "ExtResource( \"" + external_resources[res] + "\" )";
 	} else {
@@ -1505,7 +1585,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
-			RES res = p_variant;
+			Ref<Resource> res = p_variant;
 
 			if (res.is_null() || external_resources.has(res)) {
 				return;
@@ -1542,7 +1622,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 					Variant v = res->get(I->get().name);
 
 					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
-						RES sres = v;
+						Ref<Resource> sres = v;
 						if (sres.is_valid()) {
 							NonPersistentKey npk;
 							npk.base = res;
@@ -1586,7 +1666,16 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 	}
 }
 
-Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+static String _resource_get_class(Ref<Resource> p_resource) {
+	Ref<MissingResource> missing_resource = p_resource;
+	if (missing_resource.is_valid()) {
+		return missing_resource->get_original_class();
+	} else {
+		return p_resource->get_class();
+	}
+}
+
+Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn")) {
 		packed_scene = p_resource;
 	}
@@ -1627,7 +1716,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null()) {
-			title += "type=\"" + p_resource->get_class() + "\" ";
+			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
 		}
 		int load_steps = saved_resources.size() + external_resources.size();
 
@@ -1649,7 +1738,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #ifdef TOOLS_ENABLED
 	// Keep order from cached ids.
 	Set<String> cached_ids_found;
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		String cached_id = E.key->get_id_for_path(local_path);
 		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
 			int sep_pos = E.value.find("_");
@@ -1665,7 +1754,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 	// Create IDs for non cached resources.
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		if (cached_ids_found.has(E.value)) { // Already cached, go on.
 			continue;
 		}
@@ -1687,14 +1776,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #else
 	// Make sure to start from one, as it makes format more readable.
 	int counter = 1;
-	for (KeyValue<RES, String> &E : external_resources) {
+	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		E.value = itos(counter++);
 	}
 #endif
 
 	Vector<ResourceSort> sorted_er;
 
-	for (const KeyValue<RES, String> &E : external_resources) {
+	for (const KeyValue<Ref<Resource>, String> &E : external_resources) {
 		ResourceSort rs;
 		rs.resource = E.key;
 		rs.id = E.value;
@@ -1722,8 +1811,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	Set<String> used_unique_ids;
 
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES res = E->get();
+	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
+		Ref<Resource> res = E->get();
 		if (E->next() && res->is_built_in()) {
 			if (!res->get_scene_unique_id().is_empty()) {
 				if (used_unique_ids.has(res->get_scene_unique_id())) {
@@ -1735,8 +1824,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES res = E->get();
+	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
+		Ref<Resource> res = E->get();
 		ERR_CONTINUE(!resource_set.has(res));
 		bool main = (E->next() == nullptr);
 
@@ -1751,7 +1840,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			if (res->get_scene_unique_id().is_empty()) {
 				String new_id;
 				while (true) {
-					new_id = res->get_class() + "_" + Resource::generate_scene_unique_id();
+					new_id = _resource_get_class(res) + "_" + Resource::generate_scene_unique_id();
 
 					if (!used_unique_ids.has(new_id)) {
 						break;
@@ -1763,7 +1852,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			String id = res->get_scene_unique_id();
-			line += "type=\"" + res->get_class() + "\" id=\"" + id;
+			line += "type=\"" + _resource_get_class(res) + "\" id=\"" + id;
 			f->store_line(line + "\"]");
 			if (takeover_paths) {
 				res->set_path(p_path + "::" + id, true);
@@ -1775,10 +1864,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #endif
 		}
 
+		Dictionary missing_resource_properties = p_resource->get_meta(META_MISSING_RESOURCES, Dictionary());
+
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
 		for (List<PropertyInfo>::Element *PE = property_list.front(); PE; PE = PE->next()) {
 			if (skip_editor && PE->get().name.begins_with("__editor")) {
+				continue;
+			}
+			if (PE->get().name == META_PROPERTY_MISSING_RESOURCES) {
 				continue;
 			}
 
@@ -1795,6 +1889,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				} else {
 					value = res->get(name);
 				}
+
+				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
+					// Was this missing resource overriden? If so do not save the old value.
+					Ref<Resource> ures = value;
+					if (ures.is_null()) {
+						value = missing_resource_properties[PE->get().name];
+					}
+				}
+
 				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
@@ -1937,7 +2040,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	return OK;
 }
 
-Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverText::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}
@@ -1946,11 +2049,11 @@ Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource,
 	return saver.save(p_path, p_resource, p_flags);
 }
 
-bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
 	return true; // All resources recognized!
 }
 
-void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Ref<PackedScene>(p_resource).is_valid()) {
 		p_extensions->push_back("tscn"); // Text scene.
 	} else {

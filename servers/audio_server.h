@@ -48,18 +48,18 @@ class AudioStreamPlayback;
 
 class AudioDriver {
 	static AudioDriver *singleton;
-	uint64_t _last_mix_time;
-	uint64_t _last_mix_frames;
+	uint64_t _last_mix_time = 0;
+	uint64_t _last_mix_frames = 0;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks;
-	uint64_t prof_time;
+	uint64_t prof_ticks = 0;
+	uint64_t prof_time = 0;
 #endif
 
 protected:
 	Vector<int32_t> input_buffer;
-	unsigned int input_position;
-	unsigned int input_size;
+	unsigned int input_position = 0;
+	unsigned int input_size = 0;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
@@ -121,7 +121,7 @@ public:
 	void reset_profiling_time() { prof_time = 0; }
 #endif
 
-	AudioDriver();
+	AudioDriver() {}
 	virtual ~AudioDriver() {}
 };
 
@@ -169,66 +169,61 @@ public:
 	typedef void (*AudioCallback)(void *p_userdata);
 
 private:
-	uint64_t mix_time;
-	int mix_size;
+	uint64_t mix_time = 0;
+	int mix_size = 0;
 
-	uint32_t buffer_size;
-	uint64_t mix_count;
-	uint64_t mix_frames;
+	uint32_t buffer_size = 0;
+	uint64_t mix_count = 0;
+	uint64_t mix_frames = 0;
 #ifdef DEBUG_ENABLED
-	uint64_t prof_time;
+	uint64_t prof_time = 0;
 #endif
 
-	float channel_disable_threshold_db;
-	uint32_t channel_disable_frames;
+	float channel_disable_threshold_db = 0.0f;
+	uint32_t channel_disable_frames = 0;
 
-	int channel_count;
-	int to_mix;
+	int channel_count = 0;
+	int to_mix = 0;
 
-	float playback_speed_scale;
+	float playback_speed_scale = 1.0f;
 
 	struct Bus {
 		StringName name;
-		bool solo;
-		bool mute;
-		bool bypass;
+		bool solo = false;
+		bool mute = false;
+		bool bypass = false;
 
-		bool soloed;
+		bool soloed = false;
 
-		//Each channel is a stereo pair.
+		// Each channel is a stereo pair.
 		struct Channel {
-			bool used;
-			bool active;
-			AudioFrame peak_volume;
+			bool used = false;
+			bool active = false;
+			AudioFrame peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 			Vector<AudioFrame> buffer;
 			Vector<Ref<AudioEffectInstance>> effect_instances;
-			uint64_t last_mix_with_audio;
-			Channel() {
-				last_mix_with_audio = 0;
-				used = false;
-				active = false;
-				peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
-			}
+			uint64_t last_mix_with_audio = 0;
+			Channel() {}
 		};
 
 		Vector<Channel> channels;
 
 		struct Effect {
 			Ref<AudioEffect> effect;
-			bool enabled;
+			bool enabled = false;
 #ifdef DEBUG_ENABLED
-			uint64_t prof_time;
+			uint64_t prof_time = 0;
 #endif
 		};
 
 		Vector<Effect> effects;
-		float volume_db;
+		float volume_db = 0.0f;
 		StringName send;
-		int index_cache;
+		int index_cache = 0;
 	};
 
 	struct AudioStreamPlaybackBusDetails {
-		bool bus_active[MAX_BUSES_PER_PLAYBACK] = { false, false, false, false, false, false };
+		bool bus_active[MAX_BUSES_PER_PLAYBACK] = {};
 		StringName bus[MAX_BUSES_PER_PLAYBACK];
 		AudioFrame volume[MAX_BUSES_PER_PLAYBACK][MAX_CHANNELS_PER_BUS];
 	};
@@ -312,7 +307,7 @@ public:
 		ERR_FAIL_V(1);
 	}
 
-	//do not use from outside audio thread
+	// Do not use from outside audio thread.
 	bool thread_has_channel_mix_buffer(int p_bus, int p_buffer) const;
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
@@ -442,26 +437,21 @@ class AudioBusLayout : public Resource {
 
 	struct Bus {
 		StringName name;
-		bool solo;
-		bool mute;
-		bool bypass;
+		bool solo = false;
+		bool mute = false;
+		bool bypass = false;
 
 		struct Effect {
 			Ref<AudioEffect> effect;
-			bool enabled;
+			bool enabled = false;
 		};
 
 		Vector<Effect> effects;
 
-		float volume_db;
+		float volume_db = 0.0f;
 		StringName send;
 
-		Bus() {
-			solo = false;
-			mute = false;
-			bypass = false;
-			volume_db = 0;
-		}
+		Bus() {}
 	};
 
 	Vector<Bus> buses;

@@ -314,7 +314,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(z, 0.0, x, 1.0)
+			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
 			point++;
 
@@ -353,7 +353,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
 			normals.push_back(Vector3(x, 0.0, -z));
-			ADD_TANGENT(z, 0.0, x, 1.0)
+			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, onethird + (v * onethird)));
 			point++;
 
@@ -393,7 +393,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, -0.5 * height + radius, 0.0));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(z, 0.0, x, 1.0)
+			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u2, twothirds + ((v - 1.0) * onethird)));
 			point++;
 

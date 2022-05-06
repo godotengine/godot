@@ -129,6 +129,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
 #include "scene/main/instance_placeholder.h"
+#include "scene/main/missing_node.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
@@ -302,6 +303,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Object);
 
 	GDREGISTER_CLASS(Node);
+	GDREGISTER_VIRTUAL_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
@@ -752,6 +754,7 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
 	GDREGISTER_CLASS(ArrayMesh);
+	GDREGISTER_CLASS(PlaceholderMesh);
 	GDREGISTER_CLASS(ImmediateMesh);
 	GDREGISTER_CLASS(MultiMesh);
 	GDREGISTER_CLASS(SurfaceTool);
@@ -773,6 +776,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
+	GDREGISTER_CLASS(PlaceholderMaterial);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
@@ -837,6 +841,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CompressedCubemap);
 	GDREGISTER_CLASS(CompressedCubemapArray);
 	GDREGISTER_CLASS(CompressedTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderTexture2D);
+	GDREGISTER_CLASS(PlaceholderTexture3D);
+	GDREGISTER_ABSTRACT_CLASS(PlaceholderTextureLayered);
+	GDREGISTER_CLASS(PlaceholderTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderCubemap);
+	GDREGISTER_CLASS(PlaceholderCubemapArray);
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
@@ -1085,8 +1095,6 @@ void register_scene_types() {
 	SceneReplicationInterface::make_default();
 	SceneRPCInterface::make_default();
 	SceneCacheInterface::make_default();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void initialize_theme() {
@@ -1139,8 +1147,6 @@ void initialize_theme() {
 }
 
 void unregister_scene_types() {
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

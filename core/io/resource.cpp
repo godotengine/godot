@@ -208,13 +208,13 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 		}
 		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				if (sr->is_local_to_scene()) {
 					if (remap_cache.has(sr)) {
 						p = remap_cache[sr];
 					} else {
-						RES dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
+						Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
 						p = dupe;
 						remap_cache[sr] = dupe;
 					}
@@ -240,7 +240,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 		}
 		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				if (sr->is_local_to_scene()) {
 					if (!remap_cache.has(sr)) {
@@ -269,7 +269,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
 			r->set(E.name, p.duplicate(p_subresources));
 		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
-			RES sr = p;
+			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
 				r->set(E.name, sr->duplicate(p_subresources));
 			}
@@ -321,7 +321,7 @@ void Resource::notify_change_to_owners() {
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); //wtf
 		//TODO store string
-		obj->call("resource_changed", RES(this));
+		obj->call("resource_changed", Ref<Resource>(this));
 	}
 }
 
@@ -335,7 +335,7 @@ uint32_t Resource::hash_edited_version() const {
 
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			RES res = get(E.name);
+			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
 				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
 			}

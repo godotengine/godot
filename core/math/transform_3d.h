@@ -45,10 +45,10 @@ struct _NO_DISCARD_ Transform3D {
 	void affine_invert();
 	Transform3D affine_inverse() const;
 
-	Transform3D rotated(const Vector3 &p_axis, real_t p_phi) const;
+	Transform3D rotated(const Vector3 &p_axis, real_t p_angle) const;
 
-	void rotate(const Vector3 &p_axis, real_t p_phi);
-	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
 
 	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0)) const;
@@ -135,9 +135,9 @@ _FORCE_INLINE_ Vector3 Transform3D::xform_inv(const Vector3 &p_vector) const {
 	Vector3 v = p_vector - origin;
 
 	return Vector3(
-			(basis.elements[0][0] * v.x) + (basis.elements[1][0] * v.y) + (basis.elements[2][0] * v.z),
-			(basis.elements[0][1] * v.x) + (basis.elements[1][1] * v.y) + (basis.elements[2][1] * v.z),
-			(basis.elements[0][2] * v.x) + (basis.elements[1][2] * v.y) + (basis.elements[2][2] * v.z));
+			(basis.rows[0][0] * v.x) + (basis.rows[1][0] * v.y) + (basis.rows[2][0] * v.z),
+			(basis.rows[0][1] * v.x) + (basis.rows[1][1] * v.y) + (basis.rows[2][1] * v.z),
+			(basis.rows[0][2] * v.x) + (basis.rows[1][2] * v.y) + (basis.rows[2][2] * v.z));
 }
 
 // Neither the plane regular xform or xform_inv are particularly efficient,

@@ -313,7 +313,7 @@ public:
 	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
 	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
-	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
+	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
@@ -421,9 +421,9 @@ public:
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
-	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const;
-	void remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const;
-	void remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const;
+	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	void remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only

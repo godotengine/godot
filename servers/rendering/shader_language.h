@@ -756,6 +756,7 @@ public:
 	static bool is_token_interpolation(TokenType p_type);
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
+	static bool is_token_arg_qual(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_datatype_name(DataType p_type);
@@ -870,15 +871,18 @@ private:
 	struct KeyWord {
 		TokenType token;
 		const char *text;
+		uint32_t flags;
+		const Vector<String> excluded_shader_types;
+		const Vector<String> functions;
 	};
 
 	static const KeyWord keyword_list[];
 
-	GlobalVariableGetTypeFunc global_var_get_type_func;
+	GlobalVariableGetTypeFunc global_var_get_type_func = nullptr;
 
-	bool error_set;
+	bool error_set = false;
 	String error_str;
-	int error_line;
+	int error_line = 0;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -902,7 +906,7 @@ private:
 	List<ShaderWarning> warnings;
 
 	bool check_warnings = false;
-	uint32_t warning_flags;
+	uint32_t warning_flags = 0;
 
 	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
 		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject, p_extra_args));
@@ -917,9 +921,10 @@ private:
 #endif // DEBUG_ENABLED
 
 	String code;
-	int char_idx;
-	int tk_line;
+	int char_idx = 0;
+	int tk_line = 0;
 
+	StringName shader_type_identifier;
 	StringName current_function;
 	bool last_const = false;
 	StringName last_name;
@@ -972,6 +977,7 @@ private:
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
+	bool _lookup_next(Token &r_tk);
 
 	ShaderNode *shader = nullptr;
 
@@ -1020,14 +1026,18 @@ private:
 	};
 
 	CompletionType completion_type;
-	int completion_line;
+	int completion_line = 0;
 	BlockNode *completion_block = nullptr;
 	DataType completion_base;
-	bool completion_base_array;
+	bool completion_base_array = false;
 	SubClassTag completion_class;
 	StringName completion_function;
 	StringName completion_struct;
-	int completion_argument;
+	int completion_argument = 0;
+
+#ifdef DEBUG_ENABLED
+	uint32_t keyword_completion_context;
+#endif // DEBUG_ENABLED
 
 	const Map<StringName, FunctionInfo> *stages = nullptr;
 

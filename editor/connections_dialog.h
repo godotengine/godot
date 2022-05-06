@@ -111,7 +111,7 @@ private:
 	StringName signal;
 	LineEdit *dst_method = nullptr;
 	ConnectDialogBinds *cdbinds = nullptr;
-	bool edit_mode;
+	bool edit_mode = false;
 	NodePath dst_path;
 	VBoxContainer *vbc_right = nullptr;
 

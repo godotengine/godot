@@ -41,7 +41,7 @@ bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
-Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	int64_t res;
 	if (GDVIRTUAL_CALL(_save, p_path, p_resource, p_flags, res)) {
 		return (Error)res;
@@ -50,7 +50,7 @@ Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uin
 	return ERR_METHOD_NOT_FOUND;
 }
 
-bool ResourceFormatSaver::recognize(const RES &p_resource) const {
+bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 	bool success;
 	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
 		return success;
@@ -59,7 +59,7 @@ bool ResourceFormatSaver::recognize(const RES &p_resource) const {
 	return false;
 }
 
-void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, p_resource, exts)) {
 		const String *r = exts.ptr();
@@ -75,7 +75,7 @@ void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	String extension = p_path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
 
@@ -102,7 +102,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 
 		String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
-		RES rwcopy = p_resource;
+		Ref<Resource> rwcopy = p_resource;
 		if (p_flags & FLAG_CHANGE_PATH) {
 			rwcopy->set_path(local_path);
 		}
@@ -139,7 +139,7 @@ void ResourceSaver::set_save_callback(ResourceSavedCallback p_callback) {
 	save_callback = p_callback;
 }
 
-void ResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) {
+void ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) {
 	for (int i = 0; i < saver_count; i++) {
 		saver[i]->get_recognized_extensions(p_resource, p_extensions);
 	}

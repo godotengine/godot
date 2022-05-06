@@ -105,15 +105,15 @@ Transform3D Collada::fix_transform(const Transform3D &p_transform) {
 static Transform3D _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
 	Transform3D tr;
 	// i wonder why collada matrices are transposed, given that's opposed to opengl..
-	tr.basis.elements[0][0] = array[0 + ofs];
-	tr.basis.elements[0][1] = array[1 + ofs];
-	tr.basis.elements[0][2] = array[2 + ofs];
-	tr.basis.elements[1][0] = array[4 + ofs];
-	tr.basis.elements[1][1] = array[5 + ofs];
-	tr.basis.elements[1][2] = array[6 + ofs];
-	tr.basis.elements[2][0] = array[8 + ofs];
-	tr.basis.elements[2][1] = array[9 + ofs];
-	tr.basis.elements[2][2] = array[10 + ofs];
+	tr.basis.rows[0][0] = array[0 + ofs];
+	tr.basis.rows[0][1] = array[1 + ofs];
+	tr.basis.rows[0][2] = array[2 + ofs];
+	tr.basis.rows[1][0] = array[4 + ofs];
+	tr.basis.rows[1][1] = array[5 + ofs];
+	tr.basis.rows[1][2] = array[6 + ofs];
+	tr.basis.rows[2][0] = array[8 + ofs];
+	tr.basis.rows[2][1] = array[9 + ofs];
+	tr.basis.rows[2][2] = array[10 + ofs];
 	tr.origin.x = array[3 + ofs];
 	tr.origin.y = array[7 + ofs];
 	tr.origin.z = array[11 + ofs];
@@ -210,15 +210,15 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 				ret.resize(16);
 				Transform3D tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
-				ret.write[0] = interp.basis.elements[0][0];
-				ret.write[1] = interp.basis.elements[0][1];
-				ret.write[2] = interp.basis.elements[0][2];
-				ret.write[4] = interp.basis.elements[1][0];
-				ret.write[5] = interp.basis.elements[1][1];
-				ret.write[6] = interp.basis.elements[1][2];
-				ret.write[8] = interp.basis.elements[2][0];
-				ret.write[9] = interp.basis.elements[2][1];
-				ret.write[10] = interp.basis.elements[2][2];
+				ret.write[0] = interp.basis.rows[0][0];
+				ret.write[1] = interp.basis.rows[0][1];
+				ret.write[2] = interp.basis.rows[0][2];
+				ret.write[4] = interp.basis.rows[1][0];
+				ret.write[5] = interp.basis.rows[1][1];
+				ret.write[6] = interp.basis.rows[1][2];
+				ret.write[8] = interp.basis.rows[2][0];
+				ret.write[9] = interp.basis.rows[2][1];
+				ret.write[10] = interp.basis.rows[2][2];
 				ret.write[3] = interp.origin.x;
 				ret.write[7] = interp.origin.y;
 				ret.write[11] = interp.origin.z;

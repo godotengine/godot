@@ -48,7 +48,7 @@ class ResourceLoaderText {
 	VariantParser::StreamFile stream;
 
 	struct ExtResource {
-		RES cache;
+		Ref<Resource> cache;
 		String path;
 		String type;
 	};
@@ -59,7 +59,7 @@ class ResourceLoaderText {
 	bool ignore_resource_parsing = false;
 
 	Map<String, ExtResource> ext_resources;
-	Map<String, RES> int_resources;
+	Map<String, Ref<Resource>> int_resources;
 
 	int resources_total = 0;
 	int resource_current = 0;
@@ -90,10 +90,10 @@ class ResourceLoaderText {
 	};
 
 	struct DummyReadData {
-		Map<RES, int> external_resources;
-		Map<String, RES> rev_external_resources;
-		Map<RES, int> resource_index_map;
-		Map<String, RES> resource_map;
+		Map<Ref<Resource>, int> external_resources;
+		Map<String, Ref<Resource>> rev_external_resources;
+		Map<Ref<Resource>, int> resource_index_map;
+		Map<String, Ref<Resource>> resource_map;
 	};
 
 	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
@@ -108,7 +108,7 @@ class ResourceLoaderText {
 
 	Error error = OK;
 
-	RES resource;
+	Ref<Resource> resource;
 
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
@@ -133,7 +133,7 @@ public:
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
 	static ResourceFormatLoaderText *singleton;
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -158,20 +158,20 @@ class ResourceFormatSaverTextInstance {
 	bool skip_editor = false;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
-		RES base;
+		Ref<Resource> base;
 		StringName property;
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
 	};
 
-	Map<NonPersistentKey, RES> non_persistent_map;
+	Map<NonPersistentKey, Ref<Resource>> non_persistent_map;
 
-	Set<RES> resource_set;
-	List<RES> saved_resources;
-	Map<RES, String> external_resources;
-	Map<RES, String> internal_resources;
+	Set<Ref<Resource>> resource_set;
+	List<Ref<Resource>> saved_resources;
+	Map<Ref<Resource>, String> external_resources;
+	Map<Ref<Resource>, String> internal_resources;
 
 	struct ResourceSort {
-		RES resource;
+		Ref<Resource> resource;
 		String id;
 		bool operator<(const ResourceSort &p_right) const {
 			return id.naturalnocasecmp_to(p_right.id) < 0;
@@ -180,19 +180,19 @@ class ResourceFormatSaverTextInstance {
 
 	void _find_resources(const Variant &p_variant, bool p_main = false);
 
-	static String _write_resources(void *ud, const RES &p_resource);
-	String _write_resource(const RES &res);
+	static String _write_resources(void *ud, const Ref<Resource> &p_resource);
+	String _write_resource(const Ref<Resource> &res);
 
 public:
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
 };
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
-	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	virtual bool recognize(const RES &p_resource) const;
-	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual bool recognize(const Ref<Resource> &p_resource) const;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 
 	ResourceFormatSaverText();
 };

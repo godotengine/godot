@@ -134,7 +134,7 @@ public:
 		real_t mina, maxa;                                                                                                                                          \
 		real_t minb, maxb;                                                                                                                                          \
 		Transform2D ofsb = p_transform;                                                                                                                             \
-		ofsb.elements[2] += p_cast;                                                                                                                                 \
+		ofsb.columns[2] += p_cast;                                                                                                                                  \
 		project_range(p_normal, p_transform, mina, maxa);                                                                                                           \
 		project_range(p_normal, ofsb, minb, maxb);                                                                                                                  \
 		r_min = MIN(mina, minb);                                                                                                                                    \

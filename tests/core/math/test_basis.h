@@ -164,9 +164,9 @@ void test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
 
 	Basis res = to_rotation.inverse() * rotation_from_computed_euler;
 
-	CHECK_MESSAGE((res.get_axis(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Fail due to X %s\n", String(res.get_axis(0))).utf8().ptr());
-	CHECK_MESSAGE((res.get_axis(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Fail due to Y %s\n", String(res.get_axis(1))).utf8().ptr());
-	CHECK_MESSAGE((res.get_axis(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Fail due to Z %s\n", String(res.get_axis(2))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Fail due to X %s\n", String(res.get_column(0))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Fail due to Y %s\n", String(res.get_column(1))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Fail due to Z %s\n", String(res.get_column(2))).utf8().ptr());
 
 	// Double check `to_rotation` decomposing with XYZ rotation order.
 	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(Basis::EULER_ORDER_XYZ);
@@ -175,9 +175,9 @@ void test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
 
 	res = to_rotation.inverse() * rotation_from_xyz_computed_euler;
 
-	CHECK_MESSAGE((res.get_axis(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to X %s\n", String(res.get_axis(0))).utf8().ptr());
-	CHECK_MESSAGE((res.get_axis(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Y %s\n", String(res.get_axis(1))).utf8().ptr());
-	CHECK_MESSAGE((res.get_axis(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Z %s\n", String(res.get_axis(2))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to X %s\n", String(res.get_column(0))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Y %s\n", String(res.get_column(1))).utf8().ptr());
+	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Z %s\n", String(res.get_column(2))).utf8().ptr());
 
 	INFO(vformat("Rotation order: %s\n.", get_rot_order_name(rot_order)).utf8().ptr());
 	INFO(vformat("Original Rotation: %s\n", String(deg_original_euler)).utf8().ptr());

@@ -48,7 +48,7 @@ protected:
 public:
 	virtual void toggle(bool p_enable, const Array &p_opts);
 	virtual void add(const Array &p_data);
-	virtual void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time);
+	virtual void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
 
 	Error bind(const String &p_name);
 	Error unbind();

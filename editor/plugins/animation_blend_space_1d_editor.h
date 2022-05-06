@@ -65,14 +65,14 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *edit_value = nullptr;
 	Button *open_editor = nullptr;
 
-	int selected_point;
+	int selected_point = -1;
 
 	Control *blend_space_draw = nullptr;
 
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	bool updating;
+	bool updating = false;
 
 	UndoRedo *undo_redo = nullptr;
 
@@ -90,11 +90,11 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	PopupMenu *menu = nullptr;
 	PopupMenu *animations_menu = nullptr;
 	Vector<String> animations_to_add;
-	float add_point_pos;
+	float add_point_pos = 0.0f;
 	Vector<real_t> points;
 
-	bool dragging_selected_attempt;
-	bool dragging_selected;
+	bool dragging_selected_attempt = false;
+	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 

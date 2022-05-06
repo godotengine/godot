@@ -52,7 +52,6 @@ public:
 
 	StringName _free;
 	StringName changed;
-	StringName _meta;
 	StringName _script;
 	StringName script_changed;
 	StringName ___pdcdata;

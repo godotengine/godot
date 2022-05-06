@@ -41,7 +41,7 @@ struct _CoreConstant {
 	StringName enum_name;
 	bool ignore_value_in_docs = false;
 #endif
-	const char *name;
+	const char *name = nullptr;
 	int value = 0;
 
 	_CoreConstant() {}

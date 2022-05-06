@@ -55,9 +55,7 @@ void unregister_core_driver_types() {
 }
 
 void register_driver_types() {
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_DRIVER);
 }
 
 void unregister_driver_types() {
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_DRIVER);
 }

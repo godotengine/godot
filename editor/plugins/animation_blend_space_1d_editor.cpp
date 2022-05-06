@@ -594,7 +594,6 @@ AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nu
 
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;
-	updating = false;
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
@@ -744,10 +743,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
-
-	selected_point = -1;
-	dragging_selected = false;
-	dragging_selected_attempt = false;
 
 	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 }

@@ -47,7 +47,7 @@ class RenderingServer : public Object {
 
 	static RenderingServer *singleton;
 
-	int mm_policy;
+	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
@@ -1487,6 +1487,7 @@ public:
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+	virtual String get_video_adapter_api_version() const = 0;
 
 	struct FrameProfileArea {
 		String name;

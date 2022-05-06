@@ -53,7 +53,7 @@ public:
 	// RasterizerCanvasGLES3 *canvas;
 	// RasterizerSceneGLES3 *scene;
 
-	GLES3::Config *config;
+	GLES3::Config *config = nullptr;
 
 	struct Resources {
 		GLuint mipmap_blur_fbo;
@@ -234,6 +234,7 @@ public:
 	String get_video_adapter_name() const override;
 	String get_video_adapter_vendor() const override;
 	RenderingDevice::DeviceType get_video_adapter_type() const override;
+	String get_video_adapter_api_version() const override;
 
 	void capture_timestamps_begin() override {}
 	void capture_timestamp(const String &p_name) override {}

@@ -415,8 +415,6 @@ RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_sour
 
 SceneShaderForwardMobile::ShaderData::ShaderData() :
 		shader_list_element(this) {
-	valid = false;
-	uses_screen_texture = false;
 }
 
 SceneShaderForwardMobile::ShaderData::~ShaderData() {

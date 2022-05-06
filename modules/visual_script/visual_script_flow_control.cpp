@@ -119,9 +119,9 @@ void VisualScriptReturn::_bind_methods() {
 
 class VisualScriptNodeInstanceReturn : public VisualScriptNodeInstance {
 public:
-	VisualScriptReturn *node;
-	VisualScriptInstance *instance;
-	bool with_value;
+	VisualScriptReturn *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
+	bool with_value = false;
 
 	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -213,8 +213,8 @@ void VisualScriptCondition::_bind_methods() {
 
 class VisualScriptNodeInstanceCondition : public VisualScriptNodeInstance {
 public:
-	VisualScriptCondition *node;
-	VisualScriptInstance *instance;
+	VisualScriptCondition *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -293,8 +293,8 @@ void VisualScriptWhile::_bind_methods() {
 
 class VisualScriptNodeInstanceWhile : public VisualScriptNodeInstance {
 public:
-	VisualScriptWhile *node;
-	VisualScriptInstance *instance;
+	VisualScriptWhile *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	//virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -376,8 +376,8 @@ void VisualScriptIterator::_bind_methods() {
 
 class VisualScriptNodeInstanceIterator : public VisualScriptNodeInstance {
 public:
-	VisualScriptIterator *node;
-	VisualScriptInstance *instance;
+	VisualScriptIterator *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	virtual int get_working_memory_size() const override { return 2; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -508,9 +508,9 @@ void VisualScriptSequence::_bind_methods() {
 
 class VisualScriptNodeInstanceSequence : public VisualScriptNodeInstance {
 public:
-	VisualScriptSequence *node;
-	VisualScriptInstance *instance;
-	int steps;
+	VisualScriptSequence *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
+	int steps = 0;
 
 	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -596,8 +596,8 @@ String VisualScriptSwitch::get_text() const {
 
 class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	int case_count;
+	VisualScriptInstance *instance = nullptr;
+	int case_count = 0;
 
 	//virtual int get_working_memory_size() const override { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -774,7 +774,7 @@ VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGues
 
 class VisualScriptNodeInstanceTypeCast : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName base_type;
 	String script;
 
