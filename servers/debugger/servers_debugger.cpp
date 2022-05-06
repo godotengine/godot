@@ -89,7 +89,7 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 	Array arr;
 	arr.push_back(frame_number);
 	arr.push_back(frame_time);
-	arr.push_back(idle_time);
+	arr.push_back(process_time);
 	arr.push_back(physics_time);
 	arr.push_back(physics_frame_time);
 	arr.push_back(script_time);
@@ -120,7 +120,7 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, 7, "ServersProfilerFrame");
 	frame_number = p_arr[0];
 	frame_time = p_arr[1];
-	idle_time = p_arr[2];
+	process_time = p_arr[2];
 	physics_time = p_arr[3];
 	physics_frame_time = p_arr[4];
 	script_time = p_arr[5];
@@ -281,7 +281,7 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 	ScriptsProfiler scripts_profiler;
 
 	double frame_time = 0;
-	double idle_time = 0;
+	double process_time = 0;
 	double physics_time = 0;
 	double physics_frame_time = 0;
 
@@ -289,7 +289,7 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 		ServersDebugger::ServersProfilerFrame frame;
 		frame.frame_number = Engine::get_singleton()->get_process_frames();
 		frame.frame_time = frame_time;
-		frame.idle_time = idle_time;
+		frame.process_time = process_time;
 		frame.physics_time = physics_time;
 		frame.physics_frame_time = physics_frame_time;
 		Map<StringName, ServerInfo>::Element *E = server_data.front();
@@ -340,9 +340,9 @@ public:
 		srv.functions.push_back(fi);
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
-		idle_time = p_idle_time;
+		process_time = p_process_time;
 		physics_time = p_physics_time;
 		physics_frame_time = p_physics_frame_time;
 		_send_frame_data(false);
@@ -366,7 +366,7 @@ public:
 
 	void add(const Array &p_data) {}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		ServersDebugger::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {

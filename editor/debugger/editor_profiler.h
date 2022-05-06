@@ -49,7 +49,7 @@ public:
 
 		int frame_number = 0;
 		float frame_time = 0;
-		float idle_time = 0;
+		float process_time = 0;
 		float physics_time = 0;
 		float physics_frame_time = 0;
 

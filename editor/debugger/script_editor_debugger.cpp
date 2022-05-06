@@ -606,7 +606,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		metric.valid = true;
 		metric.frame_number = frame.frame_number;
 		metric.frame_time = frame.frame_time;
-		metric.idle_time = frame.idle_time;
+		metric.process_time = frame.process_time;
 		metric.physics_time = frame.physics_time;
 		metric.physics_frame_time = frame.physics_frame_time;
 
@@ -627,10 +627,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Idle Time";
-			item.total = metric.idle_time;
+			item.name = "Process Time";
+			item.total = metric.process_time;
 			item.self = item.total;
-			item.signature = "idle_time";
+			item.signature = "process_time";
 
 			frame_time.items.push_back(item);
 
