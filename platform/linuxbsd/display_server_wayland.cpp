@@ -1519,8 +1519,6 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 	ERR_FAIL_COND(!wls.windows.has(p_id));
 
 	if (!wd.visible) {
-		wd.visible = true;
-
 		print_verbose(vformat("Showing window %d", p_id));
 
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
@@ -1577,6 +1575,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
+		wd.visible = true;
 	}
 }
 
