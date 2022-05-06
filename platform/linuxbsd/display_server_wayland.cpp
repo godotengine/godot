@@ -391,6 +391,15 @@ void DisplayServerWayland::_delete_window(WindowID p_window) {
 		print_verbose(vformat("Deleting window %d.", p_window));
 	}
 
+	if (window_get_flag(WINDOW_FLAG_POPUP, p_window) && wls.popup_menu_stack.size() > 0) {
+		WindowID &top_id = wls.popup_menu_stack.front()->get();
+		if (top_id != p_window) {
+			print_error(vformat("Deleting popup menu %d which is not the topmost in the stack.", top_id));
+		}
+
+		wls.popup_menu_stack.pop_front();
+	}
+
 	while (wd.children.size()) {
 		// Unparent all children of the window.
 		window_set_transient(wd.children.front()->get(), INVALID_WINDOW_ID);
@@ -1562,6 +1571,16 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			if (wd.title.utf8().ptr()) {
 				xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
 			}
+		}
+
+		if (window_get_flag(WINDOW_FLAG_POPUP, p_id)) {
+			if (wls.popup_menu_stack.size() > 0 && wls.popup_menu_stack.front()->get() != wd.parent) {
+				// Delete the whole stack, we're creating a new one with a different root.
+				_send_window_event(wls.popup_menu_stack.back()->get(), WINDOW_EVENT_CLOSE_REQUEST);
+				wls.popup_menu_stack.clear();
+			}
+
+			wls.popup_menu_stack.push_front(p_id);
 		}
 
 		wl_surface_commit(wd.wl_surface);

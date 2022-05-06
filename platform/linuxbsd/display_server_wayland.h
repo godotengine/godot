@@ -289,6 +289,8 @@ class DisplayServerWayland : public DisplayServer {
 		LocalVector<ScreenData *> screens;
 		List<SeatState> seats;
 
+		List<WindowID> popup_menu_stack;
+
 		SafeFlag events_thread_done;
 
 		List<Ref<WaylandMessage>> message_queue;
