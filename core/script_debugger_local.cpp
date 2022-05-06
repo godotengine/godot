@@ -276,9 +276,9 @@ struct _ScriptDebuggerLocalProfileInfoSort {
 	}
 };
 
-void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time) {
 	frame_time = p_frame_time;
-	idle_time = p_idle_time;
+	process_time = p_process_time;
 	physics_time = p_physics_time;
 	physics_frame_time = p_physics_frame_time;
 }
@@ -338,7 +338,7 @@ void ScriptDebuggerLocal::profiling_start() {
 	pinfo.resize(32768);
 	frame_time = 0;
 	physics_time = 0;
-	idle_time = 0;
+	process_time = 0;
 	physics_frame_time = 0;
 }
 

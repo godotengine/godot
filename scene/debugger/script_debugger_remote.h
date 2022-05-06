@@ -56,7 +56,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Vector<MultiplayerAPI::ProfilingInfo> network_profile_info;
 
 	Map<StringName, int> profiler_function_signature_map;
-	float frame_time, idle_time, physics_time, physics_frame_time;
+	float frame_time, process_time, physics_time, physics_frame_time;
 
 	bool profiling;
 	bool profiling_network;
@@ -189,7 +189,7 @@ public:
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	virtual void profiling_set_frame_times(float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time);
 
 	virtual void set_skip_breakpoints(bool p_skip_breakpoints);
 

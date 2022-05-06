@@ -756,11 +756,11 @@ void ScriptDebuggerRemote::_poll_events() {
 			profiler_function_signature_map.clear();
 			profiling = true;
 			frame_time = 0;
-			idle_time = 0;
+			process_time = 0;
 			physics_time = 0;
 			physics_frame_time = 0;
 
-			print_line("PROFILING ALRIGHT!");
+			print_verbose("Starting profiling.");
 
 		} else if (command == "stop_profiling") {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -768,7 +768,7 @@ void ScriptDebuggerRemote::_poll_events() {
 			}
 			profiling = false;
 			_send_profiling_data(false);
-			print_line("PROFILING END!");
+			print_verbose("Ending profiling.");
 		} else if (command == "start_network_profiling") {
 			multiplayer->profiling_start();
 			profiling_network = true;
@@ -875,7 +875,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	packet_peer_stream->put_var(Engine::get_singleton()->get_idle_frames()); //total frame time
 	packet_peer_stream->put_var(frame_time); //total frame time
-	packet_peer_stream->put_var(idle_time); //idle frame time
+	packet_peer_stream->put_var(process_time); //idle frame time
 	packet_peer_stream->put_var(physics_time); //fixed frame time
 	packet_peer_stream->put_var(physics_frame_time); //fixed frame time
 
@@ -1162,9 +1162,9 @@ void ScriptDebuggerRemote::profiling_end() {
 	//ignores this, uses it via connection
 }
 
-void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time) {
 	frame_time = p_frame_time;
-	idle_time = p_idle_time;
+	process_time = p_process_time;
 	physics_time = p_physics_time;
 	physics_frame_time = p_physics_frame_time;
 }

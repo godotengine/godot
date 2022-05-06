@@ -1004,7 +1004,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		metric.valid = true;
 		metric.frame_number = p_data[0];
 		metric.frame_time = p_data[1];
-		metric.idle_time = p_data[2];
+		metric.process_time = p_data[2];
 		metric.physics_time = p_data[3];
 		metric.physics_frame_time = p_data[4];
 		int frame_data_amount = p_data[6];
@@ -1027,10 +1027,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Idle Time";
-			item.total = metric.idle_time;
+			item.name = "Process Time";
+			item.total = metric.process_time;
 			item.self = item.total;
-			item.signature = "idle_time";
+			item.signature = "process_time";
 
 			frame_time.items.push_back(item);
 
