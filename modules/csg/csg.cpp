@@ -194,7 +194,7 @@ void CSGBrush::_regen_face_aabbs() {
 	}
 }
 
-void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces) {
+void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_flip_faces) {
 	faces.clear();
 
 	int vc = p_vertices.size();
@@ -208,8 +208,8 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	const bool *rs = p_smooth.ptr();
 	int mc = p_materials.size();
 	const Ref<Material> *rm = p_materials.ptr();
-	int ic = p_invert_faces.size();
-	const bool *ri = p_invert_faces.ptr();
+	int ic = p_flip_faces.size();
+	const bool *ri = p_flip_faces.ptr();
 
 	Map<Ref<Material>, int> material_map;
 
