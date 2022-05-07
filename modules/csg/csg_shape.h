@@ -33,6 +33,7 @@
 
 #define CSGJS_HEADER_ONLY
 
+#include "core/math/transform_2d.h"
 #include "csg.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
@@ -242,17 +243,47 @@ class CSGBox3D : public CSGPrimitive3D {
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
 
+	Vector<Ref<Material>> face_material_overrides;
+	Vector<Transform2D> face_uv_transforms;
+
 protected:
 	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 public:
+	int get_face_count() const;
+
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox3D() {}
+	void set_face_uv_scale(int p_face, const Vector2 &p_scale);
+	Vector2 get_face_uv_scale(int p_face) const;
+
+	void set_face_uv_offset(int p_face, const Vector2 &p_offset);
+	Vector2 get_face_uv_offset(int p_face) const;
+
+	void set_face_uv_rotation(int p_face, float p_rotation);
+	float get_face_uv_rotation(int p_face) const;
+
+	void set_face_uv_skew(int p_face, float p_skew);
+	float get_face_uv_skew(int p_face) const;
+
+	void set_face_uv_transform(int p_face, const Transform2D &p_uv_transform);
+	Transform2D get_face_uv_transform(int p_face) const;
+
+	void set_face_override_material(int p_face, const Ref<Material> &p_material);
+	Ref<Material> get_face_override_material(int p_face) const;
+
+	CSGBox3D() {
+		face_material_overrides.resize(6);
+		face_uv_transforms.resize(6);
+	}
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
@@ -265,11 +296,19 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	int sides;
 	bool cone;
 	bool smooth_faces;
+	Vector<Ref<Material>> face_material_overrides;
+	Vector<Transform2D> face_uv_transforms;
 
 protected:
 	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 public:
+	int get_face_count() const;
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -287,6 +326,24 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_face_uv_scale(int p_face, const Vector2 &p_scale);
+	Vector2 get_face_uv_scale(int p_face) const;
+
+	void set_face_uv_offset(int p_face, const Vector2 &p_offset);
+	Vector2 get_face_uv_offset(int p_face) const;
+
+	void set_face_uv_rotation(int p_face, float p_rotation);
+	float get_face_uv_rotation(int p_face) const;
+
+	void set_face_uv_skew(int p_face, float p_skew);
+	float get_face_uv_skew(int p_face) const;
+
+	void set_face_uv_transform(int p_face, const Transform2D &p_uv_transform);
+	Transform2D get_face_uv_transform(int p_face) const;
+
+	void set_face_override_material(int p_face, Ref<Material> p_material);
+	Ref<Material> get_face_override_material(int p_face) const;
 
 	CSGCylinder3D();
 };
@@ -375,6 +432,9 @@ private:
 	real_t path_u_distance;
 	bool path_joined;
 
+	Vector<Ref<Material>> face_material_overrides;
+	Vector<Transform2D> face_uv_transforms;
+
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
 
@@ -386,7 +446,13 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 public:
+	int get_face_count() const;
+
 	void set_polygon(const Vector<Vector2> &p_polygon);
 	Vector<Vector2> get_polygon() const;
 
@@ -434,6 +500,24 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_face_uv_scale(int p_face, const Vector2 &p_scale);
+	Vector2 get_face_uv_scale(int p_face) const;
+
+	void set_face_uv_offset(int p_face, const Vector2 &p_offset);
+	Vector2 get_face_uv_offset(int p_face) const;
+
+	void set_face_uv_rotation(int p_face, float p_rotation);
+	float get_face_uv_rotation(int p_face) const;
+
+	void set_face_uv_skew(int p_face, float p_skew);
+	float get_face_uv_skew(int p_face) const;
+
+	void set_face_uv_transform(int p_face, const Transform2D &p_uv_transform);
+	Transform2D get_face_uv_transform(int p_face) const;
+
+	void set_face_override_material(int p_face, Ref<Material> p_material);
+	Ref<Material> get_face_override_material(int p_face) const;
 
 	CSGPolygon3D();
 };
