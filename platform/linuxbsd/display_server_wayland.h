@@ -137,6 +137,7 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t flags;
 		VSyncMode vsync_mode;
 		Rect2i rect;
+		Rect2i safe_rect;
 
 		Callable rect_changed_callback;
 		Callable window_event_callback;
@@ -498,6 +499,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
+
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 

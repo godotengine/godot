@@ -337,7 +337,7 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 	return true;
 }
 
-DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	MutexLock mutex_lock(wls.mutex);
 
 	WindowID id = wls.window_id_counter++;
@@ -1606,6 +1606,30 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 	_delete_window(p_id);
 }
 
+DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
+	MutexLock mutex_lock(wls.mutex);
+
+	if (wls.popup_menu_stack.size() > 0) {
+		return wls.popup_menu_stack.front()->get();
+	}
+
+	return INVALID_WINDOW_ID;
+}
+
+void DisplayServerWayland::window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+	wls.windows[p_window].safe_rect = p_rect;
+}
+
+Rect2i DisplayServerWayland::window_get_popup_safe_rect(WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Rect2i());
+	return wls.windows[p_window].safe_rect;
+}
+
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
 	// TODO
 	print_verbose("wayland stub get_window_at_screen_position");
@@ -1823,7 +1847,7 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 	print_verbose("wayland stub window_set_mode");
 }
 
-DisplayServerWayland::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
+DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
 	// TODO
 	print_verbose("wayland stub window_get_mode");
 	return WINDOW_MODE_WINDOWED;
