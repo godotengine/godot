@@ -1538,8 +1538,6 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 	ERR_FAIL_COND(!wls.windows.has(p_id));
 	WindowData &wd = wls.windows[p_id];
 
-	ERR_FAIL_COND(!wls.windows.has(p_id));
-
 	if (!wd.visible) {
 		print_verbose(vformat("Showing window %d", p_id));
 
