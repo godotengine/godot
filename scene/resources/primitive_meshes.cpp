@@ -1623,6 +1623,134 @@ SphereMesh::SphereMesh() {
 }
 
 /**
+  TorusMesh
+*/
+
+void TorusMesh::_create_mesh_array(Array &p_arr) const {
+	// set our bounding box
+
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
+
+#define ADD_TANGENT(m_x, m_y, m_z, m_d) \
+	tangents.push_back(m_x);            \
+	tangents.push_back(m_y);            \
+	tangents.push_back(m_z);            \
+	tangents.push_back(m_d);
+
+	ERR_FAIL_COND_MSG(inner_radius == outer_radius, "Inner radius and outer radius cannot be the same.");
+
+	float min_radius = inner_radius;
+	float max_radius = outer_radius;
+
+	if (min_radius > max_radius) {
+		SWAP(min_radius, max_radius);
+	}
+
+	float radius = (max_radius - min_radius) * 0.5;
+
+	for (int i = 0; i <= rings; i++) {
+		int prevrow = (i - 1) * (ring_segments + 1);
+		int thisrow = i * (ring_segments + 1);
+		float inci = float(i) / rings;
+		float angi = inci * Math_TAU;
+
+		Vector2 normali = Vector2(-Math::sin(angi), -Math::cos(angi));
+
+		for (int j = 0; j <= ring_segments; j++) {
+			float incj = float(j) / ring_segments;
+			float angj = incj * Math_TAU;
+
+			Vector2 normalj = Vector2(-Math::cos(angj), Math::sin(angj));
+			Vector2 normalk = normalj * radius + Vector2(min_radius + radius, 0);
+
+			points.push_back(Vector3(normali.x * normalk.x, normalk.y, normali.y * normalk.x));
+			normals.push_back(Vector3(normali.x * normalj.x, normalj.y, normali.y * normalj.x));
+			ADD_TANGENT(-Math::cos(angi), 0.0, Math::sin(angi), 1.0);
+			uvs.push_back(Vector2(inci, incj));
+
+			if (i > 0 && j > 0) {
+				indices.push_back(thisrow + j - 1);
+				indices.push_back(prevrow + j);
+				indices.push_back(prevrow + j - 1);
+
+				indices.push_back(thisrow + j - 1);
+				indices.push_back(thisrow + j);
+				indices.push_back(prevrow + j);
+			}
+		}
+	}
+
+	p_arr[VS::ARRAY_VERTEX] = points;
+	p_arr[VS::ARRAY_NORMAL] = normals;
+	p_arr[VS::ARRAY_TANGENT] = tangents;
+	p_arr[VS::ARRAY_TEX_UV] = uvs;
+	p_arr[VS::ARRAY_INDEX] = indices;
+}
+
+void TorusMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_inner_radius", "radius"), &TorusMesh::set_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_inner_radius"), &TorusMesh::get_inner_radius);
+
+	ClassDB::bind_method(D_METHOD("set_outer_radius", "radius"), &TorusMesh::set_outer_radius);
+	ClassDB::bind_method(D_METHOD("get_outer_radius"), &TorusMesh::get_outer_radius);
+
+	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &TorusMesh::set_rings);
+	ClassDB::bind_method(D_METHOD("get_rings"), &TorusMesh::get_rings);
+
+	ClassDB::bind_method(D_METHOD("set_ring_segments", "rings"), &TorusMesh::set_ring_segments);
+	ClassDB::bind_method(D_METHOD("get_ring_segments"), &TorusMesh::get_ring_segments);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "inner_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater"), "set_inner_radius", "get_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "outer_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater"), "set_outer_radius", "get_outer_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "3,128,1"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_segments", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_segments", "get_ring_segments");
+}
+
+void TorusMesh::set_inner_radius(const float p_inner_radius) {
+	inner_radius = p_inner_radius;
+	_request_update();
+}
+
+float TorusMesh::get_inner_radius() const {
+	return inner_radius;
+}
+
+void TorusMesh::set_outer_radius(const float p_outer_radius) {
+	outer_radius = p_outer_radius;
+	_request_update();
+}
+
+float TorusMesh::get_outer_radius() const {
+	return outer_radius;
+}
+
+void TorusMesh::set_rings(const int p_rings) {
+	ERR_FAIL_COND(p_rings < 3);
+	rings = p_rings;
+	_request_update();
+}
+
+int TorusMesh::get_rings() const {
+	return rings;
+}
+
+void TorusMesh::set_ring_segments(const int p_ring_segments) {
+	ERR_FAIL_COND(p_ring_segments < 3);
+	ring_segments = p_ring_segments;
+	_request_update();
+}
+
+int TorusMesh::get_ring_segments() const {
+	return ring_segments;
+}
+
+TorusMesh::TorusMesh() {}
+
+/**
   PointMesh
 */
 
