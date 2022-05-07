@@ -102,6 +102,171 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void MeshInstance3D::_update_modifiers() {
+	/// TODO: Recalculate tangents
+
+	ERR_FAIL_COND_MSG(!mesh.is_valid(), "Mesh hasn't been created yet.");
+
+	if (flip_faces || face_smoothing) {
+		if (visible_mesh.is_valid())
+			RS::get_singleton()->mesh_clear(visible_mesh);
+		else
+			visible_mesh = RS::get_singleton()->mesh_create();
+
+		Vector<Array> surface_arrays;
+
+		for (int s = 0; s < mesh->get_surface_count(); s++) {
+			Array arr = mesh->surface_get_arrays(s);
+
+			Vector<int> indices = arr[RS::ARRAY_INDEX];
+
+			if (flip_faces) {
+				// Flip faces
+				if (indices.size()) {
+					int *iw = indices.ptrw();
+
+					for (int i = 0; i < indices.size(); i += 3)
+						SWAP(iw[i + 0], iw[i + 1]);
+
+					arr[RS::ARRAY_INDEX] = indices;
+				}
+
+				// Flip normals
+				{
+					Vector<Vector3> normals = arr[RS::ARRAY_NORMAL];
+
+					if (normals.size()) {
+						Vector3 *nw = normals.ptrw();
+
+						for (int i = 0; i < normals.size(); i++)
+							nw[i] = -nw[i];
+
+						arr[RS::ARRAY_NORMAL] = normals;
+					}
+				}
+			}
+
+			if (face_smoothing) {
+				Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
+				Vector<float> tangents = arr[RS::ARRAY_TANGENT];
+				Vector<Vector2> uvs = arr[RS::ARRAY_TEX_UV];
+
+				const Vector3 *pr = points.ptr();
+
+				switch (face_smoothing) {
+					case SMOOTHING_FORCE_FLAT: {
+						Vector<Vector3> fpoints;
+						Vector<Vector3> fnormals;
+						Vector<float> ftangents;
+						Vector<Vector2> fuvs;
+						Vector<int> findices;
+
+						const float *tr = tangents.ptr();
+						const Vector2 *ur = uvs.ptr();
+						const int *ir = indices.ptr();
+
+						for (int i = 0; i < indices.size(); i += 3) {
+							Vector3 a = pr[ir[i]];
+							Vector3 b = pr[ir[i + 1]];
+							Vector3 c = pr[ir[i + 2]];
+							Vector3 normal = (a - c).cross(a - b).normalized();
+							for (int j = 0; j < 3; j++) {
+								int index = ir[i + j];
+								fpoints.push_back(pr[index]);
+								fnormals.push_back(normal);
+								if (tangents.size())
+									for (int t = 0; t < 4; t++)
+										ftangents.push_back(tr[index * 4 + t]);
+								if (uvs.size())
+									fuvs.push_back(ur[index]);
+								findices.push_back(i + j);
+							}
+						}
+
+						arr[RS::ARRAY_VERTEX] = fpoints;
+						arr[RS::ARRAY_NORMAL] = fnormals;
+						if (tangents.size())
+							arr[RS::ARRAY_TANGENT] = ftangents;
+						if (uvs.size())
+							arr[RS::ARRAY_TEX_UV] = fuvs;
+						arr[RS::ARRAY_INDEX] = findices;
+					} break;
+
+					case SMOOTHING_FORCE_SMOOTH: {
+						// Merge vertices
+						{
+							const int *ir = indices.ptr();
+							int *iw = indices.ptrw();
+
+							for (int i = 0; i < points.size(); i += 1) {
+								int find = i;
+								do {
+									find = points.find(pr[i], find + 1);
+									if (find != -1)
+										for (int j = 0; j < indices.size(); j += 1)
+											if (ir[j] == find)
+												iw[j] = i;
+								} while (find != -1);
+							}
+
+							arr[RS::ARRAY_INDEX] = indices;
+						}
+
+						// Recalculate normals
+						{
+							Vector<Vector3> fnormals;
+							HashMap<Vector3, Vector3> vertex_hash;
+
+							const int *ir = indices.ptr();
+
+							for (int i = 0; i < indices.size(); i += 3) {
+								Vector3 a = pr[ir[i]];
+								Vector3 b = pr[ir[i + 1]];
+								Vector3 c = pr[ir[i + 2]];
+								Vector3 normal = (a - c).cross(a - b).normalized();
+
+								for (int j = 0; j < 3; j++) {
+									Vector3 *lv = vertex_hash.getptr(pr[ir[i + j]]);
+									if (!lv)
+										vertex_hash.set(pr[ir[i + j]], normal);
+									else
+										(*lv) += normal;
+								}
+							}
+
+							for (int i = 0; i < points.size(); i++) {
+								Vector3 *lv = vertex_hash.getptr(pr[i]);
+								if (!lv)
+									fnormals.push_back(Vector3());
+								else
+									fnormals.push_back(lv->normalized());
+							}
+
+							arr[RS::ARRAY_NORMAL] = fnormals;
+						}
+					} break;
+
+					default: {
+					}
+				}
+			}
+
+			surface_arrays.push_back(arr);
+		}
+
+		for (int i = 0; i < surface_arrays.size(); i++)
+			RS::get_singleton()->mesh_add_surface_from_arrays(visible_mesh, (RS::PrimitiveType)mesh->surface_get_primitive_type(i), surface_arrays[i]);
+		set_base(visible_mesh);
+
+	} else {
+		if (visible_mesh.is_valid()) {
+			RS::get_singleton()->free(visible_mesh);
+			visible_mesh = RID();
+		}
+		set_base(mesh->get_rid());
+	}
+}
+
 void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	if (mesh == p_mesh) {
 		return;
@@ -124,11 +289,33 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		update_gizmos();
 	}
 
+	_update_modifiers();
+
 	notify_property_list_changed();
 }
 
 Ref<Mesh> MeshInstance3D::get_mesh() const {
 	return mesh;
+}
+
+void MeshInstance3D::set_face_smoothing(MeshInstance3D::FaceSmoothing p_face_smoothing) {
+	face_smoothing = p_face_smoothing;
+
+	_update_modifiers();
+}
+
+MeshInstance3D::FaceSmoothing MeshInstance3D::get_face_smoothing() const {
+	return face_smoothing;
+}
+
+void MeshInstance3D::set_flip_faces(bool p_enable) {
+	flip_faces = p_enable;
+
+	_update_modifiers();
+}
+
+bool MeshInstance3D::get_flip_faces() const {
+	return flip_faces;
 }
 
 int MeshInstance3D::get_blend_shape_count() const {
@@ -380,6 +567,8 @@ void MeshInstance3D::_mesh_changed() {
 		}
 	}
 
+	_update_modifiers();
+
 	update_gizmos();
 }
 
@@ -475,6 +664,12 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_override_material", "surface"), &MeshInstance3D::get_surface_override_material);
 	ClassDB::bind_method(D_METHOD("get_active_material", "surface"), &MeshInstance3D::get_active_material);
 
+	ClassDB::bind_method(D_METHOD("set_face_smoothing", "face_smoothing"), &MeshInstance3D::set_face_smoothing);
+	ClassDB::bind_method(D_METHOD("get_face_smoothing"), &MeshInstance3D::get_face_smoothing);
+
+	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &MeshInstance3D::set_flip_faces);
+	ClassDB::bind_method(D_METHOD("get_flip_faces"), &MeshInstance3D::get_flip_faces);
+
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision", "clean", "simplify"), &MeshInstance3D::create_convex_collision, DEFVAL(true), DEFVAL(false));
@@ -491,14 +686,22 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "face_smoothing", PROPERTY_HINT_ENUM, "Default,Force Flat,Force Smooth"), "set_face_smoothing", "get_face_smoothing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_skeleton_path", "get_skeleton_path");
 	ADD_GROUP("", "");
+
+	BIND_ENUM_CONSTANT(SMOOTHING_DEFAULT);
+	BIND_ENUM_CONSTANT(SMOOTHING_FORCE_FLAT);
+	BIND_ENUM_CONSTANT(SMOOTHING_FORCE_SMOOTH);
 }
 
 MeshInstance3D::MeshInstance3D() {
 }
 
 MeshInstance3D::~MeshInstance3D() {
+	if (visible_mesh.is_valid())
+		RS::get_singleton()->free(visible_mesh);
 }

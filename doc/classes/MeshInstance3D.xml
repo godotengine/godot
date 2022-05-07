@@ -95,6 +95,13 @@
 		</method>
 	</methods>
 	<members>
+		<member name="face_smoothing" type="int" setter="set_face_smoothing" getter="get_face_smoothing" enum="MeshInstance3D.FaceSmoothing" default="0">
+			Which mode in which to render mesh faces.
+		</member>
+		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
+			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
+			This gives the same result as using [constant BaseMaterial3D.CULL_FRONT] in [member BaseMaterial3D.cull_mode].
+		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource for the instance.
 		</member>
@@ -105,4 +112,15 @@
 			Sets the skin to be used by this instance.
 		</member>
 	</members>
+	<constants>
+		<constant name="SMOOTHING_DEFAULT" value="0" enum="FaceSmoothing">
+			Renders the mesh with original normals.
+		</constant>
+		<constant name="SMOOTHING_FORCE_FLAT" value="1" enum="FaceSmoothing">
+			Renders the mesh with a flat shaded look.
+		</constant>
+		<constant name="SMOOTHING_FORCE_SMOOTH" value="2" enum="FaceSmoothing">
+			Renders the mesh with a smooth effect making it seem rounded.
+		</constant>
+	</constants>
 </class>

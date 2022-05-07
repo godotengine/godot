@@ -39,6 +39,20 @@ class SkinReference;
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
 
+public:
+	enum FaceSmoothing {
+		SMOOTHING_DEFAULT,
+		SMOOTHING_FORCE_FLAT,
+		SMOOTHING_FORCE_SMOOTH
+	};
+
+private:
+	mutable RID visible_mesh;
+	bool flip_faces = false;
+	FaceSmoothing face_smoothing = SMOOTHING_DEFAULT;
+
+	void _update_modifiers();
+
 protected:
 	Ref<Mesh> mesh;
 	Ref<Skin> skin;
@@ -71,6 +85,12 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
+	void set_face_smoothing(FaceSmoothing p_face_smoothing);
+	FaceSmoothing get_face_smoothing() const;
+
+	void set_flip_faces(bool p_enable);
+	bool get_flip_faces() const;
+
 	int get_blend_shape_count() const;
 	int find_blend_shape_by_name(const StringName &p_name);
 	float get_blend_shape_value(int p_blend_shape) const;
@@ -97,5 +117,7 @@ public:
 	MeshInstance3D();
 	~MeshInstance3D();
 };
+
+VARIANT_ENUM_CAST(MeshInstance3D::FaceSmoothing);
 
 #endif
