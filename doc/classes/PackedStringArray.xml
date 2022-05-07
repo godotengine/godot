@@ -55,6 +55,13 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="String" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
 		<method name="duplicate">
 			<return type="PackedStringArray" />
 			<description>
@@ -66,6 +73,14 @@
 			<argument index="0" name="value" type="String" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="String" />
+			<argument index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -114,6 +129,14 @@
 			<return type="void" />
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="String" />
+			<argument index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="set">
