@@ -31,6 +31,7 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
+#include "scene/2d/area_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -176,6 +177,9 @@ TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
 	if (!shape.is_valid()) {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
+	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
+	}
 
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
@@ -204,6 +208,7 @@ void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
+	update_configuration_warnings();
 }
 
 bool CollisionShape2D::is_one_way_collision_enabled() const {
