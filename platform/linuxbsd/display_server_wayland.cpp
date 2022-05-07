@@ -259,6 +259,22 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	}
 }
 
+// Get the global position of a point in the window's local coordinate space.
+Point2i DisplayServerWayland::_wayland_state_point_window_to_global(WaylandState &wls, WindowID p_window, Point2i p_position) {
+	while (p_window != INVALID_WINDOW_ID) {
+		if (!wls.windows.has(p_window)) {
+			break;
+		}
+
+		WindowData &wd = wls.windows[p_window];
+
+		p_position += wd.rect.position;
+		p_window = wd.parent;
+	}
+
+	return p_position;
+}
+
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
 }
@@ -856,9 +872,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			mm->set_window_id(pd.pointed_window_id);
 			mm->set_button_mask(pd.pressed_button_mask);
 			mm->set_position(pd.position);
-			// FIXME: We're lying! With Wayland we can only know the position of the
-			// mouse in our windows and nowhere else!
-			mm->set_global_position(pd.position);
+			mm->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
 
 			// FIXME: I'm not sure whether accessing the Input singleton like this might
 			// give problems.
@@ -899,8 +913,8 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 					mb->set_window_id(pd.pointed_window_id);
 					mb->set_position(pd.position);
-					// FIXME: We're lying!
-					mb->set_global_position(pd.position);
+					mb->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
+
 					mb->set_button_mask(pd.pressed_button_mask);
 
 					mb->set_button_index(test_button);
@@ -937,8 +951,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 						wh_up->set_window_id(pd.pointed_window_id);
 						wh_up->set_position(pd.position);
-						// FIXME: We're lying!
-						wh_up->set_global_position(pd.position);
+						wh_up->set_global_position(_wayland_state_point_window_to_global(*wls, pd.pointed_window_id, pd.position));
 
 						// We have to unset the button to avoid it getting stuck.
 						pd.pressed_button_mask &= ~test_button_mask;
