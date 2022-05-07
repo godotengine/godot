@@ -1039,8 +1039,6 @@ public:
 		FUNC_SATURATE,
 		FUNC_NEGATE,
 		FUNC_RECIPROCAL,
-		FUNC_RGB2HSV,
-		FUNC_HSV2RGB,
 		FUNC_ABS,
 		FUNC_ACOS,
 		FUNC_ACOSH,
@@ -1095,7 +1093,6 @@ public:
 	Function get_function() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
-	String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeVectorFunc();
 };
@@ -1112,6 +1109,8 @@ class VisualShaderNodeColorFunc : public VisualShaderNode {
 public:
 	enum Function {
 		FUNC_GRAYSCALE,
+		FUNC_HSV2RGB,
+		FUNC_RGB2HSV,
 		FUNC_SEPIA,
 		FUNC_MAX,
 	};
