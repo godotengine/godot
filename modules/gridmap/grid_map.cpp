@@ -74,6 +74,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 			bm.mesh = meshes[i];
 			ERR_CONTINUE(!bm.mesh.is_valid());
 			bm.instance = RID_PRIME(VS::get_singleton()->instance_create());
+			VS::get_singleton()->instance_set_portal_mode(bm.instance, VisualServer::InstancePortalMode::INSTANCE_PORTAL_MODE_GLOBAL);
 			VS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 			VS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 			if (is_inside_tree()) {
@@ -338,6 +339,7 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 		if (st && st->is_debugging_collisions_hint()) {
 			g->collision_debug = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 			g->collision_debug_instance = RID_PRIME(VisualServer::get_singleton()->instance_create());
+			VS::get_singleton()->instance_set_portal_mode(g->collision_debug_instance, VisualServer::InstancePortalMode::INSTANCE_PORTAL_MODE_GLOBAL);
 			VisualServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
 
@@ -558,6 +560,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			RID instance = RID_PRIME(VS::get_singleton()->instance_create());
 			VS::get_singleton()->instance_set_base(instance, mm);
+			VS::get_singleton()->instance_set_portal_mode(instance, VisualServer::InstancePortalMode::INSTANCE_PORTAL_MODE_GLOBAL);
 
 			if (is_inside_tree()) {
 				VS::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
@@ -1095,6 +1098,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		BakedMesh bm;
 		bm.mesh = mesh;
 		bm.instance = RID_PRIME(VS::get_singleton()->instance_create());
+		VS::get_singleton()->instance_set_portal_mode(bm.instance, VisualServer::InstancePortalMode::INSTANCE_PORTAL_MODE_GLOBAL);
 		VS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 		VS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 		if (is_inside_tree()) {
