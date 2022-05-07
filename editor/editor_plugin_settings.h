@@ -45,8 +45,6 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
-	Button *create_plugin = nullptr;
-	Button *update_list = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
 
