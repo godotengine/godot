@@ -5104,7 +5104,7 @@ int VisualShaderNodeColorUniform::get_input_port_count() const {
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR_3D;
+	return PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
@@ -5112,15 +5112,22 @@ String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
 }
 
 int VisualShaderNodeColorUniform::get_output_port_count() const {
-	return 2;
+	return 1;
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_4D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorUniform::get_output_port_name(int p_port) const {
-	return p_port == 0 ? "color" : "alpha"; //no output port means the editor will be used as port
+	return "color";
+}
+
+bool VisualShaderNodeColorUniform::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
 }
 
 void VisualShaderNodeColorUniform::set_default_value_enabled(bool p_enabled) {
@@ -5157,9 +5164,7 @@ String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, Visual
 }
 
 String VisualShaderNodeColorUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	String code = "	" + p_output_vars[0] + " = " + get_uniform_name() + ".rgb;\n";
-	code += "	" + p_output_vars[1] + " = " + get_uniform_name() + ".a;\n";
-	return code;
+	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 }
 
 bool VisualShaderNodeColorUniform::is_show_prop_names() const {
