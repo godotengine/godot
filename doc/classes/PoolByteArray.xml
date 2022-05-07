@@ -36,6 +36,13 @@
 				Returns a new [PoolByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
+		<method name="count">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
 		<method name="decompress">
 			<return type="PoolByteArray" />
 			<argument index="0" name="buffer_size" type="int" />
@@ -67,6 +74,14 @@
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
 			</description>
 		</method>
+		<method name="find">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed. Returns [code]-1[/code] if [code]from[/code] is out of bounds.
+			</description>
+		</method>
 		<method name="get_string_from_ascii">
 			<return type="String" />
 			<description>
@@ -77,6 +92,14 @@
 			<return type="String" />
 			<description>
 				Returns a copy of the array's contents as [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool" />
+			<argument index="0" name="value" type="int" />
+			<description>
+				Returns [code]true[/code] if the array contains the given value.
+				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator.
 			</description>
 		</method>
 		<method name="hex_encode">
@@ -119,6 +142,14 @@
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 				[b]Note:[/b] Added elements are not automatically initialized to 0 and will contain garbage, i.e. indeterminate values.
+			</description>
+		</method>
+		<method name="rfind">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array. If the adjusted start index is out of bounds, this method searches from the end of the array.
 			</description>
 		</method>
 		<method name="set">
