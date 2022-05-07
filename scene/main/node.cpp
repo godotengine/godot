@@ -45,6 +45,7 @@
 #endif
 
 VARIANT_ENUM_CAST(Node::PauseMode);
+VARIANT_ENUM_CAST(Node::PhysicsInterpolationMode);
 
 int Node::orphan_node_count = 0;
 
@@ -77,6 +78,14 @@ void Node::_notification(int p_notification) {
 				}
 			} else {
 				data.pause_owner = this;
+			}
+
+			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
+				bool interpolate = true; // Root node default is for interpolation to be on
+				if (data.parent) {
+					interpolate = data.parent->is_physics_interpolated();
+				}
+				_propagate_physics_interpolated(interpolate);
 			}
 
 			if (data.input) {
@@ -183,6 +192,23 @@ void Node::_propagate_ready() {
 }
 
 void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	switch (data.physics_interpolation_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT:
+			// keep the parent p_interpolated
+			break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			p_interpolated = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			p_interpolated = true;
+		} break;
+	}
+
+	// no change? no need to propagate further
+	if (data.physics_interpolated == p_interpolated) {
+		return;
+	}
+
 	data.physics_interpolated = p_interpolated;
 
 	// allow a call to the VisualServer etc in derived classes
@@ -800,14 +826,36 @@ bool Node::can_process() const {
 	return true;
 }
 
-void Node::set_physics_interpolated(bool p_interpolated) {
+void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
+	if (data.physics_interpolation_mode == p_mode) {
+		return;
+	}
+
+	data.physics_interpolation_mode = p_mode;
+
+	bool interpolate = true; // default for root node
+
+	switch (p_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT: {
+			if (is_inside_tree() && data.parent) {
+				interpolate = data.parent->is_physics_interpolated();
+			}
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			interpolate = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			interpolate = true;
+		} break;
+	}
+
 	// if swapping from interpolated to non-interpolated, use this as
 	// an extra means to cause a reset
-	if (is_physics_interpolated() && !p_interpolated) {
+	if (is_physics_interpolated() && !interpolate) {
 		reset_physics_interpolation();
 	}
 
-	_propagate_physics_interpolated(p_interpolated);
+	_propagate_physics_interpolated(interpolate);
 }
 
 void Node::reset_physics_interpolation() {
@@ -2955,7 +3003,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
-	ClassDB::bind_method(D_METHOD("set_physics_interpolated", "enable"), &Node::set_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_mode", "mode"), &Node::set_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_mode"), &Node::get_physics_interpolation_mode);
 	ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
 	ClassDB::bind_method(D_METHOD("is_physics_interpolated_and_enabled"), &Node::is_physics_interpolated_and_enabled);
 	ClassDB::bind_method(D_METHOD("reset_physics_interpolation"), &Node::reset_physics_interpolation);
@@ -3063,6 +3112,10 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(PAUSE_MODE_STOP);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_PROCESS);
 
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_OFF);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_ON);
+
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
@@ -3078,6 +3131,8 @@ void Node::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,Off,On"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+
 #ifdef ENABLE_DEPRECATED
 	//no longer exists, but remains for compatibility (keep previous scenes folded
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor/display_folded", PROPERTY_HINT_NONE, "", 0), "set_display_folded", "is_displayed_folded");
@@ -3090,9 +3145,6 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
-
-	// Disabled for now
-	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolated"), "set_physics_interpolated", "is_physics_interpolated");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
@@ -3142,6 +3194,7 @@ Node::Node() {
 	data.unhandled_input = false;
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
+	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
 	data.pause_owner = nullptr;
 	data.network_master = 1; //server by default
 	data.path_cache = nullptr;
