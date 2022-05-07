@@ -1601,7 +1601,6 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_COND(!wls.windows.has(p_id));
 	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted.");
 
 	_delete_window(p_id);
