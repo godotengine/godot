@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,20 +76,20 @@ public:
 		bool active;
 
 		ShapeWrapper() :
-				shape(NULL),
-				bt_shape(NULL),
+				shape(nullptr),
+				bt_shape(nullptr),
 				active(true) {}
 
 		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active) :
 				shape(p_shape),
-				bt_shape(NULL),
+				bt_shape(nullptr),
 				active(p_active) {
 			set_transform(p_transform);
 		}
 
 		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active) :
 				shape(p_shape),
-				bt_shape(NULL),
+				bt_shape(nullptr),
 				active(p_active) {
 			set_transform(p_transform);
 		}
@@ -133,7 +133,7 @@ protected:
 	/// New area is added when overlap with new area (AreaBullet::addOverlap), then is removed when it exit (CollisionObjectBullet::onExitArea)
 	/// This array is used mainly to know which area hold the pointer of this object
 	Vector<AreaBullet *> areasOverlapped;
-	bool isTransformChanged;
+	bool updated = false;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -211,9 +211,9 @@ public:
 	Transform get_transform() const;
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;
-
-	bool is_transform_changed() const { return isTransformChanged; }
 	virtual void notify_transform_changed();
+
+	bool is_updated() const { return updated; }
 };
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {

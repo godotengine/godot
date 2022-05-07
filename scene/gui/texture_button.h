@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_map.h"
 class TextureButton : public BaseButton {
-
 	GDCLASS(TextureButton, BaseButton);
 
 public:
@@ -62,6 +61,9 @@ private:
 	Rect2 _position_rect;
 	bool _tile;
 
+	bool hflip;
+	bool vflip;
+
 protected:
 	virtual Size2 get_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
@@ -88,6 +90,12 @@ public:
 
 	void set_stretch_mode(StretchMode p_stretch_mode);
 	StretchMode get_stretch_mode() const;
+
+	void set_flip_h(bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(bool p_flip);
+	bool is_flipped_v() const;
 
 	TextureButton();
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,9 @@
 #include "constraint_sw.h"
 
 class JointSW : public ConstraintSW {
-
 public:
 	virtual PhysicsServer::JointType get_type() const = 0;
-	_FORCE_INLINE_ JointSW(BodySW **p_body_ptr = NULL, int p_body_count = 0) :
+	_FORCE_INLINE_ JointSW(BodySW **p_body_ptr = nullptr, int p_body_count = 0) :
 			ConstraintSW(p_body_ptr, p_body_count) {
 	}
 };

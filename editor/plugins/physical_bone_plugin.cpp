@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@ void PhysicalBoneEditor::_bind_methods() {
 }
 
 void PhysicalBoneEditor::_on_toggle_button_transform_joint(bool p_is_pressed) {
-
 	_set_move_joint();
 }
 
@@ -49,8 +48,7 @@ void PhysicalBoneEditor::_set_move_joint() {
 
 PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 		editor(p_editor),
-		selected(NULL) {
-
+		selected(nullptr) {
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_BEGIN);
@@ -72,7 +70,6 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 PhysicalBoneEditor::~PhysicalBoneEditor() {}
 
 void PhysicalBoneEditor::set_selected(PhysicalBone *p_pb) {
-
 	button_transform_joint->set_pressed(false);
 
 	_set_move_joint();
@@ -90,18 +87,16 @@ void PhysicalBoneEditor::show() {
 
 PhysicalBonePlugin::PhysicalBonePlugin(EditorNode *p_editor) :
 		editor(p_editor),
-		selected(NULL),
+		selected(nullptr),
 		physical_bone_editor(editor) {}
 
 void PhysicalBonePlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-
 		physical_bone_editor.show();
 	} else {
-
 		physical_bone_editor.hide();
-		physical_bone_editor.set_selected(NULL);
-		selected = NULL;
+		physical_bone_editor.set_selected(nullptr);
+		selected = nullptr;
 	}
 }
 

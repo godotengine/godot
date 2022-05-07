@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture" inherits="Resource" version="3.2">
+<class name="Texture" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Texture for 2D and 3D.
 	</brief_description>
@@ -7,98 +7,73 @@
 		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite] or GUI [Control].
 		Textures are often created by loading them from a file. See [method @GDScript.load].
 		[Texture] is a base for other resources. It cannot be used directly.
+		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations. Larger textures may fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="draw" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="3" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="4" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="position" type="Vector2" />
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="3" name="transpose" type="bool" default="false" />
+			<argument index="4" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws the texture using a [CanvasItem] with the [VisualServer] API at the specified [code]position[/code]. Equivalent to [method VisualServer.canvas_item_add_texture_rect] with a rect at [code]position[/code] and the size of this [Texture].
 			</description>
 		</method>
 		<method name="draw_rect" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="tile" type="bool">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="tile" type="bool" />
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="normal_map" type="Texture" default="null" />
 			<description>
 				Draws the texture using a [CanvasItem] with the [VisualServer] API. Equivalent to [method VisualServer.canvas_item_add_texture_rect].
 			</description>
 		</method>
 		<method name="draw_rect_region" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="6" name="clip_uv" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )" />
+			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="normal_map" type="Texture" default="null" />
+			<argument index="6" name="clip_uv" type="bool" default="true" />
 			<description>
 				Draws a part of the texture using a [CanvasItem] with the [VisualServer] API. Equivalent to [method VisualServer.canvas_item_add_texture_rect_region].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
-			<return type="Image">
-			</return>
+			<return type="Image" />
 			<description>
-				Returns an [Image] with the data from this [Texture]. [Image]s can be accessed and manipulated directly.
+				Returns an [Image] that is a copy of data from this [Texture]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the texture height.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the texture size.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the texture width.
 			</description>
 		</method>
 		<method name="has_alpha" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Texture] has an alpha channel.
 			</description>
@@ -118,6 +93,7 @@
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
 			Repeats the texture (instead of clamp to edge).
+			[b]Note:[/b] Ignored when using an [AtlasTexture] as these don't support repetition.
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
 			Uses a magnifying filter, to enable smooth zooming in of the texture.
@@ -131,6 +107,7 @@
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
 			Repeats the texture with alternate sections mirrored.
+			[b]Note:[/b] Ignored when using an [AtlasTexture] as these don't support repetition.
 		</constant>
 		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class Translation : public Resource {
-
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
@@ -61,18 +60,32 @@ public:
 	void get_message_list(List<StringName> *r_messages) const;
 	int get_message_count() const;
 
+	// Not exposed to scripting. For easy usage of `ContextTranslation`.
+	virtual void add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context);
+	virtual StringName get_context_message(const StringName &p_src_text, const StringName &p_context) const;
+
 	Translation();
 };
 
-class TranslationServer : public Object {
+class ContextTranslation : public Translation {
+	GDCLASS(ContextTranslation, Translation);
 
+	Map<StringName, Map<StringName, StringName>> context_translation_map;
+
+public:
+	virtual void add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context);
+	virtual StringName get_context_message(const StringName &p_src_text, const StringName &p_context) const;
+};
+
+class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
 
 	String locale;
 	String fallback;
 
-	Set<Ref<Translation> > translations;
+	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
+	Ref<Translation> doc_translation;
 
 	Map<String, String> locale_name_map;
 
@@ -108,7 +121,9 @@ public:
 	static String get_language_code(const String &p_locale);
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
-	StringName tool_translate(const StringName &p_message) const;
+	StringName tool_translate(const StringName &p_message, const StringName &p_context) const;
+	void set_doc_translation(const Ref<Translation> &p_translation);
+	StringName doc_translate(const StringName &p_message) const;
 
 	void setup();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,21 +36,20 @@
 #include "core/map.h"
 #include "core/object_id.h"
 #include "core/os/rw_lock.h"
+#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/variant.h"
 #include "core/vmap.h"
 
-#ifdef DEBUG_ENABLED
-#include <atomic> // For ObjectRC*
-#endif
+#include <atomic>
 
-#define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant()
-#define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5
-#define VARIANT_ARG_DECLARE const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5
-#define VARIANT_ARG_MAX 5
-#define VARIANT_ARGPTRS const Variant *argptr[5] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4, &p_arg5 };
-#define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4]
-#define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4]
+#define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant()
+#define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5, p_arg6, p_arg7, p_arg8
+#define VARIANT_ARG_DECLARE const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8
+#define VARIANT_ARG_MAX 8
+#define VARIANT_ARGPTRS const Variant *argptr[8] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4, &p_arg5, &p_arg6, &p_arg7, &p_arg8 };
+#define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4], *argptr[5], *argptr[6], *argptr[7]
+#define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4], m_arr[5], m_arr[6], m_arr[7]
 
 /**
 @author Juan Linietsky <reduzio@gmail.com>
@@ -94,6 +93,7 @@ enum PropertyHint {
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
+	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -141,7 +141,6 @@ enum PropertyUsageFlags {
 #define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
-
 	Variant::Type type;
 	String name;
 	StringName class_name; //for classes
@@ -171,7 +170,6 @@ struct PropertyInfo {
 			hint(p_hint),
 			hint_string(p_hint_string),
 			usage(p_usage) {
-
 		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			class_name = hint_string;
 		} else {
@@ -203,7 +201,6 @@ struct PropertyInfo {
 Array convert_property_list(const List<PropertyInfo> *p_list);
 
 struct MethodInfo {
-
 	String name;
 	PropertyInfo return_val;
 	uint32_t flags;
@@ -306,7 +303,6 @@ public:                                                                         
 	virtual bool is_class_ptr(void *p_ptr) const { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                         \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                     \
-                                                                                                                                        \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                              \
 			m_class::_get_valid_parents_static(p_parents);                                                                              \
 		}                                                                                                                               \
@@ -336,7 +332,7 @@ protected:                                                                      
 		initialize_class();                                                                                                             \
 	}                                                                                                                                   \
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                                        \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                 \
+		return (bool(Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                  \
 	}                                                                                                                                   \
 	virtual bool _getv(const StringName &p_name, Variant &r_ret) const {                                                                \
 		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                            \
@@ -346,17 +342,18 @@ protected:                                                                      
 		return m_inherits::_getv(p_name, r_ret);                                                                                        \
 	}                                                                                                                                   \
 	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {                              \
-		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                 \
+		return (bool(Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                  \
 	}                                                                                                                                   \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) {                                                           \
-		if (m_inherits::_setv(p_name, p_property)) return true;                                                                         \
+		if (m_inherits::_setv(p_name, p_property))                                                                                      \
+			return true;                                                                                                                \
 		if (m_class::_get_set() != m_inherits::_get_set()) {                                                                            \
 			return _set(p_name, p_property);                                                                                            \
 		}                                                                                                                               \
 		return false;                                                                                                                   \
 	}                                                                                                                                   \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                  \
-		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                            \
+		return (void(Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                             \
 	}                                                                                                                                   \
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {                                               \
 		if (!p_reversed) {                                                                                                              \
@@ -375,7 +372,7 @@ protected:                                                                      
 		}                                                                                                                               \
 	}                                                                                                                                   \
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                     \
-		return (void (Object::*)(int)) & m_class::_notification;                                                                        \
+		return (void(Object::*)(int)) & m_class::_notification;                                                                         \
 	}                                                                                                                                   \
 	virtual void _notificationv(int p_notification, bool p_reversed) {                                                                  \
 		if (!p_reversed)                                                                                                                \
@@ -415,7 +412,6 @@ public:
 	};
 
 	struct Connection {
-
 		Object *source;
 		StringName signal;
 		Object *target;
@@ -426,8 +422,8 @@ public:
 
 		operator Variant() const;
 		Connection() {
-			source = NULL;
-			target = NULL;
+			source = nullptr;
+			target = nullptr;
 			flags = 0;
 		}
 		Connection(const Variant &p_variant);
@@ -445,9 +441,7 @@ private:
 	friend void postinitialize_handler(Object *);
 
 	struct Signal {
-
 		struct Target {
-
 			ObjectID _id;
 			StringName method;
 
@@ -461,7 +455,6 @@ private:
 		};
 
 		struct Slot {
-
 			int reference_count;
 			Connection conn;
 			List<Connection>::Element *cE;
@@ -482,9 +475,7 @@ private:
 	int _predelete_ok;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
-#ifdef DEBUG_ENABLED
 	std::atomic<ObjectRC *> _rc;
-#endif
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
@@ -511,10 +502,8 @@ private:
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
-	void property_list_changed_notify();
-
 	friend class Reference;
-	uint32_t instance_binding_count;
+	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:
@@ -551,6 +540,7 @@ protected:
 
 	void cancel_delete();
 
+	void property_list_changed_notify();
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
@@ -560,8 +550,9 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		if (!_class_name)
+		if (!_class_name) {
 			_class_name = get_class_static();
+		}
 		return &_class_name;
 	}
 
@@ -584,8 +575,9 @@ public:
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void _change_notify(const char *p_property = "") {
 		_edited = true;
-		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next())
+		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next()) {
 			((Object *)(E->get()))->_changed_callback(this, p_property);
+		}
 	}
 #else
 	_FORCE_INLINE_ void _change_notify(const char *p_what = "") {}
@@ -595,9 +587,7 @@ public:
 		return &ptr;
 	}
 
-#ifdef DEBUG_ENABLED
 	ObjectRC *_use_rc();
-#endif
 
 	bool _is_gpl_reversed() const { return false; }
 
@@ -666,10 +656,10 @@ public:
 	//void set(const String& p_name, const Variant& p_value);
 	//Variant get(const String& p_name) const;
 
-	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
-	Variant get(const StringName &p_name, bool *r_valid = NULL) const;
-	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = NULL);
-	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = NULL) const;
+	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 
@@ -683,23 +673,22 @@ public:
 	void call_multilevel(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
 
 	void notification(int p_notification, bool p_reversed = false);
-	String to_string();
+	virtual void notification_callback(int p_message_type) {}
+	virtual String to_string();
 
 	//used mainly by script, get and set all INCLUDING string
-	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
-	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
+	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr);
 
 	/* SCRIPT */
 
 	void set_script(const RefPtr &p_script);
 	RefPtr get_script() const;
 
-	/* SCRIPT */
-
 	bool has_meta(const String &p_name) const;
 	void set_meta(const String &p_name, const Variant &p_value);
 	void remove_meta(const String &p_name);
-	Variant get_meta(const String &p_name) const;
+	Variant get_meta(const String &p_name, const Variant &p_default = Variant()) const;
 	void get_meta_list(List<String> *p_list) const;
 
 #ifdef TOOLS_ENABLED
@@ -733,8 +722,8 @@ public:
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;
 
-	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = NULL) const;
-	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = NULL) const;
+	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
+	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
@@ -771,11 +760,8 @@ bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
-
 	struct ObjectPtrHash {
-
 		static _FORCE_INLINE_ uint32_t hash(const Object *p_obj) {
-
 			union {
 				const Object *p;
 				unsigned long i;
@@ -792,12 +778,11 @@ class ObjectDB {
 	friend class Object;
 	friend void unregister_core_types();
 
-	static RWLock *rw_lock;
+	static RWLock rw_lock;
 	static void cleanup();
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 	friend void register_core_types();
-	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
@@ -806,12 +791,13 @@ public:
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 
+	// This one may give false positives because a new object may be allocated at the same memory of a previously freed one
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
-		rw_lock->read_lock();
+		rw_lock.read_lock();
 
 		bool exists = instance_checks.has(p_ptr);
 
-		rw_lock->read_unlock();
+		rw_lock.read_unlock();
 
 		return exists;
 	}

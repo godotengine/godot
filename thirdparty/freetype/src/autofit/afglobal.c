@@ -4,7 +4,7 @@
  *
  *   Auto-fitter routines to compute global hinting values (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,7 +19,8 @@
 #include "afglobal.h"
 #include "afranges.h"
 #include "afshaper.h"
-#include FT_INTERNAL_DEBUG_H
+#include "afws-decl.h"
+#include <freetype/internal/ftdebug.h>
 
 
   /**************************************************************************
@@ -31,11 +32,6 @@
 #undef  FT_COMPONENT
 #define FT_COMPONENT  afglobal
 
-
-  /* get writing system specific header files */
-#undef  WRITING_SYSTEM
-#define WRITING_SYSTEM( ws, WS )  /* empty */
-#include "afwrtsys.h"
 
 #include "aferrors.h"
 
@@ -74,7 +70,7 @@
   af_writing_system_classes[] =
   {
 
-#include "afwrtsys.h"
+#include "afws-iter.h"
 
     NULL  /* do not remove */
   };
@@ -285,10 +281,10 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-    FT_TRACE4(( "\n"
-                "style coverage\n"
-                "==============\n"
-                "\n" ));
+    FT_TRACE4(( "\n" ));
+    FT_TRACE4(( "style coverage\n" ));
+    FT_TRACE4(( "==============\n" ));
+    FT_TRACE4(( "\n" ));
 
     for ( ss = 0; af_style_classes[ss]; ss++ )
     {
@@ -306,7 +302,7 @@
           if ( !( count % 10 ) )
             FT_TRACE4(( " " ));
 
-          FT_TRACE4(( " %d", idx ));
+          FT_TRACE4(( " %ld", idx ));
           count++;
 
           if ( !( count % 10 ) )
@@ -478,6 +474,10 @@
           {
             style = (AF_Style)( globals->glyph_styles[gindex] &
                                 AF_STYLE_UNASSIGNED           );
+            /* IMPORTANT: Clear the error code, see
+             * https://gitlab.freedesktop.org/freetype/freetype/-/issues/1063
+             */
+            error = FT_Err_Ok;
             goto Again;
           }
 

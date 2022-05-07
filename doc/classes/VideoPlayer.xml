@@ -1,47 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoPlayer" inherits="Control" version="3.2">
+<class name="VideoPlayer" inherits="Control" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control for playing video streams.
 	</brief_description>
 	<description>
 		Control node for playing video streams using [VideoStream] resources.
-		Supported video formats are [url=https://www.webmproject.org/]WebM[/url] ([VideoStreamWebm]), [url=https://www.theora.org/]Ogg Theora[/url] ([VideoStreamTheora]), and any format exposed via a GDNative plugin using [VideoStreamGDNative].
+		Supported video formats are [url=https://www.webmproject.org/]WebM[/url] ([code].webm[/code], [VideoStreamWebm]), [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]), and any format exposed via a GDNative plugin using [VideoStreamGDNative].
+		[b]Note:[/b] Due to a bug, VideoPlayer does not support localization remapping yet.
+		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations, especially for VP8/VP9.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_stream_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the video stream's name, or [code]"&lt;No Stream&gt;"[/code] if no video stream is assigned.
 			</description>
 		</method>
 		<method name="get_video_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
+			<return type="Texture" />
 			<description>
 				Returns the current frame as a [Texture].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the video is playing.
 				[b]Note:[/b] The video is still considered playing if paused during playback.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Starts the video playback from the beginning. If the video is paused, this will not unpause the video.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the video playback and sets the stream position to 0.
 				[b]Note:[/b] Although the stream position will be set to 0, the first frame of the video stream won't become the current frame.
@@ -72,6 +69,7 @@
 		</member>
 		<member name="stream_position" type="float" setter="set_stream_position" getter="get_stream_position">
 			The current position of the stream, in seconds.
+			[b]Note:[/b] Changing this value won't have any effect as seeking is not implemented yet, except in video formats implemented by a GDNative add-on.
 		</member>
 		<member name="volume" type="float" setter="set_volume" getter="get_volume">
 			Audio volume as a linear value.

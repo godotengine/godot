@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,17 +34,14 @@
 #include "scene/gui/text_edit.h"
 
 inline bool _is_symbol(CharType c) {
-
 	return is_symbol(c);
 }
 
 static bool _is_text_char(CharType c) {
-
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
 static bool _is_char(CharType c) {
-
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
@@ -180,10 +177,10 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (in_region == -1 && !in_keyword && is_char && !prev_is_char) {
-
 			int to = j;
-			while (to < str.length() && _is_text_char(str[to]))
+			while (to < str.length() && _is_text_char(str[to])) {
 				to++;
+			}
 
 			String word = str.substr(j, to - j);
 			Color col = Color();
@@ -191,24 +188,25 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				col = text_editor->get_keyword_color(word);
 			} else if (text_editor->has_member_color(word)) {
 				col = text_editor->get_member_color(word);
+			}
+
+			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); //member indexing not allowed
+						col = Color(); // keyword & member indexing not allowed
 						break;
 					} else if (str[k] > 32) {
 						break;
 					}
 				}
-			}
-
-			if (col != Color()) {
-				in_keyword = true;
-				keyword_color = col;
+				if (col != Color()) {
+					in_keyword = true;
+					keyword_color = col;
+				}
 			}
 		}
 
 		if (!in_function_name && in_word && !in_keyword) {
-
 			int k = j;
 			while (k < str.length() && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
 				k++;
@@ -238,7 +236,6 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (is_symbol) {
-
 			if (in_function_name) {
 				in_function_args = true;
 			}

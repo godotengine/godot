@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,18 +29,128 @@
 /*************************************************************************/
 
 #include "ios.h"
+
+#import "app_delegate.h"
+#import "view_controller.h"
+
+#import <CoreHaptics/CoreHaptics.h>
+#import <UIKit/UIKit.h>
 #include <sys/sysctl.h>
 
-#import <UIKit/UIKit.h>
-
 void iOS::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
+	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &iOS::supports_haptic_engine);
+	ClassDB::bind_method(D_METHOD("start_haptic_engine"), &iOS::start_haptic_engine);
+	ClassDB::bind_method(D_METHOD("stop_haptic_engine"), &iOS::stop_haptic_engine);
 };
 
+bool iOS::supports_haptic_engine() {
+	if (@available(iOS 13, *)) {
+		id<CHHapticDeviceCapability> capabilities = [CHHapticEngine capabilitiesForHardware];
+		return capabilities.supportsHaptics;
+	}
+
+	return false;
+}
+
+CHHapticEngine *iOS::get_haptic_engine_instance() API_AVAILABLE(ios(13)) {
+	if (haptic_engine == NULL) {
+		NSError *error = NULL;
+		haptic_engine = [[CHHapticEngine alloc] initAndReturnError:&error];
+
+		if (!error) {
+			[haptic_engine setAutoShutdownEnabled:true];
+		} else {
+			haptic_engine = NULL;
+			NSLog(@"Could not initialize haptic engine: %@", error);
+		}
+	}
+
+	return haptic_engine;
+}
+
+void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13)) {
+	if (@available(iOS 13, *)) { // We need the @available check every time to make the compiler happy...
+		if (supports_haptic_engine()) {
+			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+			if (haptic_engine) {
+				NSDictionary *hapticDict = @{
+					CHHapticPatternKeyPattern : @[
+						@{CHHapticPatternKeyEvent : @{
+							CHHapticPatternKeyEventType : CHHapticEventTypeHapticTransient,
+							CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+							CHHapticPatternKeyEventDuration : @(p_duration_seconds)
+						},
+						},
+					],
+				};
+
+				NSError *error;
+				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
+
+				[[haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
+
+				NSLog(@"Could not vibrate using haptic engine: %@", error);
+			}
+
+			return;
+		}
+	}
+
+	NSLog(@"Haptic engine is not supported in this version of iOS");
+}
+
+void iOS::start_haptic_engine() {
+	if (@available(iOS 13, *)) {
+		if (supports_haptic_engine()) {
+			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+			if (haptic_engine) {
+				[haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
+					if (returnedError) {
+						NSLog(@"Could not start haptic engine: %@", returnedError);
+					}
+				}];
+			}
+
+			return;
+		}
+	}
+
+	NSLog(@"Haptic engine is not supported in this version of iOS");
+}
+
+void iOS::stop_haptic_engine() {
+	if (@available(iOS 13, *)) {
+		if (supports_haptic_engine()) {
+			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+			if (haptic_engine) {
+				[haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
+					if (returnedError) {
+						NSLog(@"Could not stop haptic engine: %@", returnedError);
+					}
+				}];
+			}
+
+			return;
+		}
+	}
+
+	NSLog(@"Haptic engine is not supported in this version of iOS");
+}
+
 void iOS::alert(const char *p_alert, const char *p_title) {
-	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[NSString stringWithUTF8String:p_title] message:[NSString stringWithUTF8String:p_alert] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
-	[alert show];
+	NSString *title = [NSString stringWithUTF8String:p_title];
+	NSString *message = [NSString stringWithUTF8String:p_alert];
+
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
+													 style:UIAlertActionStyleCancel
+												   handler:^(id){
+												   }];
+
+	[alert addAction:button];
+
+	[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
 }
 
 String iOS::get_model() const {
@@ -55,29 +165,16 @@ String iOS::get_model() const {
 	NSString *platform = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
 	free(model);
 	const char *str = [platform UTF8String];
-	return String(str != NULL ? str : "");
+	return String::utf8(str != nullptr ? str : "");
 }
 
 String iOS::get_rate_url(int p_app_id) const {
-	String templ = "itms-apps://ax.itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=APP_ID";
-	String templ_iOS7 = "itms-apps://itunes.apple.com/app/idAPP_ID";
-	String templ_iOS8 = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=APP_ID&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software";
+	String app_url_path = "itms-apps://itunes.apple.com/app/idAPP_ID";
 
-	//ios7 before
-	String ret = templ;
-
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1) {
-		// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
-		ret = templ_iOS7;
-	} else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-		// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
-		ret = templ_iOS8;
-	}
-
-	// ios7 for everything?
-	ret = templ_iOS7.replace("APP_ID", String::num(p_app_id));
+	String ret = app_url_path.replace("APP_ID", String::num(p_app_id));
 
 	printf("returning rate url %ls\n", ret.c_str());
+
 	return ret;
 };
 

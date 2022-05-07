@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define EDITORPREVIEWPLUGINS_H
 
 #include "editor/editor_resource_preview.h"
+
+#include "core/safe_refcount.h"
 
 void post_process_preview(Ref<Image> p_image);
 
@@ -69,7 +71,6 @@ public:
 };
 
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
-
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 &p_size) const;
@@ -79,7 +80,6 @@ public:
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -92,7 +92,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -125,7 +125,6 @@ public:
 };
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -137,7 +136,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -153,14 +152,13 @@ public:
 };
 
 class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID viewport;
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable volatile bool preview_done;
+	mutable SafeFlag preview_done;
 
 	void _preview_done(const Variant &p_udata);
 

@@ -19,7 +19,10 @@ namespace GodotTools.Core
             }
 
             if (attempt > maxAttempts + 1)
-                return;
+            {
+                // Overwrite the oldest one
+                backupPath = backupPathBase;
+            }
 
             File.Copy(filePath, backupPath, overwrite: true);
         }

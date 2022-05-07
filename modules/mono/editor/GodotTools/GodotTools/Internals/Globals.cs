@@ -13,6 +13,9 @@ namespace GodotTools.Internals
         public static object EditorDef(string setting, object defaultValue, bool restartIfChanged = false) =>
             internal_EditorDef(setting, defaultValue, restartIfChanged);
 
+        public static object EditorShortcut(string setting) =>
+            internal_EditorShortcut(setting);
+
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static string TTR(this string text) => internal_TTR(text);
 
@@ -26,6 +29,9 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern object internal_EditorDef(string setting, object defaultValue, bool restartIfChanged);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern object internal_EditorShortcut(string setting);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_TTR(string text);

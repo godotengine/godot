@@ -4,7 +4,7 @@
  *
  *   TrueType font driver implementation (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,22 +16,21 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_SERVICE_FONT_FORMAT_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/services/svfntfmt.h>
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
-#include FT_SERVICE_TRUETYPE_ENGINE_H
-#include FT_SERVICE_TRUETYPE_GLYF_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svtteng.h>
+#include <freetype/internal/services/svttglyf.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/ftdriver.h>
 
 #include "ttdriver.h"
 #include "ttgload.h"
@@ -109,7 +108,7 @@
       return error;
     }
 
-    FT_TRACE0(( "tt_property_set: missing property `%s'\n",
+    FT_TRACE2(( "tt_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -136,7 +135,7 @@
       return error;
     }
 
-    FT_TRACE0(( "tt_property_get: missing property `%s'\n",
+    FT_TRACE2(( "tt_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -355,7 +354,16 @@
 
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
-    FT_Request_Metrics( size->face, req );
+    {
+      FT_Error  err = FT_Request_Metrics( size->face, req );
+
+
+      if ( err )
+      {
+        error = err;
+        goto Exit;
+      }
+    }
 
     if ( FT_IS_SCALABLE( size->face ) )
     {
@@ -383,6 +391,7 @@
 #endif
     }
 
+  Exit:
     return error;
   }
 

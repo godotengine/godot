@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,14 +38,11 @@
 #include "step_sw.h"
 
 class PhysicsServerSW : public PhysicsServer {
-
 	GDCLASS(PhysicsServerSW, PhysicsServer);
 
 	friend class PhysicsDirectSpaceStateSW;
 	bool active;
 	int iterations;
-	bool doing_sync;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -55,8 +52,6 @@ class PhysicsServerSW : public PhysicsServer {
 
 	StepSW *stepper;
 	Set<const SpaceSW *> active_spaces;
-
-	PhysicsDirectBodyStateSW *direct_state;
 
 	mutable RID_Owner<ShapeSW> shape_owner;
 	mutable RID_Owner<SpaceSW> space_owner;
@@ -73,7 +68,6 @@ public:
 	static PhysicsServerSW *singleton;
 
 	struct CollCbkData {
-
 		int max;
 		int amount;
 		Vector3 *ptr;
@@ -236,7 +230,7 @@ public:
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>());
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	// this function only works on physics process, errors and returns null otherwise
@@ -306,7 +300,7 @@ public:
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) {}
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {}
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return 0; }
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return false; }
 
 	/* JOINT API */
 
@@ -348,9 +342,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag);
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) {}
-	virtual int generic_6dof_joint_get_precision(RID p_joint) { return 0; }
-
 	virtual JointType joint_get_type(RID p_joint) const;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
@@ -366,9 +357,10 @@ public:
 	virtual void set_active(bool p_active);
 	virtual void init();
 	virtual void step(real_t p_step);
-	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual void set_collision_iterations(int p_iterations);
 
 	virtual bool is_flushing_queries() const { return flushing_queries; }
 

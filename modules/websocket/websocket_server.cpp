@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,8 @@ WebSocketServer::~WebSocketServer() {
 }
 
 void WebSocketServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("is_listening"), &WebSocketServer::is_listening);
+	ClassDB::bind_method(D_METHOD("set_extra_headers", "headers"), &WebSocketServer::set_extra_headers, DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("listen", "port", "protocols", "gd_mp_api"), &WebSocketServer::listen, DEFVAL(Vector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &WebSocketServer::stop);
 	ClassDB::bind_method(D_METHOD("has_peer", "id"), &WebSocketServer::has_peer);
@@ -51,20 +51,24 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketServer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_bind_ip"), &WebSocketServer::get_bind_ip);
-	ClassDB::bind_method(D_METHOD("set_bind_ip"), &WebSocketServer::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &WebSocketServer::set_bind_ip);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bind_ip"), "set_bind_ip", "get_bind_ip");
 
 	ClassDB::bind_method(D_METHOD("get_private_key"), &WebSocketServer::get_private_key);
-	ClassDB::bind_method(D_METHOD("set_private_key"), &WebSocketServer::set_private_key);
+	ClassDB::bind_method(D_METHOD("set_private_key", "key"), &WebSocketServer::set_private_key);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "private_key", PROPERTY_HINT_RESOURCE_TYPE, "CryptoKey", 0), "set_private_key", "get_private_key");
 
 	ClassDB::bind_method(D_METHOD("get_ssl_certificate"), &WebSocketServer::get_ssl_certificate);
-	ClassDB::bind_method(D_METHOD("set_ssl_certificate"), &WebSocketServer::set_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_ssl_certificate", "certificate"), &WebSocketServer::set_ssl_certificate);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_ssl_certificate", "get_ssl_certificate");
 
 	ClassDB::bind_method(D_METHOD("get_ca_chain"), &WebSocketServer::get_ca_chain);
-	ClassDB::bind_method(D_METHOD("set_ca_chain"), &WebSocketServer::set_ca_chain);
+	ClassDB::bind_method(D_METHOD("set_ca_chain", "ca_chain"), &WebSocketServer::set_ca_chain);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ca_chain", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_ca_chain", "get_ca_chain");
+
+	ClassDB::bind_method(D_METHOD("get_handshake_timeout"), &WebSocketServer::get_handshake_timeout);
+	ClassDB::bind_method(D_METHOD("set_handshake_timeout", "timeout"), &WebSocketServer::set_handshake_timeout);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "handshake_timeout"), "set_handshake_timeout", "get_handshake_timeout");
 
 	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
@@ -109,20 +113,28 @@ void WebSocketServer::set_ca_chain(Ref<X509Certificate> p_ca_chain) {
 	ca_chain = p_ca_chain;
 }
 
+float WebSocketServer::get_handshake_timeout() const {
+	return handshake_timeout / 1000.0;
+}
+
+void WebSocketServer::set_handshake_timeout(float p_timeout) {
+	ERR_FAIL_COND(p_timeout <= 0.0);
+	handshake_timeout = p_timeout * 1000;
+}
+
 NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
-	if (is_listening())
+	if (is_listening()) {
 		return CONNECTION_CONNECTED;
+	}
 
 	return CONNECTION_DISCONNECTED;
 }
 
 bool WebSocketServer::is_server() const {
-
 	return true;
 }
 
 void WebSocketServer::_on_peer_packet(int32_t p_peer_id) {
-
 	if (_is_multiplayer) {
 		_process_multiplayer(get_peer(p_peer_id), p_peer_id);
 	} else {
@@ -131,7 +143,6 @@ void WebSocketServer::_on_peer_packet(int32_t p_peer_id) {
 }
 
 void WebSocketServer::_on_connect(int32_t p_peer_id, String p_protocol) {
-
 	if (_is_multiplayer) {
 		// Send add to clients
 		_send_add(p_peer_id);
@@ -142,7 +153,6 @@ void WebSocketServer::_on_connect(int32_t p_peer_id, String p_protocol) {
 }
 
 void WebSocketServer::_on_disconnect(int32_t p_peer_id, bool p_was_clean) {
-
 	if (_is_multiplayer) {
 		// Send delete to clients
 		_send_del(p_peer_id);
@@ -153,6 +163,5 @@ void WebSocketServer::_on_disconnect(int32_t p_peer_id, bool p_was_clean) {
 }
 
 void WebSocketServer::_on_close_request(int32_t p_peer_id, int p_code, String p_reason) {
-
 	emit_signal("client_close_request", p_peer_id, p_code, p_reason);
 }

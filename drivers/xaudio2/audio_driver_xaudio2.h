@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,18 +36,17 @@
 #include "servers/audio_server.h"
 
 #include <mmsystem.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <wrl/client.h>
 #include <xaudio2.h>
 
 class AudioDriverXAudio2 : public AudioDriver {
-
 	enum {
 		AUDIO_BUFFERS = 2
 	};
 
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
-
 		HANDLE buffer_end_event;
 		XAudio2DriverVoiceCallback() :
 				buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
@@ -64,8 +63,8 @@ class AudioDriverXAudio2 : public AudioDriver {
 		void STDMETHODCALLTYPE OnVoiceError(void *pBufferContext, HRESULT Error) {}
 	};
 
-	Thread *thread;
-	Mutex *mutex;
+	Thread thread;
+	Mutex mutex;
 
 	int32_t *samples_in;
 	int16_t *samples_out[AUDIO_BUFFERS];

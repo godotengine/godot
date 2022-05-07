@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 #include "servers/visual/shader_language.h"
 
 class ShaderTextEditor : public CodeTextEditor {
-
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
 	Ref<Shader> shader;
@@ -66,7 +65,6 @@ public:
 };
 
 class ShaderEditor : public PanelContainer {
-
 	GDCLASS(ShaderEditor, PanelContainer);
 
 	enum {
@@ -82,7 +80,7 @@ class ShaderEditor : public PanelContainer {
 		EDIT_INDENT_LEFT,
 		EDIT_INDENT_RIGHT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_COMPLETE,
 		SEARCH_FIND,
@@ -143,7 +141,6 @@ public:
 };
 
 class ShaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
 	bool _2d;

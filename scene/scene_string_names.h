@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/node_path.h"
 #include "core/string_name.h"
 class SceneStringNames {
-
 	friend void register_scene_types();
 	friend void unregister_scene_types();
 
@@ -43,7 +42,7 @@ class SceneStringNames {
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	SceneStringNames();
@@ -72,6 +71,8 @@ public:
 	StringName tree_exiting;
 	StringName tree_exited;
 	StringName ready;
+	StringName child_entered_tree;
+	StringName child_exited_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
 	StringName sleeping_state_changed;
@@ -90,6 +91,8 @@ public:
 	StringName sort_children;
 
 	StringName finished;
+	StringName loop_finished;
+	StringName step_finished;
 	StringName emission_finished;
 	StringName animation_finished;
 	StringName animation_changed;
@@ -105,9 +108,6 @@ public:
 
 	StringName _body_inout;
 	StringName _area_inout;
-
-	StringName _get_gizmo_geometry;
-	StringName _can_gizmo_scale;
 
 	StringName _physics_process;
 	StringName _process;
@@ -207,10 +207,6 @@ public:
 
 	StringName tracks_changed;
 
-	enum {
-		MAX_MATERIALS = 32
-	};
-	StringName mesh_materials[MAX_MATERIALS];
 	StringName _mesh_changed;
 };
 

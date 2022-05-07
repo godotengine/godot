@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/3d/path.h"
 
 class PathSpatialGizmo : public EditorSpatialGizmo {
-
 	GDCLASS(PathSpatialGizmo, EditorSpatialGizmo);
 
 	Path *path;
@@ -50,11 +49,10 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	virtual void redraw();
-	PathSpatialGizmo(Path *p_path = NULL);
+	PathSpatialGizmo(Path *p_path = nullptr);
 };
 
 class PathSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(PathSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 protected:
@@ -67,7 +65,6 @@ public:
 };
 
 class PathEditorPlugin : public EditorPlugin {
-
 	GDCLASS(PathEditorPlugin, EditorPlugin);
 
 	Separator *sep;

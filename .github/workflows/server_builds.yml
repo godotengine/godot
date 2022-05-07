@@ -1,0 +1,61 @@
+name: ☁ Server Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: 3.x
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no module_mono_enabled=yes mono_static=yes mono_glue=no
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-server
+  cancel-in-progress: true
+
+jobs:
+  build-server:
+    runs-on: "ubuntu-20.04"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Headless w/ Mono (target=release_debug, tools=yes)
+            cache-name: server-editor-mono
+            target: release_debug
+            tools: true
+
+          - name: Linux Server w/ Mono (target=release, tools=no)
+            cache-name: server-template-mono
+            target: release
+            tools: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Linux dependencies
+        shell: bash
+        run: |
+          # Azure repositories are not reliable, we need to prevent azure giving us packages.
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+          # The actual dependencies
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+              libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
+              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          platform: server
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}

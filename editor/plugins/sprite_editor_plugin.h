@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class SpriteEditor : public Control {
-
 	GDCLASS(SpriteEditor, Control);
 
 	enum Menu {
@@ -60,8 +59,8 @@ class SpriteEditor : public Control {
 	ConfirmationDialog *debug_uv_dialog;
 	Control *debug_uv;
 	Vector<Vector2> uv_lines;
-	Vector<Vector<Vector2> > outline_lines;
-	Vector<Vector<Vector2> > computed_outline_lines;
+	Vector<Vector<Vector2>> outline_lines;
+	Vector<Vector<Vector2>> computed_outline_lines;
 	Vector<Vector2> computed_vertices;
 	Vector<Vector2> computed_uv;
 	Vector<int> computed_indices;
@@ -97,7 +96,6 @@ public:
 };
 
 class SpriteEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteEditorPlugin, EditorPlugin);
 
 	SpriteEditor *sprite_editor;

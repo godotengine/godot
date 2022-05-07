@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvexPolygonShape2D" inherits="Shape2D" version="3.2">
+<class name="ConvexPolygonShape2D" inherits="Shape2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Convex polygon shape for 2D physics.
 	</brief_description>
@@ -11,10 +11,8 @@
 	</tutorials>
 	<methods>
 		<method name="set_point_cloud">
-			<return type="void">
-			</return>
-			<argument index="0" name="point_cloud" type="PoolVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point_cloud" type="PoolVector2Array" />
 			<description>
 				Based on the set of points provided, this creates and assigns the [member points] property using the convex hull algorithm. Removing all unneeded points. See [method Geometry.convex_hull_2d] for details.
 			</description>
@@ -22,7 +20,7 @@
 	</methods>
 	<members>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array(  )">
-			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
+			The polygon's list of vertices. Can be in either clockwise or counterclockwise order. Only set this property with convex hull points, use [method set_point_cloud] to generate a convex hull shape from concave shape points.
 		</member>
 	</members>
 	<constants>

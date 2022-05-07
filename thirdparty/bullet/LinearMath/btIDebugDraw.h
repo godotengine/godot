@@ -4,8 +4,8 @@ Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -21,7 +21,7 @@ subject to the following restrictions:
 
 ///The btIDebugDraw interface class allows hooking up a debug renderer to visually debug simulations.
 ///Typical use case: create a debug drawer object, and assign it to a btCollisionWorld or btDynamicsWorld using setDebugDrawer and call debugDrawWorld.
-///A class that implements the btIDebugDraw interface has to implement the drawLine method at a minimum.
+///A class that implements the btIDebugDraw interface will need to provide non-empty implementations of the the drawLine and getDebugMode methods at a minimum.
 ///For color arguments the X,Y,Z components refer to Red, Green and Blue each in the range [0..1]
 class btIDebugDraw
 {

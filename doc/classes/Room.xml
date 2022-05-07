@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Room" inherits="Spatial" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Room node, used to group objects together locally for [Portal] culling.
+	</brief_description>
+	<description>
+		The [Portal] culling system requires levels to be built using objects grouped together by location in areas called [Room]s. In many cases these will correspond to actual rooms in buildings, but not necessarily (a canyon area may be treated as a room).
+		Any [VisualInstance] that is a child or grandchild of a [Room] will be assigned to that room, if the [code]portal_mode[/code] of that [VisualInstance] is set to [code]STATIC[/code] (does not move) or [code]DYNAMIC[/code] (moves only within the room).
+		Internally the room boundary must form a [b]convex hull[/b], and by default this is determined automatically by the geometry of the objects you place within the room.
+		You can alternatively precisely specify a [b]manual bound[/b]. If you place a [MeshInstance] with a name prefixed by [code]Bound_[/code], it will turn off the bound generation from geometry, and instead use the vertices of this MeshInstance to directly calculate a convex hull during the conversion stage (see [RoomManager]).
+		In order to see from one room into an adjacent room, [Portal]s must be placed over non-occluded openings between rooms. These will often be placed over doors and windows.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+				Sets individual points. Primarily for use by the editor.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="points" type="PoolVector3Array" setter="set_points" getter="get_points" default="PoolVector3Array(  )">
+			If [code]points[/code] are set, the [Room] bounding convex hull will be built from these points. If no points are set, the room bound will either be derived from a manual bound ([MeshInstance] with name prefix [code]Bound_[/code]), or from the geometry within the room.
+			Note that you can use the [code]Generate Points[/code] editor button to get started. This will use either the geometry or manual bound to generate the room hull, and save the resulting points, allowing you to edit them to further refine the bound.
+		</member>
+		<member name="room_simplify" type="float" setter="set_room_simplify" getter="get_room_simplify" default="0.5">
+			The [code]simplify[/code] value determines to what degree room hulls (bounds) are simplified, by removing similar planes. A value of 0 gives no simplification, 1 gives maximum simplification.
+		</member>
+		<member name="use_default_simplify" type="bool" setter="set_use_default_simplify" getter="get_use_default_simplify" default="true">
+			The room hull simplification can either use the default value set in the [RoomManager], or override this and use the per room setting.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

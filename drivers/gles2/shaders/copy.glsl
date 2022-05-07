@@ -40,7 +40,6 @@ uniform highp mat4 display_transform;
 #endif
 
 void main() {
-
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 	cube_interp = cube_in;
 #elif defined(USE_ASYM_PANO)
@@ -115,7 +114,6 @@ uniform float custom_alpha;
 uniform highp mat4 sky_transform;
 
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
-
 	vec2 st = vec2(
 			atan(normal.x, normal.z),
 			acos(normal.y));
@@ -131,7 +129,6 @@ vec4 texturePanorama(sampler2D pano, vec3 normal) {
 #endif
 
 void main() {
-
 #ifdef USE_PANORAMA
 
 	vec3 cube_normal = normalize(cube_interp);
@@ -175,7 +172,7 @@ void main() {
 						vec3(1.00000, 1.00000, 1.00000),
 						vec3(0.00000, -0.34413, 1.77200),
 						vec3(1.40200, -0.71414, 0.00000)) *
-				color.rgb;
+			color.rgb;
 #endif
 
 #ifdef USE_NO_ALPHA
@@ -188,6 +185,11 @@ void main() {
 
 #ifdef USE_MULTIPLIER
 	color.rgb *= multiplier;
+#endif
+
+#ifdef OUTPUT_LINEAR
+	// sRGB -> linear
+	color.rgb = mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), vec3(lessThan(color.rgb, vec3(0.04045))));
 #endif
 
 	gl_FragColor = color;

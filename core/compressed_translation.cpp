@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@ extern "C" {
 }
 
 struct _PHashTranslationCmp {
-
 	int orig_len;
 	CharString compressed;
 	int offset;
@@ -45,13 +44,14 @@ struct _PHashTranslationCmp {
 
 void PHashTranslation::generate(const Ref<Translation> &p_from) {
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND(p_from.is_null());
 	List<StringName> keys;
 	p_from->get_message_list(&keys);
 
 	int size = Math::larger_prime(keys.size());
 
-	Vector<Vector<Pair<int, CharString> > > buckets;
-	Vector<Map<uint32_t, int> > table;
+	Vector<Vector<Pair<int, CharString>>> buckets;
+	Vector<Map<uint32_t, int>> table;
 	Vector<uint32_t> hfunc_table;
 	Vector<_PHashTranslationCmp> compressed;
 
@@ -62,10 +62,8 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	int idx = 0;
 	int total_compression_size = 0;
-	int total_string_size = 0;
 
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-
 		//hash string
 		CharString cs = E->get().operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
@@ -101,28 +99,25 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 		compressed.write[idx] = ps;
 		total_compression_size += ps.compressed.size();
-		total_string_size += src_s.size();
 		idx++;
 	}
 
 	int bucket_table_size = 0;
 
 	for (int i = 0; i < size; i++) {
-
-		const Vector<Pair<int, CharString> > &b = buckets[i];
+		const Vector<Pair<int, CharString>> &b = buckets[i];
 		Map<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0)
+		if (b.size() == 0) {
 			continue;
+		}
 
 		int d = 1;
 		int item = 0;
 
 		while (item < b.size()) {
-
 			uint32_t slot = hash(d, b[item].second.get_data());
 			if (t.has(slot)) {
-
 				item = 0;
 				d++;
 				t.clear();
@@ -148,16 +143,12 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	uint32_t *btw = (uint32_t *)&btwb[0];
 
 	int btindex = 0;
-	int collisions = 0;
 
 	for (int i = 0; i < size; i++) {
-
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
-		} else if (t.size() > 1) {
-			collisions += t.size() - 1;
 		}
 
 		htw[i] = btindex;
@@ -165,7 +156,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		btw[btindex++] = hfunc_table[i];
 
 		for (Map<uint32_t, int>::Element *E = t.front(); E; E = E->next()) {
-
 			btw[btindex++] = E->key();
 			btw[btindex++] = compressed[E->get()].offset;
 			btw[btindex++] = compressed[E->get()].compressed.size();
@@ -187,7 +177,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 }
 
 bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
-
 	String name = p_name.operator String();
 	if (name == "hash_table") {
 		hash_table = p_value;
@@ -197,33 +186,34 @@ bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
 		strings = p_value;
 	} else if (name == "load_from") {
 		generate(p_value);
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String name = p_name.operator String();
-	if (name == "hash_table")
+	if (name == "hash_table") {
 		r_ret = hash_table;
-	else if (name == "bucket_table")
+	} else if (name == "bucket_table") {
 		r_ret = bucket_table;
-	else if (name == "strings")
+	} else if (name == "strings") {
 		r_ret = strings;
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 StringName PHashTranslation::get_message(const StringName &p_src_text) const {
-
 	int htsize = hash_table.size();
 
-	if (htsize == 0)
+	if (htsize == 0) {
 		return StringName();
+	}
 
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());
@@ -248,9 +238,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	int idx = -1;
 
 	for (int i = 0; i < bucket.size; i++) {
-
 		if (bucket.elem[i].key == h) {
-
 			idx = i;
 			break;
 		}
@@ -261,13 +249,11 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	}
 
 	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-
 		String rstr;
 		rstr.parse_utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 
 		return rstr;
 	} else {
-
 		CharString uncomp;
 		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
@@ -278,14 +264,12 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 }
 
 void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "hash_table"));
 	p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "bucket_table"));
 	p_list->push_back(PropertyInfo(Variant::POOL_BYTE_ARRAY, "strings"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
 void PHashTranslation::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("generate", "from"), &PHashTranslation::generate);
 }
 

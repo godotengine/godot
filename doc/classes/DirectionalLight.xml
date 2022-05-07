@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirectionalLight" inherits="Light" version="3.2">
+<class name="DirectionalLight" inherits="Light" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Directional light from a distance, as from the Sun.
 	</brief_description>
@@ -7,7 +7,7 @@
 		A directional light is a type of [Light] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored. Only the basis is used to determine light direction.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link>$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 	</methods>
@@ -39,7 +39,7 @@
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code].
 		</member>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.1" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light" default="0.1" />
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">

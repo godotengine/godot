@@ -8,6 +8,9 @@ from compat import isbasestring
 env_freetype = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_freetype"]:
     thirdparty_dir = "#thirdparty/freetype/"
     thirdparty_sources = [
@@ -47,6 +50,7 @@ if env["builtin_freetype"]:
         "src/pshinter/pshinter.c",
         "src/psnames/psnames.c",
         "src/raster/raster.c",
+        "src/sdf/sdf.c",
         "src/smooth/smooth.c",
         "src/truetype/truetype.c",
         "src/type1/type1.c",
@@ -54,6 +58,23 @@ if env["builtin_freetype"]:
         "src/winfonts/winfnt.c",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    thirdparty_brotli_dir = "#thirdparty/brotli/"
+    thirdparty_brotli_sources = [
+        "common/constants.c",
+        "common/context.c",
+        "common/dictionary.c",
+        "common/platform.c",
+        "common/shared_dictionary.c",
+        "common/transform.c",
+        "dec/bit_reader.c",
+        "dec/decode.c",
+        "dec/huffman.c",
+        "dec/state.c",
+    ]
+    thirdparty_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
+    env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+    env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
 
     if env["platform"] == "uwp":
         # Include header for UWP to fix build issues
@@ -79,6 +100,7 @@ if env["builtin_freetype"]:
         # Forcibly undefine this macro so SIMD is not used in this file,
         # since currently unsupported in WASM
         tmp_env = env_freetype.Clone()
+        tmp_env.disable_warnings()
         tmp_env.Append(CPPFLAGS=["-U__OPTIMIZE__"])
         sfnt = tmp_env.Object(sfnt)
     thirdparty_sources += [sfnt]
@@ -86,6 +108,7 @@ if env["builtin_freetype"]:
     env_thirdparty = env_freetype.Clone()
     env_thirdparty.disable_warnings()
     lib = env_thirdparty.add_library("freetype_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -100,7 +123,13 @@ if env["builtin_freetype"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
+
 # Godot source files
-env_freetype.add_source_files(env.modules_sources, "*.cpp")
-# Used in scene/, needs to be in main env
-env.Append(CPPDEFINES=["FREETYPE_ENABLED"])
+
+module_obj = []
+
+env_freetype.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera" inherits="Spatial" version="3.2">
+<class name="Camera" inherits="Spatial" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>
@@ -7,161 +7,132 @@
 		Camera is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the camera will register in the global viewport. In other words, a camera just provides 3D display capabilities to a [Viewport], and, without one, a scene registered in that [Viewport] (or higher viewports) can't be displayed.
 	</description>
 	<tutorials>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="clear_current">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable_next" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable_next" type="bool" default="true" />
 			<description>
 				If this is the current camera, remove it from being current. If [code]enable_next[/code] is [code]true[/code], request to make the next camera current, if any.
 			</description>
 		</method>
 		<method name="get_camera_rid" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the camera's RID from the [VisualServer].
 			</description>
 		</method>
 		<method name="get_camera_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
+			<return type="Transform" />
 			<description>
-				Gets the camera transform. Subclassed cameras such as [InterpolatedCamera] may provide different transforms than the [Node] transform.
+				Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [ClippedCamera], [InterpolatedCamera] and [ARVRCamera].
 			</description>
 		</method>
 		<method name="get_cull_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
 			<description>
 				Returns [code]true[/code] if the given [code]layer[/code] in the [member cull_mask] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_frustum" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
-				Returns the camera's frustum planes in world-space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
+				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="world_point" type="Vector3">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="world_point" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the given position is behind the camera.
 				[b]Note:[/b] A position which returns [code]false[/code] may still be outside the camera's field of view.
 			</description>
 		</method>
 		<method name="make_current">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Makes this camera the current camera for the [Viewport] (see class description). If the camera node is outside the scene tree, it will attempt to become current once it's added.
 			</description>
 		</method>
 		<method name="project_local_ray_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
 				Returns a normal vector from the screen point location directed along the camera. Orthogonal cameras are normalized. Perspective cameras account for perspective, screen width/height, etc.
 			</description>
 		</method>
 		<method name="project_position" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
-			<argument index="1" name="z_depth" type="float">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="screen_point" type="Vector2" />
+			<argument index="1" name="z_depth" type="float" />
 			<description>
-				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] distance into the scene away from the camera.
+				Returns the 3D point in world space that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] distance into the scene away from the camera.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_ray_origin" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
+			<return type="Vector3" />
+			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="set_cull_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the given [code]layer[/code] in the [member cull_mask].
 			</description>
 		</method>
 		<method name="set_frustum">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="float">
-			</argument>
-			<argument index="1" name="offset" type="Vector2">
-			</argument>
-			<argument index="2" name="z_near" type="float">
-			</argument>
-			<argument index="3" name="z_far" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="float" />
+			<argument index="1" name="offset" type="Vector2" />
+			<argument index="2" name="z_near" type="float" />
+			<argument index="3" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units.
+				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units.
 			</description>
 		</method>
 		<method name="set_orthogonal">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="float">
-			</argument>
-			<argument index="1" name="z_near" type="float">
-			</argument>
-			<argument index="2" name="z_far" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="float" />
+			<argument index="1" name="z_near" type="float" />
+			<argument index="2" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [code]size[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
+				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [code]size[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
 			</description>
 		</method>
 		<method name="set_perspective">
-			<return type="void">
-			</return>
-			<argument index="0" name="fov" type="float">
-			</argument>
-			<argument index="1" name="z_near" type="float">
-			</argument>
-			<argument index="2" name="z_far" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="fov" type="float" />
+			<argument index="1" name="z_near" type="float" />
+			<argument index="2" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [code]fov[/code] (field of view) angle in degrees, and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units.
+				Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [code]fov[/code] (field of view) angle in degrees, and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units.
 			</description>
 		</method>
 		<method name="unproject_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="world_point" type="Vector3">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="world_point" type="Vector3" />
 			<description>
-				Returns the 2D coordinate in the [Viewport] rectangle that maps to the given 3D point in worldspace.
+				Returns the 2D coordinate in the [Viewport] rectangle that maps to the given 3D point in world space.
+				[b]Note:[/b] When using this to position GUI elements over a 3D viewport, use [method is_position_behind] to prevent them from appearing if the 3D point is behind the camera:
+				[codeblock]
+				# This code block is part of a script that inherits from Spatial.
+				# `control` is a reference to a node inheriting from Control.
+				control.visible = not get_viewport().get_camera().is_position_behind(global_transform.origin)
+				control.rect_position = get_viewport().get_camera().unproject_position(global_transform.origin)
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -173,7 +144,8 @@
 			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking" default="0">
-			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
+			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. The Doppler effect is only simulated for [AudioStreamPlayer3D] nodes that have [member AudioStreamPlayer3D.doppler_tracking] set to a value other than [constant AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED].
+			[b]Note:[/b] To toggle the Doppler effect preview in the editor, use the Perspective menu in the top-left corner of the 3D viewport and toggle [b]Enable Doppler[/b].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.
@@ -183,6 +155,11 @@
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="70.0">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
+			For reference, the default vertical field of view value ([code]70.0[/code]) is equivalent to a horizontal FOV of:
+			- ~86.07 degrees in a 4:3 viewport
+			- ~96.50 degrees in a 16:10 viewport
+			- ~102.45 degrees in a 16:9 viewport
+			- ~117.06 degrees in a 21:9 viewport
 		</member>
 		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2( 0, 0 )">
 			The camera's frustum offset. This can be changed from the default to create "tilted frustum" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-shearing[/url].
@@ -200,7 +177,7 @@
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
 		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
-			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
+			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal and frustum modes. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical (Y) offset of the camera viewport.
@@ -226,10 +203,10 @@
 			Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default).
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
 		</constant>
 	</constants>
 </class>

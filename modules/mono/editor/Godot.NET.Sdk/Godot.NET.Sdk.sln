@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.NET.Sdk", "Godot.NET.Sdk\Godot.NET.Sdk.csproj", "{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31B00BFA-DEA1-42FA-A472-9E54A92A8A5F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

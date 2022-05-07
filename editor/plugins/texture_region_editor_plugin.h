@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@
 */
 
 class TextureRegionEditor : public VBoxContainer {
-
 	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {
@@ -94,7 +93,7 @@ class TextureRegionEditor : public VBoxContainer {
 	Rect2 rect_prev;
 	float prev_margin;
 	int edited_margin;
-	Map<RID, List<Rect2> > cache_map;
+	Map<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
 	bool autoslice_is_dirty;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,14 +36,15 @@
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/import_defaults_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
-
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {
+		INPUT_KEY_PHYSICAL,
 		INPUT_KEY,
 		INPUT_JOY_BUTTON,
 		INPUT_JOY_MOTION,
@@ -72,11 +73,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	HBoxContainer *add_prop_bar;
 	AcceptDialog *message;
-	LineEdit *category;
 	LineEdit *property;
-	OptionButton *type;
+	OptionButton *type_box;
 	PopupMenu *popup_add;
 	ConfirmationDialog *press_a_key;
+	bool press_a_key_physical;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
 	OptionButton *device_id;
@@ -117,7 +118,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _item_del();
 	void _update_actions();
 	void _save();
-	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = NULL);
+	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = nullptr);
 	void _edit_item(Ref<InputEvent> p_exiting_event);
 
 	void _action_check(String p_action);
@@ -140,16 +141,16 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _copy_to_platform(int p_which);
 
 	void _translation_file_open();
-	void _translation_add(const String &p_path);
+	void _translation_add(const PoolStringArray &p_paths);
 	void _translation_delete(Object *p_item, int p_column, int p_button);
 	void _update_translations();
 
 	void _translation_res_file_open();
-	void _translation_res_add(const String &p_path);
+	void _translation_res_add(const PoolStringArray &p_paths);
 	void _translation_res_delete(Object *p_item, int p_column, int p_button);
 	void _translation_res_select();
 	void _translation_res_option_file_open();
-	void _translation_res_option_add(const String &p_path);
+	void _translation_res_option_add(const PoolStringArray &p_paths);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
 
@@ -164,8 +165,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	void _copy_to_platform_about_to_show();
 
-	ProjectSettingsEditor();
-
 	static ProjectSettingsEditor *singleton;
 
 	Label *restart_label;
@@ -173,9 +172,13 @@ class ProjectSettingsEditor : public AcceptDialog {
 	PanelContainer *restart_container;
 	ToolButton *restart_close_button;
 
+	ImportDefaultsEditor *import_defaults_editor;
+
 	void _editor_restart_request();
 	void _editor_restart();
 	void _editor_restart_close();
+
+	void _update_theme();
 
 protected:
 	void _unhandled_input(const Ref<InputEvent> &p_event);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 #include "scene/main/resource_preloader.h"
 
 class ResourcePreloaderEditor : public PanelContainer {
-
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
 	enum {
@@ -60,7 +59,6 @@ class ResourcePreloaderEditor : public PanelContainer {
 	ResourcePreloader *preloader;
 
 	void _load_pressed();
-	void _load_scene_pressed();
 	void _files_load_request(const Vector<String> &p_paths);
 	void _paste_pressed();
 	void _remove_resource(const String &p_to_remove);
@@ -87,7 +85,6 @@ public:
 };
 
 class ResourcePreloaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ResourcePreloaderEditorPlugin, EditorPlugin);
 
 	ResourcePreloaderEditor *preloader_editor;

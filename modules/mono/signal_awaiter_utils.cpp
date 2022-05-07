@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 namespace SignalAwaiterUtils {
 
 Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p_target, MonoObject *p_awaiter) {
-
 	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_target, ERR_INVALID_DATA);
 
@@ -66,7 +65,6 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 } // namespace SignalAwaiterUtils
 
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
 			"Resumed after await, but class instance is gone.");
@@ -90,11 +88,15 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	set_completed(true);
 
 	int signal_argc = p_argcount - 1;
-	MonoArray *signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
+	MonoArray *signal_args = NULL;
 
-	for (int i = 0; i < signal_argc; i++) {
-		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-		mono_array_setref(signal_args, i, boxed);
+	if (signal_argc > 0) {
+		signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
+
+		for (int i = 0; i < signal_argc; i++) {
+			MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
+			mono_array_setref(signal_args, i, boxed);
+		}
 	}
 
 	MonoException *exc = NULL;
@@ -111,20 +113,17 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 }
 
 void SignalAwaiterHandle::_bind_methods() {
-
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
 }
 
 SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
 		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
-
 #ifdef DEBUG_ENABLED
 	conn_target_id = 0;
 #endif
 }
 
 SignalAwaiterHandle::~SignalAwaiterHandle() {
-
 	if (!completed) {
 		MonoObject *awaiter = get_target();
 

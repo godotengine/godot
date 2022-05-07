@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "test_render.h"
 
+#include "core/math/convex_hull.h"
 #include "core/math/math_funcs.h"
-#include "core/math/quick_hull.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -43,7 +43,6 @@
 namespace TestRender {
 
 class TestMainLoop : public MainLoop {
-
 	RID test_cube;
 	RID instance;
 	RID camera;
@@ -52,7 +51,6 @@ class TestMainLoop : public MainLoop {
 	RID scenario;
 
 	struct InstanceInfo {
-
 		RID instance;
 		Transform base;
 		Vector3 rot_axis;
@@ -66,17 +64,16 @@ class TestMainLoop : public MainLoop {
 protected:
 public:
 	virtual void input_event(const Ref<InputEvent> &p_event) {
-
-		if (p_event->is_pressed())
+		if (p_event->is_pressed()) {
 			quit = true;
+		}
 	}
 
 	virtual void init() {
-
 		print_line("INITIALIZING TEST RENDER");
 		VisualServer *vs = VisualServer::get_singleton();
 		test_cube = vs->get_test_cube();
-		scenario = vs->scenario_create();
+		scenario = RID_PRIME(vs->scenario_create());
 
 		Vector<Vector3> vts;
 
@@ -121,9 +118,9 @@ public:
 		vts.push_back(Vector3(-1, -1, -1));
 
 		Geometry::MeshData md;
-		Error err = QuickHull::build(vts, md);
+		Error err = ConvexHullComputer::convex_hull(vts, md);
 		print_line("ERR: " + itos(err));
-		test_cube = vs->mesh_create();
+		test_cube = RID_PRIME(vs->mesh_create());
 		vs->mesh_add_surface_from_mesh_data(test_cube, md);
 		//vs->scenario_set_debug(scenario,VS::SCENARIO_DEBUG_WIREFRAME);
 
@@ -143,7 +140,6 @@ public:
 		};
 
 		for (int i = 0; i < object_count; i++) {
-
 			InstanceInfo ii;
 
 			ii.instance = vs->instance_create2(test_cube, scenario);
@@ -158,11 +154,11 @@ public:
 			instances.push_back(ii);
 		}
 
-		camera = vs->camera_create();
+		camera = RID_PRIME(vs->camera_create());
 
 		// 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 
-		viewport = vs->viewport_create();
+		viewport = RID_PRIME(vs->viewport_create());
 		Size2i screen_size = OS::get_singleton()->get_window_size();
 		vs->viewport_set_size(viewport, screen_size.x, screen_size.y);
 		vs->viewport_attach_to_screen(viewport, Rect2(Vector2(), screen_size));
@@ -204,7 +200,6 @@ public:
 		quit = false;
 	}
 	virtual bool iteration(float p_time) {
-
 		VisualServer *vs = VisualServer::get_singleton();
 		//Transform t;
 		//t.rotate(Vector3(0, 1, 0), ofs);
@@ -216,7 +211,6 @@ public:
 		//return quit;
 
 		for (List<InstanceInfo>::Element *E = instances.front(); E; E = E->next()) {
-
 			Transform pre(Basis(E->get().rot_axis, ofs), Vector3());
 			vs->instance_set_transform(E->get().instance, pre * E->get().base);
 			/*
@@ -239,7 +233,6 @@ public:
 };
 
 MainLoop *test() {
-
 	return memnew(TestMainLoop);
 }
 } // namespace TestRender

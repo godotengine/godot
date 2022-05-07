@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,48 +34,42 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class Dictionary extends HashMap<String, Object> {
-
 	protected String[] keys_cache;
 
 	public String[] get_keys() {
-
 		String[] ret = new String[size()];
 		int i = 0;
 		Set<String> keys = keySet();
 		for (String key : keys) {
-
 			ret[i] = key;
 			i++;
-		};
+		}
 
 		return ret;
-	};
+	}
 
 	public Object[] get_values() {
-
 		Object[] ret = new Object[size()];
 		int i = 0;
 		Set<String> keys = keySet();
 		for (String key : keys) {
-
 			ret[i] = get(key);
 			i++;
-		};
+		}
 
 		return ret;
-	};
+	}
 
 	public void set_keys(String[] keys) {
 		keys_cache = keys;
-	};
+	}
 
 	public void set_values(Object[] vals) {
-
 		int i = 0;
 		for (String key : keys_cache) {
 			put(key, vals[i]);
 			i++;
-		};
+		}
 		keys_cache = null;
-	};
-};
+	}
+}

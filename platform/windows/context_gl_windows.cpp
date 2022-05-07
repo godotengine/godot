@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,27 +51,42 @@
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
 void ContextGL_Windows::release_current() {
-
 	wglMakeCurrent(hDC, NULL);
 }
 
 void ContextGL_Windows::make_current() {
-
 	wglMakeCurrent(hDC, hRC);
 }
 
-int ContextGL_Windows::get_window_width() {
+bool ContextGL_Windows::is_offscreen_available() const {
+	return hRC_offscreen != NULL;
+}
 
+void ContextGL_Windows::make_offscreen_current() {
+	ERR_FAIL_COND(!wglMakeCurrent(hDC, hRC_offscreen));
+}
+
+void ContextGL_Windows::release_offscreen_current() {
+	ERR_FAIL_COND(!wglMakeCurrent(hDC, NULL));
+}
+
+HDC ContextGL_Windows::get_hdc() {
+	return hDC;
+}
+
+HGLRC ContextGL_Windows::get_hglrc() {
+	return hRC;
+}
+
+int ContextGL_Windows::get_window_width() {
 	return OS::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_Windows::get_window_height() {
-
 	return OS::get_singleton()->get_video_mode().height;
 }
 
 bool ContextGL_Windows::should_vsync_via_compositor() {
-
 	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
 		return false;
 	}
@@ -88,7 +103,6 @@ bool ContextGL_Windows::should_vsync_via_compositor() {
 }
 
 void ContextGL_Windows::swap_buffers() {
-
 	SwapBuffers(hDC);
 
 	if (use_vsync) {
@@ -100,7 +114,7 @@ void ContextGL_Windows::swap_buffers() {
 
 		if (vsync_via_compositor_now != vsync_via_compositor) {
 			// The previous frame had a different operating mode than this
-			// frame.  Set the 'vsync_via_compositor' member variable and the
+			// frame. Set the 'vsync_via_compositor' member variable and the
 			// OpenGL swap interval to their proper values.
 			set_use_vsync(true);
 		}
@@ -108,7 +122,6 @@ void ContextGL_Windows::swap_buffers() {
 }
 
 void ContextGL_Windows::set_use_vsync(bool p_use) {
-
 	vsync_via_compositor = p_use && should_vsync_via_compositor();
 
 	if (wglSwapIntervalEXT) {
@@ -120,14 +133,12 @@ void ContextGL_Windows::set_use_vsync(bool p_use) {
 }
 
 bool ContextGL_Windows::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 #define _WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
 
 Error ContextGL_Windows::initialize() {
-
 	static PIXELFORMATDESCRIPTOR pfd = {
 		sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
 		1,
@@ -175,7 +186,6 @@ Error ContextGL_Windows::initialize() {
 	wglMakeCurrent(hDC, hRC);
 
 	if (opengl_3_context) {
-
 		int attribs[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
 			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -207,6 +217,8 @@ Error ContextGL_Windows::initialize() {
 		{
 			return ERR_CANT_CREATE; // Return FALSE
 		}
+
+		hRC_offscreen = wglCreateContextAttribsARB(hDC, 0, attribs);
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
@@ -217,9 +229,9 @@ Error ContextGL_Windows::initialize() {
 }
 
 ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
-
 	opengl_3_context = p_opengl_3_context;
 	hWnd = hwnd;
+	hRC_offscreen = NULL;
 	use_vsync = false;
 	vsync_via_compositor = false;
 }

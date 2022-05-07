@@ -13,10 +13,11 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[{*.{py,cs},SConstruct,SCsub}]
+[{*.py,SConstruct,SCsub}]
 indent_style = space
 indent_size = 4
 
-[.travis.yml]
+# YAML requires indentation with spaces instead of tabs.
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2

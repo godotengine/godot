@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,6 +126,11 @@ ARVRInterface::~ARVRInterface(){};
 
 // optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
 unsigned int ARVRInterface::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
+	return 0;
+};
+
+// optional render to external depth texture which enhances performance on those platforms that require us to submit our end result into special textures.
+unsigned int ARVRInterface::get_external_depth_for_eye(ARVRInterface::Eyes p_eye) {
 	return 0;
 };
 

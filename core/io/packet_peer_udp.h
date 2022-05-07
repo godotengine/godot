@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,8 @@
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer.h"
 
+class UDPServer;
+
 class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);
 
@@ -55,6 +57,7 @@ protected:
 	bool connected;
 	bool blocking;
 	bool broadcast;
+	UDPServer *udp_server;
 	Ref<NetSocket> _sock;
 
 	static void _bind_methods();
@@ -72,7 +75,9 @@ public:
 	Error wait();
 	bool is_listening() const;
 
-	Error connect_socket(Ref<NetSocket> p_sock); // Used by UDPServer
+	Error connect_shared_socket(Ref<NetSocket> p_sock, IP_Address p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
+	void disconnect_shared_socket(); // Used by UDPServer
+	Error store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
 	Error connect_to_host(const IP_Address &p_host, int p_port);
 	bool is_connected_to_host() const;
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Tweener" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract class for all Tweeners used by [SceneTreeTween].
+	</brief_description>
+	<description>
+		Tweeners are objects that perform a specific animating task, e.g. interpolating a property or calling a method at a given time. A [Tweener] can't be created manually, you need to use a dedicated method from [SceneTreeTween].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when the [Tweener] has just finished its job.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

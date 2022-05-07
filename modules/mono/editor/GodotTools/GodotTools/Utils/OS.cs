@@ -13,10 +13,10 @@ namespace GodotTools.Utils
     public static class OS
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern string GetPlatformName();
+        private static extern string GetPlatformName();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern bool UnixFileHasExecutableAccess(string filePath);
+        private static extern bool UnixFileHasExecutableAccess(string filePath);
 
         public static class Names
         {
@@ -62,6 +62,11 @@ namespace GodotTools.Utils
             return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
+        private static bool IsAnyOS(IEnumerable<string> names)
+        {
+            return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
+        }
+
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isOSX = new Lazy<bool>(() => IsOS(Names.OSX));
         private static readonly Lazy<bool> _isX11 = new Lazy<bool>(() => IsOS(Names.X11));
@@ -71,6 +76,7 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isiOS = new Lazy<bool>(() => IsOS(Names.iOS));
         private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
+        private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
 
         public static bool IsWindows => _isWindows.Value || IsUWP;
         public static bool IsOSX => _isOSX.Value;
@@ -82,38 +88,42 @@ namespace GodotTools.Utils
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
 
-        private static bool? _isUnixCache;
-        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
+        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS};
 
-        public static bool IsUnixLike()
-        {
-            if (_isUnixCache.HasValue)
-                return _isUnixCache.Value;
-
-            string osName = GetPlatformName();
-            _isUnixCache = UnixLikePlatforms.Any(p => p.Equals(osName, StringComparison.OrdinalIgnoreCase));
-            return _isUnixCache.Value;
-        }
+        public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';
 
         public static string PathWhich([NotNull] string name)
         {
-            return IsWindows ? PathWhichWindows(name) : PathWhichUnix(name);
+            if (IsWindows)
+                return PathWhichWindows(name);
+
+            return PathWhichUnix(name);
         }
 
         private static string PathWhichWindows([NotNull] string name)
         {
-            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? new string[] { };
+            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) &&
+                windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
@@ -130,11 +140,20 @@ namespace GodotTools.Utils
         private static string PathWhichUnix([NotNull] string name)
         {
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
 
             if (pathDirs != null)
-                searchDirs.AddRange(pathDirs);
+            {
+                foreach (var pathDir in pathDirs)
+                {
+                    if (pathDir.IndexOfAny(invalidPathChars) != -1)
+                        continue;
+
+                    searchDirs.Add(pathDir);
+                }
+            }
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 

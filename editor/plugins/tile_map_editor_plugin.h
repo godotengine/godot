@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 #include "scene/gui/tool_button.h"
 
 class TileMapEditor : public VBoxContainer {
-
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 	enum Tool {
@@ -119,6 +118,7 @@ class TileMapEditor : public VBoxContainer {
 	Rect2i rectangle;
 
 	Point2i over_tile;
+	bool refocus_over_tile;
 
 	bool *bucket_cache_visited;
 	Rect2i bucket_cache_rect;
@@ -172,6 +172,7 @@ class TileMapEditor : public VBoxContainer {
 	void _select(const Point2i &p_from, const Point2i &p_to);
 	void _erase_selection();
 
+	void _draw_grid(Control *p_viewport, const Rect2 &p_rect) const;
 	void _draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform);
 	void _draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform);
 	void _clear_bucket_cache();
@@ -231,7 +232,6 @@ public:
 };
 
 class TileMapEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
 	TileMapEditor *tile_map_editor;

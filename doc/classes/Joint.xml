@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Joint" inherits="Spatial" version="3.2">
+<class name="Joint" inherits="Spatial" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all 3D joints.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Joints are used to bind together two physics bodies. They have a solver priority and can define if the bodies of the two attached nodes should be able to collide with each other.
 	</description>
 	<tutorials>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
 	<methods>
 	</methods>

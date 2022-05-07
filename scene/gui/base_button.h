@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 class ButtonGroup;
 
 class BaseButton : public Control {
-
 	GDCLASS(BaseButton, Control);
 
 public:
@@ -55,7 +54,6 @@ private:
 
 	ActionMode action_mode;
 	struct Status {
-
 		bool pressed;
 		bool hovering;
 		bool press_attempt;
@@ -98,7 +96,8 @@ public:
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
-	void set_pressed(bool p_pressed); ///only works in toggle mode
+	void set_pressed(bool p_pressed); // Only works in toggle mode.
+	void set_pressed_no_signal(bool p_pressed);
 	void set_toggle_mode(bool p_on);
 	bool is_toggle_mode() const;
 
@@ -136,7 +135,6 @@ VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
-
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	Set<BaseButton *> buttons;

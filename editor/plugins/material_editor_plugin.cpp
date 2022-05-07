@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,7 @@
 #include "scene/resources/particles_material.h"
 
 void MaterialEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
-
 		//get_scene()->connect("node_removed",this,"_node_removed");
 
 		if (first_enter) {
@@ -58,7 +56,6 @@ void MaterialEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
@@ -67,20 +64,17 @@ void MaterialEditor::_notification(int p_what) {
 }
 
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
-
 	material = p_material;
 	camera->set_environment(p_env);
 	if (!material.is_null()) {
 		sphere_instance->set_material_override(material);
 		box_instance->set_material_override(material);
 	} else {
-
 		hide();
 	}
 }
 
 void MaterialEditor::_button_pressed(Node *p_button) {
-
 	if (p_button == light_1_switch) {
 		light1->set_visible(!light_1_switch->is_pressed());
 	}
@@ -107,12 +101,10 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 }
 
 void MaterialEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_button_pressed"), &MaterialEditor::_button_pressed);
 }
 
 MaterialEditor::MaterialEditor() {
-
 	vc = memnew(ViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
@@ -210,16 +202,15 @@ MaterialEditor::MaterialEditor() {
 ///////////////////////
 
 bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
-
 	Material *material = Object::cast_to<Material>(p_object);
-	if (!material)
+	if (!material) {
 		return false;
+	}
 
 	return material->get_shader_mode() == Shader::MODE_SPATIAL;
 }
 
 void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
-
 	Material *material = Object::cast_to<Material>(p_object);
 	if (!material) {
 		return;
@@ -239,23 +230,19 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginMaterial> plugin;
 	plugin.instance();
 	add_inspector_plugin(plugin);
 }
 
 String SpatialMaterialConversionPlugin::converts_to() const {
-
 	return "ShaderMaterial";
 }
 bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-
 	Ref<SpatialMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-
 	Ref<SpatialMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
@@ -275,7 +262,6 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-
 		// Texture parameter has to be treated specially since SpatialMaterial saved it
 		// as RID but ShaderMaterial needs Texture itself
 		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
@@ -288,20 +274,19 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
 String ParticlesMaterialConversionPlugin::converts_to() const {
-
 	return "ShaderMaterial";
 }
 bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-
 	Ref<ParticlesMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-
 	Ref<ParticlesMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
@@ -326,20 +311,19 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
 String CanvasItemMaterialConversionPlugin::converts_to() const {
-
 	return "ShaderMaterial";
 }
 bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-
 	Ref<CanvasItemMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-
 	Ref<CanvasItemMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
@@ -364,5 +348,7 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }

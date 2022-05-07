@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "wslay/wslay.h"
 
 class WSLClient : public WebSocketClient {
-
 	GDCIIMPL(WSLClient, WebSocketClient);
 
 private:
@@ -64,8 +63,11 @@ private:
 
 	String _key;
 	String _host;
+	uint16_t _port;
+	Array _ip_candidates;
 	Vector<String> _protocols;
-	bool _use_ssl;
+	bool _use_ssl = false;
+	IP::ResolverID _resolver_id = IP::RESOLVER_INVALID_ID;
 
 	void _do_handshake();
 	bool _verify_headers(String &r_protocol);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WeakRef" inherits="Reference" version="3.2">
+<class name="WeakRef" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Holds an [Object], but does not contribute to the reference count if the object is a reference.
 	</brief_description>
@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_ref" qualifiers="const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns the [Object] this weakref is referring to.
 			</description>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,23 +31,21 @@
 #include "bone_attachment.h"
 
 void BoneAttachment::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "bone_name") {
 		Skeleton *parent = Object::cast_to<Skeleton>(get_parent());
 
 		if (parent) {
-
 			String names;
 			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					names += ",";
+				}
 				names += parent->get_bone_name(i);
 			}
 
 			property.hint = PROPERTY_HINT_ENUM;
 			property.hint_string = names;
 		} else {
-
 			property.hint = PROPERTY_HINT_NONE;
 			property.hint_string = "";
 		}
@@ -55,10 +53,8 @@ void BoneAttachment::_validate_property(PropertyInfo &property) const {
 }
 
 void BoneAttachment::_check_bind() {
-
 	Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
 	if (sk) {
-
 		int idx = sk->find_bone(bone_name);
 		if (idx != -1) {
 			sk->bind_child_node_to_bone(idx, this);
@@ -69,12 +65,9 @@ void BoneAttachment::_check_bind() {
 }
 
 void BoneAttachment::_check_unbind() {
-
 	if (bound) {
-
 		Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
 		if (sk) {
-
 			int idx = sk->find_bone(bone_name);
 			if (idx != -1) {
 				sk->unbind_child_node_from_bone(idx, this);
@@ -85,31 +78,27 @@ void BoneAttachment::_check_unbind() {
 }
 
 void BoneAttachment::set_bone_name(const String &p_name) {
-
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_unbind();
+	}
 
 	bone_name = p_name;
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_bind();
+	}
 }
 
 String BoneAttachment::get_bone_name() const {
-
 	return bone_name;
 }
 
 void BoneAttachment::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			_check_bind();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			_check_unbind();
 		} break;
 	}

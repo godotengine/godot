@@ -5,8 +5,11 @@ Import("env_modules")
 
 env_mbed_tls = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+
 if env["builtin_mbedtls"]:
-    # Thirdparty source files
     thirdparty_sources = [
         "aes.c",
         "aesni.c",
@@ -26,6 +29,7 @@ if env["builtin_mbedtls"]:
         "cipher_wrap.c",
         "cmac.c",
         "ctr_drbg.c",
+        "constant_time.c",
         "debug.c",
         "des.c",
         "dhm.c",
@@ -45,8 +49,9 @@ if env["builtin_mbedtls"]:
         "md4.c",
         "md5.c",
         "md.c",
-        "md_wrap.c",
         "memory_buffer_alloc.c",
+        "mps_reader.c",
+        "mps_trace.c",
         "net_sockets.c",
         "nist_kw.c",
         "oid.c",
@@ -72,9 +77,11 @@ if env["builtin_mbedtls"]:
         "ssl_ciphersuites.c",
         "ssl_cli.c",
         "ssl_cookie.c",
+        "ssl_msg.c",
         "ssl_srv.c",
         "ssl_ticket.c",
         "ssl_tls.c",
+        "ssl_tls13_keys.c",
         "threading.c",
         "timing.c",
         "version.c",
@@ -96,7 +103,17 @@ if env["builtin_mbedtls"]:
 
     env_thirdparty = env_mbed_tls.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
 
-# Module sources
-env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")
+
+# Godot source files
+
+module_obj = []
+
+env_mbed_tls.add_source_files(module_obj, "*.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

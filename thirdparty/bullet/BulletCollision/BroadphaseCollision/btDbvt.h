@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2007 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2007 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -203,8 +203,8 @@ struct btDbvntNode
 
     btDbvntNode(const btDbvtNode* n)
     : volume(n->volume)
-    , angle(0)
     , normal(0,0,0)
+    , angle(0)
     , data(n->data)
     {
         childs[0] = 0;

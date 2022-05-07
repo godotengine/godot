@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 #include "scene/resources/texture.h"
 
 class TileSet : public Resource {
-
 	GDCLASS(TileSet, Resource);
 
 public:
@@ -97,8 +96,8 @@ public:
 		int spacing;
 		Vector2 icon_coord;
 		Map<Vector2, uint32_t> flags;
-		Map<Vector2, Ref<OccluderPolygon2D> > occluder_map;
-		Map<Vector2, Ref<NavigationPolygon> > navpoly_map;
+		Map<Vector2, Ref<OccluderPolygon2D>> occluder_map;
+		Map<Vector2, Ref<NavigationPolygon>> navpoly_map;
 		Map<Vector2, int> priority_map;
 		Map<Vector2, int> z_index_map;
 
@@ -112,7 +111,6 @@ public:
 
 private:
 	struct TileData {
-
 		String name;
 		Ref<Texture> texture;
 		Ref<Texture> normal_map;
@@ -173,13 +171,13 @@ public:
 	void tile_set_tile_mode(int p_id, TileMode p_tile_mode);
 	TileMode tile_get_tile_mode(int p_id) const;
 
-	void autotile_set_icon_coordinate(int p_id, Vector2 coord);
+	void autotile_set_icon_coordinate(int p_id, const Vector2 &coord);
 	Vector2 autotile_get_icon_coordinate(int p_id) const;
 
 	void autotile_set_spacing(int p_id, int p_spacing);
 	int autotile_get_spacing(int p_id) const;
 
-	void autotile_set_size(int p_id, Size2 p_size);
+	void autotile_set_size(int p_id, const Size2 &p_size);
 	Size2 autotile_get_size(int p_id) const;
 
 	void autotile_clear_bitmask_map(int p_id);
@@ -191,11 +189,11 @@ public:
 	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
 
-	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag);
-	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
+	void autotile_set_bitmask(int p_id, const Vector2 &p_coord, uint32_t p_flag);
+	uint32_t autotile_get_bitmask(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
-	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
-	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
+	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
+	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
 
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
@@ -233,7 +231,7 @@ public:
 
 	void autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord);
 	Ref<OccluderPolygon2D> autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<OccluderPolygon2D> > &autotile_get_light_oclusion_map(int p_id) const;
+	const Map<Vector2, Ref<OccluderPolygon2D>> &autotile_get_light_oclusion_map(int p_id) const;
 
 	void tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_navigation_polygon_offset(int p_id) const;
@@ -243,7 +241,7 @@ public:
 
 	void autotile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_coord);
 	Ref<NavigationPolygon> autotile_get_navigation_polygon(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<NavigationPolygon> > &autotile_get_navigation_map(int p_id) const;
+	const Map<Vector2, Ref<NavigationPolygon>> &autotile_get_navigation_map(int p_id) const;
 
 	void tile_set_z_index(int p_id, int p_z_index);
 	int tile_get_z_index(int p_id) const;

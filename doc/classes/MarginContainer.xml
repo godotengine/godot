@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MarginContainer" inherits="Container" version="3.2">
+<class name="MarginContainer" inherits="Container" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Simple margin container.
 	</brief_description>
@@ -7,30 +7,32 @@
 		Adds a top, left, bottom, and right margin to all [Control] nodes that are direct children of the container. To control the [MarginContainer]'s margin, use the [code]margin_*[/code] theme properties listed below.
 		[b]Note:[/b] Be careful, [Control] margin values are different than the constant margin values. If you want to change the custom margin values of the [MarginContainer] by code, you should use the following examples:
 		[codeblock]
+		# This code sample assumes the current script is extending MarginContainer.
 		var margin_value = 100
-		set("custom_constants/margin_top", margin_value)
-		set("custom_constants/margin_left", margin_value)
-		set("custom_constants/margin_bottom", margin_value)
-		set("custom_constants/margin_right", margin_value)
+		add_constant_override("margin_top", margin_value)
+		add_constant_override("margin_left", margin_value)
+		add_constant_override("margin_bottom", margin_value)
+		add_constant_override("margin_right", margin_value)
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="margin_bottom" type="int" default="0">
+		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a bottom margin of [code]margin_bottom[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_left" type="int" default="0">
+		<theme_item name="margin_left" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a left margin of [code]margin_left[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_right" type="int" default="0">
+		<theme_item name="margin_right" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a right margin of [code]margin_right[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_top" type="int" default="0">
+		<theme_item name="margin_top" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a top margin of [code]margin_top[/code] pixels.
 		</theme_item>
 	</theme_items>

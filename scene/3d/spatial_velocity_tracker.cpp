@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,16 +32,13 @@
 #include "core/engine.h"
 
 void SpatialVelocityTracker::set_track_physics_step(bool p_track_physics_step) {
-
 	physics_step = p_track_physics_step;
 }
 
 bool SpatialVelocityTracker::is_tracking_physics_step() const {
-
 	return physics_step;
 }
 void SpatialVelocityTracker::update_position(const Vector3 &p_position) {
-
 	PositionHistory ph;
 	ph.position = p_position;
 	if (physics_step) {
@@ -60,7 +57,6 @@ void SpatialVelocityTracker::update_position(const Vector3 &p_position) {
 	position_history.write[0] = ph;
 }
 Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
-
 	Vector3 linear_velocity;
 
 	float max_time = 1 / 5.0; //maximum time to interpolate a velocity
@@ -90,8 +86,9 @@ Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
 			delta = double(diff) / 1000000.0;
 		}
 
-		if (base_time + time_accum + delta > max_time)
+		if (base_time + time_accum + delta > max_time) {
 			break;
+		}
 
 		distance_accum += distance;
 		time_accum += delta;
@@ -105,7 +102,6 @@ Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
 }
 
 void SpatialVelocityTracker::reset(const Vector3 &p_new_pos) {
-
 	PositionHistory ph;
 	ph.position = p_new_pos;
 	if (physics_step) {
@@ -119,7 +115,6 @@ void SpatialVelocityTracker::reset(const Vector3 &p_new_pos) {
 }
 
 void SpatialVelocityTracker::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_track_physics_step", "enable"), &SpatialVelocityTracker::set_track_physics_step);
 	ClassDB::bind_method(D_METHOD("is_tracking_physics_step"), &SpatialVelocityTracker::is_tracking_physics_step);
 	ClassDB::bind_method(D_METHOD("update_position", "position"), &SpatialVelocityTracker::update_position);

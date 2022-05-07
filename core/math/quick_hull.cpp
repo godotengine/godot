@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,20 +33,13 @@
 #include "core/map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
+bool QuickHull::_flag_warnings = true;
 
-Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
-
+Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh, real_t p_over_tolerance_epsilon) {
 	/* CREATE AABB VOLUME */
 
 	AABB aabb;
-	for (int i = 0; i < p_points.size(); i++) {
-
-		if (i == 0) {
-			aabb.position = p_points[i];
-		} else {
-			aabb.expand_to(p_points[i]);
-		}
-	}
+	aabb.create_from_points(p_points);
 
 	if (aabb.size == Vector3()) {
 		return ERR_CANT_CREATE;
@@ -57,7 +50,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	Set<Vector3> valid_cache;
 
 	for (int i = 0; i < p_points.size(); i++) {
-
 		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));
 		if (valid_cache.has(sp)) {
 			valid_points.write[i] = false;
@@ -78,12 +70,11 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		real_t max = 0, min = 0;
 
 		for (int i = 0; i < p_points.size(); i++) {
-
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 			real_t d = p_points[i][longest_axis];
 			if (i == 0 || d < min) {
-
 				simplex[0] = i;
 				min = d;
 			}
@@ -102,36 +93,34 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Vector3 rel12 = p_points[simplex[0]] - p_points[simplex[1]];
 
 		for (int i = 0; i < p_points.size(); i++) {
-
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 
 			Vector3 n = rel12.cross(p_points[simplex[0]] - p_points[i]).cross(rel12).normalized();
 			real_t d = Math::abs(n.dot(p_points[simplex[0]]) - n.dot(p_points[i]));
 
 			if (i == 0 || d > maxd) {
-
 				maxd = d;
 				simplex[2] = i;
 			}
 		}
 	}
 
-	//fourth vertex is the one  most further away from the plane
+	//fourth vertex is the one most further away from the plane
 
 	{
 		real_t maxd = 0;
 		Plane p(p_points[simplex[0]], p_points[simplex[1]], p_points[simplex[2]]);
 
 		for (int i = 0; i < p_points.size(); i++) {
-
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 
 			real_t d = Math::abs(p.distance_to(p_points[i]));
 
 			if (i == 0 || d > maxd) {
-
 				maxd = d;
 				simplex[3] = i;
 			}
@@ -152,7 +141,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	List<Face> faces;
 
 	for (int i = 0; i < 4; i++) {
-
 		static const int face_order[4][3] = {
 			{ 0, 1, 2 },
 			{ 0, 1, 3 },
@@ -178,27 +166,29 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		faces.push_back(f);
 	}
 
-	real_t over_tolerance = 3 * UNIT_EPSILON * (aabb.size.x + aabb.size.y + aabb.size.z);
+	real_t over_tolerance = p_over_tolerance_epsilon * (aabb.size.x + aabb.size.y + aabb.size.z);
 
 	/* COMPUTE AVAILABLE VERTICES */
 
 	for (int i = 0; i < p_points.size(); i++) {
-
-		if (i == simplex[0])
+		if (i == simplex[0]) {
 			continue;
-		if (i == simplex[1])
+		}
+		if (i == simplex[1]) {
 			continue;
-		if (i == simplex[2])
+		}
+		if (i == simplex[2]) {
 			continue;
-		if (i == simplex[3])
+		}
+		if (i == simplex[3]) {
 			continue;
-		if (!valid_points[i])
+		}
+		if (!valid_points[i]) {
 			continue;
+		}
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
-
 			if (E->get().plane.distance_to(p_points[i]) > over_tolerance) {
-
 				E->get().points_over.push_back(i);
 				break;
 			}
@@ -219,7 +209,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	uint32_t debug_stop = debug_stop_after;
 
 	while (debug_stop > 0 && faces.back()->get().points_over.size()) {
-
 		debug_stop--;
 		Face &f = faces.back()->get();
 
@@ -228,7 +217,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		real_t next_d = 0;
 
 		for (int i = 0; i < f.points_over.size(); i++) {
-
 			real_t d = f.plane.distance_to(p_points[f.points_over[i]]);
 
 			if (d > next_d) {
@@ -247,9 +235,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Map<Edge, FaceConnect> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
-
 			if (E->get().plane.distance_to(v) > 0) {
-
 				lit_faces.push_back(E);
 
 				for (int i = 0; i < 3; i++) {
@@ -265,7 +251,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 						//left
 						F->get().left = E;
 					} else {
-
 						F->get().right = E;
 					}
 				}
@@ -276,7 +261,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		List<List<Face>::Element *> new_faces; //new faces
 
 		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
-
 			FaceConnect &fc = E->get();
 			if (fc.left && fc.right) {
 				continue; //edge is uninteresting, not on horizont
@@ -304,17 +288,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		//distribute points into new faces
 
 		for (List<List<Face>::Element *>::Element *F = lit_faces.front(); F; F = F->next()) {
-
 			Face &lf = F->get()->get();
 
 			for (int i = 0; i < lf.points_over.size(); i++) {
-
-				if (lf.points_over[i] == f.points_over[next]) //do not add current one
+				if (lf.points_over[i] == f.points_over[next]) { //do not add current one
 					continue;
+				}
 
 				Vector3 p = p_points[lf.points_over[i]];
 				for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
-
 					Face &f2 = E->get()->get();
 					if (f2.plane.distance_to(p) > over_tolerance) {
 						f2.points_over.push_back(lf.points_over[i]);
@@ -327,7 +309,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		//erase lit faces
 
 		while (lit_faces.size()) {
-
 			faces.erase(lit_faces.front()->get());
 			lit_faces.pop_front();
 		}
@@ -335,7 +316,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		//put faces that contain no points on the front
 
 		for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
-
 			Face &f2 = E->get()->get();
 			if (f2.points_over.size() == 0) {
 				faces.move_to_front(E->get());
@@ -352,7 +332,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	List<Geometry::MeshData::Face> ret_faces;
 
 	for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
-
 		Geometry::MeshData::Face f;
 		f.plane = E->get().plane;
 
@@ -363,7 +342,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		List<Geometry::MeshData::Face>::Element *F = ret_faces.push_back(f);
 
 		for (int i = 0; i < 3; i++) {
-
 			uint32_t a = E->get().vertices[i];
 			uint32_t b = E->get().vertices[(i + 1) % 3];
 			Edge e(a, b);
@@ -376,7 +354,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 				//left
 				G->get().left = F;
 			} else {
-
 				G->get().right = F;
 			}
 		}
@@ -384,22 +361,35 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	//fill faces
 
-	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+	bool warning_f = false;
+	bool warning_o_equal_e = false;
+	bool warning_o = false;
+	bool warning_not_f2 = false;
 
+	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry::MeshData::Face &f = E->get();
 
 		for (int i = 0; i < f.indices.size(); i++) {
-
 			int a = E->get().indices[i];
 			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
 
 			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);
 
-			ERR_CONTINUE(!F);
+			if (unlikely(!F)) {
+				warning_f = true;
+				continue;
+			}
+
 			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
-			ERR_CONTINUE(O == E);
-			ERR_CONTINUE(O == NULL);
+			if (unlikely(O == E)) {
+				warning_o_equal_e = true;
+				continue;
+			}
+			if (unlikely(!O)) {
+				warning_o = true;
+				continue;
+			}
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
@@ -411,7 +401,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 					if (O->get().indices[j] == a) {
 						//append the rest
 						for (int k = 0; k < ois; k++) {
-
 							int idx = O->get().indices[(k + j) % ois];
 							int idxn = O->get().indices[(k + j + 1) % ois];
 							if (idx == b && idxn == a) { //already have b!
@@ -425,12 +414,18 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 							Edge e2(idx, idxn);
 
 							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
-							ERR_CONTINUE(!F2);
+
+							if (unlikely(!F2)) {
+								warning_not_f2 = true;
+								continue;
+							}
+
 							//change faceconnect, point to this face instead
-							if (F2->get().left == O)
+							if (F2->get().left == O) {
 								F2->get().left = E;
-							else if (F2->get().right == O)
+							} else if (F2->get().right == O) {
 								F2->get().right = E;
+							}
 						}
 
 						break;
@@ -439,16 +434,33 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 				// remove all edge connections to this face
 				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
-					if (G->get().left == O)
-						G->get().left = NULL;
+					if (G->get().left == O) {
+						G->get().left = nullptr;
+					}
 
-					if (G->get().right == O)
-						G->get().right = NULL;
+					if (G->get().right == O) {
+						G->get().right = nullptr;
+					}
 				}
 
 				ret_edges.erase(F); //remove the edge
 				ret_faces.erase(O); //remove the face
 			}
+		}
+	}
+
+	if (_flag_warnings) {
+		if (warning_f) {
+			WARN_PRINT("QuickHull : !F");
+		}
+		if (warning_o_equal_e) {
+			WARN_PRINT("QuickHull : O == E");
+		}
+		if (warning_o) {
+			WARN_PRINT("QuickHull : O == nullptr");
+		}
+		if (warning_not_f2) {
+			WARN_PRINT("QuickHull : !F2");
 		}
 	}
 
@@ -463,14 +475,34 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
 	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
-
 		Geometry::MeshData::Edge e;
 		e.a = E->key().vertices[0];
 		e.b = E->key().vertices[1];
 		r_mesh.edges.write[idx++] = e;
 	}
 
-	r_mesh.vertices = p_points;
+	// we are only interested in outputting the points that are used
+	Vector<int> out_indices;
+
+	for (int n = 0; n < r_mesh.faces.size(); n++) {
+		Geometry::MeshData::Face face = r_mesh.faces[n];
+		for (int i = 0; i < face.indices.size(); i++) {
+			face.indices.set(i, find_or_create_output_index(face.indices[i], out_indices));
+		}
+		r_mesh.faces.set(n, face);
+	}
+	for (int n = 0; n < r_mesh.edges.size(); n++) {
+		Geometry::MeshData::Edge e = r_mesh.edges[n];
+		e.a = find_or_create_output_index(e.a, out_indices);
+		e.b = find_or_create_output_index(e.b, out_indices);
+		r_mesh.edges.set(n, e);
+	}
+
+	// rejig the final vertices
+	r_mesh.vertices.resize(out_indices.size());
+	for (int n = 0; n < out_indices.size(); n++) {
+		r_mesh.vertices.set(n, p_points[out_indices[n]]);
+	}
 
 	return OK;
 }

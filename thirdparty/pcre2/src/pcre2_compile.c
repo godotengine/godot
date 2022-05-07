@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ static BOOL
 
 static int
   check_lookbehinds(uint32_t *, uint32_t **, parsed_recurse_check *,
-    compile_block *);
+    compile_block *, int *);
 
 
 /*************************************************
@@ -782,12 +782,15 @@ are allowed. */
 #define PUBLIC_COMPILE_EXTRA_OPTIONS \
    (PUBLIC_LITERAL_COMPILE_EXTRA_OPTIONS| \
     PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES|PCRE2_EXTRA_BAD_ESCAPE_IS_LITERAL| \
-    PCRE2_EXTRA_ESCAPED_CR_IS_LF|PCRE2_EXTRA_ALT_BSUX)
+    PCRE2_EXTRA_ESCAPED_CR_IS_LF|PCRE2_EXTRA_ALT_BSUX| \
+    PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK)
 
 /* Compile time error code numbers. They are given names so that they can more
 easily be tracked. When a new number is added, the tables called eint1 and
 eint2 in pcre2posix.c may need to be updated, and a new error text must be
-added to compile_error_texts in pcre2_error.c. */
+added to compile_error_texts in pcre2_error.c. Also, the error codes in
+pcre2.h.in must be updated - their values are exactly 100 greater than these
+values. */
 
 enum { ERR0 = COMPILE_ERROR_BASE,
        ERR1,  ERR2,  ERR3,  ERR4,  ERR5,  ERR6,  ERR7,  ERR8,  ERR9,  ERR10,
@@ -799,7 +802,7 @@ enum { ERR0 = COMPILE_ERROR_BASE,
        ERR61, ERR62, ERR63, ERR64, ERR65, ERR66, ERR67, ERR68, ERR69, ERR70,
        ERR71, ERR72, ERR73, ERR74, ERR75, ERR76, ERR77, ERR78, ERR79, ERR80,
        ERR81, ERR82, ERR83, ERR84, ERR85, ERR86, ERR87, ERR88, ERR89, ERR90,
-       ERR91, ERR92, ERR93, ERR94, ERR95, ERR96, ERR97, ERR98 };
+       ERR91, ERR92, ERR93, ERR94, ERR95, ERR96, ERR97, ERR98, ERR99 };
 
 /* This is a table of start-of-pattern options such as (*UTF) and settings such
 as (*LIMIT_MATCH=nnnn) and (*CRLF). For completeness and backward
@@ -1202,7 +1205,7 @@ in the decoded tables. */
 
 if ((code->flags & PCRE2_DEREF_TABLES) != 0)
   {
-  ref_count = (PCRE2_SIZE *)(code->tables + tables_length);
+  ref_count = (PCRE2_SIZE *)(code->tables + TABLES_LENGTH);
   (*ref_count)++;
   }
 
@@ -1232,15 +1235,15 @@ if (newcode == NULL) return NULL;
 memcpy(newcode, code, code->blocksize);
 newcode->executable_jit = NULL;
 
-newtables = code->memctl.malloc(tables_length + sizeof(PCRE2_SIZE),
+newtables = code->memctl.malloc(TABLES_LENGTH + sizeof(PCRE2_SIZE),
   code->memctl.memory_data);
 if (newtables == NULL)
   {
   code->memctl.free((void *)newcode, code->memctl.memory_data);
   return NULL;
   }
-memcpy(newtables, code->tables, tables_length);
-ref_count = (PCRE2_SIZE *)(newtables + tables_length);
+memcpy(newtables, code->tables, TABLES_LENGTH);
+ref_count = (PCRE2_SIZE *)(newtables + TABLES_LENGTH);
 *ref_count = 1;
 
 newcode->tables = newtables;
@@ -1270,7 +1273,7 @@ if (code != NULL)
     be freed when there are no more references to them. The *ref_count should
     always be > 0. */
 
-    ref_count = (PCRE2_SIZE *)(code->tables + tables_length);
+    ref_count = (PCRE2_SIZE *)(code->tables + TABLES_LENGTH);
     if (*ref_count > 0)
       {
       (*ref_count)--;
@@ -1398,32 +1401,47 @@ static BOOL
 read_repeat_counts(PCRE2_SPTR *ptrptr, PCRE2_SPTR ptrend, uint32_t *minp,
   uint32_t *maxp, int *errorcodeptr)
 {
-PCRE2_SPTR p = *ptrptr;
+PCRE2_SPTR p;
 BOOL yield = FALSE;
+BOOL had_comma = FALSE;
 int32_t min = 0;
 int32_t max = REPEAT_UNLIMITED; /* This value is larger than MAX_REPEAT_COUNT */
 
-/* NB read_number() initializes the error code to zero. The only error is for a
-number that is too big. */
+/* Check the syntax */
 
+*errorcodeptr = 0;
+for (p = *ptrptr;; p++)
+  {
+  uint32_t c;
+  if (p >= ptrend) return FALSE;
+  c = *p;
+  if (IS_DIGIT(c)) continue;
+  if (c == CHAR_RIGHT_CURLY_BRACKET) break;
+  if (c == CHAR_COMMA)
+    {
+    if (had_comma) return FALSE;
+    had_comma = TRUE;
+    }
+  else return FALSE;
+  }
+
+/* The only error from read_number() is for a number that is too big. */
+
+p = *ptrptr;
 if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &min, errorcodeptr))
   goto EXIT;
-
-if (p >= ptrend) goto EXIT;
 
 if (*p == CHAR_RIGHT_CURLY_BRACKET)
   {
   p++;
   max = min;
   }
-
 else
   {
-  if (*p++ != CHAR_COMMA || p >= ptrend) goto EXIT;
-  if (*p != CHAR_RIGHT_CURLY_BRACKET)
+  if (*(++p) != CHAR_RIGHT_CURLY_BRACKET)
     {
     if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &max,
-        errorcodeptr) || p >= ptrend ||  *p != CHAR_RIGHT_CURLY_BRACKET)
+        errorcodeptr))
       goto EXIT;
     if (max < min)
       {
@@ -1438,11 +1456,10 @@ yield = TRUE;
 if (minp != NULL) *minp = (uint32_t)min;
 if (maxp != NULL) *maxp = (uint32_t)max;
 
-/* Update the pattern pointer on success, or after an error, but not when
-the result is "not a repeat quantifier". */
+/* Update the pattern pointer */
 
 EXIT:
-if (yield || *errorcodeptr != 0) *ptrptr = p;
+*ptrptr = p;
 return yield;
 }
 
@@ -1776,19 +1793,23 @@ else
       {
       oldptr = ptr;
       ptr--;   /* Back to the digit */
-      if (!read_number(&ptr, ptrend, -1, INT_MAX/10 - 1, ERR61, &s,
-          errorcodeptr))
-        break;
 
-      /* \1 to \9 are always back references. \8x and \9x are too; \1x to \7x
+      /* As we know we are at a digit, the only possible error from
+      read_number() is a number that is too large to be a group number. In this
+      case we fall through handle this as not a group reference. If we have
+      read a small enough number, check for a back reference.
+
+      \1 to \9 are always back references. \8x and \9x are too; \1x to \7x
       are octal escapes if there are not that many previous captures. */
 
-      if (s < 10 || oldptr[-1] >= CHAR_8 || s <= (int)cb->bracount)
+      if (read_number(&ptr, ptrend, -1, INT_MAX/10 - 1, 0, &s, errorcodeptr) &&
+          (s < 10 || oldptr[-1] >= CHAR_8 || s <= (int)cb->bracount))
         {
         if (s > (int)MAX_GROUP_NUMBER) *errorcodeptr = ERR61;
           else escape = -s;     /* Indicates a back reference */
         break;
         }
+
       ptr = oldptr;      /* Put the pointer back and fall through */
       }
 
@@ -2344,7 +2365,7 @@ if (ptr > *nameptr + MAX_NAME_SIZE)
   *errorcodeptr = ERR48;
   goto FAILED;
   }
-*namelenptr = ptr - *nameptr;
+*namelenptr = (uint32_t)(ptr - *nameptr);
 
 /* Subpattern names must not be empty, and their terminator is checked here.
 (What follows a verb or alpha assertion name is checked separately.) */
@@ -3653,7 +3674,7 @@ while (ptr < ptrend)
     if (ptr >= ptrend) goto UNCLOSED_PARENTHESIS;
 
     /* If ( is not followed by ? it is either a capture or a special verb or an
-    alpha assertion. */
+    alpha assertion or a positive non-atomic lookahead. */
 
     if (*ptr != CHAR_QUESTION_MARK)
       {
@@ -3685,10 +3706,10 @@ while (ptr < ptrend)
         break;
 
       /* Handle "alpha assertions" such as (*pla:...). Most of these are
-      synonyms for the historical symbolic assertions, but the script run ones
-      are new. They are distinguished by starting with a lower case letter.
-      Checking both ends of the alphabet makes this work in all character
-      codes. */
+      synonyms for the historical symbolic assertions, but the script run and
+      non-atomic lookaround ones are new. They are distinguished by starting
+      with a lower case letter. Checking both ends of the alphabet makes this
+      work in all character codes. */
 
       else if (CHMAX_255(c) && (cb->ctypes[c] & ctype_lcletter) != 0)
         {
@@ -3747,9 +3768,7 @@ while (ptr < ptrend)
           goto POSITIVE_LOOK_AHEAD;
 
           case META_LOOKAHEAD_NA:
-          *parsed_pattern++ = meta;
-          ptr++;
-          goto POST_ASSERTION;
+          goto POSITIVE_NONATOMIC_LOOK_AHEAD;
 
           case META_LOOKAHEADNOT:
           goto NEGATIVE_LOOK_AHEAD;
@@ -4333,6 +4352,7 @@ while (ptr < ptrend)
           {
           if (++ptr >= ptrend || !IS_DIGIT(*ptr)) goto BAD_VERSION_CONDITION;
           minor = (*ptr++ - CHAR_0) * 10;
+          if (ptr >= ptrend) goto BAD_VERSION_CONDITION;
           if (IS_DIGIT(*ptr)) minor += *ptr++ - CHAR_0;
           if (ptr >= ptrend || *ptr != CHAR_RIGHT_PARENTHESIS)
             goto BAD_VERSION_CONDITION;
@@ -4438,6 +4458,12 @@ while (ptr < ptrend)
       ptr++;
       goto POST_ASSERTION;
 
+      case CHAR_ASTERISK:
+      POSITIVE_NONATOMIC_LOOK_AHEAD:         /* Come from (?* */
+      *parsed_pattern++ = META_LOOKAHEAD_NA;
+      ptr++;
+      goto POST_ASSERTION;
+
       case CHAR_EXCLAMATION_MARK:
       NEGATIVE_LOOK_AHEAD:                   /* Come from (*nla: */
       *parsed_pattern++ = META_LOOKAHEADNOT;
@@ -4447,20 +4473,23 @@ while (ptr < ptrend)
 
       /* ---- Lookbehind assertions ---- */
 
-      /* (?< followed by = or ! is a lookbehind assertion. Otherwise (?< is the
-      start of the name of a capturing group. */
+      /* (?< followed by = or ! or * is a lookbehind assertion. Otherwise (?<
+      is the start of the name of a capturing group. */
 
       case CHAR_LESS_THAN_SIGN:
       if (ptrend - ptr <= 1 ||
-         (ptr[1] != CHAR_EQUALS_SIGN && ptr[1] != CHAR_EXCLAMATION_MARK))
+         (ptr[1] != CHAR_EQUALS_SIGN &&
+          ptr[1] != CHAR_EXCLAMATION_MARK &&
+          ptr[1] != CHAR_ASTERISK))
         {
         terminator = CHAR_GREATER_THAN_SIGN;
         goto DEFINE_NAME;
         }
       *parsed_pattern++ = (ptr[1] == CHAR_EQUALS_SIGN)?
-        META_LOOKBEHIND : META_LOOKBEHINDNOT;
+        META_LOOKBEHIND : (ptr[1] == CHAR_EXCLAMATION_MARK)?
+        META_LOOKBEHINDNOT : META_LOOKBEHIND_NA;
 
-      POST_LOOKBEHIND:              /* Come from (*plb: (*naplb: and (*nlb: */
+      POST_LOOKBEHIND:           /* Come from (*plb: (*naplb: and (*nlb: */
       *has_lookbehind = TRUE;
       offset = (PCRE2_SIZE)(ptr - cb->start_pattern - 2);
       PUTOFFSET(offset, parsed_pattern);
@@ -4632,8 +4661,6 @@ while (ptr < ptrend)
         {
         *parsed_pattern++ = META_KET;
         }
-
-
 
       if (top_nest == (nest_save *)(cb->start_workspace)) top_nest = NULL;
         else top_nest--;
@@ -4899,7 +4926,7 @@ range. */
 if ((options & PCRE2_CASELESS) != 0)
   {
 #ifdef SUPPORT_UNICODE
-  if ((options & PCRE2_UTF) != 0)
+  if ((options & (PCRE2_UTF|PCRE2_UCP)) != 0)
     {
     int rc;
     uint32_t oc, od;
@@ -5314,7 +5341,8 @@ dynamically as we process the pattern. */
 
 #ifdef SUPPORT_UNICODE
 BOOL utf = (options & PCRE2_UTF) != 0;
-#else  /* No UTF support */
+BOOL ucp = (options & PCRE2_UCP) != 0;
+#else  /* No Unicode support */
 BOOL utf = FALSE;
 #endif
 
@@ -5559,12 +5587,12 @@ for (;; pptr++)
       zerofirstcu = firstcu;
       zerofirstcuflags = firstcuflags;
 
-      /* For caseless UTF mode, check whether this character has more than
-      one other case. If so, generate a special OP_NOTPROP item instead of
+      /* For caseless UTF or UCP mode, check whether this character has more
+      than one other case. If so, generate a special OP_NOTPROP item instead of
       OP_NOTI. */
 
 #ifdef SUPPORT_UNICODE
-      if (utf && (options & PCRE2_CASELESS) != 0 &&
+      if ((utf||ucp) && (options & PCRE2_CASELESS) != 0 &&
           (d = UCD_CASESET(c)) != 0)
         {
         *code++ = OP_NOTPROP;
@@ -5597,7 +5625,7 @@ for (;; pptr++)
         uint32_t d;
 
 #ifdef SUPPORT_UNICODE
-        if (utf && c > 127) d = UCD_OTHERCASE(c); else
+        if ((utf || ucp) && c > 127) d = UCD_OTHERCASE(c); else
 #endif
           {
 #if PCRE2_CODE_UNIT_WIDTH != 8
@@ -6671,23 +6699,11 @@ for (;; pptr++)
             }
 
           /* For a back reference, update the back reference map and the
-          maximum back reference. Then, for each group, we must check to
-          see if it is recursive, that is, it is inside the group that it
-          references. A flag is set so that the group can be made atomic.
-          */
+          maximum back reference. */
 
           cb->backref_map |= (groupnumber < 32)? (1u << groupnumber) : 1;
           if (groupnumber > cb->top_backref)
             cb->top_backref = groupnumber;
-
-          for (oc = cb->open_caps; oc != NULL; oc = oc->next)
-            {
-            if (oc->number == groupnumber)
-              {
-              oc->flag = TRUE;
-              break;
-              }
-            }
           }
         }
 
@@ -7081,15 +7097,18 @@ for (;; pptr++)
             previous[GET(previous, 1)] != OP_ALT)
           goto END_REPEAT;
 
-        /* There is no sense in actually repeating assertions. The only
-        potential use of repetition is in cases when the assertion is optional.
-        Therefore, if the minimum is greater than zero, just ignore the repeat.
-        If the maximum is not zero or one, set it to 1. */
+        /* Perl allows all assertions to be quantified, and when they contain
+        capturing parentheses and/or are optional there are potential uses for
+        this feature. PCRE2 used to force the maximum quantifier to 1 on the
+        invalid grounds that further repetition was never useful. This was
+        always a bit pointless, since an assertion could be wrapped with a
+        repeated group to achieve the effect. General repetition is now
+        permitted, but if the maximum is unlimited it is set to one more than
+        the minimum. */
 
         if (op_previous < OP_ONCE)    /* Assertion */
           {
-          if (repeat_min > 0) goto END_REPEAT;
-          if (repeat_max > 1) repeat_max = 1;
+          if (repeat_max == REPEAT_UNLIMITED) repeat_max = repeat_min + 1;
           }
 
         /* The case of a zero minimum is special because of the need to stick
@@ -7682,19 +7701,6 @@ for (;; pptr++)
 
     cb->backref_map |= (meta_arg < 32)? (1u << meta_arg) : 1;
     if (meta_arg > cb->top_backref) cb->top_backref = meta_arg;
-
-    /* Check to see if this back reference is recursive, that it, it
-    is inside the group that it references. A flag is set so that the
-    group can be made atomic. */
-
-    for (oc = cb->open_caps; oc != NULL; oc = oc->next)
-      {
-      if (oc->number == meta_arg)
-        {
-        oc->flag = TRUE;
-        break;
-        }
-      }
     break;
 
 
@@ -7796,6 +7802,16 @@ for (;; pptr++)
       }
 #endif
 
+    /* \K is forbidden in lookarounds since 10.38 because that's what Perl has
+    done. However, there's an option, in case anyone was relying on it. */
+
+    if (cb->assert_depth > 0 && meta_arg == ESC_K &&
+        (cb->cx->extra_options & PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK) == 0)
+      {
+      *errorcodeptr = ERR99;
+      return 0;
+      }
+
     /* For the rest (including \X when Unicode is supported - if not it's
     faulted at parse time), the OP value is the escape value when PCRE2_UCP is
     not set; if it is set, these escapes do not show up here because they are
@@ -7840,11 +7856,12 @@ for (;; pptr++)
     NORMAL_CHAR_SET:  /* Character is already in meta */
     matched_char = TRUE;
 
-    /* For caseless UTF mode, check whether this character has more than one
-    other case. If so, generate a special OP_PROP item instead of OP_CHARI. */
+    /* For caseless UTF or UCP mode, check whether this character has more than
+    one other case. If so, generate a special OP_PROP item instead of OP_CHARI.
+    */
 
 #ifdef SUPPORT_UNICODE
-    if (utf && (options & PCRE2_CASELESS) != 0)
+    if ((utf||ucp) && (options & PCRE2_CASELESS) != 0)
       {
       uint32_t caseset = UCD_CASESET(meta);
       if (caseset != 0)
@@ -8053,7 +8070,6 @@ if (*code == OP_CBRA)
   capnumber = GET2(code, 1 + LINK_SIZE);
   capitem.number = capnumber;
   capitem.next = cb->open_caps;
-  capitem.flag = FALSE;
   capitem.assert_depth = cb->assert_depth;
   cb->open_caps = &capitem;
   }
@@ -8182,26 +8198,9 @@ for (;;)
     PUT(code, 1, (int)(code - start_bracket));
     code += 1 + LINK_SIZE;
 
-    /* If it was a capturing subpattern, check to see if it contained any
-    recursive back references. If so, we must wrap it in atomic brackets. In
-    any event, remove the block from the chain. */
+    /* If it was a capturing subpattern, remove the block from the chain. */
 
-    if (capnumber > 0)
-      {
-      if (cb->open_caps->flag)
-        {
-        (void)memmove(start_bracket + 1 + LINK_SIZE, start_bracket,
-          CU2BYTES(code - start_bracket));
-        *start_bracket = OP_ONCE;
-        code += 1 + LINK_SIZE;
-        PUT(start_bracket, 1, (int)(code - start_bracket));
-        *code = OP_KET;
-        PUT(code, 1, (int)(code - start_bracket));
-        code += 1 + LINK_SIZE;
-        length += 2 + 2*LINK_SIZE;
-        }
-      cb->open_caps = cb->open_caps->next;
-      }
+    if (capnumber > 0) cb->open_caps = cb->open_caps->next;
 
     /* Set values to pass back */
 
@@ -8836,9 +8835,10 @@ memset(slot + IMM2_SIZE + length, 0,
 
 /* This function is called to skip parts of the parsed pattern when finding the
 length of a lookbehind branch. It is called after (*ACCEPT) and (*FAIL) to find
-the end of the branch, it is called to skip over an internal lookaround, and it
-is also called to skip to the end of a class, during which it will never
-encounter nested groups (but there's no need to have special code for that).
+the end of the branch, it is called to skip over an internal lookaround or
+(DEFINE) group, and it is also called to skip to the end of a class, during
+which it will never encounter nested groups (but there's no need to have
+special code for that).
 
 When called to find the end of a branch or group, pptr must point to the first
 meta code inside the branch, not the branch-starting code. In other cases it
@@ -9161,7 +9161,7 @@ for (;; pptr++)
     case META_LOOKAHEAD:
     case META_LOOKAHEADNOT:
     case META_LOOKAHEAD_NA:
-    *errcodeptr = check_lookbehinds(pptr + 1, &pptr, recurses, cb);
+    *errcodeptr = check_lookbehinds(pptr + 1, &pptr, recurses, cb, lcptr);
     if (*errcodeptr != 0) return -1;
 
     /* Ignore any qualifiers that follow a lookahead assertion. */
@@ -9316,14 +9316,21 @@ for (;; pptr++)
     itemlength = grouplength;
     break;
 
-    /* Check nested groups - advance past the initial data for each type and
-    then seek a fixed length with get_grouplength(). */
+    /* A (DEFINE) group is never obeyed inline and so it does not contribute to
+    the length of this branch. Skip from the following item to the next
+    unpaired ket. */
+
+    case META_COND_DEFINE:
+    pptr = parsed_skip(pptr + 1, PSKIP_KET);
+    break;
+
+    /* Check other nested groups - advance past the initial data for each type
+    and then seek a fixed length with get_grouplength(). */
 
     case META_COND_NAME:
     case META_COND_NUMBER:
     case META_COND_RNAME:
     case META_COND_RNUMBER:
-    case META_COND_DEFINE:
     pptr += 2 + SIZEOFFSET;
     goto CHECK_GROUP;
 
@@ -9494,16 +9501,16 @@ Arguments
   retptr    if not NULL, return the ket pointer here
   recurses  chain of recurse_check to catch mutual recursion
   cb        points to the compile block
+  lcptr     points to loop counter
 
 Returns:    0 on success, or an errorcode (cb->erroroffset will be set)
 */
 
 static int
 check_lookbehinds(uint32_t *pptr, uint32_t **retptr,
-  parsed_recurse_check *recurses, compile_block *cb)
+  parsed_recurse_check *recurses, compile_block *cb, int *lcptr)
 {
 int errorcode = 0;
-int loopcount = 0;
 int nestlevel = 0;
 
 cb->erroroffset = PCRE2_UNSET;
@@ -9580,6 +9587,10 @@ for (; *pptr != META_END; pptr++)
     break;
 
     case META_COND_DEFINE:
+    pptr += SIZEOFFSET;
+    nestlevel++;
+    break;
+
     case META_COND_NAME:
     case META_COND_NUMBER:
     case META_COND_RNAME:
@@ -9625,7 +9636,7 @@ for (; *pptr != META_END; pptr++)
     case META_LOOKBEHIND:
     case META_LOOKBEHINDNOT:
     case META_LOOKBEHIND_NA:
-    if (!set_lookbehind_lengths(&pptr, &errorcode, &loopcount, recurses, cb))
+    if (!set_lookbehind_lengths(&pptr, &errorcode, lcptr, recurses, cb))
       return errorcode;
     break;
     }
@@ -9660,6 +9671,7 @@ pcre2_compile(PCRE2_SPTR pattern, PCRE2_SIZE patlen, uint32_t options,
    int *errorptr, PCRE2_SIZE *erroroffset, pcre2_compile_context *ccontext)
 {
 BOOL utf;                             /* Set TRUE for UTF mode */
+BOOL ucp;                             /* Set TRUE for UCP mode */
 BOOL has_lookbehind = FALSE;          /* Set TRUE if a lookbehind is found */
 BOOL zero_terminated;                 /* Set TRUE for zero-terminated pattern */
 pcre2_real_code *re = NULL;           /* What we will return */
@@ -9947,8 +9959,8 @@ if (utf)
 
 /* Check UCP lockout. */
 
-if ((cb.external_options & (PCRE2_UCP|PCRE2_NEVER_UCP)) ==
-    (PCRE2_UCP|PCRE2_NEVER_UCP))
+ucp = (cb.external_options & PCRE2_UCP) != 0;
+if (ucp && (cb.external_options & PCRE2_NEVER_UCP) != 0)
   {
   errorcode = ERR75;
   goto HAD_EARLY_ERROR;
@@ -10079,7 +10091,8 @@ lengths. */
 
 if (has_lookbehind)
   {
-  errorcode = check_lookbehinds(cb.parsed_pattern, NULL, NULL, &cb);
+  int loopcount = 0;
+  errorcode = check_lookbehinds(cb.parsed_pattern, NULL, NULL, &cb, &loopcount);
   if (errorcode != 0) goto HAD_CB_ERROR;
   }
 
@@ -10324,7 +10337,7 @@ function call. */
 if (errorcode == 0 && (re->overall_options & PCRE2_NO_AUTO_POSSESS) == 0)
   {
   PCRE2_UCHAR *temp = (PCRE2_UCHAR *)codestart;
-  if (PRIV(auto_possessify)(temp, utf, &cb) != 0) errorcode = ERR80;
+  if (PRIV(auto_possessify)(temp, &cb) != 0) errorcode = ERR80;
   }
 
 /* Failed to compile, or error while post-processing. */
@@ -10372,21 +10385,25 @@ if ((re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0)
 
     if ((firstcuflags & REQ_CASELESS) != 0)
       {
-      if (firstcu < 128 || (!utf && firstcu < 255))
+      if (firstcu < 128 || (!utf && !ucp && firstcu < 255))
         {
         if (cb.fcc[firstcu] != firstcu) re->flags |= PCRE2_FIRSTCASELESS;
         }
 
-      /* The first code unit is > 128 in UTF mode, or > 255 otherwise. In
-      8-bit UTF mode, codepoints in the range 128-255 are introductory code
-      points and cannot have another case. In 16-bit and 32-bit modes, we can
-      check wide characters when UTF (and therefore UCP) is supported. */
+      /* The first code unit is > 128 in UTF or UCP mode, or > 255 otherwise.
+      In 8-bit UTF mode, codepoints in the range 128-255 are introductory code
+      points and cannot have another case, but if UCP is set they may do. */
 
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 8
-      else if (firstcu <= MAX_UTF_CODE_POINT &&
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      else if (ucp && !utf && UCD_OTHERCASE(firstcu) != firstcu)
+        re->flags |= PCRE2_FIRSTCASELESS;
+#else
+      else if ((utf || ucp) && firstcu <= MAX_UTF_CODE_POINT &&
                UCD_OTHERCASE(firstcu) != firstcu)
         re->flags |= PCRE2_FIRSTCASELESS;
 #endif
+#endif  /* SUPPORT_UNICODE */
       }
     }
 
@@ -10435,14 +10452,20 @@ if ((re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0)
 
       if ((reqcuflags & REQ_CASELESS) != 0)
         {
-        if (reqcu < 128 || (!utf && reqcu < 255))
+        if (reqcu < 128 || (!utf && !ucp && reqcu < 255))
           {
           if (cb.fcc[reqcu] != reqcu) re->flags |= PCRE2_LASTCASELESS;
           }
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 8
-        else if (reqcu <= MAX_UTF_CODE_POINT && UCD_OTHERCASE(reqcu) != reqcu)
-          re->flags |= PCRE2_LASTCASELESS;
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      else if (ucp && !utf && UCD_OTHERCASE(reqcu) != reqcu)
+        re->flags |= PCRE2_LASTCASELESS;
+#else
+      else if ((utf || ucp) && reqcu <= MAX_UTF_CODE_POINT &&
+               UCD_OTHERCASE(reqcu) != reqcu)
+        re->flags |= PCRE2_LASTCASELESS;
 #endif
+#endif  /* SUPPORT_UNICODE */
         }
       }
     }

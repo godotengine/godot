@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +31,17 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
+#include "core/pool_vector.h"
 #include "core/typedefs.h"
 
 class Compression {
-
 public:
 	static int zlib_level;
 	static int gzip_level;
 	static int zstd_level;
 	static bool zstd_long_distance_matching;
 	static int zstd_window_log_size;
+	static int gzip_chunk;
 
 	enum Mode {
 		MODE_FASTLZ,
@@ -52,8 +53,7 @@ public:
 	static int compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);
 	static int get_max_compressed_buffer_size(int p_src_size, Mode p_mode = MODE_ZSTD);
 	static int decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);
-
-	Compression();
+	static int decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode);
 };
 
 #endif // COMPRESSION_H

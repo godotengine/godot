@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
 #ifndef WEBRTC_DATA_CHANNEL_GDNATIVE_H
 #define WEBRTC_DATA_CHANNEL_GDNATIVE_H
+
+#ifdef WEBRTC_GDNATIVE_ENABLED
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_data_channel.h"
@@ -60,6 +60,7 @@ public:
 	virtual int get_max_retransmits() const;
 	virtual String get_protocol() const;
 	virtual bool is_negotiated() const;
+	virtual int get_buffered_amount() const;
 
 	virtual Error poll();
 	virtual void close();
@@ -75,6 +76,6 @@ public:
 	~WebRTCDataChannelGDNative();
 };
 
-#endif // WEBRTC_DATA_CHANNEL_GDNATIVE_H
-
 #endif // WEBRTC_GDNATIVE_ENABLED
+
+#endif // WEBRTC_DATA_CHANNEL_GDNATIVE_H

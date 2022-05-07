@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
+#include "core/safe_refcount.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/spatial_velocity_tracker.h"
 #include "servers/audio/audio_filter_sw.h"
@@ -39,7 +40,6 @@
 
 class Camera;
 class AudioStreamPlayer3D : public Spatial {
-
 	GDCLASS(AudioStreamPlayer3D, Spatial);
 
 public:
@@ -69,7 +69,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
@@ -82,15 +81,15 @@ private:
 
 		Output() {
 			filter_gain = 0;
-			viewport = NULL;
+			viewport = nullptr;
 			reverb_bus_index = -1;
 			bus_index = -1;
 		}
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count;
-	volatile bool output_ready;
+	SafeNumeric<int> output_count;
+	SafeFlag output_ready;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
@@ -100,9 +99,9 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile float setplay;
+	SafeNumeric<float> setseek;
+	SafeFlag active;
+	SafeNumeric<float> setplay;
 
 	AttenuationModel attenuation_model;
 	float unit_db;

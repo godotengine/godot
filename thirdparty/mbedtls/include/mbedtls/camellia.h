@@ -4,7 +4,7 @@
  * \brief Camellia block cipher
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,14 +18,12 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_CAMELLIA_H
 #define MBEDTLS_CAMELLIA_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
@@ -33,7 +31,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "platform_util.h"
+#include "mbedtls/platform_util.h"
 
 #define MBEDTLS_CAMELLIA_ENCRYPT     1
 #define MBEDTLS_CAMELLIA_DECRYPT     0
@@ -41,13 +39,16 @@
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 #define MBEDTLS_ERR_CAMELLIA_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( -0x0024 )
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-#define MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA -0x0024 /**< Bad input data. */
+/** Bad input data. */
+#define MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA -0x0024
 
-#define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH -0x0026 /**< Invalid data input length. */
+/** Invalid data input length. */
+#define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH -0x0026
 
 /* MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027  /**< Camellia hardware accelerator failed. */
+/** Camellia hardware accelerator failed. */
+#define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027
 
 #ifdef __cplusplus
 extern "C" {

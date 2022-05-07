@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 #include "step_2d_sw.h"
 
 class Physics2DServerSW : public Physics2DServer {
-
 	GDCLASS(Physics2DServerSW, Physics2DServer);
 
 	friend class Physics2DDirectSpaceStateSW;
@@ -46,7 +45,6 @@ class Physics2DServerSW : public Physics2DServer {
 	bool active;
 	int iterations;
 	bool doing_sync;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -58,8 +56,6 @@ class Physics2DServerSW : public Physics2DServer {
 
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
-
-	Physics2DDirectBodyStateSW *direct_state;
 
 	mutable RID_Owner<Shape2DSW> shape_owner;
 	mutable RID_Owner<Space2DSW> space_owner;
@@ -78,7 +74,6 @@ class Physics2DServerSW : public Physics2DServer {
 
 public:
 	struct CollCbkData {
-
 		Vector2 valid_dir;
 		real_t valid_depth;
 		int max;
@@ -248,8 +243,8 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable);
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
-	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>());
+	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.08);
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual Physics2DDirectBodyState *body_get_direct_state(RID p_body);
@@ -283,6 +278,8 @@ public:
 	virtual void flush_queries();
 	virtual void end_sync();
 	virtual void finish();
+
+	virtual void set_collision_iterations(int p_iterations);
 
 	virtual bool is_flushing_queries() const { return flushing_queries; }
 

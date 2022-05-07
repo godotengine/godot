@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,28 +29,31 @@
 /*************************************************************************/
 
 #include "menu_button.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_shortcuts)
+	if (disable_shortcuts) {
 		return;
+	}
 
 	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
-
-		if (!get_parent() || !is_visible_in_tree() || is_disabled())
+		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
 			return;
+		}
 
 		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
 
-		if (popup->activate_item_by_event(p_event, global_only))
+		if (popup->activate_item_by_event(p_event, global_only)) {
 			accept_event();
+		}
 	}
 }
 
 void MenuButton::pressed() {
-
 	emit_signal("about_to_show");
 	Size2 size = get_size();
 
@@ -59,43 +62,43 @@ void MenuButton::pressed() {
 	popup->set_size(Size2(size.width, 0));
 	popup->set_scale(get_global_transform().get_scale());
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
+
+	// If not triggered by the mouse, start the popup with its first item selected.
+	if (popup->get_item_count() > 0 &&
+			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+		popup->set_current_index(0);
+	}
+
 	popup->popup();
 }
 
 void MenuButton::_gui_input(Ref<InputEvent> p_event) {
-
 	BaseButton::_gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() const {
-
 	return popup;
 }
 
 void MenuButton::_set_items(const Array &p_items) {
-
 	popup->set("items", p_items);
 }
 
 Array MenuButton::_get_items() const {
-
 	return popup->get("items");
 }
 
 void MenuButton::set_switch_on_hover(bool p_enabled) {
-
 	switch_on_hover = p_enabled;
 }
 
 bool MenuButton::is_switch_on_hover() {
-
 	return switch_on_hover;
 }
 
 void MenuButton::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		if (!is_visible_in_tree()) {
 			popup->hide();
 		}
@@ -103,7 +106,6 @@ void MenuButton::_notification(int p_what) {
 }
 
 void MenuButton::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
@@ -119,17 +121,15 @@ void MenuButton::_bind_methods() {
 }
 
 void MenuButton::set_disable_shortcuts(bool p_disabled) {
-
 	disable_shortcuts = p_disabled;
 }
 
 MenuButton::MenuButton() {
-
 	switch_on_hover = false;
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_enabled_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_NONE);
 	set_process_unhandled_key_input(true);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,8 +76,8 @@ public:
 	};
 
 private:
-	Vector<Ref<ARVRInterface> > interfaces;
-	Vector<ARVRPositionalTracker *> trackers;
+	Vector<Ref<ARVRInterface>> interfaces;
+	Vector<Ref<ARVRPositionalTracker>> trackers;
 
 	Ref<ARVRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
@@ -167,11 +167,11 @@ public:
 	*/
 	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
-	void add_tracker(ARVRPositionalTracker *p_tracker);
-	void remove_tracker(ARVRPositionalTracker *p_tracker);
+	void add_tracker(Ref<ARVRPositionalTracker> p_tracker);
+	void remove_tracker(Ref<ARVRPositionalTracker> p_tracker);
 	int get_tracker_count() const;
-	ARVRPositionalTracker *get_tracker(int p_index) const;
-	ARVRPositionalTracker *find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	Ref<ARVRPositionalTracker> get_tracker(int p_index) const;
+	Ref<ARVRPositionalTracker> find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
 
 	uint64_t get_last_process_usec();
 	uint64_t get_last_commit_usec();

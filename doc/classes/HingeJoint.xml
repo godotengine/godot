@@ -1,50 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HingeJoint" inherits="Joint" version="3.2">
+<class name="HingeJoint" inherits="Joint" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A hinge between two 3D bodies.
+		A hinge between two 3D PhysicsBodies.
 	</brief_description>
 	<description>
-		A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though.
+		A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though. See also [Generic6DOFJoint].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="HingeJoint.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="HingeJoint.Param" />
 			<description>
 				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified flag.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="HingeJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="HingeJoint.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the value of the specified parameter.
 			</description>

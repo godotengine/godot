@@ -1,0 +1,137 @@
+name: 🐧 Linux Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: 3.x
+  SCONSFLAGS: verbose=yes warnings=all werror=yes
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
+  cancel-in-progress: true
+
+jobs:
+  build-linux:
+    runs-on: "ubuntu-20.04"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor w/ Mono (target=release_debug, tools=yes)
+            cache-name: linux-editor-mono
+            target: release_debug
+            tools: true
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
+            bin: "./bin/godot.x11.opt.tools.64.mono"
+            build-mono: true
+            artifact: true
+
+          - name: Editor and sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes)
+            cache-name: linux-editor-sanitizers
+            target: debug
+            tools: true
+            sconsflags: use_asan=yes use_ubsan=yes
+            test: true
+            bin: "./bin/godot.x11.tools.64s"
+            build-mono: false
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
+          - name: Template w/ Mono (target=release, tools=no)
+            cache-name: linux-template-mono
+            target: release
+            tools: false
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
+            build-mono: false
+            artifact: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Linux dependencies
+        shell: bash
+        run: |
+          # Azure repositories are not reliable, we need to prevent azure giving us packages.
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+          # The actual dependencies
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+              libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
+              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          platform: linuxbsd
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
+      # Generate mono glue
+      - name: Generate Mono glue code
+        if: ${{ matrix.build-mono }}
+        run: |
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --generate-mono-glue modules/mono/glue || true
+
+      # Rebuild with mono
+      - name: Compilation (mono_glue=yes)
+        uses: ./.github/actions/godot-build
+        if: ${{ matrix.build-mono }}
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} mono_glue=yes
+          platform: linuxbsd
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
+      # Download and extract zip archive with project, folder is renamed to be able to easy change used project
+      - name: Download test project
+        if: ${{ matrix.test }}
+        run: |
+          wget https://github.com/godotengine/regression-test-project/archive/3.x.zip
+          unzip 3.x.zip
+          mv "regression-test-project-3.x" "test_project"
+
+      # Editor is quite complicated piece of software, so it is easy to introduce bug here
+      - name: Open and close editor
+        if: ${{ matrix.test }}
+        run: |
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Run test project
+      - name: Run project
+        if: ${{ matrix.test }}
+        run: |
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} 30 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Check class reference
+      - name: Check for class reference updates
+        if: ${{ matrix.test }}
+        run: |
+          echo "Running --doctool to see if this changes the public API without updating the documentation."
+          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
+          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --doctool . 2>&1 > /dev/null || true
+          git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
+
+      - name: Prepare artifact
+        if: ${{ matrix.artifact }}
+        run: |
+          strip bin/godot.*
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        if: ${{ matrix.artifact }}
+        with:
+          name: ${{ matrix.cache-name }}

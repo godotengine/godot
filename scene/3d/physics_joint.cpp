@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,33 @@
 
 #include "physics_joint.h"
 
-void Joint::_update_joint(bool p_only_free) {
+#include "scene/scene_string_names.h"
 
+void Joint::_disconnect_signals() {
+	Node *node_a = get_node_or_null(a);
+	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
+	if (body_a) {
+		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
+
+	Node *node_b = get_node_or_null(b);
+	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
+	if (body_b) {
+		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
+}
+
+void Joint::_body_exit_tree() {
+	_disconnect_signals();
+	_update_joint(true);
+}
+
+void Joint::_update_joint(bool p_only_free) {
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid())
+		if (ba.is_valid() && bb.is_valid()) {
 			PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
+			PhysicsServer::get_singleton()->body_remove_collision_exception(bb, ba);
+		}
 
 		PhysicsServer::get_singleton()->free(joint);
 		joint = RID();
@@ -42,102 +64,166 @@ void Joint::_update_joint(bool p_only_free) {
 		bb = RID();
 	}
 
-	if (p_only_free || !is_inside_tree())
+	if (p_only_free || !is_inside_tree()) {
+		warning = String();
 		return;
+	}
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
+	Node *node_a = get_node_or_null(a);
+	Node *node_b = get_node_or_null(b);
 
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
 
-	if (!body_a && body_b)
-		SWAP(body_a, body_b);
-
-	if (!body_a)
+	if (node_a && !body_a && node_b && !body_b) {
+		warning = TTR("Node A and Node B must be PhysicsBodies");
+		update_configuration_warning();
 		return;
+	}
 
-	joint = _configure_joint(body_a, body_b);
-
-	if (!joint.is_valid())
+	if (node_a && !body_a) {
+		warning = TTR("Node A must be a PhysicsBody");
+		update_configuration_warning();
 		return;
+	}
+
+	if (node_b && !body_b) {
+		warning = TTR("Node B must be a PhysicsBody");
+		update_configuration_warning();
+		return;
+	}
+
+	if (!body_a && !body_b) {
+		warning = TTR("Joint is not connected to any PhysicsBodies");
+		update_configuration_warning();
+		return;
+	}
+
+	if (body_a == body_b) {
+		warning = TTR("Node A and Node B must be different PhysicsBodies");
+		update_configuration_warning();
+		return;
+	}
+
+	warning = String();
+	update_configuration_warning();
+
+	if (body_a) {
+		joint = _configure_joint(body_a, body_b);
+	} else if (body_b) {
+		joint = _configure_joint(body_b, nullptr);
+	}
+
+	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
-	ba = body_a->get_rid();
-	if (body_b)
+	if (body_a) {
+		ba = body_a->get_rid();
+		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
+
+	if (body_b) {
 		bb = body_b->get_rid();
+		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
 
 	PhysicsServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }
 
 void Joint::set_node_a(const NodePath &p_node_a) {
-
-	if (a == p_node_a)
+	if (a == p_node_a) {
 		return;
+	}
+
+	if (joint.is_valid()) {
+		_disconnect_signals();
+	}
 
 	a = p_node_a;
 	_update_joint();
 }
 
 NodePath Joint::get_node_a() const {
-
 	return a;
 }
 
 void Joint::set_node_b(const NodePath &p_node_b) {
-
-	if (b == p_node_b)
+	if (b == p_node_b) {
 		return;
+	}
+
+	if (joint.is_valid()) {
+		_disconnect_signals();
+	}
+
 	b = p_node_b;
 	_update_joint();
 }
-NodePath Joint::get_node_b() const {
 
+NodePath Joint::get_node_b() const {
 	return b;
 }
 
 void Joint::set_solver_priority(int p_priority) {
-
 	solver_priority = p_priority;
-	if (joint.is_valid())
+	if (joint.is_valid()) {
 		PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
+	}
 }
 
 int Joint::get_solver_priority() const {
-
 	return solver_priority;
 }
 
 void Joint::_notification(int p_what) {
-
 	switch (p_what) {
-
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (joint.is_valid()) {
+				_disconnect_signals();
+			}
 			_update_joint();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
-				_update_joint(true);
+				_disconnect_signals();
 			}
+			_update_joint(true);
 		} break;
 	}
 }
 
 void Joint::set_exclude_nodes_from_collision(bool p_enable) {
-
-	if (exclude_from_collision == p_enable)
+	if (exclude_from_collision == p_enable) {
 		return;
+	}
+	if (joint.is_valid()) {
+		_disconnect_signals();
+	}
+	_update_joint(true);
 	exclude_from_collision = p_enable;
 	_update_joint();
 }
 
 bool Joint::get_exclude_nodes_from_collision() const {
-
 	return exclude_from_collision;
 }
 
+String Joint::get_configuration_warning() const {
+	String node_warning = Node::get_configuration_warning();
+
+	if (!warning.empty()) {
+		if (!node_warning.empty()) {
+			node_warning += "\n\n";
+		}
+		node_warning += warning;
+	}
+
+	return node_warning;
+}
+
 void Joint::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &Joint::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint::get_node_a);
@@ -151,15 +237,14 @@ void Joint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint::get_exclude_nodes_from_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver/priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }
 
 Joint::Joint() {
-
 	exclude_from_collision = true;
 	solver_priority = 1;
 	set_notify_transform(true);
@@ -168,7 +253,6 @@ Joint::Joint() {
 ///////////////////////////////////
 
 void PinJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &PinJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &PinJoint::get_param);
 
@@ -182,28 +266,27 @@ void PinJoint::_bind_methods() {
 }
 
 void PinJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer::PinJointParam(p_param), p_value);
+	}
 }
 float PinJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, 3, 0);
 	return params[p_param];
 }
 
 RID PinJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Vector3 pinpos = get_global_transform().origin;
 	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
 	Vector3 local_b;
 
-	if (body_b)
+	if (body_b) {
 		local_b = body_b->get_global_transform().affine_inverse().xform(pinpos);
-	else
+	} else {
 		local_b = pinpos;
+	}
 
 	RID j = PhysicsServer::get_singleton()->joint_create_pin(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < 3; i++) {
@@ -213,7 +296,6 @@ RID PinJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 PinJoint::PinJoint() {
-
 	params[PARAM_BIAS] = 0.3;
 	params[PARAM_DAMPING] = 1;
 	params[PARAM_IMPULSE_CLAMP] = 0;
@@ -224,27 +306,22 @@ PinJoint::PinJoint() {
 ///////////////////////////////////
 
 void HingeJoint::_set_upper_limit(float p_limit) {
-
 	set_param(PARAM_LIMIT_UPPER, Math::deg2rad(p_limit));
 }
 
 float HingeJoint::_get_upper_limit() const {
-
 	return Math::rad2deg(get_param(PARAM_LIMIT_UPPER));
 }
 
 void HingeJoint::_set_lower_limit(float p_limit) {
-
 	set_param(PARAM_LIMIT_LOWER, Math::deg2rad(p_limit));
 }
 
 float HingeJoint::_get_lower_limit() const {
-
 	return Math::rad2deg(get_param(PARAM_LIMIT_LOWER));
 }
 
 void HingeJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &HingeJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &HingeJoint::get_param);
 
@@ -286,37 +363,34 @@ void HingeJoint::_bind_methods() {
 }
 
 void HingeJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->hinge_joint_set_param(get_joint(), PhysicsServer::HingeJointParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
 float HingeJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 void HingeJoint::set_flag(Flag p_flag, bool p_value) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->hinge_joint_set_flag(get_joint(), PhysicsServer::HingeJointFlag(p_flag), p_value);
+	}
 
 	update_gizmo();
 }
 bool HingeJoint::get_flag(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags[p_flag];
 }
 
 RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -331,7 +405,7 @@ RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	RID j = RID_PRIME(PhysicsServer::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b));
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HingeJointParam(i), params[i]);
 	}
@@ -343,7 +417,6 @@ RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 HingeJoint::HingeJoint() {
-
 	params[PARAM_BIAS] = 0.3;
 	params[PARAM_LIMIT_UPPER] = Math_PI * 0.5;
 	params[PARAM_LIMIT_LOWER] = -Math_PI * 0.5;
@@ -362,27 +435,22 @@ HingeJoint::HingeJoint() {
 //////////////////////////////////
 
 void SliderJoint::_set_upper_limit_angular(float p_limit_angular) {
-
 	set_param(PARAM_ANGULAR_LIMIT_UPPER, Math::deg2rad(p_limit_angular));
 }
 
 float SliderJoint::_get_upper_limit_angular() const {
-
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_UPPER));
 }
 
 void SliderJoint::_set_lower_limit_angular(float p_limit_angular) {
-
 	set_param(PARAM_ANGULAR_LIMIT_LOWER, Math::deg2rad(p_limit_angular));
 }
 
 float SliderJoint::_get_lower_limit_angular() const {
-
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_LOWER));
 }
 
 void SliderJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint::get_param);
 
@@ -444,21 +512,19 @@ void SliderJoint::_bind_methods() {
 }
 
 void SliderJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->slider_joint_set_param(get_joint(), PhysicsServer::SliderJointParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float SliderJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -482,7 +548,6 @@ RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 SliderJoint::SliderJoint() {
-
 	params[PARAM_LINEAR_LIMIT_UPPER] = 1.0;
 	params[PARAM_LINEAR_LIMIT_LOWER] = -1.0;
 	params[PARAM_LINEAR_LIMIT_SOFTNESS] = 1.0;
@@ -511,27 +576,22 @@ SliderJoint::SliderJoint() {
 //////////////////////////////////
 
 void ConeTwistJoint::_set_swing_span(float p_limit_angular) {
-
 	set_param(PARAM_SWING_SPAN, Math::deg2rad(p_limit_angular));
 }
 
 float ConeTwistJoint::_get_swing_span() const {
-
 	return Math::rad2deg(get_param(PARAM_SWING_SPAN));
 }
 
 void ConeTwistJoint::_set_twist_span(float p_limit_angular) {
-
 	set_param(PARAM_TWIST_SPAN, Math::deg2rad(p_limit_angular));
 }
 
 float ConeTwistJoint::_get_twist_span() const {
-
 	return Math::rad2deg(get_param(PARAM_TWIST_SPAN));
 }
 
 void ConeTwistJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &ConeTwistJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &ConeTwistJoint::get_param);
 
@@ -557,22 +617,20 @@ void ConeTwistJoint::_bind_methods() {
 }
 
 void ConeTwistJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->cone_twist_joint_set_param(get_joint(), PhysicsServer::ConeTwistJointParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
 float ConeTwistJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 RID ConeTwistJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -599,7 +657,6 @@ RID ConeTwistJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 ConeTwistJoint::ConeTwistJoint() {
-
 	params[PARAM_SWING_SPAN] = Math_PI * 0.25;
 	params[PARAM_TWIST_SPAN] = Math_PI;
 	params[PARAM_BIAS] = 0.3;
@@ -610,67 +667,54 @@ ConeTwistJoint::ConeTwistJoint() {
 /////////////////////////////////////////////////////////////////////
 
 void Generic6DOFJoint::_set_angular_hi_limit_x(float p_limit_angular) {
-
 	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_x() const {
-
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_x(float p_limit_angular) {
-
 	set_param_x(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_x() const {
-
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_hi_limit_y(float p_limit_angular) {
-
 	set_param_y(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_y() const {
-
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_y(float p_limit_angular) {
-
 	set_param_y(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_y() const {
-
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_hi_limit_z(float p_limit_angular) {
-
 	set_param_z(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_z() const {
-
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_z(float p_limit_angular) {
-
 	set_param_z(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_z() const {
-
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_set_angular_hi_limit_x", "angle"), &Generic6DOFJoint::_set_angular_hi_limit_x);
 	ClassDB::bind_method(D_METHOD("_get_angular_hi_limit_x"), &Generic6DOFJoint::_get_angular_hi_limit_x);
 
@@ -706,9 +750,6 @@ void Generic6DOFJoint::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flag_z", "flag", "value"), &Generic6DOFJoint::set_flag_z);
 	ClassDB::bind_method(D_METHOD("get_flag_z", "flag"), &Generic6DOFJoint::get_flag_z);
-
-	ClassDB::bind_method(D_METHOD("set_precision", "precision"), &Generic6DOFJoint::set_precision);
-	ClassDB::bind_method(D_METHOD("get_precision"), &Generic6DOFJoint::get_precision);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_limit_x/upper_distance"), "set_param_x", "get_param_x", PARAM_LINEAR_UPPER_LIMIT);
@@ -798,8 +839,6 @@ void Generic6DOFJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/damping"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/equilibrium_point"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "precision", PROPERTY_HINT_RANGE, "1,99999,1"), "set_precision", "get_precision");
-
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
@@ -834,100 +873,85 @@ void Generic6DOFJoint::_bind_methods() {
 }
 
 void Generic6DOFJoint::set_param_x(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_X, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_x(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_x[p_param];
 }
 
 void Generic6DOFJoint::set_param_y(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Y, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_y(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_y[p_param];
 }
 
 void Generic6DOFJoint::set_param_z(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Z, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_z(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_z[p_param];
 }
 
 void Generic6DOFJoint::set_flag_x(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_x[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_X, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_x(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_x[p_flag];
 }
 
 void Generic6DOFJoint::set_flag_y(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_y[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Y, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_y(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_y[p_flag];
 }
 
 void Generic6DOFJoint::set_flag_z(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_z[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Z, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_z(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_z[p_flag];
 }
 
-void Generic6DOFJoint::set_precision(int p_precision) {
-	precision = p_precision;
-
-	PhysicsServer::get_singleton()->generic_6dof_joint_set_precision(
-			get_joint(),
-			precision);
-}
-
 RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -960,9 +984,7 @@ RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b)
 	return j;
 }
 
-Generic6DOFJoint::Generic6DOFJoint() :
-		precision(1) {
-
+Generic6DOFJoint::Generic6DOFJoint() {
 	set_param_x(PARAM_LINEAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_UPPER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_LIMIT_SOFTNESS, 0.7);

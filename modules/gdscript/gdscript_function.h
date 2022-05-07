@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,10 +53,13 @@ struct GDScriptDataType {
 	} kind;
 	Variant::Type builtin_type;
 	StringName native_type;
-	Ref<Script> script_type;
+	Script *script_type;
+	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) return true; // Can't type check
+		if (!has_type) {
+			return true; // Can't type check
+		}
 
 		switch (kind) {
 			case UNINITIALIZED:
@@ -78,7 +81,7 @@ struct GDScriptDataType {
 				}
 
 				Object *obj = p_variant.operator Object *();
-				if (!obj || !ObjectDB::instance_validate(obj)) {
+				if (!obj) {
 					return false;
 				}
 
@@ -101,11 +104,11 @@ struct GDScriptDataType {
 				}
 
 				Object *obj = p_variant.operator Object *();
-				if (!obj || !ObjectDB::instance_validate(obj)) {
+				if (!obj) {
 					return false;
 				}
 
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 				bool valid = false;
 				while (base.is_valid()) {
 					if (base == script_type) {
@@ -149,7 +152,8 @@ struct GDScriptDataType {
 	GDScriptDataType() :
 			has_type(false),
 			kind(UNINITIALIZED),
-			builtin_type(Variant::NIL) {}
+			builtin_type(Variant::NIL),
+			script_type(nullptr) {}
 };
 
 class GDScriptFunction {
@@ -214,7 +218,6 @@ public:
 	};
 
 	struct StackDebug {
-
 		int line;
 		int pos;
 		bool added;
@@ -265,7 +268,7 @@ private:
 
 	List<StackDebug> stack_debug;
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
+	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
@@ -292,7 +295,6 @@ private:
 
 public:
 	struct CallState {
-
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED
@@ -324,7 +326,7 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
@@ -342,7 +344,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = nullptr);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
@@ -350,7 +352,6 @@ public:
 };
 
 class GDScriptFunctionState : public Reference {
-
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
 	GDScriptFunction *function;

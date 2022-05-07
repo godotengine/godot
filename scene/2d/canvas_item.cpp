@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/input.h"
+#include "core/version.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
@@ -41,17 +42,12 @@
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual_server.h"
 
-Mutex *CanvasItemMaterial::material_mutex = NULL;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = NULL;
+Mutex CanvasItemMaterial::material_mutex;
+SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
 Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
-CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = NULL;
+CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
 
 void CanvasItemMaterial::init_shaders() {
-
-#ifndef NO_THREADS
-	material_mutex = Mutex::create();
-#endif
-
 	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
@@ -62,23 +58,18 @@ void CanvasItemMaterial::init_shaders() {
 }
 
 void CanvasItemMaterial::finish_shaders() {
-
 	memdelete(dirty_materials);
 	memdelete(shader_names);
-	dirty_materials = NULL;
-
-#ifndef NO_THREADS
-	memdelete(material_mutex);
-#endif
+	dirty_materials = nullptr;
 }
 
 void CanvasItemMaterial::_update_shader() {
-
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key)
+	if (mk.key == current_key.key) {
 		return; //no update required in the end
+	}
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -92,7 +83,6 @@ void CanvasItemMaterial::_update_shader() {
 	current_key = mk;
 
 	if (shader_map.has(mk)) {
-
 		VS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
 		shader_map[mk].users++;
 		return;
@@ -100,26 +90,45 @@ void CanvasItemMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type canvas_item;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
+
+	code += "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
-		case BLEND_MODE_MIX: code += "blend_mix"; break;
-		case BLEND_MODE_ADD: code += "blend_add"; break;
-		case BLEND_MODE_SUB: code += "blend_sub"; break;
-		case BLEND_MODE_MUL: code += "blend_mul"; break;
-		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
-		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
+		case BLEND_MODE_MIX:
+			code += "blend_mix";
+			break;
+		case BLEND_MODE_ADD:
+			code += "blend_add";
+			break;
+		case BLEND_MODE_SUB:
+			code += "blend_sub";
+			break;
+		case BLEND_MODE_MUL:
+			code += "blend_mul";
+			break;
+		case BLEND_MODE_PREMULT_ALPHA:
+			code += "blend_premul_alpha";
+			break;
+		case BLEND_MODE_DISABLED:
+			code += "blend_disabled";
+			break;
 	}
 
 	switch (light_mode) {
-		case LIGHT_MODE_NORMAL: break;
-		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
-		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
+		case LIGHT_MODE_NORMAL:
+			break;
+		case LIGHT_MODE_UNSHADED:
+			code += ",unshaded";
+			break;
+		case LIGHT_MODE_LIGHT_ONLY:
+			code += ",light_only";
+			break;
 	}
 
 	code += ";\n";
 
 	if (particles_animation) {
-
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
 		code += "uniform bool particles_anim_loop;\n";
@@ -139,7 +148,7 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
 		code += "\t}";
 		code += "\tUV /= vec2(h_frames, v_frames);\n";
-		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		code += "}\n";
 	}
 
@@ -155,48 +164,37 @@ void CanvasItemMaterial::_update_shader() {
 }
 
 void CanvasItemMaterial::flush_changes() {
-
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	while (dirty_materials->first()) {
-
 		dirty_materials->first()->self()->_update_shader();
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 void CanvasItemMaterial::_queue_shader_change() {
+	material_mutex.lock();
 
-	if (material_mutex)
-		material_mutex->lock();
-
-	if (!element.in_list()) {
+	if (is_initialized && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 bool CanvasItemMaterial::_is_shader_dirty() const {
-
 	bool dirty = false;
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	dirty = element.in_list();
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 
 	return dirty;
 }
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
-
 	blend_mode = p_blend_mode;
 	_queue_shader_change();
 }
@@ -206,13 +204,11 @@ CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
 }
 
 void CanvasItemMaterial::set_light_mode(LightMode p_light_mode) {
-
 	light_mode = p_light_mode;
 	_queue_shader_change();
 }
 
 CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
-
 	return light_mode;
 }
 
@@ -227,34 +223,28 @@ bool CanvasItemMaterial::get_particles_animation() const {
 }
 
 void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
-
 	particles_anim_h_frames = p_frames;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
 }
 
 int CanvasItemMaterial::get_particles_anim_h_frames() const {
-
 	return particles_anim_h_frames;
 }
 void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
-
 	particles_anim_v_frames = p_frames;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
 }
 
 int CanvasItemMaterial::get_particles_anim_v_frames() const {
-
 	return particles_anim_v_frames;
 }
 
 void CanvasItemMaterial::set_particles_anim_loop(bool p_loop) {
-
 	particles_anim_loop = p_loop;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
 }
 
 bool CanvasItemMaterial::get_particles_anim_loop() const {
-
 	return particles_anim_loop;
 }
 
@@ -265,18 +255,15 @@ void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
 }
 
 RID CanvasItemMaterial::get_shader_rid() const {
-
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }
 
 Shader::Mode CanvasItemMaterial::get_shader_mode() const {
-
 	return Shader::MODE_CANVAS_ITEM;
 }
 
 void CanvasItemMaterial::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &CanvasItemMaterial::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &CanvasItemMaterial::get_blend_mode);
 
@@ -316,7 +303,6 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
-
 	blend_mode = BLEND_MODE_MIX;
 	light_mode = LIGHT_MODE_NORMAL;
 	particles_animation = false;
@@ -327,13 +313,12 @@ CanvasItemMaterial::CanvasItemMaterial() :
 
 	current_key.key = 0;
 	current_key.invalid_key = 1;
+	is_initialized = true;
 	_queue_shader_change();
 }
 
 CanvasItemMaterial::~CanvasItemMaterial() {
-
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -346,8 +331,7 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 		VS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -366,82 +350,94 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return false;
+	}
 
 	const CanvasItem *p = this;
 
 	while (p) {
-		if (!p->visible)
+		if (!p->visible) {
 			return false;
+		}
 		p = p->get_parent_item();
+	}
+
+	if (canvas_layer) {
+		return canvas_layer->is_visible();
 	}
 
 	return true;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible) {
+void CanvasItem::_toplevel_visibility_changed(bool p_visible) {
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, visible && p_visible);
 
+	if (visible) {
+		_propagate_visibility_changed(p_visible);
+	} else {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+	}
+}
+
+void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible && first_draw) { //avoid propagating it twice
 		first_draw = false;
 	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible)
-		update(); //todo optimize
-	else
+	if (p_visible) {
+		update(); // Todo optimize.
+	} else {
 		emit_signal(SceneStringNames::get_singleton()->hide);
+	}
 	_block();
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
-		if (c && c->visible) //should the toplevels stop propagation? i think so but..
+		if (c && c->visible && !c->toplevel) {
 			c->_propagate_visibility_changed(p_visible);
+		}
 	}
 
 	_unblock();
 }
 
-void CanvasItem::show() {
-
-	if (visible)
+void CanvasItem::set_visible(bool p_visible) {
+	if (visible == p_visible) {
 		return;
+	}
 
-	visible = true;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
+	visible = p_visible;
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	_propagate_visibility_changed(true);
+	_propagate_visibility_changed(p_visible);
 	_change_notify("visible");
+}
+
+void CanvasItem::show() {
+	set_visible(true);
 }
 
 void CanvasItem::hide() {
-
-	if (!visible)
-		return;
-
-	visible = false;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
-
-	if (!is_inside_tree())
-		return;
-
-	_propagate_visibility_changed(false);
-	_change_notify("visible");
+	set_visible(false);
 }
 
-CanvasItem *CanvasItem::current_item_drawn = NULL;
+bool CanvasItem::is_visible() const {
+	return visible;
+}
+
+CanvasItem *CanvasItem::current_item_drawn = nullptr;
 CanvasItem *CanvasItem::get_current_item_drawn() {
 	return current_item_drawn;
 }
 
 void CanvasItem::_update_callback() {
-
 	if (!is_inside_tree()) {
 		pending_update = false;
 		return;
@@ -449,7 +445,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) { //todo optimize this!!
+	if (is_visible_in_tree()) { // Todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -459,9 +455,9 @@ void CanvasItem::_update_callback() {
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
-			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
+			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, nullptr, 0);
 		}
-		current_item_drawn = NULL;
+		current_item_drawn = nullptr;
 		drawing = false;
 	}
 	//todo updating = false
@@ -469,13 +465,13 @@ void CanvasItem::_update_callback() {
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
-
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_transform() * get_global_transform();
-	else if (is_inside_tree())
+	} else if (is_inside_tree()) {
 		return get_viewport()->get_canvas_transform() * get_global_transform();
-	else
+	} else {
 		return get_global_transform();
+	}
 }
 
 Transform2D CanvasItem::get_global_transform() const {
@@ -483,12 +479,12 @@ Transform2D CanvasItem::get_global_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), get_transform());
 #endif
 	if (global_invalid) {
-
 		const CanvasItem *pi = get_parent_item();
-		if (pi)
+		if (pi) {
 			global_transform = pi->get_global_transform() * get_transform();
-		else
+		} else {
 			global_transform = get_transform();
+		}
 
 		global_invalid = false;
 	}
@@ -497,26 +493,24 @@ Transform2D CanvasItem::get_global_transform() const {
 }
 
 void CanvasItem::_toplevel_raise_self() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (canvas_layer)
+	if (canvas_layer) {
 		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, canvas_layer->get_sort_index());
-	else
+	} else {
 		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_viewport()->gui_get_canvas_sort_index());
+	}
 }
 
 void CanvasItem::_enter_canvas() {
-
 	if ((!Object::cast_to<CanvasItem>(get_parent())) || toplevel) {
-
 		Node *n = this;
 
-		canvas_layer = NULL;
+		canvas_layer = nullptr;
 
 		while (n) {
-
 			canvas_layer = Object::cast_to<CanvasLayer>(n);
 			if (canvas_layer) {
 				break;
@@ -528,25 +522,26 @@ void CanvasItem::_enter_canvas() {
 		}
 
 		RID canvas;
-		if (canvas_layer)
+		if (canvas_layer) {
 			canvas = canvas_layer->get_canvas();
-		else
+		} else {
 			canvas = get_viewport()->find_world_2d()->get_canvas();
+		}
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
 		group = "root_canvas" + itos(canvas.get_id());
 
 		add_to_group(group);
-		if (canvas_layer)
+		if (canvas_layer) {
 			canvas_layer->reset_sort_index();
-		else
+		} else {
 			get_viewport()->gui_reset_canvas_sort_index();
+		}
 
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
 
 	} else {
-
 		CanvasItem *parent = get_parent_item();
 		canvas_layer = parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
@@ -560,23 +555,24 @@ void CanvasItem::_enter_canvas() {
 }
 
 void CanvasItem::_exit_canvas() {
-
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
-	canvas_layer = NULL;
+	canvas_layer = nullptr;
 	group = "";
 }
 
 void CanvasItem::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
+			ERR_FAIL_COND(!is_inside_tree());
 			first_draw = true;
-			if (get_parent()) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
-				if (ci)
+
+			Node *parent = get_parent();
+			if (parent) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
+				if (ci) {
 					C = ci->children_items.push_back(this);
+				}
 			}
 			_enter_canvas();
 			if (!block_transform_notify && !xform_change.in_list()) {
@@ -584,9 +580,9 @@ void CanvasItem::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
-
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (group != "") {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
@@ -598,44 +594,32 @@ void CanvasItem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (xform_change.in_list())
+			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
+			}
 			_exit_canvas();
 			if (C) {
 				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = NULL;
+				C = nullptr;
 			}
 			global_invalid = true;
 		} break;
 		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 	}
 }
 
-void CanvasItem::set_visible(bool p_visible) {
-
-	if (p_visible)
-		show();
-	else
-		hide();
-}
-bool CanvasItem::is_visible() const {
-
-	return visible;
-}
-
 void CanvasItem::update() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
-	if (pending_update)
+	}
+	if (pending_update) {
 		return;
+	}
 
 	pending_update = true;
 
@@ -643,22 +627,21 @@ void CanvasItem::update() {
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
-
-	if (modulate == p_modulate)
+	if (modulate == p_modulate) {
 		return;
+	}
 
 	modulate = p_modulate;
 	VisualServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
 }
 Color CanvasItem::get_modulate() const {
-
 	return modulate;
 }
 
 void CanvasItem::set_as_toplevel(bool p_toplevel) {
-
-	if (toplevel == p_toplevel)
+	if (toplevel == p_toplevel) {
 		return;
+	}
 
 	if (!is_inside_tree()) {
 		toplevel = p_toplevel;
@@ -668,64 +651,61 @@ void CanvasItem::set_as_toplevel(bool p_toplevel) {
 	_exit_canvas();
 	toplevel = p_toplevel;
 	_enter_canvas();
+
+	_notify_transform();
 }
 
 bool CanvasItem::is_set_as_toplevel() const {
-
 	return toplevel;
 }
 
 CanvasItem *CanvasItem::get_parent_item() const {
-
-	if (toplevel)
-		return NULL;
+	if (toplevel) {
+		return nullptr;
+	}
 
 	return Object::cast_to<CanvasItem>(get_parent());
 }
 
 void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
-
-	if (self_modulate == p_self_modulate)
+	if (self_modulate == p_self_modulate) {
 		return;
+	}
 
 	self_modulate = p_self_modulate;
 	VisualServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
 }
 Color CanvasItem::get_self_modulate() const {
-
 	return self_modulate;
 }
 
 void CanvasItem::set_light_mask(int p_light_mask) {
-
-	if (light_mask == p_light_mask)
+	if (light_mask == p_light_mask) {
 		return;
+	}
 
 	light_mask = p_light_mask;
 	VS::get_singleton()->canvas_item_set_light_mask(canvas_item, p_light_mask);
 }
 
 int CanvasItem::get_light_mask() const {
-
 	return light_mask;
 }
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
-
-	if (p_size_changed)
+	if (p_size_changed) {
 		update();
+	}
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
 void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_from, p_to, p_color, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
@@ -734,14 +714,12 @@ void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_co
 }
 
 void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	VisualServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width, bool p_antialiased) {
-
 	Vector<Point2> points;
 	points.resize(p_point_count);
 	const float delta_angle = p_end_angle - p_start_angle;
@@ -754,7 +732,6 @@ void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start
 }
 
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
@@ -763,14 +740,12 @@ void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_c
 }
 
 void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	VisualServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, float p_width, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	if (p_filled) {
@@ -825,14 +800,12 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 }
 
 void CanvasItem::draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	VisualServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color);
 }
 
 void CanvasItem::draw_texture(const Ref<Texture> &p_texture, const Point2 &p_pos, const Color &p_modulate, const Ref<Texture> &p_normal_map) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
@@ -841,14 +814,12 @@ void CanvasItem::draw_texture(const Ref<Texture> &p_texture, const Point2 &p_pos
 }
 
 void CanvasItem::draw_texture_rect(const Ref<Texture> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
 	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose, p_normal_map);
 }
 void CanvasItem::draw_texture_rect_region(const Ref<Texture> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
 	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_normal_map, p_clip_uv);
@@ -862,7 +833,6 @@ void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p
 	p_style_box->draw(canvas_item, p_rect);
 }
 void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture> p_texture, float p_width, const Ref<Texture> &p_normal_map) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
@@ -871,7 +841,6 @@ void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Col
 	VisualServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid, p_width, rid_normal);
 }
 void CanvasItem::draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Transform2D xform(p_rot, p_offset);
@@ -880,14 +849,12 @@ void CanvasItem::draw_set_transform(const Point2 &p_offset, float p_rot, const S
 }
 
 void CanvasItem::draw_set_transform_matrix(const Transform2D &p_matrix) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item, p_matrix);
 }
 
 void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture> p_texture, const Ref<Texture> &p_normal_map, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
@@ -897,7 +864,6 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 }
 
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture> p_texture, const Ref<Texture> &p_normal_map, bool p_antialiased) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors;
@@ -909,7 +875,6 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 }
 
 void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map, const Transform2D &p_transform, const Color &p_modulate) {
-
 	ERR_FAIL_COND(p_mesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
@@ -917,7 +882,6 @@ void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_textur
 	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid, normal_map_rid);
 }
 void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
-
 	ERR_FAIL_COND(p_multimesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
@@ -925,7 +889,6 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 }
 
 void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) {
-
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_font.is_null());
@@ -933,7 +896,6 @@ void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const
 }
 
 float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, const Color &p_modulate) {
-
 	ERR_FAIL_COND_V_MSG(!drawing, 0, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND_V(p_char.length() != 1, 0);
@@ -946,7 +908,6 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
-
 	/* This check exists to avoid re-propagating the transform
 	 * notification down the tree on dirty nodes. It provides
 	 * optimization by avoiding redundancy (nodes are dirty, will get the
@@ -961,38 +922,37 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
-			if (p_node->is_inside_tree())
+			if (p_node->is_inside_tree()) {
 				get_tree()->xform_change_list.add(&p_node->xform_change);
+			}
 		}
 	}
 
 	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
-
 		CanvasItem *ci = E->get();
-		if (ci->toplevel)
+		if (ci->toplevel) {
 			continue;
+		}
 		_notify_transform(ci);
 	}
 }
 
 Rect2 CanvasItem::get_viewport_rect() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 	return get_viewport()->get_visible_rect();
 }
 
 RID CanvasItem::get_canvas() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_canvas();
-	else
+	} else {
 		return get_viewport()->find_world_2d()->get_canvas();
+	}
 }
 
 ObjectID CanvasItem::get_canvas_layer_instance_id() const {
-
 	if (canvas_layer) {
 		return canvas_layer->get_instance_id();
 	} else {
@@ -1001,7 +961,6 @@ ObjectID CanvasItem::get_canvas_layer_instance_id() const {
 }
 
 CanvasItem *CanvasItem::get_toplevel() const {
-
 	CanvasItem *ci = const_cast<CanvasItem *>(this);
 	while (!ci->toplevel && Object::cast_to<CanvasItem>(ci->get_parent())) {
 		ci = Object::cast_to<CanvasItem>(ci->get_parent());
@@ -1011,7 +970,6 @@ CanvasItem *CanvasItem::get_toplevel() const {
 }
 
 Ref<World2D> CanvasItem::get_world_2d() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), Ref<World2D>());
 
 	CanvasItem *tl = get_toplevel();
@@ -1024,7 +982,6 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 }
 
 RID CanvasItem::get_viewport_rid() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 	return get_viewport()->get_viewport_rid();
 }
@@ -1034,51 +991,45 @@ void CanvasItem::set_block_transform_notify(bool p_enable) {
 }
 
 bool CanvasItem::is_block_transform_notify_enabled() const {
-
 	return block_transform_notify;
 }
 
 void CanvasItem::set_draw_behind_parent(bool p_enable) {
-
-	if (behind == p_enable)
+	if (behind == p_enable) {
 		return;
+	}
 	behind = p_enable;
 	VisualServer::get_singleton()->canvas_item_set_draw_behind_parent(canvas_item, behind);
 }
 
 bool CanvasItem::is_draw_behind_parent_enabled() const {
-
 	return behind;
 }
 
 void CanvasItem::set_material(const Ref<Material> &p_material) {
-
 	material = p_material;
 	RID rid;
-	if (material.is_valid())
+	if (material.is_valid()) {
 		rid = material->get_rid();
+	}
 	VS::get_singleton()->canvas_item_set_material(canvas_item, rid);
 	_change_notify(); //properties for material exposed
 }
 
 void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
-
 	use_parent_material = p_use_parent_material;
 	VS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_use_parent_material);
 }
 
 bool CanvasItem::get_use_parent_material() const {
-
 	return use_parent_material;
 }
 
 Ref<Material> CanvasItem::get_material() const {
-
 	return material;
 }
 
 Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), screen_point);
 
 	Transform2D local_matrix = (get_canvas_transform() * get_global_transform()).affine_inverse();
@@ -1087,7 +1038,6 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 }
 
 Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) const {
-
 	ERR_FAIL_COND_V(p_event.is_null(), p_event);
 	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
 
@@ -1095,13 +1045,11 @@ Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) con
 }
 
 Vector2 CanvasItem::get_global_mouse_position() const {
-
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_position());
 }
 
 Vector2 CanvasItem::get_local_mouse_position() const {
-
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 
 	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
@@ -1119,7 +1067,7 @@ void CanvasItem::force_update_transform() {
 }
 
 void CanvasItem::_bind_methods() {
-
+	ClassDB::bind_method(D_METHOD("_toplevel_visibility_changed", "visible"), &CanvasItem::_toplevel_visibility_changed);
 	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
 	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
 
@@ -1251,6 +1199,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
@@ -1258,23 +1207,21 @@ void CanvasItem::_bind_methods() {
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {
-
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
-
-	if (canvas_layer)
-		return canvas_layer->get_transform();
-	else if (Object::cast_to<CanvasItem>(get_parent()))
-		return Object::cast_to<CanvasItem>(get_parent())->get_canvas_transform();
-	else
-		return get_viewport()->get_canvas_transform();
-}
-
-Transform2D CanvasItem::get_viewport_transform() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 
 	if (canvas_layer) {
+		return canvas_layer->get_transform();
+	} else if (Object::cast_to<CanvasItem>(get_parent())) {
+		return Object::cast_to<CanvasItem>(get_parent())->get_canvas_transform();
+	} else {
+		return get_viewport()->get_canvas_transform();
+	}
+}
 
+Transform2D CanvasItem::get_viewport_transform() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+
+	if (canvas_layer) {
 		if (get_viewport()) {
 			return get_viewport()->get_final_transform() * canvas_layer->get_transform();
 		} else {
@@ -1295,14 +1242,15 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 }
 
 void CanvasItem::set_notify_transform(bool p_enable) {
-	if (notify_transform == p_enable)
+	if (notify_transform == p_enable) {
 		return;
+	}
 
 	notify_transform = p_enable;
 
 	if (notify_transform && is_inside_tree()) {
 		//this ensures that invalid globals get resolved, so notifications can be received
-		get_global_transform();
+		_ALLOW_DISCARD_ get_global_transform();
 	}
 }
 
@@ -1311,17 +1259,16 @@ bool CanvasItem::is_transform_notification_enabled() const {
 }
 
 int CanvasItem::get_canvas_layer() const {
-
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_layer();
-	else
+	} else {
 		return 0;
+	}
 }
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-
-	canvas_item = VisualServer::get_singleton()->canvas_item_create();
+	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
 	pending_update = false;
 	modulate = Color(1, 1, 1, 1);
@@ -1332,17 +1279,16 @@ CanvasItem::CanvasItem() :
 	behind = false;
 	block_transform_notify = false;
 	//viewport=NULL;
-	canvas_layer = NULL;
+	canvas_layer = nullptr;
 	use_parent_material = false;
 	global_invalid = true;
 	notify_local_transform = false;
 	notify_transform = false;
 	light_mask = 1;
 
-	C = NULL;
+	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {
-
 	VisualServer::get_singleton()->free(canvas_item);
 }

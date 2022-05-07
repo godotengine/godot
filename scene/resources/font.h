@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "scene/resources/texture.h"
 
 class Font : public Resource {
-
 	GDCLASS(Font, Resource);
 
 protected:
@@ -104,15 +103,13 @@ public:
 };
 
 class BitmapFont : public Font {
-
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture>> textures;
 
 public:
 	struct Character {
-
 		int texture_idx;
 		Rect2 rect;
 		float v_align;
@@ -126,7 +123,6 @@ public:
 	};
 
 	struct KerningPairKey {
-
 		union {
 			struct {
 				uint32_t A, B;
@@ -139,7 +135,7 @@ public:
 	};
 
 private:
-	HashMap<CharType, Character> char_map;
+	HashMap<int32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
 
 	float height;
@@ -169,17 +165,17 @@ public:
 	float get_descent() const;
 
 	void add_texture(const Ref<Texture> &p_texture);
-	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
+	void add_char(int32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
-	Vector<CharType> get_char_keys() const;
-	Character get_character(CharType p_char) const;
+	Vector<int32_t> get_char_keys() const;
+	Character get_character(int32_t p_char) const;
 
 	int get_texture_count() const;
 	Ref<Texture> get_texture(int p_idx) const;
 
-	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
-	int get_kerning_pair(CharType p_A, CharType p_B) const;
+	void add_kerning_pair(int32_t p_A, int32_t p_B, int p_kerning);
+	int get_kerning_pair(int32_t p_A, int32_t p_B) const;
 	Vector<KerningPairKey> get_kerning_pair_keys() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
@@ -200,7 +196,7 @@ public:
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

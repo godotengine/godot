@@ -8,7 +8,7 @@
  *          functions; you must not call them directly.
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,21 +22,20 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_PADLOCK_H
 #define MBEDTLS_PADLOCK_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "aes.h"
+#include "mbedtls/aes.h"
 
-#define MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED               -0x0030  /**< Input data should be aligned. */
+/** Input data should be aligned. */
+#define MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED               -0x0030
 
 #if defined(__has_feature)
 #if __has_feature(address_sanitizer)
@@ -73,7 +72,7 @@ extern "C" {
  *
  * \param feature  The feature to detect
  *
- * \return         1 if CPU has support for the feature, 0 otherwise
+ * \return         non-zero if CPU has support for the feature, 0 otherwise
  */
 int mbedtls_padlock_has_support( int feature );
 

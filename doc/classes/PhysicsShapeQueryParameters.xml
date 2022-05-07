@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsShapeQueryParameters" inherits="Reference" version="3.2">
+<class name="PhysicsShapeQueryParameters" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Parameters to be sent to a 3D shape physics query.
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 3D intersection/collision queries. See also [PhysicsShapeQueryResult].
+		This class contains the shape and other parameters for 3D intersection/collision queries.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="Resource">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shape" type="Resource" />
 			<description>
 				Sets the [Shape] that will be used for collision/intersection queries.
 			</description>
@@ -27,7 +25,7 @@
 			If [code]true[/code], the query will take [PhysicsBody]s into account.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="2147483647">
-			The physics layer(s) the query will take into account (as a bitmask).
+			The physics layer(s) the query will take into account (as a bitmask). See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[  ]">
 			The list of objects or object [RID]s that will be excluded from collisions.

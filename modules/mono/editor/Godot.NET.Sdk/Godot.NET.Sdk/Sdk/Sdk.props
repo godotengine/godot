@@ -1,0 +1,117 @@
+<Project>
+  <PropertyGroup>
+    <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
+    <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Configurations>Debug;ExportDebug;ExportRelease</Configurations>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+
+    <GodotProjectDir Condition=" '$(SolutionDir)' != '' ">$(SolutionDir)</GodotProjectDir>
+    <GodotProjectDir Condition=" '$(SolutionDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
+    <GodotProjectDir>$([MSBuild]::EnsureTrailingSlash('$(GodotProjectDir)'))</GodotProjectDir>
+
+    <!-- Custom output paths for Godot projects. In brief, 'bin\' and 'obj\' are moved to '$(GodotProjectDir)\.mono\temp\'. -->
+    <BaseOutputPath>$(GodotProjectDir).mono\temp\bin\</BaseOutputPath>
+    <OutputPath>$(GodotProjectDir).mono\temp\bin\$(Configuration)\</OutputPath>
+    <!--
+    Use custom IntermediateOutputPath and BaseIntermediateOutputPath only if it wasn't already set.
+    Otherwise the old values may have already been changed by MSBuild which can cause problems with NuGet.
+    -->
+    <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(GodotProjectDir).mono\temp\obj\$(Configuration)\</IntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$(GodotProjectDir).mono\temp\obj\</BaseIntermediateOutputPath>
+
+    <!-- Do not append the target framework name to the output path. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
+
+  <PropertyGroup>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+  </PropertyGroup>
+
+  <!--
+  The Microsoft.NET.Sdk only understands of the Debug and Release configurations.
+  We need to set the following properties manually for ExportDebug and ExportRelease.
+  -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' or '$(Configuration)' == 'ExportDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'ExportRelease' ">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GodotApiConfiguration Condition=" '$(Configuration)' != 'ExportRelease' ">Debug</GodotApiConfiguration>
+    <GodotApiConfiguration Condition=" '$(Configuration)' == 'ExportRelease' ">Release</GodotApiConfiguration>
+  </PropertyGroup>
+
+  <!-- Auto-detect the target Godot platform if it was not specified. -->
+  <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">x11</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(FreeBSD))' ">x11</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(OSX))' ">osx</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Windows))' ">windows</GodotTargetPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GodotRealTIsDouble Condition=" '$(GodotRealTIsDouble)' == '' ">false</GodotRealTIsDouble>
+  </PropertyGroup>
+
+  <!-- Godot DefineConstants. -->
+  <PropertyGroup>
+    <!-- Define constant to identify Godot builds. -->
+    <GodotDefineConstants>GODOT</GodotDefineConstants>
+
+    <!--
+    Define constant to determine the target Godot platform. This includes the
+    recognized platform names and the platform category (PC, MOBILE or WEB).
+    -->
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'windows' ">GODOT_WINDOWS;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'x11' ">GODOT_X11;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'osx' ">GODOT_OSX;GODOT_MACOS;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'server' ">GODOT_SERVER;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'uwp' ">GODOT_UWP;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'haiku' ">GODOT_HAIKU;GODOT_PC</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'android' ">GODOT_ANDROID;GODOT_MOBILE</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'iphone' ">GODOT_IPHONE;GODOT_IOS;GODOT_MOBILE</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'javascript' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
+
+    <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants)</GodotDefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- ExportDebug also defines DEBUG like Debug does. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
+    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
+
+    <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+    TODO:
+    We should consider a nuget package for reference assemblies. This is difficult because the
+    Godot scripting API is continuaslly breaking backwards compatibility even in patch releases.
+    -->
+    <Reference Include="GodotSharp">
+      <Private>false</Private>
+      <HintPath>$(GodotProjectDir).mono\assemblies\$(GodotApiConfiguration)\GodotSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="GodotSharpEditor" Condition=" '$(Configuration)' == 'Debug' ">
+      <Private>false</Private>
+      <HintPath>$(GodotProjectDir).mono\assemblies\$(GodotApiConfiguration)\GodotSharpEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(AutomaticallyUseReferenceAssemblyPackages)' == '' and '$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)' == '' ">
+    <!-- Old 'Microsoft.NET.Sdk' so we reference the 'Microsoft.NETFramework.ReferenceAssemblies' package ourselves. -->
+    <AutomaticallyUseReferenceAssemblyPackages>true</AutomaticallyUseReferenceAssemblyPackages>
+    <MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion>1.0.0</MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion>
+    <GodotUseNETFrameworkRefAssemblies>true</GodotUseNETFrameworkRefAssemblies>
+  </PropertyGroup>
+</Project>

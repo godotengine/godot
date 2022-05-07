@@ -1,66 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" version="3.2">
+<class name="Line2D" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D line.
 	</brief_description>
 	<description>
-		A line through several points in 2D space.
+		A line through several points in 2D space. Supports varying width and color over the line's length, texturing, and several cap/joint types.
 		[b]Note:[/b] By default, Godot can only draw up to 4,096 polygon points at a time. To increase this limit, open the Project Settings and increase [member ProjectSettings.rendering/limits/buffers/canvas_polygon_buffer_size_kb] and [member ProjectSettings.rendering/limits/buffers/canvas_polygon_index_buffer_size_kb].
 	</description>
 	<tutorials>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
 		<method name="add_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="at_position" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a point at the [code]position[/code]. Appends the point at the end of the line.
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt; 0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="clear_points">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all points from the line.
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the Line2D's amount of points.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="i" type="int" />
 			<description>
 				Returns point [code]i[/code]'s position.
 			</description>
 		</method>
 		<method name="remove_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="i" type="int" />
 			<description>
 				Removes the point at index [code]i[/code] from the line.
 			</description>
 		</method>
 		<method name="set_point_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="i" type="int" />
+			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Overwrites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>
@@ -68,7 +58,9 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
-			If [code]true[/code], the line's border will be anti-aliased.
+			If [code]true[/code], the line's border will attempt to perform antialiasing by drawing thin OpenGL smooth lines on the line's edges.
+			[b]Note:[/b] Line2D is not accelerated by batching if [member antialiased] is [code]true[/code].
+			[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent lines and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedLine2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 		</member>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
 			Controls the style of the line's first point. Use [enum LineCapMode] constants.
@@ -86,13 +78,14 @@
 			The style for the points between the start and the end.
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array(  )">
-			The points that form the lines. The line is drawn between every point set in this array.
+			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
-			The smoothness of the rounded joints and caps. This is only used if a cap or joint is set as round.
+			The smoothness of the rounded joints and caps. Higher values result in smoother corners, but are more demanding to render and update. This is only used if a cap or joint is set as round.
+			[b]Note:[/b] The default value is tuned for lines with the default [member width]. For thin lines, this value should be reduced to a number between [code]2[/code] and [code]4[/code] to improve performance.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
-			The direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [constant LINE_JOINT_SHARP].
+			The direction difference in radians between vector points. This value is only used if [member joint_mode] is set to [constant LINE_JOINT_SHARP].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The texture used for the line's texture. Uses [code]texture_mode[/code] for drawing style.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,7 @@
 #include "skeleton.h"
 
 class PhysicsBody : public CollisionObject {
-
 	GDCLASS(PhysicsBody, CollisionObject);
-
-	uint32_t collision_layer;
-	uint32_t collision_mask;
 
 	void _set_layers(uint32_t p_mask);
 	uint32_t _get_layers() const;
@@ -57,27 +53,12 @@ public:
 	virtual Vector3 get_angular_velocity() const;
 	virtual float get_inverse_mass() const;
 
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
 	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
-
-	PhysicsBody();
 };
 
 class StaticBody : public PhysicsBody {
-
 	GDCLASS(StaticBody, PhysicsBody);
 
 	Vector3 constant_linear_velocity;
@@ -114,7 +95,6 @@ private:
 };
 
 class RigidBody : public PhysicsBody {
-
 	GDCLASS(RigidBody, PhysicsBody);
 
 public:
@@ -135,6 +115,7 @@ protected:
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
+	Basis inverse_inertia_tensor;
 	real_t gravity_scale;
 	real_t linear_damp;
 	real_t angular_damp;
@@ -147,15 +128,15 @@ protected:
 	bool custom_integrator;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -166,19 +147,17 @@ protected:
 		}
 	};
 	struct RigidBody_RemoveAction {
-
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
-		//int rc;
+		RID rid;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -187,7 +166,7 @@ protected:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	virtual void _direct_state_changed(Object *p_state);
 
 	void _notification(int p_what);
@@ -223,6 +202,8 @@ public:
 
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
+
+	Basis get_inverse_inertia_tensor();
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
@@ -278,10 +259,14 @@ VARIANT_ENUM_CAST(RigidBody::Mode);
 class KinematicCollision;
 
 class KinematicBody : public PhysicsBody {
-
 	GDCLASS(KinematicBody, PhysicsBody);
 
 public:
+	enum MovingPlatformApplyVelocityOnLeave {
+		PLATFORM_VEL_ON_LEAVE_ALWAYS,
+		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
+		PLATFORM_VEL_ON_LEAVE_NEVER,
+	};
 	struct Collision {
 		Vector3 collision;
 		Vector3 normal;
@@ -293,6 +278,11 @@ public:
 		Vector3 remainder;
 		Vector3 travel;
 		int local_shape;
+		real_t collision_safe_fraction;
+
+		real_t get_angle(const Vector3 &p_up_direction) const {
+			return Math::acos(normal.dot(p_up_direction));
+		}
 	};
 
 private:
@@ -306,21 +296,31 @@ private:
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
-	Vector<Collision> colliders;
-	Vector<Ref<KinematicCollision> > slide_colliders;
-	Ref<KinematicCollision> motion_cache;
+	bool sync_to_physics = false;
+	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
 
-	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
+	Vector<Collision> colliders;
+	Vector<Ref<KinematicCollision>> slide_colliders;
+	Ref<KinematicCollision> motion_cache;
 
 	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision> _get_last_slide_collision();
+
+	Transform last_valid_transform;
+	void _direct_state_changed(Object *p_state);
+
+	Vector3 _move_and_slide_internal(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	void _set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle);
+	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
+	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true, const Set<RID> &p_exclude = Set<RID>());
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
@@ -337,17 +337,22 @@ public:
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector3 get_floor_normal() const;
+	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Vector3 get_floor_velocity() const;
 
 	int get_slide_count() const;
 	Collision get_slide_collision(int p_bounce) const;
 
+	void set_sync_to_physics(bool p_enable);
+	bool is_sync_to_physics_enabled() const;
+
 	KinematicBody();
 	~KinematicBody();
 };
 
-class KinematicCollision : public Reference {
+VARIANT_ENUM_CAST(KinematicBody::MovingPlatformApplyVelocityOnLeave);
 
+class KinematicCollision : public Reference {
 	GDCLASS(KinematicCollision, Reference);
 
 	KinematicBody *owner;
@@ -362,9 +367,11 @@ public:
 	Vector3 get_normal() const;
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
+	real_t get_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
 	Object *get_collider_shape() const;
 	int get_collider_shape_index() const;
 	Vector3 get_collider_velocity() const;
@@ -374,7 +381,6 @@ public:
 };
 
 class PhysicalBone : public PhysicsBody {
-
 	GDCLASS(PhysicalBone, PhysicsBody);
 
 public:
@@ -391,7 +397,7 @@ public:
 		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
 
 		/// "j" is used to set the parameter inside the PhysicsServer
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -401,7 +407,7 @@ public:
 	struct PinJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_PIN; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -418,7 +424,7 @@ public:
 	struct ConeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_CONE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -439,7 +445,7 @@ public:
 	struct HingeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_HINGE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -462,7 +468,7 @@ public:
 	struct SliderJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_SLIDER; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -540,7 +546,7 @@ public:
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 

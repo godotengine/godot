@@ -30,7 +30,6 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ("tools", False),
         ("xaudio2", True),
@@ -39,7 +38,6 @@ def get_flags():
 
 
 def configure(env):
-
     env.msvc = True
 
     if env["bits"] != "default":
@@ -56,20 +54,21 @@ def configure(env):
     ## Build type
 
     if env["target"] == "release":
-        env.Append(CCFLAGS=["/O2", "/GL"])
         env.Append(CCFLAGS=["/MD"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS", "/LTCG"])
+        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+        if env["optimize"] != "none":
+            env.Append(CCFLAGS=["/O2", "/GL"])
+            env.Append(LINKFLAGS=["/LTCG"])
 
     elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["/O2", "/Zi"])
         env.Append(CCFLAGS=["/MD"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        if env["optimize"] != "none":
+            env.Append(CCFLAGS=["/O2", "/Zi"])
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["/Zi"])
         env.Append(CCFLAGS=["/MDd"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
@@ -77,6 +76,9 @@ def configure(env):
 
     env["ENV"] = os.environ
     vc_base_path = os.environ["VCTOOLSINSTALLDIR"] if "VCTOOLSINSTALLDIR" in os.environ else os.environ["VCINSTALLDIR"]
+
+    # Force to use Unicode encoding
+    env.AppendUnique(CCFLAGS=["/utf-8"])
 
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,9 @@
 
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
 		JointBullet() {
-
 	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
-	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
+	_ALLOW_DISCARD_ scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
@@ -53,7 +52,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	if (rbB) {
 		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 
-		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
+		_ALLOW_DISCARD_ scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;
 		G_TO_B(scaled_BFrame, btFrameB);
@@ -261,12 +260,4 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 bool Generic6DOFJointBullet::get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, false);
 	return flags[p_axis][p_flag];
-}
-
-void Generic6DOFJointBullet::set_precision(int p_precision) {
-	sixDOFConstraint->setOverrideNumSolverIterations(MAX(1, p_precision));
-}
-
-int Generic6DOFJointBullet::get_precision() const {
-	return sixDOFConstraint->getOverrideNumSolverIterations();
 }

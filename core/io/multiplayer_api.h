@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "core/reference.h"
 
 class MultiplayerAPI : public Reference {
-
 	GDCLASS(MultiplayerAPI, Reference);
 
 public:
@@ -67,7 +66,7 @@ private:
 
 #ifdef DEBUG_ENABLED
 	struct BandwidthFrame {
-		uint32_t timestamp;
+		uint64_t timestamp;
 		int packet_size;
 	};
 
@@ -131,6 +130,7 @@ public:
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
+	Node *get_root_node();
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	Error send_bytes(PoolVector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,15 +34,15 @@
 #include "core/io/image_loader.h"
 #include "core/ustring.h"
 
-#include <nanosvg.h>
-#include <nanosvgrast.h>
-
 /**
 	@author Daniel Ramirez <djrmuv@gmail.com>
 */
 
-class SVGRasterizer {
+// Forward declare and include thirdparty headers in .cpp.
+struct NSVGrasterizer;
+struct NSVGimage;
 
+class SVGRasterizer {
 	NSVGrasterizer *rasterizer;
 
 public:
@@ -62,7 +62,7 @@ class ImageLoaderSVG : public ImageFormatLoader {
 	static Error _create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
 
 public:
-	static void set_convert_colors(Dictionary *p_replace_color = NULL);
+	static void set_convert_colors(Dictionary *p_replace_color = nullptr);
 	static Error create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors = false);
 
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);

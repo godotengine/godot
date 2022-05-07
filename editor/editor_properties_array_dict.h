@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,10 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
+#include "editor/filesystem_dock.h"
 #include "scene/gui/button.h"
 
 class EditorPropertyArrayObject : public Reference {
-
 	GDCLASS(EditorPropertyArrayObject, Reference);
 
 	Variant array;
@@ -53,7 +53,6 @@ public:
 };
 
 class EditorPropertyDictionaryObject : public Reference {
-
 	GDCLASS(EditorPropertyDictionaryObject, Reference);
 
 	Variant new_item_key;
@@ -82,20 +81,27 @@ class EditorPropertyArray : public EditorProperty {
 
 	PopupMenu *change_type;
 	bool updating;
+	bool dropping;
 
 	Ref<EditorPropertyArrayObject> object;
-	int page_len;
-	int page_idx;
-	int changing_type_idx;
+	int page_length = 20;
+	int page_index = 0;
+	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
-	EditorSpinSlider *length;
-	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	EditorSpinSlider *size_slider;
+	EditorSpinSlider *page_slider;
+	HBoxContainer *page_hbox;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
+
+	int reorder_from_index = -1;
+	int reorder_to_index = -1;
+	float reorder_mouse_y_delta = 0.0f;
+	HBoxContainer *reorder_selected_element_hbox = nullptr;
+	Button *reorder_selected_button = nullptr;
 
 	void _page_changed(double p_page);
 	void _length_changed(double p_page);
@@ -106,6 +112,15 @@ class EditorPropertyArray : public EditorProperty {
 
 	void _object_id_selected(const String &p_property, ObjectID p_id);
 	void _remove_pressed(int p_index);
+
+	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
+	void _reorder_button_down(int p_index);
+	void _reorder_button_up();
+
+	void _button_draw();
+	bool _is_drop_valid(const Dictionary &p_drag_data) const;
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	static void _bind_methods();
@@ -124,14 +139,15 @@ class EditorPropertyDictionary : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyDictionaryObject> object;
-	int page_len;
-	int page_idx;
-	int changing_type_idx;
+	int page_length = 20;
+	int page_index = 0;
+	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
-	EditorSpinSlider *length;
-	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	EditorSpinSlider *size_slider;
+	EditorSpinSlider *page_slider;
+	HBoxContainer *page_hbox;
+	Button *button_add_item;
 
 	void _page_changed(double p_page);
 	void _edit_pressed();

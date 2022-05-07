@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/power_osx.h"
-#include "platform/osx/semaphore_osx.h"
 #else
 #include "platform/x11/crash_handler_x11.h"
 #include "platform/x11/power_x11.h"
@@ -49,7 +48,6 @@
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
-
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -121,7 +119,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;

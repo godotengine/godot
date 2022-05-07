@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,15 +40,11 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#define WSL_SERVER_TIMEOUT 1000
-
 class WSLServer : public WebSocketServer {
-
 	GDCIIMPL(WSLServer, WebSocketServer);
 
 private:
 	class PendingPeer : public Reference {
-
 	private:
 		bool _parse_request(const Vector<String> p_protocols);
 
@@ -57,7 +53,7 @@ private:
 		Ref<StreamPeer> connection;
 		bool use_ssl;
 
-		int time;
+		uint64_t time;
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
 		int req_pos;
 		String key;
@@ -68,7 +64,7 @@ private:
 
 		PendingPeer();
 
-		Error do_handshake(const Vector<String> p_protocols);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, const Vector<String> &p_extra_headers);
 	};
 
 	int _in_buf_size;
@@ -76,12 +72,14 @@ private:
 	int _out_buf_size;
 	int _out_pkt_size;
 
-	List<Ref<PendingPeer> > _pending;
+	List<Ref<PendingPeer>> _pending;
 	Ref<TCP_Server> _server;
 	Vector<String> _protocols;
+	Vector<String> _extra_headers;
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	void set_extra_headers(const Vector<String> &p_headers);
 	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;

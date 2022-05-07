@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,23 +56,24 @@ typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLX
 
 struct vendor {
 	const char *glxvendor;
-	int priority;
+	int priority = 0;
 };
 
 vendor vendormap[] = {
 	{ "Advanced Micro Devices, Inc.", 30 },
+	{ "AMD", 30 },
 	{ "NVIDIA Corporation", 30 },
 	{ "X.Org", 30 },
 	{ "Intel Open Source Technology Center", 20 },
 	{ "Intel", 20 },
 	{ "nouveau", 10 },
 	{ "Mesa Project", 0 },
-	{ NULL, 0 }
+	{ nullptr, 0 }
 };
 
 // Runs inside a child. Exiting will not quit the engine.
 void create_context() {
-	Display *x11_display = XOpenDisplay(NULL);
+	Display *x11_display = XOpenDisplay(nullptr);
 	Window x11_window;
 	GLXContext glx_context;
 
@@ -90,8 +91,8 @@ void create_context() {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig = 0;
-	XVisualInfo *vi = NULL;
+	GLXFBConfig fbconfig = nullptr;
+	XVisualInfo *vi = nullptr;
 
 	XSetWindowAttributes swa;
 	swa.event_mask = StructureNotifyMask;
@@ -99,8 +100,9 @@ void create_context() {
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 
 	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-	if (!fbc)
+	if (!fbc) {
 		exit(1);
+	}
 
 	vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
@@ -114,13 +116,14 @@ void create_context() {
 		None
 	};
 
-	glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
+	glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, nullptr, true, context_attribs);
 
 	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, 10, 10, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
 
-	if (!x11_window)
+	if (!x11_window) {
 		exit(1);
+	}
 
 	glXMakeCurrent(x11_display, x11_window, glx_context);
 	XFree(vi);
@@ -128,7 +131,7 @@ void create_context() {
 
 int detect_prime() {
 	pid_t p;
-	int priorities[2];
+	int priorities[2] = {};
 	String vendors[2];
 	String renderers[2];
 
@@ -178,7 +181,9 @@ int detect_prime() {
 
 			close(fdset[0]);
 
-			if (i) setenv("DRI_PRIME", "1", 1);
+			if (i) {
+				setenv("DRI_PRIME", "1", 1);
+			}
 			create_context();
 
 			const char *vendor = (const char *)glGetString(GL_VENDOR);

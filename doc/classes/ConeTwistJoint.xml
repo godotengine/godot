@@ -1,31 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConeTwistJoint" inherits="Joint" version="3.2">
+<class name="ConeTwistJoint" inherits="Joint" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A twist joint between two 3D bodies.
+		A twist joint between two 3D PhysicsBodies.
 	</brief_description>
 	<description>
 		The joint can rotate the bodies across an axis defined by the local x-axes of the [Joint].
 		The twist axis is initiated as the X axis of the [Joint].
-		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint in the local space of the two Bodies.
+		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint in the local space of the two Bodies. See also [Generic6DOFJoint].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>

@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2021 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -17,10 +17,9 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
@@ -61,7 +60,12 @@
     /* predates clang; the `__BYTE_ORDER__' preprocessor symbol was */
     /* introduced in gcc 4.6 and clang 3.2, respectively.           */
     /* `__builtin_shuffle' for gcc was introduced in gcc 4.7.0.     */
-#if ( ( defined( __GNUC__ )                                &&             \
+    /*                                                              */
+    /* Intel compilers do not currently support __builtin_shuffle;  */
+
+    /* The Intel check must be first. */
+#if !defined( __INTEL_COMPILER )                                       && \
+    ( ( defined( __GNUC__ )                                &&             \
         ( ( __GNUC__ >= 5 )                              ||               \
         ( ( __GNUC__ == 4 ) && ( __GNUC_MINOR__ >= 7 ) ) ) )         ||   \
       ( defined( __clang__ )                                       &&     \
@@ -266,7 +270,10 @@
 
     int         bitdepth, color_type, interlace;
     FT_Int      i;
-    png_byte*  *rows = NULL; /* pacify compiler */
+
+    /* `rows` gets modified within a 'setjmp' scope; */
+    /* we thus need the `volatile` keyword.          */
+    png_byte* *volatile  rows = NULL;
 
 
     if ( x_offset < 0 ||
@@ -328,6 +335,13 @@
 
     if ( populate_map_and_metrics )
     {
+      /* reject too large bitmaps similarly to the rasterizer */
+      if ( imgHeight > 0x7FFF || imgWidth > 0x7FFF )
+      {
+        error = FT_THROW( Array_Too_Large );
+        goto DestroyExit;
+      }
+
       metrics->width  = (FT_UShort)imgWidth;
       metrics->height = (FT_UShort)imgHeight;
 
@@ -336,13 +350,6 @@
       map->pixel_mode = FT_PIXEL_MODE_BGRA;
       map->pitch      = (int)( map->width * 4 );
       map->num_grays  = 256;
-
-      /* reject too large bitmaps similarly to the rasterizer */
-      if ( map->rows > 0x7FFF || map->width > 0x7FFF )
-      {
-        error = FT_THROW( Array_Too_Large );
-        goto DestroyExit;
-      }
     }
 
     /* convert palette/gray image to rgb */
@@ -423,7 +430,7 @@
         goto DestroyExit;
     }
 
-    if ( FT_NEW_ARRAY( rows, imgHeight ) )
+    if ( FT_QNEW_ARRAY( rows, imgHeight ) )
     {
       error = FT_THROW( Out_Of_Memory );
       goto DestroyExit;
@@ -434,11 +441,11 @@
 
     png_read_image( png, rows );
 
-    FT_FREE( rows );
-
     png_read_end( png, info );
 
   DestroyExit:
+    /* even if reading fails with longjmp, rows must be freed */
+    FT_FREE( rows );
     png_destroy_read_struct( &png, &info, NULL );
     FT_Stream_Close( &stream );
 

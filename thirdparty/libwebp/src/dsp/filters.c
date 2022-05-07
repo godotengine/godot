@@ -254,7 +254,7 @@ WEBP_DSP_INIT_FUNC(VP8FiltersInit) {
 #endif
 
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8FiltersInitSSE2();
     }
@@ -271,7 +271,7 @@ WEBP_DSP_INIT_FUNC(VP8FiltersInit) {
 #endif
   }
 
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
   if (WEBP_NEON_OMIT_C_CODE ||
       (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kNEON))) {
     VP8FiltersInitNEON();

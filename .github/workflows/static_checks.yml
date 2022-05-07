@@ -1,0 +1,53 @@
+name: 📊 Static Checks
+on: [push, pull_request]
+
+jobs:
+  static-checks:
+    name: Static Checks (clang-format, black format, file format, documentation checks)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+          sudo apt-get update
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils
+          sudo update-alternatives --remove-all clang-format
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
+          sudo pip3 install black==21.10b0 pygments
+
+      - name: File formatting checks (file_format.sh)
+        run: |
+          bash ./misc/scripts/file_format.sh
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh
+
+      - name: Python style checks via black (black_format.sh)
+        run: |
+          bash ./misc/scripts/black_format.sh
+
+      - name: JavaScript style and documentation checks via ESLint and JSDoc
+        run: |
+          cd platform/javascript
+          npm ci
+          npm run lint
+          npm run docs -- -d dry-run
+
+      - name: Class reference schema checks
+        run: |
+          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml
+
+      - name: Documentation checks
+        run: |
+          doc/tools/make_rst.py --dry-run doc/classes modules

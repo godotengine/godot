@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourceConversionPlugin" inherits="Reference" version="3.2">
+<class name="EditorResourceConversionPlugin" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,16 +8,13 @@
 	</tutorials>
 	<methods>
 		<method name="_convert" qualifiers="virtual">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
 		<method name="_converts_to" qualifiers="virtual">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>

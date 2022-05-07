@@ -1,107 +1,85 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles" inherits="GeometryInstance" version="3.2">
+<class name="CPUParticles" inherits="GeometryInstance" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		CPU-based 3D particle emitter.
 	</brief_description>
 	<description>
 		CPU-based 3D particle node used to create a variety of particle systems and effects.
 		See also [Particles], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		[b]Note:[/b] Unlike [Particles], the visibility rect is generated on-the-fly and doesn't need to be configured by the user.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">
-			<return type="void">
-			</return>
-			<argument index="0" name="particles" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="particles" type="Node" />
 			<description>
 				Sets this node's properties to match a given [Particles] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
-			<return type="Curve">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="Curve" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
 			<description>
 				Returns the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags" />
 			<description>
 				Returns the enabled state of the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts the particle emitter.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_curve">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="curve" type="Curve">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="curve" type="Curve" />
 			<description>
 				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
-			</argument>
-			<argument index="1" name="randomness" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter" />
+			<argument index="1" name="randomness" type="float" />
 			<description>
 				Sets the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the given flag (see [enum Flags] for options).
 			</description>
@@ -109,7 +87,8 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
 		</member>
 		<member name="angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			Initial rotation applied to each particle, in degrees.
@@ -121,7 +100,7 @@
 			Rotation randomness ratio.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_param" getter="get_param" default="0.0">
-			Initial angular velocity applied to each particle. Sets the speed of rotation of the particle.
+			Initial angular velocity applied to each particle in [i]degrees[/i] per second. Sets the speed of rotation of the particle.
 		</member>
 		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's angular velocity will vary along this [Curve].
@@ -148,10 +127,13 @@
 			Animation speed randomness ratio.
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
-			Unused for 3D particles.
+			Each particle's initial color. To have particle display color in a [SpatialMaterial] make sure to set [member SpatialMaterial.vertex_color_use_as_albedo] to [code]true[/code].
+		</member>
+		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
+			Each particle's initial color will vary along this [GradientTexture] (multiplied with [member color]).
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Unused for 3D particles.
+			Each particle's color will vary along this [GradientTexture] over its lifetime (multiplied with [member color]).
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The rate at which particles lose velocity.
@@ -171,14 +153,26 @@
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
-		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PoolColorArray(  )">
+		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_normals" type="PoolVector3Array" setter="set_emission_normals" getter="get_emission_normals">
 			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_points" type="PoolVector3Array" setter="set_emission_points" getter="get_emission_points" default="PoolVector3Array(  )">
+		<member name="emission_points" type="PoolVector3Array" setter="set_emission_points" getter="get_emission_points">
 			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
+		</member>
+		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
+			The axis for the ring shaped emitter when using [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_height" type="float" setter="set_emission_ring_height" getter="get_emission_ring_height">
+			The height for the ring shaped emitter when using [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_inner_radius" type="float" setter="set_emission_ring_inner_radius" getter="get_emission_ring_inner_radius">
+			The inner radius for the ring shaped emitter when using [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_radius" type="float" setter="set_emission_ring_radius" getter="get_emission_ring_radius">
+			The radius for the ring shaped emitter when using [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles.EmissionShape" default="0">
 			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
@@ -229,7 +223,7 @@
 			Initial velocity randomness ratio.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
 			Particle lifetime randomness ratio.
@@ -378,7 +372,10 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_RING" value="5" enum="EmissionShape">
+			Particles will be emitted in a ring or cylinder.
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>

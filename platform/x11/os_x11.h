@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "core/local_vector.h"
 #include "core/os/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
@@ -44,7 +45,6 @@
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
@@ -78,7 +78,6 @@ typedef struct _xrr_monitor_info {
 #undef CursorShape
 
 class OS_X11 : public OS_Unix {
-
 	Atom wm_delete;
 	Atom xdnd_enter;
 	Atom xdnd_position;
@@ -156,7 +155,29 @@ class OS_X11 : public OS_Unix {
 	MouseMode mouse_mode;
 	Point2i center;
 
-	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
+	void _handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
+
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
+
+	String _get_clipboard_impl(Atom p_source, Window x11_window, Atom target) const;
+	String _get_clipboard(Atom p_source, Window x11_window) const;
+	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
+
+	mutable Mutex events_mutex;
+	Thread events_thread;
+	bool events_thread_done = false;
+	LocalVector<XEvent> polled_events;
+	static void _poll_events_thread(void *ud);
+	bool _wait_for_events() const;
+	void _poll_events();
+	void _check_pending_events(LocalVector<XEvent> &r_events);
+
+	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
+
 	void process_xevents();
 	virtual void delete_main_loop();
 
@@ -171,7 +192,7 @@ class OS_X11 : public OS_Unix {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	InputDefault *input;
 
@@ -218,11 +239,15 @@ protected:
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
+
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 	void _window_changed(XEvent *event);
 
-	bool is_window_maximize_allowed();
+	bool window_maximize_check(const char *p_atom_name) const;
+	bool is_window_maximize_allowed() const;
 
 public:
 	virtual String get_name() const;
@@ -238,15 +263,20 @@ public:
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
+	virtual void set_window_mouse_passthrough(const PoolVector2Array &p_region);
 
 	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual MainLoop *get_main_loop() const;
 
+	virtual uint64_t get_embedded_pck_offset() const;
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual void set_clipboard_primary(const String &p_text);
+	virtual String get_clipboard_primary() const;
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
@@ -256,7 +286,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error shell_open(String p_uri);
 
@@ -270,6 +300,7 @@ public:
 	virtual Point2 get_screen_position(int p_screen = -1) const;
 	virtual Size2 get_screen_size(int p_screen = -1) const;
 	virtual int get_screen_dpi(int p_screen = -1) const;
+	virtual float get_screen_refresh_rate(int p_screen = -1) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
@@ -291,6 +322,7 @@ public:
 	virtual bool is_window_always_on_top() const;
 	virtual bool is_window_focused() const;
 	virtual void request_attention();
+	virtual void *get_native_handle(int p_handle_type);
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
@@ -302,6 +334,7 @@ public:
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;
+	virtual String get_processor_name() const;
 
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
@@ -334,6 +367,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+	virtual uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	void update_real_mouse_position();
 	OS_X11();

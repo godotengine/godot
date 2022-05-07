@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,16 +33,17 @@
 
 #include "core/os/keyboard.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <winuser.h>
 
 class KeyMappingWindows {
-
 	KeyMappingWindows(){};
 
 public:
 	static unsigned int get_keysym(unsigned int p_code);
+	static unsigned int get_scancode(unsigned int p_keycode);
+	static unsigned int get_scansym(unsigned int p_code, bool p_extended);
 	static bool is_extended_key(unsigned int p_code);
 };
 

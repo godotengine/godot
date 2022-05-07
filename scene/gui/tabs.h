@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Tabs : public Control {
-
 	GDCLASS(Tabs, Control);
 
 public:
@@ -56,7 +55,6 @@ public:
 
 private:
 	struct Tab {
-
 		String text;
 		String xl_text;
 		Ref<Texture> icon;
@@ -79,7 +77,7 @@ private:
 	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
-	int _get_top_margin() const;
+	int previous;
 	TabAlign tab_align;
 	int rb_hover;
 	bool rb_pressing;
@@ -140,6 +138,7 @@ public:
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
 	int get_tab_offset() const;

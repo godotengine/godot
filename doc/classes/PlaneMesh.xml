@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PlaneMesh" inherits="PrimitiveMesh" version="3.2">
+<class name="PlaneMesh" inherits="PrimitiveMesh" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class representing a planar [PrimitiveMesh].
 	</brief_description>
 	<description>
 		Class representing a planar [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Z axes; this default rotation isn't suited for use with billboarded materials. For billboarded materials, use [QuadMesh] instead.
+		[b]Note:[/b] When using a large textured [PlaneMesh] (e.g. as a floor), you may stumble upon UV jittering issues depending on the camera angle. To solve this, increase [member subdivide_depth] and [member subdivide_width] until you no longer notice UV jittering.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
+		<member name="center_offset" type="Vector3" setter="set_center_offset" getter="get_center_offset" default="Vector3( 0, 0, 0 )">
+			Offset from the origin of the generated plane. Useful for particles.
+		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 2, 2 )">
 			Size of the generated plane.
 		</member>

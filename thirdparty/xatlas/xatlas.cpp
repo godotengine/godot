@@ -33,6 +33,13 @@ https://github.com/brandonpelfrey/Fast-BVH
 MIT License
 Copyright (c) 2012 Brandon Pelfrey
 */
+#include "xatlas.h"
+#ifndef XATLAS_C_API
+#define XATLAS_C_API 0
+#endif
+#if XATLAS_C_API
+#include "xatlas_c.h"
+#endif
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -45,7 +52,6 @@ Copyright (c) 2012 Brandon Pelfrey
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "xatlas.h"
 
 #ifndef XA_DEBUG
 #ifdef NDEBUG
@@ -59,7 +65,7 @@ Copyright (c) 2012 Brandon Pelfrey
 #define XA_PROFILE 0
 #endif
 #if XA_PROFILE
-#include <time.h>
+#include <chrono>
 #endif
 
 #ifndef XA_MULTITHREADED
@@ -116,9 +122,9 @@ Copyright (c) 2012 Brandon Pelfrey
 #define XA_MERGE_CHARTS 1
 #define XA_MERGE_CHARTS_MIN_NORMAL_DEVIATION 0.5f
 #define XA_RECOMPUTE_CHARTS 1
-#define XA_CLOSE_HOLES_CHECK_EDGE_INTERSECTION 0
-#define XA_FIX_INTERNAL_BOUNDARY_LOOPS 1
-#define XA_PRINT_CHART_WARNINGS 0
+#define XA_CHECK_PARAM_WINDING 0
+#define XA_CHECK_PIECEWISE_CHART_QUALITY 0
+#define XA_CHECK_T_JUNCTIONS 0
 
 #define XA_DEBUG_HEAP 0
 #define XA_DEBUG_SINGLE_CHART 0
@@ -131,8 +137,7 @@ Copyright (c) 2012 Brandon Pelfrey
 #define XA_DEBUG_EXPORT_OBJ_CHART_GROUPS 0
 #define XA_DEBUG_EXPORT_OBJ_PLANAR_REGIONS 0
 #define XA_DEBUG_EXPORT_OBJ_CHARTS 0
-#define XA_DEBUG_EXPORT_OBJ_BEFORE_FIX_TJUNCTION 0
-#define XA_DEBUG_EXPORT_OBJ_CLOSE_HOLES_ERROR 0
+#define XA_DEBUG_EXPORT_OBJ_TJUNCTION 0 // XA_CHECK_T_JUNCTIONS must also be set
 #define XA_DEBUG_EXPORT_OBJ_CHARTS_AFTER_PARAMETERIZATION 0
 #define XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION 0
 #define XA_DEBUG_EXPORT_OBJ_RECOMPUTED_CHARTS 0
@@ -142,8 +147,7 @@ Copyright (c) 2012 Brandon Pelfrey
 	|| XA_DEBUG_EXPORT_OBJ_CHART_GROUPS \
 	|| XA_DEBUG_EXPORT_OBJ_PLANAR_REGIONS \
 	|| XA_DEBUG_EXPORT_OBJ_CHARTS \
-	|| XA_DEBUG_EXPORT_OBJ_BEFORE_FIX_TJUNCTION \
-	|| XA_DEBUG_EXPORT_OBJ_CLOSE_HOLES_ERROR \
+	|| XA_DEBUG_EXPORT_OBJ_TJUNCTION \
 	|| XA_DEBUG_EXPORT_OBJ_CHARTS_AFTER_PARAMETERIZATION \
 	|| XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION \
 	|| XA_DEBUG_EXPORT_OBJ_RECOMPUTED_CHARTS)
@@ -165,74 +169,77 @@ static PrintFunc s_print = printf;
 static bool s_printVerbose = false;
 
 #if XA_PROFILE
-#define XA_PROFILE_START(var) const clock_t var##Start = clock();
-#define XA_PROFILE_END(var) internal::s_profile.var += clock() - var##Start;
-#define XA_PROFILE_PRINT_AND_RESET(label, var) XA_PRINT("%s%.2f seconds (%g ms)\n", label, internal::clockToSeconds(internal::s_profile.var), internal::clockToMs(internal::s_profile.var)); internal::s_profile.var = 0;
+typedef uint64_t Duration;
+
+#define XA_PROFILE_START(var) const std::chrono::time_point<std::chrono::high_resolution_clock> var##Start = std::chrono::high_resolution_clock::now();
+#define XA_PROFILE_END(var) internal::s_profile.var += uint64_t(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - var##Start).count());
+#define XA_PROFILE_PRINT_AND_RESET(label, var) XA_PRINT("%s%.2f seconds (%g ms)\n", label, internal::durationToSeconds(internal::s_profile.var), internal::durationToMs(internal::s_profile.var)); internal::s_profile.var = 0u;
 #define XA_PROFILE_ALLOC 0
 
 struct ProfileData
 {
 #if XA_PROFILE_ALLOC
-	std::atomic<clock_t> alloc;
+	std::atomic<Duration> alloc;
 #endif
-	clock_t addMeshReal;
-	clock_t addMeshCopyData;
-	std::atomic<clock_t> addMeshThread;
-	std::atomic<clock_t> addMeshCreateColocals;
-	clock_t computeChartsReal;
-	std::atomic<clock_t> computeChartsThread;
-	std::atomic<clock_t> createFaceGroups;
-	std::atomic<clock_t> extractInvalidMeshGeometry;
-	std::atomic<clock_t> chartGroupComputeChartsReal;
-	std::atomic<clock_t> chartGroupComputeChartsThread;
-	std::atomic<clock_t> createChartGroupMesh;
-	std::atomic<clock_t> createChartGroupMeshColocals;
-	std::atomic<clock_t> createChartGroupMeshBoundaries;
-	std::atomic<clock_t> buildAtlas;
-	std::atomic<clock_t> buildAtlasInit;
-	std::atomic<clock_t> planarCharts;
-	std::atomic<clock_t> clusteredCharts;
-	std::atomic<clock_t> clusteredChartsPlaceSeeds;
-	std::atomic<clock_t> clusteredChartsPlaceSeedsBoundaryIntersection;
-	std::atomic<clock_t> clusteredChartsRelocateSeeds;
-	std::atomic<clock_t> clusteredChartsReset;
-	std::atomic<clock_t> clusteredChartsGrow;
-	std::atomic<clock_t> clusteredChartsGrowBoundaryIntersection;
-	std::atomic<clock_t> clusteredChartsMerge;
-	std::atomic<clock_t> clusteredChartsFillHoles;
-	std::atomic<clock_t> copyChartFaces;
-	clock_t parameterizeChartsReal;
-	std::atomic<clock_t> parameterizeChartsThread;
-	std::atomic<clock_t> createChartMesh;
-	std::atomic<clock_t> fixChartMeshTJunctions;
-	std::atomic<clock_t> closeChartMeshHoles;
-	std::atomic<clock_t> parameterizeChartsOrthogonal;
-	std::atomic<clock_t> parameterizeChartsLSCM;
-	std::atomic<clock_t> parameterizeChartsRecompute;
-	std::atomic<clock_t> parameterizeChartsPiecewise;
-	std::atomic<clock_t> parameterizeChartsPiecewiseBoundaryIntersection;
-	std::atomic<clock_t> parameterizeChartsEvaluateQuality;
-	clock_t packCharts;
-	clock_t packChartsAddCharts;
-	std::atomic<clock_t> packChartsAddChartsThread;
-	std::atomic<clock_t> packChartsAddChartsRestoreTexcoords;
-	clock_t packChartsRasterize;
-	clock_t packChartsDilate;
-	clock_t packChartsFindLocation;
-	clock_t packChartsBlit;
-	clock_t buildOutputMeshes;
+	std::chrono::time_point<std::chrono::high_resolution_clock> addMeshRealStart;
+	Duration addMeshReal;
+	Duration addMeshCopyData;
+	std::atomic<Duration> addMeshThread;
+	std::atomic<Duration> addMeshCreateColocals;
+	Duration computeChartsReal;
+	std::atomic<Duration> computeChartsThread;
+	std::atomic<Duration> createFaceGroups;
+	std::atomic<Duration> extractInvalidMeshGeometry;
+	std::atomic<Duration> chartGroupComputeChartsReal;
+	std::atomic<Duration> chartGroupComputeChartsThread;
+	std::atomic<Duration> createChartGroupMesh;
+	std::atomic<Duration> createChartGroupMeshColocals;
+	std::atomic<Duration> createChartGroupMeshBoundaries;
+	std::atomic<Duration> buildAtlas;
+	std::atomic<Duration> buildAtlasInit;
+	std::atomic<Duration> planarCharts;
+	std::atomic<Duration> originalUvCharts;
+	std::atomic<Duration> clusteredCharts;
+	std::atomic<Duration> clusteredChartsPlaceSeeds;
+	std::atomic<Duration> clusteredChartsPlaceSeedsBoundaryIntersection;
+	std::atomic<Duration> clusteredChartsRelocateSeeds;
+	std::atomic<Duration> clusteredChartsReset;
+	std::atomic<Duration> clusteredChartsGrow;
+	std::atomic<Duration> clusteredChartsGrowBoundaryIntersection;
+	std::atomic<Duration> clusteredChartsMerge;
+	std::atomic<Duration> clusteredChartsFillHoles;
+	std::atomic<Duration> copyChartFaces;
+	std::atomic<Duration> createChartMeshAndParameterizeReal;
+	std::atomic<Duration> createChartMeshAndParameterizeThread;
+	std::atomic<Duration> createChartMesh;
+	std::atomic<Duration> parameterizeCharts;
+	std::atomic<Duration> parameterizeChartsOrthogonal;
+	std::atomic<Duration> parameterizeChartsLSCM;
+	std::atomic<Duration> parameterizeChartsRecompute;
+	std::atomic<Duration> parameterizeChartsPiecewise;
+	std::atomic<Duration> parameterizeChartsPiecewiseBoundaryIntersection;
+	std::atomic<Duration> parameterizeChartsEvaluateQuality;
+	Duration packCharts;
+	Duration packChartsAddCharts;
+	std::atomic<Duration> packChartsAddChartsThread;
+	std::atomic<Duration> packChartsAddChartsRestoreTexcoords;
+	Duration packChartsRasterize;
+	Duration packChartsDilate;
+	Duration packChartsFindLocation;
+	Duration packChartsBlit;
+	Duration buildOutputMeshes;
 };
 
 static ProfileData s_profile;
 
-static double clockToMs(clock_t c)
+static double durationToMs(Duration c)
 {
-	return c * 1000.0 / CLOCKS_PER_SEC;
+	return (double)c * 0.001;
 }
 
-static double clockToSeconds(clock_t c)
+static double durationToSeconds(Duration c)
 {
-	return c / (double)CLOCKS_PER_SEC;
+	return (double)c * 0.000001;
 }
 #else
 #define XA_PROFILE_START(var)
@@ -542,7 +549,7 @@ class Vector2
 public:
 	Vector2() {}
 	explicit Vector2(float f) : x(f), y(f) {}
-	Vector2(float x, float y): x(x), y(y) {}
+	Vector2(float _x, float _y): x(_x), y(_y) {}
 
 	Vector2 operator-() const
 	{
@@ -623,22 +630,21 @@ static bool isNormalized(const Vector2 &v, float epsilon = kNormalEpsilon)
 }
 #endif
 
-static Vector2 normalize(const Vector2 &v, float epsilon)
+static Vector2 normalize(const Vector2 &v)
 {
-	float l = length(v);
-	XA_DEBUG_ASSERT(!isZero(l, epsilon));
-	XA_UNUSED(epsilon);
-	Vector2 n = v * (1.0f / l);
+	const float l = length(v);
+	XA_DEBUG_ASSERT(l > 0.0f); // Never negative.
+	const Vector2 n = v * (1.0f / l);
 	XA_DEBUG_ASSERT(isNormalized(n));
 	return n;
 }
 
-static Vector2 normalizeSafe(const Vector2 &v, const Vector2 &fallback, float epsilon)
+static Vector2 normalizeSafe(const Vector2 &v, const Vector2 &fallback)
 {
-	float l = length(v);
-	if (isZero(l, epsilon))
-		return fallback;
-	return v * (1.0f / l);
+	const float l = length(v);
+	if (l > 0.0f) // Never negative.
+		return v * (1.0f / l);
+	return fallback;
 }
 
 static bool equal(const Vector2 &v1, const Vector2 &v2, float epsilon)
@@ -694,7 +700,7 @@ static bool linesIntersect(const Vector2 &a1, const Vector2 &a2, const Vector2 &
 struct Vector2i
 {
 	Vector2i() {}
-	Vector2i(int32_t x, int32_t y) : x(x), y(y) {}
+	Vector2i(int32_t _x, int32_t _y) : x(_x), y(_y) {}
 
 	int32_t x, y;
 };
@@ -704,8 +710,8 @@ class Vector3
 public:
 	Vector3() {}
 	explicit Vector3(float f) : x(f), y(f), z(f) {}
-	Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
-	Vector3(const Vector2 &v, float z) : x(v.x), y(v.y), z(z) {}
+	Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	Vector3(const Vector2 &v, float _z) : x(v.x), y(v.y), z(_z) {}
 
 	Vector2 xy() const
 	{
@@ -773,6 +779,11 @@ static Vector3 operator-(const Vector3 &a, const Vector3 &b)
 	return Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
+static bool operator==(const Vector3 &a, const Vector3 &b)
+{
+	return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
 static Vector3 cross(const Vector3 &a, const Vector3 &b)
 {
 	return Vector3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
@@ -805,26 +816,24 @@ static float length(const Vector3 &v)
 
 static bool isNormalized(const Vector3 &v, float epsilon = kNormalEpsilon)
 {
-	return equal(length(v), 1, epsilon);
+	return equal(length(v), 1.0f, epsilon);
 }
 
-static Vector3 normalize(const Vector3 &v, float epsilon)
+static Vector3 normalize(const Vector3 &v)
 {
-	float l = length(v);
-	XA_DEBUG_ASSERT(!isZero(l, epsilon));
-	XA_UNUSED(epsilon);
-	Vector3 n = v * (1.0f / l);
+	const float l = length(v);
+	XA_DEBUG_ASSERT(l > 0.0f); // Never negative.
+	const Vector3 n = v * (1.0f / l);
 	XA_DEBUG_ASSERT(isNormalized(n));
 	return n;
 }
 
-static Vector3 normalizeSafe(const Vector3 &v, const Vector3 &fallback, float epsilon)
+static Vector3 normalizeSafe(const Vector3 &v, const Vector3 &fallback)
 {
-	float l = length(v);
-	if (isZero(l, epsilon)) {
-		return fallback;
-	}
-	return v * (1.0f / l);
+	const float l = length(v);
+	if (l > 0.0f) // Never negative.
+		return v * (1.0f / l);
+	return fallback;
 }
 
 static bool equal(const Vector3 &v0, const Vector3 &v1, float epsilon)
@@ -854,7 +863,7 @@ struct Extents2
 	Vector2 min, max;
 
 	Extents2() {}
-	
+
 	Extents2(Vector2 p1, Vector2 p2)
 	{
 		min = xatlas::internal::min(p1, p2);
@@ -884,99 +893,11 @@ struct Extents2
 	}
 };
 
-struct Plane
-{
-	Plane() = default;
-	
-	Plane(const Vector3 &p1, const Vector3 &p2, const Vector3 &p3)
-	{
-		normal = cross(p2 - p1, p3 - p1);
-		dist = dot(normal, p1);
-	}
-
-	float distance(const Vector3 &p) const
-	{
-		return dot(normal, p) - dist;
-	}
-
-	void normalize()
-	{
-		const float len = length(normal);
-		if (len > 0.0f) {
-			const float il = 1.0f / len;
-			normal *= il;
-			dist *= il;
-		}
-	}
-
-	Vector3 normal;
-	float dist;
-};
-
-static bool lineIntersectsPoint(const Vector3 &point, const Vector3 &lineStart, const Vector3 &lineEnd, float *t, float epsilon)
-{
-	float tt;
-	if (!t)
-		t = &tt;
-	*t = 0.0f;
-	if (equal(lineStart, point, epsilon) || equal(lineEnd, point, epsilon))
-		return false; // Vertex lies on either line vertices.
-	const Vector3 v01 = point - lineStart;
-	const Vector3 v21 = lineEnd - lineStart;
-	const float l = length(v21);
-	const float d = length(cross(v01, v21)) / l;
-	if (!isZero(d, epsilon))
-		return false;
-	*t = dot(v01, v21) / (l * l);
-	return *t > kEpsilon && *t < 1.0f - kEpsilon;
-}
-
-static bool sameSide(const Vector3 &p1, const Vector3 &p2, const Vector3 &a, const Vector3 &b)
-{
-	const Vector3 &ab = b - a;
-	return dot(cross(ab, p1 - a), cross(ab, p2 - a)) >= 0.0f;
-}
-
-// http://blackpawn.com/texts/pointinpoly/default.html
-static bool pointInTriangle(const Vector3 &p, const Vector3 &a, const Vector3 &b, const Vector3 &c)
-{
-	return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b);
-}
-
-#if XA_CLOSE_HOLES_CHECK_EDGE_INTERSECTION
-// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-static bool rayIntersectsTriangle(const Vector3 &rayOrigin, const Vector3 &rayDir, const Vector3 *tri, float *t)
-{
-	*t = 0.0f;
-	const Vector3 &edge1 = tri[1] - tri[0];
-	const Vector3 &edge2 = tri[2] - tri[0];
-	const Vector3 h = cross(rayDir, edge2);
-	const float a = dot(edge1, h);
-	if (a > -kEpsilon && a < kEpsilon)
-		return false; // This ray is parallel to this triangle.
-	const float f = 1.0f / a;
-	const Vector3 s = rayOrigin - tri[0];
-	const float u = f * dot(s, h);
-	if (u < 0.0f || u > 1.0f)
-		return false;
-	const Vector3 q = cross(s, edge1);
-	const float v = f * dot(rayDir, q);
-	if (v < 0.0f || u + v > 1.0f)
-		return false;
-	// At this stage we can compute t to find out where the intersection point is on the line.
-	*t = f * dot(edge2, q);
-	if (*t > kEpsilon && *t < 1.0f - kEpsilon)
-		return true;
-	// This means that there is a line intersection but not a ray intersection.
-	return false;
-}
-#endif
-
 // From Fast-BVH
 struct AABB
 {
 	AABB() : min(FLT_MAX, FLT_MAX, FLT_MAX), max(-FLT_MAX, -FLT_MAX, -FLT_MAX) {}
-	AABB(const Vector3 &min, const Vector3 &max) : min(min), max(max) { }
+	AABB(const Vector3 &_min, const Vector3 &_max) : min(_min), max(_max) { }
 	AABB(const Vector3 &p, float radius = 0.0f) : min(p), max(p) { if (radius > 0.0f) expand(radius); }
 
 	bool intersect(const AABB &other) const
@@ -1026,7 +947,7 @@ struct AABB
 
 struct ArrayBase
 {
-	ArrayBase(uint32_t elementSize, int memTag = MemTag::Default) : buffer(nullptr), elementSize(elementSize), size(0), capacity(0)
+	ArrayBase(uint32_t _elementSize, int memTag = MemTag::Default) : buffer(nullptr), elementSize(_elementSize), size(0), capacity(0)
 	{
 #if XA_DEBUG_HEAP
 		this->memTag = memTag;
@@ -1047,15 +968,20 @@ struct ArrayBase
 
 	void copyFrom(const uint8_t *data, uint32_t length)
 	{
+		XA_DEBUG_ASSERT(data);
+		XA_DEBUG_ASSERT(length > 0);
 		resize(length, true);
-		memcpy(buffer, data, length * elementSize);
+		if (buffer && data && length > 0)
+			memcpy(buffer, data, length * elementSize);
 	}
 
 	void copyTo(ArrayBase &other) const
 	{
 		XA_DEBUG_ASSERT(elementSize == other.elementSize);
+		XA_DEBUG_ASSERT(size > 0);
 		other.resize(size, true);
-		memcpy(other.buffer, buffer, size * elementSize);
+		if (other.buffer && buffer && size > 0)
+			memcpy(other.buffer, buffer, size * elementSize);
 	}
 
 	void destroy()
@@ -1071,10 +997,13 @@ struct ArrayBase
 	void insertAt(uint32_t index, const uint8_t *value)
 	{
 		XA_DEBUG_ASSERT(index >= 0 && index <= size);
+		XA_DEBUG_ASSERT(value);
 		resize(size + 1, false);
-		if (index < size - 1)
+		XA_DEBUG_ASSERT(buffer);
+		if (buffer && index < size - 1)
 			memmove(buffer + elementSize * (index + 1), buffer + elementSize * index, elementSize * (size - 1 - index));
-		memcpy(&buffer[index * elementSize], value, elementSize);
+		if (buffer && value)
+			memcpy(&buffer[index * elementSize], value, elementSize);
 	}
 
 	void moveTo(ArrayBase &other)
@@ -1101,36 +1030,49 @@ struct ArrayBase
 	void push_back(const uint8_t *value)
 	{
 		XA_DEBUG_ASSERT(value < buffer || value >= buffer + size);
+		XA_DEBUG_ASSERT(value);
 		resize(size + 1, false);
-		memcpy(&buffer[(size - 1) * elementSize], value, elementSize);
+		XA_DEBUG_ASSERT(buffer);
+		if (buffer && value)
+			memcpy(&buffer[(size - 1) * elementSize], value, elementSize);
 	}
 
 	void push_back(const ArrayBase &other)
 	{
 		XA_DEBUG_ASSERT(elementSize == other.elementSize);
-		if (other.size == 0)
-			return;
-		const uint32_t oldSize = size;
-		resize(size + other.size, false);
-		memcpy(buffer + oldSize * elementSize, other.buffer, other.size * other.elementSize);
+		if (other.size > 0) {
+			const uint32_t oldSize = size;
+			resize(size + other.size, false);
+			XA_DEBUG_ASSERT(buffer);
+			if (buffer)
+				memcpy(buffer + oldSize * elementSize, other.buffer, other.size * other.elementSize);
+		}
 	}
 
 	// Remove the element at the given index. This is an expensive operation!
 	void removeAt(uint32_t index)
 	{
 		XA_DEBUG_ASSERT(index >= 0 && index < size);
-		if (size != 1)
-			memmove(buffer + elementSize * index, buffer + elementSize * (index + 1), elementSize * (size - 1 - index));
-		size--;
+		XA_DEBUG_ASSERT(buffer);
+		if (buffer) {
+			if (size > 1)
+				memmove(buffer + elementSize * index, buffer + elementSize * (index + 1), elementSize * (size - 1 - index));
+			if (size > 0)
+				size--;
+		}
 	}
 
 	// Element at index is swapped with the last element, then the array length is decremented.
 	void removeAtFast(uint32_t index)
 	{
 		XA_DEBUG_ASSERT(index >= 0 && index < size);
-		if (size != 1 && index != size - 1)
-			memcpy(buffer + elementSize * index, buffer + elementSize * (size - 1), elementSize);
-		size--;
+		XA_DEBUG_ASSERT(buffer);
+		if (buffer) {
+			if (size > 1 && index != size - 1)
+				memcpy(buffer + elementSize * index, buffer + elementSize * (size - 1), elementSize);
+			if (size > 0)
+				size--;
+		}
 	}
 
 	void reserve(uint32_t desiredSize)
@@ -1200,12 +1142,14 @@ public:
 	XA_INLINE const T &operator[](uint32_t index) const
 	{
 		XA_DEBUG_ASSERT(index < m_base.size);
+		XA_DEBUG_ASSERT(m_base.buffer);
 		return ((const T *)m_base.buffer)[index];
 	}
 
 	XA_INLINE T &operator[](uint32_t index)
 	{
 		XA_DEBUG_ASSERT(index < m_base.size);
+		XA_DEBUG_ASSERT(m_base.buffer);
 		return ((T *)m_base.buffer)[index];
 	}
 
@@ -1265,7 +1209,8 @@ public:
 
 	void fillBytes(uint8_t value)
 	{
-		memset(m_base.buffer, (int)value, m_base.size * m_base.elementSize);
+		if (m_base.buffer && m_base.size > 0)
+			memset(m_base.buffer, (int)value, m_base.size * m_base.elementSize);
 	}
 
 #if XA_DEBUG_HEAP
@@ -1273,7 +1218,12 @@ public:
 #endif
 
 	XA_INLINE uint32_t size() const { return m_base.size; }
-	XA_INLINE void zeroOutMemory() { memset(m_base.buffer, 0, m_base.elementSize * m_base.size); }
+
+	XA_INLINE void zeroOutMemory()
+	{
+		if (m_base.buffer && m_base.size > 0)
+			memset(m_base.buffer, 0, m_base.elementSize * m_base.size);
+	}
 
 private:
 	ArrayBase m_base;
@@ -1284,9 +1234,10 @@ struct ArrayView
 {
 	ArrayView() : data(nullptr), length(0) {}
 	ArrayView(Array<T> &a) : data(a.data()), length(a.size()) {}
-	ArrayView(T *data, uint32_t length) : data(data), length(length) {}
+	ArrayView(T *_data, uint32_t _length) : data(_data), length(_length) {}
 	ArrayView &operator=(Array<T> &a) { data = a.data(); length = a.size(); return *this; }
 	XA_INLINE const T &operator[](uint32_t index) const { XA_DEBUG_ASSERT(index < length); return data[index]; }
+	XA_INLINE T &operator[](uint32_t index) { XA_DEBUG_ASSERT(index < length); return data[index]; }
 	T *data;
 	uint32_t length;
 };
@@ -1296,7 +1247,8 @@ struct ConstArrayView
 {
 	ConstArrayView() : data(nullptr), length(0) {}
 	ConstArrayView(const Array<T> &a) : data(a.data()), length(a.size()) {}
-	ConstArrayView(const T *data, uint32_t length) : data(data), length(length) {}
+	ConstArrayView(ArrayView<T> av) : data(av.data), length(av.length) {}
+	ConstArrayView(const T *_data, uint32_t _length) : data(_data), length(_length) {}
 	ConstArrayView &operator=(const Array<T> &a) { data = a.data(); length = a.size(); return *this; }
 	XA_INLINE const T &operator[](uint32_t index) const { XA_DEBUG_ASSERT(index < length); return data[index]; }
 	const T *data;
@@ -1319,7 +1271,7 @@ struct Basis
 			tangent = Vector3(0, 0, 1);
 		// Ortogonalize
 		tangent -= normal * dot(normal, tangent);
-		tangent = normalize(tangent, kEpsilon);
+		tangent = normalize(tangent);
 		return tangent;
 	}
 
@@ -1649,14 +1601,14 @@ private:
 
 struct Fit
 {
-	static bool computeBasis(const Vector3 *points, uint32_t pointsCount, Basis *basis)
+	static bool computeBasis(ConstArrayView<Vector3> points, Basis *basis)
 	{
-		if (computeLeastSquaresNormal(points, pointsCount, &basis->normal)) {
+		if (computeLeastSquaresNormal(points, &basis->normal)) {
 			basis->tangent = Basis::computeTangent(basis->normal);
 			basis->bitangent = Basis::computeBitangent(basis->normal, basis->tangent);
 			return true;
 		}
-		return computeEigen(points, pointsCount, basis);
+		return computeEigen(points, basis);
 	}
 
 private:
@@ -1664,21 +1616,21 @@ private:
 	// Fast, and accurate to within a few degrees.
 	// Returns None if the points do not span a plane.
 	// https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
-	static bool computeLeastSquaresNormal(const Vector3 *points, uint32_t pointsCount, Vector3 *normal)
+	static bool computeLeastSquaresNormal(ConstArrayView<Vector3> points, Vector3 *normal)
 	{
-		XA_DEBUG_ASSERT(pointsCount >= 3);
-		if (pointsCount == 3) {
-			*normal = normalize(cross(points[2] - points[0], points[1] - points[0]), kEpsilon);
+		XA_DEBUG_ASSERT(points.length >= 3);
+		if (points.length == 3) {
+			*normal = normalize(cross(points[2] - points[0], points[1] - points[0]));
 			return true;
 		}
-		const float invN = 1.0f / float(pointsCount);
+		const float invN = 1.0f / float(points.length);
 		Vector3 centroid(0.0f);
-		for (uint32_t i = 0; i < pointsCount; i++)
+		for (uint32_t i = 0; i < points.length; i++)
 			centroid += points[i];
 		centroid *= invN;
 		// Calculate full 3x3 covariance matrix, excluding symmetries:
 		float xx = 0.0f, xy = 0.0f, xz = 0.0f, yy = 0.0f, yz = 0.0f, zz = 0.0f;
-		for (uint32_t i = 0; i < pointsCount; i++) {
+		for (uint32_t i = 0; i < points.length; i++) {
 			Vector3 r = points[i] - centroid;
 			xx += r.x * r.x;
 			xy += r.x * r.y;
@@ -1743,41 +1695,40 @@ private:
 		return isNormalized(*normal);
 	}
 
-	static bool computeEigen(const Vector3 *points, uint32_t pointsCount, Basis *basis)
+	static bool computeEigen(ConstArrayView<Vector3> points, Basis *basis)
 	{
 		float matrix[6];
-		computeCovariance(pointsCount, points, matrix);
+		computeCovariance(points, matrix);
 		if (matrix[0] == 0 && matrix[3] == 0 && matrix[5] == 0)
 			return false;
 		float eigenValues[3];
 		Vector3 eigenVectors[3];
 		if (!eigenSolveSymmetric3(matrix, eigenValues, eigenVectors))
 			return false;
-		basis->normal = normalize(eigenVectors[2], kEpsilon);
-		basis->tangent = normalize(eigenVectors[0], kEpsilon);
-		basis->bitangent = normalize(eigenVectors[1], kEpsilon);
+		basis->normal = normalize(eigenVectors[2]);
+		basis->tangent = normalize(eigenVectors[0]);
+		basis->bitangent = normalize(eigenVectors[1]);
 		return true;
 	}
 
-	static Vector3 computeCentroid(int n, const Vector3 * points)
+	static Vector3 computeCentroid(ConstArrayView<Vector3> points)
 	{
 		Vector3 centroid(0.0f);
-		for (int i = 0; i < n; i++) {
+		for (uint32_t i = 0; i < points.length; i++)
 			centroid += points[i];
-		}
-		centroid /= float(n);
+		centroid /= float(points.length);
 		return centroid;
 	}
 
-	static Vector3 computeCovariance(int n, const Vector3 * points, float * covariance)
+	static Vector3 computeCovariance(ConstArrayView<Vector3> points, float * covariance)
 	{
 		// compute the centroid
-		Vector3 centroid = computeCentroid(n, points);
+		Vector3 centroid = computeCentroid(points);
 		// compute covariance matrix
 		for (int i = 0; i < 6; i++) {
 			covariance[i] = 0.0f;
 		}
-		for (int i = 0; i < n; i++) {
+		for (uint32_t i = 0; i < points.length; i++) {
 			Vector3 v = points[i] - centroid;
 			covariance[0] += v.x * v.x;
 			covariance[1] += v.x * v.y;
@@ -2025,27 +1976,12 @@ public:
 	{
 		if (!m_slots)
 			return UINT32_MAX;
-		const uint32_t hash = computeHash(key);
-		uint32_t i = m_slots[hash];
-		E equal;
-		while (i != UINT32_MAX) {
-			if (equal(m_keys[i], key))
-				return i;
-			i = m_next[i];
-		}
-		return UINT32_MAX;
+		return find(key, m_slots[computeHash(key)]);
 	}
 
-	uint32_t getNext(uint32_t current) const
+	uint32_t getNext(const Key &key, uint32_t current) const
 	{
-		uint32_t i = m_next[current];
-		E equal;
-		while (i != UINT32_MAX) {
-			if (equal(m_keys[i], m_keys[current]))
-				return i;
-			i = m_next[i];
-		}
-		return UINT32_MAX;
+		return find(key, m_next[current]);
 	}
 
 private:
@@ -2067,6 +2003,17 @@ private:
 	{
 		H hash;
 		return hash(key) & (m_numSlots - 1);
+	}
+
+	uint32_t find(const Key &key, uint32_t current) const
+	{
+		E equal;
+		while (current != UINT32_MAX) {
+			if (equal(m_keys[current], key))
+				return current;
+			current = m_next[current];
+		}
+		return current;
 	}
 
 	int m_memTag;
@@ -2127,9 +2074,9 @@ private:
 class RadixSort
 {
 public:
-	void sort(const float *input, uint32_t count)
+	void sort(ConstArrayView<float> input)
 	{
-		if (input == nullptr || count == 0) {
+		if (input.length == 0) {
 			m_buffer1.clear();
 			m_buffer2.clear();
 			m_ranks = m_buffer1.data();
@@ -2137,28 +2084,23 @@ public:
 			return;
 		}
 		// Resize lists if needed
-		m_buffer1.resize(count);
-		m_buffer2.resize(count);
+		m_buffer1.resize(input.length);
+		m_buffer2.resize(input.length);
 		m_ranks = m_buffer1.data();
 		m_ranks2 = m_buffer2.data();
 		m_validRanks = false;
-		if (count < 32)
-			insertionSort(input, count);
+		if (input.length < 32)
+			insertionSort(input);
 		else {
 			// @@ Avoid touching the input multiple times.
-			for (uint32_t i = 0; i < count; i++) {
+			for (uint32_t i = 0; i < input.length; i++) {
 				floatFlip((uint32_t &)input[i]);
 			}
-			radixSort<uint32_t>((const uint32_t *)input, count);
-			for (uint32_t i = 0; i < count; i++) {
+			radixSort(ConstArrayView<uint32_t>((const uint32_t *)input.data, input.length));
+			for (uint32_t i = 0; i < input.length; i++) {
 				ifloatFlip((uint32_t &)input[i]);
 			}
 		}
-	}
-
-	void sort(const Array<float> &input)
-	{
-		sort(input.data(), input.size());
 	}
 
 	// Access to results. m_ranks is a list of indices in sorted order, i.e. in the order you may further process your data
@@ -2171,7 +2113,7 @@ public:
 private:
 	uint32_t *m_ranks, *m_ranks2;
 	Array<uint32_t> m_buffer1, m_buffer2;
-	bool m_validRanks;
+	bool m_validRanks = false;
 
 	void floatFlip(uint32_t &f)
 	{
@@ -2185,40 +2127,30 @@ private:
 		f ^= mask;
 	}
 
-	template<typename T>
-	void createHistograms(const T *buffer, uint32_t count, uint32_t *histogram)
+	void createHistograms(ConstArrayView<uint32_t> input, uint32_t *histogram)
 	{
-		const uint32_t bucketCount = sizeof(T); // (8 * sizeof(T)) / log2(radix)
+		const uint32_t bucketCount = sizeof(uint32_t);
 		// Init bucket pointers.
 		uint32_t *h[bucketCount];
 		for (uint32_t i = 0; i < bucketCount; i++) {
 			h[i] = histogram + 256 * i;
 		}
 		// Clear histograms.
-		memset(histogram, 0, 256 * bucketCount * sizeof(uint32_t ));
+		memset(histogram, 0, 256 * bucketCount * sizeof(uint32_t));
 		// @@ Add support for signed integers.
 		// Build histograms.
-		const uint8_t *p = (const uint8_t *)buffer;  // @@ Does this break aliasing rules?
-		const uint8_t *pe = p + count * sizeof(T);
+		const uint8_t *p = (const uint8_t *)input.data;  // @@ Does this break aliasing rules?
+		const uint8_t *pe = p + input.length * sizeof(uint32_t);
 		while (p != pe) {
 			h[0][*p++]++, h[1][*p++]++, h[2][*p++]++, h[3][*p++]++;
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4127)
-#endif
-			if (bucketCount == 8) h[4][*p++]++, h[5][*p++]++, h[6][*p++]++, h[7][*p++]++;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 		}
 	}
 
-	template <typename T>
-	void insertionSort(const T *input, uint32_t count)
+	void insertionSort(ConstArrayView<float> input)
 	{
 		if (!m_validRanks) {
 			m_ranks[0] = 0;
-			for (uint32_t i = 1; i != count; ++i) {
+			for (uint32_t i = 1; i != input.length; ++i) {
 				int rank = m_ranks[i] = i;
 				uint32_t j = i;
 				while (j != 0 && input[rank] < input[m_ranks[j - 1]]) {
@@ -2231,7 +2163,7 @@ private:
 			}
 			m_validRanks = true;
 		} else {
-			for (uint32_t i = 1; i != count; ++i) {
+			for (uint32_t i = 1; i != input.length; ++i) {
 				int rank = m_ranks[i];
 				uint32_t j = i;
 				while (j != 0 && input[rank] < input[m_ranks[j - 1]]) {
@@ -2245,21 +2177,20 @@ private:
 		}
 	}
 
-	template <typename T>
-	void radixSort(const T *input, uint32_t count)
+	void radixSort(ConstArrayView<uint32_t> input)
 	{
-		const uint32_t P = sizeof(T); // pass count
+		const uint32_t P = sizeof(uint32_t); // pass count
 		// Allocate histograms & offsets on the stack
 		uint32_t histogram[256 * P];
 		uint32_t *link[256];
-		createHistograms(input, count, histogram);
+		createHistograms(input, histogram);
 		// Radix sort, j is the pass number (0=LSB, P=MSB)
 		for (uint32_t j = 0; j < P; j++) {
 			// Pointer to this bucket.
 			const uint32_t *h = &histogram[j * 256];
-			const uint8_t *inputBytes = (const uint8_t *)input; // @@ Is this aliasing legal?
+			auto inputBytes = (const uint8_t *)input.data; // @@ Is this aliasing legal?
 			inputBytes += j;
-			if (h[inputBytes[0]] == count) {
+			if (h[inputBytes[0]] == input.length) {
 				// Skip this pass, all values are the same.
 				continue;
 			}
@@ -2268,12 +2199,12 @@ private:
 			for (uint32_t i = 1; i < 256; i++) link[i] = link[i - 1] + h[i - 1];
 			// Perform Radix Sort
 			if (!m_validRanks) {
-				for (uint32_t i = 0; i < count; i++) {
+				for (uint32_t i = 0; i < input.length; i++) {
 					*link[inputBytes[i * P]]++ = i;
 				}
 				m_validRanks = true;
 			} else {
-				for (uint32_t i = 0; i < count; i++) {
+				for (uint32_t i = 0; i < input.length; i++) {
 					const uint32_t idx = m_ranks[i];
 					*link[inputBytes[idx * P]]++ = idx;
 				}
@@ -2283,7 +2214,7 @@ private:
 		}
 		// All values were equal, generate linear ranks.
 		if (!m_validRanks) {
-			for (uint32_t i = 0; i < count; i++)
+			for (uint32_t i = 0; i < input.length; i++)
 				m_ranks[i] = i;
 			m_validRanks = true;
 		}
@@ -2307,14 +2238,13 @@ public:
 	}
 
 	// This should compute convex hull and use rotating calipers to find the best box. Currently it uses a brute force method.
-	// If vertices is null or vertexCount is 0, the boundary vertices are used.
-	void compute(const Vector2 *vertices = nullptr, uint32_t vertexCount = 0)
+	// If vertices are empty, the boundary vertices are used.
+	void compute(ConstArrayView<Vector2> vertices = ConstArrayView<Vector2>())
 	{
-		if (!vertices || vertexCount == 0) {
-			vertices = m_boundaryVertices.data();
-			vertexCount = m_boundaryVertices.size();
-		}
-		convexHull(m_boundaryVertices.data(), m_boundaryVertices.size(), m_hull, 0.00001f);
+		XA_DEBUG_ASSERT(!m_boundaryVertices.isEmpty());
+		if (vertices.length == 0)
+			vertices = m_boundaryVertices;
+		convexHull(m_boundaryVertices, m_hull, 0.00001f);
 		// @@ Ideally I should use rotating calipers to find the best box. Using brute force for now.
 		float best_area = FLT_MAX;
 		Vector2 best_min(0);
@@ -2324,13 +2254,13 @@ public:
 		for (uint32_t i = 0, j = hullCount - 1; i < hullCount; j = i, i++) {
 			if (equal(m_hull[i], m_hull[j], kEpsilon))
 				continue;
-			Vector2 axis = normalize(m_hull[i] - m_hull[j], 0.0f);
+			Vector2 axis = normalize(m_hull[i] - m_hull[j]);
 			XA_DEBUG_ASSERT(isFinite(axis));
 			// Compute bounding box.
 			Vector2 box_min(FLT_MAX, FLT_MAX);
 			Vector2 box_max(-FLT_MAX, -FLT_MAX);
 			// Consider all points, not only boundary points, in case the input chart is malformed.
-			for (uint32_t v = 0; v < vertexCount; v++) {
+			for (uint32_t v = 0; v < vertices.length; v++) {
 				const Vector2 &point = vertices[v];
 				const float x = dot(axis, point);
 				const float y = dot(Vector2(-axis.y, axis.x), point);
@@ -2357,28 +2287,28 @@ public:
 
 private:
 	// Compute the convex hull using Graham Scan.
-	void convexHull(const Vector2 *input, uint32_t inputCount, Array<Vector2> &output, float epsilon)
+	void convexHull(ConstArrayView<Vector2> input, Array<Vector2> &output, float epsilon)
 	{
-		m_coords.resize(inputCount);
-		for (uint32_t i = 0; i < inputCount; i++)
+		m_coords.resize(input.length);
+		for (uint32_t i = 0; i < input.length; i++)
 			m_coords[i] = input[i].x;
 		m_radix.sort(m_coords);
 		const uint32_t *ranks = m_radix.ranks();
 		m_top.clear();
 		m_bottom.clear();
-		m_top.reserve(inputCount);
-		m_bottom.reserve(inputCount);
+		m_top.reserve(input.length);
+		m_bottom.reserve(input.length);
 		Vector2 P = input[ranks[0]];
-		Vector2 Q = input[ranks[inputCount - 1]];
+		Vector2 Q = input[ranks[input.length - 1]];
 		float topy = max(P.y, Q.y);
 		float boty = min(P.y, Q.y);
-		for (uint32_t i = 0; i < inputCount; i++) {
+		for (uint32_t i = 0; i < input.length; i++) {
 			Vector2 p = input[ranks[i]];
 			if (p.y >= boty)
 				m_top.push_back(p);
 		}
-		for (uint32_t i = 0; i < inputCount; i++) {
-			Vector2 p = input[ranks[inputCount - 1 - i]];
+		for (uint32_t i = 0; i < input.length; i++) {
+			Vector2 p = input[ranks[input.length - 1 - i]];
 			if (p.y <= topy)
 				m_bottom.push_back(p);
 		}
@@ -2426,6 +2356,21 @@ private:
 	RadixSort m_radix;
 };
 
+struct EdgeKey
+{
+	EdgeKey(const EdgeKey &k) : v0(k.v0), v1(k.v1) {}
+	EdgeKey(uint32_t _v0, uint32_t _v1) : v0(_v0), v1(_v1) {}
+	bool operator==(const EdgeKey &k) const { return v0 == k.v0 && v1 == k.v1; }
+
+	uint32_t v0;
+	uint32_t v1;
+};
+
+struct EdgeHash
+{
+	uint32_t operator()(const EdgeKey &k) const { return k.v0 * 32768u + k.v1; }
+};
+
 static uint32_t meshEdgeFace(uint32_t edge) { return edge / 3; }
 static uint32_t meshEdgeIndex0(uint32_t edge) { return edge; }
 
@@ -2440,17 +2385,15 @@ struct MeshFlags
 	enum
 	{
 		HasIgnoredFaces = 1<<0,
-		HasNormals = 1<<1
+		HasNormals = 1<<1,
+		HasMaterials = 1<<2
 	};
 };
-
-class Mesh;
-static void meshGetBoundaryLoops(const Mesh &mesh, Array<uint32_t> &boundaryLoops);
 
 class Mesh
 {
 public:
-	Mesh(float epsilon, uint32_t approxVertexCount, uint32_t approxFaceCount, uint32_t flags = 0, uint32_t id = UINT32_MAX) : m_epsilon(epsilon), m_flags(flags), m_id(id), m_faceIgnore(MemTag::Mesh), m_indices(MemTag::MeshIndices), m_positions(MemTag::MeshPositions), m_normals(MemTag::MeshNormals), m_texcoords(MemTag::MeshTexcoords), m_nextColocalVertex(MemTag::MeshColocals), m_boundaryEdges(MemTag::MeshBoundaries), m_oppositeEdges(MemTag::MeshBoundaries), m_nextBoundaryEdges(MemTag::MeshBoundaries), m_edgeMap(MemTag::MeshEdgeMap, approxFaceCount * 3)
+	Mesh(float epsilon, uint32_t approxVertexCount, uint32_t approxFaceCount, uint32_t flags = 0, uint32_t id = UINT32_MAX) : m_epsilon(epsilon), m_flags(flags), m_id(id), m_faceIgnore(MemTag::Mesh), m_faceMaterials(MemTag::Mesh), m_indices(MemTag::MeshIndices), m_positions(MemTag::MeshPositions), m_normals(MemTag::MeshNormals), m_texcoords(MemTag::MeshTexcoords), m_nextColocalVertex(MemTag::MeshColocals), m_firstColocalVertex(MemTag::MeshColocals), m_boundaryEdges(MemTag::MeshBoundaries), m_oppositeEdges(MemTag::MeshBoundaries), m_edgeMap(MemTag::MeshEdgeMap, approxFaceCount * 3)
 	{
 		m_indices.reserve(approxFaceCount * 3);
 		m_positions.reserve(approxVertexCount);
@@ -2459,6 +2402,8 @@ public:
 			m_faceIgnore.reserve(approxFaceCount);
 		if (m_flags & MeshFlags::HasNormals)
 			m_normals.reserve(approxVertexCount);
+		if (m_flags & MeshFlags::HasMaterials)
+			m_faceMaterials.reserve(approxFaceCount);
 	}
 
 	uint32_t flags() const { return m_flags; }
@@ -2473,44 +2418,23 @@ public:
 		m_texcoords.push_back(texcoord);
 	}
 
-	struct AddFaceResult
+	void addFace(const uint32_t *indices, bool ignore = false, uint32_t material = UINT32_MAX)
 	{
-		enum Enum
-		{
-			OK,
-			DuplicateEdge = 1
-		};
-	};
-
-	AddFaceResult::Enum addFace(uint32_t v0, uint32_t v1, uint32_t v2, bool ignore = false)
-	{
-		uint32_t indexArray[3];
-		indexArray[0] = v0;
-		indexArray[1] = v1;
-		indexArray[2] = v2;
-		return addFace(indexArray, ignore);
-	}
-
-	AddFaceResult::Enum addFace(const uint32_t *indices, bool ignore = false)
-	{
-		AddFaceResult::Enum result = AddFaceResult::OK;
 		if (m_flags & MeshFlags::HasIgnoredFaces)
 			m_faceIgnore.push_back(ignore);
+		if (m_flags & MeshFlags::HasMaterials)
+			m_faceMaterials.push_back(material);
 		const uint32_t firstIndex = m_indices.size();
 		for (uint32_t i = 0; i < 3; i++)
 			m_indices.push_back(indices[i]);
 		for (uint32_t i = 0; i < 3; i++) {
 			const uint32_t vertex0 = m_indices[firstIndex + i];
 			const uint32_t vertex1 = m_indices[firstIndex + (i + 1) % 3];
-			const EdgeKey key(vertex0, vertex1);
-			if (m_edgeMap.get(key) != UINT32_MAX)
-				result = AddFaceResult::DuplicateEdge;
-			m_edgeMap.add(key);
+			m_edgeMap.add(EdgeKey(vertex0, vertex1));
 		}
-		return result;
 	}
 
-	void createColocals()
+	void createColocalsBVH()
 	{
 		const uint32_t vertexCount = m_positions.size();
 		Array<AABB> aabbs(MemTag::BVH);
@@ -2522,6 +2446,8 @@ public:
 		Array<uint32_t> potential(MemTag::MeshColocals);
 		m_nextColocalVertex.resize(vertexCount);
 		m_nextColocalVertex.fillBytes(0xff);
+		m_firstColocalVertex.resize(vertexCount);
+		m_firstColocalVertex.fillBytes(0xff);
 		for (uint32_t i = 0; i < vertexCount; i++) {
 			if (m_nextColocalVertex[i] != UINT32_MAX)
 				continue; // Already linked.
@@ -2537,14 +2463,64 @@ public:
 			if (colocals.size() == 1) {
 				// No colocals for this vertex.
 				m_nextColocalVertex[i] = i;
-				continue; 
+				m_firstColocalVertex[i] = i;
+				continue;
 			}
 			// Link in ascending order.
 			insertionSort(colocals.data(), colocals.size());
-			for (uint32_t j = 0; j < colocals.size(); j++)
+			for (uint32_t j = 0; j < colocals.size(); j++) {
 				m_nextColocalVertex[colocals[j]] = colocals[(j + 1) % colocals.size()];
+				m_firstColocalVertex[colocals[j]] = colocals[0];
+			}
 			XA_DEBUG_ASSERT(m_nextColocalVertex[i] != UINT32_MAX);
 		}
+	}
+
+	void createColocalsHash()
+	{
+		const uint32_t vertexCount = m_positions.size();
+		HashMap<Vector3> positionToVertexMap(MemTag::Default, vertexCount);
+		for (uint32_t i = 0; i < vertexCount; i++)
+			positionToVertexMap.add(m_positions[i]);
+		Array<uint32_t> colocals(MemTag::MeshColocals);
+		m_nextColocalVertex.resize(vertexCount);
+		m_nextColocalVertex.fillBytes(0xff);
+		m_firstColocalVertex.resize(vertexCount);
+		m_firstColocalVertex.fillBytes(0xff);
+		for (uint32_t i = 0; i < vertexCount; i++) {
+			if (m_nextColocalVertex[i] != UINT32_MAX)
+				continue; // Already linked.
+			// Find other vertices colocal to this one.
+			colocals.clear();
+			colocals.push_back(i); // Always add this vertex.
+			uint32_t otherVertex = positionToVertexMap.get(m_positions[i]);
+			while (otherVertex != UINT32_MAX) {
+				if (otherVertex != i && equal(m_positions[i], m_positions[otherVertex], m_epsilon) && m_nextColocalVertex[otherVertex] == UINT32_MAX)
+					colocals.push_back(otherVertex);
+				otherVertex = positionToVertexMap.getNext(m_positions[i], otherVertex);
+			}
+			if (colocals.size() == 1) {
+				// No colocals for this vertex.
+				m_nextColocalVertex[i] = i;
+				m_firstColocalVertex[i] = i;
+				continue;
+			}
+			// Link in ascending order.
+			insertionSort(colocals.data(), colocals.size());
+			for (uint32_t j = 0; j < colocals.size(); j++) {
+				m_nextColocalVertex[colocals[j]] = colocals[(j + 1) % colocals.size()];
+				m_firstColocalVertex[colocals[j]] = colocals[0];
+			}
+			XA_DEBUG_ASSERT(m_nextColocalVertex[i] != UINT32_MAX);
+		}
+	}
+
+	void createColocals()
+	{
+		if (m_epsilon <= FLT_EPSILON)
+			createColocalsHash();
+		else
+			createColocalsBVH();
 	}
 
 	void createBoundaries()
@@ -2578,143 +2554,49 @@ public:
 		}
 	}
 
-	void linkBoundaries()
-	{
-		const uint32_t edgeCount = m_indices.size();
-		HashMap<uint32_t> vertexToEdgeMap(MemTag::Mesh, edgeCount); // Edge is index / 2
-		for (uint32_t i = 0; i < edgeCount; i++) {
-			vertexToEdgeMap.add(m_indices[meshEdgeIndex0(i)]);
-			vertexToEdgeMap.add(m_indices[meshEdgeIndex1(i)]);
-		}
-		m_nextBoundaryEdges.resize(edgeCount);
-		for (uint32_t i = 0; i < edgeCount; i++)
-			m_nextBoundaryEdges[i] = UINT32_MAX;
-		uint32_t numBoundaryLoops = 0, numUnclosedBoundaries = 0;
-		BitArray linkedEdges(edgeCount);
-		linkedEdges.zeroOutMemory();
-		for (;;) {
-			// Find the first boundary edge that hasn't been linked yet.
-			uint32_t firstEdge = UINT32_MAX;
-			for (uint32_t i = 0; i < edgeCount; i++) {
-				if (m_oppositeEdges[i] == UINT32_MAX && !linkedEdges.get(i)) {
-					firstEdge = i;
-					break;
-				}
-			}
-			if (firstEdge == UINT32_MAX)
-				break;
-			uint32_t currentEdge = firstEdge;
-			for (;;) {
-				// Find the next boundary edge. The first vertex will be the same as (or colocal to) the current edge second vertex.
-				const uint32_t startVertex = m_indices[meshEdgeIndex1(currentEdge)];
-				uint32_t bestNextEdge = UINT32_MAX;
-				for (ColocalVertexIterator it(this, startVertex); !it.isDone(); it.advance()) {
-					uint32_t mapIndex = vertexToEdgeMap.get(it.vertex());
-					while (mapIndex != UINT32_MAX) {
-						const uint32_t otherEdge = mapIndex / 2; // Two vertices added per edge.
-						if (m_oppositeEdges[otherEdge] != UINT32_MAX)
-							goto next; // Not a boundary edge.
-						if (linkedEdges.get(otherEdge))
-							goto next; // Already linked.
-						if (m_indices[meshEdgeIndex0(otherEdge)] != it.vertex())
-							goto next; // Edge contains the vertex, but it's the wrong one.
-						// First edge (closing the boundary loop) has the highest priority.
-						// Non-colocal vertex has the next highest.
-						if (bestNextEdge != firstEdge && (bestNextEdge == UINT32_MAX || it.vertex() == startVertex))
-							bestNextEdge = otherEdge;
-					next:
-						mapIndex = vertexToEdgeMap.getNext(mapIndex);
-					}
-				}
-				if (bestNextEdge == UINT32_MAX) {
-					numUnclosedBoundaries++;
-					if (currentEdge == firstEdge)
-						linkedEdges.set(firstEdge); // Only 1 edge in this boundary "loop".
-					break; // Can't find a next edge.
-				}
-				m_nextBoundaryEdges[currentEdge] = bestNextEdge;
-				linkedEdges.set(bestNextEdge);
-				currentEdge = bestNextEdge;
-				if (currentEdge == firstEdge) {
-					numBoundaryLoops++;
-					break; // Closed the boundary loop.
-				}
-			}
-		}
-#if XA_FIX_INTERNAL_BOUNDARY_LOOPS
-		// Find internal boundary loops and separate them.
-		// Detect by finding two edges in a boundary loop that have a colocal end vertex.
-		// Fix by swapping their next boundary edge.
-		// Need to start over after every fix since known boundary loops have changed.
-		Array<uint32_t> boundaryLoops;
-	fixInternalBoundary:
-		meshGetBoundaryLoops(*this, boundaryLoops);
-		for (uint32_t loop = 0; loop < boundaryLoops.size(); loop++) {
-			linkedEdges.zeroOutMemory();
-			for (Mesh::BoundaryLoopEdgeIterator it1(this, boundaryLoops[loop]); !it1.isDone(); it1.advance()) {
-				const uint32_t e1 = it1.edge();
-				if (linkedEdges.get(e1))
-					continue;
-				for (Mesh::BoundaryLoopEdgeIterator it2(this, boundaryLoops[loop]); !it2.isDone(); it2.advance()) {
-					const uint32_t e2 = it2.edge();
-					if (e1 == e2 || !isBoundaryEdge(e2) || linkedEdges.get(e2))
-						continue;
-					if (!areColocal(m_indices[meshEdgeIndex1(e1)], m_indices[meshEdgeIndex1(e2)]))
-						continue;
-					swap(m_nextBoundaryEdges[e1], m_nextBoundaryEdges[e2]);
-					linkedEdges.set(e1);
-					linkedEdges.set(e2);
-					goto fixInternalBoundary; // start over
-				}
-			}
-		}
-#endif
-	}
-
 	/// Find edge, test all colocals.
 	uint32_t findEdge(uint32_t vertex0, uint32_t vertex1) const
 	{
-		uint32_t result = UINT32_MAX;
-		if (m_nextColocalVertex.isEmpty()) {
+		// Try to find exact vertex match first.
+		{
 			EdgeKey key(vertex0, vertex1);
 			uint32_t edge = m_edgeMap.get(key);
 			while (edge != UINT32_MAX) {
 				// Don't find edges of ignored faces.
-				if (!isFaceIgnored(meshEdgeFace(edge))) {
-					//XA_DEBUG_ASSERT(m_id != UINT32_MAX || (m_id == UINT32_MAX && result == UINT32_MAX)); // duplicate edge - ignore on initial meshes
-					result = edge;
-#if !XA_DEBUG
-					return result;
-#endif
-				}
-				edge = m_edgeMap.getNext(edge);
+				if (!isFaceIgnored(meshEdgeFace(edge)))
+					return edge;
+				edge = m_edgeMap.getNext(key, edge);
 			}
-		} else {
-			for (ColocalVertexIterator it0(this, vertex0); !it0.isDone(); it0.advance()) {
-				for (ColocalVertexIterator it1(this, vertex1); !it1.isDone(); it1.advance()) {
-					EdgeKey key(it0.vertex(), it1.vertex());
+		}
+		// If colocals were created, try every permutation.
+		if (!m_nextColocalVertex.isEmpty()) {
+			uint32_t colocalVertex0 = vertex0;
+			for (;;) {
+				uint32_t colocalVertex1 = vertex1;
+				for (;;) {
+					EdgeKey key(colocalVertex0, colocalVertex1);
 					uint32_t edge = m_edgeMap.get(key);
 					while (edge != UINT32_MAX) {
 						// Don't find edges of ignored faces.
-						if (!isFaceIgnored(meshEdgeFace(edge))) {
-							XA_DEBUG_ASSERT(m_id != UINT32_MAX || (m_id == UINT32_MAX && result == UINT32_MAX)); // duplicate edge - ignore on initial meshes
-							result = edge;
-#if !XA_DEBUG
-							return result;
-#endif
-						}
-						edge = m_edgeMap.getNext(edge);
+						if (!isFaceIgnored(meshEdgeFace(edge)))
+							return edge;
+						edge = m_edgeMap.getNext(key, edge);
 					}
+					colocalVertex1 = m_nextColocalVertex[colocalVertex1];
+					if (colocalVertex1 == vertex1)
+						break; // Back to start.
 				}
+				colocalVertex0 = m_nextColocalVertex[colocalVertex0];
+				if (colocalVertex0 == vertex0)
+					break; // Back to start.
 			}
 		}
-		return result;
+		return UINT32_MAX;
 	}
 
 	// Edge map can be destroyed when no longer used to reduce memory usage. It's used by:
 	//   * Mesh::createBoundaries()
-	//   * Mesh::ColocalEdgeIterator (used by MeshFaceGroups)
-	//   * meshCloseHole()
+	//   * Mesh::edgeMap() (used by MeshFaceGroups)
 	void destroyEdgeMap()
 	{
 		m_edgeMap.destroy();
@@ -2754,29 +2636,6 @@ public:
 		}
 	}
 
-	void writeObjLinkedBoundaries(FILE *file) const
-	{
-		if (m_oppositeEdges.isEmpty() || m_nextBoundaryEdges.isEmpty())
-			return; // Boundaries haven't been created and/or linked.
-		Array<uint32_t> boundaryLoops;
-		meshGetBoundaryLoops(*this, boundaryLoops);
-		for (uint32_t i = 0; i < boundaryLoops.size(); i++) {
-			uint32_t edge = boundaryLoops[i];
-			fprintf(file, "o boundary_%04d\n", i);
-			fprintf(file, "l");
-			for (;;) {
-				const uint32_t vertex0 = m_indices[meshEdgeIndex0(edge)];
-				const uint32_t vertex1 = m_indices[meshEdgeIndex1(edge)];
-				fprintf(file, " %d", vertex0 + 1); // 1-indexed
-				edge = m_nextBoundaryEdges[edge];
-				if (edge == boundaryLoops[i] || edge == UINT32_MAX) {
-					fprintf(file, " %d\n", vertex1 + 1); // 1-indexed
-					break;
-				}
-			}
-		}
-	}
-
 	void writeObjFile(const char *filename) const
 	{
 		FILE *file;
@@ -2789,7 +2648,6 @@ public:
 		for (uint32_t i = 0; i < faceCount(); i++)
 			writeObjFace(file, i);
 		writeObjBoundaryEges(file);
-		writeObjLinkedBoundaries(file);
 		fclose(file);
 	}
 #endif
@@ -2809,7 +2667,7 @@ public:
 		float area = 0;
 		for (uint32_t f = 0; f < faceCount(); f++)
 			area += fabsf(computeFaceParametricArea(f)); // May be negative, depends on texcoord winding.
-		return area; 
+		return area;
 	}
 
 	float computeFaceArea(uint32_t face) const
@@ -2852,7 +2710,7 @@ public:
 		const Vector3 e0 = p2 - p0;
 		const Vector3 e1 = p1 - p0;
 		const Vector3 normalAreaScaled = cross(e0, e1);
-		return normalizeSafe(normalAreaScaled, Vector3(0, 0, 1), 0.0f);
+		return normalizeSafe(normalAreaScaled, Vector3(0, 0, 1));
 	}
 
 	float computeFaceParametricArea(uint32_t face) const
@@ -2862,7 +2720,7 @@ public:
 		const Vector2 &t2 = m_texcoords[m_indices[face * 3 + 2]];
 		return triangleArea(t0, t1, t2);
 	}
-	
+
 	// @@ This is not exactly accurate, we should compare the texture coordinates...
 	bool isSeam(uint32_t edge) const
 	{
@@ -2888,26 +2746,10 @@ public:
 		return m_texcoords[m_indices[e0]] != m_texcoords[m_indices[oe1]] || m_texcoords[m_indices[e1]] != m_texcoords[m_indices[oe0]];
 	}
 
-	uint32_t firstColocal(uint32_t vertex) const
+	uint32_t firstColocalVertex(uint32_t vertex) const
 	{
-		for (ColocalVertexIterator it(this, vertex); !it.isDone(); it.advance()) {
-			if (it.vertex() < vertex)
-				vertex = it.vertex();
-		}
-		return vertex;
-	}
-
-	bool areColocal(uint32_t vertex0, uint32_t vertex1) const
-	{
-		if (vertex0 == vertex1)
-			return true;
-		if (m_nextColocalVertex.isEmpty())
-			return false;
-		for (ColocalVertexIterator it(this, vertex0); !it.isDone(); it.advance()) {
-			if (it.vertex() == vertex1)
-				return true;
-		}
-		return false;
+		XA_DEBUG_ASSERT(m_firstColocalVertex.size() == m_positions.size());
+		return m_firstColocalVertex[vertex];
 	}
 
 	XA_INLINE float epsilon() const { return m_epsilon; }
@@ -2919,16 +2761,18 @@ public:
 	XA_INLINE uint32_t vertexCount() const { return m_positions.size(); }
 	XA_INLINE uint32_t vertexAt(uint32_t i) const { return m_indices[i]; }
 	XA_INLINE const Vector3 &position(uint32_t vertex) const { return m_positions[vertex]; }
-	XA_INLINE const Vector3 *positions() const { return m_positions.data(); }
+	XA_INLINE ConstArrayView<Vector3> positions() const { return m_positions; }
 	XA_INLINE const Vector3 &normal(uint32_t vertex) const { XA_DEBUG_ASSERT(m_flags & MeshFlags::HasNormals); return m_normals[vertex]; }
 	XA_INLINE const Vector2 &texcoord(uint32_t vertex) const { return m_texcoords[vertex]; }
 	XA_INLINE Vector2 &texcoord(uint32_t vertex) { return m_texcoords[vertex]; }
-	XA_INLINE const Vector2 *texcoords() const { return m_texcoords.data(); }
-	XA_INLINE Vector2 *texcoords() { return m_texcoords.data(); }
+	XA_INLINE const ConstArrayView<Vector2> texcoords() const { return m_texcoords; }
+	XA_INLINE ArrayView<Vector2> texcoords() { return m_texcoords; }
 	XA_INLINE uint32_t faceCount() const { return m_indices.size() / 3; }
-	XA_INLINE const uint32_t *indices() const { return m_indices.data(); }
+	XA_INLINE ConstArrayView<uint32_t> indices() const { return m_indices; }
 	XA_INLINE uint32_t indexCount() const { return m_indices.size(); }
 	XA_INLINE bool isFaceIgnored(uint32_t face) const { return (m_flags & MeshFlags::HasIgnoredFaces) && m_faceIgnore[face]; }
+	XA_INLINE uint32_t faceMaterial(uint32_t face) const { return (m_flags & MeshFlags::HasMaterials) ? m_faceMaterials[face] : UINT32_MAX; }
+	XA_INLINE const HashMap<EdgeKey, EdgeHash> &edgeMap() const { return m_edgeMap; }
 
 private:
 
@@ -2936,6 +2780,7 @@ private:
 	uint32_t m_flags;
 	uint32_t m_id;
 	Array<bool> m_faceIgnore;
+	Array<uint32_t> m_faceMaterials;
 	Array<uint32_t> m_indices;
 	Array<Vector3> m_positions;
 	Array<Vector3> m_normals;
@@ -2943,188 +2788,17 @@ private:
 
 	// Populated by createColocals
 	Array<uint32_t> m_nextColocalVertex; // In: vertex index. Out: the vertex index of the next colocal position.
+	Array<uint32_t> m_firstColocalVertex;
 
 	// Populated by createBoundaries
 	BitArray m_isBoundaryVertex;
 	Array<uint32_t> m_boundaryEdges;
 	Array<uint32_t> m_oppositeEdges; // In: edge index. Out: the index of the opposite edge (i.e. wound the opposite direction). UINT32_MAX if the input edge is a boundary edge.
 
-	// Populated by linkBoundaries
-	Array<uint32_t> m_nextBoundaryEdges; // The index of the next boundary edge. UINT32_MAX if the edge is not a boundary edge.
-
-	struct EdgeKey
-	{
-		EdgeKey(const EdgeKey &k) : v0(k.v0), v1(k.v1) {}
-		EdgeKey(uint32_t v0, uint32_t v1) : v0(v0), v1(v1) {}
-		bool operator==(const EdgeKey &k) const { return v0 == k.v0 && v1 == k.v1; }
-
-		uint32_t v0;
-		uint32_t v1;
-	};
-
-	struct EdgeHash
-	{
-		uint32_t operator()(const EdgeKey &k) const { return k.v0 * 32768u + k.v1; }
-	};
-
 	HashMap<EdgeKey, EdgeHash> m_edgeMap;
 
 public:
-	class BoundaryLoopEdgeIterator
-	{
-	public:
-		BoundaryLoopEdgeIterator(const Mesh *mesh, uint32_t edge) : m_mesh(mesh), m_first(UINT32_MAX), m_current(edge) {}
-
-		void advance()
-		{
-			if (m_first == UINT32_MAX)
-				m_first = m_current;
-			m_current = m_mesh->m_nextBoundaryEdges[m_current];
-		}
-
-		bool isDone() const
-		{
-			return m_first == m_current || m_current == UINT32_MAX;
-		}
-
-		uint32_t edge() const
-		{
-			return m_current;
-		}
-
-		uint32_t nextEdge() const
-		{
-			return m_mesh->m_nextBoundaryEdges[m_current];
-		}
-
-	private:
-		const Mesh *m_mesh;
-		uint32_t m_first;
-		uint32_t m_current;
-	};
-
-	class ColocalVertexIterator
-	{
-	public:
-		ColocalVertexIterator(const Mesh *mesh, uint32_t v) : m_mesh(mesh), m_first(UINT32_MAX), m_current(v) {}
-
-		void advance()
-		{
-			if (m_first == UINT32_MAX)
-				m_first = m_current;
-			if (!m_mesh->m_nextColocalVertex.isEmpty())
-				m_current = m_mesh->m_nextColocalVertex[m_current];
-		}
-
-		bool isDone() const
-		{
-			return m_first == m_current;
-		}
-
-		uint32_t vertex() const
-		{
-			return m_current;
-		}
-
-		const Vector3 *pos() const
-		{
-			return &m_mesh->m_positions[m_current];
-		}
-
-	private:
-		const Mesh *m_mesh;
-		uint32_t m_first;
-		uint32_t m_current;
-	};
-
-	class ColocalEdgeIterator
-	{
-	public:
-		ColocalEdgeIterator(const Mesh *mesh, uint32_t vertex0, uint32_t vertex1) : m_mesh(mesh), m_vertex0It(mesh, vertex0), m_vertex1It(mesh, vertex1), m_vertex1(vertex1)
-		{
-			do {
-				if (!resetElement()) {
-					advanceVertex1();
-				}
-				else {
-					break;
-				}
-			} while (!isDone());
-		}
-
-		void advance()
-		{
-			advanceElement();
-		}
-
-		bool isDone() const
-		{
-			return m_vertex0It.isDone() && m_vertex1It.isDone() && m_edge == UINT32_MAX;
-		}
-
-		uint32_t edge() const
-		{
-			return m_edge;
-		}
-
-	private:
-		bool resetElement()
-		{
-			m_edge = m_mesh->m_edgeMap.get(Mesh::EdgeKey(m_vertex0It.vertex(), m_vertex1It.vertex()));
-			while (m_edge != UINT32_MAX) {
-				if (!isIgnoredFace())
-					break;
-				m_edge = m_mesh->m_edgeMap.getNext(m_edge);
-			}
-			if (m_edge == UINT32_MAX) {
-				return false;
-			}
-			return true;
-		}
-
-		void advanceElement()
-		{
-			for (;;) {
-				m_edge = m_mesh->m_edgeMap.getNext(m_edge);
-				if (m_edge == UINT32_MAX)
-					break;
-				if (!isIgnoredFace())
-					break;
-			}
-			if (m_edge == UINT32_MAX)
-				advanceVertex1();
-		}
-
-		void advanceVertex1()
-		{
-			auto successful = false;
-			while (!successful)	{
-				m_vertex1It.advance();
-				if (m_vertex1It.isDone()) {
-					if (!m_vertex0It.isDone()) {
-						m_vertex0It.advance();
-						m_vertex1It = ColocalVertexIterator(m_mesh, m_vertex1);
-					}
-					else {
-						return;
-					}
-				}
-				successful = resetElement();
-			}
-		}
-
-		bool isIgnoredFace() const
-		{
-			return m_mesh->m_faceIgnore[meshEdgeFace(m_edge)];
-		}
-
-		const Mesh *m_mesh;
-		ColocalVertexIterator m_vertex0It, m_vertex1It;
-		const uint32_t m_vertex1;
-		uint32_t m_edge;
-	};
-
-	class FaceEdgeIterator 
+	class FaceEdgeIterator
 	{
 	public:
 		FaceEdgeIterator (const Mesh *mesh, uint32_t face) : m_mesh(mesh), m_face(face), m_relativeEdge(0)
@@ -3152,7 +2826,7 @@ public:
 		uint32_t relativeEdge() const { return m_relativeEdge; }
 		uint32_t face() const { return m_face; }
 		uint32_t oppositeEdge() const { return m_mesh->m_oppositeEdges[m_edge]; }
-		
+
 		uint32_t oppositeFace() const
 		{
 			const uint32_t oedge = m_mesh->m_oppositeEdges[m_edge];
@@ -3222,57 +2896,25 @@ struct MeshFaceGroups
 					break;
 				const uint32_t f = growFaces.back();
 				growFaces.pop_back();
+				const uint32_t material = m_mesh->faceMaterial(f);
 				for (Mesh::FaceEdgeIterator edgeIt(m_mesh, f); !edgeIt.isDone(); edgeIt.advance()) {
-					// Iterate opposite edges. There may be more than one - non-manifold geometry can have duplicate edges.
-					// Prioritize the one with exact vertex match, not just colocal.
-					// If *any* of the opposite edges are already assigned to this group, don't do anything.
-					bool alreadyAssignedToThisGroup = false;
-					uint32_t bestConnectedFace = UINT32_MAX;
-					for (Mesh::ColocalEdgeIterator oppositeEdgeIt(m_mesh, edgeIt.vertex1(), edgeIt.vertex0()); !oppositeEdgeIt.isDone(); oppositeEdgeIt.advance()) {
-						const uint32_t oppositeEdge = oppositeEdgeIt.edge();
-						const uint32_t oppositeFace = meshEdgeFace(oppositeEdge);
-#if 0
-						// Reject opposite face if dihedral angle >= 90 degrees.
-						{
-							Vector3 a = m_mesh->computeFaceNormal(f);
-							Vector3 b = m_mesh->computeFaceNormal(oppositeFace);
-							if (dot(a, b) <= 0.0f)
-								continue;
-						}
-#endif
-						if (m_mesh->isFaceIgnored(oppositeFace))
-							continue; // Don't add ignored faces to group.
-						if (m_groups[oppositeFace] == group) {
-							alreadyAssignedToThisGroup = true;
-							break;
-						}
-						if (m_groups[oppositeFace] != kInvalid)
-							continue; // Connected face is already assigned to another group.
-						if (faceDuplicatesGroupEdge(group, oppositeFace))
-							continue; // Don't want duplicate edges in a group.
-						const uint32_t oppositeVertex0 = m_mesh->vertexAt(meshEdgeIndex0(oppositeEdge));
-						const uint32_t oppositeVertex1 = m_mesh->vertexAt(meshEdgeIndex1(oppositeEdge));
-						if (bestConnectedFace == UINT32_MAX || (oppositeVertex0 == edgeIt.vertex1() && oppositeVertex1 == edgeIt.vertex0()))
-							bestConnectedFace = oppositeFace;
-#if 0
-						else {
-							// Choose the opposite face with the smallest dihedral angle.
-							const float d1 = 1.0f - dot(computeFaceNormal(f), computeFaceNormal(bestConnectedFace));
-							const float d2 = 1.0f - dot(computeFaceNormal(f), computeFaceNormal(oppositeFace));
-							if (d2 < d1)
-								bestConnectedFace = oppositeFace;
-						}
-#endif
-					}
-					if (!alreadyAssignedToThisGroup && bestConnectedFace != UINT32_MAX) {
-						m_groups[bestConnectedFace] = group;
-						m_nextFace[bestConnectedFace] = UINT32_MAX;
-						if (prevFace != UINT32_MAX)
-							m_nextFace[prevFace] = bestConnectedFace;
-						prevFace = bestConnectedFace;
-						groupFaceCount++;
-						growFaces.push_back(bestConnectedFace);
-					}
+					const uint32_t oppositeEdge = m_mesh->findEdge(edgeIt.vertex1(), edgeIt.vertex0());
+					if (oppositeEdge == UINT32_MAX)
+						continue; // Boundary edge.
+					const uint32_t oppositeFace = meshEdgeFace(oppositeEdge);
+					if (m_mesh->isFaceIgnored(oppositeFace))
+						continue; // Don't add ignored faces to group.
+					if (m_mesh->faceMaterial(oppositeFace) != material)
+						continue; // Different material.
+					if (m_groups[oppositeFace] != kInvalid)
+						continue; // Connected face is already assigned to another group.
+					m_groups[oppositeFace] = group;
+					m_nextFace[oppositeFace] = UINT32_MAX;
+					if (prevFace != UINT32_MAX)
+						m_nextFace[prevFace] = oppositeFace;
+					prevFace = oppositeFace;
+					groupFaceCount++;
+					growFaces.push_back(oppositeFace);
 				}
 			}
 			m_faceCount.push_back(groupFaceCount);
@@ -3311,18 +2953,6 @@ struct MeshFaceGroups
 	};
 
 private:
-	// Check if the face duplicates any edges of any face already in the group.
-	bool faceDuplicatesGroupEdge(Handle group, uint32_t face) const
-	{
-		for (Mesh::FaceEdgeIterator edgeIt(m_mesh, face); !edgeIt.isDone(); edgeIt.advance()) {
-			for (Mesh::ColocalEdgeIterator colocalEdgeIt(m_mesh, edgeIt.vertex0(), edgeIt.vertex1()); !colocalEdgeIt.isDone(); colocalEdgeIt.advance()) {
-				if (m_groups[meshEdgeFace(colocalEdgeIt.edge())] == group)
-					return true;
-			}
-		}
-		return false;
-	}
-
 	const Mesh *m_mesh;
 	Array<Handle> m_groups;
 	Array<uint32_t> m_firstFace;
@@ -3332,243 +2962,29 @@ private:
 
 constexpr MeshFaceGroups::Handle MeshFaceGroups::kInvalid;
 
-static bool meshCloseHole(Mesh *mesh, const Array<uint32_t> &holeVertices, const Vector3 &normal)
+#if XA_CHECK_T_JUNCTIONS
+static bool lineIntersectsPoint(const Vector3 &point, const Vector3 &lineStart, const Vector3 &lineEnd, float *t, float epsilon)
 {
-#if XA_CLOSE_HOLES_CHECK_EDGE_INTERSECTION
-	const uint32_t faceCount = mesh->faceCount();
-#endif
-	const bool compareNormal = equal(normal, Vector3(0.0f), FLT_EPSILON);
-	uint32_t frontCount = holeVertices.size();
-	Array<uint32_t> frontVertices;
-	Array<Vector3> frontPoints;
-	Array<float> frontAngles;
-	frontVertices.resize(frontCount);
-	frontPoints.resize(frontCount);
-	for (uint32_t i = 0; i < frontCount; i++) {
-		frontVertices[i] = holeVertices[i];
-		frontPoints[i] = mesh->position(frontVertices[i]);
-	}
-	while (frontCount >= 3) {
-		frontAngles.resize(frontCount);
-		float smallestAngle = kPi2, smallestAngleIgnoringNormal = kPi2;
-		uint32_t smallestAngleIndex = UINT32_MAX, smallestAngleIndexIgnoringNormal = UINT32_MAX;
-		for (uint32_t i = 0; i < frontCount; i++) {
-			const uint32_t i1 = i == 0 ? frontCount - 1 : i - 1;
-			const uint32_t i2 = i;
-			const uint32_t i3 = (i + 1) % frontCount;
-			const Vector3 edge1 = frontPoints[i1] - frontPoints[i2];
-			const Vector3 edge2 = frontPoints[i3] - frontPoints[i2];
-			frontAngles[i] = atan2f(length(cross(edge1, edge2)), dot(edge1, edge2));
-			if (frontAngles[i] >= smallestAngle || isNan(frontAngles[i]))
-				continue;
-			// Don't duplicate edges.
-			if (mesh->findEdge(frontVertices[i1], frontVertices[i2]) != UINT32_MAX)
-				continue;
-			if (mesh->findEdge(frontVertices[i2], frontVertices[i3]) != UINT32_MAX)
-				continue;
-			if (mesh->findEdge(frontVertices[i3], frontVertices[i1]) != UINT32_MAX)
-				continue;
-			/*
-			Make sure he new edge that would be formed by (i3, i1) doesn't intersect any vertices. This often happens when fixing t-junctions.
-
-			       i2
-			       *
-			      / \
-			     /   \
-			 i1 *--*--* i3
-			     \ | /
-				  \|/
-				   *
-			*/
-			bool intersection = false;
-			for (uint32_t j = 0; j < frontCount; j++) {
-				if (j == i1 || j == i2 || j == i3)
-					continue;
-				if (lineIntersectsPoint(frontPoints[j], frontPoints[i3], frontPoints[i1], nullptr, mesh->epsilon())) {
-					intersection = true;
-					break;
-				}
-			}
-			if (intersection)
-				continue;
-			// Don't add the triangle if a boundary point lies on the same plane as the triangle, and is inside it.
-			intersection = false;
-			const Plane plane(frontPoints[i1], frontPoints[i2], frontPoints[i3]);
-			for (uint32_t j = 0; j < frontCount; j++) {
-				if (j == i1 || j == i2 || j == i3)
-					continue;
-				if (!isZero(plane.distance(frontPoints[j]), mesh->epsilon()))
-					continue;
-				if (pointInTriangle(frontPoints[j], frontPoints[i1], frontPoints[i2], frontPoints[i3])) {
-					intersection = true;
-					break;
-				}
-			}
-			if (intersection)
-				continue;
-#if XA_CLOSE_HOLES_CHECK_EDGE_INTERSECTION
-			// Don't add the triangle if the new edge (i3, i1), intersects any other triangle that isn't part of the filled hole.
-			intersection = false;
-			const Vector3 newEdgeVector = frontPoints[i1] - frontPoints[i3];
-			for (uint32_t f = 0; f < faceCount; f++) {
-				Vector3 tri[3];
-				for (uint32_t j = 0; j < 3; j++)
-					tri[j] = mesh->position(mesh->vertexAt(f * 3 + j));
-				float t;
-				if (rayIntersectsTriangle(frontPoints[i3], newEdgeVector, tri, &t)) {
-					intersection = true;
-					break;
-				}
-			}
-			if (intersection)
-				continue;
-#endif
-			// Skip backwards facing triangles.
-			if (compareNormal) {
-				if (frontAngles[i] < smallestAngleIgnoringNormal) {
-					smallestAngleIgnoringNormal = frontAngles[i];
-					smallestAngleIndexIgnoringNormal = i;
-				}
-				const Vector3 e0 = frontPoints[i3] - frontPoints[i1];
-				const Vector3 e1 = frontPoints[i2] - frontPoints[i1];
-				const Vector3 triNormal = normalizeSafe(cross(e0, e1), Vector3(0.0f), mesh->epsilon());
-				if (dot(normal, triNormal) <= 0.0f)
-					continue;
-			}
-			smallestAngle = smallestAngleIgnoringNormal = frontAngles[i];
-			smallestAngleIndex = smallestAngleIndexIgnoringNormal = i;
-		}
-		// Closing holes failed if we don't have a smallest angle.
-		// Fallback to ignoring the backwards facing normal test if possible.
-		if (smallestAngleIndex == UINT32_MAX || smallestAngle <= 0.0f || smallestAngle >= kPi) {
-			if (smallestAngleIgnoringNormal == UINT32_MAX || smallestAngleIgnoringNormal <= 0.0f || smallestAngleIgnoringNormal >= kPi)
-				return false;
-			else
-				smallestAngleIndex = smallestAngleIndexIgnoringNormal;
-		}
-		const uint32_t i1 = smallestAngleIndex == 0 ? frontCount - 1 : smallestAngleIndex - 1;
-		const uint32_t i2 = smallestAngleIndex;
-		const uint32_t i3 = (smallestAngleIndex + 1) % frontCount;
-		const Mesh::AddFaceResult::Enum result = mesh->addFace(frontVertices[i1], frontVertices[i2], frontVertices[i3]);
-		XA_DEBUG_ASSERT(result == Mesh::AddFaceResult::OK); // Shouldn't happen due to the findEdge calls above.
-		XA_UNUSED(result);
-		frontVertices.removeAt(i2);
-		frontPoints.removeAt(i2);
-		frontCount = frontVertices.size();
-	}
-	return true;
-}
-
-static bool meshCloseHoles(Mesh *mesh, const Array<uint32_t> &boundaryLoops, const Vector3 &normal, uint32_t *holeCount, Array<uint32_t> *holeFaceCounts)
-{
-	if (holeFaceCounts)
-		holeFaceCounts->clear();
-	// Compute lengths.
-	const uint32_t boundaryCount = boundaryLoops.size();
-	Array<float> boundaryLengths;
-	Array<uint32_t> boundaryEdgeCounts;
-	boundaryEdgeCounts.resize(boundaryCount);
-	for (uint32_t i = 0; i < boundaryCount; i++) {
-		float boundaryLength = 0.0f;
-		boundaryEdgeCounts[i] = 0;
-		for (Mesh::BoundaryLoopEdgeIterator it(mesh, boundaryLoops[i]); !it.isDone(); it.advance()) {
-			const Vector3 &t0 = mesh->position(mesh->vertexAt(meshEdgeIndex0(it.edge())));
-			const Vector3 &t1 = mesh->position(mesh->vertexAt(meshEdgeIndex1(it.edge())));
-			boundaryLength += length(t1 - t0);
-			boundaryEdgeCounts[i]++;
-		}
-		boundaryLengths.push_back(boundaryLength);
-	}
-	// Find disk boundary.
-	uint32_t diskBoundary = 0;
-	float maxLength = boundaryLengths[0];
-	for (uint32_t i = 1; i < boundaryCount; i++) {
-		if (boundaryLengths[i] > maxLength) {
-			maxLength = boundaryLengths[i];
-			diskBoundary = i;
-		}
-	}
-	// Close holes.
-	Array<uint32_t> holeVertices;
-	Array<Vector3> holePoints;
-	bool result = true;
-	for (uint32_t i = 0; i < boundaryCount; i++) {
-		if (diskBoundary == i)
-			continue; // Skip disk boundary.
-		holeVertices.resize(boundaryEdgeCounts[i]);
-		holePoints.resize(boundaryEdgeCounts[i]);
-		// Winding is backwards for internal boundaries.
-		uint32_t e = 0;
-		for (Mesh::BoundaryLoopEdgeIterator it(mesh, boundaryLoops[i]); !it.isDone(); it.advance()) {
-			const uint32_t vertex = mesh->vertexAt(meshEdgeIndex0(it.edge()));
-			holeVertices[boundaryEdgeCounts[i] - 1 - e] = vertex;
-			holePoints[boundaryEdgeCounts[i] - 1 - e] = mesh->position(vertex);
-			e++;
-		}
-		const uint32_t oldFaceCount = mesh->faceCount();
-		if (!meshCloseHole(mesh, holeVertices, normal))
-			result = false; // Return false if any hole failed to close, but keep trying to close other holes.
-		if (holeCount)
-			(*holeCount)++;
-		if (holeFaceCounts)
-			holeFaceCounts->push_back(mesh->faceCount() - oldFaceCount);
-	}
-	return result;
-}
-
-static bool meshIsPlanar(const Mesh &mesh)
-{
-	const Vector3 p1 = mesh.position(mesh.vertexAt(0));
-	const Vector3 p2 = mesh.position(mesh.vertexAt(1));
-	const Vector3 p3 = mesh.position(mesh.vertexAt(2));
-	const Plane plane(p1, p2, p3);
-	const uint32_t vertexCount = mesh.vertexCount();
-	for (uint32_t v = 0; v < vertexCount; v++) {
-		const float d = plane.distance(mesh.position(v));
-		if (!isZero(d, mesh.epsilon()))
-			return false;
-	}
-	return true;
-}
-
-/*
-Fixing T-junctions.
-
-- Find T-junctions. Find  vertices that are on an edge.
-- This test is approximate.
-- Insert edges on a spatial index to speedup queries.
-- Consider only open edges, that is edges that have no pairs.
-- Consider only vertices on boundaries.
-- Close T-junction.
-- Split edge.
-
-*/
-struct SplitEdge
-{
-	uint32_t edge;
-	float t;
-	uint32_t vertex;
-
-	bool operator<(const SplitEdge &other) const
-	{
-		if (edge < other.edge)
-			return true;
-		else if (edge == other.edge) {
-			if (t < other.t)
-				return true;
-		}
+	float tt;
+	if (!t)
+		t = &tt;
+	*t = 0.0f;
+	if (equal(lineStart, point, epsilon) || equal(lineEnd, point, epsilon))
+		return false; // Vertex lies on either line vertices.
+	const Vector3 v01 = point - lineStart;
+	const Vector3 v21 = lineEnd - lineStart;
+	const float l = length(v21);
+	const float d = length(cross(v01, v21)) / l;
+	if (!isZero(d, epsilon))
 		return false;
-	}
-};
+	*t = dot(v01, v21) / (l * l);
+	return *t > kEpsilon && *t < 1.0f - kEpsilon;
+}
 
-// Returns nullptr if there were no t-junctions to fix.
-static Mesh *meshFixTJunctions(const Mesh &inputMesh, bool *duplicatedEdge, bool *failed, uint32_t *fixedTJunctionsCount)
+// Returns the number of T-junctions found.
+static int meshCheckTJunctions(const Mesh &inputMesh)
 {
-	if (duplicatedEdge)
-		*duplicatedEdge = false;
-	if (failed)
-		*failed = false;
-	Array<SplitEdge> splitEdges;
+	int count = 0;
 	const uint32_t vertexCount = inputMesh.vertexCount();
 	const uint32_t edgeCount = inputMesh.edgeCount();
 	for (uint32_t v = 0; v < vertexCount; v++) {
@@ -3582,81 +2998,61 @@ static Mesh *meshFixTJunctions(const Mesh &inputMesh, bool *duplicatedEdge, bool
 			const Vector3 &edgePos1 = inputMesh.position(inputMesh.vertexAt(meshEdgeIndex0(e)));
 			const Vector3 &edgePos2 = inputMesh.position(inputMesh.vertexAt(meshEdgeIndex1(e)));
 			float t;
-			if (!lineIntersectsPoint(pos, edgePos1, edgePos2, &t, inputMesh.epsilon()))
-				continue;
-			SplitEdge splitEdge;
-			splitEdge.edge = e;
-			splitEdge.t = t;
-			splitEdge.vertex = v;
-			splitEdges.push_back(splitEdge);
+			if (lineIntersectsPoint(pos, edgePos1, edgePos2, &t, inputMesh.epsilon()))
+				count++;
 		}
 	}
-	if (splitEdges.isEmpty())
-		return nullptr;
-	const uint32_t faceCount = inputMesh.faceCount();
-	Mesh *mesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, inputMesh.epsilon(), vertexCount + splitEdges.size(), faceCount);
-	for (uint32_t v = 0; v < vertexCount; v++)
-		mesh->addVertex(inputMesh.position(v));
-	Array<uint32_t> indexArray;
-	indexArray.reserve(4);
-	Array<SplitEdge> faceSplitEdges;
-	faceSplitEdges.reserve(4);
-	for (uint32_t f = 0; f < faceCount; f++) {
-		// Find t-junctions in this face.
-		faceSplitEdges.clear();
-		for (uint32_t i = 0; i < splitEdges.size(); i++) {
-			if (meshEdgeFace(splitEdges[i].edge) == f)
-				faceSplitEdges.push_back(splitEdges[i]);
-		}
-		if (!faceSplitEdges.isEmpty()) {
-			// Need to split edges in winding order when a single edge has multiple t-junctions.
-			insertionSort(faceSplitEdges.data(), faceSplitEdges.size());
-			indexArray.clear();
-			for (Mesh::FaceEdgeIterator it(&inputMesh, f); !it.isDone(); it.advance()) {
-				indexArray.push_back(it.vertex0());
-				for (uint32_t se = 0; se < faceSplitEdges.size(); se++) {
-					const SplitEdge &splitEdge = faceSplitEdges[se];
-					if (splitEdge.edge == it.edge())
-						indexArray.push_back(splitEdge.vertex);
-				}
-			}
-			if (!meshCloseHole(mesh, indexArray, Vector3(0.0f))) {
-				if (failed)
-					*failed = true;
-			}
-		} else {
-			// No t-junctions in this face. Copy from input mesh.
-			if (mesh->addFace(&inputMesh.indices()[f * 3]) == Mesh::AddFaceResult::DuplicateEdge) {
-				if (duplicatedEdge)
-					*duplicatedEdge = true;
-			}
-		}
-	}
-	if (fixedTJunctionsCount)
-		*fixedTJunctionsCount = splitEdges.size();
-	return mesh;
+	return count;
 }
+#endif
 
-// boundaryLoops are the first edges for each boundary loop.
-static void meshGetBoundaryLoops(const Mesh &mesh, Array<uint32_t> &boundaryLoops)
+// References invalid faces and vertices in a mesh.
+struct InvalidMeshGeometry
 {
-	const uint32_t edgeCount = mesh.edgeCount();
-	BitArray bitFlags(edgeCount);
-	bitFlags.zeroOutMemory();
-	boundaryLoops.clear();
-	// Search for boundary edges. Mark all the edges that belong to the same boundary.
-	for (uint32_t e = 0; e < edgeCount; e++) {
-		if (bitFlags.get(e) || !mesh.isBoundaryEdge(e))
-			continue;
-		for (Mesh::BoundaryLoopEdgeIterator it(&mesh, e); !it.isDone(); it.advance())
-			bitFlags.set(it.edge());
-		boundaryLoops.push_back(e);
+	// If meshFaceGroups is not null, invalid faces have the face group MeshFaceGroups::kInvalid.
+	// If meshFaceGroups is null, invalid faces are Mesh::isFaceIgnored.
+	void extract(const Mesh *mesh, const MeshFaceGroups *meshFaceGroups)
+	{
+		// Copy invalid faces.
+		m_faces.clear();
+		const uint32_t meshFaceCount = mesh->faceCount();
+		for (uint32_t f = 0; f < meshFaceCount; f++) {
+			if ((meshFaceGroups && meshFaceGroups->groupAt(f) == MeshFaceGroups::kInvalid) || (!meshFaceGroups && mesh->isFaceIgnored(f)))
+				m_faces.push_back(f);
+		}
+		// Create *unique* list of vertices of invalid faces.
+		const uint32_t faceCount = m_faces.size();
+		m_indices.resize(faceCount * 3);
+		const uint32_t approxVertexCount = min(faceCount * 3, mesh->vertexCount());
+		m_vertexToSourceVertexMap.clear();
+		m_vertexToSourceVertexMap.reserve(approxVertexCount);
+		HashMap<uint32_t, PassthroughHash<uint32_t>> sourceVertexToVertexMap(MemTag::Mesh, approxVertexCount);
+		for (uint32_t f = 0; f < faceCount; f++) {
+			const uint32_t face = m_faces[f];
+			for (uint32_t i = 0; i < 3; i++) {
+				const uint32_t vertex = mesh->vertexAt(face * 3 + i);
+				uint32_t newVertex = sourceVertexToVertexMap.get(vertex);
+				if (newVertex == UINT32_MAX) {
+					newVertex = sourceVertexToVertexMap.add(vertex);
+					m_vertexToSourceVertexMap.push_back(vertex);
+				}
+				m_indices[f * 3 + i] = newVertex;
+			}
+		}
 	}
-}
+
+	ConstArrayView<uint32_t> faces() const { return m_faces; }
+	ConstArrayView<uint32_t> indices() const { return m_indices; }
+	ConstArrayView<uint32_t> vertices() const { return m_vertexToSourceVertexMap; }
+
+private:
+	Array<uint32_t> m_faces, m_indices;
+	Array<uint32_t> m_vertexToSourceVertexMap; // Map face vertices to vertices of the source mesh.
+};
 
 struct Progress
 {
-	Progress(ProgressCategory::Enum category, ProgressFunc func, void *userData, uint32_t maxValue) : value(0), cancel(false), m_category(category), m_func(func), m_userData(userData), m_maxValue(maxValue), m_progress(0)
+	Progress(ProgressCategory category, ProgressFunc func, void *userData, uint32_t maxValue) : cancel(false), m_category(category), m_func(func), m_userData(userData), m_value(0), m_maxValue(maxValue), m_percent(0)
 	{
 		if (m_func) {
 			if (!m_func(category, 0, userData))
@@ -3672,37 +3068,39 @@ struct Progress
 		}
 	}
 
-	void update()
+	void increment(uint32_t value)
 	{
-		if (!m_func)
-			return;
-		m_mutex.lock();
-		const uint32_t newProgress = uint32_t(ceilf(value.load() / (float)m_maxValue * 100.0f));
-		if (newProgress != m_progress && newProgress < 100) {
-			m_progress = newProgress;
-			if (!m_func(m_category, m_progress, m_userData))
-				cancel = true;
-		}
-		m_mutex.unlock();
+		m_value += value;
+		update();
 	}
 
 	void setMaxValue(uint32_t maxValue)
 	{
-		m_mutex.lock();
 		m_maxValue = maxValue;
-		m_mutex.unlock();
+		update();
 	}
 
-	std::atomic<uint32_t> value;
 	std::atomic<bool> cancel;
 
 private:
-	ProgressCategory::Enum m_category;
+	void update()
+	{
+		if (!m_func)
+			return;
+		const uint32_t newPercent = uint32_t(ceilf(m_value.load() / (float)m_maxValue.load() * 100.0f));
+		if (newPercent != m_percent) {
+			// Atomic max.
+			uint32_t oldPercent = m_percent;
+			while (oldPercent < newPercent && !m_percent.compare_exchange_weak(oldPercent, newPercent)) {}
+			if (!m_func(m_category, m_percent, m_userData))
+				cancel = true;
+		}
+	}
+
+	ProgressCategory m_category;
 	ProgressFunc m_func;
 	void *m_userData;
-	uint32_t m_maxValue;
-	uint32_t m_progress;
-	std::mutex m_mutex;
+	std::atomic<uint32_t> m_value, m_maxValue, m_percent;
 };
 
 struct Spinlock
@@ -3721,8 +3119,8 @@ struct TaskGroupHandle
 
 struct Task
 {
-	void (*func)(void *userData);
-	void *userData;
+	void (*func)(void *groupUserData, void *taskUserData);
+	void *userData; // Passed to func as taskUserData.
 };
 
 #if XA_MULTITHREADED
@@ -3739,6 +3137,7 @@ public:
 			new (&m_groups[i]) TaskGroup();
 			m_groups[i].free = true;
 			m_groups[i].ref = 0;
+			m_groups[i].userData = nullptr;
 		}
 		m_workers.resize(std::thread::hardware_concurrency() <= 1 ? 1 : std::thread::hardware_concurrency() - 1);
 		for (uint32_t i = 0; i < m_workers.size(); i++) {
@@ -3772,7 +3171,8 @@ public:
 		return max(1u, std::thread::hardware_concurrency()); // Including the main thread.
 	}
 
-	TaskGroupHandle createTaskGroup(uint32_t reserveSize = 0)
+	// userData is passed to Task::func as groupUserData.
+	TaskGroupHandle createTaskGroup(void *userData = nullptr, uint32_t reserveSize = 0)
 	{
 		// Claim the first free group.
 		for (uint32_t i = 0; i < m_maxGroups; i++) {
@@ -3785,6 +3185,8 @@ public:
 			group.queue.clear();
 			group.queue.reserve(reserveSize);
 			group.queueLock.unlock();
+			group.userData = userData;
+			group.ref = 0;
 			TaskGroupHandle handle;
 			handle.value = i;
 			return handle;
@@ -3826,7 +3228,7 @@ public:
 			group.queueLock.unlock();
 			if (!task)
 				break;
-			task->func(task->userData);
+			task->func(group.userData, task->userData);
 			group.ref--;
 		}
 		// Even though the task queue is empty, workers can still be running tasks.
@@ -3846,6 +3248,7 @@ private:
 		uint32_t queueHead = 0;
 		Spinlock queueLock;
 		std::atomic<uint32_t> ref; // Increment when a task is enqueued, decrement when a task finishes.
+		void *userData;
 	};
 
 	struct Worker
@@ -3889,7 +3292,7 @@ private:
 				}
 				if (!task)
 					break;
-				task->func(task->userData);
+				task->func(group->userData, task->userData);
 				group->ref--;
 			}
 		}
@@ -3912,10 +3315,11 @@ public:
 		return 1;
 	}
 
-	TaskGroupHandle createTaskGroup(uint32_t reserveSize = 0)
+	TaskGroupHandle createTaskGroup(void *userData = nullptr, uint32_t reserveSize = 0)
 	{
 		TaskGroup *group = XA_NEW(MemTag::Default, TaskGroup);
 		group->queue.reserve(reserveSize);
+		group->userData = userData;
 		m_groups.push_back(group);
 		TaskGroupHandle handle;
 		handle.value = m_groups.size() - 1;
@@ -3935,7 +3339,7 @@ public:
 		}
 		TaskGroup *group = m_groups[handle->value];
 		for (uint32_t i = 0; i < group->queue.size(); i++)
-			group->queue[i].func(group->queue[i].userData);
+			group->queue[i].func(group->userData, group->queue[i].userData);
 		group->queue.clear();
 		destroyGroup(*handle);
 		handle->value = UINT32_MAX;
@@ -3957,6 +3361,7 @@ private:
 	struct TaskGroup
 	{
 		Array<Task> queue;
+		void *userData;
 	};
 
 	Array<TaskGroup *> m_groups;
@@ -4049,10 +3454,109 @@ private:
 	T *m_array;
 };
 
+// Implemented as a struct so the temporary arrays can be reused.
+struct Triangulator
+{
+	// This is doing a simple ear-clipping algorithm that skips invalid triangles. Ideally, we should
+	// also sort the ears by angle, start with the ones that have the smallest angle and proceed in order.
+	void triangulatePolygon(ConstArrayView<Vector3> vertices, ConstArrayView<uint32_t> inputIndices, Array<uint32_t> &outputIndices)
+	{
+		m_polygonVertices.clear();
+		m_polygonVertices.reserve(inputIndices.length);
+		outputIndices.clear();
+		if (inputIndices.length == 3) {
+			// Simple case for triangles.
+			outputIndices.push_back(inputIndices[0]);
+			outputIndices.push_back(inputIndices[1]);
+			outputIndices.push_back(inputIndices[2]);
+		}
+		else {
+			// Build 2D polygon projecting vertices onto normal plane.
+			// Faces are not necesarily planar, this is for example the case, when the face comes from filling a hole. In such cases
+			// it's much better to use the best fit plane.
+			Basis basis;
+			basis.normal = normalize(cross(vertices[inputIndices[1]] - vertices[inputIndices[0]], vertices[inputIndices[2]] - vertices[inputIndices[1]]));
+			basis.tangent = basis.computeTangent(basis.normal);
+			basis.bitangent = basis.computeBitangent(basis.normal, basis.tangent);
+			const uint32_t edgeCount = inputIndices.length;
+			m_polygonPoints.clear();
+			m_polygonPoints.reserve(edgeCount);
+			m_polygonAngles.clear();
+			m_polygonAngles.reserve(edgeCount);
+			for (uint32_t i = 0; i < inputIndices.length; i++) {
+				m_polygonVertices.push_back(inputIndices[i]);
+				const Vector3 &pos = vertices[inputIndices[i]];
+				m_polygonPoints.push_back(Vector2(dot(basis.tangent, pos), dot(basis.bitangent, pos)));
+			}
+			m_polygonAngles.resize(edgeCount);
+			while (m_polygonVertices.size() > 2) {
+				const uint32_t size = m_polygonVertices.size();
+				// Update polygon angles. @@ Update only those that have changed.
+				float minAngle = kPi2;
+				uint32_t bestEar = 0; // Use first one if none of them is valid.
+				bool bestIsValid = false;
+				for (uint32_t i = 0; i < size; i++) {
+					uint32_t i0 = i;
+					uint32_t i1 = (i + 1) % size; // Use Sean's polygon interation trick.
+					uint32_t i2 = (i + 2) % size;
+					Vector2 p0 = m_polygonPoints[i0];
+					Vector2 p1 = m_polygonPoints[i1];
+					Vector2 p2 = m_polygonPoints[i2];
+					float d = clamp(dot(p0 - p1, p2 - p1) / (length(p0 - p1) * length(p2 - p1)), -1.0f, 1.0f);
+					float angle = acosf(d);
+					float area = triangleArea(p0, p1, p2);
+					if (area < 0.0f)
+						angle = kPi2 - angle;
+					m_polygonAngles[i1] = angle;
+					if (angle < minAngle || !bestIsValid) {
+						// Make sure this is a valid ear, if not, skip this point.
+						bool valid = true;
+						for (uint32_t j = 0; j < size; j++) {
+							if (j == i0 || j == i1 || j == i2)
+								continue;
+							Vector2 p = m_polygonPoints[j];
+							if (pointInTriangle(p, p0, p1, p2)) {
+								valid = false;
+								break;
+							}
+						}
+						if (valid || !bestIsValid) {
+							minAngle = angle;
+							bestEar = i1;
+							bestIsValid = valid;
+						}
+					}
+				}
+				// Clip best ear:
+				const uint32_t i0 = (bestEar + size - 1) % size;
+				const uint32_t i1 = (bestEar + 0) % size;
+				const uint32_t i2 = (bestEar + 1) % size;
+				outputIndices.push_back(m_polygonVertices[i0]);
+				outputIndices.push_back(m_polygonVertices[i1]);
+				outputIndices.push_back(m_polygonVertices[i2]);
+				m_polygonVertices.removeAt(i1);
+				m_polygonPoints.removeAt(i1);
+				m_polygonAngles.removeAt(i1);
+			}
+		}
+	}
+
+private:
+	static bool pointInTriangle(const Vector2 &p, const Vector2 &a, const Vector2 &b, const Vector2 &c)
+	{
+		return triangleArea(a, b, p) >= kAreaEpsilon && triangleArea(b, c, p) >= kAreaEpsilon && triangleArea(c, a, p) >= kAreaEpsilon;
+	}
+
+	Array<int> m_polygonVertices;
+	Array<float> m_polygonAngles;
+	Array<Vector2> m_polygonPoints;
+};
+
 class UniformGrid2
 {
 public:
-	void reset(const Vector2 *positions, const uint32_t *indices = nullptr, uint32_t reserveEdgeCount = 0)
+	// indices are optional.
+	void reset(ConstArrayView<Vector2> positions, ConstArrayView<uint32_t> indices = ConstArrayView<uint32_t>(), uint32_t reserveEdgeCount = 0)
 	{
 		m_edges.clear();
 		if (reserveEdgeCount > 0)
@@ -4202,14 +3706,14 @@ private:
 			edgeExtents.add(edgePosition1(edge));
 		}
 		m_gridOrigin = edgeExtents.min;
-		// Size grid to approximately one edge per cell.
+		// Size grid to approximately one edge per cell in the largest dimension.
 		const Vector2 extentsSize(edgeExtents.max - edgeExtents.min);
-		m_cellSize = min(extentsSize.x, extentsSize.y) / sqrtf((float)edgeCount);
+		m_cellSize = max(extentsSize.x, extentsSize.y) / (float)clamp(edgeCount, 32u, 512u);
 		if (m_cellSize <= 0.0f)
 			return false;
 		m_gridWidth = uint32_t(ceilf(extentsSize.x / m_cellSize));
 		m_gridHeight = uint32_t(ceilf(extentsSize.y / m_cellSize));
-		if (m_gridWidth == 0 || m_gridHeight == 0)
+		if (m_gridWidth <= 1 || m_gridHeight <= 1)
 			return false;
 		// Insert edges into cells.
 		m_cellDataOffsets.resize(m_gridWidth * m_gridHeight);
@@ -4265,7 +3769,7 @@ private:
 	void traverse(Vector2 p1, Vector2 p2)
 	{
 		const Vector2 dir = p2 - p1;
-		const Vector2 normal = normalizeSafe(dir, Vector2(0.0f), kEpsilon);
+		const Vector2 normal = normalizeSafe(dir, Vector2(0.0f));
 		const int stepX = dir.x >= 0 ? 1 : -1;
 		const int stepY = dir.y >= 0 ? 1 : -1;
 		const uint32_t firstCell[2] = { cellX(p1.x), cellY(p1.y) };
@@ -4340,12 +3844,12 @@ private:
 
 	uint32_t vertexAt(uint32_t index) const
 	{
-		return m_indices ? m_indices[index] : index;
+		return m_indices.length > 0 ? m_indices[index] : index;
 	}
 
 	Array<uint32_t> m_edges;
-	const Vector2 *m_positions;
-	const uint32_t *m_indices; // Optional
+	ConstArrayView<Vector2> m_positions;
+	ConstArrayView<uint32_t> m_indices; // Optional. Empty if unused.
 	float m_cellSize;
 	Vector2 m_gridOrigin;
 	uint32_t m_gridWidth, m_gridHeight; // in cells
@@ -4365,7 +3869,10 @@ struct UvMeshChart
 struct UvMesh
 {
 	UvMeshDecl decl;
+	BitArray faceIgnore;
+	Array<uint32_t> faceMaterials;
 	Array<uint32_t> indices;
+	Array<Vector2> texcoords; // Copied from input and never modified, UvMeshInstance::texcoords are. Used to restore UvMeshInstance::texcoords so packing can be run multiple times.
 	Array<UvMeshChart *> charts;
 	Array<uint32_t> vertexToChartMap;
 };
@@ -4374,7 +3881,6 @@ struct UvMeshInstance
 {
 	UvMesh *mesh;
 	Array<Vector2> texcoords;
-	bool rotateCharts;
 };
 
 /*
@@ -4423,10 +3929,10 @@ namespace opennl {
 #define NL_NEW(T)              XA_ALLOC(MemTag::OpenNL, T)
 #define NL_NEW_ARRAY(T,NB)     XA_ALLOC_ARRAY(MemTag::OpenNL, T, NB)
 #define NL_RENEW_ARRAY(T,x,NB) XA_REALLOC(MemTag::OpenNL, x, T, NB)
-#define NL_DELETE(x)           XA_FREE(x); x = nullptr 
+#define NL_DELETE(x)           XA_FREE(x); x = nullptr
 #define NL_DELETE_ARRAY(x)     XA_FREE(x); x = nullptr
 #define NL_CLEAR(x, T)         memset(x, 0, sizeof(T));
-#define NL_CLEAR_ARRAY(T,x,NB) memset(x, 0, (size_t)(NB)*sizeof(T)) 
+#define NL_CLEAR_ARRAY(T,x,NB) memset(x, 0, (size_t)(NB)*sizeof(T))
 #define NL_NEW_VECTOR(dim)     XA_ALLOC_ARRAY(MemTag::OpenNL, double, dim)
 #define NL_DELETE_VECTOR(ptr)  XA_FREE(ptr)
 
@@ -4788,8 +4294,8 @@ static NLMatrix nlCRSMatrixNewFromSparseMatrix(NLSparseMatrix* M)
 		CRS->sliceptr[0] = 0;
 		for (slice = 1; slice < nslices; ++slice) {
 			while (cur_NNZ < cur_bound && cur_row < M->m) {
-				++cur_row;
 				cur_NNZ += CRS->rowptr[cur_row + 1] - CRS->rowptr[cur_row];
+				++cur_row;
 			}
 			CRS->sliceptr[slice] = cur_row;
 			cur_bound += slice_size;
@@ -5287,7 +4793,7 @@ typedef bool (*SamplingCallback)(void *param, int x, int y);
 /// A triangle for rasterization.
 struct Triangle
 {
-	Triangle(const Vector2 &_v0, const Vector2 &_v1, const Vector2 &_v2) : v1(_v0), v2(_v2), v3(_v1)
+	Triangle(const Vector2 &_v0, const Vector2 &_v1, const Vector2 &_v2) : v1(_v0), v2(_v2), v3(_v1), n1(0.0f), n2(0.0f), n3(0.0f)
 	{
 		// make sure every triangle is front facing.
 		flipBackface();
@@ -5501,6 +5007,7 @@ struct AtlasData
 	Array<float> edgeDihedralAngles;
 	Array<float> edgeLengths;
 	Array<float> faceAreas;
+	Array<float> faceUvAreas; // Can be negative.
 	Array<Vector3> faceNormals;
 	BitArray isFaceInChart;
 
@@ -5513,6 +5020,8 @@ struct AtlasData
 		edgeDihedralAngles.resize(edgeCount);
 		edgeLengths.resize(edgeCount);
 		faceAreas.resize(faceCount);
+		if (options.useInputMeshUvs)
+			faceUvAreas.resize(faceCount);
 		faceNormals.resize(faceCount);
 		isFaceInChart.resize(faceCount);
 		isFaceInChart.zeroOutMemory();
@@ -5526,6 +5035,8 @@ struct AtlasData
 			}
 			faceAreas[f] = mesh->computeFaceArea(f);
 			XA_DEBUG_ASSERT(faceAreas[f] > 0.0f);
+			if (options.useInputMeshUvs)
+				faceUvAreas[f] = mesh->computeFaceParametricArea(f);
 			faceNormals[f] = mesh->computeFaceNormal(f);
 		}
 		for (uint32_t face = 0; face < faceCount; face++) {
@@ -5543,6 +5054,102 @@ struct AtlasData
 	}
 };
 
+// If MeshDecl::vertexUvData is set on input meshes, find charts by floodfilling faces in world/model space without crossing UV seams.
+struct OriginalUvCharts
+{
+	OriginalUvCharts(AtlasData &data) : m_data(data) {}
+	uint32_t chartCount() const { return m_charts.size(); }
+	const Basis &chartBasis(uint32_t chartIndex) const { return m_chartBasis[chartIndex]; }
+
+	ConstArrayView<uint32_t> chartFaces(uint32_t chartIndex) const
+	{
+		const Chart &chart = m_charts[chartIndex];
+		return ConstArrayView<uint32_t>(&m_chartFaces[chart.firstFace], chart.faceCount);
+	}
+
+	void compute()
+	{
+		m_charts.clear();
+		m_chartFaces.clear();
+		const Mesh *mesh = m_data.mesh;
+		const uint32_t faceCount = mesh->faceCount();
+		for (uint32_t f = 0; f < faceCount; f++) {
+			if (m_data.isFaceInChart.get(f))
+				continue;
+			if (isZero(m_data.faceUvAreas[f], kAreaEpsilon))
+				continue; // Face must have valid UVs.
+			// Found an unassigned face, create a new chart.
+			Chart chart;
+			chart.firstFace = m_chartFaces.size();
+			chart.faceCount = 1;
+			m_chartFaces.push_back(f);
+			m_data.isFaceInChart.set(f);
+			floodfillFaces(chart);
+			m_charts.push_back(chart);
+		}
+		// Compute basis for each chart.
+		m_chartBasis.resize(m_charts.size());
+		for (uint32_t c = 0; c < m_charts.size(); c++)
+		{
+			const Chart &chart = m_charts[c];
+			m_tempPoints.resize(chart.faceCount * 3);
+			for (uint32_t f = 0; f < chart.faceCount; f++) {
+				const uint32_t face = m_chartFaces[chart.firstFace + f];
+				for (uint32_t i = 0; i < 3; i++)
+					m_tempPoints[f * 3 + i] = m_data.mesh->position(m_data.mesh->vertexAt(face * 3 + i));
+			}
+			Fit::computeBasis(m_tempPoints, &m_chartBasis[c]);
+		}
+	}
+
+private:
+	struct Chart
+	{
+		uint32_t firstFace, faceCount;
+	};
+
+	void floodfillFaces(Chart &chart)
+	{
+		const bool isFaceAreaNegative = m_data.faceUvAreas[m_chartFaces[chart.firstFace]] < 0.0f;
+		for (;;) {
+			bool newFaceAdded = false;
+			const uint32_t faceCount = chart.faceCount;
+			for (uint32_t f = 0; f < faceCount; f++) {
+				const uint32_t sourceFace = m_chartFaces[chart.firstFace + f];
+				for (Mesh::FaceEdgeIterator edgeIt(m_data.mesh, sourceFace); !edgeIt.isDone(); edgeIt.advance()) {
+					const uint32_t face = edgeIt.oppositeFace();
+					if (face == UINT32_MAX)
+						continue; // Boundary edge.
+					if (m_data.isFaceInChart.get(face))
+						continue; // Already assigned to a chart.
+					if (isZero(m_data.faceUvAreas[face], kAreaEpsilon))
+						continue; // Face must have valid UVs.
+					if ((m_data.faceUvAreas[face] < 0.0f) != isFaceAreaNegative)
+						continue; // Face winding is opposite of the first chart face.
+					const Vector2 &uv0 = m_data.mesh->texcoord(edgeIt.vertex0());
+					const Vector2 &uv1 = m_data.mesh->texcoord(edgeIt.vertex1());
+					const Vector2 &ouv0 = m_data.mesh->texcoord(m_data.mesh->vertexAt(meshEdgeIndex0(edgeIt.oppositeEdge())));
+					const Vector2 &ouv1 = m_data.mesh->texcoord(m_data.mesh->vertexAt(meshEdgeIndex1(edgeIt.oppositeEdge())));
+					if (!equal(uv0, ouv1, m_data.mesh->epsilon()) || !equal(uv1, ouv0, m_data.mesh->epsilon()))
+						continue; // UVs must match exactly.
+					m_chartFaces.push_back(face);
+					chart.faceCount++;
+					m_data.isFaceInChart.set(face);
+					newFaceAdded = true;
+				}
+			}
+			if (!newFaceAdded)
+				break;
+		}
+	}
+
+	AtlasData &m_data;
+	Array<Chart> m_charts;
+	Array<Basis> m_chartBasis;
+	Array<uint32_t> m_chartFaces;
+	Array<Vector3> m_tempPoints;
+};
+
 #if XA_DEBUG_EXPORT_OBJ_PLANAR_REGIONS
 static uint32_t s_planarRegionsCurrentRegion;
 static uint32_t s_planarRegionsCurrentVertex;
@@ -5553,7 +5160,7 @@ struct PlanarCharts
 	PlanarCharts(AtlasData &data) : m_data(data), m_nextRegionFace(MemTag::SegmentAtlasPlanarRegions), m_faceToRegionId(MemTag::SegmentAtlasPlanarRegions) {}
 	const Basis &chartBasis(uint32_t chartIndex) const { return m_chartBasis[chartIndex]; }
 	uint32_t chartCount() const { return m_charts.size(); }
-	
+
 	ConstArrayView<uint32_t> chartFaces(uint32_t chartIndex) const
 	{
 		const Chart &chart = m_charts[chartIndex];
@@ -5581,6 +5188,8 @@ struct PlanarCharts
 		for (uint32_t f = 0; f < faceCount; f++) {
 			if (m_nextRegionFace[f] != f)
 				continue; // Already assigned.
+			if (m_data.isFaceInChart.get(f))
+				continue; // Already in a chart.
 			faceStack.clear();
 			faceStack.push_back(f);
 			for (;;) {
@@ -5595,6 +5204,8 @@ struct PlanarCharts
 						continue;
 					if (m_nextRegionFace[oface] != oface)
 						continue; // Already assigned.
+					if (m_data.isFaceInChart.get(oface))
+						continue; // Already in a chart.
 					if (!equal(dot(m_data.faceNormals[face], m_data.faceNormals[oface]), 1.0f, kEpsilon))
 						continue; // Not coplanar.
 					const uint32_t next = m_nextRegionFace[face];
@@ -5632,8 +5243,11 @@ struct PlanarCharts
 		// Precompute planar region areas.
 		m_regionAreas.resize(regionCount);
 		m_regionAreas.zeroOutMemory();
-		for (uint32_t f = 0; f < faceCount; f++)
+		for (uint32_t f = 0; f < faceCount; f++) {
+			if (m_faceToRegionId[f] == UINT32_MAX)
+				continue;
 			m_regionAreas[m_faceToRegionId[f]] += m_data.faceAreas[f];
+		}
 		// Create charts from suitable planar regions.
 		// The dihedral angle of all boundary edges must be >= 90 degrees.
 		m_charts.clear();
@@ -5964,7 +5578,7 @@ private:
 					// Merge if chart2 has a single face.
 					// chart1 must have more than 1 face.
 					// chart2 area must be <= 10% of chart1 area.
-					if (m_sharedBoundaryLengthsNoSeams[cc] > 0.0f && chart->faces.size() > 1 && chart2->faces.size() == 1 && chart2->area <= chart->area * 0.1f) 
+					if (m_sharedBoundaryLengthsNoSeams[cc] > 0.0f && chart->faces.size() > 1 && chart2->faces.size() == 1 && chart2->area <= chart->area * 0.1f)
 						goto merge;
 					// Merge if chart2 has two faces (probably a quad), and chart1 bounds at least 2 of its edges.
 					if (chart2->faces.size() == 2 && m_sharedBoundaryEdgeCountNoSeams[cc] >= 2)
@@ -5972,7 +5586,7 @@ private:
 					// Merge if chart2 is wholely inside chart1, ignoring seams.
 					if (m_sharedBoundaryLengthsNoSeams[cc] > 0.0f && equal(m_sharedBoundaryLengthsNoSeams[cc], chart2->boundaryLength, kEpsilon))
 						goto merge;
-					if (m_sharedBoundaryLengths[cc] > 0.2f * max(0.0f, chart->boundaryLength - externalBoundaryLength) || 
+					if (m_sharedBoundaryLengths[cc] > 0.2f * max(0.0f, chart->boundaryLength - externalBoundaryLength) ||
 						m_sharedBoundaryLengths[cc] > 0.75f * chart2->boundaryLength)
 						goto merge;
 					continue;
@@ -6059,7 +5673,7 @@ private:
 			for (uint32_t j = 0; j < 3; j++)
 				m_tempPoints[i * 3 + j] = m_data.mesh->position(m_data.mesh->vertexAt(f * 3 + j));
 		}
-		return Fit::computeBasis(m_tempPoints.data(), m_tempPoints.size(), basis);
+		return Fit::computeBasis(m_tempPoints, basis);
 	}
 
 	bool isFaceFlipped(uint32_t face) const
@@ -6099,7 +5713,7 @@ private:
 		// Check for boundary intersection in the parameterization.
 		XA_PROFILE_START(clusteredChartsPlaceSeedsBoundaryIntersection)
 		XA_PROFILE_START(clusteredChartsGrowBoundaryIntersection)
-		m_boundaryGrid.reset(m_texcoords.data());
+		m_boundaryGrid.reset(m_texcoords);
 		for (uint32_t i = 0; i < faceCount; i++) {
 			const uint32_t f = chart->faces[i];
 			for (uint32_t j = 0; j < 3; j++) {
@@ -6128,7 +5742,7 @@ private:
 		// Append the face and any coplanar connected faces to the chart faces array.
 		chart->faces.push_back(face);
 		uint32_t coplanarFace = m_planarCharts.nextRegionFace(face);
-		while (coplanarFace != face) { 
+		while (coplanarFace != face) {
 			XA_DEBUG_ASSERT(!m_data.isFaceInChart.get(coplanarFace));
 			chart->faces.push_back(coplanarFace);
 			coplanarFace = m_planarCharts.nextRegionFace(coplanarFace);
@@ -6140,7 +5754,7 @@ private:
 			// Use the first face normal.
 			// Use any edge as the tangent vector.
 			basis.normal = m_data.faceNormals[face];
-			basis.tangent = normalize(m_data.mesh->position(m_data.mesh->vertexAt(face * 3 + 0)) - m_data.mesh->position(m_data.mesh->vertexAt(face * 3 + 1)), kEpsilon);
+			basis.tangent = normalize(m_data.mesh->position(m_data.mesh->vertexAt(face * 3 + 0)) - m_data.mesh->position(m_data.mesh->vertexAt(face * 3 + 1)));
 			basis.bitangent = cross(basis.normal, basis.tangent);
 		} else {
 			// Use best fit normal.
@@ -6288,7 +5902,7 @@ private:
 		float l_in = 0.0f; // Length that does border the chart.
 		const uint32_t planarRegionId = m_planarCharts.regionIdFromFace(firstFace);
 		uint32_t face = firstFace;
-		for (;;) { 
+		for (;;) {
 			for (Mesh::FaceEdgeIterator it(m_data.mesh, face); !it.isDone(); it.advance()) {
 				const float l = m_data.edgeLengths[it.edge()];
 				if (it.isBoundary()) {
@@ -6305,7 +5919,6 @@ private:
 				break;
 		}
 #if 1
-		XA_DEBUG_ASSERT(l_in != 0.0f); // Candidate face must be adjacent to chart. @@ This is not true if the input mesh has zero-length edges.
 		float ratio = (l_out - l_in) / (l_out + l_in);
 		return min(ratio, 0.0f); // Only use the straightness metric to close gaps.
 #else
@@ -6338,7 +5951,7 @@ private:
 	{
 		float seamFactor = 0.0f, totalLength = 0.0f;
 		uint32_t face = firstFace;
-		for (;;) { 
+		for (;;) {
 			for (Mesh::FaceEdgeIterator it(m_data.mesh, face); !it.isDone(); it.advance()) {
 				if (it.isBoundary())
 					continue;
@@ -6379,7 +5992,7 @@ private:
 	{
 		float seamLength = 0.0f, totalLength = 0.0f;
 		uint32_t face = firstFace;
-		for (;;) { 
+		for (;;) {
 			for (Mesh::FaceEdgeIterator it(m_data.mesh, face); !it.isDone(); it.advance()) {
 				if (it.isBoundary())
 					continue;
@@ -6406,7 +6019,7 @@ private:
 	{
 		float area = chart->area;
 		uint32_t face = firstFace;
-		for (;;) { 
+		for (;;) {
 			area += m_data.faceAreas[face];
 			face = m_planarCharts.nextRegionFace(face);
 			if (face == firstFace)
@@ -6421,7 +6034,7 @@ private:
 		// Add new edges, subtract edges shared with the chart.
 		const uint32_t planarRegionId = m_planarCharts.regionIdFromFace(firstFace);
 		uint32_t face = firstFace;
-		for (;;) { 
+		for (;;) {
 			for (Mesh::FaceEdgeIterator it(m_data.mesh, face); !it.isDone(); it.advance()) {
 				const float edgeLength = m_data.edgeLengths[it.edge()];
 				if (it.isBoundary()) {
@@ -6499,17 +6112,31 @@ private:
 	bool m_placingSeeds;
 };
 
+struct ChartGeneratorType
+{
+	enum Enum
+	{
+		OriginalUv,
+		Planar,
+		Clustered,
+		Piecewise
+	};
+};
+
 struct Atlas
 {
-	Atlas() : m_planarCharts(m_data), m_clusteredCharts(m_data, m_planarCharts) {}
+	Atlas() : m_originalUvCharts(m_data), m_planarCharts(m_data), m_clusteredCharts(m_data, m_planarCharts) {}
 
 	uint32_t chartCount() const
 	{
-		return m_planarCharts.chartCount() + m_clusteredCharts.chartCount();
+		return m_originalUvCharts.chartCount() + m_planarCharts.chartCount() + m_clusteredCharts.chartCount();
 	}
 
 	ConstArrayView<uint32_t> chartFaces(uint32_t chartIndex) const
 	{
+		if (chartIndex < m_originalUvCharts.chartCount())
+			return m_originalUvCharts.chartFaces(chartIndex);
+		chartIndex -= m_originalUvCharts.chartCount();
 		if (chartIndex < m_planarCharts.chartCount())
 			return m_planarCharts.chartFaces(chartIndex);
 		chartIndex -= m_planarCharts.chartCount();
@@ -6518,10 +6145,23 @@ struct Atlas
 
 	const Basis &chartBasis(uint32_t chartIndex) const
 	{
+		if (chartIndex < m_originalUvCharts.chartCount())
+			return m_originalUvCharts.chartBasis(chartIndex);
+		chartIndex -= m_originalUvCharts.chartCount();
 		if (chartIndex < m_planarCharts.chartCount())
 			return m_planarCharts.chartBasis(chartIndex);
 		chartIndex -= m_planarCharts.chartCount();
 		return m_clusteredCharts.chartBasis(chartIndex);
+	}
+
+	ChartGeneratorType::Enum chartGeneratorType(uint32_t chartIndex) const
+	{
+		if (chartIndex < m_originalUvCharts.chartCount())
+			return ChartGeneratorType::OriginalUv;
+		chartIndex -= m_originalUvCharts.chartCount();
+		if (chartIndex < m_planarCharts.chartCount())
+			return ChartGeneratorType::Planar;
+		return ChartGeneratorType::Clustered;
 	}
 
 	void reset(const Mesh *mesh, const ChartOptions &options)
@@ -6535,6 +6175,11 @@ struct Atlas
 
 	void compute()
 	{
+		if (m_data.options.useInputMeshUvs) {
+			XA_PROFILE_START(originalUvCharts)
+			m_originalUvCharts.compute();
+			XA_PROFILE_END(originalUvCharts)
+		}
 		XA_PROFILE_START(planarCharts)
 		m_planarCharts.compute();
 		XA_PROFILE_END(planarCharts)
@@ -6545,9 +6190,143 @@ struct Atlas
 
 private:
 	AtlasData m_data;
+	OriginalUvCharts m_originalUvCharts;
 	PlanarCharts m_planarCharts;
 	ClusteredCharts m_clusteredCharts;
 };
+
+struct ComputeUvMeshChartsTaskArgs
+{
+	UvMesh *mesh;
+	Progress *progress;
+};
+
+// Charts are found by floodfilling faces without crossing UV seams.
+struct ComputeUvMeshChartsTask
+{
+	ComputeUvMeshChartsTask(ComputeUvMeshChartsTaskArgs *args) : m_mesh(args->mesh), m_progress(args->progress), m_uvToEdgeMap(MemTag::Default, m_mesh->indices.size()), m_faceAssigned(m_mesh->indices.size() / 3) {}
+
+	void run()
+	{
+		const uint32_t vertexCount = m_mesh->texcoords.size();
+		const uint32_t indexCount = m_mesh->indices.size();
+		const uint32_t faceCount = indexCount / 3;
+		// A vertex can only be assigned to one chart.
+		m_mesh->vertexToChartMap.resize(vertexCount);
+		m_mesh->vertexToChartMap.fill(UINT32_MAX);
+		// Map vertex UV to edge. Face is then edge / 3.
+		for (uint32_t i = 0; i < indexCount; i++)
+			m_uvToEdgeMap.add(m_mesh->texcoords[m_mesh->indices[i]]);
+		// Find charts.
+		m_faceAssigned.zeroOutMemory();
+		for (uint32_t f = 0; f < faceCount; f++) {
+			if (m_progress->cancel)
+				return;
+			m_progress->increment(1);
+			// Found an unassigned face, see if it can be added.
+			const uint32_t chartIndex = m_mesh->charts.size();
+			if (!canAddFaceToChart(chartIndex, f))
+				continue;
+			// Face is OK, create a new chart with the face.
+			UvMeshChart *chart = XA_NEW(MemTag::Default, UvMeshChart);
+			m_mesh->charts.push_back(chart);
+			chart->material = m_mesh->faceMaterials.isEmpty() ? 0 : m_mesh->faceMaterials[f];
+			addFaceToChart(chartIndex, f);
+			// Walk incident faces and assign them to the chart.
+			uint32_t f2 = 0;
+			for (;;) {
+				bool newFaceAssigned = false;
+				const uint32_t faceCount2 = chart->faces.size();
+				for (; f2 < faceCount2; f2++) {
+					const uint32_t face = chart->faces[f2];
+					for (uint32_t i = 0; i < 3; i++) {
+						// Add any valid faces with colocal UVs to the chart.
+						const Vector2 &uv = m_mesh->texcoords[m_mesh->indices[face * 3 + i]];
+						uint32_t edge = m_uvToEdgeMap.get(uv);
+						while (edge != UINT32_MAX) {
+							const uint32_t newFace = edge / 3;
+							if (canAddFaceToChart(chartIndex, newFace)) {
+								addFaceToChart(chartIndex, newFace);
+								newFaceAssigned = true;
+							}
+							edge = m_uvToEdgeMap.getNext(uv, edge);
+						}
+					}
+				}
+				if (!newFaceAssigned)
+					break;
+			}
+		}
+	}
+
+private:
+	// The chart at chartIndex doesn't have to exist yet.
+	bool canAddFaceToChart(uint32_t chartIndex, uint32_t face) const
+	{
+		if (m_faceAssigned.get(face))
+			return false; // Already assigned to a chart.
+		if (m_mesh->faceIgnore.get(face))
+			return false; // Face is ignored (zero area or nan UVs).
+		if (!m_mesh->faceMaterials.isEmpty() && chartIndex < m_mesh->charts.size()) {
+			if (m_mesh->faceMaterials[face] != m_mesh->charts[chartIndex]->material)
+				return false; // Materials don't match.
+		}
+		for (uint32_t i = 0; i < 3; i++) {
+			const uint32_t vertex = m_mesh->indices[face * 3 + i];
+			if (m_mesh->vertexToChartMap[vertex] != UINT32_MAX && m_mesh->vertexToChartMap[vertex] != chartIndex)
+				return false; // Vertex already assigned to another chart.
+		}
+		return true;
+	}
+
+	void addFaceToChart(uint32_t chartIndex, uint32_t face)
+	{
+		UvMeshChart *chart = m_mesh->charts[chartIndex];
+		m_faceAssigned.set(face);
+		chart->faces.push_back(face);
+		for (uint32_t i = 0; i < 3; i++) {
+			const uint32_t vertex = m_mesh->indices[face * 3 + i];
+			m_mesh->vertexToChartMap[vertex] = chartIndex;
+			chart->indices.push_back(vertex);
+		}
+	}
+
+	UvMesh * const m_mesh;
+	Progress * const m_progress;
+	HashMap<Vector2> m_uvToEdgeMap; // Face is edge / 3.
+	BitArray m_faceAssigned;
+};
+
+static void runComputeUvMeshChartsTask(void * /*groupUserData*/, void *taskUserData)
+{
+	XA_PROFILE_START(computeChartsThread)
+	ComputeUvMeshChartsTask task((ComputeUvMeshChartsTaskArgs *)taskUserData);
+	task.run();
+	XA_PROFILE_END(computeChartsThread)
+}
+
+static bool computeUvMeshCharts(TaskScheduler *taskScheduler, ArrayView<UvMesh *> meshes, ProgressFunc progressFunc, void *progressUserData)
+{
+	uint32_t totalFaceCount = 0;
+	for (uint32_t i = 0; i < meshes.length; i++)
+		totalFaceCount += meshes[i]->indices.size() / 3;
+	Progress progress(ProgressCategory::ComputeCharts, progressFunc, progressUserData, totalFaceCount);
+	TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(nullptr, meshes.length);
+	Array<ComputeUvMeshChartsTaskArgs> taskArgs;
+	taskArgs.resize(meshes.length);
+	for (uint32_t i = 0; i < meshes.length; i++)
+	{
+		ComputeUvMeshChartsTaskArgs &args = taskArgs[i];
+		args.mesh = meshes[i];
+		args.progress = &progress;
+		Task task;
+		task.userData = &args;
+		task.func = runComputeUvMeshChartsTask;
+		taskScheduler->run(taskGroup, task);
+	}
+	taskScheduler->wait(&taskGroup);
+	return !progress.cancel;
+}
 
 } // namespace segment
 
@@ -6612,15 +6391,95 @@ static bool findApproximateDiameterVertices(Mesh *mesh, uint32_t *a, uint32_t *b
 
 // From OpenNL LSCM example.
 // Computes the coordinates of the vertices of a triangle in a local 2D orthonormal basis of the triangle's plane.
-static void projectTriangle(Vector3 p0, Vector3 p1, Vector3 p2, Vector2 *z0, Vector2 *z1, Vector2 *z2, float epsilon)
+static void projectTriangle(Vector3 p0, Vector3 p1, Vector3 p2, Vector2 *z0, Vector2 *z1, Vector2 *z2)
 {
-	Vector3 X = normalize(p1 - p0, epsilon);
-	Vector3 Z = normalize(cross(X, p2 - p0), epsilon);
+	Vector3 X = normalize(p1 - p0);
+	Vector3 Z = normalize(cross(X, p2 - p0));
 	Vector3 Y = cross(Z, X);
 	Vector3 &O = p0;
 	*z0 = Vector2(0, 0);
 	*z1 = Vector2(length(p1 - O), 0);
 	*z2 = Vector2(dot(p2 - O, X), dot(p2 - O, Y));
+}
+
+// Conformal relations from Brecht Van Lommel (based on ABF):
+
+static float vec_angle_cos(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)
+{
+	Vector3 d1 = v1 - v2;
+	Vector3 d2 = v3 - v2;
+	return clamp(dot(d1, d2) / (length(d1) * length(d2)), -1.0f, 1.0f);
+}
+
+static float vec_angle(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3)
+{
+	float dot = vec_angle_cos(v1, v2, v3);
+	return acosf(dot);
+}
+
+static void triangle_angles(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3, float *a1, float *a2, float *a3)
+{
+	*a1 = vec_angle(v3, v1, v2);
+	*a2 = vec_angle(v1, v2, v3);
+	*a3 = kPi - *a2 - *a1;
+}
+
+static bool setup_abf_relations(opennl::NLContext *context, int id0, int id1, int id2, const Vector3 &p0, const Vector3 &p1, const Vector3 &p2)
+{
+	// @@ IC: Wouldn't it be more accurate to return cos and compute 1-cos^2?
+	// It does indeed seem to be a little bit more robust.
+	// @@ Need to revisit this more carefully!
+	float a0, a1, a2;
+	triangle_angles(p0, p1, p2, &a0, &a1, &a2);
+	if (a0 == 0.0f || a1 == 0.0f || a2 == 0.0f)
+		return false;
+	float s0 = sinf(a0);
+	float s1 = sinf(a1);
+	float s2 = sinf(a2);
+	if (s1 > s0 && s1 > s2) {
+		swap(s1, s2);
+		swap(s0, s1);
+		swap(a1, a2);
+		swap(a0, a1);
+		swap(id1, id2);
+		swap(id0, id1);
+	} else if (s0 > s1 && s0 > s2) {
+		swap(s0, s2);
+		swap(s0, s1);
+		swap(a0, a2);
+		swap(a0, a1);
+		swap(id0, id2);
+		swap(id0, id1);
+	}
+	float c0 = cosf(a0);
+	float ratio = (s2 == 0.0f) ? 1.0f : s1 / s2;
+	float cosine = c0 * ratio;
+	float sine = s0 * ratio;
+	// Note  : 2*id + 0 --> u
+	//         2*id + 1 --> v
+	int u0_id = 2 * id0 + 0;
+	int v0_id = 2 * id0 + 1;
+	int u1_id = 2 * id1 + 0;
+	int v1_id = 2 * id1 + 1;
+	int u2_id = 2 * id2 + 0;
+	int v2_id = 2 * id2 + 1;
+	// Real part
+	opennl::nlBegin(context, NL_ROW);
+	opennl::nlCoefficient(context, u0_id, cosine - 1.0f);
+	opennl::nlCoefficient(context, v0_id, -sine);
+	opennl::nlCoefficient(context, u1_id, -cosine);
+	opennl::nlCoefficient(context, v1_id, sine);
+	opennl::nlCoefficient(context, u2_id, 1);
+	opennl::nlEnd(context, NL_ROW);
+	// Imaginary part
+	opennl::nlBegin(context, NL_ROW);
+	opennl::nlCoefficient(context, u0_id, sine);
+	opennl::nlCoefficient(context, v0_id, cosine - 1.0f);
+	opennl::nlCoefficient(context, u1_id, -sine);
+	opennl::nlCoefficient(context, v1_id, -cosine);
+	opennl::nlCoefficient(context, v2_id, 1);
+	opennl::nlEnd(context, NL_ROW);
+	return true;
 }
 
 static bool computeLeastSquaresConformalMap(Mesh *mesh)
@@ -6635,55 +6494,57 @@ static bool computeLeastSquaresConformalMap(Mesh *mesh)
 	opennl::nlSolverParameteri(context, NL_NB_VARIABLES, int(2 * vertexCount));
 	opennl::nlSolverParameteri(context, NL_MAX_ITERATIONS, int(5 * vertexCount));
 	opennl::nlBegin(context, NL_SYSTEM);
-	const Vector2 *texcoords = mesh->texcoords();
+	ArrayView<Vector2> texcoords = mesh->texcoords();
 	for (uint32_t i = 0; i < vertexCount; i++) {
 		opennl::nlSetVariable(context, 2 * i, texcoords[i].x);
 		opennl::nlSetVariable(context, 2 * i + 1, texcoords[i].y);
 		if (i == lockedVertex0 || i == lockedVertex1) {
 			opennl::nlLockVariable(context, 2 * i);
 			opennl::nlLockVariable(context, 2 * i + 1);
-		} 
+		}
 	}
 	opennl::nlBegin(context, NL_MATRIX);
 	const uint32_t faceCount = mesh->faceCount();
-	const Vector3 *positions = mesh->positions();
-	const uint32_t *indices = mesh->indices();
+	ConstArrayView<Vector3> positions = mesh->positions();
+	ConstArrayView<uint32_t> indices = mesh->indices();
 	for (uint32_t f = 0; f < faceCount; f++) {
 		const uint32_t v0 = indices[f * 3 + 0];
 		const uint32_t v1 = indices[f * 3 + 1];
 		const uint32_t v2 = indices[f * 3 + 2];
-		Vector2 z0, z1, z2;
-		projectTriangle(positions[v0], positions[v1], positions[v2], &z0, &z1, &z2, mesh->epsilon());
-		double a = z1.x - z0.x;
-		double b = z1.y - z0.y;
-		double c = z2.x - z0.x;
-		double d = z2.y - z0.y;
-		XA_DEBUG_ASSERT(b == 0.0);
-		// Note  : 2*id + 0 --> u
-		//         2*id + 1 --> v
-		uint32_t u0_id = 2 * v0;
-		uint32_t v0_id = 2 * v0 + 1;
-		uint32_t u1_id = 2 * v1;
-		uint32_t v1_id = 2 * v1 + 1;
-		uint32_t u2_id = 2 * v2;
-		uint32_t v2_id = 2 * v2 + 1;
-		// Note : b = 0
-		// Real part
-		opennl::nlBegin(context, NL_ROW);
-		opennl::nlCoefficient(context, u0_id, -a+c) ;
-		opennl::nlCoefficient(context, v0_id, b-d) ;
-		opennl::nlCoefficient(context, u1_id, -c) ;
-		opennl::nlCoefficient(context, v1_id, d) ;
-		opennl::nlCoefficient(context, u2_id, a);
-		opennl::nlEnd(context, NL_ROW);
-		// Imaginary part
-		opennl::nlBegin(context, NL_ROW);
-		opennl::nlCoefficient(context, u0_id, -b+d);
-		opennl::nlCoefficient(context, v0_id, -a+c);
-		opennl::nlCoefficient(context, u1_id, -d);
-		opennl::nlCoefficient(context, v1_id, -c);
-		opennl::nlCoefficient(context, v2_id, a);
-		opennl::nlEnd(context, NL_ROW);
+		if (!setup_abf_relations(context, v0, v1, v2, positions[v0], positions[v1], positions[v2])) {
+			Vector2 z0, z1, z2;
+			projectTriangle(positions[v0], positions[v1], positions[v2], &z0, &z1, &z2);
+			double a = z1.x - z0.x;
+			double b = z1.y - z0.y;
+			double c = z2.x - z0.x;
+			double d = z2.y - z0.y;
+			XA_DEBUG_ASSERT(b == 0.0);
+			// Note  : 2*id + 0 --> u
+			//         2*id + 1 --> v
+			uint32_t u0_id = 2 * v0;
+			uint32_t v0_id = 2 * v0 + 1;
+			uint32_t u1_id = 2 * v1;
+			uint32_t v1_id = 2 * v1 + 1;
+			uint32_t u2_id = 2 * v2;
+			uint32_t v2_id = 2 * v2 + 1;
+			// Note : b = 0
+			// Real part
+			opennl::nlBegin(context, NL_ROW);
+			opennl::nlCoefficient(context, u0_id, -a+c) ;
+			opennl::nlCoefficient(context, v0_id, b-d) ;
+			opennl::nlCoefficient(context, u1_id, -c) ;
+			opennl::nlCoefficient(context, v1_id, d) ;
+			opennl::nlCoefficient(context, u2_id, a);
+			opennl::nlEnd(context, NL_ROW);
+			// Imaginary part
+			opennl::nlBegin(context, NL_ROW);
+			opennl::nlCoefficient(context, u0_id, -b+d);
+			opennl::nlCoefficient(context, v0_id, -a+c);
+			opennl::nlCoefficient(context, u1_id, -d);
+			opennl::nlCoefficient(context, v1_id, -c);
+			opennl::nlCoefficient(context, v2_id, a);
+			opennl::nlEnd(context, NL_ROW);
+		}
 	}
 	opennl::nlEnd(context, NL_MATRIX);
 	opennl::nlEnd(context, NL_SYSTEM);
@@ -6694,7 +6555,7 @@ static bool computeLeastSquaresConformalMap(Mesh *mesh)
 	for (uint32_t i = 0; i < vertexCount; i++) {
 		const double u = opennl::nlGetVariable(context, 2 * i);
 		const double v = opennl::nlGetVariable(context, 2 * i + 1);
-		mesh->texcoord(i) = Vector2((float)u, (float)v);
+		texcoords[i] = Vector2((float)u, (float)v);
 		XA_DEBUG_ASSERT(!isNan(mesh->texcoord(i).x));
 		XA_DEBUG_ASSERT(!isNan(mesh->texcoord(i).y));
 	}
@@ -6702,27 +6563,26 @@ static bool computeLeastSquaresConformalMap(Mesh *mesh)
 	return true;
 }
 
-#if XA_RECOMPUTE_CHARTS
 struct PiecewiseParam
 {
-	void reset(const Mesh *mesh, uint32_t faceCount)
+	void reset(const Mesh *mesh)
 	{
 		m_mesh = mesh;
-		m_faceCount = faceCount;
+		const uint32_t faceCount = m_mesh->faceCount();
 		const uint32_t vertexCount = m_mesh->vertexCount();
 		m_texcoords.resize(vertexCount);
-		m_patch.reserve(m_faceCount);
-		m_candidates.reserve(m_faceCount);
-		m_faceInAnyPatch.resize(m_faceCount);
+		m_patch.reserve(faceCount);
+		m_candidates.reserve(faceCount);
+		m_faceInAnyPatch.resize(faceCount);
 		m_faceInAnyPatch.zeroOutMemory();
-		m_faceInvalid.resize(m_faceCount);
-		m_faceInPatch.resize(m_faceCount);
+		m_faceInvalid.resize(faceCount);
+		m_faceInPatch.resize(faceCount);
 		m_vertexInPatch.resize(vertexCount);
-		m_faceToCandidate.resize(m_faceCount);
+		m_faceToCandidate.resize(faceCount);
 	}
 
 	ConstArrayView<uint32_t> chartFaces() const { return m_patch; }
-	const Vector2 *texcoords() const { return m_texcoords.data(); }
+	ConstArrayView<Vector2> texcoords() const { return m_texcoords; }
 
 	bool computeChart()
 	{
@@ -6734,8 +6594,9 @@ struct PiecewiseParam
 		m_faceInPatch.zeroOutMemory();
 		m_vertexInPatch.zeroOutMemory();
 		// Add the seed face (first unassigned face) to the patch.
+		const uint32_t faceCount = m_mesh->faceCount();
 		uint32_t seed = UINT32_MAX;
-		for (uint32_t f = 0; f < m_faceCount; f++) {
+		for (uint32_t f = 0; f < faceCount; f++) {
 			if (m_faceInAnyPatch.get(f))
 				continue;
 			seed = f;
@@ -6749,7 +6610,7 @@ struct PiecewiseParam
 			}
 			addFaceToPatch(seed);
 			// Initialize the boundary grid.
-			m_boundaryGrid.reset(m_texcoords.data(), m_mesh->indices());
+			m_boundaryGrid.reset(m_texcoords, m_mesh->indices());
 			for (Mesh::FaceEdgeIterator it(m_mesh, seed); !it.isDone(); it.advance())
 				m_boundaryGrid.append(it.edge());
 			break;
@@ -6793,22 +6654,34 @@ struct PiecewiseParam
 					break;
 				}
 			}
+			// Check for zero area and flipped faces (using area).
+			for (CandidateIterator it(bestCandidate); !it.isDone(); it.advance()) {
+				const Vector2 a = m_texcoords[m_mesh->vertexAt(it.current()->face * 3 + 0)];
+				const Vector2 b = m_texcoords[m_mesh->vertexAt(it.current()->face * 3 + 1)];
+				const Vector2 c = m_texcoords[m_mesh->vertexAt(it.current()->face * 3 + 2)];
+				const float area = triangleArea(a, b, c);
+				if (area <= 0.0f) {
+					invalid = true;
+					break;
+				}
+			}
 			// Check for boundary intersection.
 			if (!invalid) {
 				XA_PROFILE_START(parameterizeChartsPiecewiseBoundaryIntersection)
 				// Test candidate edges that would form part of the new patch boundary.
 				// Ignore boundary edges that would become internal if the candidate faces were added to the patch.
-				Array<uint32_t> newBoundaryEdges, ignoreEdges;
+				m_newBoundaryEdges.clear();
+				m_ignoreBoundaryEdges.clear();
 				for (CandidateIterator candidateIt(bestCandidate); !candidateIt.isDone(); candidateIt.advance()) {
 					for (Mesh::FaceEdgeIterator it(m_mesh, candidateIt.current()->face); !it.isDone(); it.advance()) {
 						const uint32_t oface = it.oppositeFace();
-						if (oface == UINT32_MAX || oface >= m_faceCount || !m_faceInPatch.get(oface))
-							newBoundaryEdges.push_back(it.edge());
-						if (oface != UINT32_MAX && oface < m_faceCount && m_faceInPatch.get(oface))
-							ignoreEdges.push_back(it.oppositeEdge());
+						if (oface == UINT32_MAX || !m_faceInPatch.get(oface))
+							m_newBoundaryEdges.push_back(it.edge());
+						if (oface != UINT32_MAX && m_faceInPatch.get(oface))
+							m_ignoreBoundaryEdges.push_back(it.oppositeEdge());
 					}
 				}
-				invalid = m_boundaryGrid.intersect(m_mesh->epsilon(), newBoundaryEdges, ignoreEdges);
+				invalid = m_boundaryGrid.intersect(m_mesh->epsilon(), m_newBoundaryEdges, m_ignoreBoundaryEdges);
 				XA_PROFILE_END(parameterizeChartsPiecewiseBoundaryIntersection)
 			}
 			if (invalid) {
@@ -6826,11 +6699,11 @@ struct PiecewiseParam
 				removeLinkedCandidates(bestCandidate);
 				// Reset the grid with all edges on the patch boundary.
 				XA_PROFILE_START(parameterizeChartsPiecewiseBoundaryIntersection)
-				m_boundaryGrid.reset(m_texcoords.data(), m_mesh->indices());
+				m_boundaryGrid.reset(m_texcoords, m_mesh->indices());
 				for (uint32_t i = 0; i < m_patch.size(); i++) {
 					for (Mesh::FaceEdgeIterator it(m_mesh, m_patch[i]); !it.isDone(); it.advance()) {
 						const uint32_t oface = it.oppositeFace();
-						if (oface == UINT32_MAX || oface >= m_faceCount || !m_faceInPatch.get(oface))
+						if (oface == UINT32_MAX || !m_faceInPatch.get(oface))
 							m_boundaryGrid.append(it.edge());
 					}
 				}
@@ -6864,7 +6737,6 @@ private:
 	};
 
 	const Mesh *m_mesh;
-	uint32_t m_faceCount;
 	Array<Vector2> m_texcoords;
 	BitArray m_faceInAnyPatch; // Face is in a previous chart patch or the current patch.
 	Array<Candidate *> m_candidates; // Incident faces to the patch.
@@ -6873,6 +6745,7 @@ private:
 	BitArray m_faceInPatch, m_vertexInPatch; // Face/vertex is in the current patch.
 	BitArray m_faceInvalid; // Face cannot be added to the patch - flipped, cost too high or causes boundary intersection.
 	UniformGrid2 m_boundaryGrid;
+	Array<uint32_t> m_newBoundaryEdges, m_ignoreBoundaryEdges; // Temp arrays used when testing for boundary intersection.
 
 	void addFaceToPatch(uint32_t face)
 	{
@@ -6884,7 +6757,7 @@ private:
 		// Find new candidate faces on the patch incident to the newly added face.
 		for (Mesh::FaceEdgeIterator it(m_mesh, face); !it.isDone(); it.advance()) {
 			const uint32_t oface = it.oppositeFace();
-			if (oface == UINT32_MAX || oface >= m_faceCount || m_faceInAnyPatch.get(oface) || m_faceToCandidate[oface])
+			if (oface == UINT32_MAX || m_faceInAnyPatch.get(oface) || m_faceToCandidate[oface])
 				continue;
 			// Found an active edge on the patch front.
 			// Find the free vertex (the vertex that isn't on the active edge).
@@ -6900,12 +6773,14 @@ private:
 				}
 			}
 			XA_DEBUG_ASSERT(freeVertex != UINT32_MAX);
-			// If the free vertex is already in the patch, the face is enclosed by the patch. Add the face to the patch - don't need to assign texcoords.
-			/*if (m_vertexInPatch.get(freeVertex)) {
+			if (m_vertexInPatch.get(freeVertex)) {
+#if 0
+				// If the free vertex is already in the patch, the face is enclosed by the patch. Add the face to the patch - don't need to assign texcoords.
 				freeVertex = UINT32_MAX;
-				addFaceToPatch(oface, false);
+				addFaceToPatch(oface);
+#endif
 				continue;
-			}*/
+			}
 			// Check this here rather than above so faces enclosed by the patch are always added.
 			if (m_faceInvalid.get(oface))
 				continue;
@@ -6960,8 +6835,10 @@ private:
 			uv.x = x + texcoords[localVertex0].x;
 			uv.y = y + texcoords[localVertex0].y;
 		}
-		if (isNan(texcoords[localFreeVertex].x) || isNan(texcoords[localFreeVertex].y))
+		if (isNan(texcoords[localFreeVertex].x) || isNan(texcoords[localFreeVertex].y)) {
+			m_faceInvalid.set(face);
 			return;
+		}
 		// Check for local overlap (flipped triangle).
 		// The patch face vertex that isn't on the active edge and the free vertex should be oriented on opposite sides to the active edge.
 		const float freeVertexOrient = orientToEdge(m_texcoords[vertex0], m_texcoords[vertex1], texcoords[localFreeVertex]);
@@ -6975,12 +6852,10 @@ private:
 			return;
 		}
 		const float cost = fabsf(stretch - 1.0f);
-#if 0
-		if (cost > 0.25f) {
+		if (cost > 0.5f) {
 			m_faceInvalid.set(face);
 			return;
 		}
-#endif
 		// Add the candidate.
 		Candidate *candidate = XA_ALLOC(MemTag::Default, Candidate);
 		candidate->face = face;
@@ -7048,8 +6923,8 @@ private:
 
 	void orthoProjectFace(uint32_t face, Vector2 *texcoords) const
 	{
-		const Vector3 normal = m_mesh->computeFaceNormal(face);
-		const Vector3 tangent = normalize(m_mesh->position(m_mesh->vertexAt(face * 3 + 1)) - m_mesh->position(m_mesh->vertexAt(face * 3 + 0)), kEpsilon);
+		const Vector3 normal = -m_mesh->computeFaceNormal(face);
+		const Vector3 tangent = normalize(m_mesh->position(m_mesh->vertexAt(face * 3 + 1)) - m_mesh->position(m_mesh->vertexAt(face * 3 + 0)));
 		const Vector3 bitangent = cross(normal, tangent);
 		for (uint32_t i = 0; i < 3; i++) {
 			const Vector3 &pos = m_mesh->position(m_mesh->vertexAt(face * 3 + i));
@@ -7085,7 +6960,6 @@ private:
 		return (edgeVertex0.x - point.x) * (edgeVertex1.y - point.y) - (edgeVertex0.y - point.y) * (edgeVertex1.x - point.x);
 	}
 };
-#endif
 
 // Estimate quality of existing parameterization.
 struct Quality
@@ -7123,11 +6997,12 @@ struct Quality
 #endif
 	}
 
-	void computeFlippedFaces(const Mesh *mesh, uint32_t faceCount, Array<uint32_t> *flippedFaces)
+	void computeFlippedFaces(const Mesh *mesh, Array<uint32_t> *flippedFaces)
 	{
 		totalTriangleCount = flippedTriangleCount = zeroAreaTriangleCount = 0;
 		if (flippedFaces)
 			flippedFaces->clear();
+		const uint32_t faceCount = mesh->faceCount();
 		for (uint32_t f = 0; f < faceCount; f++) {
 			Vector2 texcoord[3];
 			for (int i = 0; i < 3; i++) {
@@ -7182,10 +7057,11 @@ struct Quality
 		}
 	}
 
-	void computeMetrics(const Mesh *mesh, uint32_t faceCount)
+	void computeMetrics(const Mesh *mesh)
 	{
 		totalGeometricArea = totalParametricArea = 0.0f;
 		stretchMetric = maxStretchMetric = conformalMetric = authalicMetric = 0.0f;
+		const uint32_t faceCount = mesh->faceCount();
 		for (uint32_t f = 0; f < faceCount; f++) {
 			Vector3 pos[3];
 			Vector2 texcoord[3];
@@ -7252,288 +7128,212 @@ struct Quality
 	}
 };
 
-struct ChartWarningFlags
-{
-	enum Enum
-	{
-		CloseHolesFailed = 1<<1,
-		FixTJunctionsDuplicatedEdge = 1<<2,
-		FixTJunctionsFailed = 1<<3,
-		TriangulateDuplicatedEdge = 1<<4,
-	};
-};
-
 struct ChartCtorBuffers
 {
 	Array<uint32_t> chartMeshIndices;
 	Array<uint32_t> unifiedMeshIndices;
-	Array<uint32_t> boundaryLoops;
 };
 
 class Chart
 {
 public:
-	Chart(ChartCtorBuffers &buffers, const ParameterizeOptions &options, const Basis &basis, ConstArrayView<uint32_t> faces, const Mesh *sourceMesh, uint32_t chartGroupId, uint32_t chartId) : m_basis(basis), m_mesh(nullptr), m_unifiedMesh(nullptr), m_unmodifiedUnifiedMesh(nullptr), m_type(ChartType::LSCM), m_warningFlags(0), m_closedHolesCount(0), m_fixedTJunctionsCount(0), m_isInvalid(false)
+	Chart(const Basis &basis, segment::ChartGeneratorType::Enum generatorType, ConstArrayView<uint32_t> faces, const Mesh *sourceMesh, uint32_t chartGroupId, uint32_t chartId) : m_basis(basis), m_unifiedMesh(nullptr), m_type(ChartType::LSCM), m_generatorType(generatorType), m_tjunctionCount(0), m_originalVertexCount(0), m_isInvalid(false)
 	{
 		XA_UNUSED(chartGroupId);
 		XA_UNUSED(chartId);
 		m_faceToSourceFaceMap.copyFrom(faces.data, faces.length);
 		const uint32_t approxVertexCount = min(faces.length * 3, sourceMesh->vertexCount());
-		m_mesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, sourceMesh->epsilon(), approxVertexCount, faces.length);
 		m_unifiedMesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, sourceMesh->epsilon(), approxVertexCount, faces.length);
 		HashMap<uint32_t, PassthroughHash<uint32_t>> sourceVertexToUnifiedVertexMap(MemTag::Mesh, approxVertexCount), sourceVertexToChartVertexMap(MemTag::Mesh, approxVertexCount);
-		// Add vertices.
-		const uint32_t faceCount = m_initialFaceCount = faces.length;
+		m_originalIndices.resize(faces.length * 3);
+		// Add geometry.
+		const uint32_t faceCount = faces.length;
 		for (uint32_t f = 0; f < faceCount; f++) {
+			uint32_t unifiedIndices[3];
 			for (uint32_t i = 0; i < 3; i++) {
 				const uint32_t sourceVertex = sourceMesh->vertexAt(m_faceToSourceFaceMap[f] * 3 + i);
-				const uint32_t sourceUnifiedVertex = sourceMesh->firstColocal(sourceVertex);
+				uint32_t sourceUnifiedVertex = sourceMesh->firstColocalVertex(sourceVertex);
+				if (m_generatorType == segment::ChartGeneratorType::OriginalUv && sourceVertex != sourceUnifiedVertex) {
+					// Original UVs: don't unify vertices with different UVs; we want to preserve UVs.
+					if (!equal(sourceMesh->texcoord(sourceVertex), sourceMesh->texcoord(sourceUnifiedVertex), sourceMesh->epsilon()))
+						sourceUnifiedVertex = sourceVertex;
+				}
 				uint32_t unifiedVertex = sourceVertexToUnifiedVertexMap.get(sourceUnifiedVertex);
 				if (unifiedVertex == UINT32_MAX) {
 					unifiedVertex = sourceVertexToUnifiedVertexMap.add(sourceUnifiedVertex);
-					m_unifiedMesh->addVertex(sourceMesh->position(sourceVertex));
+					m_unifiedMesh->addVertex(sourceMesh->position(sourceVertex), Vector3(0.0f), sourceMesh->texcoord(sourceVertex));
 				}
 				if (sourceVertexToChartVertexMap.get(sourceVertex) == UINT32_MAX) {
 					sourceVertexToChartVertexMap.add(sourceVertex);
 					m_vertexToSourceVertexMap.push_back(sourceVertex);
 					m_chartVertexToUnifiedVertexMap.push_back(unifiedVertex);
-					m_mesh->addVertex(sourceMesh->position(sourceVertex), Vector3(0.0f), sourceMesh->texcoord(sourceVertex));
+					m_originalVertexCount++;
 				}
-			}
-		}
-		// Add faces.
-		for (uint32_t f = 0; f < faceCount; f++) {
-			uint32_t indices[3], unifiedIndices[3];
-			for (uint32_t i = 0; i < 3; i++) {
-				const uint32_t sourceVertex = sourceMesh->vertexAt(m_faceToSourceFaceMap[f] * 3 + i);
-				const uint32_t sourceUnifiedVertex = sourceMesh->firstColocal(sourceVertex);
-				indices[i] = sourceVertexToChartVertexMap.get(sourceVertex);
-				XA_DEBUG_ASSERT(indices[i] != UINT32_MAX);
+				m_originalIndices[f * 3 + i] = sourceVertexToChartVertexMap.get(sourceVertex);;
+				XA_DEBUG_ASSERT(m_originalIndices[f * 3 + i] != UINT32_MAX);
 				unifiedIndices[i] = sourceVertexToUnifiedVertexMap.get(sourceUnifiedVertex);
 				XA_DEBUG_ASSERT(unifiedIndices[i] != UINT32_MAX);
 			}
-			Mesh::AddFaceResult::Enum result = m_mesh->addFace(indices);
-			XA_UNUSED(result);
-			XA_DEBUG_ASSERT(result == Mesh::AddFaceResult::OK);
-#if XA_DEBUG
-			// Unifying colocals may create degenerate edges. e.g. if two triangle vertices are colocal.
-			for (int i = 0; i < 3; i++) {
-				const uint32_t index1 = unifiedIndices[i];
-				const uint32_t index2 = unifiedIndices[(i + 1) % 3];
-				XA_DEBUG_ASSERT(index1 != index2);
-			}
-#endif
-			result = m_unifiedMesh->addFace(unifiedIndices);
-			XA_UNUSED(result);
-			XA_DEBUG_ASSERT(result == Mesh::AddFaceResult::OK);
+			m_unifiedMesh->addFace(unifiedIndices);
 		}
-		m_mesh->createBoundaries(); // For AtlasPacker::computeBoundingBox
-		m_mesh->destroyEdgeMap(); // Only needed it for createBoundaries.
 		m_unifiedMesh->createBoundaries();
-		if (meshIsPlanar(*m_unifiedMesh)) {
+		if (m_generatorType == segment::ChartGeneratorType::Planar) {
 			m_type = ChartType::Planar;
 			return;
 		}
-		m_unifiedMesh->linkBoundaries();
-#if XA_DEBUG_EXPORT_OBJ_BEFORE_FIX_TJUNCTION
-		m_unifiedMesh->writeObjFile("debug_before_fix_tjunction.obj");
-#endif
-		bool duplicatedEdge = false, failed = false;
-		if (options.fixTJunctions) {
-			XA_PROFILE_START(fixChartMeshTJunctions)
-			Mesh *fixedUnifiedMesh = meshFixTJunctions(*m_unifiedMesh, &duplicatedEdge, &failed, &m_fixedTJunctionsCount);
-			XA_PROFILE_END(fixChartMeshTJunctions)
-			if (fixedUnifiedMesh) {
-				if (duplicatedEdge)
-					m_warningFlags |= ChartWarningFlags::FixTJunctionsDuplicatedEdge;
-				if (failed)
-					m_warningFlags |= ChartWarningFlags::FixTJunctionsFailed;
-				m_unmodifiedUnifiedMesh = m_unifiedMesh;
-				m_unifiedMesh = fixedUnifiedMesh;
-				m_unifiedMesh->createBoundaries();
-				m_unifiedMesh->linkBoundaries();
-				m_initialFaceCount = m_unifiedMesh->faceCount(); // Fixing t-junctions rewrites faces.
-			}
+#if XA_CHECK_T_JUNCTIONS
+		m_tjunctionCount = meshCheckTJunctions(*m_unifiedMesh);
+#if XA_DEBUG_EXPORT_OBJ_TJUNCTION
+		if (m_tjunctionCount > 0) {
+			char filename[256];
+			XA_SPRINTF(filename, sizeof(filename), "debug_mesh_%03u_chartgroup_%03u_chart_%03u_tjunction.obj", sourceMesh->id(), chartGroupId, chartId);
+			m_unifiedMesh->writeObjFile(filename);
 		}
-		if (options.closeHoles) {
-			// See if there are any holes that need closing.
-			Array<uint32_t> &boundaryLoops = buffers.boundaryLoops;
-			meshGetBoundaryLoops(*m_unifiedMesh, boundaryLoops);
-			if (boundaryLoops.size() > 1) {
-#if XA_DEBUG_EXPORT_OBJ_CLOSE_HOLES_ERROR
-				const uint32_t faceCountBeforeHolesClosed = m_unifiedMesh->faceCount();
 #endif
-				// Closing the holes is not always the best solution and does not fix all the problems.
-				// We need to do some analysis of the holes and the genus to:
-				// - Find cuts that reduce genus.
-				// - Find cuts to connect holes.
-				// - Use minimal spanning trees or seamster.
-				XA_PROFILE_START(closeChartMeshHoles)
-				uint32_t holeCount = 0;
-#if XA_DEBUG_EXPORT_OBJ_CLOSE_HOLES_ERROR
-				Array<uint32_t> holeFaceCounts;
-				failed = !meshCloseHoles(m_unifiedMesh, boundaryLoops, m_basis.normal, &holeFaceCounts);
-#else
-				failed = !meshCloseHoles(m_unifiedMesh, boundaryLoops, m_basis.normal, &holeCount, nullptr);
 #endif
-				XA_PROFILE_END(closeChartMeshHoles)
-				m_unifiedMesh->createBoundaries();
-				m_unifiedMesh->linkBoundaries();
-				meshGetBoundaryLoops(*m_unifiedMesh, boundaryLoops);
-				if (failed || boundaryLoops.size() > 1)
-					m_warningFlags |= ChartWarningFlags::CloseHolesFailed;
-				m_closedHolesCount = holeCount;
-#if XA_DEBUG_EXPORT_OBJ_CLOSE_HOLES_ERROR
-				if (m_warningFlags & ChartWarningFlags::CloseHolesFailed) {
-					char filename[256];
-					XA_SPRINTF(filename, sizeof(filename), "debug_mesh_%03u_chartgroup_%03u_chart_%03u_close_holes_error.obj", sourceMesh->id(), chartGroupId, chartId);
-					FILE *file;
-					XA_FOPEN(file, filename, "w");
-					if (file) {
-						m_unifiedMesh->writeObjVertices(file);
-						fprintf(file, "s off\n");
-						fprintf(file, "o object\n");
-						for (uint32_t i = 0; i < faceCountBeforeHolesClosed; i++)
-							m_unifiedMesh->writeObjFace(file, i);
-						uint32_t face = faceCountBeforeHolesClosed;
-						for (uint32_t i = 0; i < holeFaceCounts.size(); i++) {
-							fprintf(file, "s off\n");
-							fprintf(file, "o hole%u\n", i);
-							for (uint32_t j = 0; j < holeFaceCounts[i]; j++) {
-								m_unifiedMesh->writeObjFace(file, face);
-								face++;
-							}
-						}
-						m_unifiedMesh->writeObjBoundaryEges(file);
-						m_unifiedMesh->writeObjLinkedBoundaries(file);
-						fclose(file);
-					}
-				}
-#endif
-			}
-		}
 	}
 
-#if XA_RECOMPUTE_CHARTS
-	Chart(ChartCtorBuffers &buffers, const Chart *parent, const Mesh *parentMesh, ConstArrayView<uint32_t> faces, const Vector2 *texcoords, const Mesh *sourceMesh) : m_mesh(nullptr), m_unifiedMesh(nullptr), m_unmodifiedUnifiedMesh(nullptr), m_type(ChartType::Piecewise), m_warningFlags(0), m_closedHolesCount(0), m_fixedTJunctionsCount(0), m_isInvalid(false)
+	Chart(ChartCtorBuffers &buffers, const Chart *parent, const Mesh *parentMesh, ConstArrayView<uint32_t> faces, ConstArrayView<Vector2> texcoords, const Mesh *sourceMesh) : m_unifiedMesh(nullptr), m_type(ChartType::Piecewise), m_generatorType(segment::ChartGeneratorType::Piecewise), m_tjunctionCount(0), m_originalVertexCount(0), m_isInvalid(false)
 	{
-		const uint32_t faceCount = m_initialFaceCount = faces.length;
+		const uint32_t faceCount = faces.length;
 		m_faceToSourceFaceMap.resize(faceCount);
 		for (uint32_t i = 0; i < faceCount; i++)
 			m_faceToSourceFaceMap[i] = parent->m_faceToSourceFaceMap[faces[i]]; // Map faces to parent chart source mesh.
 		// Copy face indices.
-		m_mesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, sourceMesh->epsilon(), m_faceToSourceFaceMap.size() * 3, m_faceToSourceFaceMap.size());
 		Array<uint32_t> &chartMeshIndices = buffers.chartMeshIndices;
 		chartMeshIndices.resize(sourceMesh->vertexCount());
 		chartMeshIndices.fillBytes(0xff);
+		m_unifiedMesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, sourceMesh->epsilon(), m_faceToSourceFaceMap.size() * 3, m_faceToSourceFaceMap.size());
+		HashMap<uint32_t, PassthroughHash<uint32_t>> sourceVertexToUnifiedVertexMap(MemTag::Mesh, m_faceToSourceFaceMap.size() * 3);
 		// Add vertices.
 		for (uint32_t f = 0; f < faceCount; f++) {
 			for (uint32_t i = 0; i < 3; i++) {
 				const uint32_t vertex = sourceMesh->vertexAt(m_faceToSourceFaceMap[f] * 3 + i);
+				const uint32_t sourceUnifiedVertex = sourceMesh->firstColocalVertex(vertex);
 				const uint32_t parentVertex = parentMesh->vertexAt(faces[f] * 3 + i);
-				if (chartMeshIndices[vertex] == (uint32_t)~0) {
-					chartMeshIndices[vertex] = m_mesh->vertexCount();
+				uint32_t unifiedVertex = sourceVertexToUnifiedVertexMap.get(sourceUnifiedVertex);
+				if (unifiedVertex == UINT32_MAX) {
+					unifiedVertex = sourceVertexToUnifiedVertexMap.add(sourceUnifiedVertex);
+					m_unifiedMesh->addVertex(sourceMesh->position(vertex), Vector3(0.0f), texcoords[parentVertex]);
+				}
+				if (chartMeshIndices[vertex] == UINT32_MAX) {
+					chartMeshIndices[vertex] = m_originalVertexCount;
+					m_originalVertexCount++;
 					m_vertexToSourceVertexMap.push_back(vertex);
-					m_mesh->addVertex(sourceMesh->position(vertex), Vector3(0.0f), texcoords[parentVertex]);
+					m_chartVertexToUnifiedVertexMap.push_back(unifiedVertex);
 				}
 			}
 		}
 		// Add faces.
+		m_originalIndices.resize(faceCount * 3);
 		for (uint32_t f = 0; f < faceCount; f++) {
-			uint32_t indices[3];
+			uint32_t unifiedIndices[3];
 			for (uint32_t i = 0; i < 3; i++) {
 				const uint32_t vertex = sourceMesh->vertexAt(m_faceToSourceFaceMap[f] * 3 + i);
-				indices[i] = chartMeshIndices[vertex];
+				m_originalIndices[f * 3 + i] = chartMeshIndices[vertex];
+				const uint32_t unifiedVertex = sourceMesh->firstColocalVertex(vertex);
+				unifiedIndices[i] = sourceVertexToUnifiedVertexMap.get(unifiedVertex);
 			}
-			Mesh::AddFaceResult::Enum result = m_mesh->addFace(indices);
-			XA_UNUSED(result);
-			XA_DEBUG_ASSERT(result == Mesh::AddFaceResult::OK);
+			m_unifiedMesh->addFace(unifiedIndices);
 		}
-		m_mesh->createBoundaries(); // For AtlasPacker::computeBoundingBox
-		m_mesh->destroyEdgeMap(); // Only needed it for createBoundaries.
+		m_unifiedMesh->createBoundaries();
 		// Need to store texcoords for backup/restore so packing can be run multiple times.
 		backupTexcoords();
 	}
-#endif
 
 	~Chart()
 	{
-		if (m_mesh) {
-			m_mesh->~Mesh();
-			XA_FREE(m_mesh);
+		if (m_unifiedMesh) {
+			m_unifiedMesh->~Mesh();
+			XA_FREE(m_unifiedMesh);
+			m_unifiedMesh = nullptr;
 		}
-		destroyUnifiedMesh();
 	}
 
 	bool isInvalid() const { return m_isInvalid; }
-	ChartType::Enum type() const { return m_type; }
-	uint32_t warningFlags() const { return m_warningFlags; }
-	uint32_t closedHolesCount() const { return m_closedHolesCount; }
-	uint32_t fixedTJunctionsCount() const { return m_fixedTJunctionsCount; }
+	ChartType type() const { return m_type; }
+	segment::ChartGeneratorType::Enum generatorType() const { return m_generatorType; }
+	uint32_t tjunctionCount() const { return m_tjunctionCount; }
 	const Quality &quality() const { return m_quality; }
-	uint32_t initialFaceCount() const { return m_initialFaceCount; }
 #if XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION
 	const Array<uint32_t> &paramFlippedFaces() const { return m_paramFlippedFaces; }
 #endif
 	uint32_t mapFaceToSourceFace(uint32_t i) const { return m_faceToSourceFaceMap[i]; }
 	uint32_t mapChartVertexToSourceVertex(uint32_t i) const { return m_vertexToSourceVertexMap[i]; }
-	const Mesh *mesh() const { return m_mesh; }
-	Mesh *mesh() { return m_mesh; }
 	const Mesh *unifiedMesh() const { return m_unifiedMesh; }
-	const Mesh *unmodifiedUnifiedMesh() const { return m_unmodifiedUnifiedMesh; }
+	Mesh *unifiedMesh() { return m_unifiedMesh; }
 
-	void parameterize(const ParameterizeOptions &options, UniformGrid2 &boundaryGrid)
+	// Vertex count of the chart mesh before unifying vertices.
+	uint32_t originalVertexCount() const { return m_originalVertexCount; }
+
+	uint32_t originalVertexToUnifiedVertex(uint32_t v) const { return m_chartVertexToUnifiedVertexMap[v]; }
+
+	ConstArrayView<uint32_t> originalVertices() const { return m_originalIndices; }
+
+	void parameterize(const ChartOptions &options, UniformGrid2 &boundaryGrid)
 	{
-		XA_PROFILE_START(parameterizeChartsOrthogonal)
-		{
+		const uint32_t unifiedVertexCount = m_unifiedMesh->vertexCount();
+		if (m_generatorType == segment::ChartGeneratorType::OriginalUv) {
+		} else {
 			// Project vertices to plane.
-			const uint32_t vertexCount = m_unifiedMesh->vertexCount();
-			for (uint32_t i = 0; i < vertexCount; i++)
+			XA_PROFILE_START(parameterizeChartsOrthogonal)
+			for (uint32_t i = 0; i < unifiedVertexCount; i++)
 				m_unifiedMesh->texcoord(i) = Vector2(dot(m_basis.tangent, m_unifiedMesh->position(i)), dot(m_basis.bitangent, m_unifiedMesh->position(i)));
-		}
-		XA_PROFILE_END(parameterizeChartsOrthogonal)
-		// Computing charts checks for flipped triangles and boundary intersection. Don't need to do that again here if chart is planar.
-		if (m_type != ChartType::Planar) {
-			XA_PROFILE_START(parameterizeChartsEvaluateQuality)
-			m_quality.computeBoundaryIntersection(m_unifiedMesh, boundaryGrid);
-			m_quality.computeFlippedFaces(m_unifiedMesh, m_initialFaceCount, nullptr);
-			m_quality.computeMetrics(m_unifiedMesh, m_initialFaceCount);
-			XA_PROFILE_END(parameterizeChartsEvaluateQuality)
-			// Use orthogonal parameterization if quality is acceptable.
-			if (!m_quality.boundaryIntersection && m_quality.flippedTriangleCount == 0 && m_quality.totalGeometricArea > 0.0f && m_quality.stretchMetric <= 1.1f && m_quality.maxStretchMetric <= 1.25f)
-				m_type = ChartType::Ortho;
-		}
-		if (m_type == ChartType::LSCM) {
-			XA_PROFILE_START(parameterizeChartsLSCM)
-			if (options.func) {
-				options.func(&m_unifiedMesh->position(0).x, &m_unifiedMesh->texcoord(0).x, m_unifiedMesh->vertexCount(), m_unifiedMesh->indices(), m_unifiedMesh->indexCount());
+			XA_PROFILE_END(parameterizeChartsOrthogonal)
+			// Computing charts checks for flipped triangles and boundary intersection. Don't need to do that again here if chart is planar.
+			if (m_type != ChartType::Planar && m_generatorType != segment::ChartGeneratorType::OriginalUv) {
+				XA_PROFILE_START(parameterizeChartsEvaluateQuality)
+				m_quality.computeBoundaryIntersection(m_unifiedMesh, boundaryGrid);
+				m_quality.computeFlippedFaces(m_unifiedMesh, nullptr);
+				m_quality.computeMetrics(m_unifiedMesh);
+				XA_PROFILE_END(parameterizeChartsEvaluateQuality)
+				// Use orthogonal parameterization if quality is acceptable.
+				if (!m_quality.boundaryIntersection && m_quality.flippedTriangleCount == 0 && m_quality.zeroAreaTriangleCount == 0 && m_quality.totalGeometricArea > 0.0f && m_quality.stretchMetric <= 1.1f && m_quality.maxStretchMetric <= 1.25f)
+					m_type = ChartType::Ortho;
 			}
-			else
-				computeLeastSquaresConformalMap(m_unifiedMesh);
-			XA_PROFILE_END(parameterizeChartsLSCM)
-			XA_PROFILE_START(parameterizeChartsEvaluateQuality)
-			m_quality.computeBoundaryIntersection(m_unifiedMesh, boundaryGrid);
+			if (m_type == ChartType::LSCM) {
+				XA_PROFILE_START(parameterizeChartsLSCM)
+				if (options.paramFunc) {
+					options.paramFunc(&m_unifiedMesh->position(0).x, &m_unifiedMesh->texcoord(0).x, m_unifiedMesh->vertexCount(), m_unifiedMesh->indices().data, m_unifiedMesh->indexCount());
+				}
+				else
+					computeLeastSquaresConformalMap(m_unifiedMesh);
+				XA_PROFILE_END(parameterizeChartsLSCM)
+				XA_PROFILE_START(parameterizeChartsEvaluateQuality)
+				m_quality.computeBoundaryIntersection(m_unifiedMesh, boundaryGrid);
 #if XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION
-			m_quality.computeFlippedFaces(m_unifiedMesh, m_initialFaceCount, &m_paramFlippedFaces);
+				m_quality.computeFlippedFaces(m_unifiedMesh, &m_paramFlippedFaces);
 #else
-			m_quality.computeFlippedFaces(m_unifiedMesh, m_initialFaceCount, nullptr);
+				m_quality.computeFlippedFaces(m_unifiedMesh, nullptr);
 #endif
-			// Don't need to call computeMetrics here, that's only used in evaluateOrthoQuality to determine if quality is acceptable enough to use ortho projection.
-			if (m_quality.boundaryIntersection || m_quality.flippedTriangleCount > 0)
-				m_isInvalid = true;
-			XA_PROFILE_END(parameterizeChartsEvaluateQuality)
+				// Don't need to call computeMetrics here, that's only used in evaluateOrthoQuality to determine if quality is acceptable enough to use ortho projection.
+				if (m_quality.boundaryIntersection || m_quality.flippedTriangleCount > 0 || m_quality.zeroAreaTriangleCount > 0)
+					m_isInvalid = true;
+				XA_PROFILE_END(parameterizeChartsEvaluateQuality)
+			}
 		}
+		if (options.fixWinding && m_unifiedMesh->computeFaceParametricArea(0) < 0.0f) {
+			for (uint32_t i = 0; i < unifiedVertexCount; i++)
+				m_unifiedMesh->texcoord(i).x *= -1.0f;
+		}
+#if XA_CHECK_PARAM_WINDING
+		const uint32_t faceCount = m_unifiedMesh->faceCount();
+		uint32_t flippedCount = 0;
+		for (uint32_t i = 0; i < faceCount; i++) {
+			const float area = m_unifiedMesh->computeFaceParametricArea(i);
+			if (area < 0.0f)
+				flippedCount++;
+		}
+		if (flippedCount == faceCount) {
+			XA_PRINT_WARNING("param: all faces flipped\n");
+		} else if (flippedCount > 0) {
+			XA_PRINT_WARNING("param: %u / %u faces flipped\n", flippedCount, faceCount);
+		}
+#endif
+
 #if XA_DEBUG_ALL_CHARTS_INVALID
 		m_isInvalid = true;
 #endif
-		// Transfer parameterization from unified mesh to chart mesh.
-		const uint32_t vertexCount = m_mesh->vertexCount();
-		for (uint32_t v = 0; v < vertexCount; v++)
-			m_mesh->texcoord(v) = m_unifiedMesh->texcoord(m_chartVertexToUnifiedVertexMap[v]);
-		// Can destroy unified mesh now.
-		// But not if the parameterization is invalid, the unified mesh will be needed for PiecewiseParameterization.
-		if (!m_isInvalid)
-			destroyUnifiedMesh();
 		// Need to store texcoords for backup/restore so packing can be run multiple times.
 		backupTexcoords();
 	}
@@ -7542,50 +7342,48 @@ public:
 	{
 		Vector2 minCorner(FLT_MAX, FLT_MAX);
 		Vector2 maxCorner(-FLT_MAX, -FLT_MAX);
-		const uint32_t vertexCount = m_mesh->vertexCount();
+		const uint32_t vertexCount = m_unifiedMesh->vertexCount();
 		for (uint32_t v = 0; v < vertexCount; v++) {
-			minCorner = min(minCorner, m_mesh->texcoord(v));
-			maxCorner = max(maxCorner, m_mesh->texcoord(v));
+			minCorner = min(minCorner, m_unifiedMesh->texcoord(v));
+			maxCorner = max(maxCorner, m_unifiedMesh->texcoord(v));
 		}
 		return (maxCorner - minCorner) * 0.5f;
 	}
 
+#if XA_CHECK_PIECEWISE_CHART_QUALITY
+	void evaluateQuality(UniformGrid2 &boundaryGrid)
+	{
+		m_quality.computeBoundaryIntersection(m_unifiedMesh, boundaryGrid);
+#if XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION
+		m_quality.computeFlippedFaces(m_unifiedMesh, &m_paramFlippedFaces);
+#else
+		m_quality.computeFlippedFaces(m_unifiedMesh, nullptr);
+#endif
+		if (m_quality.boundaryIntersection || m_quality.flippedTriangleCount > 0 || m_quality.zeroAreaTriangleCount > 0)
+			m_isInvalid = true;
+	}
+#endif
+
 	void restoreTexcoords()
 	{
-		memcpy(m_mesh->texcoords(), m_backupTexcoords.data(), m_mesh->vertexCount() * sizeof(Vector2));
+		memcpy(m_unifiedMesh->texcoords().data, m_backupTexcoords.data(), m_unifiedMesh->vertexCount() * sizeof(Vector2));
 	}
 
 private:
 	void backupTexcoords()
 	{
-		m_backupTexcoords.resize(m_mesh->vertexCount());
-		memcpy(m_backupTexcoords.data(), m_mesh->texcoords(), m_mesh->vertexCount() * sizeof(Vector2));
-	}
-
-	void destroyUnifiedMesh()
-	{
-		if (m_unifiedMesh) {
-			m_unifiedMesh->~Mesh();
-			XA_FREE(m_unifiedMesh);
-			m_unifiedMesh = nullptr;
-		}
-		if (m_unmodifiedUnifiedMesh) {
-			m_unmodifiedUnifiedMesh->~Mesh();
-			XA_FREE(m_unmodifiedUnifiedMesh);
-			m_unmodifiedUnifiedMesh = nullptr;
-		}
-		// Don't need this when unified meshes are destroyed.
-		m_chartVertexToUnifiedVertexMap.destroy();
+		m_backupTexcoords.resize(m_unifiedMesh->vertexCount());
+		memcpy(m_backupTexcoords.data(), m_unifiedMesh->texcoords().data, m_unifiedMesh->vertexCount() * sizeof(Vector2));
 	}
 
 	Basis m_basis;
-	Mesh *m_mesh;
 	Mesh *m_unifiedMesh;
-	Mesh *m_unmodifiedUnifiedMesh; // Unified mesh before fixing t-junctions. Null if no t-junctions were fixed
-	ChartType::Enum m_type;
-	uint32_t m_warningFlags;
-	uint32_t m_initialFaceCount; // Before fixing T-junctions and/or closing holes.
-	uint32_t m_closedHolesCount, m_fixedTJunctionsCount;
+	ChartType m_type;
+	segment::ChartGeneratorType::Enum m_generatorType;
+	uint32_t m_tjunctionCount;
+
+	uint32_t m_originalVertexCount;
+	Array<uint32_t> m_originalIndices;
 
 	// List of faces of the source mesh that belong to this chart.
 	Array<uint32_t> m_faceToSourceFaceMap;
@@ -7604,47 +7402,49 @@ private:
 	bool m_isInvalid;
 };
 
+struct CreateAndParameterizeChartTaskGroupArgs
+{
+	Progress *progress;
+	ThreadLocal<UniformGrid2> *boundaryGrid;
+	ThreadLocal<ChartCtorBuffers> *chartBuffers;
+	const ChartOptions *options;
+	ThreadLocal<PiecewiseParam> *pp;
+};
+
 struct CreateAndParameterizeChartTaskArgs
 {
 	const Basis *basis;
-	ThreadLocal<UniformGrid2> *boundaryGrid;
 	Chart *chart; // output
 	Array<Chart *> charts; // output (if more than one chart)
-	ThreadLocal<ChartCtorBuffers> *chartBuffers;
+	segment::ChartGeneratorType::Enum chartGeneratorType;
 	const Mesh *mesh;
-	const ParameterizeOptions *options;
-#if XA_RECOMPUTE_CHARTS
-	ThreadLocal<PiecewiseParam> *pp;
-#endif
 	ConstArrayView<uint32_t> faces;
 	uint32_t chartGroupId;
 	uint32_t chartId;
 };
 
-static void runCreateAndParameterizeChartTask(void *userData)
+static void runCreateAndParameterizeChartTask(void *groupUserData, void *taskUserData)
 {
-	auto args = (CreateAndParameterizeChartTaskArgs *)userData;
+	XA_PROFILE_START(createChartMeshAndParameterizeThread)
+	auto groupArgs = (CreateAndParameterizeChartTaskGroupArgs *)groupUserData;
+	auto args = (CreateAndParameterizeChartTaskArgs *)taskUserData;
 	XA_PROFILE_START(createChartMesh)
-	args->chart = XA_NEW_ARGS(MemTag::Default, Chart, args->chartBuffers->get(), *args->options, *args->basis, args->faces, args->mesh, args->chartGroupId, args->chartId);
+	args->chart = XA_NEW_ARGS(MemTag::Default, Chart, *args->basis, args->chartGeneratorType, args->faces, args->mesh, args->chartGroupId, args->chartId);
 	XA_PROFILE_END(createChartMesh)
-	args->chart->parameterize(*args->options, args->boundaryGrid->get());
+	XA_PROFILE_START(parameterizeCharts)
+	args->chart->parameterize(*groupArgs->options, groupArgs->boundaryGrid->get());
+	XA_PROFILE_END(parameterizeCharts)
 #if XA_RECOMPUTE_CHARTS
-	if (!args->chart->isInvalid())
+	if (!args->chart->isInvalid()) {
+		XA_PROFILE_END(createChartMeshAndParameterizeThread)
 		return;
+	}
 	// Recompute charts with invalid parameterizations.
 	XA_PROFILE_START(parameterizeChartsRecompute)
 	Chart *invalidChart = args->chart;
-	// Fixing t-junctions rewrites unified mesh faces, and we need to map faces back to input mesh. So use the unmodified unified mesh.
-	const Mesh *invalidMesh = invalidChart->unmodifiedUnifiedMesh();
-	uint32_t faceCount = 0;
-	if (invalidMesh) {
-		faceCount = invalidMesh->faceCount();
-	} else {
-		invalidMesh = invalidChart->unifiedMesh();
-		faceCount = invalidChart->initialFaceCount(); // Not invalidMesh->faceCount(). Don't want faces added by hole closing.
-	}
-	PiecewiseParam &pp = args->pp->get();
-	pp.reset(invalidMesh, faceCount);
+	const Mesh *invalidMesh = invalidChart->unifiedMesh();
+	PiecewiseParam &pp = groupArgs->pp->get();
+	pp.reset(invalidMesh);
 #if XA_DEBUG_EXPORT_OBJ_RECOMPUTED_CHARTS
 	char filename[256];
 	XA_SPRINTF(filename, sizeof(filename), "debug_mesh_%03u_chartgroup_%03u_chart_%03u_recomputed.obj", args->mesh->id(), args->chartGroupId, args->chartId);
@@ -7658,7 +7458,10 @@ static void runCreateAndParameterizeChartTask(void *userData)
 		XA_PROFILE_END(parameterizeChartsPiecewise)
 		if (!facesRemaining)
 			break;
-		Chart *chart = XA_NEW_ARGS(MemTag::Default, Chart, args->chartBuffers->get(), invalidChart, invalidMesh, pp.chartFaces(), pp.texcoords(), args->mesh);
+		Chart *chart = XA_NEW_ARGS(MemTag::Default, Chart, groupArgs->chartBuffers->get(), invalidChart, invalidMesh, pp.chartFaces(), pp.texcoords(), args->mesh);
+#if XA_CHECK_PIECEWISE_CHART_QUALITY
+		chart->evaluateQuality(args->boundaryGrid->get());
+#endif
 		args->charts.push_back(chart);
 #if XA_DEBUG_EXPORT_OBJ_RECOMPUTED_CHARTS
 		if (file) {
@@ -7686,13 +7489,16 @@ static void runCreateAndParameterizeChartTask(void *userData)
 #endif
 	XA_PROFILE_END(parameterizeChartsRecompute)
 #endif // XA_RECOMPUTE_CHARTS
+	XA_PROFILE_END(createChartMeshAndParameterizeThread)
+	// Update progress.
+	groupArgs->progress->increment(args->faces.length);
 }
 
 // Set of charts corresponding to mesh faces in the same face group.
 class ChartGroup
 {
 public:
-	ChartGroup(uint32_t id, const Mesh *sourceMesh, const MeshFaceGroups *sourceMeshFaceGroups, MeshFaceGroups::Handle faceGroup) : m_id(id), m_sourceMesh(sourceMesh), m_sourceMeshFaceGroups(sourceMeshFaceGroups), m_faceGroup(faceGroup), m_faceCount(0), m_paramAddedChartsCount(0), m_paramDeletedChartsCount(0)
+	ChartGroup(uint32_t id, const Mesh *sourceMesh, const MeshFaceGroups *sourceMeshFaceGroups, MeshFaceGroups::Handle faceGroup) : m_id(id), m_sourceMesh(sourceMesh), m_sourceMeshFaceGroups(sourceMeshFaceGroups), m_faceGroup(faceGroup)
 	{
 	}
 
@@ -7704,32 +7510,45 @@ public:
 		}
 	}
 
-	uint32_t segmentChartCount() const { return m_chartBasis.size(); }
 	uint32_t chartCount() const { return m_charts.size(); }
 	Chart *chartAt(uint32_t i) const { return m_charts[i]; }
-	uint32_t faceCount() const { return m_faceCount; }
-	uint32_t paramAddedChartsCount() const { return m_paramAddedChartsCount; }
-	uint32_t paramDeletedChartsCount() const { return m_paramDeletedChartsCount; }
+	uint32_t faceCount() const { return m_sourceMeshFaceGroups->faceCount(m_faceGroup); }
 
-	void computeChartFaces(const ChartOptions &options, segment::Atlas &atlas)
+	void computeCharts(TaskScheduler *taskScheduler, const ChartOptions &options, Progress *progress, segment::Atlas &atlas, ThreadLocal<UniformGrid2> *boundaryGrid, ThreadLocal<ChartCtorBuffers> *chartBuffers, ThreadLocal<PiecewiseParam> *piecewiseParam)
 	{
+		// This function may be called multiple times, so destroy existing charts.
+		for (uint32_t i = 0; i < m_charts.size(); i++) {
+			m_charts[i]->~Chart();
+			XA_FREE(m_charts[i]);
+		}
 		// Create mesh from source mesh, using only the faces in this face group.
 		XA_PROFILE_START(createChartGroupMesh)
 		Mesh *mesh = createMesh();
 		XA_PROFILE_END(createChartGroupMesh)
 		// Segment mesh into charts (arrays of faces).
 #if XA_DEBUG_SINGLE_CHART
-		m_chartBasis.resize(1);
-		Fit::computeBasis(&mesh->position(0), mesh->vertexCount(), &m_chartBasis[0]);
-		m_chartFaces.resize(1 + mesh->faceCount());
-		m_chartFaces[0] = mesh->faceCount();
-		for (uint32_t i = 0; i < m_chartFaces.size(); i++)
-			m_chartFaces[i + 1] = i;
+		XA_UNUSED(options);
+		XA_UNUSED(atlas);
+		const uint32_t chartCount = 1;
+		uint32_t offset;
+		Basis chartBasis;
+		Fit::computeBasis(&mesh->position(0), mesh->vertexCount(), &chartBasis);
+		Array<uint32_t> chartFaces;
+		chartFaces.resize(1 + mesh->faceCount());
+		chartFaces[0] = mesh->faceCount();
+		for (uint32_t i = 0; i < chartFaces.size() - 1; i++)
+			chartFaces[i + 1] = m_faceToSourceFaceMap[i];
+		// Destroy mesh.
+		const uint32_t faceCount = mesh->faceCount();
+		mesh->~Mesh();
+		XA_FREE(mesh);
 #else
 		XA_PROFILE_START(buildAtlas)
 		atlas.reset(mesh, options);
 		atlas.compute();
 		XA_PROFILE_END(buildAtlas)
+		// Update progress.
+		progress->increment(faceCount());
 #if XA_DEBUG_EXPORT_OBJ_CHARTS
 		char filename[256];
 		XA_SPRINTF(filename, sizeof(filename), "debug_mesh_%03u_chartgroup_%03u_charts.obj", m_sourceMesh->id(), m_id);
@@ -7745,7 +7564,6 @@ public:
 					mesh->writeObjFace(file, faces[f]);
 			}
 			mesh->writeObjBoundaryEges(file);
-			mesh->writeObjLinkedBoundaries(file);
 			fclose(file);
 		}
 #endif
@@ -7754,65 +7572,57 @@ public:
 		mesh->~Mesh();
 		XA_FREE(mesh);
 		XA_PROFILE_START(copyChartFaces)
-		// Copy basis.
-		const uint32_t chartCount = atlas.chartCount();
-		m_chartBasis.resize(chartCount);
-		for (uint32_t i = 0; i < chartCount; i++)
-			m_chartBasis[i] = atlas.chartBasis(i);
+		if (progress->cancel)
+			return;
 		// Copy faces from segment::Atlas to m_chartFaces array with <chart 0 face count> <face 0> <face n> <chart 1 face count> etc. encoding.
 		// segment::Atlas faces refer to the chart group mesh. Map them to the input mesh instead.
-		m_chartFaces.resize(chartCount + faceCount);
+		const uint32_t chartCount = atlas.chartCount();
+		Array<uint32_t> chartFaces;
+		chartFaces.resize(chartCount + faceCount);
 		uint32_t offset = 0;
 		for (uint32_t i = 0; i < chartCount; i++) {
 			ConstArrayView<uint32_t> faces = atlas.chartFaces(i);
-			m_chartFaces[offset++] = faces.length;
+			chartFaces[offset++] = faces.length;
 			for (uint32_t j = 0; j < faces.length; j++)
-				m_chartFaces[offset++] = m_faceToSourceFaceMap[faces[j]];
+				chartFaces[offset++] = m_faceToSourceFaceMap[faces[j]];
 		}
 		XA_PROFILE_END(copyChartFaces)
 #endif
-	}
-
-#if XA_RECOMPUTE_CHARTS
-	void parameterizeCharts(TaskScheduler *taskScheduler, const ParameterizeOptions &options, ThreadLocal<UniformGrid2> *boundaryGrid, ThreadLocal<ChartCtorBuffers> *chartBuffers, ThreadLocal<PiecewiseParam> *piecewiseParam)
-#else
-	void parameterizeCharts(TaskScheduler* taskScheduler, const ParameterizeOptions &options, ThreadLocal<UniformGrid2>* boundaryGrid, ThreadLocal<ChartCtorBuffers>* chartBuffers)
-#endif
-	{
-		// This function may be called multiple times, so destroy existing charts.
-		for (uint32_t i = 0; i < m_charts.size(); i++) {
-			m_charts[i]->~Chart();
-			XA_FREE(m_charts[i]);
-		}
-		m_paramAddedChartsCount = 0;
-		const uint32_t chartCount = m_chartBasis.size();
+		XA_PROFILE_START(createChartMeshAndParameterizeReal)
+		CreateAndParameterizeChartTaskGroupArgs groupArgs;
+		groupArgs.progress = progress;
+		groupArgs.boundaryGrid = boundaryGrid;
+		groupArgs.chartBuffers = chartBuffers;
+		groupArgs.options = &options;
+		groupArgs.pp = piecewiseParam;
+		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(&groupArgs, chartCount);
 		Array<CreateAndParameterizeChartTaskArgs> taskArgs;
 		taskArgs.resize(chartCount);
 		taskArgs.runCtors(); // Has Array member.
-		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(chartCount);
-		uint32_t offset = 0;
+		offset = 0;
 		for (uint32_t i = 0; i < chartCount; i++) {
 			CreateAndParameterizeChartTaskArgs &args = taskArgs[i];
-			args.basis = &m_chartBasis[i];
-			args.boundaryGrid = boundaryGrid;
+#if XA_DEBUG_SINGLE_CHART
+			args.basis = &chartBasis;
+			args.isPlanar = false;
+#else
+			args.basis = &atlas.chartBasis(i);
+			args.chartGeneratorType = atlas.chartGeneratorType(i);
+#endif
 			args.chart = nullptr;
 			args.chartGroupId = m_id;
 			args.chartId = i;
-			args.chartBuffers = chartBuffers;
-			const uint32_t faceCount = m_chartFaces[offset++];
-			args.faces = ConstArrayView<uint32_t>(&m_chartFaces[offset], faceCount);
-			offset += faceCount;
+			const uint32_t chartFaceCount = chartFaces[offset++];
+			args.faces = ConstArrayView<uint32_t>(&chartFaces[offset], chartFaceCount);
+			offset += chartFaceCount;
 			args.mesh = m_sourceMesh;
-			args.options = &options;
-#if XA_RECOMPUTE_CHARTS
-			args.pp = piecewiseParam;
-#endif
 			Task task;
 			task.userData = &args;
 			task.func = runCreateAndParameterizeChartTask;
 			taskScheduler->run(taskGroup, task);
 		}
 		taskScheduler->wait(&taskGroup);
+		XA_PROFILE_END(createChartMeshAndParameterizeReal)
 #if XA_RECOMPUTE_CHARTS
 		// Count charts. Skip invalid ones and include new ones added by recomputing.
 		uint32_t newChartCount = 0;
@@ -7830,7 +7640,6 @@ public:
 			if (chart->isInvalid()) {
 				chart->~Chart();
 				XA_FREE(chart);
-				m_paramDeletedChartsCount++;
 				continue;
 			}
 			m_charts[current++] = chart;
@@ -7838,10 +7647,8 @@ public:
 		// Now add new charts.
 		for (uint32_t i = 0; i < chartCount; i++) {
 			CreateAndParameterizeChartTaskArgs &args = taskArgs[i];
-			for (uint32_t j = 0; j < args.charts.size(); j++) {
+			for (uint32_t j = 0; j < args.charts.size(); j++)
 				m_charts[current++] = args.charts[j];
-				m_paramAddedChartsCount++;
-			}
 		}
 #else // XA_RECOMPUTE_CHARTS
 		m_charts.resize(chartCount);
@@ -7860,7 +7667,7 @@ private:
 		for (MeshFaceGroups::Iterator it(m_sourceMeshFaceGroups, m_faceGroup); !it.isDone(); it.advance())
 			m_faceToSourceFaceMap.push_back(it.face());
 		// Only initial meshes has ignored faces. The only flag we care about is HasNormals.
-		const uint32_t faceCount = m_faceCount = m_faceToSourceFaceMap.size();
+		const uint32_t faceCount = m_faceToSourceFaceMap.size();
 		XA_DEBUG_ASSERT(faceCount > 0);
 		const uint32_t approxVertexCount = min(faceCount * 3, m_sourceMesh->vertexCount());
 		Mesh *mesh = XA_NEW_ARGS(MemTag::Mesh, Mesh, m_sourceMesh->epsilon(), approxVertexCount, faceCount, m_sourceMesh->flags() & MeshFlags::HasNormals);
@@ -7889,9 +7696,7 @@ private:
 				XA_DEBUG_ASSERT(indices[i] != UINT32_MAX);
 			}
 			// Don't copy flags - ignored faces aren't used by chart groups, they are handled by InvalidMeshGeometry.
-			Mesh::AddFaceResult::Enum result = mesh->addFace(indices);
-			XA_UNUSED(result);
-			XA_DEBUG_ASSERT(result == Mesh::AddFaceResult::OK);
+			mesh->addFace(indices);
 		}
 		XA_PROFILE_START(createChartGroupMeshColocals)
 		mesh->createColocals();
@@ -7913,94 +7718,58 @@ private:
 	const MeshFaceGroups * const m_sourceMeshFaceGroups;
 	const MeshFaceGroups::Handle m_faceGroup;
 	Array<uint32_t> m_faceToSourceFaceMap; // List of faces of the source mesh that belong to this chart group.
-	Array<Basis> m_chartBasis; // Copied from segment::Atlas.
-	Array<uint32_t> m_chartFaces; // Copied from segment::Atlas. Encoding: <chart 0 face count> <face 0> <face n> <chart 1 face count> etc.
 	Array<Chart *> m_charts;
-	uint32_t m_faceCount; // Set by createMesh(). Used for sorting.
-	uint32_t m_paramAddedChartsCount; // Number of new charts added by recomputing charts with invalid parameterizations.
-	uint32_t m_paramDeletedChartsCount; // Number of charts with invalid parameterizations that were deleted, after charts were recomputed.
 };
 
-// References invalid faces and vertices in a mesh.
-struct InvalidMeshGeometry
-{
-	// Invalid faces have the face groups MeshFaceGroups::kInvalid.
-	void extract(const Mesh *mesh, const MeshFaceGroups *meshFaceGroups)
-	{
-		// Copy invalid faces.
-		m_faces.clear();
-		const uint32_t meshFaceCount = mesh->faceCount();
-		for (uint32_t f = 0; f < meshFaceCount; f++) {
-			if (meshFaceGroups->groupAt(f) == MeshFaceGroups::kInvalid)
-				m_faces.push_back(f);
-		}
-		// Create *unique* list of vertices of invalid faces.
-		const uint32_t faceCount = m_faces.size();
-		m_indices.resize(faceCount * 3);
-		const uint32_t approxVertexCount = min(faceCount * 3, mesh->vertexCount());
-		m_vertexToSourceVertexMap.clear();
-		m_vertexToSourceVertexMap.reserve(approxVertexCount);
-		HashMap<uint32_t, PassthroughHash<uint32_t>> sourceVertexToVertexMap(MemTag::Mesh, approxVertexCount);
-		for (uint32_t f = 0; f < faceCount; f++) {
-			const uint32_t face = m_faces[f];
-			for (uint32_t i = 0; i < 3; i++) {
-				const uint32_t vertex = mesh->vertexAt(face * 3 + i);
-				uint32_t newVertex = sourceVertexToVertexMap.get(vertex);
-				if (newVertex == UINT32_MAX) {
-					newVertex = sourceVertexToVertexMap.add(vertex);
-					m_vertexToSourceVertexMap.push_back(vertex);
-				}
-				m_indices[f * 3 + i] = newVertex;
-			}
-		}
-	}
-
-	ConstArrayView<uint32_t> faces() const { return m_faces; }
-	ConstArrayView<uint32_t> indices() const { return m_indices; }
-	ConstArrayView<uint32_t> vertices() const { return m_vertexToSourceVertexMap; }
-
-private:
-	Array<uint32_t> m_faces, m_indices;
-	Array<uint32_t> m_vertexToSourceVertexMap; // Map face vertices to vertices of the source mesh.
-};
-
-struct ChartGroupComputeChartFacesTaskArgs
+struct ChartGroupComputeChartsTaskGroupArgs
 {
 	ThreadLocal<segment::Atlas> *atlas;
-	ChartGroup *chartGroup;
 	const ChartOptions *options;
 	Progress *progress;
+	TaskScheduler *taskScheduler;
+	ThreadLocal<UniformGrid2> *boundaryGrid;
+	ThreadLocal<ChartCtorBuffers> *chartBuffers;
+	ThreadLocal<PiecewiseParam> *piecewiseParam;
 };
 
-static void runChartGroupComputeChartFacesJob(void *userData)
+static void runChartGroupComputeChartsTask(void *groupUserData, void *taskUserData)
 {
-	auto args = (ChartGroupComputeChartFacesTaskArgs *)userData;
+	auto args = (ChartGroupComputeChartsTaskGroupArgs *)groupUserData;
+	auto chartGroup = (ChartGroup *)taskUserData;
 	if (args->progress->cancel)
 		return;
 	XA_PROFILE_START(chartGroupComputeChartsThread)
-	args->chartGroup->computeChartFaces(*args->options, args->atlas->get());
+	chartGroup->computeCharts(args->taskScheduler, *args->options, args->progress, args->atlas->get(), args->boundaryGrid, args->chartBuffers, args->piecewiseParam);
 	XA_PROFILE_END(chartGroupComputeChartsThread)
 }
 
-struct MeshComputeChartFacesTaskArgs
+struct MeshComputeChartsTaskGroupArgs
 {
-	Array<ChartGroup *> *chartGroups; // output
-	InvalidMeshGeometry *invalidMeshGeometry; // output
 	ThreadLocal<segment::Atlas> *atlas;
 	const ChartOptions *options;
 	Progress *progress;
-	const Mesh *sourceMesh;
 	TaskScheduler *taskScheduler;
+	ThreadLocal<UniformGrid2> *boundaryGrid;
+	ThreadLocal<ChartCtorBuffers> *chartBuffers;
+	ThreadLocal<PiecewiseParam> *piecewiseParam;
+};
+
+struct MeshComputeChartsTaskArgs
+{
+	const Mesh *sourceMesh;
+	Array<ChartGroup *> *chartGroups; // output
+	InvalidMeshGeometry *invalidMeshGeometry; // output
 };
 
 #if XA_DEBUG_EXPORT_OBJ_FACE_GROUPS
 static uint32_t s_faceGroupsCurrentVertex = 0;
 #endif
 
-static void runMeshComputeChartFacesJob(void *userData)
+static void runMeshComputeChartsTask(void *groupUserData, void *taskUserData)
 {
-	auto args = (MeshComputeChartFacesTaskArgs *)userData;
-	if (args->progress->cancel)
+	auto groupArgs = (MeshComputeChartsTaskGroupArgs *)groupUserData;
+	auto args = (MeshComputeChartsTaskArgs *)taskUserData;
+	if (groupArgs->progress->cancel)
 		return;
 	XA_PROFILE_START(computeChartsThread)
 	// Create face groups.
@@ -8009,7 +7778,7 @@ static void runMeshComputeChartFacesJob(void *userData)
 	meshFaceGroups->compute();
 	const uint32_t chartGroupCount = meshFaceGroups->groupCount();
 	XA_PROFILE_END(createFaceGroups)
-	if (args->progress->cancel)
+	if (groupArgs->progress->cancel)
 		goto cleanup;
 #if XA_DEBUG_EXPORT_OBJ_FACE_GROUPS
 	{
@@ -8053,33 +7822,41 @@ static void runMeshComputeChartFacesJob(void *userData)
 	for (uint32_t i = 0; i < chartGroupCount; i++)
 		(*args->chartGroups)[i] = XA_NEW_ARGS(MemTag::Default, ChartGroup, i, args->sourceMesh, meshFaceGroups, MeshFaceGroups::Handle(i));
 	// Extract invalid geometry via the invalid face group (MeshFaceGroups::kInvalid).
-	XA_PROFILE_START(extractInvalidMeshGeometry)
-	args->invalidMeshGeometry->extract(args->sourceMesh, meshFaceGroups);
-	XA_PROFILE_END(extractInvalidMeshGeometry)
-	// One task for each chart group - compute chart faces.
+	{
+		XA_PROFILE_START(extractInvalidMeshGeometry)
+		args->invalidMeshGeometry->extract(args->sourceMesh, meshFaceGroups);
+		XA_PROFILE_END(extractInvalidMeshGeometry)
+	}
+	// One task for each chart group - compute charts.
 	{
 		XA_PROFILE_START(chartGroupComputeChartsReal)
-		Array<ChartGroupComputeChartFacesTaskArgs> taskArgs;
-		taskArgs.resize(chartGroupCount);
-		for (uint32_t i = 0; i < chartGroupCount; i++) {
-			taskArgs[i].atlas = args->atlas;
-			taskArgs[i].chartGroup = (*args->chartGroups)[i];
-			taskArgs[i].options = args->options;
-			taskArgs[i].progress = args->progress;
-		}
-		TaskGroupHandle taskGroup = args->taskScheduler->createTaskGroup(chartGroupCount);
+		// Sort chart groups by face count.
+		Array<float> chartGroupSortData;
+		chartGroupSortData.resize(chartGroupCount);
+		for (uint32_t i = 0; i < chartGroupCount; i++)
+			chartGroupSortData[i] = (float)(*args->chartGroups)[i]->faceCount();
+		RadixSort chartGroupSort;
+		chartGroupSort.sort(chartGroupSortData);
+		// Larger chart groups are added first to reduce the chance of thread starvation.
+		ChartGroupComputeChartsTaskGroupArgs taskGroupArgs;
+		taskGroupArgs.atlas = groupArgs->atlas;
+		taskGroupArgs.options = groupArgs->options;
+		taskGroupArgs.progress = groupArgs->progress;
+		taskGroupArgs.taskScheduler = groupArgs->taskScheduler;
+		taskGroupArgs.boundaryGrid = groupArgs->boundaryGrid;
+		taskGroupArgs.chartBuffers = groupArgs->chartBuffers;
+		taskGroupArgs.piecewiseParam = groupArgs->piecewiseParam;
+		TaskGroupHandle taskGroup = groupArgs->taskScheduler->createTaskGroup(&taskGroupArgs, chartGroupCount);
 		for (uint32_t i = 0; i < chartGroupCount; i++) {
 			Task task;
-			task.userData = &taskArgs[i];
-			task.func = runChartGroupComputeChartFacesJob;
-			args->taskScheduler->run(taskGroup, task);
+			task.userData = (*args->chartGroups)[chartGroupCount - i - 1];
+			task.func = runChartGroupComputeChartsTask;
+			groupArgs->taskScheduler->run(taskGroup, task);
 		}
-		args->taskScheduler->wait(&taskGroup);
+		groupArgs->taskScheduler->wait(&taskGroup);
 		XA_PROFILE_END(chartGroupComputeChartsReal)
 	}
 	XA_PROFILE_END(computeChartsThread)
-	args->progress->value++;
-	args->progress->update();
 cleanup:
 	if (meshFaceGroups) {
 		meshFaceGroups->~MeshFaceGroups();
@@ -8087,40 +7864,11 @@ cleanup:
 	}
 }
 
-struct ParameterizeChartsTaskArgs
-{
-	TaskScheduler *taskScheduler;
-	ChartGroup *chartGroup;
-	const ParameterizeOptions *options;
-	ThreadLocal<UniformGrid2> *boundaryGrid;
-	ThreadLocal<ChartCtorBuffers> *chartBuffers;
-#if XA_RECOMPUTE_CHARTS
-	ThreadLocal<PiecewiseParam> *piecewiseParam;
-#endif
-	Progress *progress;
-};
-
-static void runParameterizeChartsJob(void *userData)
-{
-	auto args = (ParameterizeChartsTaskArgs *)userData;
-	if (args->progress->cancel)
-		return;
-	XA_PROFILE_START(parameterizeChartsThread)
-#if XA_RECOMPUTE_CHARTS
-	args->chartGroup->parameterizeCharts(args->taskScheduler, *args->options, args->boundaryGrid, args->chartBuffers, args->piecewiseParam);
-#else
-	args->chartGroup->parameterizeCharts(args->taskScheduler, *args->options, args->boundaryGrid, args->chartBuffers);
-#endif
-	XA_PROFILE_END(parameterizeChartsThread)
-	args->progress->value++;
-	args->progress->update();
-}
-
 /// An atlas is a set of chart groups.
 class Atlas
 {
 public:
-	Atlas() : m_chartsComputed(false), m_chartsParameterized(false) {}
+	Atlas() : m_chartsComputed(false) {}
 
 	~Atlas()
 	{
@@ -8137,7 +7885,6 @@ public:
 	uint32_t meshCount() const { return m_meshes.size(); }
 	const InvalidMeshGeometry &invalidMeshGeometry(uint32_t meshIndex) const { return m_invalidMeshGeometry[meshIndex]; }
 	bool chartsComputed() const { return m_chartsComputed; }
-	bool chartsParameterized() const { return m_chartsParameterized; }
 	uint32_t chartGroupCount(uint32_t mesh) const { return m_meshChartGroups[mesh].size(); }
 	const ChartGroup *chartGroupAt(uint32_t mesh, uint32_t group) const { return m_meshChartGroups[mesh][group]; }
 
@@ -8148,11 +7895,17 @@ public:
 
 	bool computeCharts(TaskScheduler *taskScheduler, const ChartOptions &options, ProgressFunc progressFunc, void *progressUserData)
 	{
+		XA_PROFILE_START(computeChartsReal)
 #if XA_DEBUG_EXPORT_OBJ_PLANAR_REGIONS
 		segment::s_planarRegionsCurrentRegion = segment::s_planarRegionsCurrentVertex = 0;
 #endif
+		// Progress is per-face x 2 (1 for chart faces, 1 for parameterized chart faces).
+		const uint32_t meshCount = m_meshes.size();
+		uint32_t totalFaceCount = 0;
+		for (uint32_t i = 0; i < meshCount; i++)
+			totalFaceCount += m_meshes[i]->faceCount();
+		Progress progress(ProgressCategory::ComputeCharts, progressFunc, progressUserData, totalFaceCount * 2);
 		m_chartsComputed = false;
-		m_chartsParameterized = false;
 		// Clear chart groups, since this function may be called multiple times.
 		if (!m_meshChartGroups.isEmpty()) {
 			for (uint32_t i = 0; i < m_meshChartGroups.size(); i++) {
@@ -8162,27 +7915,20 @@ public:
 				}
 				m_meshChartGroups[i].clear();
 			}
-			XA_ASSERT(m_meshChartGroups.size() == m_meshes.size()); // The number of meshes shouldn't have changed.
+			XA_ASSERT(m_meshChartGroups.size() == meshCount); // The number of meshes shouldn't have changed.
 		}
-		m_meshChartGroups.resize(m_meshes.size());
+		m_meshChartGroups.resize(meshCount);
 		m_meshChartGroups.runCtors();
-		m_invalidMeshGeometry.resize(m_meshes.size());
+		m_invalidMeshGeometry.resize(meshCount);
 		m_invalidMeshGeometry.runCtors();
 		// One task per mesh.
-		const uint32_t meshCount = m_meshes.size();
-		Progress progress(ProgressCategory::ComputeCharts, progressFunc, progressUserData, meshCount);
-		ThreadLocal<segment::Atlas> atlas;
-		Array<MeshComputeChartFacesTaskArgs> taskArgs;
+		Array<MeshComputeChartsTaskArgs> taskArgs;
 		taskArgs.resize(meshCount);
 		for (uint32_t i = 0; i < meshCount; i++) {
-			MeshComputeChartFacesTaskArgs &args = taskArgs[i];
-			args.atlas = &atlas;
+			MeshComputeChartsTaskArgs &args = taskArgs[i];
+			args.sourceMesh = m_meshes[i];
 			args.chartGroups = &m_meshChartGroups[i];
 			args.invalidMeshGeometry = &m_invalidMeshGeometry[i];
-			args.options = &options;
-			args.progress = &progress;
-			args.sourceMesh = m_meshes[i];
-			args.taskScheduler = taskScheduler;
 		}
 		// Sort meshes by indexCount.
 		Array<float> meshSortData;
@@ -8192,79 +7938,30 @@ public:
 		RadixSort meshSort;
 		meshSort.sort(meshSortData);
 		// Larger meshes are added first to reduce the chance of thread starvation.
-		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(meshCount);
+		ThreadLocal<segment::Atlas> atlas;
+		ThreadLocal<UniformGrid2> boundaryGrid; // For Quality boundary intersection.
+		ThreadLocal<ChartCtorBuffers> chartBuffers;
+		ThreadLocal<PiecewiseParam> piecewiseParam;
+		MeshComputeChartsTaskGroupArgs taskGroupArgs;
+		taskGroupArgs.atlas = &atlas;
+		taskGroupArgs.options = &options;
+		taskGroupArgs.progress = &progress;
+		taskGroupArgs.taskScheduler = taskScheduler;
+		taskGroupArgs.boundaryGrid = &boundaryGrid;
+		taskGroupArgs.chartBuffers = &chartBuffers;
+		taskGroupArgs.piecewiseParam = &piecewiseParam;
+		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(&taskGroupArgs, meshCount);
 		for (uint32_t i = 0; i < meshCount; i++) {
 			Task task;
 			task.userData = &taskArgs[meshSort.ranks()[meshCount - i - 1]];
-			task.func = runMeshComputeChartFacesJob;
+			task.func = runMeshComputeChartsTask;
 			taskScheduler->run(taskGroup, task);
 		}
 		taskScheduler->wait(&taskGroup);
+		XA_PROFILE_END(computeChartsReal)
 		if (progress.cancel)
 			return false;
 		m_chartsComputed = true;
-		return true;
-	}
-
-	bool parameterizeCharts(TaskScheduler *taskScheduler, const ParameterizeOptions &options, ProgressFunc progressFunc, void *progressUserData)
-	{
-		m_chartsParameterized = false;
-		uint32_t chartGroupCount = 0;
-		for (uint32_t i = 0; i < m_meshChartGroups.size(); i++)
-			chartGroupCount += m_meshChartGroups[i].size();
-		Progress progress(ProgressCategory::ParameterizeCharts, progressFunc, progressUserData, chartGroupCount);
-		ThreadLocal<UniformGrid2> boundaryGrid; // For Quality boundary intersection.
-		ThreadLocal<ChartCtorBuffers> chartBuffers;
-#if XA_RECOMPUTE_CHARTS
-		ThreadLocal<PiecewiseParam> piecewiseParam;
-#endif
-		Array<ParameterizeChartsTaskArgs> taskArgs;
-		taskArgs.resize(chartGroupCount);
-		{
-			uint32_t k = 0;
-			for (uint32_t i = 0; i < m_meshChartGroups.size(); i++) {
-				const uint32_t count = m_meshChartGroups[i].size();
-				for (uint32_t j = 0; j < count; j++) {
-					ParameterizeChartsTaskArgs &args = taskArgs[k];
-					args.taskScheduler = taskScheduler;
-					args.chartGroup = m_meshChartGroups[i][j];
-					args.options = &options;
-					args.boundaryGrid = &boundaryGrid;
-					args.chartBuffers = &chartBuffers;
-#if XA_RECOMPUTE_CHARTS
-					args.piecewiseParam = &piecewiseParam;
-#endif
-					args.progress = &progress;
-					k++;
-				}
-			}
-		}
-		// Sort chart groups by face count.
-		Array<float> chartGroupSortData;
-		chartGroupSortData.resize(chartGroupCount);
-		{
-			uint32_t k = 0;
-			for (uint32_t i = 0; i < m_meshChartGroups.size(); i++) {
-				const uint32_t count = m_meshChartGroups[i].size();
-				for (uint32_t j = 0; j < count; j++) {
-					chartGroupSortData[k++] = (float)m_meshChartGroups[i][j]->faceCount();
-				}
-			}
-		}
-		RadixSort chartGroupSort;
-		chartGroupSort.sort(chartGroupSortData);
-		// Larger chart groups are added first to reduce the chance of thread starvation.
-		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(chartGroupCount);
-		for (uint32_t i = 0; i < chartGroupCount; i++) {
-			Task task;
-			task.userData = &taskArgs[chartGroupSort.ranks()[chartGroupCount - i - 1]];
-			task.func = runParameterizeChartsJob;
-			taskScheduler->run(taskGroup, task);
-		}
-		taskScheduler->wait(&taskGroup);
-		if (progress.cancel)
-			return false;
-		m_chartsParameterized = true;
 		return true;
 	}
 
@@ -8273,7 +7970,6 @@ private:
 	Array<InvalidMeshGeometry> m_invalidMeshGeometry; // 1 per mesh.
 	Array<Array<ChartGroup *> > m_meshChartGroups;
 	bool m_chartsComputed;
-	bool m_chartsParameterized;
 };
 
 } // namespace param
@@ -8382,14 +8078,11 @@ struct Chart
 {
 	int32_t atlasIndex;
 	uint32_t material;
-	uint32_t indexCount;
-	const uint32_t *indices;
+	ConstArrayView<uint32_t> indices;
 	float parametricArea;
 	float surfaceArea;
-	Vector2 *vertices;
-	uint32_t vertexCount;
+	ArrayView<Vector2> vertices;
 	Array<uint32_t> uniqueVertices;
-	bool allowRotate;
 	// bounding box
 	Vector2 majorAxis, minorAxis, minCorner, maxCorner;
 	// Mesh only
@@ -8398,29 +8091,28 @@ struct Chart
 	Array<uint32_t> faces;
 
 	Vector2 &uniqueVertexAt(uint32_t v) { return uniqueVertices.isEmpty() ? vertices[v] : vertices[uniqueVertices[v]]; }
-	uint32_t uniqueVertexCount() const { return uniqueVertices.isEmpty() ? vertexCount : uniqueVertices.size(); }
+	uint32_t uniqueVertexCount() const { return uniqueVertices.isEmpty() ? vertices.length : uniqueVertices.size(); }
 };
 
 struct AddChartTaskArgs
 {
-	ThreadLocal<BoundingBox2D> *boundingBox;
 	param::Chart *paramChart;
 	Chart *chart; // out
 };
 
-static void runAddChartTask(void *userData)
+static void runAddChartTask(void *groupUserData, void *taskUserData)
 {
 	XA_PROFILE_START(packChartsAddChartsThread)
-	auto args = (AddChartTaskArgs *)userData;
+	auto boundingBox = (ThreadLocal<BoundingBox2D> *)groupUserData;
+	auto args = (AddChartTaskArgs *)taskUserData;
 	param::Chart *paramChart = args->paramChart;
 	XA_PROFILE_START(packChartsAddChartsRestoreTexcoords)
 	paramChart->restoreTexcoords();
 	XA_PROFILE_END(packChartsAddChartsRestoreTexcoords)
-	Mesh *mesh = paramChart->mesh();
+	Mesh *mesh = paramChart->unifiedMesh();
 	Chart *chart = args->chart = XA_NEW(MemTag::Default, Chart);
 	chart->atlasIndex = -1;
 	chart->material = 0;
-	chart->indexCount = mesh->indexCount();
 	chart->indices = mesh->indices();
 	chart->parametricArea = mesh->computeParametricArea();
 	if (chart->parametricArea < kAreaEpsilon) {
@@ -8430,17 +8122,15 @@ static void runAddChartTask(void *userData)
 	}
 	chart->surfaceArea = mesh->computeSurfaceArea();
 	chart->vertices = mesh->texcoords();
-	chart->vertexCount = mesh->vertexCount();
-	chart->allowRotate = true;
 	chart->boundaryEdges = &mesh->boundaryEdges();
 	// Compute bounding box of chart.
-	BoundingBox2D &bb = args->boundingBox->get();
+	BoundingBox2D &bb = boundingBox->get();
 	bb.clear();
-	for (uint32_t v = 0; v < chart->vertexCount; v++) {
+	for (uint32_t v = 0; v < chart->vertices.length; v++) {
 		if (mesh->isBoundaryVertex(v))
 			bb.appendBoundaryVertex(mesh->texcoord(v));
 	}
-	bb.compute(mesh->texcoords(), mesh->vertexCount());
+	bb.compute(mesh->texcoords());
 	chart->majorAxis = bb.majorAxis;
 	chart->minorAxis = bb.minorAxis;
 	chart->minCorner = bb.minCorner;
@@ -8489,11 +8179,11 @@ struct Atlas
 		if (chartCount == 0)
 			return;
 		// Run one task per chart.
+		ThreadLocal<BoundingBox2D> boundingBox;
+		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(&boundingBox, chartCount);
 		Array<AddChartTaskArgs> taskArgs;
 		taskArgs.resize(chartCount);
-		TaskGroupHandle taskGroup = taskScheduler->createTaskGroup(chartCount);
 		uint32_t chartIndex = 0;
-		ThreadLocal<BoundingBox2D> boundingBox;
 		for (uint32_t i = 0; i < paramAtlas->meshCount(); i++) {
 			const uint32_t chartGroupsCount = paramAtlas->chartGroupCount(i);
 			for (uint32_t j = 0; j < chartGroupsCount; j++) {
@@ -8501,7 +8191,6 @@ struct Atlas
 				const uint32_t count = chartGroup->chartCount();
 				for (uint32_t k = 0; k < count; k++) {
 					AddChartTaskArgs &args = taskArgs[chartIndex];
-					args.boundingBox = &boundingBox;
 					args.paramChart = chartGroup->chartAt(k);
 					Task task;
 					task.userData = &taskArgs[chartIndex];
@@ -8520,6 +8209,9 @@ struct Atlas
 
 	void addUvMeshCharts(UvMeshInstance *mesh)
 	{
+		// Copy texcoords from mesh.
+		mesh->texcoords.resize(mesh->mesh->texcoords.size());
+		memcpy(mesh->texcoords.data(), mesh->mesh->texcoords.data(), mesh->texcoords.size() * sizeof(Vector2));
 		BitArray vertexUsed(mesh->texcoords.size());
 		BoundingBox2D boundingBox;
 		for (uint32_t c = 0; c < mesh->mesh->charts.size(); c++) {
@@ -8527,17 +8219,14 @@ struct Atlas
 			Chart *chart = XA_NEW(MemTag::Default, Chart);
 			chart->atlasIndex = -1;
 			chart->material = uvChart->material;
-			chart->indexCount = uvChart->indices.size();
-			chart->indices = uvChart->indices.data();
-			chart->vertices = mesh->texcoords.data();
-			chart->vertexCount = mesh->texcoords.size();
-			chart->allowRotate = mesh->rotateCharts;
+			chart->indices = uvChart->indices;
+			chart->vertices = mesh->texcoords;
 			chart->boundaryEdges = nullptr;
 			chart->faces.resize(uvChart->faces.size());
 			memcpy(chart->faces.data(), uvChart->faces.data(), sizeof(uint32_t) * uvChart->faces.size());
 			// Find unique vertices.
 			vertexUsed.zeroOutMemory();
-			for (uint32_t i = 0; i < chart->indexCount; i++) {
+			for (uint32_t i = 0; i < chart->indices.length; i++) {
 				const uint32_t vertex = chart->indices[i];
 				if (!vertexUsed.get(vertex)) {
 					vertexUsed.set(vertex);
@@ -8546,14 +8235,13 @@ struct Atlas
 			}
 			// Compute parametric and surface areas.
 			chart->parametricArea = 0.0f;
-			for (uint32_t f = 0; f < chart->indexCount / 3; f++) {
+			for (uint32_t f = 0; f < chart->indices.length / 3; f++) {
 				const Vector2 &v1 = chart->vertices[chart->indices[f * 3 + 0]];
 				const Vector2 &v2 = chart->vertices[chart->indices[f * 3 + 1]];
 				const Vector2 &v3 = chart->vertices[chart->indices[f * 3 + 2]];
 				chart->parametricArea += fabsf(triangleArea(v1, v2, v3));
 			}
 			chart->parametricArea *= 0.5f;
-			chart->surfaceArea = chart->parametricArea; // Identical for UV meshes.
 			if (chart->parametricArea < kAreaEpsilon) {
 				// When the parametric area is too small we use a rough approximation to prevent divisions by very small numbers.
 				Vector2 minCorner(FLT_MAX, FLT_MAX);
@@ -8565,6 +8253,9 @@ struct Atlas
 				const Vector2 bounds = (maxCorner - minCorner) * 0.5f;
 				chart->parametricArea = bounds.x * bounds.y;
 			}
+			XA_DEBUG_ASSERT(isFinite(chart->parametricArea));
+			XA_DEBUG_ASSERT(!isNan(chart->parametricArea));
+			chart->surfaceArea = chart->parametricArea; // Identical for UV meshes.
 			// Compute bounding box of chart.
 			// Using all unique vertices for simplicity, can compute real boundaries if this is too slow.
 			boundingBox.clear();
@@ -8627,19 +8318,19 @@ struct Atlas
 			// Compute chart scale
 			float scale = 1.0f;
 			if (chart->parametricArea != 0.0f) {
-				scale = (chart->surfaceArea / chart->parametricArea) * m_texelsPerUnit;
+				scale = sqrtf(chart->surfaceArea / chart->parametricArea) * m_texelsPerUnit;
 				XA_ASSERT(isFinite(scale));
 			}
 			// Translate, rotate and scale vertices. Compute extents.
 			Vector2 minCorner(FLT_MAX, FLT_MAX);
-			if (!chart->allowRotate) {
+			if (!options.rotateChartsToAxis) {
 				for (uint32_t i = 0; i < chart->uniqueVertexCount(); i++)
 					minCorner = min(minCorner, chart->uniqueVertexAt(i));
 			}
 			Vector2 extents(0.0f);
 			for (uint32_t i = 0; i < chart->uniqueVertexCount(); i++) {
 				Vector2 &texcoord = chart->uniqueVertexAt(i);
-				if (chart->allowRotate) {
+				if (options.rotateChartsToAxis) {
 					const float x = dot(texcoord, chart->majorAxis);
 					const float y = dot(texcoord, chart->minorAxis);
 					texcoord.x = x;
@@ -8750,27 +8441,27 @@ struct Atlas
 			// Resize and clear (discard = true) chart images.
 			// Leave room for padding at extents.
 			chartImage.resize(ftoi_ceil(chartExtents[c].x) + options.padding, ftoi_ceil(chartExtents[c].y) + options.padding, true);
-			if (chart->allowRotate)
+			if (options.rotateCharts)
 				chartImageRotated.resize(chartImage.height(), chartImage.width(), true);
 			if (options.bilinear) {
 				chartImageBilinear.resize(chartImage.width(), chartImage.height(), true);
-				if (chart->allowRotate)
+				if (options.rotateCharts)
 					chartImageBilinearRotated.resize(chartImage.height(), chartImage.width(), true);
 			}
 			// Rasterize chart faces.
-			const uint32_t faceCount = chart->indexCount / 3;
+			const uint32_t faceCount = chart->indices.length / 3;
 			for (uint32_t f = 0; f < faceCount; f++) {
 				Vector2 vertices[3];
 				for (uint32_t v = 0; v < 3; v++)
 					vertices[v] = chart->vertices[chart->indices[f * 3 + v]];
 				DrawTriangleCallbackArgs args;
 				args.chartBitImage = &chartImage;
-				args.chartBitImageRotated = chart->allowRotate ? &chartImageRotated : nullptr;
+				args.chartBitImageRotated = options.rotateCharts ? &chartImageRotated : nullptr;
 				raster::drawTriangle(Vector2((float)chartImage.width(), (float)chartImage.height()), vertices, drawTriangleCallback, &args);
 			}
 			// Expand chart by pixels sampled by bilinear interpolation.
 			if (options.bilinear)
-				bilinearExpand(chart, &chartImage, &chartImageBilinear, chart->allowRotate ? &chartImageBilinearRotated : nullptr, boundaryEdgeGrid);
+				bilinearExpand(chart, &chartImage, &chartImageBilinear, options.rotateCharts ? &chartImageBilinearRotated : nullptr, boundaryEdgeGrid);
 			// Expand chart by padding pixels (dilation).
 			if (options.padding > 0) {
 				// Copy into the same BitImage instances for every chart to avoid reallocating BitImage buffers (largest chart is packed first).
@@ -8780,7 +8471,7 @@ struct Atlas
 				else
 					chartImage.copyTo(chartImagePadding);
 				chartImagePadding.dilate(options.padding);
-				if (chart->allowRotate) {
+				if (options.rotateCharts) {
 					if (options.bilinear)
 						chartImageBilinearRotated.copyTo(chartImagePaddingRotated);
 					else
@@ -8817,21 +8508,24 @@ struct Atlas
 			int best_r = 0;
 			for (;;)
 			{
+#if XA_DEBUG
 				bool firstChartInBitImage = false;
-				XA_UNUSED(firstChartInBitImage);
+#endif
 				if (currentAtlas + 1 > m_bitImages.size()) {
 					// Chart doesn't fit in the current bitImage, create a new one.
 					BitImage *bi = XA_NEW_ARGS(MemTag::Default, BitImage, resolution, resolution);
 					m_bitImages.push_back(bi);
 					atlasSizes.push_back(Vector2i(0, 0));
+#if XA_DEBUG
 					firstChartInBitImage = true;
+#endif
 					if (createImage)
 						m_atlasImages.push_back(XA_NEW_ARGS(MemTag::Default, AtlasImage, resolution, resolution));
 					// Start positions are per-atlas, so create a new one of those too.
 					chartStartPositions.push_back(Vector2i(0, 0));
 				}
 				XA_PROFILE_START(packChartsFindLocation)
-				const bool foundLocation = findChartLocation(chartStartPositions[currentAtlas], options.bruteForce, m_bitImages[currentAtlas], chartImageToPack, chartImageToPackRotated, atlasSizes[currentAtlas].x, atlasSizes[currentAtlas].y, &best_x, &best_y, &best_cw, &best_ch, &best_r, options.blockAlign, maxResolution, chart->allowRotate);
+				const bool foundLocation = findChartLocation(options, chartStartPositions[currentAtlas], m_bitImages[currentAtlas], chartImageToPack, chartImageToPackRotated, atlasSizes[currentAtlas].x, atlasSizes[currentAtlas].y, &best_x, &best_y, &best_cw, &best_ch, &best_r, maxResolution);
 				XA_PROFILE_END(packChartsFindLocation)
 				XA_DEBUG_ASSERT(!(firstChartInBitImage && !foundLocation)); // Chart doesn't fit in an empty, newly allocated bitImage. Shouldn't happen, since charts are resized if they are too big to fit in the atlas.
 				if (maxResolution == 0) {
@@ -8897,7 +8591,7 @@ struct Atlas
 				Vector2 &texcoord = chart->uniqueVertexAt(v);
 				Vector2 t = texcoord;
 				if (best_r) {
-					XA_DEBUG_ASSERT(chart->allowRotate);
+					XA_DEBUG_ASSERT(options.rotateCharts);
 					swap(t.x, t.y);
 				}
 				texcoord.x = best_x + t.x;
@@ -8958,28 +8652,24 @@ struct Atlas
 	}
 
 private:
-	// IC: Brute force is slow, and random may take too much time to converge. We start inserting large charts in a small atlas. Using brute force is lame, because most of the space
-	// is occupied at this point. At the end we have many small charts and a large atlas with sparse holes. Finding those holes randomly is slow. A better approach would be to
-	// start stacking large charts as if they were tetris pieces. Once charts get small try to place them randomly. It may be interesting to try a intermediate strategy, first try
-	// along one axis and then try exhaustively along that axis.
-	bool findChartLocation(const Vector2i &startPosition, bool bruteForce, const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned, uint32_t maxResolution, bool allowRotate)
+	bool findChartLocation(const PackOptions &options, const Vector2i &startPosition, const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, uint32_t maxResolution)
 	{
 		const int attempts = 4096;
-		if (bruteForce || attempts >= w * h)
-			return findChartLocation_bruteForce(startPosition, atlasBitImage, chartBitImage, chartBitImageRotated, w, h, best_x, best_y, best_w, best_h, best_r, blockAligned, maxResolution, allowRotate);
-		return findChartLocation_random(atlasBitImage, chartBitImage, chartBitImageRotated, w, h, best_x, best_y, best_w, best_h, best_r, attempts, blockAligned, maxResolution, allowRotate);
+		if (options.bruteForce || attempts >= w * h)
+			return findChartLocation_bruteForce(options, startPosition, atlasBitImage, chartBitImage, chartBitImageRotated, w, h, best_x, best_y, best_w, best_h, best_r, maxResolution);
+		return findChartLocation_random(options, atlasBitImage, chartBitImage, chartBitImageRotated, w, h, best_x, best_y, best_w, best_h, best_r, attempts, maxResolution);
 	}
 
-	bool findChartLocation_bruteForce(const Vector2i &startPosition, const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned, uint32_t maxResolution, bool allowRotate)
+	bool findChartLocation_bruteForce(const PackOptions &options, const Vector2i &startPosition, const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, uint32_t maxResolution)
 	{
-		const int stepSize = blockAligned ? 4 : 1;
+		const int stepSize = options.blockAlign ? 4 : 1;
 		int best_metric = INT_MAX;
 		// Try two different orientations.
 		for (int r = 0; r < 2; r++) {
 			int cw = chartBitImage->width();
 			int ch = chartBitImage->height();
 			if (r == 1) {
-				if (allowRotate)
+				if (options.rotateCharts)
 					swap(cw, ch);
 				else
 					break;
@@ -9016,15 +8706,15 @@ private:
 		return best_metric != INT_MAX;
 	}
 
-	bool findChartLocation_random(const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, int minTrialCount, bool blockAligned, uint32_t maxResolution, bool allowRotate)
+	bool findChartLocation_random(const PackOptions &options, const BitImage *atlasBitImage, const BitImage *chartBitImage, const BitImage *chartBitImageRotated, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, int attempts, uint32_t maxResolution)
 	{
 		bool result = false;
 		const int BLOCK_SIZE = 4;
 		int best_metric = INT_MAX;
-		for (int i = 0; i < minTrialCount; i++) {
+		for (int i = 0; i < attempts; i++) {
 			int cw = chartBitImage->width();
 			int ch = chartBitImage->height();
-			int r = allowRotate ? m_rand.getRange(1) : 0;
+			int r = options.rotateCharts ? m_rand.getRange(1) : 0;
 			if (r == 1)
 				swap(cw, ch);
 			// + 1 to extend atlas in case atlas full. We may want to use a higher number to increase probability of extending atlas.
@@ -9037,7 +8727,7 @@ private:
 			}
 			int x = m_rand.getRange(xRange);
 			int y = m_rand.getRange(yRange);
-			if (blockAligned) {
+			if (options.blockAlign) {
 				x = align(x, BLOCK_SIZE);
 				y = align(y, BLOCK_SIZE);
 				if (maxResolution > 0 && (x > (int)maxResolution - cw || y > (int)maxResolution - ch))
@@ -9062,7 +8752,7 @@ private:
 				*best_y = y;
 				*best_w = cw;
 				*best_h = ch;
-				*best_r = allowRotate ? r : 0;
+				*best_r = options.rotateCharts ? r : 0;
 				if (area == w * h) {
 					// Chart is completely inside, do not look at any other location.
 					break;
@@ -9104,7 +8794,7 @@ private:
 			for (uint32_t i = 0; i < edgeCount; i++)
 				boundaryEdgeGrid.append((*chart->boundaryEdges)[i]);
 		} else {
-			for (uint32_t i = 0; i < chart->indexCount; i++)
+			for (uint32_t i = 0; i < chart->indices.length; i++)
 				boundaryEdgeGrid.append(i);
 		}
 		const int xOffsets[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
@@ -9180,6 +8870,14 @@ private:
 } // namespace pack
 } // namespace internal
 
+// Used to map triangulated polygons back to polygons.
+struct MeshPolygonMapping
+{
+	internal::Array<uint8_t> faceVertexCount; // Copied from MeshDecl::faceVertexCount.
+	internal::Array<uint32_t> triangleToPolygonMap; // Triangle index (mesh face index) to polygon index.
+	internal::Array<uint32_t> triangleToPolygonIndicesMap; // Triangle indices to polygon indices.
+};
+
 struct Context
 {
 	Atlas atlas;
@@ -9190,8 +8888,10 @@ struct Context
 	void *progressUserData = nullptr;
 	internal::TaskScheduler *taskScheduler;
 	internal::Array<internal::Mesh *> meshes;
+	internal::Array<MeshPolygonMapping *> meshPolygonMappings;
 	internal::Array<internal::UvMesh *> uvMeshes;
 	internal::Array<internal::UvMeshInstance *> uvMeshInstances;
+	bool uvMeshChartsComputed = false;
 };
 
 Atlas *Create()
@@ -9244,6 +8944,13 @@ void Destroy(Atlas *atlas)
 		mesh->~Mesh();
 		XA_FREE(mesh);
 	}
+	for (uint32_t i = 0; i < ctx->meshPolygonMappings.size(); i++) {
+		MeshPolygonMapping *mapping = ctx->meshPolygonMappings[i];
+		if (mapping) {
+			mapping->~MeshPolygonMapping();
+			XA_FREE(mapping);
+		}
+	}
 	for (uint32_t i = 0; i < ctx->uvMeshes.size(); i++) {
 		internal::UvMesh *mesh = ctx->uvMeshes[i];
 		for (uint32_t j = 0; j < mesh->charts.size(); j++) {
@@ -9265,32 +8972,24 @@ void Destroy(Atlas *atlas)
 #endif
 }
 
-struct AddMeshTaskArgs
-{
-	Context *ctx;
-	internal::Mesh *mesh;
-};
-
-static void runAddMeshTask(void *userData)
+static void runAddMeshTask(void *groupUserData, void *taskUserData)
 {
 	XA_PROFILE_START(addMeshThread)
-	auto args = (AddMeshTaskArgs *)userData; // Responsible for freeing this.
-	internal::Mesh *mesh = args->mesh;
-	internal::Progress *progress = args->ctx->addMeshProgress;
-	if (progress->cancel)
-		goto cleanup;
-	{
-		XA_PROFILE_START(addMeshCreateColocals)
-		mesh->createColocals();
-		XA_PROFILE_END(addMeshCreateColocals)
+	auto ctx = (Context *)groupUserData;
+	auto mesh = (internal::Mesh *)taskUserData;
+	internal::Progress *progress = ctx->addMeshProgress;
+	if (progress->cancel) {
+		XA_PROFILE_END(addMeshThread)
+			return;
 	}
-	if (progress->cancel)
-		goto cleanup;
-	progress->value++;
-	progress->update();
-cleanup:
-	args->~AddMeshTaskArgs();
-	XA_FREE(args);
+	XA_PROFILE_START(addMeshCreateColocals)
+	mesh->createColocals();
+	XA_PROFILE_END(addMeshCreateColocals)
+	if (progress->cancel) {
+		XA_PROFILE_END(addMeshThread)
+		return;
+	}
+	progress->increment(1);
 	XA_PROFILE_END(addMeshThread)
 }
 
@@ -9315,7 +9014,7 @@ static internal::Vector2 DecodeUv(const MeshDecl &meshDecl, uint32_t index)
 	return *((const internal::Vector2 *)&((const uint8_t *)meshDecl.vertexUvData)[meshDecl.vertexUvStride * index]);
 }
 
-static uint32_t DecodeIndex(IndexFormat::Enum format, const void *indexData, int32_t offset, uint32_t i)
+static uint32_t DecodeIndex(IndexFormat format, const void *indexData, int32_t offset, uint32_t i)
 {
 	XA_DEBUG_ASSERT(indexData);
 	if (format == IndexFormat::UInt16)
@@ -9323,7 +9022,7 @@ static uint32_t DecodeIndex(IndexFormat::Enum format, const void *indexData, int
 	return uint32_t((int32_t)((const uint32_t *)indexData)[i] + offset);
 }
 
-AddMeshError::Enum AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t meshCountHint)
+AddMeshError AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t meshCountHint)
 {
 	XA_DEBUG_ASSERT(atlas);
 	if (!atlas) {
@@ -9337,7 +9036,7 @@ AddMeshError::Enum AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t mesh
 	}
 #if XA_PROFILE
 	if (ctx->meshes.isEmpty())
-		internal::s_profile.addMeshReal = clock();
+		internal::s_profile.addMeshRealStart = std::chrono::high_resolution_clock::now();
 #endif
 	// Don't know how many times AddMesh will be called, so progress needs to adjusted each time.
 	if (!ctx->addMeshProgress) {
@@ -9349,21 +9048,25 @@ AddMeshError::Enum AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t mesh
 	XA_PROFILE_START(addMeshCopyData)
 	const bool hasIndices = meshDecl.indexCount > 0;
 	const uint32_t indexCount = hasIndices ? meshDecl.indexCount : meshDecl.vertexCount;
-	XA_PRINT("Adding mesh %d: %u vertices, %u triangles\n", ctx->meshes.size(), meshDecl.vertexCount, indexCount / 3);
-	// Expecting triangle faces.
-	if ((indexCount % 3) != 0)
-		return AddMeshError::InvalidIndexCount;
-	if (hasIndices) {
-		// Check if any index is out of range.
-		for (uint32_t i = 0; i < indexCount; i++) {
-			const uint32_t index = DecodeIndex(meshDecl.indexFormat, meshDecl.indexData, meshDecl.indexOffset, i);
-			if (index >= meshDecl.vertexCount)
-				return AddMeshError::IndexOutOfRange;
+	uint32_t faceCount = indexCount / 3;
+	if (meshDecl.faceVertexCount) {
+		faceCount = meshDecl.faceCount;
+		XA_PRINT("Adding mesh %d: %u vertices, %u polygons\n", ctx->meshes.size(), meshDecl.vertexCount, faceCount);
+		for (uint32_t f = 0; f < faceCount; f++) {
+			if (meshDecl.faceVertexCount[f] < 3)
+				return AddMeshError::InvalidFaceVertexCount;
 		}
+	} else {
+		XA_PRINT("Adding mesh %d: %u vertices, %u triangles\n", ctx->meshes.size(), meshDecl.vertexCount, faceCount);
+		// Expecting triangle faces unless otherwise specified.
+		if ((indexCount % 3) != 0)
+			return AddMeshError::InvalidIndexCount;
 	}
 	uint32_t meshFlags = internal::MeshFlags::HasIgnoredFaces;
 	if (meshDecl.vertexNormalData)
 		meshFlags |= internal::MeshFlags::HasNormals;
+	if (meshDecl.faceMaterialData)
+		meshFlags |= internal::MeshFlags::HasMaterials;
 	internal::Mesh *mesh = XA_NEW_ARGS(internal::MemTag::Mesh, internal::Mesh, meshDecl.epsilon, meshDecl.vertexCount, indexCount / 3, meshFlags, ctx->meshes.size());
 	for (uint32_t i = 0; i < meshDecl.vertexCount; i++) {
 		internal::Vector3 normal(0.0f);
@@ -9374,17 +9077,42 @@ AddMeshError::Enum AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t mesh
 			texcoord = DecodeUv(meshDecl, i);
 		mesh->addVertex(DecodePosition(meshDecl, i), normal, texcoord);
 	}
+	MeshPolygonMapping *meshPolygonMapping = nullptr;
+	if (meshDecl.faceVertexCount) {
+		meshPolygonMapping = XA_NEW(internal::MemTag::Default, MeshPolygonMapping);
+		// Copy MeshDecl::faceVertexCount so it can be used later when building output meshes.
+		meshPolygonMapping->faceVertexCount.copyFrom(meshDecl.faceVertexCount, meshDecl.faceCount);
+		// There should be at least as many triangles as polygons.
+		meshPolygonMapping->triangleToPolygonMap.reserve(meshDecl.faceCount);
+		meshPolygonMapping->triangleToPolygonIndicesMap.reserve(meshDecl.indexCount);
+	}
 	const uint32_t kMaxWarnings = 50;
 	uint32_t warningCount = 0;
-	for (uint32_t i = 0; i < indexCount / 3; i++) {
-		uint32_t tri[3];
-		for (int j = 0; j < 3; j++)
-			tri[j] = hasIndices ? DecodeIndex(meshDecl.indexFormat, meshDecl.indexData, meshDecl.indexOffset, i * 3 + j) : i * 3 + j;
+	internal::Array<uint32_t> triIndices;
+	uint32_t firstFaceIndex = 0;
+	internal::Triangulator triangulator;
+	for (uint32_t face = 0; face < faceCount; face++) {
+		// Decode face indices.
+		const uint32_t faceVertexCount = meshDecl.faceVertexCount ? (uint32_t)meshDecl.faceVertexCount[face] : 3;
+		uint32_t polygon[UINT8_MAX];
+		for (uint32_t i = 0; i < faceVertexCount; i++) {
+			if (hasIndices) {
+				polygon[i] = DecodeIndex(meshDecl.indexFormat, meshDecl.indexData, meshDecl.indexOffset, face * faceVertexCount + i);
+				// Check if any index is out of range.
+				if (polygon[i] >= meshDecl.vertexCount) {
+					mesh->~Mesh();
+					XA_FREE(mesh);
+					return AddMeshError::IndexOutOfRange;
+				}
+			} else {
+				polygon[i] = face * faceVertexCount + i;
+			}
+		}
+		// Ignore faces with degenerate or zero length edges.
 		bool ignore = false;
-		// Check for degenerate or zero length edges.
-		for (int j = 0; j < 3; j++) {
-			const uint32_t index1 = tri[j];
-			const uint32_t index2 = tri[(j + 1) % 3];
+		for (uint32_t i = 0; i < faceVertexCount; i++) {
+			const uint32_t index1 = polygon[i];
+			const uint32_t index2 = polygon[(i + 1) % 3];
 			if (index1 == index2) {
 				ignore = true;
 				if (++warningCount <= kMaxWarnings)
@@ -9402,70 +9130,87 @@ AddMeshError::Enum AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t mesh
 		}
 		// Ignore faces with any nan vertex attributes.
 		if (!ignore) {
-			for (int j = 0; j < 3; j++) {
-				const internal::Vector3 &pos = mesh->position(tri[j]);
+			for (uint32_t i = 0; i < faceVertexCount; i++) {
+				const internal::Vector3 &pos = mesh->position(polygon[i]);
 				if (internal::isNan(pos.x) || internal::isNan(pos.y) || internal::isNan(pos.z)) {
 					if (++warningCount <= kMaxWarnings)
-						XA_PRINT("   NAN position in face: %d\n", i);
+						XA_PRINT("   NAN position in face: %d\n", face);
 					ignore = true;
 					break;
 				}
 				if (meshDecl.vertexNormalData) {
-					const internal::Vector3 &normal = mesh->normal(tri[j]);
+					const internal::Vector3 &normal = mesh->normal(polygon[i]);
 					if (internal::isNan(normal.x) || internal::isNan(normal.y) || internal::isNan(normal.z)) {
 						if (++warningCount <= kMaxWarnings)
-							XA_PRINT("   NAN normal in face: %d\n", i);
+							XA_PRINT("   NAN normal in face: %d\n", face);
 						ignore = true;
 						break;
 					}
 				}
 				if (meshDecl.vertexUvData) {
-					const internal::Vector2 &uv = mesh->texcoord(tri[j]);
+					const internal::Vector2 &uv = mesh->texcoord(polygon[i]);
 					if (internal::isNan(uv.x) || internal::isNan(uv.y)) {
 						if (++warningCount <= kMaxWarnings)
-							XA_PRINT("   NAN texture coordinate in face: %d\n", i);
+							XA_PRINT("   NAN texture coordinate in face: %d\n", face);
 						ignore = true;
 						break;
 					}
 				}
 			}
 		}
-		const internal::Vector3 &a = mesh->position(tri[0]);
-		const internal::Vector3 &b = mesh->position(tri[1]);
-		const internal::Vector3 &c = mesh->position(tri[2]);
+		// Triangulate if necessary.
+		triIndices.clear();
+		if (faceVertexCount == 3) {
+			triIndices.push_back(polygon[0]);
+			triIndices.push_back(polygon[1]);
+			triIndices.push_back(polygon[2]);
+		} else {
+			triangulator.triangulatePolygon(mesh->positions(), internal::ConstArrayView<uint32_t>(polygon, faceVertexCount), triIndices);
+		}
 		// Check for zero area faces.
-		float area = 0.0f;
 		if (!ignore) {
-			area = internal::length(internal::cross(b - a, c - a)) * 0.5f;
-			if (area <= internal::kAreaEpsilon) {
-				ignore = true;
-				if (++warningCount <= kMaxWarnings)
-					XA_PRINT("   Zero area face: %d, indices (%d %d %d), area is %f\n", i, tri[0], tri[1], tri[2], area);
+			for (uint32_t i = 0; i < triIndices.size(); i += 3) {
+				const internal::Vector3 &a = mesh->position(triIndices[i + 0]);
+				const internal::Vector3 &b = mesh->position(triIndices[i + 1]);
+				const internal::Vector3 &c = mesh->position(triIndices[i + 2]);
+				const float area = internal::length(internal::cross(b - a, c - a)) * 0.5f;
+				if (area <= internal::kAreaEpsilon) {
+					ignore = true;
+					if (++warningCount <= kMaxWarnings)
+						XA_PRINT("   Zero area face: %d, area is %f\n", face, area);
+					break;
+				}
 			}
 		}
-		if (!ignore) {
-			if (internal::equal(a, b, meshDecl.epsilon) || internal::equal(a, c, meshDecl.epsilon) || internal::equal(b, c, meshDecl.epsilon)) {
-				ignore = true;
-				if (++warningCount <= kMaxWarnings)
-					XA_PRINT("   Degenerate face: %d, area is %f\n", i, area);
-			}
-		}
-		if (meshDecl.faceIgnoreData && meshDecl.faceIgnoreData[i])
+		// User face ignore.
+		if (meshDecl.faceIgnoreData && meshDecl.faceIgnoreData[face])
 			ignore = true;
-		mesh->addFace(tri[0], tri[1], tri[2], ignore);
+		// User material.
+		uint32_t material = UINT32_MAX;
+		if (meshDecl.faceMaterialData)
+			material = meshDecl.faceMaterialData[face];
+		// Add the face(s).
+		for (uint32_t i = 0; i < triIndices.size(); i += 3) {
+			mesh->addFace(&triIndices[i], ignore, material);
+			if (meshPolygonMapping)
+				meshPolygonMapping->triangleToPolygonMap.push_back(face);
+		}
+		if (meshPolygonMapping) {
+			for (uint32_t i = 0; i < triIndices.size(); i++)
+				meshPolygonMapping->triangleToPolygonIndicesMap.push_back(triIndices[i]);
+		}
+		firstFaceIndex += faceVertexCount;
 	}
 	if (warningCount > kMaxWarnings)
 		XA_PRINT("   %u additional warnings truncated\n", warningCount - kMaxWarnings);
 	XA_PROFILE_END(addMeshCopyData)
 	ctx->meshes.push_back(mesh);
+	ctx->meshPolygonMappings.push_back(meshPolygonMapping);
 	ctx->paramAtlas.addMesh(mesh);
 	if (ctx->addMeshTaskGroup.value == UINT32_MAX)
-		ctx->addMeshTaskGroup = ctx->taskScheduler->createTaskGroup();
-	AddMeshTaskArgs *taskArgs = XA_NEW(internal::MemTag::Default, AddMeshTaskArgs); // The task frees this.
-	taskArgs->ctx = ctx;
-	taskArgs->mesh = mesh;
+		ctx->addMeshTaskGroup = ctx->taskScheduler->createTaskGroup(ctx);
 	internal::Task task;
-	task.userData = taskArgs;
+	task.userData = mesh;
 	task.func = runAddMeshTask;
 	ctx->taskScheduler->run(ctx->addMeshTaskGroup, task);
 	return AddMeshError::Success;
@@ -9479,41 +9224,43 @@ void AddMeshJoin(Atlas *atlas)
 		return;
 	}
 	Context *ctx = (Context *)atlas;
-	if (!ctx->addMeshProgress)
-		return;
-	ctx->taskScheduler->wait(&ctx->addMeshTaskGroup);
-	ctx->addMeshProgress->~Progress();
-	XA_FREE(ctx->addMeshProgress);
-	ctx->addMeshProgress = nullptr;
+	if (!ctx->uvMeshes.isEmpty()) {
 #if XA_PROFILE
-	XA_PRINT("Added %u meshes\n", ctx->meshes.size());
-	internal::s_profile.addMeshReal = clock() - internal::s_profile.addMeshReal;
+		XA_PRINT("Added %u UV meshes\n", ctx->uvMeshes.size());
+		internal::s_profile.addMeshReal = uint64_t(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - internal::s_profile.addMeshRealStart).count());
 #endif
-	XA_PROFILE_PRINT_AND_RESET("   Total (real): ", addMeshReal)
-	XA_PROFILE_PRINT_AND_RESET("      Copy data: ", addMeshCopyData)
-	XA_PROFILE_PRINT_AND_RESET("   Total (thread): ", addMeshThread)
-	XA_PROFILE_PRINT_AND_RESET("      Create colocals: ", addMeshCreateColocals)
+		XA_PROFILE_PRINT_AND_RESET("   Total: ", addMeshReal)
+		XA_PROFILE_PRINT_AND_RESET("      Copy data: ", addMeshCopyData)
 #if XA_PROFILE_ALLOC
-	XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
+		XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
 #endif
-	XA_PRINT_MEM_USAGE
+		XA_PRINT_MEM_USAGE
+	} else {
+		if (!ctx->addMeshProgress)
+			return;
+		ctx->taskScheduler->wait(&ctx->addMeshTaskGroup);
+		ctx->addMeshProgress->~Progress();
+		XA_FREE(ctx->addMeshProgress);
+		ctx->addMeshProgress = nullptr;
+#if XA_PROFILE
+		XA_PRINT("Added %u meshes\n", ctx->meshes.size());
+		internal::s_profile.addMeshReal = uint64_t(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - internal::s_profile.addMeshRealStart).count());
+#endif
+		XA_PROFILE_PRINT_AND_RESET("   Total (real): ", addMeshReal)
+		XA_PROFILE_PRINT_AND_RESET("      Copy data: ", addMeshCopyData)
+		XA_PROFILE_PRINT_AND_RESET("   Total (thread): ", addMeshThread)
+		XA_PROFILE_PRINT_AND_RESET("      Create colocals: ", addMeshCreateColocals)
+#if XA_PROFILE_ALLOC
+		XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
+#endif
+		XA_PRINT_MEM_USAGE
 #if XA_DEBUG_EXPORT_OBJ_FACE_GROUPS
-	internal::param::s_faceGroupsCurrentVertex = 0;
+		internal::param::s_faceGroupsCurrentVertex = 0;
 #endif
+	}
 }
 
-struct EdgeKey
-{
-	EdgeKey() {}
-	EdgeKey(const EdgeKey &k) : v0(k.v0), v1(k.v1) {}
-	EdgeKey(uint32_t v0, uint32_t v1) : v0(v0), v1(v1) {}
-	bool operator==(const EdgeKey &k) const { return v0 == k.v0 && v1 == k.v1; }
-
-	uint32_t v0;
-	uint32_t v1;
-};
-
-AddMeshError::Enum AddUvMesh(Atlas *atlas, const UvMeshDecl &decl)
+AddMeshError AddUvMesh(Atlas *atlas, const UvMeshDecl &decl)
 {
 	XA_DEBUG_ASSERT(atlas);
 	if (!atlas) {
@@ -9525,13 +9272,18 @@ AddMeshError::Enum AddUvMesh(Atlas *atlas, const UvMeshDecl &decl)
 		XA_PRINT_WARNING("AddUvMesh: Meshes and UV meshes cannot be added to the same atlas.\n");
 		return AddMeshError::Error;
 	}
-	const bool decoded = (decl.indexCount <= 0);
-	const uint32_t indexCount = decoded ? decl.vertexCount : decl.indexCount;
+#if XA_PROFILE
+	if (ctx->uvMeshInstances.isEmpty())
+		internal::s_profile.addMeshRealStart = std::chrono::high_resolution_clock::now();
+#endif
+	XA_PROFILE_START(addMeshCopyData)
+	const bool hasIndices = decl.indexCount > 0;
+	const uint32_t indexCount = hasIndices ? decl.indexCount : decl.vertexCount;
 	XA_PRINT("Adding UV mesh %d: %u vertices, %u triangles\n", ctx->uvMeshes.size(), decl.vertexCount, indexCount / 3);
 	// Expecting triangle faces.
 	if ((indexCount % 3) != 0)
 		return AddMeshError::InvalidIndexCount;
-	if (!decoded) {
+	if (hasIndices) {
 		// Check if any index is out of range.
 		for (uint32_t i = 0; i < indexCount; i++) {
 			const uint32_t index = DecodeIndex(decl.indexFormat, decl.indexData, decl.indexOffset, i);
@@ -9539,88 +9291,74 @@ AddMeshError::Enum AddUvMesh(Atlas *atlas, const UvMeshDecl &decl)
 				return AddMeshError::IndexOutOfRange;
 		}
 	}
+	// Create a mesh instance.
 	internal::UvMeshInstance *meshInstance = XA_NEW(internal::MemTag::Default, internal::UvMeshInstance);
-	meshInstance->texcoords.resize(decl.vertexCount);
-	for (uint32_t i = 0; i < decl.vertexCount; i++) {
-		internal::Vector2 texcoord = *((const internal::Vector2 *)&((const uint8_t *)decl.vertexUvData)[decl.vertexStride * i]);
-		// Set nan values to 0.
-		if (internal::isNan(texcoord.x) || internal::isNan(texcoord.y))
-			texcoord.x = texcoord.y = 0.0f;
-		meshInstance->texcoords[i] = texcoord;
-	}
-	meshInstance->rotateCharts = decl.rotateCharts;
+	meshInstance->mesh = nullptr;
+	ctx->uvMeshInstances.push_back(meshInstance);
 	// See if this is an instance of an already existing mesh.
 	internal::UvMesh *mesh = nullptr;
 	for (uint32_t m = 0; m < ctx->uvMeshes.size(); m++) {
 		if (memcmp(&ctx->uvMeshes[m]->decl, &decl, sizeof(UvMeshDecl)) == 0) {
-			meshInstance->mesh = mesh = ctx->uvMeshes[m];
+			mesh = ctx->uvMeshes[m];
+			XA_PRINT("   instance of a previous UV mesh\n");
 			break;
 		}
 	}
 	if (!mesh) {
 		// Copy geometry to mesh.
-		meshInstance->mesh = mesh = XA_NEW(internal::MemTag::Default, internal::UvMesh);
+		mesh = XA_NEW(internal::MemTag::Default, internal::UvMesh);
+		ctx->uvMeshes.push_back(mesh);
 		mesh->decl = decl;
+		if (decl.faceMaterialData) {
+			mesh->faceMaterials.resize(decl.indexCount / 3);
+			memcpy(mesh->faceMaterials.data(), decl.faceMaterialData, mesh->faceMaterials.size() * sizeof(uint32_t));
+		}
 		mesh->indices.resize(decl.indexCount);
 		for (uint32_t i = 0; i < indexCount; i++)
-			mesh->indices[i] = decoded ? i : DecodeIndex(decl.indexFormat, decl.indexData, decl.indexOffset, i);
-		mesh->vertexToChartMap.resize(decl.vertexCount);
-		for (uint32_t i = 0; i < mesh->vertexToChartMap.size(); i++)
-			mesh->vertexToChartMap[i] = UINT32_MAX;
-		// Calculate charts (incident faces).
-		internal::HashMap<internal::Vector2> vertexToFaceMap(internal::MemTag::Default, indexCount); // Face is index / 3
-		const uint32_t faceCount = indexCount / 3;
-		for (uint32_t i = 0; i < indexCount; i++)
-			vertexToFaceMap.add(meshInstance->texcoords[mesh->indices[i]]);
-		internal::BitArray faceAssigned(faceCount);
-		faceAssigned.zeroOutMemory();
-		for (uint32_t f = 0; f < faceCount; f++) {
-			if (faceAssigned.get(f))
-				continue;
-			// Found an unassigned face, create a new chart.
-			internal::UvMeshChart *chart = XA_NEW(internal::MemTag::Default, internal::UvMeshChart);
-			chart->material = decl.faceMaterialData ? decl.faceMaterialData[f] : 0;
-			// Walk incident faces and assign them to the chart.
-			faceAssigned.set(f);
-			chart->faces.push_back(f);
-			for (;;) {
-				bool newFaceAssigned = false;
-				const uint32_t faceCount2 = chart->faces.size();
-				for (uint32_t f2 = 0; f2 < faceCount2; f2++) {
-					const uint32_t face = chart->faces[f2];
-					for (uint32_t i = 0; i < 3; i++) {
-						const internal::Vector2 &texcoord = meshInstance->texcoords[meshInstance->mesh->indices[face * 3 + i]];
-						uint32_t mapIndex = vertexToFaceMap.get(texcoord);
-						while (mapIndex != UINT32_MAX) {
-							const uint32_t face2 = mapIndex / 3; // 3 vertices added per face.
-							// Materials must match.
-							if (!faceAssigned.get(face2) && (!decl.faceMaterialData || decl.faceMaterialData[face] == decl.faceMaterialData[face2])) {
-								faceAssigned.set(face2);
-								chart->faces.push_back(face2);
-								newFaceAssigned = true;
-							}
-							mapIndex = vertexToFaceMap.getNext(mapIndex);
-						}
-					}
-				}
-				if (!newFaceAssigned)
+			mesh->indices[i] = hasIndices ? DecodeIndex(decl.indexFormat, decl.indexData, decl.indexOffset, i) : i;
+		mesh->texcoords.resize(decl.vertexCount);
+		for (uint32_t i = 0; i < decl.vertexCount; i++)
+			mesh->texcoords[i] = *((const internal::Vector2 *)&((const uint8_t *)decl.vertexUvData)[decl.vertexStride * i]);
+		// Validate.
+		mesh->faceIgnore.resize(decl.indexCount / 3);
+		mesh->faceIgnore.zeroOutMemory();
+		const uint32_t kMaxWarnings = 50;
+		uint32_t warningCount = 0;
+		for (uint32_t f = 0; f < indexCount / 3; f++) {
+			bool ignore = false;
+			uint32_t tri[3];
+			for (uint32_t i = 0; i < 3; i++)
+				tri[i] = mesh->indices[f * 3 + i];
+			// Check for nan UVs.
+			for (uint32_t i = 0; i < 3; i++) {
+				const uint32_t vertex = tri[i];
+				if (internal::isNan(mesh->texcoords[vertex].x) || internal::isNan(mesh->texcoords[vertex].y)) {
+					ignore = true;
+					if (++warningCount <= kMaxWarnings)
+						XA_PRINT("   NAN texture coordinate in vertex %u\n", vertex);
 					break;
-			}
-			for (uint32_t i = 0; i < chart->faces.size(); i++) {
-				for (uint32_t j = 0; j < 3; j++) {
-					const uint32_t vertex = meshInstance->mesh->indices[chart->faces[i] * 3 + j];
-					chart->indices.push_back(vertex);
-					mesh->vertexToChartMap[vertex] = mesh->charts.size();
 				}
 			}
-			mesh->charts.push_back(chart);
+			// Check for zero area faces.
+			if (!ignore) {
+				const internal::Vector2 &v1 = mesh->texcoords[tri[0]];
+				const internal::Vector2 &v2 = mesh->texcoords[tri[1]];
+				const internal::Vector2 &v3 = mesh->texcoords[tri[2]];
+				const float area = fabsf(((v2.x - v1.x) * (v3.y - v1.y) - (v3.x - v1.x) * (v2.y - v1.y)) * 0.5f);
+				if (area <= internal::kAreaEpsilon) {
+					ignore = true;
+					if (++warningCount <= kMaxWarnings)
+						XA_PRINT("   Zero area face: %d, indices (%d %d %d), area is %f\n", f, tri[0], tri[1], tri[2], area);
+				}
+			}
+			if (ignore)
+				mesh->faceIgnore.set(f);
 		}
-		ctx->uvMeshes.push_back(mesh);
-	} else {
-		XA_PRINT("   instance of a previous UV mesh\n");
+		if (warningCount > kMaxWarnings)
+			XA_PRINT("   %u additional warnings truncated\n", warningCount - kMaxWarnings);
 	}
-	XA_PRINT("   %u charts\n", meshInstance->mesh->charts.size());
-	ctx->uvMeshInstances.push_back(meshInstance);
+	meshInstance->mesh = mesh;
+	XA_PROFILE_END(addMeshCopyData)
 	return AddMeshError::Success;
 }
 
@@ -9631,219 +9369,182 @@ void ComputeCharts(Atlas *atlas, ChartOptions options)
 		return;
 	}
 	Context *ctx = (Context *)atlas;
-	if (!ctx->uvMeshInstances.isEmpty()) {
-		XA_PRINT_WARNING("ComputeCharts: This function should not be called with UV meshes.\n");
-		return;
-	}
 	AddMeshJoin(atlas);
-	if (ctx->meshes.isEmpty()) {
-		XA_PRINT_WARNING("ComputeCharts: No meshes. Call AddMesh first.\n");
+	if (ctx->meshes.isEmpty() && ctx->uvMeshInstances.isEmpty()) {
+		XA_PRINT_WARNING("ComputeCharts: No meshes. Call AddMesh or AddUvMesh first.\n");
 		return;
 	}
-	XA_PRINT("Computing charts\n");
-	XA_PROFILE_START(computeChartsReal)
-	if (!ctx->paramAtlas.computeCharts(ctx->taskScheduler, options, ctx->progressFunc, ctx->progressUserData)) {
-		XA_PRINT("   Cancelled by user\n");
-		return;
-	}
-	XA_PROFILE_END(computeChartsReal)
-	// Count charts.
-	uint32_t chartCount = 0;
-	const uint32_t meshCount = ctx->meshes.size();
-	for (uint32_t i = 0; i < meshCount; i++) {
-		for (uint32_t j = 0; j < ctx->paramAtlas.chartGroupCount(i); j++) {
-			const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, j);
-			chartCount += chartGroup->segmentChartCount();
-		}
-	}
-	XA_PRINT("   %u charts\n", chartCount);
-#if XA_PROFILE
-	XA_PRINT("   Chart groups\n");
-	uint32_t chartGroupCount = 0;
-	for (uint32_t i = 0; i < meshCount; i++) {
-		XA_PRINT("      Mesh %u: %u chart groups\n", i, ctx->paramAtlas.chartGroupCount(i));
-		chartGroupCount += ctx->paramAtlas.chartGroupCount(i);
-	}
-	XA_PRINT("      %u total\n", chartGroupCount);
-#endif
-	XA_PROFILE_PRINT_AND_RESET("   Total (real): ", computeChartsReal)
-	XA_PROFILE_PRINT_AND_RESET("   Total (thread): ", computeChartsThread)
-	XA_PROFILE_PRINT_AND_RESET("      Create face groups: ", createFaceGroups)
-	XA_PROFILE_PRINT_AND_RESET("      Extract invalid mesh geometry: ", extractInvalidMeshGeometry)
-	XA_PROFILE_PRINT_AND_RESET("      Chart group compute charts (real): ", chartGroupComputeChartsReal)
-	XA_PROFILE_PRINT_AND_RESET("      Chart group compute charts (thread): ", chartGroupComputeChartsThread)
-	XA_PROFILE_PRINT_AND_RESET("         Create chart group mesh: ", createChartGroupMesh)
-	XA_PROFILE_PRINT_AND_RESET("            Create colocals: ", createChartGroupMeshColocals)
-	XA_PROFILE_PRINT_AND_RESET("            Create boundaries: ", createChartGroupMeshBoundaries)
-	XA_PROFILE_PRINT_AND_RESET("         Build atlas: ", buildAtlas)
-	XA_PROFILE_PRINT_AND_RESET("            Init: ", buildAtlasInit)
-	XA_PROFILE_PRINT_AND_RESET("            Planar charts: ", planarCharts)
-	XA_PROFILE_PRINT_AND_RESET("            Clustered charts: ", clusteredCharts)
-	XA_PROFILE_PRINT_AND_RESET("               Place seeds: ", clusteredChartsPlaceSeeds)
-	XA_PROFILE_PRINT_AND_RESET("                  Boundary intersection: ", clusteredChartsPlaceSeedsBoundaryIntersection)
-	XA_PROFILE_PRINT_AND_RESET("               Relocate seeds: ", clusteredChartsRelocateSeeds)
-	XA_PROFILE_PRINT_AND_RESET("               Reset: ", clusteredChartsReset)
-	XA_PROFILE_PRINT_AND_RESET("               Grow: ", clusteredChartsGrow)
-	XA_PROFILE_PRINT_AND_RESET("                  Boundary intersection: ", clusteredChartsGrowBoundaryIntersection)
-	XA_PROFILE_PRINT_AND_RESET("               Merge: ", clusteredChartsMerge)
-	XA_PROFILE_PRINT_AND_RESET("               Fill holes: ", clusteredChartsFillHoles)
-	XA_PROFILE_PRINT_AND_RESET("         Copy chart faces: ", copyChartFaces)
-#if XA_PROFILE_ALLOC
-	XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
-#endif
-	XA_PRINT_MEM_USAGE
-}
-
-void ParameterizeCharts(Atlas *atlas, ParameterizeOptions options)
-{
-	if (!atlas) {
-		XA_PRINT_WARNING("ParameterizeCharts: atlas is null.\n");
-		return;
-	}
-	Context *ctx = (Context *)atlas;
-	if (!ctx->uvMeshInstances.isEmpty()) {
-		XA_PRINT_WARNING("ParameterizeCharts: This function should not be called with UV meshes.\n");
-		return;
-	}
-	if (!ctx->paramAtlas.chartsComputed()) {
-		XA_PRINT_WARNING("ParameterizeCharts: ComputeCharts must be called first.\n");
-		return;
-	}
-	atlas->atlasCount = 0;
-	atlas->height = 0;
-	atlas->texelsPerUnit = 0;
-	atlas->width = 0;
-	if (atlas->utilization) {
+	// Reset atlas state. This function may be called multiple times, or again after PackCharts.
+	if (atlas->utilization)
 		XA_FREE(atlas->utilization);
-		atlas->utilization = nullptr;
-	}
-	if (atlas->image) {
+	if (atlas->image)
 		XA_FREE(atlas->image);
-		atlas->image = nullptr;
-	}
 	DestroyOutputMeshes(ctx);
-	XA_PRINT("Parameterizing charts\n");
-	XA_PROFILE_START(parameterizeChartsReal)
-	if (!ctx->paramAtlas.parameterizeCharts(ctx->taskScheduler, options, ctx->progressFunc, ctx->progressUserData)) {
-		XA_PRINT("   Cancelled by user\n");
+	memset(&ctx->atlas, 0, sizeof(Atlas));
+	XA_PRINT("Computing charts\n");
+	if (!ctx->meshes.isEmpty()) {
+		if (!ctx->paramAtlas.computeCharts(ctx->taskScheduler, options, ctx->progressFunc, ctx->progressUserData)) {
+			XA_PRINT("   Cancelled by user\n");
 			return;
-	}
-	XA_PROFILE_END(parameterizeChartsReal)
-	const uint32_t meshCount = ctx->meshes.size();
-	uint32_t chartCount = 0, chartsWithHolesCount = 0, holesCount = 0, chartsWithTJunctionsCount = 0, tJunctionsCount = 0, orthoChartsCount = 0, planarChartsCount = 0, lscmChartsCount = 0, piecewiseChartsCount = 0, chartsAddedCount = 0, chartsDeletedCount = 0;
-	for (uint32_t i = 0; i < meshCount; i++) {
-		for (uint32_t j = 0; j < ctx->paramAtlas.chartGroupCount(i); j++) {
-			const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, j);
-			for (uint32_t k = 0; k < chartGroup->chartCount(); k++) {
-				const internal::param::Chart *chart = chartGroup->chartAt(k);
-#if XA_PRINT_CHART_WARNINGS
-				if (chart->warningFlags() & internal::param::ChartWarningFlags::CloseHolesFailed)
-					XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u): failed to close holes\n", chartCount, i, j, k);
-				if (chart->warningFlags() & internal::param::ChartWarningFlags::FixTJunctionsDuplicatedEdge)
-					XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u): fixing t-junctions created non-manifold geometry\n", chartCount, i, j, k);
-				if (chart->warningFlags() & internal::param::ChartWarningFlags::FixTJunctionsFailed)
-					XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u): fixing t-junctions failed\n", chartCount, i, j, k);
-				if (chart->warningFlags() & internal::param::ChartWarningFlags::TriangulateDuplicatedEdge)
-					XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u): triangulation created non-manifold geometry\n", chartCount, i, j, k);
-#endif
-				holesCount += chart->closedHolesCount();
-				if (chart->closedHolesCount() > 0)
-					chartsWithHolesCount++;
-				tJunctionsCount += chart->fixedTJunctionsCount();
-				if (chart->fixedTJunctionsCount() > 0)
-					chartsWithTJunctionsCount++;
-				if (chart->type() == ChartType::Planar)
-					planarChartsCount++;
-				else if (chart->type() == ChartType::Ortho)
-					orthoChartsCount++;
-				else if (chart->type() == ChartType::LSCM)
-					lscmChartsCount++;
-				else if (chart->type() == ChartType::Piecewise)
-					piecewiseChartsCount++;
-			}
-			chartCount += chartGroup->chartCount();
-			chartsAddedCount += chartGroup->paramAddedChartsCount();
-			chartsDeletedCount += chartGroup->paramDeletedChartsCount();
 		}
-	}
-	if (holesCount > 0)
-		XA_PRINT("   %u holes closed in %u charts\n", holesCount, chartsWithHolesCount);
-	if (tJunctionsCount > 0)
-		XA_PRINT("   %u t-junctions fixed in %u charts\n", tJunctionsCount, chartsWithTJunctionsCount);
-	XA_PRINT("   %u planar charts, %u ortho charts, %u LSCM charts, %u piecewise charts\n", planarChartsCount, orthoChartsCount, lscmChartsCount, piecewiseChartsCount);
-	if (chartsDeletedCount > 0) {
-		XA_PRINT("   %u charts with invalid parameterizations replaced with %u new charts\n", chartsDeletedCount, chartsAddedCount);
+		uint32_t chartsWithTJunctionsCount = 0, tJunctionCount = 0, orthoChartsCount = 0, planarChartsCount = 0, lscmChartsCount = 0, piecewiseChartsCount = 0, originalUvChartsCount = 0;
+		uint32_t chartCount = 0;
+		const uint32_t meshCount = ctx->meshes.size();
+		for (uint32_t i = 0; i < meshCount; i++) {
+			for (uint32_t j = 0; j < ctx->paramAtlas.chartGroupCount(i); j++) {
+				const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, j);
+				for (uint32_t k = 0; k < chartGroup->chartCount(); k++) {
+					const internal::param::Chart *chart = chartGroup->chartAt(k);
+					tJunctionCount += chart->tjunctionCount();
+					if (chart->tjunctionCount() > 0)
+						chartsWithTJunctionsCount++;
+					if (chart->type() == ChartType::Planar)
+						planarChartsCount++;
+					else if (chart->type() == ChartType::Ortho)
+						orthoChartsCount++;
+					else if (chart->type() == ChartType::LSCM)
+						lscmChartsCount++;
+					else if (chart->type() == ChartType::Piecewise)
+						piecewiseChartsCount++;
+					if (chart->generatorType() == internal::segment::ChartGeneratorType::OriginalUv)
+						originalUvChartsCount++;
+				}
+				chartCount += chartGroup->chartCount();
+			}
+		}
+		if (tJunctionCount > 0)
+			XA_PRINT("   %u t-junctions found in %u charts\n", tJunctionCount, chartsWithTJunctionsCount);
 		XA_PRINT("   %u charts\n", chartCount);
-	}
-	uint32_t chartIndex = 0, invalidParamCount = 0;
-	for (uint32_t i = 0; i < meshCount; i++) {
-		for (uint32_t j = 0; j < ctx->paramAtlas.chartGroupCount(i); j++) {
-			const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, j);
-			for (uint32_t k = 0; k < chartGroup->chartCount(); k++) {
-				internal::param::Chart *chart = chartGroup->chartAt(k);
-				const internal::param::Quality &quality = chart->quality();
+		XA_PRINT("      %u planar, %u ortho, %u LSCM, %u piecewise\n", planarChartsCount, orthoChartsCount, lscmChartsCount, piecewiseChartsCount);
+		if (originalUvChartsCount > 0)
+			XA_PRINT("      %u with original UVs\n", originalUvChartsCount);
+		uint32_t chartIndex = 0, invalidParamCount = 0;
+		for (uint32_t i = 0; i < meshCount; i++) {
+			for (uint32_t j = 0; j < ctx->paramAtlas.chartGroupCount(i); j++) {
+				const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, j);
+				for (uint32_t k = 0; k < chartGroup->chartCount(); k++) {
+					internal::param::Chart *chart = chartGroup->chartAt(k);
+					const internal::param::Quality &quality = chart->quality();
 #if XA_DEBUG_EXPORT_OBJ_CHARTS_AFTER_PARAMETERIZATION
-				{
-					char filename[256];
-					XA_SPRINTF(filename, sizeof(filename), "debug_chart_%03u_after_parameterization.obj", chartIndex);
-					chart->unifiedMesh()->writeObjFile(filename);
-				}
+					{
+						char filename[256];
+						XA_SPRINTF(filename, sizeof(filename), "debug_chart_%03u_after_parameterization.obj", chartIndex);
+						chart->unifiedMesh()->writeObjFile(filename);
+					}
 #endif
-				const char *type = "LSCM";
-				if (chart->type() == ChartType::Planar)
-					type = "planar";
-				else if (chart->type() == ChartType::Ortho)
-					type = "ortho";
-				else if (chart->type() == ChartType::Piecewise)
-					type = "piecewise";
-				if (chart->isInvalid()) {
-					if (quality.boundaryIntersection) {
-						XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u) (%s): invalid parameterization, self-intersecting boundary.\n", chartIndex, i, j, k, type);
-					}
-					if (quality.flippedTriangleCount > 0) {
-						XA_PRINT_WARNING("   Chart %u  (mesh %u, group %u, id %u) (%s): invalid parameterization, %u / %u flipped triangles.\n", chartIndex, i, j, k, type, quality.flippedTriangleCount, quality.totalTriangleCount);
-					}
-					invalidParamCount++;
-#if XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION
-					char filename[256];
-					XA_SPRINTF(filename, sizeof(filename), "debug_chart_%03u_invalid_parameterization.obj", chartIndex);
-					const internal::Mesh *mesh = chart->unifiedMesh();
-					FILE *file;
-					XA_FOPEN(file, filename, "w");
-					if (file) {
-						mesh->writeObjVertices(file);
-						fprintf(file, "s off\n");
-						fprintf(file, "o object\n");
-						for (uint32_t f = 0; f < mesh->faceCount(); f++)
-							mesh->writeObjFace(file, f);
-						if (!chart->paramFlippedFaces().isEmpty()) {
-							fprintf(file, "o flipped_faces\n");
-							for (uint32_t f = 0; f < chart->paramFlippedFaces().size(); f++)
-								mesh->writeObjFace(file, chart->paramFlippedFaces()[f]);
+					const char *type = "LSCM";
+					if (chart->type() == ChartType::Planar)
+						type = "planar";
+					else if (chart->type() == ChartType::Ortho)
+						type = "ortho";
+					else if (chart->type() == ChartType::Piecewise)
+						type = "piecewise";
+					if (chart->isInvalid()) {
+						if (quality.boundaryIntersection) {
+							XA_PRINT_WARNING("   Chart %u (mesh %u, group %u, id %u) (%s): invalid parameterization, self-intersecting boundary.\n", chartIndex, i, j, k, type);
 						}
-						mesh->writeObjBoundaryEges(file);
-						mesh->writeObjLinkedBoundaries(file);
-						fclose(file);
-					}
+						if (quality.flippedTriangleCount > 0) {
+							XA_PRINT_WARNING("   Chart %u  (mesh %u, group %u, id %u) (%s): invalid parameterization, %u / %u flipped triangles.\n", chartIndex, i, j, k, type, quality.flippedTriangleCount, quality.totalTriangleCount);
+						}
+						if (quality.zeroAreaTriangleCount > 0) {
+							XA_PRINT_WARNING("   Chart %u  (mesh %u, group %u, id %u) (%s): invalid parameterization, %u / %u zero area triangles.\n", chartIndex, i, j, k, type, quality.zeroAreaTriangleCount, quality.totalTriangleCount);
+						}
+						invalidParamCount++;
+#if XA_DEBUG_EXPORT_OBJ_INVALID_PARAMETERIZATION
+						char filename[256];
+						XA_SPRINTF(filename, sizeof(filename), "debug_chart_%03u_invalid_parameterization.obj", chartIndex);
+						const internal::Mesh *mesh = chart->unifiedMesh();
+						FILE *file;
+						XA_FOPEN(file, filename, "w");
+						if (file) {
+							mesh->writeObjVertices(file);
+							fprintf(file, "s off\n");
+							fprintf(file, "o object\n");
+							for (uint32_t f = 0; f < mesh->faceCount(); f++)
+								mesh->writeObjFace(file, f);
+							if (!chart->paramFlippedFaces().isEmpty()) {
+								fprintf(file, "o flipped_faces\n");
+								for (uint32_t f = 0; f < chart->paramFlippedFaces().size(); f++)
+									mesh->writeObjFace(file, chart->paramFlippedFaces()[f]);
+							}
+							mesh->writeObjBoundaryEges(file);
+							fclose(file);
+						}
 #endif
+					}
+					chartIndex++;
 				}
-				chartIndex++;
 			}
 		}
+		if (invalidParamCount > 0)
+			XA_PRINT_WARNING("   %u charts with invalid parameterizations\n", invalidParamCount);
+#if XA_PROFILE
+		XA_PRINT("   Chart groups\n");
+		uint32_t chartGroupCount = 0;
+		for (uint32_t i = 0; i < meshCount; i++) {
+#if 0
+			XA_PRINT("      Mesh %u: %u chart groups\n", i, ctx->paramAtlas.chartGroupCount(i));
+#endif
+			chartGroupCount += ctx->paramAtlas.chartGroupCount(i);
+		}
+		XA_PRINT("      %u total\n", chartGroupCount);
+#endif
+		XA_PROFILE_PRINT_AND_RESET("   Compute charts total (real): ", computeChartsReal)
+		XA_PROFILE_PRINT_AND_RESET("   Compute charts total (thread): ", computeChartsThread)
+		XA_PROFILE_PRINT_AND_RESET("      Create face groups: ", createFaceGroups)
+		XA_PROFILE_PRINT_AND_RESET("      Extract invalid mesh geometry: ", extractInvalidMeshGeometry)
+		XA_PROFILE_PRINT_AND_RESET("      Chart group compute charts (real): ", chartGroupComputeChartsReal)
+		XA_PROFILE_PRINT_AND_RESET("      Chart group compute charts (thread): ", chartGroupComputeChartsThread)
+		XA_PROFILE_PRINT_AND_RESET("         Create chart group mesh: ", createChartGroupMesh)
+		XA_PROFILE_PRINT_AND_RESET("            Create colocals: ", createChartGroupMeshColocals)
+		XA_PROFILE_PRINT_AND_RESET("            Create boundaries: ", createChartGroupMeshBoundaries)
+		XA_PROFILE_PRINT_AND_RESET("         Build atlas: ", buildAtlas)
+		XA_PROFILE_PRINT_AND_RESET("            Init: ", buildAtlasInit)
+		XA_PROFILE_PRINT_AND_RESET("            Planar charts: ", planarCharts)
+		if (options.useInputMeshUvs) {
+			XA_PROFILE_PRINT_AND_RESET("            Original UV charts: ", originalUvCharts)
+		}
+		XA_PROFILE_PRINT_AND_RESET("            Clustered charts: ", clusteredCharts)
+		XA_PROFILE_PRINT_AND_RESET("               Place seeds: ", clusteredChartsPlaceSeeds)
+		XA_PROFILE_PRINT_AND_RESET("                  Boundary intersection: ", clusteredChartsPlaceSeedsBoundaryIntersection)
+		XA_PROFILE_PRINT_AND_RESET("               Relocate seeds: ", clusteredChartsRelocateSeeds)
+		XA_PROFILE_PRINT_AND_RESET("               Reset: ", clusteredChartsReset)
+		XA_PROFILE_PRINT_AND_RESET("               Grow: ", clusteredChartsGrow)
+		XA_PROFILE_PRINT_AND_RESET("                  Boundary intersection: ", clusteredChartsGrowBoundaryIntersection)
+		XA_PROFILE_PRINT_AND_RESET("               Merge: ", clusteredChartsMerge)
+		XA_PROFILE_PRINT_AND_RESET("               Fill holes: ", clusteredChartsFillHoles)
+		XA_PROFILE_PRINT_AND_RESET("         Copy chart faces: ", copyChartFaces)
+		XA_PROFILE_PRINT_AND_RESET("      Create chart mesh and parameterize (real): ", createChartMeshAndParameterizeReal)
+		XA_PROFILE_PRINT_AND_RESET("      Create chart mesh and parameterize (thread): ", createChartMeshAndParameterizeThread)
+		XA_PROFILE_PRINT_AND_RESET("         Create chart mesh: ", createChartMesh)
+		XA_PROFILE_PRINT_AND_RESET("         Parameterize charts: ", parameterizeCharts)
+		XA_PROFILE_PRINT_AND_RESET("            Orthogonal: ", parameterizeChartsOrthogonal)
+		XA_PROFILE_PRINT_AND_RESET("            LSCM: ", parameterizeChartsLSCM)
+		XA_PROFILE_PRINT_AND_RESET("            Recompute: ", parameterizeChartsRecompute)
+		XA_PROFILE_PRINT_AND_RESET("               Piecewise: ", parameterizeChartsPiecewise)
+		XA_PROFILE_PRINT_AND_RESET("                  Boundary intersection: ", parameterizeChartsPiecewiseBoundaryIntersection)
+		XA_PROFILE_PRINT_AND_RESET("            Evaluate quality: ", parameterizeChartsEvaluateQuality)
+#if XA_PROFILE_ALLOC
+		XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
+#endif
+		XA_PRINT_MEM_USAGE
+	} else {
+		XA_PROFILE_START(computeChartsReal)
+		if (!internal::segment::computeUvMeshCharts(ctx->taskScheduler, ctx->uvMeshes, ctx->progressFunc, ctx->progressUserData)) {
+			XA_PRINT("   Cancelled by user\n");
+			return;
+		}
+		XA_PROFILE_END(computeChartsReal)
+		ctx->uvMeshChartsComputed = true;
+		// Count charts.
+		uint32_t chartCount = 0;
+		const uint32_t meshCount = ctx->uvMeshes.size();
+		for (uint32_t i = 0; i < meshCount; i++)
+			chartCount += ctx->uvMeshes[i]->charts.size();
+		XA_PRINT("   %u charts\n", chartCount);
+		XA_PROFILE_PRINT_AND_RESET("   Total (real): ", computeChartsReal)
+		XA_PROFILE_PRINT_AND_RESET("   Total (thread): ", computeChartsThread)
 	}
-	if (invalidParamCount > 0)
-		XA_PRINT_WARNING("   %u charts with invalid parameterizations\n", invalidParamCount);
-	XA_PROFILE_PRINT_AND_RESET("   Total (real): ", parameterizeChartsReal)
-	XA_PROFILE_PRINT_AND_RESET("   Total (thread): ", parameterizeChartsThread)
-	XA_PROFILE_PRINT_AND_RESET("      Create chart mesh: ", createChartMesh)
-	XA_PROFILE_PRINT_AND_RESET("         Fix t-junctions: ", fixChartMeshTJunctions)
-	XA_PROFILE_PRINT_AND_RESET("         Close holes: ", closeChartMeshHoles)
-	XA_PROFILE_PRINT_AND_RESET("      Orthogonal: ", parameterizeChartsOrthogonal)
-	XA_PROFILE_PRINT_AND_RESET("      LSCM: ", parameterizeChartsLSCM)
-	XA_PROFILE_PRINT_AND_RESET("      Recompute: ", parameterizeChartsRecompute)
-	XA_PROFILE_PRINT_AND_RESET("         Piecewise: ", parameterizeChartsPiecewise)
-	XA_PROFILE_PRINT_AND_RESET("            Boundary intersection: ", parameterizeChartsPiecewiseBoundaryIntersection)
-	XA_PROFILE_PRINT_AND_RESET("      Evaluate quality: ", parameterizeChartsEvaluateQuality)
 #if XA_PROFILE_ALLOC
 	XA_PROFILE_PRINT_AND_RESET("   Alloc: ", alloc)
 #endif
@@ -9867,10 +9568,9 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 			XA_PRINT_WARNING("PackCharts: ComputeCharts must be called first.\n");
 			return;
 		}
-		if (!ctx->paramAtlas.chartsParameterized()) {
-			XA_PRINT_WARNING("PackCharts: ParameterizeCharts must be called first.\n");
-			return;
-		}
+	} else if (!ctx->uvMeshChartsComputed) {
+		XA_PRINT_WARNING("PackCharts: ComputeCharts must be called first.\n");
+		return;
 	}
 	if (packOptions.texelsPerUnit < 0.0f) {
 		XA_PRINT_WARNING("PackCharts: PackOptions::texelsPerUnit is negative.\n");
@@ -9946,16 +9646,35 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 		uint32_t chartIndex = 0;
 		for (uint32_t i = 0; i < atlas->meshCount; i++) {
 			Mesh &outputMesh = atlas->meshes[i];
+			MeshPolygonMapping *meshPolygonMapping = ctx->meshPolygonMappings[i];
+			// One polygon can have many triangles. Don't want to process the same polygon more than once when counting indices, building chart faces etc.
+			internal::BitArray polygonTouched;
+			if (meshPolygonMapping) {
+				polygonTouched.resize(meshPolygonMapping->faceVertexCount.size());
+				polygonTouched.zeroOutMemory();
+			}
 			// Count and alloc arrays.
-			const internal::param::InvalidMeshGeometry &invalid = ctx->paramAtlas.invalidMeshGeometry(i);
+			const internal::InvalidMeshGeometry &invalid = ctx->paramAtlas.invalidMeshGeometry(i);
 			outputMesh.vertexCount += invalid.vertices().length;
 			outputMesh.indexCount += invalid.faces().length * 3;
 			for (uint32_t cg = 0; cg < ctx->paramAtlas.chartGroupCount(i); cg++) {
 				const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, cg);
 				for (uint32_t c = 0; c < chartGroup->chartCount(); c++) {
 					const internal::param::Chart *chart = chartGroup->chartAt(c);
-					outputMesh.vertexCount += chart->mesh()->vertexCount();
-					outputMesh.indexCount += chart->mesh()->faceCount() * 3;
+					outputMesh.vertexCount += chart->originalVertexCount();
+					const uint32_t faceCount = chart->unifiedMesh()->faceCount();
+					if (meshPolygonMapping) {
+						// Map triangles back to polygons and count the polygon vertices.
+						for (uint32_t f = 0; f < faceCount; f++) {
+							const uint32_t polygon = meshPolygonMapping->triangleToPolygonMap[chart->mapFaceToSourceFace(f)];
+							if (!polygonTouched.get(polygon)) {
+								polygonTouched.set(polygon);
+								outputMesh.indexCount += meshPolygonMapping->faceVertexCount[polygon];
+							}
+						}
+					} else {
+						outputMesh.indexCount += faceCount * 3;
+					}
 					outputMesh.chartCount++;
 				}
 			}
@@ -9966,7 +9685,7 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 			// Copy mesh data.
 			uint32_t firstVertex = 0;
 			{
-				const internal::param::InvalidMeshGeometry &mesh = ctx->paramAtlas.invalidMeshGeometry(i);
+				const internal::InvalidMeshGeometry &mesh = ctx->paramAtlas.invalidMeshGeometry(i);
 				internal::ConstArrayView<uint32_t> faces = mesh.faces();
 				internal::ConstArrayView<uint32_t> indices = mesh.indices();
 				internal::ConstArrayView<uint32_t> vertices = mesh.vertices();
@@ -9991,23 +9710,50 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 				const internal::param::ChartGroup *chartGroup = ctx->paramAtlas.chartGroupAt(i, cg);
 				for (uint32_t c = 0; c < chartGroup->chartCount(); c++) {
 					const internal::param::Chart *chart = chartGroup->chartAt(c);
-					const internal::Mesh *mesh = chart->mesh();
+					const internal::Mesh *unifiedMesh = chart->unifiedMesh();
+					const uint32_t faceCount = unifiedMesh->faceCount();
+#if XA_CHECK_PARAM_WINDING
+					uint32_t flippedCount = 0;
+					for (uint32_t f = 0; f < faceCount; f++) {
+						const float area = mesh->computeFaceParametricArea(f);
+						if (area < 0.0f)
+							flippedCount++;
+					}
+					const char *type = "LSCM";
+					if (chart->type() == ChartType::Planar)
+						type = "planar";
+					else if (chart->type() == ChartType::Ortho)
+						type = "ortho";
+					else if (chart->type() == ChartType::Piecewise)
+						type = "piecewise";
+					if (flippedCount > 0) {
+						if (flippedCount == faceCount) {
+							XA_PRINT_WARNING("chart %u (%s): all face flipped\n", chartIndex, type);
+						} else {
+							XA_PRINT_WARNING("chart %u (%s): %u / %u faces flipped\n", chartIndex, type, flippedCount, faceCount);
+						}
+					}
+#endif
 					// Vertices.
-					for (uint32_t v = 0; v < mesh->vertexCount(); v++) {
+					for (uint32_t v = 0; v < chart->originalVertexCount(); v++) {
 						Vertex &vertex = outputMesh.vertexArray[firstVertex + v];
 						vertex.atlasIndex = packAtlas.getChart(chartIndex)->atlasIndex;
 						XA_DEBUG_ASSERT(vertex.atlasIndex >= 0);
 						vertex.chartIndex = (int32_t)chartIndex;
-						const internal::Vector2 &uv = mesh->texcoord(v);
+						const internal::Vector2 &uv = unifiedMesh->texcoord(chart->originalVertexToUnifiedVertex(v));
 						vertex.uv[0] = internal::max(0.0f, uv.x);
 						vertex.uv[1] = internal::max(0.0f, uv.y);
 						vertex.xref = chart->mapChartVertexToSourceVertex(v);
 					}
 					// Indices.
-					for (uint32_t f = 0; f < mesh->faceCount(); f++) {
+					for (uint32_t f = 0; f < faceCount; f++) {
 						const uint32_t indexOffset = chart->mapFaceToSourceFace(f) * 3;
-						for (uint32_t j = 0; j < 3; j++)
-							outputMesh.indexArray[indexOffset + j] = firstVertex + mesh->vertexAt(f * 3 + j);
+						for (uint32_t j = 0; j < 3; j++) {
+							uint32_t outIndex = indexOffset + j;
+							if (meshPolygonMapping)
+								outIndex = meshPolygonMapping->triangleToPolygonIndicesMap[outIndex];
+							outputMesh.indexArray[outIndex] = firstVertex + chart->originalVertices()[f * 3 + j];
+						}
 					}
 					// Charts.
 					Chart *outputChart = &outputMesh.chartArray[meshChartIndex];
@@ -10015,14 +9761,38 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 					XA_DEBUG_ASSERT(atlasIndex >= 0);
 					outputChart->atlasIndex = (uint32_t)atlasIndex;
 					outputChart->type = chart->isInvalid() ? ChartType::Invalid : chart->type();
-					outputChart->faceCount = mesh->faceCount();
-					outputChart->faceArray = XA_ALLOC_ARRAY(internal::MemTag::Default, uint32_t, outputChart->faceCount);
-					for (uint32_t f = 0; f < outputChart->faceCount; f++)
-						outputChart->faceArray[f] = chart->mapFaceToSourceFace(f);
+					if (meshPolygonMapping) {
+						// Count polygons.
+						polygonTouched.zeroOutMemory();
+						outputChart->faceCount = 0;
+						for (uint32_t f = 0; f < faceCount; f++) {
+							const uint32_t polygon = meshPolygonMapping->triangleToPolygonMap[chart->mapFaceToSourceFace(f)];
+							if (!polygonTouched.get(polygon)) {
+								polygonTouched.set(polygon);
+								outputChart->faceCount++;
+							}
+						}
+						// Write polygons.
+						outputChart->faceArray = XA_ALLOC_ARRAY(internal::MemTag::Default, uint32_t, outputChart->faceCount);
+						polygonTouched.zeroOutMemory();
+						uint32_t of = 0;
+						for (uint32_t f = 0; f < faceCount; f++) {
+							const uint32_t polygon = meshPolygonMapping->triangleToPolygonMap[chart->mapFaceToSourceFace(f)];
+							if (!polygonTouched.get(polygon)) {
+								polygonTouched.set(polygon);
+								outputChart->faceArray[of++] = polygon;
+							}
+						}
+					} else {
+						outputChart->faceCount = faceCount;
+						outputChart->faceArray = XA_ALLOC_ARRAY(internal::MemTag::Default, uint32_t, outputChart->faceCount);
+						for (uint32_t f = 0; f < outputChart->faceCount; f++)
+							outputChart->faceArray[f] = chart->mapFaceToSourceFace(f);
+					}
 					outputChart->material = 0;
 					meshChartIndex++;
 					chartIndex++;
-					firstVertex += mesh->vertexCount();
+					firstVertex += chart->originalVertexCount();
 				}
 			}
 			XA_DEBUG_ASSERT(outputMesh.vertexCount == firstVertex);
@@ -10102,23 +9872,18 @@ void PackCharts(Atlas *atlas, PackOptions packOptions)
 	XA_PRINT_MEM_USAGE
 }
 
-void Generate(Atlas *atlas, ChartOptions chartOptions, ParameterizeOptions parameterizeOptions, PackOptions packOptions)
+void Generate(Atlas *atlas, ChartOptions chartOptions, PackOptions packOptions)
 {
 	if (!atlas) {
 		XA_PRINT_WARNING("Generate: atlas is null.\n");
 		return;
 	}
 	Context *ctx = (Context *)atlas;
-	if (!ctx->uvMeshInstances.isEmpty()) {
-		XA_PRINT_WARNING("Generate: This function should not be called with UV meshes.\n");
-		return;
-	}
-	if (ctx->meshes.isEmpty()) {
-		XA_PRINT_WARNING("Generate: No meshes. Call AddMesh first.\n");
+	if (ctx->meshes.isEmpty() && ctx->uvMeshInstances.isEmpty()) {
+		XA_PRINT_WARNING("Generate: No meshes. Call AddMesh or AddUvMesh first.\n");
 		return;
 	}
 	ComputeCharts(atlas, chartOptions);
-	ParameterizeCharts(atlas, parameterizeOptions);
 	PackCharts(atlas, packOptions);
 }
 
@@ -10145,25 +9910,25 @@ void SetPrint(PrintFunc print, bool verbose)
 	internal::s_printVerbose = verbose;
 }
 
-const char *StringForEnum(AddMeshError::Enum error)
+const char *StringForEnum(AddMeshError error)
 {
 	if (error == AddMeshError::Error)
 		return "Unspecified error";
 	if (error == AddMeshError::IndexOutOfRange)
 		return "Index out of range";
+	if (error == AddMeshError::InvalidFaceVertexCount)
+		return "Invalid face vertex count";
 	if (error == AddMeshError::InvalidIndexCount)
 		return "Invalid index count";
 	return "Success";
 }
 
-const char *StringForEnum(ProgressCategory::Enum category)
+const char *StringForEnum(ProgressCategory category)
 {
 	if (category == ProgressCategory::AddMesh)
 		return "Adding mesh(es)";
 	if (category == ProgressCategory::ComputeCharts)
 		return "Computing charts";
-	if (category == ProgressCategory::ParameterizeCharts)
-		return "Parameterizing charts";
 	if (category == ProgressCategory::PackCharts)
 		return "Packing charts";
 	if (category == ProgressCategory::BuildOutputMeshes)
@@ -10172,3 +9937,113 @@ const char *StringForEnum(ProgressCategory::Enum category)
 }
 
 } // namespace xatlas
+
+#if XATLAS_C_API
+static_assert(sizeof(xatlas::Chart) == sizeof(xatlasChart), "xatlasChart size mismatch");
+static_assert(sizeof(xatlas::Vertex) == sizeof(xatlasVertex), "xatlasVertex size mismatch");
+static_assert(sizeof(xatlas::Mesh) == sizeof(xatlasMesh), "xatlasMesh size mismatch");
+static_assert(sizeof(xatlas::Atlas) == sizeof(xatlasAtlas), "xatlasAtlas size mismatch");
+static_assert(sizeof(xatlas::MeshDecl) == sizeof(xatlasMeshDecl), "xatlasMeshDecl size mismatch");
+static_assert(sizeof(xatlas::UvMeshDecl) == sizeof(xatlasUvMeshDecl), "xatlasUvMeshDecl size mismatch");
+static_assert(sizeof(xatlas::ChartOptions) == sizeof(xatlasChartOptions), "xatlasChartOptions size mismatch");
+static_assert(sizeof(xatlas::PackOptions) == sizeof(xatlasPackOptions), "xatlasPackOptions size mismatch");
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+xatlasAtlas *xatlasCreate()
+{
+	return (xatlasAtlas *)xatlas::Create();
+}
+
+void xatlasDestroy(xatlasAtlas *atlas)
+{
+	xatlas::Destroy((xatlas::Atlas *)atlas);
+}
+
+xatlasAddMeshError xatlasAddMesh(xatlasAtlas *atlas, const xatlasMeshDecl *meshDecl, uint32_t meshCountHint)
+{
+	return (xatlasAddMeshError)xatlas::AddMesh((xatlas::Atlas *)atlas, *(const xatlas::MeshDecl *)meshDecl, meshCountHint);
+}
+
+void xatlasAddMeshJoin(xatlasAtlas *atlas)
+{
+	xatlas::AddMeshJoin((xatlas::Atlas *)atlas);
+}
+
+xatlasAddMeshError xatlasAddUvMesh(xatlasAtlas *atlas, const xatlasUvMeshDecl *decl)
+{
+	return (xatlasAddMeshError)xatlas::AddUvMesh((xatlas::Atlas *)atlas, *(const xatlas::UvMeshDecl *)decl);
+}
+
+void xatlasComputeCharts(xatlasAtlas *atlas, const xatlasChartOptions *chartOptions)
+{
+	xatlas::ComputeCharts((xatlas::Atlas *)atlas, chartOptions ? *(xatlas::ChartOptions *)chartOptions : xatlas::ChartOptions());
+}
+
+void xatlasPackCharts(xatlasAtlas *atlas, const xatlasPackOptions *packOptions)
+{
+	xatlas::PackCharts((xatlas::Atlas *)atlas, packOptions ? *(xatlas::PackOptions *)packOptions : xatlas::PackOptions());
+}
+
+void xatlasGenerate(xatlasAtlas *atlas, const xatlasChartOptions *chartOptions, const xatlasPackOptions *packOptions)
+{
+	xatlas::Generate((xatlas::Atlas *)atlas, chartOptions ? *(xatlas::ChartOptions *)chartOptions : xatlas::ChartOptions(), packOptions ? *(xatlas::PackOptions *)packOptions : xatlas::PackOptions());
+}
+
+void xatlasSetProgressCallback(xatlasAtlas *atlas, xatlasProgressFunc progressFunc, void *progressUserData)
+{
+	xatlas::ProgressFunc pf;
+	*(void **)&pf = (void *)progressFunc;
+	xatlas::SetProgressCallback((xatlas::Atlas *)atlas, pf, progressUserData);
+}
+
+void xatlasSetAlloc(xatlasReallocFunc reallocFunc, xatlasFreeFunc freeFunc)
+{
+	xatlas::SetAlloc((xatlas::ReallocFunc)reallocFunc, (xatlas::FreeFunc)freeFunc);
+}
+
+void xatlasSetPrint(xatlasPrintFunc print, bool verbose)
+{
+	xatlas::SetPrint((xatlas::PrintFunc)print, verbose);
+}
+
+const char *xatlasAddMeshErrorString(xatlasAddMeshError error)
+{
+	return xatlas::StringForEnum((xatlas::AddMeshError)error);
+}
+
+const char *xatlasProgressCategoryString(xatlasProgressCategory category)
+{
+	return xatlas::StringForEnum((xatlas::ProgressCategory)category);
+}
+
+void xatlasMeshDeclInit(xatlasMeshDecl *meshDecl)
+{
+	xatlas::MeshDecl init;
+	memcpy(meshDecl, &init, sizeof(init));
+}
+
+void xatlasUvMeshDeclInit(xatlasUvMeshDecl *uvMeshDecl)
+{
+	xatlas::UvMeshDecl init;
+	memcpy(uvMeshDecl, &init, sizeof(init));
+}
+
+void xatlasChartOptionsInit(xatlasChartOptions *chartOptions)
+{
+	xatlas::ChartOptions init;
+	memcpy(chartOptions, &init, sizeof(init));
+}
+
+void xatlasPackOptionsInit(xatlasPackOptions *packOptions)
+{
+	xatlas::PackOptions init;
+	memcpy(packOptions, &init, sizeof(init));
+}
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#endif // XATLAS_C_API

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,6 @@ class EditorNetworkProfiler;
 class ScriptEditorDebuggerInspectedObject;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 public:
@@ -80,6 +79,7 @@ private:
 		ITEM_MENU_COPY_ERROR,
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
+		ITEM_MENU_OPEN_SOURCE,
 	};
 
 	AcceptDialog *msgdialog;
@@ -98,6 +98,7 @@ private:
 	float inspect_edited_object_timeout;
 	bool auto_switch_remote_scene_tree;
 	ObjectID inspected_object_id;
+	String last_filter;
 	ScriptEditorDebuggerVariables *variables;
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<RES> remote_dependencies;
@@ -123,6 +124,7 @@ private:
 	int last_warning_count;
 
 	bool hide_on_stop;
+	int remote_port;
 	bool enable_external_editor;
 
 	bool skip_breakpoints_value = false;
@@ -141,7 +143,7 @@ private:
 	Button *dobreak;
 	Button *docontinue;
 
-	List<Vector<float> > perf_history;
+	List<Vector<float>> perf_history;
 	Vector<float> perf_max;
 	Vector<TreeItem *> perf_items;
 
@@ -157,6 +159,7 @@ private:
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
+	LineEdit *search;
 	EditorInspector *inspector;
 
 	Ref<TCP_Server> server;
@@ -241,7 +244,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void start();
+	void start(int p_port = -1, const IP_Address &p_bind_address = IP_Address("*"));
 	void pause();
 	void unpause();
 	void stop();
@@ -279,6 +282,7 @@ public:
 	void set_hide_on_stop(bool p_hide);
 
 	bool get_debug_with_external_editor() const;
+	String get_connection_string() const;
 	void set_debug_with_external_editor(bool p_enabled);
 
 	Ref<Script> get_dump_stack_script() const;
@@ -290,7 +294,7 @@ public:
 	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const;
-	ScriptEditorDebugger(EditorNode *p_editor = NULL);
+	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,14 +149,13 @@ struct Location {
  * Represents a link between a source and a target location.
  */
 struct LocationLink {
-
 	/**
 	 * Span of the origin of this link.
 	 *
 	 * Used as the underlined span for mouse interaction. Defaults to the word range at
 	 * the mouse position.
 	 */
-	Range *originSelectionRange = NULL;
+	Range *originSelectionRange = nullptr;
 
 	/**
 	 * The target resource identifier of this link.
@@ -220,7 +219,6 @@ struct DocumentLinkParams {
  * text document or a web site.
  */
 struct DocumentLink {
-
 	/**
 	 * The range this link applies to.
 	 */
@@ -257,6 +255,72 @@ struct TextEdit {
 };
 
 /**
+ * The edits to be applied.
+ */
+struct WorkspaceEdit {
+	/**
+	 * Holds changes to existing resources.
+	 */
+	Map<String, Vector<TextEdit>> changes;
+
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		Dictionary out_changes;
+		for (Map<String, Vector<TextEdit>>::Element *E = changes.front(); E; E = E->next()) {
+			Array edits;
+			for (int i = 0; i < E->get().size(); ++i) {
+				Dictionary text_edit;
+				text_edit["range"] = E->get()[i].range.to_json();
+				text_edit["newText"] = E->get()[i].newText;
+				edits.push_back(text_edit);
+			}
+			out_changes[E->key()] = edits;
+		}
+		dict["changes"] = out_changes;
+
+		return dict;
+	}
+
+	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			Vector<TextEdit> edit_list = E->value();
+			for (int i = 0; i < edit_list.size(); ++i) {
+				TextEdit edit = edit_list[i];
+				if (edit.range.start.character == start_character) {
+					return;
+				}
+			}
+		}
+
+		TextEdit new_edit;
+		new_edit.newText = new_text;
+		new_edit.range.start.line = line;
+		new_edit.range.start.character = start_character;
+		new_edit.range.end.line = line;
+		new_edit.range.end.character = end_character;
+
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			E->value().push_back(new_edit);
+		} else {
+			Vector<TextEdit> edit_list;
+			edit_list.push_back(new_edit);
+			changes.insert(uri, edit_list);
+		}
+	}
+};
+
+/**
  * Represents a reference to a command.
  * Provides a title which will be used to represent a command in the UI.
  * Commands are identified by a string identifier.
@@ -282,7 +346,9 @@ struct Command {
 		Dictionary dict;
 		dict["title"] = title;
 		dict["command"] = command;
-		if (arguments.size()) dict["arguments"] = arguments;
+		if (arguments.size()) {
+			dict["arguments"] = arguments;
+		}
 		return dict;
 	}
 };
@@ -292,21 +358,21 @@ struct Command {
 
 namespace TextDocumentSyncKind {
 /**
-	 * Documents should not be synced at all.
-	 */
+ * Documents should not be synced at all.
+ */
 static const int None = 0;
 
 /**
-	 * Documents are synced by always sending the full content
-	 * of the document.
-	 */
+ * Documents are synced by always sending the full content
+ * of the document.
+ */
 static const int Full = 1;
 
 /**
-	 * Documents are synced by sending the full content on open.
-	 * After that only incremental updates to the document are
-	 * send.
-	 */
+ * Documents are synced by sending the full content on open.
+ * After that only incremental updates to the document are
+ * send.
+ */
 static const int Incremental = 2;
 }; // namespace TextDocumentSyncKind
 
@@ -486,7 +552,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	bool save = false;
+	SaveOptions save;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +560,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save;
+		dict["save"] = save.to_json();
 		return dict;
 	}
 };
@@ -601,20 +667,20 @@ struct TextDocumentContentChangeEvent {
 // Use namespace instead of enumeration to follow the LSP specifications
 namespace DiagnosticSeverity {
 /**
-	 * Reports an error.
-	 */
+ * Reports an error.
+ */
 static const int Error = 1;
 /**
-	 * Reports a warning.
-	 */
+ * Reports a warning.
+ */
 static const int Warning = 2;
 /**
-	 * Reports an information.
-	 */
+ * Reports an information.
+ */
 static const int Information = 3;
 /**
-	 * Reports a hint.
-	 */
+ * Reports a hint.
+ */
 static const int Hint = 4;
 }; // namespace DiagnosticSeverity
 
@@ -805,18 +871,18 @@ static const int TypeParameter = 25;
  */
 namespace InsertTextFormat {
 /**
-	 * The primary text to be inserted is treated as a plain string.
-	 */
+ * The primary text to be inserted is treated as a plain string.
+ */
 static const int PlainText = 1;
 
 /**
-	 * The primary text to be inserted is treated as a snippet.
-	 *
-	 * A snippet can define tab stops and placeholders with `$1`, `$2`
-	 * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-	 * the end of the snippet. Placeholders with equal identifiers are linked,
-	 * that is typing in one will update others too.
-	 */
+ * The primary text to be inserted is treated as a snippet.
+ *
+ * A snippet can define tab stops and placeholders with `$1`, `$2`
+ * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+ * the end of the snippet. Placeholders with equal identifiers are linked,
+ * that is typing in one will update others too.
+ */
 static const int Snippet = 2;
 }; // namespace InsertTextFormat
 
@@ -946,16 +1012,24 @@ struct CompletionItem {
 			dict["preselect"] = preselect;
 			dict["sortText"] = sortText;
 			dict["filterText"] = filterText;
-			if (commitCharacters.size()) dict["commitCharacters"] = commitCharacters;
+			if (commitCharacters.size()) {
+				dict["commitCharacters"] = commitCharacters;
+			}
 			dict["command"] = command.to_json();
 		}
 		return dict;
 	}
 
 	void load(const Dictionary &p_dict) {
-		if (p_dict.has("label")) label = p_dict["label"];
-		if (p_dict.has("kind")) kind = p_dict["kind"];
-		if (p_dict.has("detail")) detail = p_dict["detail"];
+		if (p_dict.has("label")) {
+			label = p_dict["label"];
+		}
+		if (p_dict.has("kind")) {
+			kind = p_dict["kind"];
+		}
+		if (p_dict.has("detail")) {
+			detail = p_dict["detail"];
+		}
 		if (p_dict.has("documentation")) {
 			Variant doc = p_dict["documentation"];
 			if (doc.get_type() == Variant::STRING) {
@@ -965,12 +1039,24 @@ struct CompletionItem {
 				documentation.value = v["value"];
 			}
 		}
-		if (p_dict.has("deprecated")) deprecated = p_dict["deprecated"];
-		if (p_dict.has("preselect")) preselect = p_dict["preselect"];
-		if (p_dict.has("sortText")) sortText = p_dict["sortText"];
-		if (p_dict.has("filterText")) filterText = p_dict["filterText"];
-		if (p_dict.has("insertText")) insertText = p_dict["insertText"];
-		if (p_dict.has("data")) data = p_dict["data"];
+		if (p_dict.has("deprecated")) {
+			deprecated = p_dict["deprecated"];
+		}
+		if (p_dict.has("preselect")) {
+			preselect = p_dict["preselect"];
+		}
+		if (p_dict.has("sortText")) {
+			sortText = p_dict["sortText"];
+		}
+		if (p_dict.has("filterText")) {
+			filterText = p_dict["filterText"];
+		}
+		if (p_dict.has("insertText")) {
+			insertText = p_dict["insertText"];
+		}
+		if (p_dict.has("data")) {
+			data = p_dict["data"];
+		}
 	}
 };
 
@@ -998,32 +1084,32 @@ struct CompletionList {
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 0;
-static const int Module = 1;
-static const int Namespace = 2;
-static const int Package = 3;
-static const int Class = 4;
-static const int Method = 5;
-static const int Property = 6;
-static const int Field = 7;
-static const int Constructor = 8;
-static const int Enum = 9;
-static const int Interface = 10;
-static const int Function = 11;
-static const int Variable = 12;
-static const int Constant = 13;
-static const int String = 14;
-static const int Number = 15;
-static const int Boolean = 16;
-static const int Array = 17;
-static const int Object = 18;
-static const int Key = 19;
-static const int Null = 20;
-static const int EnumMember = 21;
-static const int Struct = 22;
-static const int Event = 23;
-static const int Operator = 24;
-static const int TypeParameter = 25;
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
@@ -1096,7 +1182,6 @@ struct DocumentedSymbolInformation : public SymbolInformation {
  * e.g. the range of an identifier.
  */
 struct DocumentSymbol {
-
 	/**
 	 * The name of this symbol. Will be displayed in the user interface and therefore must not be
 	 * an empty string or a string only consisting of white spaces.
@@ -1205,7 +1290,6 @@ struct DocumentSymbol {
 	}
 
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-
 		lsp::CompletionItem item;
 		item.label = name;
 
@@ -1248,8 +1332,19 @@ struct DocumentSymbol {
 	}
 };
 
-struct NativeSymbolInspectParams {
+struct ApplyWorkspaceEditParams {
+	WorkspaceEdit edit;
 
+	Dictionary to_json() {
+		Dictionary dict;
+
+		dict["edit"] = edit.to_json();
+
+		return dict;
+	}
+};
+
+struct NativeSymbolInspectParams {
 	String native_class;
 	String symbol_name;
 
@@ -1264,16 +1359,16 @@ struct NativeSymbolInspectParams {
  */
 namespace FoldingRangeKind {
 /**
-	 * Folding range for a comment
-	 */
+ * Folding range for a comment
+ */
 static const String Comment = "comment";
 /**
-	 * Folding range for a imports or includes
-	 */
+ * Folding range for a imports or includes
+ */
 static const String Imports = "imports";
 /**
-	 * Folding range for a region (e.g. `#region`)
-	 */
+ * Folding range for a region (e.g. `#region`)
+ */
 static const String Region = "region";
 } // namespace FoldingRangeKind
 
@@ -1281,7 +1376,6 @@ static const String Region = "region";
  * Represents a folding range.
  */
 struct FoldingRange {
-
 	/**
 	 * The zero-based line number from where the folded range starts.
 	 */
@@ -1325,20 +1419,20 @@ struct FoldingRange {
  */
 namespace CompletionTriggerKind {
 /**
-	 * Completion was triggered by typing an identifier (24x7 code
-	 * complete), manual invocation (e.g Ctrl+Space) or via API.
-	 */
+ * Completion was triggered by typing an identifier (24x7 code
+ * complete), manual invocation (e.g Ctrl+Space) or via API.
+ */
 static const int Invoked = 1;
 
 /**
-	 * Completion was triggered by a trigger character specified by
-	 * the `triggerCharacters` properties of the `CompletionRegistrationOptions`.
-	 */
+ * Completion was triggered by a trigger character specified by
+ * the `triggerCharacters` properties of the `CompletionRegistrationOptions`.
+ */
 static const int TriggerCharacter = 2;
 
 /**
-	 * Completion was re-triggered as the current completion list is incomplete.
-	 */
+ * Completion was re-triggered as the current completion list is incomplete.
+ */
 static const int TriggerForIncompleteCompletions = 3;
 } // namespace CompletionTriggerKind
 
@@ -1347,8 +1441,8 @@ static const int TriggerForIncompleteCompletions = 3;
  */
 struct CompletionContext {
 	/**
-	* How the completion was triggered.
-	*/
+	 * How the completion was triggered.
+	 */
 	int triggerKind = CompletionTriggerKind::TriggerCharacter;
 
 	/**
@@ -1364,7 +1458,6 @@ struct CompletionContext {
 };
 
 struct CompletionParams : public TextDocumentPositionParams {
-
 	/**
 	 * The completion context. This is only available if the client specifies
 	 * to send this using `ClientCapabilities.textDocument.completion.contextSupport === true`
@@ -1405,7 +1498,6 @@ struct Hover {
  * have a label and a doc-comment.
  */
 struct ParameterInformation {
-
 	/**
 	 * The label of this parameter information.
 	 *
@@ -1514,6 +1606,114 @@ struct SignatureHelp {
 	}
 };
 
+/**
+ * A pattern to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationPattern {
+	/**
+	 * The glob pattern to match.
+	 */
+	String glob = "**/*.gd";
+
+	/**
+	 * Whether to match `file`s or `folder`s with this pattern.
+	 *
+	 * Matches both if undefined.
+	 */
+	String matches = "file";
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["glob"] = glob;
+		dict["matches"] = matches;
+
+		return dict;
+	}
+};
+
+/**
+ * A filter to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationFilter {
+	/**
+	 * The actual file operation pattern.
+	 */
+	FileOperationPattern pattern;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["pattern"] = pattern.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * The options to register for file operations.
+ */
+struct FileOperationRegistrationOptions {
+	/**
+	 * The actual filters.
+	 */
+	Vector<FileOperationFilter> filters;
+
+	FileOperationRegistrationOptions() {
+		filters.push_back(FileOperationFilter());
+	}
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		Array filts;
+		for (int i = 0; i < filters.size(); i++) {
+			filts.push_back(filters[i].to_json());
+		}
+		dict["filters"] = filts;
+
+		return dict;
+	}
+};
+
+/**
+ * The server is interested in file notifications/requests.
+ */
+struct FileOperations {
+	/**
+	 * The server is interested in receiving didDeleteFiles file notifications.
+	 */
+	FileOperationRegistrationOptions didDelete;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["didDelete"] = didDelete.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * Workspace specific server capabilities
+ */
+struct Workspace {
+	/**
+	 * The server is interested in file notifications/requests.
+	 */
+	FileOperations fileOperations;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["fileOperations"] = fileOperations.to_json();
+
+		return dict;
+	}
+};
+
 struct ServerCapabilities {
 	/**
 	 * Defines how text documents are synced. Is either a detailed structure defining each notification or
@@ -1574,6 +1774,11 @@ struct ServerCapabilities {
 	 * The server provides workspace symbol support.
 	 */
 	bool workspaceSymbolProvider = true;
+
+	/**
+	 * The server supports workspace folder.
+	 */
+	Workspace workspace;
 
 	/**
 	 * The server provides code actions. The `CodeActionOptions` return type is only
@@ -1647,7 +1852,7 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		dict["codeLensProvider"] = false; // codeLensProvider.to_json();
+		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
@@ -1662,6 +1867,7 @@ struct ServerCapabilities {
 		dict["documentHighlightProvider"] = documentHighlightProvider;
 		dict["documentSymbolProvider"] = documentSymbolProvider;
 		dict["workspaceSymbolProvider"] = workspaceSymbolProvider;
+		dict["workspace"] = workspace.to_json();
 		dict["codeActionProvider"] = codeActionProvider;
 		dict["documentFormattingProvider"] = documentFormattingProvider;
 		dict["documentRangeFormattingProvider"] = documentRangeFormattingProvider;
@@ -1684,10 +1890,9 @@ struct InitializeResult {
 };
 
 struct GodotNativeClassInfo {
-
 	String name;
-	const DocData::ClassDoc *class_doc = NULL;
-	const ClassDB::ClassInfo *class_info = NULL;
+	const DocData::ClassDoc *class_doc = nullptr;
+	const ClassDB::ClassInfo *class_info = nullptr;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -1699,10 +1904,9 @@ struct GodotNativeClassInfo {
 
 /** Features not included in the standard lsp specifications */
 struct GodotCapabilities {
-
 	/**
 	 * Native class list
-	*/
+	 */
 	List<GodotNativeClassInfo> native_classes;
 
 	Dictionary to_json() {
@@ -1718,7 +1922,6 @@ struct GodotCapabilities {
 
 /** Format BBCode documentation from DocData to markdown */
 static String marked_documentation(const String &p_bbcode) {
-
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");

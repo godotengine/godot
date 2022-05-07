@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 class AudioStreamSample;
 
 class AudioStreamPlaybackSample : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);
 	enum {
 		MIX_FRAC_BITS = 13,
@@ -45,7 +44,6 @@ class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	};
 
 	struct IMA_ADPCM_State {
-
 		int16_t step_index;
 		int32_t predictor;
 		/* values at loop point */
@@ -91,6 +89,7 @@ public:
 		FORMAT_IMA_ADPCM
 	};
 
+	// Keep the ResourceImporterWAV `edit/loop_mode` enum hint in sync with these options.
 	enum LoopMode {
 		LOOP_DISABLED,
 		LOOP_FORWARD,

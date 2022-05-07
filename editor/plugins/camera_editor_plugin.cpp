@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,43 +33,38 @@
 #include "spatial_editor_plugin.h"
 
 void CameraEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
-		node = NULL;
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		node = nullptr;
+		SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 		hide();
 	}
 }
 
 void CameraEditor::_pressed() {
-
-	Node *sn = (node && preview->is_pressed()) ? node : NULL;
+	Node *sn = (node && preview->is_pressed()) ? node : nullptr;
 	SpatialEditor::get_singleton()->set_custom_camera(sn);
 }
 
 void CameraEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_pressed"), &CameraEditor::_pressed);
 }
 
 void CameraEditor::edit(Node *p_camera) {
-
 	node = p_camera;
 
 	if (!node) {
 		preview->set_pressed(false);
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 	} else {
-
-		if (preview->is_pressed())
+		if (preview->is_pressed()) {
 			SpatialEditor::get_singleton()->set_custom_camera(p_camera);
-		else
-			SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		} else {
+			SpatialEditor::get_singleton()->set_custom_camera(nullptr);
+		}
 	}
 }
 
 CameraEditor::CameraEditor() {
-
 	preview = memnew(Button);
 	add_child(preview);
 
@@ -85,27 +80,23 @@ CameraEditor::CameraEditor() {
 }
 
 void CameraEditorPlugin::edit(Object *p_object) {
-
 	SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
 	//camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("Camera");
 }
 
 void CameraEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		//SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
 	} else {
-		SpatialEditor::get_singleton()->set_can_preview(NULL);
+		SpatialEditor::get_singleton()->set_can_preview(nullptr);
 	}
 }
 
 CameraEditorPlugin::CameraEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	/*	camera_editor = memnew( CameraEditor );
 	editor->get_viewport()->add_child(camera_editor);

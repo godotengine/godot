@@ -1,278 +1,248 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="3.2">
+<class name="RichTextLabel" inherits="Control" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
 		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
+		[b]Note:[/b] [code]push_*/pop[/code] functions won't affect BBCode.
+		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
+		[b]Note:[/b] Unicode characters after [code]0xffff[/code] (such as most emoji) are [i]not[/i] supported on Windows. They will display as unknown characters instead. This will be resolved in Godot 4.0.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="add_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Texture">
-			</argument>
-			<argument index="1" name="width" type="int" default="0">
-			</argument>
-			<argument index="2" name="height" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Texture" />
+			<argument index="1" name="width" type="int" default="0" />
+			<argument index="2" name="height" type="int" default="0" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 			</description>
 		</method>
 		<method name="add_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
 			<description>
 				Adds raw non-BBCode-parsed text to the tag stack.
 			</description>
 		</method>
 		<method name="append_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="bbcode" type="String" />
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed.
+				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
 		<method name="get_content_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the height of the content.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
 			</description>
 		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the current selection text. Does not include BBCodes.
+			</description>
+		</method>
 		<method name="get_total_character_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_v_scroll">
-			<return type="VScrollBar">
-			</return>
+			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of visible lines.
 			</description>
 		</method>
 		<method name="install_effect">
-			<return type="void">
-			</return>
-			<argument index="0" name="effect" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="effect" type="Variant" />
 			<description>
 				Installs a custom effect. [code]effect[/code] should be a valid [RichTextEffect].
 			</description>
 		</method>
 		<method name="newline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a newline tag to the tag stack.
 			</description>
 		</method>
 		<method name="parse_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content.
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="expressions" type="PoolStringArray">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="expressions" type="PoolStringArray" />
 			<description>
 				Parses BBCode parameter [code]expressions[/code] into a dictionary.
 			</description>
 		</method>
 		<method name="pop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
 		<method name="push_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="align" type="int" enum="RichTextLabel.Align" />
 			<description>
 				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
 		<method name="push_bold">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a bold font to the tag stack. This is the same as adding a [code][b][/code] tag if not currently in a [code][i][/code] tag.
 			</description>
 		</method>
 		<method name="push_bold_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a bold italics font to the tag stack.
 			</description>
 		</method>
 		<method name="push_cell">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [code][table][/code] tag. See [method push_table] for details.
 			</description>
 		</method>
 		<method name="push_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="color" type="Color" />
 			<description>
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="font" type="Font" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 			</description>
 		</method>
 		<method name="push_indent">
-			<return type="void">
-			</return>
-			<argument index="0" name="level" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="level" type="int" />
 			<description>
 				Adds an [code][indent][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
 		<method name="push_list">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType" />
 			<description>
 				Adds a [code][list][/code] tag to the tag stack. Similar to the BBCodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
 			</description>
 		</method>
 		<method name="push_meta">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="data" type="Variant" />
 			<description>
 				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_mono">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a monospace font to the tag stack.
 			</description>
 		</method>
 		<method name="push_normal">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][font][/code] tag with a normal font to the tag stack.
 			</description>
 		</method>
 		<method name="push_strikethrough">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][s][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_table">
-			<return type="void">
-			</return>
-			<argument index="0" name="columns" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="columns" type="int" />
 			<description>
 				Adds a [code][table=columns][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_underline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a [code][u][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="remove_line">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
 				The [code]line[/code] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
 			</description>
 		</method>
 		<method name="scroll_to_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line" type="int" />
 			<description>
 				Scrolls the window's top line to match [code]line[/code].
 			</description>
 		</method>
 		<method name="set_table_column_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="expand" type="bool">
-			</argument>
-			<argument index="2" name="ratio" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="expand" type="bool" />
+			<argument index="2" name="ratio" type="int" />
 			<description>
 				Edits the selected column's expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.
@@ -283,14 +253,18 @@
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
+			[b]Note:[/b] Trying to alter the [RichTextLabel]'s text with [method add_text] will reset this to [code]false[/code]. Use instead [method append_bbcode] to preserve BBCode formatting.
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] It is unadvised to use [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead.
+			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. It will also erase all BBCode that was added to stack using [code]push_*[/code] methods. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
+		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
 		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
@@ -306,7 +280,7 @@
 			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -325,26 +299,24 @@
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
+			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
 	</members>
 	<signals>
 		<signal name="meta_clicked">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse exits a meta tag.
 			</description>
 		</signal>
 		<signal name="meta_hover_started">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<argument index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse enters a meta tag.
 			</description>
@@ -412,56 +384,56 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bold_font" type="Font">
-			The font used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font" type="Font">
-			The font used for bold italics text.
-		</theme_item>
-		<theme_item name="default_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="default_color" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The default text color.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
-		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
+		<theme_item name="font_color_selected" data_type="color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 			The color of selected text, used when [member selection_enabled] is [code]true[/code].
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="font_color_shadow" data_type="color" type="Color" default="Color( 0, 0, 0, 0 )">
 			The color of the font's shadow.
 		</theme_item>
-		<theme_item name="italics_font" type="Font">
-			The font used for italics text.
-		</theme_item>
-		<theme_item name="line_separation" type="int" default="1">
-			The vertical space between lines.
-		</theme_item>
-		<theme_item name="mono_font" type="Font">
-			The font used for monospace text.
-		</theme_item>
-		<theme_item name="normal" type="StyleBox">
-			The normal background for the [RichTextLabel].
-		</theme_item>
-		<theme_item name="normal_font" type="Font">
-			The default text font.
-		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 			The color of the selection box.
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int" default="0">
+		<theme_item name="line_separation" data_type="constant" type="int" default="1">
+			The vertical space between lines.
+		</theme_item>
+		<theme_item name="shadow_as_outline" data_type="constant" type="int" default="0">
 			Boolean value. If 1 ([code]true[/code]), the shadow will be displayed around the whole text as an outline.
 		</theme_item>
-		<theme_item name="shadow_offset_x" type="int" default="1">
+		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.
 		</theme_item>
-		<theme_item name="shadow_offset_y" type="int" default="1">
+		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
 			The vertical offset of the font's shadow.
 		</theme_item>
-		<theme_item name="table_hseparation" type="int" default="3">
+		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_vseparation" type="int" default="3">
+		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			The font used for italics text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			The font used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The default text font.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The background The background used when the [RichTextLabel] is focused.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The normal background for the [RichTextLabel].
 		</theme_item>
 	</theme_items>
 </class>

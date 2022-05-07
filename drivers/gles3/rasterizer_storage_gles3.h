@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,10 @@
 #define RASTERIZERSTORAGEGLES3_H
 
 #include "core/self_list.h"
+#include "drivers/gles_common/rasterizer_asserts.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
+#include "shader_cache_gles3.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
 
@@ -43,11 +45,8 @@
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 
-// WebGL 2.0 has no MapBufferRange/UnmapBuffer, but offers a non-ES style BufferSubData API instead.
-#ifdef __EMSCRIPTEN__
-void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
-#endif
-
+template <class K>
+class ThreadedCallableQueue;
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
 
@@ -69,10 +68,11 @@ public:
 	};
 
 	struct Config {
-
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
+		bool use_lightmap_filter_bicubic;
+		bool use_physical_light_attenuation;
 
 		bool s3tc_supported;
 		bool latc_supported;
@@ -84,6 +84,7 @@ public:
 
 		bool srgb_decode_supported;
 
+		bool support_npot_repeat_mipmap;
 		bool texture_float_linear_supported;
 		bool framebuffer_float_supported;
 		bool framebuffer_half_float_supported;
@@ -94,6 +95,7 @@ public:
 
 		int max_texture_image_units;
 		int max_texture_size;
+		int max_cubemap_texture_size;
 
 		bool generate_wireframes;
 
@@ -105,13 +107,24 @@ public:
 
 		bool use_depth_prepass;
 		bool force_vertex_shading;
+
+		// in some cases the legacy render didn't orphan. We will mark these
+		// so the user can switch orphaning off for them.
+		bool should_orphan;
+
+		bool program_binary_supported;
+		bool parallel_shader_compile_supported;
+		bool async_compilation_enabled;
+		bool shader_cache_enabled;
 	} config;
 
 	mutable struct Shaders {
-
 		CopyShaderGLES3 copy;
 
 		ShaderCompilerGLES3 compiler;
+		ShaderCacheGLES3 *cache;
+		ThreadedCallableQueue<GLuint> *cache_write_queue;
+		ThreadedCallableQueue<GLuint> *compile_queue;
 
 		CubemapFilterShaderGLES3 cubemap_filter;
 
@@ -125,7 +138,6 @@ public:
 	} shaders;
 
 	struct Resources {
-
 		GLuint white_tex;
 		GLuint black_tex;
 		GLuint normal_tex;
@@ -143,7 +155,6 @@ public:
 	} resources;
 
 	struct Info {
-
 		uint64_t texture_mem;
 		uint64_t vertex_mem;
 
@@ -170,7 +181,6 @@ public:
 		} render, render_final, snap;
 
 		Info() {
-
 			texture_mem = 0;
 			vertex_mem = 0;
 			render.reset();
@@ -184,14 +194,11 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 	struct Instantiable : public RID_Data {
-
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
-
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
@@ -200,7 +207,6 @@ public:
 		_FORCE_INLINE_ void instance_remove_deps() {
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
 				instances->self()->base_removed();
 				instances = next;
@@ -213,11 +219,9 @@ public:
 	};
 
 	struct GeometryOwner : public Instantiable {
-
 		virtual ~GeometryOwner() {}
 	};
 	struct Geometry : Instantiable {
-
 		enum Type {
 			GEOMETRY_INVALID,
 			GEOMETRY_SURFACE,
@@ -247,7 +251,6 @@ public:
 	struct RenderTarget;
 
 	struct Texture : public RID_Data {
-
 		Texture *proxy;
 		Set<Texture *> proxy_owners;
 
@@ -282,7 +285,7 @@ public:
 
 		RenderTarget *render_target;
 
-		Vector<Ref<Image> > images;
+		Vector<Ref<Image>> images;
 
 		VisualServer::TextureDetectCallback detect_3d;
 		void *detect_3d_ud;
@@ -294,7 +297,7 @@ public:
 		void *detect_normal_ud;
 
 		Texture() :
-				proxy(NULL),
+				proxy(nullptr),
 				flags(0),
 				width(0),
 				height(0),
@@ -312,13 +315,13 @@ public:
 				using_srgb(false),
 				redraw_if_visible(false),
 				stored_cube_sides(0),
-				render_target(NULL),
-				detect_3d(NULL),
-				detect_3d_ud(NULL),
-				detect_srgb(NULL),
-				detect_srgb_ud(NULL),
-				detect_normal(NULL),
-				detect_normal_ud(NULL) {
+				render_target(nullptr),
+				detect_3d(nullptr),
+				detect_3d_ud(nullptr),
+				detect_srgb(nullptr),
+				detect_srgb_ud(nullptr),
+				detect_normal(nullptr),
+				detect_normal_ud(nullptr) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -330,14 +333,12 @@ public:
 		}
 
 		~Texture() {
-
 			if (tex_id != 0) {
-
 				glDeleteTextures(1, &tex_id);
 			}
 
 			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = NULL;
+				E->get()->proxy = nullptr;
 			}
 
 			if (proxy) {
@@ -389,7 +390,6 @@ public:
 	/* SKY API */
 
 	struct Sky : public RID_Data {
-
 		RID panorama;
 		GLuint radiance;
 		GLuint irradiance;
@@ -406,7 +406,6 @@ public:
 	struct Material;
 
 	struct Shader : public RID_Data {
-
 		RID self;
 
 		VS::ShaderMode mode;
@@ -435,7 +434,6 @@ public:
 		String path;
 
 		struct CanvasItem {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -455,14 +453,28 @@ public:
 
 			int light_mode;
 
+			// these flags are specifically for batching
+			// some of the logic is thus in rasterizer_storage.cpp
+			// we could alternatively set bitflags for each 'uses' and test on the fly
+			// defined in RasterizerStorageCommon::BatchFlags
+			unsigned int batch_flags;
+
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
+			bool uses_modulate;
+			bool uses_color;
+			bool uses_vertex;
+
+			// all these should disable item joining if used in a custom shader
+			bool uses_world_matrix;
+			bool uses_extra_matrix;
+			bool uses_projection_matrix;
+			bool uses_instance_custom;
 
 		} canvas_item;
 
 		struct Spatial {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -499,6 +511,8 @@ public:
 			bool uses_screen_texture;
 			bool uses_depth_texture;
 			bool uses_time;
+			bool uses_tangent;
+			bool uses_ensure_correct_normals;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 			bool uses_world_coordinates;
@@ -506,7 +520,6 @@ public:
 		} spatial;
 
 		struct Particles {
-
 		} particles;
 
 		bool uses_vertex_time;
@@ -514,8 +527,7 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-
-			shader = NULL;
+			shader = nullptr;
 			ubo_size = 0;
 			valid = false;
 			custom_code_id = 0;
@@ -539,7 +551,10 @@ public:
 
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define);
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const;
-	virtual void shader_clear_custom_defines(RID p_shader);
+	virtual void shader_remove_custom_define(RID p_shader, const String &p_define);
+
+	virtual void set_shader_async_hidden_forbidden(bool p_forbidden);
+	virtual bool is_shader_async_hidden_forbidden();
 
 	void _update_shader(Shader *p_shader) const;
 
@@ -548,7 +563,6 @@ public:
 	/* COMMON MATERIAL API */
 
 	struct Material : public RID_Data {
-
 		Shader *shader;
 		GLuint ubo_id;
 		uint32_t ubo_size;
@@ -572,7 +586,7 @@ public:
 		bool is_animated_cache;
 
 		Material() :
-				shader(NULL),
+				shader(nullptr),
 				ubo_id(0),
 				ubo_size(0),
 				list(this),
@@ -606,6 +620,8 @@ public:
 
 	virtual bool material_is_animated(RID p_material);
 	virtual bool material_casts_shadows(RID p_material);
+	virtual bool material_uses_tangents(RID p_material);
+	virtual bool material_uses_ensure_correct_normals(RID p_material);
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
@@ -620,9 +636,7 @@ public:
 
 	struct Mesh;
 	struct Surface : public Geometry {
-
 		struct Attrib {
-
 			bool enabled;
 			bool integer;
 			GLuint index;
@@ -681,7 +695,7 @@ public:
 		int total_data_size;
 
 		Surface() :
-				mesh(NULL),
+				mesh(nullptr),
 				format(0),
 				array_id(0),
 				vertex_id(0),
@@ -707,16 +721,15 @@ public:
 	struct MultiMesh;
 
 	struct Mesh : public GeometryOwner {
-
 		bool active;
 		Vector<Surface *> surfaces;
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
 		AABB custom_aabb;
 		mutable uint64_t last_pass;
 		SelfList<MultiMesh>::List multimeshes;
 		_FORCE_INLINE_ void update_multimeshes() {
-
 			SelfList<MultiMesh> *mm = multimeshes.first();
 			while (mm) {
 				mm->self()->instance_change_notify(false, true);
@@ -736,13 +749,16 @@ public:
 
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
+	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount);
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values);
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
@@ -759,7 +775,7 @@ public:
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
+	virtual Vector<PoolVector<uint8_t>> mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
@@ -795,6 +811,8 @@ public:
 		bool dirty_aabb;
 		bool dirty_data;
 
+		MMInterpolator interpolator;
+
 		MultiMesh() :
 				size(0),
 				transform_format(VS::MULTIMESH_TRANSFORM_2D),
@@ -818,37 +836,36 @@ public:
 
 	void update_dirty_multimeshes();
 
-	virtual RID multimesh_create();
+	virtual RID _multimesh_create();
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format = VS::MULTIMESH_CUSTOM_DATA_NONE);
-	virtual int multimesh_get_instance_count(RID p_multimesh) const;
+	virtual void _multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data_format = VS::MULTIMESH_CUSTOM_DATA_NONE);
+	virtual int _multimesh_get_instance_count(RID p_multimesh) const;
 
-	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
-	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data);
+	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh);
+	virtual void _multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
+	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data);
 
-	virtual RID multimesh_get_mesh(RID p_multimesh) const;
+	virtual RID _multimesh_get_mesh(RID p_multimesh) const;
 
-	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
-	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
-	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
-	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
+	virtual Transform _multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	virtual Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
+	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const;
+	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
+	virtual void _multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
 
-	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible);
+	virtual int _multimesh_get_visible_instances(RID p_multimesh) const;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) const;
+	virtual MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const;
 
 	/* IMMEDIATE API */
 
 	struct Immediate : public Geometry {
-
 		struct Chunk {
-
 			RID texture;
 			VS::PrimitiveType primitive;
 			Vector<Vector3> vertices;
@@ -930,7 +947,6 @@ public:
 	/* Light API */
 
 	struct Light : Instantiable {
-
 		VS::LightType type;
 		float param[VS::LIGHT_PARAM_MAX];
 		Color color;
@@ -939,7 +955,7 @@ public:
 		bool shadow;
 		bool negative;
 		bool reverse_cull;
-		bool use_gi;
+		VS::LightBakeMode bake_mode;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
@@ -962,6 +978,7 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 	virtual void light_set_use_gi(RID p_light, bool p_enabled);
+	virtual void light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -982,6 +999,7 @@ public:
 	virtual float light_get_param(RID p_light, VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
 	virtual bool light_get_use_gi(RID p_light);
+	virtual VS::LightBakeMode light_get_bake_mode(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
@@ -989,7 +1007,6 @@ public:
 	/* PROBE API */
 
 	struct ReflectionProbe : Instantiable {
-
 		VS::ReflectionProbeUpdateMode update_mode;
 		float intensity;
 		Color interior_ambient;
@@ -1034,7 +1051,6 @@ public:
 	/* GI PROBE API */
 
 	struct GIProbe : public Instantiable {
-
 		AABB bounds;
 		Transform to_cell;
 		float cell_size;
@@ -1092,7 +1108,6 @@ public:
 	virtual uint32_t gi_probe_get_version(RID p_probe);
 
 	struct GIProbeData : public RID_Data {
-
 		int width;
 		int height;
 		int depth;
@@ -1106,7 +1121,6 @@ public:
 
 	mutable RID_Owner<GIProbeData> gi_probe_data_owner;
 
-	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const;
 	virtual RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression);
 	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data);
 
@@ -1124,28 +1138,38 @@ public:
 
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy);
 	virtual float lightmap_capture_get_energy(RID p_capture) const;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior);
+	virtual bool lightmap_capture_is_interior(RID p_capture) const;
 
 	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const;
 
 	struct LightmapCapture : public Instantiable {
-
 		PoolVector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;
 		int cell_subdiv;
 		float energy;
-		LightmapCapture() {
+		bool interior;
+
+		SelfList<LightmapCapture> update_list;
+
+		LightmapCapture() :
+				update_list(this) {
 			energy = 1.0;
 			cell_subdiv = 1;
+			interior = false;
 		}
 	};
+
+	SelfList<LightmapCapture>::List capture_update_list;
+
+	void update_dirty_captures();
 
 	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
 
 	/* PARTICLES */
 
 	struct Particles : public GeometryOwner {
-
 		bool inactive;
 		float inactive_time;
 		bool emitting;
@@ -1222,7 +1246,6 @@ public:
 		}
 
 		~Particles() {
-
 			glDeleteBuffers(2, particle_buffers);
 			glDeleteVertexArrays(2, particle_vaos);
 			if (histories_enabled) {
@@ -1286,13 +1309,11 @@ public:
 	/* RENDER TARGET */
 
 	struct RenderTarget : public RID_Data {
-
 		GLuint fbo;
 		GLuint color;
 		GLuint depth;
 
 		struct Buffers {
-
 			bool active;
 			bool effects_active;
 			GLuint fbo;
@@ -1308,9 +1329,7 @@ public:
 		} buffers;
 
 		struct Effects {
-
 			struct MipMaps {
-
 				struct Size {
 					GLuint fbo;
 					int width;
@@ -1360,10 +1379,14 @@ public:
 		// External FBO to render our final result to (mostly used for ARVR)
 		struct External {
 			GLuint fbo;
-			RID texture;
+			GLuint color;
+			GLuint depth;
 
 			External() :
-					fbo(0) {}
+					fbo(0),
+					color(0),
+					depth(0) {
+			}
 		} external;
 
 		uint64_t last_exposure_tick;
@@ -1374,6 +1397,9 @@ public:
 
 		bool used_in_frame;
 		VS::ViewportMSAA msaa;
+		bool use_fxaa;
+		bool use_debanding;
+		float sharpen_intensity;
 
 		RID texture;
 
@@ -1384,7 +1410,10 @@ public:
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				use_fxaa(false),
+				use_debanding(false),
+				sharpen_intensity(0.0) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1406,17 +1435,20 @@ public:
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
+	virtual uint32_t render_target_get_depth_texture_id(RID p_render_target) const;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id, unsigned int p_depth_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
+	virtual void render_target_set_sharpen_intensity(RID p_render_target, float p_intensity);
 
 	/* CANVAS SHADOW */
 
 	struct CanvasLightShadow : public RID_Data {
-
 		int size;
 		int height;
 		GLuint fbo;
@@ -1431,7 +1463,6 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	struct CanvasOccluder : public RID_Data {
-
 		GLuint array_id; // 0 means, unconfigured
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
@@ -1449,7 +1480,6 @@ public:
 	virtual bool free(RID p_rid);
 
 	struct Frame {
-
 		RenderTarget *current_rt;
 
 		bool clear_request;
@@ -1457,6 +1487,7 @@ public:
 		float time[4];
 		float delta;
 		uint64_t count;
+		int shader_compiles_started;
 
 	} frame;
 
@@ -1473,11 +1504,55 @@ public:
 	virtual void render_info_end_capture();
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
-	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual uint64_t get_render_info(VS::RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 
+	// NOTE : THESE SIZES ARE IN BYTES. BUFFER SIZES MAY NOT BE SPECIFIED IN BYTES SO REMEMBER TO CONVERT THEM WHEN CALLING.
+	void buffer_orphan_and_upload(unsigned int p_buffer_size_bytes, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
+	bool safe_buffer_sub_data(unsigned int p_total_buffer_size_bytes, GLenum p_target, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, unsigned int &r_offset_after_bytes) const;
+
 	RasterizerStorageGLES3();
+	~RasterizerStorageGLES3();
 };
+
+inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_buffer_size_bytes, GLenum p_target, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, unsigned int &r_offset_after_bytes) const {
+	r_offset_after_bytes = p_offset_bytes + p_data_size_bytes;
+#ifdef DEBUG_ENABLED
+	// we are trying to write across the edge of the buffer
+	if (r_offset_after_bytes > p_total_buffer_size_bytes) {
+		return false;
+	}
+#endif
+	glBufferSubData(p_target, p_offset_bytes, p_data_size_bytes, p_data);
+	return true;
+}
+
+// standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
+// bugs causing pipeline stalls
+// NOTE : THESE SIZES ARE IN BYTES. BUFFER SIZES MAY NOT BE SPECIFIED IN BYTES SO REMEMBER TO CONVERT THEM WHEN CALLING.
+inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size_bytes, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
+	if (!p_optional_orphan || (config.should_orphan)) {
+		glBufferData(p_target, p_buffer_size_bytes, nullptr, p_usage);
+#ifdef RASTERIZER_EXTRA_CHECKS
+		// fill with garbage off the end of the array
+		if (p_buffer_size_bytes) {
+			unsigned int start = p_offset_bytes + p_data_size_bytes;
+			unsigned int end = start + 1024;
+			if (end < p_buffer_size) {
+				uint8_t *garbage = (uint8_t *)alloca(1024);
+				for (int n = 0; n < 1024; n++) {
+					garbage[n] = Math::random(0, 255);
+				}
+				glBufferSubData(p_target, start, 1024, garbage);
+			}
+		}
+#endif
+	}
+	ERR_FAIL_COND((p_offset_bytes + p_data_size_bytes) > p_buffer_size_bytes);
+	glBufferSubData(p_target, p_offset_bytes, p_data_size_bytes, p_data);
+}
 
 #endif // RASTERIZERSTORAGEGLES3_H

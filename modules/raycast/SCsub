@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_raycast = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_embree"]:
+    thirdparty_dir = "#thirdparty/embree/"
+
+    embree_src = [
+        "common/sys/sysinfo.cpp",
+        "common/sys/alloc.cpp",
+        "common/sys/filename.cpp",
+        "common/sys/library.cpp",
+        "common/sys/thread.cpp",
+        "common/sys/string.cpp",
+        "common/sys/regression.cpp",
+        "common/sys/mutex.cpp",
+        "common/sys/condition.cpp",
+        "common/sys/barrier.cpp",
+        "common/math/constants.cpp",
+        "common/simd/sse.cpp",
+        "common/lexers/stringstream.cpp",
+        "common/lexers/tokenstream.cpp",
+        "common/tasking/taskschedulerinternal.cpp",
+        "kernels/common/device.cpp",
+        "kernels/common/stat.cpp",
+        "kernels/common/acceln.cpp",
+        "kernels/common/accelset.cpp",
+        "kernels/common/state.cpp",
+        "kernels/common/rtcore.cpp",
+        "kernels/common/rtcore_builder.cpp",
+        "kernels/common/scene.cpp",
+        "kernels/common/alloc.cpp",
+        "kernels/common/geometry.cpp",
+        "kernels/common/scene_triangle_mesh.cpp",
+        "kernels/geometry/primitive4.cpp",
+        "kernels/builders/primrefgen.cpp",
+        "kernels/bvh/bvh.cpp",
+        "kernels/bvh/bvh_statistics.cpp",
+        "kernels/bvh/bvh4_factory.cpp",
+        "kernels/bvh/bvh8_factory.cpp",
+        "kernels/bvh/bvh_collider.cpp",
+        "kernels/bvh/bvh_rotate.cpp",
+        "kernels/bvh/bvh_refit.cpp",
+        "kernels/bvh/bvh_builder.cpp",
+        "kernels/bvh/bvh_builder_morton.cpp",
+        "kernels/bvh/bvh_builder_sah.cpp",
+        "kernels/bvh/bvh_builder_sah_spatial.cpp",
+        "kernels/bvh/bvh_builder_sah_mb.cpp",
+        "kernels/bvh/bvh_builder_twolevel.cpp",
+        "kernels/bvh/bvh_intersector1_bvh4.cpp",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in embree_src]
+
+    env_raycast.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "include"])
+    env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL", "NDEBUG"])
+
+    if not env.msvc:
+        if env["arch"] in ["x86", "x86_64"]:
+            env_raycast.Append(CPPFLAGS=["-msse2", "-mxsave"])
+
+        if env["platform"] == "windows":
+            env_raycast.Append(CPPFLAGS=["-mstackrealign"])
+
+    if env["platform"] == "windows":
+        if env.msvc:
+            env.Append(LINKFLAGS=["psapi.lib"])
+        else:
+            env.Append(LIBS=["psapi"])
+
+    env_thirdparty = env_raycast.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+    if not env["arch"] in ["x86", "x86_64"] or env.msvc:
+        # Embree needs those, it will automatically use SSE2NEON in ARM
+        env_thirdparty.Append(CPPDEFINES=["__SSE2__", "__SSE__"])
+
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_raycast.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,6 @@ CachedData cached_data;
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_METHOD_THUNK_AND_CHECK_IMPL(cached_data.methodthunk_##m_class##_##m_method, m_val)
 
 void CachedData::clear_corlib_cache() {
-
 	corlib_cache_updated = false;
 
 	class_MonoObject = NULL;
@@ -98,7 +97,6 @@ void CachedData::clear_corlib_cache() {
 }
 
 void CachedData::clear_godot_api_cache() {
-
 	godot_api_cache_updated = false;
 
 	rawclass_Dictionary = NULL;
@@ -169,6 +167,8 @@ void CachedData::clear_godot_api_cache() {
 	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
 
+	methodthunk_MarshalUtils_GetGenericTypeDefinition.nullify();
+
 	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
 	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
 
@@ -184,7 +184,6 @@ void CachedData::clear_godot_api_cache() {
 #define GODOT_API_NS_CLASS(m_ns, m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(m_ns, #m_class))
 
 void update_corlib_cache() {
-
 	CACHE_CLASS_AND_CHECK(MonoObject, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_object_class()));
 	CACHE_CLASS_AND_CHECK(bool, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_boolean_class()));
 	CACHE_CLASS_AND_CHECK(int8_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_sbyte_class()));
@@ -217,7 +216,6 @@ void update_corlib_cache() {
 }
 
 void update_godot_api_cache() {
-
 	CACHE_CLASS_AND_CHECK(Vector2, GODOT_API_CLASS(Vector2));
 	CACHE_CLASS_AND_CHECK(Rect2, GODOT_API_CLASS(Rect2));
 	CACHE_CLASS_AND_CHECK(Transform2D, GODOT_API_CLASS(Transform2D));
@@ -282,6 +280,8 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
+
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GetGenericTypeDefinition, GODOT_API_CLASS(MarshalUtils)->get_method("GetGenericTypeDefinition", 2));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));

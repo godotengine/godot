@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Environment" inherits="Resource" version="3.2">
+<class name="Environment" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple rendering options.
 	</brief_description>
@@ -9,29 +9,31 @@
 		- Glow
 		- Tonemap (Auto Exposure)
 		- Adjustments
-		These effects will only apply when the [Viewport]'s intended usage is "3D" or "3D Without Effects". This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
+		If the target [Viewport] is set to "2D Without Sampling", all post-processing effects will be unavailable. With "3D Without Effects", the following options will be unavailable:
+		- Ssao
+		- Ss Reflections
+		This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
+		Note that [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] has a mobile platform override to use "3D Without Effects" by default. It improves the performance on mobile devices, but at the same time affects the screen display on mobile devices.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
+		<link title="Environment and post-processing">$DOCS_URL/tutorials/3d/environment_and_post_processing.html</link>
+		<link title="Light transport in game engines">$DOCS_URL/tutorials/3d/high_dynamic_range.html</link>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
+		<link title="2D HDR Demo">https://godotengine.org/asset-library/asset/110</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="is_glow_level_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the glow level [code]idx[/code] is specified, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_glow_level">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables the glow level at index [code]idx[/code]. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
@@ -60,7 +62,8 @@
 			The ambient light's energy. The higher the value, the stronger the light.
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
-			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
+			Defines the amount of light that the sky brings on the scene. A value of [code]0.0[/code] means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of [code]1.0[/code] means that [i]all[/i] the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
+			[b]Note:[/b] [member ambient_light_sky_contribution] is internally clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 		</member>
 		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure" getter="get_tonemap_auto_exposure" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
@@ -191,6 +194,8 @@
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
 			If [code]true[/code], the glow effect is enabled.
+			[b]Note:[/b] Only effective if [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] is [b]3D[/b] ([i]not[/i] [b]3D Without Effects[/b]). On mobile, [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] defaults to [b]3D Without Effects[/b] by default, so its [code].mobile[/code] override needs to be changed to [b]3D[/b].
+			[b]Note:[/b] When using GLES3 on mobile, HDR rendering is disabled by default for performance reasons. This means glow will only be visible if [member glow_hdr_threshold] is decreased below [code]1.0[/code] or if [member glow_bloom] is increased above [code]0.0[/code]. Also consider increasing [member glow_intensity] to [code]1.5[/code]. If you want glow to behave on mobile like it does on desktop (at a performance cost), enable [member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] override.
 		</member>
 		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap" default="12.0">
 			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
@@ -200,6 +205,9 @@
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
 			The lower threshold of the HDR glow. When using the GLES2 renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
+		</member>
+		<member name="glow_high_quality" type="bool" setter="set_glow_high_quality" getter="is_glow_high_quality_enabled" default="false">
+			Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
 			The glow intensity. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
@@ -294,7 +302,8 @@
 	</members>
 	<constants>
 		<constant name="BG_KEEP" value="5" enum="BGMode">
-			Keeps on screen every pixel drawn in the background. This is the fastest background mode, but it can only be safely used in fully-interior scenes (no visible sky or sky reflections). If enabled in a scene where the background is visible, "ghost trail" artifacts will be visible when moving the camera.
+			Keeps on screen every pixel drawn in the background. Only select this mode if you really need to keep the old data. On modern GPUs it will generally not be faster than clearing the background, and can be significantly slower, particularly on mobile.
+			It can only be safely used in fully-interior scenes (no visible sky or sky reflections). If enabled in a scene where the background is visible, "ghost trail" artifacts will be visible when moving the camera.
 		</constant>
 		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
 			Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/default_clear_color].
@@ -330,16 +339,20 @@
 			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
+			Linear tonemapper operator. Reads the linear data and passes it on unmodified. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
+			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
 		</constant>
 		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
-			Filmic tonemapper operator.
+			Filmic tonemapper operator. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant TONE_MAPPER_REINHARDT].
 		</constant>
 		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Academy Color Encoding System tonemapper operator.
+			Use the legacy Godot version of the Academy Color Encoding System tonemapper. Unlike [constant TONE_MAPPER_ACES_FITTED], this version of ACES does not handle bright lighting in a physically accurate way. ACES typically has a more contrasted output compared to [constant TONE_MAPPER_REINHARDT] and [constant TONE_MAPPER_FILMIC].
+			[b]Note:[/b] This tonemapping operator will be removed in Godot 4.0 in favor of the more accurate [constant TONE_MAPPER_ACES_FITTED].
+		</constant>
+		<constant name="TONE_MAPPER_ACES_FITTED" value="4" enum="ToneMapper">
+			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant TONE_MAPPER_REINHARDT] and [constant TONE_MAPPER_FILMIC].
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_LOW" value="0" enum="DOFBlurQuality">
 			Low depth-of-field blur quality (fastest).

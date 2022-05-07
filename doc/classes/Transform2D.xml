@@ -1,194 +1,167 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" version="3.2">
+<class name="Transform2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D transformation (3×2 matrix).
+		2D transformation (2×3 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of two [member x] and [member y] [Vector2]s and an [member origin]. It is similar to a 3×2 matrix.
+		2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
+		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
+		<link title="Math tutorial index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
 		<method name="Transform2D">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="from" type="Transform">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="from" type="Transform" />
 			<description>
 				Constructs the transform from a 3D [Transform].
 			</description>
 		</method>
 		<method name="Transform2D">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="x_axis" type="Vector2">
-			</argument>
-			<argument index="1" name="y_axis" type="Vector2">
-			</argument>
-			<argument index="2" name="origin" type="Vector2">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="x_axis" type="Vector2" />
+			<argument index="1" name="y_axis" type="Vector2" />
+			<argument index="2" name="origin" type="Vector2" />
 			<description>
-				Constructs the transform from 3 [Vector2]s representing x, y, and origin.
+				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
 			</description>
 		</method>
 		<method name="Transform2D">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="rotation" type="float">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="rotation" type="float" />
+			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Constructs the transform from a given angle (in radians) and position.
 			</description>
 		</method>
 		<method name="affine_inverse">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the matrix.
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="basis_xform">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="v" type="Vector2">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="v" type="Vector2" />
 			<description>
-				Transforms the given vector by this transform's basis (no translation).
+				Returns a vector transformed (multiplied) by the basis matrix.
+				This method does not account for translation (the origin vector).
 			</description>
 		</method>
 		<method name="basis_xform_inv">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="v" type="Vector2">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="v" type="Vector2" />
 			<description>
-				Inverse-transforms the given vector by this transform's basis (no translation).
+				Returns a vector transformed (multiplied) by the inverse basis matrix.
+				This method does not account for translation (the origin vector).
 			</description>
 		</method>
 		<method name="get_origin">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the transform's origin (translation).
 			</description>
 		</method>
 		<method name="get_rotation">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the transform's rotation (in radians).
 			</description>
 		</method>
 		<method name="get_scale">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the scale.
 			</description>
 		</method>
 		<method name="interpolate_with">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="transform" type="Transform2D">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="transform" type="Transform2D" />
+			<argument index="1" name="weight" type="float" />
 			<description>
-				Returns a transform interpolated between this transform and another by a given weight (0-1).
+				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="transform" type="Transform2D">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="transform" type="Transform2D" />
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="orthonormalized">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
 		<method name="rotated">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="phi" type="float">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="angle" type="float" />
 			<description>
-				Rotates the transform by the given angle (in radians), using matrix multiplication.
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="scale" type="Vector2" />
 			<description>
-				Scales the transform by the given scale factor, using matrix multiplication.
+				Returns a copy of the transform scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="offset" type="Vector2" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
 		<method name="xform">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="v" type="Variant" />
 			<description>
 				Transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="v" type="Variant" />
 			<description>
-				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
+				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform, under the assumption that the transformation is composed of rotation and translation (no scaling). Equivalent to calling [code]inverse().xform(v)[/code] on this transform. For affine transformations (e.g. with scaling) see [method affine_inverse] method.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="origin" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
-			The transform's translation offset.
+			The origin vector (column 2, the third column). Equivalent to array index [code]2[/code]. The origin vector represents translation.
 		</member>
 		<member name="x" type="Vector2" setter="" getter="" default="Vector2( 1, 0 )">
-			The X axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
 		</member>
 		<member name="y" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
-			The Y axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			[Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+			The identity [Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
-			[Transform2D] with mirroring applied parallel to the X axis.
+			The [Transform2D] that will flip something along the X axis.
 		</constant>
 		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
-			[Transform2D] with mirroring applied parallel to the Y axis.
+			The [Transform2D] that will flip something along the Y axis.
 		</constant>
 	</constants>
 </class>

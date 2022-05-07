@@ -8,17 +8,32 @@
 
 /* Begin PBXBuildFile section */
 		1F1575721F582BE20003B888 /* dylibs in Resources */ = {isa = PBXBuildFile; fileRef = 1F1575711F582BE20003B888 /* dylibs */; };
-		DEADBEEF2F582BE20003B888 /* $binary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.a */; };
+		DEADBEEF2F582BE20003B888 /* $binary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.xcframework */; };
 		$modules_buildfile
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
 		D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE4418AEBDA2004A7AAE /* InfoPlist.strings */; };
 		D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7718AEBFEB004A7AAE /* $binary.pck */; };
+		$pbx_launch_screen_build_reference
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		90A13CD024AA68E500E8464F /* Embed Frameworks */ = {
+				isa = PBXCopyFilesBuildPhase;
+				buildActionMask = 2147483647;
+				dstPath = "";
+				dstSubfolderSpec = 10;
+				files = (
+					$pbx_embeded_frameworks
+				);
+				name = "Embed Frameworks";
+				runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1F1575711F582BE20003B888 /* dylibs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dylibs; path = "$binary/dylibs"; sourceTree = "<group>"; };
-		DEADBEEF1F582BE20003B888 /* $binary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot; path = "$binary.a"; sourceTree = "<group>"; };
+		DEADBEEF1F582BE20003B888 /* $binary.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = godot; path = "$binary.xcframework"; sourceTree = "<group>"; };
 		$modules_fileref
 		1FF4C1881F584E6300A41E41 /* $binary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "$binary.entitlements"; sourceTree = "<group>"; };
 		1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
@@ -26,7 +41,9 @@
 		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "$binary.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE4318AEBDA2004A7AAE /* $binary-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "$binary-Info.plist"; sourceTree = "<group>"; };
 		D0BCFE4518AEBDA2004A7AAE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		$pbx_locale_file_reference
 		D0BCFE7718AEBFEB004A7AAE /* $binary.pck */ = {isa = PBXFileReference; lastKnownFileType = file; path = "$binary.pck"; sourceTree = "<group>"; };
+		$pbx_launch_screen_file_reference
 /* End PBXFileReference section */
 
 		$additional_pbx_files
@@ -36,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DEADBEEF2F582BE20003B888 /* $binary.a */,
+				DEADBEEF2F582BE20003B888 /* $binary.xcframework */,
 				$modules_buildphase
 				$additional_pbx_frameworks_build
 			);
@@ -68,7 +85,7 @@
 		D0BCFE3618AEBDA2004A7AAE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				DEADBEEF1F582BE20003B888 /* $binary.a */,
+				DEADBEEF1F582BE20003B888 /* $binary.xcframework */,
 				$modules_buildgrp
 				$additional_pbx_frameworks_refs
 			);
@@ -78,6 +95,7 @@
 		D0BCFE4118AEBDA2004A7AAE /* $binary */ = {
 			isa = PBXGroup;
 			children = (
+				$pbx_launch_screen_copy_files
 				1FF4C1881F584E6300A41E41 /* $binary.entitlements */,
 				D07CD44D1C5D589C00B7FB28 /* Images.xcassets */,
 				D0BCFE4218AEBDA2004A7AAE /* Supporting Files */,
@@ -105,6 +123,7 @@
 				D0BCFE3018AEBDA2004A7AAE /* Sources */,
 				D0BCFE3118AEBDA2004A7AAE /* Frameworks */,
 				D0BCFE3218AEBDA2004A7AAE /* Resources */,
+				90A13CD024AA68E500E8464F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -128,81 +147,6 @@
 						DevelopmentTeam = $team_id;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
-							com.apple.AccessWiFi = {
-								enabled = $access_wifi;
-							};
-							com.apple.ApplePay = {
-								enabled = 0;
-							};
-							com.apple.ApplicationGroups.iOS = {
-								enabled = 0;
-							};
-							com.apple.AutoFillCredentialProvider = {
-								enabled = 0;
-							};
-							com.apple.BackgroundModes = {
-								enabled = 0;
-							};
-							com.apple.ClassKit = {
-								enabled = 0;
-							};
-							com.apple.DataProtection = {
-								enabled = 0;
-							};
-							com.apple.GameCenter.iOS = {
-								enabled = $game_center;
-							};
-							com.apple.HealthKit = {
-								enabled = 0;
-							};
-							com.apple.HomeKit = {
-								enabled = 0;
-							};
-							com.apple.HotspotConfiguration = {
-								enabled = 0;
-							};
-							com.apple.InAppPurchase = {
-								enabled = $in_app_purchases;
-							};
-							com.apple.InterAppAudio = {
-								enabled = 0;
-							};
-							com.apple.Keychain = {
-								enabled = 0;
-							};
-							com.apple.Maps.iOS = {
-								enabled = 0;
-							};
-							com.apple.Multipath = {
-								enabled = 0;
-							};
-							com.apple.NearFieldCommunicationTagReading = {
-								enabled = 0;
-							};
-							com.apple.NetworkExtensions.iOS = {
-								enabled = 0;
-							};
-							com.apple.Push = {
-								enabled = $push_notifications;
-							};
-							com.apple.SafariKeychain = {
-								enabled = 0;
-							};
-							com.apple.Siri = {
-								enabled = 0;
-							};
-							com.apple.VPNLite = {
-								enabled = 0;
-							};
-							com.apple.WAC = {
-								enabled = 0;
-							};
-							com.apple.Wallet = {
-								enabled = 0;
-							};
-							com.apple.iCloud = {
-								enabled = 0;
-							};
 						};
 					};
 				};
@@ -230,9 +174,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1F1575721F582BE20003B888 /* dylibs in Resources */,
 				D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */,
 				D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */,
+				$pbx_launch_screen_build_phase
 				D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */,
 				$additional_pbx_resources_build
 			);
@@ -256,6 +200,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				D0BCFE4518AEBDA2004A7AAE /* en */,
+				$pbx_locale_build_reference
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -284,7 +229,9 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_BITCODE = NO;
-				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary/**";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = (
+					"$(PROJECT_DIR)/**",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -299,10 +246,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				OTHER_LDFLAGS = "$linker_flags";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 			};
 			name = Debug;
 		};
@@ -327,7 +274,9 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_BITCODE = NO;
-				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary/**";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = (
+					"$(PROJECT_DIR)/**",
+				);
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -336,10 +285,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				OTHER_LDFLAGS = "$linker_flags";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -349,22 +298,27 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				$pbx_launch_image_usage_setting
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
+				CODE_SIGN_STYLE = "$code_sign_style_debug";
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_debug";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "armv7 armv7s arm64 i386 x86_64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -375,22 +329,27 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				$pbx_launch_image_usage_setting
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
+				CODE_SIGN_STYLE = "$code_sign_style_release";
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_release";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "armv7 armv7s arm64 i386 x86_64";
 				WRAPPER_EXTENSION = app;
 			};

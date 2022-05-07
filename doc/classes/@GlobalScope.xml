@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" version="3.2">
+<class name="@GlobalScope" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
@@ -30,9 +30,6 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			The [Geometry] singleton.
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
@@ -56,8 +53,14 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
-			The [EditorNavigationMeshGenerator] singleton.
+		<member name="Navigation2DServer" type="Navigation2DServer" setter="" getter="">
+			The [Navigation2DServer] singleton.
+		</member>
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
+			The [NavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer" type="NavigationServer" setter="" getter="">
+			The [NavigationServer] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -79,6 +82,9 @@
 		</member>
 		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="">
 			The [ResourceSaver] singleton.
+		</member>
+		<member name="Time" type="Time" setter="" getter="">
+			The [Time] singleton.
 		</member>
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
@@ -341,16 +347,16 @@
 			Right Direction key.
 		</constant>
 		<constant name="KEY_BACK" value="16777280" enum="KeyList">
-			Back key.
+			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
 		<constant name="KEY_FORWARD" value="16777281" enum="KeyList">
-			Forward key.
+			Media forward key.
 		</constant>
 		<constant name="KEY_STOP" value="16777282" enum="KeyList">
-			Stop key.
+			Media stop key.
 		</constant>
 		<constant name="KEY_REFRESH" value="16777283" enum="KeyList">
-			Refresh key.
+			Media refresh key.
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="KeyList">
 			Volume down key.
@@ -886,7 +892,7 @@
 		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask">
 			Ctrl key mask.
 		</constant>
-		<constant name="KEY_MASK_CMD" value="268435456" enum="KeyModifierMask">
+		<constant name="KEY_MASK_CMD" value="platform-dependent" enum="KeyModifierMask">
 			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
@@ -937,6 +943,9 @@
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="JOY_INVALID_OPTION" value="-1" enum="JoystickList">
+			Invalid button or axis.
+		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Gamepad button 0.
 		</constant>
@@ -985,8 +994,32 @@
 		<constant name="JOY_BUTTON_15" value="15" enum="JoystickList">
 			Gamepad button 15.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="16" enum="JoystickList">
-			Represents the maximum number of joystick buttons supported.
+		<constant name="JOY_BUTTON_16" value="16" enum="JoystickList">
+			Gamepad button 16.
+		</constant>
+		<constant name="JOY_BUTTON_17" value="17" enum="JoystickList">
+			Gamepad button 17.
+		</constant>
+		<constant name="JOY_BUTTON_18" value="18" enum="JoystickList">
+			Gamepad button 18.
+		</constant>
+		<constant name="JOY_BUTTON_19" value="19" enum="JoystickList">
+			Gamepad button 19.
+		</constant>
+		<constant name="JOY_BUTTON_20" value="20" enum="JoystickList">
+			Gamepad button 20.
+		</constant>
+		<constant name="JOY_BUTTON_21" value="21" enum="JoystickList">
+			Gamepad button 21.
+		</constant>
+		<constant name="JOY_BUTTON_22" value="22" enum="JoystickList">
+			Gamepad button 22.
+		</constant>
+		<constant name="JOY_BUTTON_MAX" value="128" enum="JoystickList">
+			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
+			- Android: Up to 36 buttons.
+			- Linux: Up to 80 buttons.
+			- Windows and macOS: Up to 128 buttons.
 		</constant>
 		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoystickList">
 			DualShock circle button.
@@ -1062,6 +1095,27 @@
 		</constant>
 		<constant name="JOY_DPAD_RIGHT" value="15" enum="JoystickList">
 			Gamepad DPad right.
+		</constant>
+		<constant name="JOY_GUIDE" value="16" enum="JoystickList">
+			Gamepad SDL guide button.
+		</constant>
+		<constant name="JOY_MISC1" value="17" enum="JoystickList">
+			Gamepad SDL miscellaneous button.
+		</constant>
+		<constant name="JOY_PADDLE1" value="18" enum="JoystickList">
+			Gamepad SDL paddle 1 button.
+		</constant>
+		<constant name="JOY_PADDLE2" value="19" enum="JoystickList">
+			Gamepad SDL paddle 2 button.
+		</constant>
+		<constant name="JOY_PADDLE3" value="20" enum="JoystickList">
+			Gamepad SDL paddle 3 button.
+		</constant>
+		<constant name="JOY_PADDLE4" value="21" enum="JoystickList">
+			Gamepad SDL paddle 4 button.
+		</constant>
+		<constant name="JOY_TOUCHPAD" value="22" enum="JoystickList">
+			Gamepad SDL touchpad button.
 		</constant>
 		<constant name="JOY_L" value="4" enum="JoystickList">
 			Gamepad left Shoulder button.
@@ -1145,25 +1199,58 @@
 			OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR controllers).
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
-			MIDI note OFF message.
+			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MidiMessageList">
-			MIDI note ON message.
+			MIDI note ON message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MidiMessageList">
-			MIDI aftertouch message.
+			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MidiMessageList">
-			MIDI control change message.
+			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MidiMessageList">
-			MIDI program change message.
+			MIDI program change message. This message sent when the program patch number changes.
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MidiMessageList">
-			MIDI channel pressure message.
+			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
-			MIDI pitch bend message.
+			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MidiMessageList">
+			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MidiMessageList">
+			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MidiMessageList">
+			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MidiMessageList">
+			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MidiMessageList">
+			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+		</constant>
+		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MidiMessageList">
+			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+		</constant>
+		<constant name="MIDI_MESSAGE_START" value="250" enum="MidiMessageList">
+			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+		</constant>
+		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MidiMessageList">
+			MIDI continue message. Continue at the point the sequence was stopped.
+		</constant>
+		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MidiMessageList">
+			MIDI stop message. Stop the current sequence.
+		</constant>
+		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MidiMessageList">
+			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MidiMessageList">
+			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
@@ -1171,10 +1258,10 @@
 			[codeblock]
 			var err = method_that_returns_error()
 			if err != OK:
-			    print("Failure!)
+			    print("Failure!")
 			# Or, equivalent:
 			if err:
-			    print("Still failing!)
+			    print("Still failing!")
 			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
@@ -1328,10 +1415,15 @@
 			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_RANGE" value="2" enum="PropertyHint">
-			Hints that an integer or float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,or_greater"[/code].
+			Hints that a float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,or_greater"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="3" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
+		</constant>
+		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="37" enum="PropertyHint">
+			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
 			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
@@ -1409,7 +1501,7 @@
 			The property is a translatable string.
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
-			Used to group properties together in the editor.
+			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.

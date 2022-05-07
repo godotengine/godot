@@ -32,7 +32,6 @@ in this Software without prior written authorization from The Open Group.
 /* Modified for use with FreeType */
 
 
-#include <ft2build.h>
 #include "pcfutil.h"
 
 

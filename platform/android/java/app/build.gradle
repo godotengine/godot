@@ -9,7 +9,7 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
 //CHUNK_BUILDSCRIPT_REPOSITORIES_BEGIN
 //CHUNK_BUILDSCRIPT_REPOSITORIES_END
     }
@@ -25,9 +25,8 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
-        mavenCentral()
         google()
-        jcenter()
+        mavenCentral()
 //CHUNK_ALLPROJECTS_REPOSITORIES_BEGIN
 //CHUNK_ALLPROJECTS_REPOSITORIES_END
 
@@ -43,10 +42,14 @@ allprojects {
     }
 }
 
+configurations {
+    // Initializes a placeholder for the devImplementation dependency configuration.
+    devImplementation {}
+}
+
 dependencies {
-    implementation libraries.supportCoreUtils
     implementation libraries.kotlinStdLib
-    implementation libraries.v4Support
+    implementation libraries.androidxFragment
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -56,6 +59,7 @@ dependencies {
         // Custom build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
+        devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
         releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
     }
 
@@ -80,22 +84,36 @@ dependencies {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
     }
+
+    assetPacks = [":assetPacks:installTime"]
 
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
-            ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
         }
+
+        ndk {
+            String[] export_abi_list = getExportEnabledABIs()
+            abiFilters export_abi_list
+        }
+
+        manifestPlaceholders = [godotEditorVersion: getGodotEditorVersion()]
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()
-        minSdkVersion versions.minSdk
-        targetSdkVersion versions.targetSdk
+        versionCode getExportVersionCode()
+        versionName getExportVersionName()
+        minSdkVersion getExportMinSdkVersion()
+        targetSdkVersion getExportTargetSdkVersion()
+
+        missingDimensionStrategy 'products', 'template'
 //CHUNK_ANDROID_DEFAULTCONFIG_BEGIN
 //CHUNK_ANDROID_DEFAULTCONFIG_END
     }
@@ -105,18 +123,74 @@ android {
         disable 'MissingTranslation', 'UnusedResources'
     }
 
+    ndkVersion versions.ndkVersion
+
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // Should be uncommented for development purpose within Android Studio
-        // doNotStrip '**/*.so'
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
     }
 
-    // Both signing and zip-aligning will be done at export time
-    buildTypes.all { buildType ->
-        buildType.zipAlignEnabled false
-        buildType.signingConfig null
+    signingConfigs {
+        debug {
+            if (hasCustomDebugKeystore()) {
+                storeFile new File(getDebugKeystoreFile())
+                storePassword getDebugKeystorePassword()
+                keyAlias getDebugKeyAlias()
+                keyPassword getDebugKeystorePassword()
+            }
+        }
+
+        release {
+            File keystoreFile = new File(getReleaseKeystoreFile())
+            if (keystoreFile.isFile()) {
+                storeFile keystoreFile
+                storePassword getReleaseKeystorePassword()
+                keyAlias getReleaseKeyAlias()
+                keyPassword getReleaseKeystorePassword()
+            }
+        }
+    }
+
+    buildTypes {
+
+        debug {
+            // Signing and zip-aligning are skipped for prebuilt builds, but
+            // performed for custom builds.
+            zipAlignEnabled shouldZipAlign()
+            if (shouldSign()) {
+                signingConfig signingConfigs.debug
+            } else {
+                signingConfig null
+            }
+        }
+
+        dev {
+            initWith debug
+            // Signing and zip-aligning are skipped for prebuilt builds, but
+            // performed for custom builds.
+            zipAlignEnabled shouldZipAlign()
+            if (shouldSign()) {
+                signingConfig signingConfigs.debug
+            } else {
+                signingConfig null
+            }
+        }
+
+        release {
+            // Signing and zip-aligning are skipped for prebuilt builds, but
+            // performed for custom builds.
+            zipAlignEnabled shouldZipAlign()
+            if (shouldSign()) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig null
+            }
+        }
     }
 
     sourceSets {
@@ -148,6 +222,11 @@ android {
 //DIR_JNI_DEBUG_BEGIN
 //DIR_JNI_DEBUG_END
         ]
+        dev.jniLibs.srcDirs = [
+            'libs/dev'
+//DIR_JNI_DEV_BEGIN
+//DIR_JNI_DEV_END
+        ]
         release.jniLibs.srcDirs = [
             'libs/release'
 //DIR_JNI_RELEASE_BEGIN
@@ -160,6 +239,42 @@ android {
             output.outputFileName = "android_${variant.name}.apk"
         }
     }
+}
+
+task copyAndRenameDebugApk(type: Copy) {
+    from "$buildDir/outputs/apk/debug/android_debug.apk"
+    into getExportPath()
+    rename "android_debug.apk", getExportFilename()
+}
+
+task copyAndRenameDevApk(type: Copy) {
+    from "$buildDir/outputs/apk/dev/android_dev.apk"
+    into getExportPath()
+    rename "android_dev.apk", getExportFilename()
+}
+
+task copyAndRenameReleaseApk(type: Copy) {
+    from "$buildDir/outputs/apk/release/android_release.apk"
+    into getExportPath()
+    rename "android_release.apk", getExportFilename()
+}
+
+task copyAndRenameDebugAab(type: Copy) {
+    from "$buildDir/outputs/bundle/debug/build-debug.aab"
+    into getExportPath()
+    rename "build-debug.aab", getExportFilename()
+}
+
+task copyAndRenameDevAab(type: Copy) {
+    from "$buildDir/outputs/bundle/dev/build-dev.aab"
+    into getExportPath()
+    rename "build-dev.aab", getExportFilename()
+}
+
+task copyAndRenameReleaseAab(type: Copy) {
+    from "$buildDir/outputs/bundle/release/build-release.aab"
+    into getExportPath()
+    rename "build-release.aab", getExportFilename()
 }
 
 //CHUNK_GLOBAL_BEGIN

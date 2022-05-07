@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/3d/spatial.h"
 
 class RayCast : public Spatial {
-
 	GDCLASS(RayCast, Spatial);
 
 	bool enabled;
@@ -52,9 +51,15 @@ class RayCast : public Spatial {
 
 	Node *debug_shape;
 	Ref<Material> debug_material;
+	Color debug_shape_custom_color = Color(0.0, 0.0, 0.0);
+	int debug_shape_thickness = 2;
+	Vector<Vector3> debug_shape_vertices;
+	Vector<Vector3> debug_line_vertices;
 
 	void _create_debug_shape();
 	void _update_debug_shape();
+	void _update_debug_shape_material(bool p_check_collision = false);
+	void _update_debug_shape_vertices();
 	void _clear_debug_shape();
 
 	bool collide_with_areas;
@@ -86,6 +91,17 @@ public:
 
 	void set_exclude_parent_body(bool p_exclude_parent_body);
 	bool get_exclude_parent_body() const;
+
+	const Color &get_debug_shape_custom_color() const;
+	void set_debug_shape_custom_color(const Color &p_color);
+
+	const Vector<Vector3> &get_debug_shape_vertices() const;
+	const Vector<Vector3> &get_debug_line_vertices() const;
+
+	Ref<SpatialMaterial> get_debug_material();
+
+	int get_debug_shape_thickness() const;
+	void set_debug_shape_thickness(const int p_debug_thickness);
 
 	void force_raycast_update();
 	bool is_colliding() const;

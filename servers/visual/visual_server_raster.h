@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 #include "visual_server_viewport.h"
 
 class VisualServerRaster : public VisualServer {
-
 	enum {
 
 		MAX_INSTANCE_CULL = 8192,
@@ -54,14 +53,14 @@ class VisualServerRaster : public VisualServer {
 
 	};
 
-	static int changes;
+	// low and high priority
+	static int changes[2];
 	RID test_cube;
 
 	int black_margin[4];
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
-
 		ObjectID object;
 		StringName method;
 		Variant param;
@@ -70,27 +69,36 @@ class VisualServerRaster : public VisualServer {
 	List<FrameDrawnCallbacks> frame_drawn_callbacks;
 
 	void _draw_margins();
-	static void _changes_changed() {}
 
-public:
-	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
-	//#define DEBUG_CHANGES
-
-#ifdef DEBUG_CHANGES
-	_FORCE_INLINE_ static void redraw_request() {
-		changes++;
-		_changes_changed();
+	// This function is NOT dead code.
+	// It is specifically for debugging redraws to help identify problems with
+	// undesired constant editor updating.
+	// The function will be called in DEV builds (and thus does not require a recompile),
+	// allowing you to place a breakpoint either at the first line or the semicolon.
+	// You can then look at the callstack to find the cause of the redraw.
+	static void _changes_changed(int p_priority) {
+		if (p_priority) {
+			;
+		}
 	}
 
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
+public:
+	// if editor is redrawing when it shouldn't, use a DEV build and put a breakpoint in _changes_changed()
+	_FORCE_INLINE_ static void redraw_request(bool p_high_priority = true) {
+		int priority = p_high_priority ? 1 : 0;
+		changes[priority] += 1;
+#ifdef DEV_ENABLED
+		_changes_changed(priority);
+#endif
+	}
 
+#ifdef DEV_ENABLED
+#define DISPLAY_CHANGED \
+	changes[1] += 1;    \
+	_changes_changed(1);
 #else
-	_FORCE_INLINE_ static void redraw_request() { changes++; }
-
 #define DISPLAY_CHANGED \
-	changes++;
+	changes[1] += 1;
 #endif
 
 #define BIND0R(m_r, m_name) \
@@ -108,8 +116,12 @@ public:
 #define BIND4RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 
+#define BIND0N(m_name) \
+	void m_name() { BINDBASE->m_name(); }
 #define BIND1(m_name, m_type1) \
 	void m_name(m_type1 arg1) { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
+#define BIND1N(m_name, m_type1) \
+	void m_name(m_type1 arg1) { BINDBASE->m_name(arg1); }
 #define BIND2(m_name, m_type1, m_type2) \
 	void m_name(m_type1 arg1, m_type2 arg2) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2); }
 #define BIND2C(m_name, m_type1, m_type2) \
@@ -192,7 +204,9 @@ public:
 
 	BIND2(shader_add_custom_define, RID, const String &)
 	BIND2C(shader_get_custom_defines, RID, Vector<String> *)
-	BIND1(shader_clear_custom_defines, RID)
+	BIND2(shader_remove_custom_define, RID, const String &)
+
+	BIND1(set_shader_async_hidden_forbidden, bool)
 
 	/* COMMON MATERIAL API */
 
@@ -213,7 +227,7 @@ public:
 
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
 
 	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
@@ -236,7 +250,7 @@ public:
 	BIND2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
 
 	BIND2RC(AABB, mesh_surface_get_aabb, RID, int)
-	BIND2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
+	BIND2RC(Vector<PoolVector<uint8_t>>, mesh_surface_get_blend_shapes, RID, int)
 	BIND2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
 
 	BIND2(mesh_remove_surface, RID, int)
@@ -269,6 +283,11 @@ public:
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+
+	BIND3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
+	BIND2(multimesh_set_physics_interpolated, RID, bool)
+	BIND2(multimesh_set_physics_interpolation_quality, RID, int)
+	BIND2(multimesh_instance_reset_physics_interpolation, RID, int)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)
@@ -314,6 +333,7 @@ public:
 	BIND2(light_set_cull_mask, RID, uint32_t)
 	BIND2(light_set_reverse_cull_face_mode, RID, bool)
 	BIND2(light_set_use_gi, RID, bool)
+	BIND2(light_set_bake_mode, RID, LightBakeMode)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	BIND2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
@@ -395,6 +415,9 @@ public:
 	BIND2(lightmap_capture_set_energy, RID, float)
 	BIND1RC(float, lightmap_capture_get_energy, RID)
 
+	BIND2(lightmap_capture_set_interior, RID, bool)
+	BIND1RC(bool, lightmap_capture_is_interior, RID)
+
 	/* PARTICLES */
 
 	BIND0R(RID, particles_create)
@@ -429,6 +452,11 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene
 
+	/* EVENT QUEUING */
+
+	BIND0N(tick)
+	BIND1N(pre_draw, bool)
+
 	/* CAMERA API */
 
 	BIND0R(RID, camera_create)
@@ -436,6 +464,8 @@ public:
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)
+	BIND2(camera_set_interpolated, RID, bool)
+	BIND1(camera_reset_physics_interpolation, RID)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
@@ -484,7 +514,11 @@ public:
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
+	BIND2(viewport_set_use_fxaa, RID, bool)
+	BIND2(viewport_set_use_debanding, RID, bool)
+	BIND2(viewport_set_sharpen_intensity, RID, float)
 	BIND2(viewport_set_hdr, RID, bool)
+	BIND2(viewport_set_use_32_bpc_depth, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
@@ -512,7 +546,7 @@ public:
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
+	BIND12(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
@@ -522,10 +556,14 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-	/* SCENARIO API */
-
 #undef BINDBASE
 #define BINDBASE VSG::scene
+
+	/* INTERPOLATION */
+
+	BIND1(set_physics_interpolation_enabled, bool)
+
+	/* SCENARIO API */
 
 	BIND0R(RID, scenario_create)
 
@@ -535,17 +573,20 @@ public:
 	BIND2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
+
 	BIND0R(RID, instance_create)
 
 	BIND2(instance_set_base, RID, RID)
 	BIND2(instance_set_scenario, RID, RID)
 	BIND2(instance_set_layer_mask, RID, uint32_t)
 	BIND2(instance_set_transform, RID, const Transform &)
+	BIND2(instance_set_interpolated, RID, bool)
+	BIND1(instance_reset_physics_interpolation, RID)
 	BIND2(instance_attach_object_instance_id, RID, ObjectID)
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
-	BIND3(instance_set_use_lightmap, RID, RID, RID)
+	BIND5(instance_set_use_lightmap, RID, RID, RID, int, const Rect2 &)
 
 	BIND2(instance_set_custom_aabb, RID, AABB)
 
@@ -553,6 +594,65 @@ public:
 	BIND2(instance_set_exterior, RID, bool)
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
+
+	/* PORTALS */
+
+	BIND2(instance_set_portal_mode, RID, InstancePortalMode)
+
+	BIND0R(RID, ghost_create)
+	BIND4(ghost_set_scenario, RID, RID, ObjectID, const AABB &)
+	BIND2(ghost_update, RID, const AABB &)
+
+	BIND0R(RID, portal_create)
+	BIND2(portal_set_scenario, RID, RID)
+	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, real_t)
+	BIND4(portal_link, RID, RID, RID, bool)
+	BIND2(portal_set_active, RID, bool)
+
+	/* ROOMGROUPS */
+
+	BIND0R(RID, roomgroup_create)
+	BIND2(roomgroup_prepare, RID, ObjectID)
+	BIND2(roomgroup_set_scenario, RID, RID)
+	BIND2(roomgroup_add_room, RID, RID)
+
+	/* OCCLUDERS */
+
+	BIND0R(RID, occluder_instance_create)
+	BIND2(occluder_instance_set_scenario, RID, RID)
+	BIND2(occluder_instance_link_resource, RID, RID)
+	BIND2(occluder_instance_set_transform, RID, const Transform &)
+	BIND2(occluder_instance_set_active, RID, bool)
+
+	BIND0R(RID, occluder_resource_create)
+	BIND2(occluder_resource_prepare, RID, OccluderType)
+	BIND2(occluder_resource_spheres_update, RID, const Vector<Plane> &)
+	BIND2(occluder_resource_mesh_update, RID, const Geometry::OccluderMeshData &)
+	BIND1(set_use_occlusion_culling, bool)
+	BIND1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
+
+	/* ROOMS */
+
+	BIND0R(RID, room_create)
+	BIND2(room_set_scenario, RID, RID)
+	BIND4(room_add_instance, RID, RID, const AABB &, const Vector<Vector3> &)
+	BIND3(room_add_ghost, RID, ObjectID, const AABB &)
+	BIND5(room_set_bound, RID, ObjectID, const Vector<Plane> &, const AABB &, const Vector<Vector3> &)
+	BIND2(room_prepare, RID, int32_t)
+	BIND1(rooms_and_portals_clear, RID)
+	BIND2(rooms_unload, RID, String)
+	BIND8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
+	BIND4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
+	BIND2(rooms_set_active, RID, bool)
+	BIND3(rooms_set_params, RID, int, real_t)
+	BIND3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
+	BIND2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
+
+	// don't use this in a game
+	BIND1RC(bool, rooms_is_loaded, RID)
+
+	// Callbacks
+	BIND1(callbacks_register, VisualServerCallbacks *)
 
 	// don't use these in a game!
 	BIND2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
@@ -562,6 +662,7 @@ public:
 	BIND3(instance_geometry_set_flag, RID, InstanceFlags, bool)
 	BIND2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	BIND2(instance_geometry_set_material_override, RID, RID)
+	BIND2(instance_geometry_set_material_overlay, RID, RID)
 
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)
@@ -676,13 +777,13 @@ public:
 
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	virtual bool has_changed() const;
+	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const;
 	virtual void init();
 	virtual void finish();
 
 	/* STATUS INFORMATION */
 
-	virtual int get_render_info(RenderInfo p_info);
+	virtual uint64_t get_render_info(RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,7 @@ private:
 		float scale_rand;
 		float hue_rot_rand;
 		float anim_offset_rand;
+		Color start_color_rand;
 		float time;
 		float lifetime;
 		Color base_color;
@@ -126,7 +127,6 @@ private:
 		const Particle *particles;
 		Vector2 axis;
 		bool operator()(int p_a, int p_b) const {
-
 			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
 		}
 	};
@@ -163,6 +163,7 @@ private:
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
 	Ref<Gradient> color_ramp;
+	Ref<Gradient> color_initial_ramp;
 
 	bool flags[FLAG_MAX];
 
@@ -180,7 +181,7 @@ private:
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 
-	Mutex *update_mutex;
+	Mutex update_mutex;
 
 	void _update_render_thread();
 
@@ -204,7 +205,6 @@ public:
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
 	void set_lifetime_randomness(float p_random);
-	void set_visibility_aabb(const Rect2 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(float p_scale);
 
@@ -216,7 +216,6 @@ public:
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
 	float get_lifetime_randomness() const;
-	Rect2 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	float get_speed_scale() const;
 
@@ -228,9 +227,6 @@ public:
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
-
-	void set_draw_passes(int p_count);
-	int get_draw_passes() const;
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
@@ -261,6 +257,9 @@ public:
 	void set_color_ramp(const Ref<Gradient> &p_ramp);
 	Ref<Gradient> get_color_ramp() const;
 
+	void set_color_initial_ramp(const Ref<Gradient> &p_ramp);
+	Ref<Gradient> get_color_initial_ramp() const;
+
 	void set_particle_flag(Flags p_flag, bool p_enable);
 	bool get_particle_flag(Flags p_flag) const;
 
@@ -270,7 +269,6 @@ public:
 	void set_emission_points(const PoolVector<Vector2> &p_points);
 	void set_emission_normals(const PoolVector<Vector2> &p_normals);
 	void set_emission_colors(const PoolVector<Color> &p_colors);
-	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
@@ -278,7 +276,6 @@ public:
 	PoolVector<Vector2> get_emission_points() const;
 	PoolVector<Vector2> get_emission_normals() const;
 	PoolVector<Color> get_emission_colors() const;
-	int get_emission_point_count() const;
 
 	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;

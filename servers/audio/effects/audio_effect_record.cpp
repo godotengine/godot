@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,6 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 }
 
 void AudioEffectRecordInstance::_thread_callback(void *_instance) {
-
 	AudioEffectRecordInstance *aeri = reinterpret_cast<AudioEffectRecordInstance *>(_instance);
 
 	aeri->_io_thread_process();
@@ -119,23 +118,21 @@ void AudioEffectRecordInstance::init() {
 #ifdef NO_THREADS
 	AudioServer::get_singleton()->add_update_callback(&AudioEffectRecordInstance::_update, this);
 #else
-	io_thread = Thread::create(_thread_callback, this);
+	io_thread.start(_thread_callback, this);
 #endif
 }
 
 void AudioEffectRecordInstance::finish() {
-
 #ifdef NO_THREADS
 	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
 #else
 	if (thread_active) {
-		Thread::wait_to_finish(io_thread);
+		io_thread.wait_to_finish();
 	}
 #endif
 }
 
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {
-
 	finish();
 }
 
@@ -178,15 +175,15 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 
 void AudioEffectRecord::ensure_thread_stopped() {
 	recording_active = false;
-	if (current_instance != 0) {
+	if (current_instance != nullptr) {
 		current_instance->finish();
 	}
 }
 
 void AudioEffectRecord::set_recording_active(bool p_record) {
 	if (p_record) {
-		if (current_instance == 0) {
-			WARN_PRINTS("Recording should not be set as active before Godot has initialized.");
+		if (current_instance == nullptr) {
+			WARN_PRINT("Recording should not be set as active before Godot has initialized.");
 			recording_active = false;
 			return;
 		}
@@ -217,8 +214,8 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 
 	PoolVector<uint8_t> dst_data;
 
-	ERR_FAIL_COND_V(current_instance.is_null(), NULL);
-	ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, NULL);
+	ERR_FAIL_COND_V(current_instance.is_null(), nullptr);
+	ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, nullptr);
 
 	if (dst_format == AudioStreamSample::FORMAT_8_BITS) {
 		int data_size = current_instance->recording_data.size();

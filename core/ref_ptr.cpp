@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 void RefPtr::operator=(const RefPtr &p_other) {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
 
@@ -42,7 +41,6 @@ void RefPtr::operator=(const RefPtr &p_other) {
 }
 
 bool RefPtr::operator==(const RefPtr &p_other) const {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
 
@@ -50,7 +48,6 @@ bool RefPtr::operator==(const RefPtr &p_other) const {
 }
 
 bool RefPtr::operator!=(const RefPtr &p_other) const {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
 
@@ -58,7 +55,6 @@ bool RefPtr::operator!=(const RefPtr &p_other) const {
 }
 
 RefPtr::RefPtr(const RefPtr &p_other) {
-
 	memnew_placement(&data[0], Ref<Reference>);
 
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
@@ -68,36 +64,33 @@ RefPtr::RefPtr(const RefPtr &p_other) {
 }
 
 bool RefPtr::is_null() const {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	return ref->is_null();
 }
 
 RID RefPtr::get_rid() const {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
-	if (ref->is_null())
+	if (ref->is_null()) {
 		return RID();
+	}
 	Resource *res = Object::cast_to<Resource>(ref->ptr());
-	if (res)
+	if (res) {
 		return res->get_rid();
+	}
 	return RID();
 }
 
 void RefPtr::unref() {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	ref->unref();
 }
 
 RefPtr::RefPtr() {
-
 	ERR_FAIL_COND(sizeof(Ref<Reference>) > DATASIZE);
 	memnew_placement(&data[0], Ref<Reference>);
 }
 
 RefPtr::~RefPtr() {
-
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	ref->~Ref<Reference>();
 }

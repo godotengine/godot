@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Polygon2D" inherits="Node2D" version="3.2">
+<class name="Polygon2D" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D polygon.
 	</brief_description>
@@ -11,75 +11,58 @@
 	</tutorials>
 	<methods>
 		<method name="add_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<argument index="1" name="weights" type="PoolRealArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="weights" type="PoolRealArray" />
 			<description>
 				Adds a bone with the specified [code]path[/code] and [code]weights[/code].
 			</description>
 		</method>
 		<method name="clear_bones">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all bones from this [Polygon2D].
 			</description>
 		</method>
 		<method name="erase_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes the specified bone from this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of bones in this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="get_bone_weights" qualifiers="const">
-			<return type="PoolRealArray">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="PoolRealArray" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the height values of the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="path" type="NodePath">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="path" type="NodePath" />
 			<description>
 				Sets the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_weights">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="weights" type="PoolRealArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="weights" type="PoolRealArray" />
 			<description>
 				Sets the weight values for the specified bone.
 			</description>
@@ -87,7 +70,8 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
-			If [code]true[/code], polygon edges will be anti-aliased.
+			If [code]true[/code], attempts to perform antialiasing for polygon edges by drawing a thin OpenGL smooth line on the edges.
+			[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 		</member>
 		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[  ]">
 		</member>

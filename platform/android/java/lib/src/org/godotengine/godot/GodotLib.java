@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Wrapper for native library
  */
 public class GodotLib {
-
 	public static GodotIO io;
 
 	static {
@@ -68,16 +67,15 @@ public class GodotLib {
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
 	 * @param width
 	 * @param height
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
 	public static native void resize(int width, int height);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface is created or recreated.
-	 * @param p_32_bits
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
 	 */
-	public static native void newcontext(boolean p_32_bits);
+	public static native void newcontext();
 
 	/**
 	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
@@ -86,24 +84,26 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
-	public static native void step();
+	public static native boolean step();
 
 	/**
 	 * Forward touch events from the main thread to the GL thread.
 	 */
-	public static native void touch(int what, int pointer, int howmany, int[] arr);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
 
 	/**
 	 * Forward hover events from the main thread to the GL thread.
 	 */
-	public static native void hover(int type, int x, int y);
+	public static native void hover(int type, float x, float y);
 
 	/**
 	 * Forward double_tap events from the main thread to the GL thread.
 	 */
-	public static native void doubletap(int x, int y);
+	public static native void doubleTap(int buttonMask, int x, int y);
 
 	/**
 	 * Forward scroll events from the main thread to the GL thread.
@@ -137,7 +137,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events from the main thread to the GL thread.
 	 */
-	public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);
 
 	/**
 	 * Forward game device's key events from the main thread to the GL thread.
@@ -170,11 +170,6 @@ public class GodotLib {
 	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
-
-	/**
-	 * Invoked when the audio thread is started.
-	 */
-	public static native void audio();
 
 	/**
 	 * Used to access Godot global properties.

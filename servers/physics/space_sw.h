@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 #include "core/typedefs.h"
 
 class PhysicsDirectSpaceStateSW : public PhysicsDirectSpaceState {
-
 	GDCLASS(PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState);
 
 public:
@@ -51,7 +50,7 @@ public:
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false);
 	virtual int intersect_shape(const RID &p_shape, const Transform &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	virtual bool cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = NULL);
+	virtual bool cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr);
 	virtual bool collide_shape(RID p_shape, const Transform &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual bool rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const;
@@ -60,7 +59,6 @@ public:
 };
 
 class SpaceSW : public RID_Data {
-
 public:
 	enum ElapsedTime {
 		ELAPSED_TIME_INTEGRATE_FORCES,
@@ -85,8 +83,8 @@ private:
 	SelfList<AreaSW>::List monitor_query_list;
 	SelfList<AreaSW>::List area_moved_list;
 
-	static void *_broadphase_pair(CollisionObjectSW *A, int p_subindex_A, CollisionObjectSW *B, int p_subindex_B, void *p_self);
-	static void _broadphase_unpair(CollisionObjectSW *A, int p_subindex_A, CollisionObjectSW *B, int p_subindex_B, void *p_data, void *p_self);
+	static void *_broadphase_pair(CollisionObjectSW *p_object_A, int p_subindex_A, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self);
+	static void _broadphase_unpair(CollisionObjectSW *p_object_A, int p_subindex_A, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self);
 
 	Set<CollisionObjectSW *> objects;
 
@@ -96,7 +94,6 @@ private:
 	real_t contact_max_separation;
 	real_t contact_max_allowed_penetration;
 	real_t constraint_bias;
-	real_t test_motion_min_contact_depth;
 
 	enum {
 
@@ -113,6 +110,7 @@ private:
 
 	bool locked;
 
+	real_t step;
 	int island_count;
 	int active_objects;
 	int collision_pairs;
@@ -129,6 +127,9 @@ private:
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ void set_step(const real_t &p_step) { step = p_step; }
+	_FORCE_INLINE_ real_t get_step() const { return step; }
 
 	void set_default_area(AreaSW *p_area) { area = p_area; }
 	AreaSW *get_default_area() const { return area; }
@@ -187,7 +188,9 @@ public:
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
-		if (contact_debug_count < contact_debug.size()) contact_debug.write[contact_debug_count++] = p_contact;
+		if (contact_debug_count < contact_debug.size()) {
+			contact_debug.write[contact_debug_count++] = p_contact;
+		}
 	}
 	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contact_debug; }
 	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
@@ -199,7 +202,7 @@ public:
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
 	int test_body_ray_separation(BodySW *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
-	bool test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes);
+	bool test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude = Set<RID>());
 
 	SpaceSW();
 	~SpaceSW();

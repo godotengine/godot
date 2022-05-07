@@ -86,21 +86,16 @@ def configure(env, env_mono):
     is_android = env["platform"] == "android"
     is_javascript = env["platform"] == "javascript"
     is_ios = env["platform"] == "iphone"
-    is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
+    is_ios_sim = is_ios and env["ios_simulator"]
 
     tools_enabled = env["tools"]
     mono_static = env["mono_static"]
     copy_mono_root = env["copy_mono_root"]
 
     mono_prefix = env["mono_prefix"]
+    mono_bcl = env["mono_bcl"]
 
     mono_lib_names = ["mono-2.0-sgen", "monosgen-2.0"]
-
-    is_travis = os.environ.get("TRAVIS") == "true"
-
-    if is_travis:
-        # Travis CI may have a Mono version lower than 5.12
-        env_mono.Append(CPPDEFINES=["NO_PENDING_EXCEPTIONS"])
 
     if is_android and not env["android_arch"] in android_arch_dirs:
         raise RuntimeError("This module does not support the specified 'android_arch': " + env["android_arch"])
@@ -258,7 +253,8 @@ def configure(env, env_mono):
             env_mono.Append(CPPDEFINES=["_REENTRANT"])
 
             if mono_static:
-                env.Append(LINKFLAGS=["-rdynamic"])
+                if not is_javascript:
+                    env.Append(LINKFLAGS=["-rdynamic"])
 
                 mono_lib_file = os.path.join(mono_lib_path, "lib" + mono_lib + ".a")
 
@@ -269,9 +265,20 @@ def configure(env, env_mono):
                         arch = env["arch"]
 
                         def copy_mono_lib(libname_wo_ext):
-                            copy_file(
-                                mono_lib_path, "#bin", libname_wo_ext + ".a", "%s.iphone.%s.a" % (libname_wo_ext, arch)
-                            )
+                            if is_ios_sim:
+                                copy_file(
+                                    mono_lib_path,
+                                    "#bin",
+                                    libname_wo_ext + ".a",
+                                    "%s.iphone.%s.simulator.a" % (libname_wo_ext, arch),
+                                )
+                            else:
+                                copy_file(
+                                    mono_lib_path,
+                                    "#bin",
+                                    libname_wo_ext + ".a",
+                                    "%s.iphone.%s.a" % (libname_wo_ext, arch),
+                                )
 
                         # Copy Mono libraries to the output folder. These are meant to be bundled with
                         # the export templates and added to the Xcode project when exporting a game.
@@ -392,9 +399,8 @@ def configure(env, env_mono):
             mono_root = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
 
         if tools_enabled:
-            copy_mono_root_files(env, mono_root)
-        else:
-            print("Ignoring option: 'copy_mono_root'; only available for builds with 'tools' enabled.")
+            # Only supported for editor builds.
+            copy_mono_root_files(env, mono_root, mono_bcl)
 
 
 def make_template_dir(env, mono_root):
@@ -427,7 +433,7 @@ def make_template_dir(env, mono_root):
     copy_mono_shared_libs(env, mono_root, template_mono_root_dir)
 
 
-def copy_mono_root_files(env, mono_root):
+def copy_mono_root_files(env, mono_root, mono_bcl):
     from glob import glob
     from shutil import copy
     from shutil import rmtree
@@ -452,7 +458,7 @@ def copy_mono_root_files(env, mono_root):
 
     # Copy framework assemblies
 
-    mono_framework_dir = os.path.join(mono_root, "lib", "mono", "4.5")
+    mono_framework_dir = mono_bcl or os.path.join(mono_root, "lib", "mono", "4.5")
     mono_framework_facades_dir = os.path.join(mono_framework_dir, "Facades")
 
     editor_mono_framework_dir = os.path.join(editor_mono_root_dir, "lib", "mono", "4.5")
@@ -539,12 +545,16 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if not os.path.isdir(target_mono_lib_dir):
             os.makedirs(target_mono_lib_dir)
 
+        src_mono_lib_dir = os.path.join(mono_root, "lib")
+
         lib_file_names = []
         if platform == "osx":
-            lib_file_names = [
-                lib_name + ".dylib"
-                for lib_name in ["libmono-btls-shared", "libmono-native-compat", "libMonoPosixHelper"]
-            ]
+            lib_file_names = [lib_name + ".dylib" for lib_name in ["libmono-btls-shared", "libMonoPosixHelper"]]
+
+            if os.path.isfile(os.path.join(src_mono_lib_dir, "libmono-native-compat.dylib")):
+                lib_file_names += ["libmono-native-compat.dylib"]
+            else:
+                lib_file_names += ["libmono-native.dylib"]
         elif is_unix_like(platform):
             lib_file_names = [
                 lib_name + ".so"
@@ -561,7 +571,7 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
             ]
 
         for lib_file_name in lib_file_names:
-            copy_if_exists(os.path.join(mono_root, "lib", lib_file_name), target_mono_lib_dir)
+            copy_if_exists(os.path.join(src_mono_lib_dir, lib_file_name), target_mono_lib_dir)
 
 
 def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):

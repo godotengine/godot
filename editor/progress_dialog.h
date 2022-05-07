@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,11 @@
 #include "scene/gui/progress_bar.h"
 
 class BackgroundProgress : public HBoxContainer {
-
 	GDCLASS(BackgroundProgress, HBoxContainer);
 
 	_THREAD_SAFE_CLASS_
 
 	struct Task {
-
 		HBoxContainer *hb;
 		ProgressBar *progress;
 	};
@@ -69,21 +67,19 @@ public:
 };
 
 class ProgressDialog : public Popup {
-
 	GDCLASS(ProgressDialog, Popup);
 	struct Task {
-
 		String task;
 		VBoxContainer *vb;
 		ProgressBar *progress;
 		Label *state;
+		uint64_t last_progress_tick;
 	};
 	HBoxContainer *cancel_hb;
 	Button *cancel;
 
 	Map<String, Task> tasks;
 	VBoxContainer *main;
-	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;
 	void _popup();

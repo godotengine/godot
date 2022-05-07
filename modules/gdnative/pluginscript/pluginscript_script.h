@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 #include <pluginscript/godot_pluginscript.h>
 
 class PluginScript : public Script {
-
 	GDCLASS(PluginScript, Script);
 
 	friend class PluginScriptInstance;
@@ -71,6 +70,8 @@ private:
 
 protected:
 	static void _bind_methods();
+
+	bool inherits_script(const Ref<Script> &p_script) const;
 
 	PluginScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);

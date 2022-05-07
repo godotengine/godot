@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 	gl_Position.z = 1.0;
 }
@@ -58,7 +57,6 @@ uniform float camera_z_near;
 uniform ivec2 screen_size;
 
 void main() {
-
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
 
 	float depth = texelFetch(source_depth, ssC, 0).r;
@@ -91,7 +89,6 @@ void main() {
 		// We already handled the zero case above.  This loop should be unrolled and the static branch optimized out,
 		// so the IF statement has no runtime cost
 		if (r != 0) {
-
 			ivec2 ppos = ssC + axis * (r * filter_scale);
 			float value = texelFetch(source_ssao, clamp(ppos, ivec2(0), clamp_limit), 0).r;
 			ivec2 rpos = clamp(ppos, ivec2(0), clamp_limit);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,20 +53,17 @@ class RasterizerStorageGLES2;
 class ShaderGLES2 {
 protected:
 	struct Enum {
-
 		uint64_t mask;
 		uint64_t shift;
 		const char *defines[16];
 	};
 
 	struct EnumValue {
-
 		uint64_t set_mask;
 		uint64_t clear_mask;
 	};
 
 	struct AttributePair {
-
 		const char *name;
 		int index;
 	};
@@ -77,7 +74,6 @@ protected:
 	};
 
 	struct TexUnitPair {
-
 		const char *name;
 		int index;
 	};
@@ -94,7 +90,6 @@ private:
 	int attribute_pair_count;
 
 	struct CustomCode {
-
 		String vertex;
 		String vertex_globals;
 		String fragment;
@@ -104,11 +99,10 @@ private:
 		Vector<StringName> texture_uniforms;
 		Vector<StringName> custom_uniforms;
 		Vector<CharString> custom_defines;
-		Set<uint32_t> versions;
+		Set<uint64_t> versions;
 	};
 
 	struct Version {
-
 		GLuint id;
 		GLuint vert_id;
 		GLuint frag_id;
@@ -121,7 +115,7 @@ private:
 			id = 0;
 			vert_id = 0;
 			frag_id = 0;
-			uniform_location = NULL;
+			uniform_location = nullptr;
 			code_version = 0;
 			ok = false;
 		}
@@ -130,19 +124,17 @@ private:
 	Version *version;
 
 	union VersionKey {
-
 		struct {
-			uint32_t version;
+			uint64_t version;
 			uint32_t code_version;
 		};
-		uint64_t key;
-		bool operator==(const VersionKey &p_key) const { return key == p_key.key; }
-		bool operator<(const VersionKey &p_key) const { return key < p_key.key; }
+		unsigned char key[12];
+		bool operator==(const VersionKey &p_key) const { return version == p_key.version && code_version == p_key.code_version; }
+		bool operator<(const VersionKey &p_key) const { return version < p_key.version || (version == p_key.version && code_version < p_key.code_version); }
 	};
 
 	struct VersionKeyHash {
-
-		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); }
+		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return hash_djb2_buffer(p_key.key, sizeof(p_key.key)); }
 	};
 
 	//this should use a way more cachefriendly version..
@@ -179,7 +171,7 @@ private:
 
 	int max_image_units;
 
-	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > > uniform_values;
+	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value>>> uniform_values;
 
 protected:
 	_FORCE_INLINE_ int _get_uniform(int p_which) const;
@@ -230,13 +222,13 @@ public:
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 
-	uint32_t get_version_key() const { return conditional_version.version; }
+	uint64_t get_version_key() const { return conditional_version.version; }
 
 	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
 	// like forward declared nested classes.
 	void use_material(void *p_material);
 
-	_FORCE_INLINE_ uint32_t get_version() const { return new_conditional_version.version; }
+	_FORCE_INLINE_ uint64_t get_version() const { return new_conditional_version.version; }
 	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
 
 	virtual void init() = 0;
@@ -252,8 +244,8 @@ public:
 		}
 	}
 
-	void clear_custom_defines() {
-		custom_defines.clear();
+	void remove_custom_define(const String &p_define) {
+		custom_defines.erase(p_define.utf8());
 	}
 
 	virtual ~ShaderGLES2();
@@ -262,19 +254,20 @@ public:
 // called a lot, made inline
 
 int ShaderGLES2::_get_uniform(int p_which) const {
-
 	ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 	ERR_FAIL_COND_V(!version, -1);
 	return version->uniform_location[p_which];
 }
 
 void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
-
 	ERR_FAIL_INDEX(p_which, conditional_count);
-	if (p_value)
-		new_conditional_version.version |= (1 << p_which);
-	else
-		new_conditional_version.version &= ~(1 << p_which);
+	ERR_FAIL_INDEX(p_which, (int)sizeof(new_conditional_version.version) * 8);
+
+	if (p_value) {
+		new_conditional_version.version |= (uint64_t(1) << p_which);
+	} else {
+		new_conditional_version.version &= ~(uint64_t(1) << p_which);
+	}
 }
 
 #endif

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,14 +39,18 @@
 #include "core/rid.h"
 #include "core/variant.h"
 
-class VisualServer : public Object {
+class VisualServerCallbacks;
 
+class VisualServer : public Object {
 	GDCLASS(VisualServer, Object);
 
 	static VisualServer *singleton;
 
 	int mm_policy;
 	bool render_loop_enabled = true;
+#ifdef DEBUG_ENABLED
+	bool force_shader_fallbacks = false;
+#endif
 
 	void _camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	void _canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate = Color(1, 1, 1));
@@ -59,7 +63,7 @@ protected:
 	RID white_texture;
 	RID test_material;
 
-	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
+	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t *p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
 
 	static VisualServer *(*create_func)();
 	static void _bind_methods();
@@ -67,6 +71,10 @@ protected:
 public:
 	static VisualServer *get_singleton();
 	static VisualServer *create();
+	static Vector2 norm_to_oct(const Vector3 v);
+	static Vector2 tangent_to_oct(const Vector3 v, const float sign, const bool high_precision);
+	static Vector3 oct_to_norm(const Vector2 v);
+	static Vector3 oct_to_tangent(const Vector2 v, float *out_sign);
 
 	enum {
 
@@ -81,7 +89,7 @@ public:
 
 	/* TEXTURE API */
 
-	enum TextureFlags {
+	enum TextureFlags : unsigned int { // unsigned to stop sanitizer complaining about bit operations on ints
 		TEXTURE_FLAG_MIPMAPS = 1, /// Enable automatic mipmap generation - when available
 		TEXTURE_FLAG_REPEAT = 2, /// Repeat texture (Tiling), otherwise Clamping
 		TEXTURE_FLAG_FILTER = 4, /// Create texture with linear (or available) filter
@@ -197,7 +205,9 @@ public:
 
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define) = 0;
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const = 0;
-	virtual void shader_clear_custom_defines(RID p_shader) = 0;
+	virtual void shader_remove_custom_define(RID p_shader, const String &p_define) = 0;
+
+	virtual void set_shader_async_hidden_forbidden(bool p_forbidden) = 0;
 
 	/* COMMON MATERIAL API */
 
@@ -262,8 +272,9 @@ public:
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION = ARRAY_COMPRESS_INDEX << 4,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS | ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION
 
 	};
 
@@ -281,11 +292,11 @@ public:
 	virtual RID mesh_create() = 0;
 
 	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
-	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const;
+	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
 	/// Returns stride
-	virtual uint32_t mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
+	virtual void mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t *r_strides) const;
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
+	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount) = 0;
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
@@ -316,7 +327,7 @@ public:
 	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const = 0;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const = 0;
+	virtual Vector<PoolVector<uint8_t>> mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const = 0;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const = 0;
 	Array _mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const;
 
@@ -370,6 +381,12 @@ public:
 
 	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
 
+	// Interpolation
+	virtual void multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev) = 0;
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) = 0;
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, int p_quality) = 0;
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) = 0;
+
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
 
@@ -412,6 +429,7 @@ public:
 
 		LIGHT_PARAM_ENERGY,
 		LIGHT_PARAM_INDIRECT_ENERGY,
+		LIGHT_PARAM_SIZE,
 		LIGHT_PARAM_SPECULAR,
 		LIGHT_PARAM_RANGE,
 		LIGHT_PARAM_ATTENUATION,
@@ -441,6 +459,15 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
+
+	// bake mode
+	enum LightBakeMode {
+		LIGHT_BAKE_DISABLED,
+		LIGHT_BAKE_INDIRECT,
+		LIGHT_BAKE_ALL
+	};
+
+	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
 
 	// omni light
 	enum LightOmniShadowMode {
@@ -549,6 +576,8 @@ public:
 	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
 	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior) = 0;
+	virtual bool lightmap_capture_is_interior(RID p_capture) const = 0;
 
 	/* PARTICLES API */
 
@@ -594,6 +623,8 @@ public:
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform) = 0;
+	virtual void camera_set_interpolated(RID p_camera, bool p_interpolated) = 0;
+	virtual void camera_reset_physics_interpolation(RID p_camera) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
@@ -671,6 +702,9 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_use_fxaa(RID p_viewport, bool p_fxaa) = 0;
+	virtual void viewport_set_use_debanding(RID p_viewport, bool p_debanding) = 0;
+	virtual void viewport_set_sharpen_intensity(RID p_viewport, float p_intensity) = 0;
 
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,
@@ -680,6 +714,7 @@ public:
 	};
 
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
+	virtual void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
 
 	enum ViewportRenderInfo {
@@ -751,13 +786,14 @@ public:
 		GLOW_BLEND_MODE_SOFTLIGHT,
 		GLOW_BLEND_MODE_REPLACE,
 	};
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) = 0;
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale, bool p_high_quality) = 0;
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
 		ENV_TONE_MAPPER_REINHARD,
 		ENV_TONE_MAPPER_FILMIC,
-		ENV_TONE_MAPPER_ACES
+		ENV_TONE_MAPPER_ACES,
+		ENV_TONE_MAPPER_ACES_FITTED
 	};
 
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
@@ -783,6 +819,10 @@ public:
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
+
+	/* INTERPOLATION API */
+
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
 	/* SCENARIO API */
 
@@ -827,12 +867,14 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario) = 0;
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
+	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
 
-	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) = 0;
+	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 
@@ -840,6 +882,85 @@ public:
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled) = 0;
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
+
+	/* PORTALS API */
+
+	enum InstancePortalMode {
+		INSTANCE_PORTAL_MODE_STATIC, // not moving within a room
+		INSTANCE_PORTAL_MODE_DYNAMIC, //  moving within room
+		INSTANCE_PORTAL_MODE_ROAMING, // moving between rooms
+		INSTANCE_PORTAL_MODE_GLOBAL, // frustum culled only
+		INSTANCE_PORTAL_MODE_IGNORE, // don't show at all - e.g. manual bounds, hidden portals
+	};
+
+	virtual void instance_set_portal_mode(RID p_instance, InstancePortalMode p_mode) = 0;
+
+	virtual RID ghost_create() = 0;
+	virtual void ghost_set_scenario(RID p_ghost, RID p_scenario, ObjectID p_id, const AABB &p_aabb) = 0;
+	virtual void ghost_update(RID p_ghost, const AABB &p_aabb) = 0;
+
+	virtual RID portal_create() = 0;
+	virtual void portal_set_scenario(RID p_portal, RID p_scenario) = 0;
+	virtual void portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, real_t p_margin) = 0;
+	virtual void portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) = 0;
+	virtual void portal_set_active(RID p_portal, bool p_active) = 0;
+
+	/* ROOMGROUPS API */
+
+	virtual RID roomgroup_create() = 0;
+	virtual void roomgroup_prepare(RID p_roomgroup, ObjectID p_roomgroup_object_id) = 0;
+	virtual void roomgroup_set_scenario(RID p_roomgroup, RID p_scenario) = 0;
+	virtual void roomgroup_add_room(RID p_roomgroup, RID p_room) = 0;
+
+	/* OCCLUDERS API */
+
+	enum OccluderType {
+		OCCLUDER_TYPE_UNDEFINED,
+		OCCLUDER_TYPE_SPHERE,
+		OCCLUDER_TYPE_MESH,
+		OCCLUDER_TYPE_NUM_TYPES,
+	};
+
+	virtual RID occluder_instance_create() = 0;
+	virtual void occluder_instance_set_scenario(RID p_occluder_instance, RID p_scenario) = 0;
+	virtual void occluder_instance_link_resource(RID p_occluder_instance, RID p_occluder_resource) = 0;
+	virtual void occluder_instance_set_transform(RID p_occluder_instance, const Transform &p_xform) = 0;
+	virtual void occluder_instance_set_active(RID p_occluder_instance, bool p_active) = 0;
+
+	virtual RID occluder_resource_create() = 0;
+	virtual void occluder_resource_prepare(RID p_occluder_resource, VisualServer::OccluderType p_type) = 0;
+	virtual void occluder_resource_spheres_update(RID p_occluder_resource, const Vector<Plane> &p_spheres) = 0;
+	virtual void occluder_resource_mesh_update(RID p_occluder_resource, const Geometry::OccluderMeshData &p_mesh_data) = 0;
+
+	virtual void set_use_occlusion_culling(bool p_enable) = 0;
+	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const = 0;
+
+	/* ROOMS API */
+
+	enum RoomsDebugFeature {
+		ROOMS_DEBUG_SPRAWL,
+	};
+
+	virtual RID room_create() = 0;
+	virtual void room_set_scenario(RID p_room, RID p_scenario) = 0;
+	virtual void room_add_instance(RID p_room, RID p_instance, const AABB &p_aabb, const Vector<Vector3> &p_object_pts) = 0;
+	virtual void room_add_ghost(RID p_room, ObjectID p_object_id, const AABB &p_aabb) = 0;
+	virtual void room_set_bound(RID p_room, ObjectID p_room_object_id, const Vector<Plane> &p_convex, const AABB &p_aabb, const Vector<Vector3> &p_verts) = 0;
+	virtual void room_prepare(RID p_room, int32_t p_priority) = 0;
+	virtual void rooms_and_portals_clear(RID p_scenario) = 0;
+	virtual void rooms_unload(RID p_scenario, String p_reason) = 0;
+	virtual void rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation) = 0;
+	virtual void rooms_override_camera(RID p_scenario, bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex) = 0;
+	virtual void rooms_set_active(RID p_scenario, bool p_active) = 0;
+	virtual void rooms_set_params(RID p_scenario, int p_portal_depth_limit, real_t p_roaming_expansion_margin) = 0;
+	virtual void rooms_set_debug_feature(RID p_scenario, RoomsDebugFeature p_feature, bool p_active) = 0;
+	virtual void rooms_update_gameplay_monitor(RID p_scenario, const Vector<Vector3> &p_camera_positions) = 0;
+
+	// don't use this in a game!
+	virtual bool rooms_is_loaded(RID p_scenario) const = 0;
+
+	// callbacks are used to send messages back from the visual server to scene tree in thread friendly manner
+	virtual void callbacks_register(VisualServerCallbacks *p_callbacks) = 0;
 
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
@@ -866,6 +987,7 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
+	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material) = 0;
 
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
@@ -1003,11 +1125,19 @@ public:
 
 	/* EVENT QUEUING */
 
+	enum ChangedPriority {
+		CHANGED_PRIORITY_ANY = 0,
+		CHANGED_PRIORITY_LOW,
+		CHANGED_PRIORITY_HIGH,
+	};
+
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
-	virtual bool has_changed() const = 0;
+	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init() = 0;
 	virtual void finish() = 0;
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	/* STATUS INFORMATION */
 
@@ -1027,7 +1157,7 @@ public:
 		INFO_VERTEX_MEM_USED,
 	};
 
-	virtual int get_render_info(RenderInfo p_info) = 0;
+	virtual uint64_t get_render_info(RenderInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 
@@ -1067,6 +1197,11 @@ public:
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
 
+#ifdef DEBUG_ENABLED
+	bool is_force_shader_fallbacks_enabled() const;
+	void set_force_shader_fallbacks_enabled(bool p_enabled);
+#endif
+
 	VisualServer();
 	virtual ~VisualServer();
 };
@@ -1089,6 +1224,7 @@ VARIANT_ENUM_CAST(VisualServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(VisualServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(VisualServer::ScenarioDebugMode);
 VARIANT_ENUM_CAST(VisualServer::InstanceType);
+VARIANT_ENUM_CAST(VisualServer::InstancePortalMode);
 VARIANT_ENUM_CAST(VisualServer::NinePatchAxisMode);
 VARIANT_ENUM_CAST(VisualServer::CanvasLightMode);
 VARIANT_ENUM_CAST(VisualServer::CanvasLightShadowFilter);
@@ -1098,6 +1234,7 @@ VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
+VARIANT_ENUM_CAST(VisualServer::LightBakeMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
@@ -1113,6 +1250,7 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
 VARIANT_ENUM_CAST(VisualServer::TextureType);
+VARIANT_ENUM_CAST(VisualServer::ChangedPriority);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer

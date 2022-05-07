@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,14 +35,12 @@
 #include "scene/resources/texture.h"
 
 class SpriteFrames : public Resource {
-
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-
 		float speed;
 		bool loop;
-		Vector<Ref<Texture> > frames;
+		Vector<Ref<Texture>> frames;
 
 		Anim() {
 			loop = true;
@@ -83,26 +81,26 @@ public:
 	void add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos = -1);
 	int get_frame_count(const StringName &p_anim) const;
 	_FORCE_INLINE_ Ref<Texture> get_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
-		if (p_idx >= E->get().frames.size())
+		if (p_idx >= E->get().frames.size()) {
 			return Ref<Texture>();
+		}
 
 		return E->get().frames[p_idx];
 	}
 
 	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 
 		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
 
-		if (!EN || p_idx >= EN->get().frames.size())
+		if (!EN || p_idx >= EN->get().frames.size()) {
 			return Ref<Texture>();
+		}
 
 		return EN->get().frames[p_idx];
 	}
@@ -111,8 +109,9 @@ public:
 		Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND(p_idx < 0);
-		if (p_idx >= E->get().frames.size())
+		if (p_idx >= E->get().frames.size()) {
 			return;
+		}
 		E->get().frames.write[p_idx] = p_frame;
 	}
 	void remove_frame(const StringName &p_anim, int p_idx);
@@ -123,7 +122,6 @@ public:
 };
 
 class AnimatedSprite : public Node2D {
-
 	GDCLASS(AnimatedSprite, Node2D);
 
 	Ref<SpriteFrames> frames;
@@ -146,8 +144,6 @@ class AnimatedSprite : public Node2D {
 
 	float _get_frame_duration();
 	void _reset_timeout();
-	void _set_playing(bool p_playing);
-	bool _is_playing() const;
 	Rect2 _get_rect() const;
 
 protected:
@@ -174,6 +170,8 @@ public:
 
 	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
+
+	void set_playing(bool p_playing);
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_animation);
@@ -197,10 +195,9 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_modulate(const Color &p_color);
-	Color get_modulate() const;
-
 	virtual String get_configuration_warning() const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
 	AnimatedSprite();
 };
 

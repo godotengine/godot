@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,33 +43,37 @@ void RemoteTransform::_update_cache() {
 }
 
 void RemoteTransform::_update_remote() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (!cache)
+	if (!cache) {
 		return;
+	}
 
 	Spatial *n = Object::cast_to<Spatial>(ObjectDB::get_instance(cache));
-	if (!n)
+	if (!n) {
 		return;
+	}
 
-	if (!n->is_inside_tree())
+	if (!n->is_inside_tree()) {
 		return;
+	}
 
 	//todo make faster
 	if (use_global_coordinates) {
-
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_global_transform(get_global_transform());
 		} else {
 			Transform our_trans = get_global_transform();
 
-			if (update_remote_rotation)
+			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
+			}
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(our_trans.basis.get_scale());
+			}
 
 			if (update_remote_position) {
 				Transform n_trans = n->get_global_transform();
@@ -85,11 +89,13 @@ void RemoteTransform::_update_remote() {
 		} else {
 			Transform our_trans = get_transform();
 
-			if (update_remote_rotation)
+			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
+			}
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(our_trans.basis.get_scale());
+			}
 
 			if (update_remote_position) {
 				Transform n_trans = n->get_transform();
@@ -102,20 +108,17 @@ void RemoteTransform::_update_remote() {
 }
 
 void RemoteTransform::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			_update_cache();
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (cache) {
-
 				_update_remote();
 			}
 
@@ -124,7 +127,6 @@ void RemoteTransform::_notification(int p_what) {
 }
 
 void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
-
 	remote_node = p_remote_node;
 	if (is_inside_tree()) {
 		_update_cache();
@@ -135,7 +137,6 @@ void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
 }
 
 NodePath RemoteTransform::get_remote_node() const {
-
 	return remote_node;
 }
 
@@ -179,16 +180,18 @@ void RemoteTransform::force_update_cache() {
 }
 
 String RemoteTransform::get_configuration_warning() const {
-
+	String warning = Spatial::get_configuration_warning();
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
-		return TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
 	}
 
-	return String();
+	return warning;
 }
 
 void RemoteTransform::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform::get_remote_node);
 	ClassDB::bind_method(D_METHOD("force_update_cache"), &RemoteTransform::force_update_cache);
@@ -213,7 +216,6 @@ void RemoteTransform::_bind_methods() {
 }
 
 RemoteTransform::RemoteTransform() {
-
 	use_global_coordinates = true;
 	update_remote_position = true;
 	update_remote_rotation = true;

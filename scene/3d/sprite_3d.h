@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance.h"
 
 class SpriteBase3D : public GeometryInstance {
-
 	GDCLASS(SpriteBase3D, GeometryInstance);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
@@ -76,7 +75,8 @@ private:
 	float pixel_size;
 	AABB aabb;
 
-	RID immediate;
+	RID mesh;
+	RID material;
 
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
@@ -92,7 +92,14 @@ protected:
 	static void _bind_methods();
 	virtual void _draw() = 0;
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
-	_FORCE_INLINE_ RID &get_immediate() { return immediate; }
+	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
+	_FORCE_INLINE_ RID &get_material() { return material; }
+
+	uint32_t mesh_surface_offsets[VS::ARRAY_MAX];
+	PoolByteArray mesh_buffer;
+	uint32_t mesh_stride[VS::ARRAY_MAX];
+	uint32_t mesh_surface_format;
+
 	void _queue_update();
 
 public:
@@ -107,12 +114,6 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
-
-	void set_region(bool p_region);
-	bool is_region() const;
-
-	void set_region_rect(const Rect2 &p_region_rect);
-	Rect2 get_region_rect() const;
 
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
@@ -145,7 +146,6 @@ public:
 };
 
 class Sprite3D : public SpriteBase3D {
-
 	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture> texture;
 
@@ -192,7 +192,6 @@ public:
 };
 
 class AnimatedSprite3D : public SpriteBase3D {
-
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
@@ -238,6 +237,8 @@ public:
 	virtual Rect2 get_item_rect() const;
 
 	virtual String get_configuration_warning() const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
 	AnimatedSprite3D();
 };
 

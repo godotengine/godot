@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@ extern "C" {
 static_assert(sizeof(godot_vector2) == sizeof(Vector2), "Vector2 size mismatch");
 
 void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
-
 	Vector2 *dest = (Vector2 *)r_dest;
 	*dest = Vector2(p_x, p_y);
 }
@@ -213,7 +212,7 @@ godot_vector2 GDAPI godot_vector2_clamped(const godot_vector2 *p_self, const god
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
 
-	*((Vector2 *)&dest) = self->clamped(p_length);
+	*((Vector2 *)&dest) = self->limit_length(p_length);
 	return dest;
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class Tween : public Node {
-
 	GDCLASS(Tween, Node);
 
 public:
@@ -99,7 +98,7 @@ private:
 		EaseType ease_type;
 		real_t delay;
 		int args;
-		Variant arg[5];
+		Variant arg[VARIANT_ARG_MAX];
 		int uid;
 		InterpolateData() {
 			active = false;
@@ -115,7 +114,7 @@ private:
 	float speed_scale;
 	mutable int pending_update;
 	int uid;
-
+	bool was_stopped = false;
 	List<InterpolateData> interpolates;
 
 	struct PendingCommand {
@@ -131,7 +130,6 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
-	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
 	Variant &_get_delta_val(InterpolateData &p_data);
 	Variant _get_initial_val(const InterpolateData &p_data) const;
 	Variant _get_final_val(const InterpolateData &p_data) const;
@@ -153,6 +151,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static real_t run_equation(Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration);
+
 	bool is_active() const;
 	void set_active(bool p_active);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 #include "scene/gui/tree.h"
 
 class SceneTreeEditor : public Control {
-
 	GDCLASS(SceneTreeEditor, Control);
 
 	EditorSelection *editor_selection;
@@ -54,6 +53,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_SIGNALS = 6,
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
+		BUTTON_UNIQUE = 9,
 	};
 
 	Tree *tree;
@@ -72,9 +72,9 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
-	bool _add_nodes(Node *p_node, TreeItem *p_parent);
+	bool _add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected = false);
 	void _test_update_tree();
-	void _update_tree();
+	void _update_tree(bool p_scroll_to_selected = false);
 	void _tree_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
@@ -112,8 +112,6 @@ class SceneTreeEditor : public Control {
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
-
-	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
 
 	void _selection_changed();
 	Node *get_scene_node();
@@ -163,7 +161,6 @@ public:
 };
 
 class SceneTreeDialog : public ConfirmationDialog {
-
 	GDCLASS(SceneTreeDialog, ConfirmationDialog);
 
 	SceneTreeEditor *tree;
@@ -171,7 +168,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	//Button *cancel;
 	LineEdit *filter;
 
-	void update_tree();
 	void _select();
 	void _cancel();
 	void _filter_changed(const String &p_filter);
@@ -182,6 +178,7 @@ protected:
 
 public:
 	SceneTreeEditor *get_scene_tree() { return tree; }
+	LineEdit *get_filter_line_edit() { return filter; }
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };

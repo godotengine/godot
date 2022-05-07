@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 
 class Viewport;
 class CanvasLayer : public Node {
-
 	GDCLASS(CanvasLayer, Node);
 
 	bool locrotscale_dirty;
@@ -54,6 +53,7 @@ class CanvasLayer : public Node {
 	Viewport *vp;
 
 	int sort_index;
+	bool visible;
 
 	bool follow_viewport;
 	float follow_viewport_scale;
@@ -69,6 +69,11 @@ protected:
 public:
 	void set_layer(int p_xform);
 	int get_layer() const;
+
+	void set_visible(bool p_visible);
+	bool is_visible() const;
+	void show();
+	void hide();
 
 	void set_transform(const Transform2D &p_xform);
 	Transform2D get_transform() const;
@@ -102,6 +107,10 @@ public:
 	float get_follow_viewport_scale() const;
 
 	RID get_canvas() const;
+
+#ifdef TOOLS_ENABLED
+	StringName get_property_store_alias(const StringName &p_property) const;
+#endif
 
 	CanvasLayer();
 	~CanvasLayer();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,14 +36,12 @@
 #define ACCUMULATE_IMPULSES
 
 void BodyPair2DSW::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
-
 	BodyPair2DSW *self = (BodyPair2DSW *)p_self;
 
 	self->_contact_added_callback(p_point_A, p_point_B);
 }
 
 void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B) {
-
 	// check if we already have the contact
 
 	Vector2 local_A = A->get_inv_transform().basis_xform(p_point_A);
@@ -69,12 +67,10 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	real_t recycle_radius_2 = space->get_contact_recycle_radius() * space->get_contact_recycle_radius();
 
 	for (int i = 0; i < contact_count; i++) {
-
 		Contact &c = contacts[i];
 		if (
 				c.local_A.distance_squared_to(local_A) < (recycle_radius_2) &&
 				c.local_B.distance_squared_to(local_B) < (recycle_radius_2)) {
-
 			contact.acc_normal_impulse = c.acc_normal_impulse;
 			contact.acc_tangent_impulse = c.acc_tangent_impulse;
 			contact.acc_bias_impulse = c.acc_bias_impulse;
@@ -86,14 +82,12 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	// figure out if the contact amount must be reduced to fit the new contact
 
 	if (new_index == MAX_CONTACTS) {
-
 		// remove the contact with the minimum depth
 
 		int least_deep = -1;
 		real_t min_depth = 1e10;
 
 		for (int i = 0; i <= contact_count; i++) {
-
 			Contact &c = (i == contact_count) ? contact : contacts[i];
 			Vector2 global_A = A->get_transform().basis_xform(c.local_A);
 			Vector2 global_B = B->get_transform().basis_xform(c.local_B) + offset_B;
@@ -102,7 +96,6 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 			real_t depth = axis.dot(c.normal);
 
 			if (depth < min_depth) {
-
 				min_depth = depth;
 				least_deep = i;
 			}
@@ -121,20 +114,17 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	contacts[new_index] = contact;
 
 	if (new_index == contact_count) {
-
 		contact_count++;
 	}
 }
 
 void BodyPair2DSW::_validate_contacts() {
-
 	//make sure to erase contacts that are no longer valid
 
 	real_t max_separation = space->get_contact_max_separation();
 	real_t max_separation2 = max_separation * max_separation;
 
 	for (int i = 0; i < contact_count; i++) {
-
 		Contact &c = contacts[i];
 
 		bool erase = false;
@@ -169,11 +159,11 @@ void BodyPair2DSW::_validate_contacts() {
 }
 
 bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const Transform2D &p_xform_A, Body2DSW *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result) {
-
 	Vector2 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
-	if (mlen < CMP_EPSILON)
+	if (mlen < CMP_EPSILON) {
 		return false;
+	}
 
 	Vector2 mnormal = motion / mlen;
 
@@ -199,8 +189,9 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 	Vector2 local_to = from_inv.xform(to);
 
 	Vector2 rpos, rnorm;
-	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm))
+	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm)) {
 		return false;
+	}
 
 	//ray hit something
 
@@ -211,10 +202,11 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 
 	//create a contact
 
-	if (p_swap_result)
+	if (p_swap_result) {
 		_contact_added_callback(contact_B, contact_A);
-	else
+	} else {
 		_contact_added_callback(contact_A, contact_B);
+	}
 
 	return true;
 }
@@ -228,16 +220,20 @@ real_t combine_friction(Body2DSW *A, Body2DSW *B) {
 }
 
 bool BodyPair2DSW::setup(real_t p_step) {
-
 	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
 	}
 
-	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
-		collided = false;
-		return false;
+	bool report_contacts_only = false;
+	if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
+		if ((A->get_max_contacts_reported() > 0) || (B->get_max_contacts_reported() > 0)) {
+			report_contacts_only = true;
+		} else {
+			collided = false;
+			return false;
+		}
 	}
 
 	//use local A coordinates to avoid numerical issues on collision detection
@@ -264,23 +260,23 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
-	//faster to set than to check..
 
-	//bool prev_collided=collided;
+	bool prev_collided = collided;
 
 	collided = CollisionSolver2DSW::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
-
 		//test ccd (currently just a raycast)
 
 		if (A->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && A->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
-			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B))
+			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B)) {
 				collided = true;
+			}
 		}
 
 		if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && B->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
-			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true))
+			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true)) {
 				collided = true;
+			}
 		}
 
 		if (!collided) {
@@ -289,28 +285,25 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 	}
 
-	if (oneway_disabled)
+	if (oneway_disabled) {
 		return false;
+	}
 
-	//if (!prev_collided) {
-	{
-
+	if (!prev_collided) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
-			if (B->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused)
-						continue;
-					if (c.normal.dot(direction) > 0) //greater (normal inverted)
-						continue;
-
-					valid = true;
-					break;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused) {
+					continue;
 				}
+				if (c.normal.dot(direction) > -CMP_EPSILON) { //greater (normal inverted)
+					continue;
+				}
+				valid = true;
+				break;
 			}
-
 			if (!valid) {
 				collided = false;
 				oneway_disabled = true;
@@ -321,17 +314,16 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		if (B->is_shape_set_as_one_way_collision(shape_B)) {
 			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
-			if (A->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused)
-						continue;
-					if (c.normal.dot(direction) < 0) //less (normal ok)
-						continue;
-
-					valid = true;
-					break;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused) {
+					continue;
 				}
+				if (c.normal.dot(direction) < CMP_EPSILON) { //less (normal ok)
+					continue;
+				}
+				valid = true;
+				break;
 			}
 			if (!valid) {
 				collided = false;
@@ -345,13 +337,13 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 	real_t bias = 0.3;
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
-
-		if (shape_A_ptr->get_custom_bias() == 0)
+		if (shape_A_ptr->get_custom_bias() == 0) {
 			bias = shape_B_ptr->get_custom_bias();
-		else if (shape_B_ptr->get_custom_bias() == 0)
+		} else if (shape_B_ptr->get_custom_bias() == 0) {
 			bias = shape_A_ptr->get_custom_bias();
-		else
+		} else {
 			bias = (shape_B_ptr->get_custom_bias() + shape_A_ptr->get_custom_bias()) * 0.5;
+		}
 	}
 
 	cc = 0;
@@ -361,8 +353,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	bool do_process = false;
 
 	for (int i = 0; i < contact_count; i++) {
-
 		Contact &c = contacts[i];
+		c.active = false;
 
 		Vector2 global_A = xform_Au.xform(c.local_A);
 		Vector2 global_B = xform_Bu.xform(c.local_B);
@@ -370,46 +362,35 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		real_t depth = c.normal.dot(global_A - global_B);
 
 		if (depth <= 0 || !c.reused) {
-			c.active = false;
 			continue;
 		}
 
-		c.active = true;
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
 #endif
-		int gather_A = A->can_report_contacts();
-		int gather_B = B->can_report_contacts();
 
 		c.rA = global_A;
 		c.rB = global_B - offset_B;
 
-		if (gather_A | gather_B) {
-
-			//Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
-
-			global_A += offset_A;
-			global_B += offset_A;
-
-			if (gather_A) {
-				Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-			}
-			if (gather_B) {
-
-				Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-			}
+		if (A->can_report_contacts()) {
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
 		}
 
-		if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
-			c.active = false;
+		if (B->can_report_contacts()) {
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
+		}
+
+		if (report_contacts_only) {
 			collided = false;
 			continue;
 		}
+
+		c.active = true;
 
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
@@ -442,7 +423,6 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
-
 			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
 			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
 			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
@@ -456,17 +436,17 @@ bool BodyPair2DSW::setup(real_t p_step) {
 }
 
 void BodyPair2DSW::solve(real_t p_step) {
-
-	if (!collided)
+	if (!collided) {
 		return;
+	}
 
 	for (int i = 0; i < contact_count; ++i) {
-
 		Contact &c = contacts[i];
 		cc++;
 
-		if (!c.active)
+		if (!c.active) {
 			continue;
+		}
 
 		// Relative velocity at contact
 
@@ -512,7 +492,6 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B) :
 		Constraint2DSW(_arr, 2) {
-
 	A = p_A;
 	B = p_B;
 	shape_A = p_shape_A;
@@ -526,7 +505,6 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 }
 
 BodyPair2DSW::~BodyPair2DSW() {
-
 	A->remove_constraint(this);
 	B->remove_constraint(this);
 }

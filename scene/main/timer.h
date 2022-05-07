@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class Timer : public Node {
-
 	GDCLASS(Timer, Node);
 
 	float wait_time;
@@ -73,6 +72,8 @@ public:
 	bool is_stopped() const;
 
 	float get_time_left() const;
+
+	String get_configuration_warning() const;
 
 	void set_timer_process_mode(TimerProcessMode p_mode);
 	TimerProcessMode get_timer_process_mode() const;

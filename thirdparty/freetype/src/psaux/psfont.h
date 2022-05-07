@@ -40,7 +40,7 @@
 #define PSFONT_H_
 
 
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/services/svcfftl.h>
 
 #include "psft.h"
 #include "psblues.h"

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 class CollisionObject2D;
 
 class CollisionPolygon2D : public Node2D {
-
 	GDCLASS(CollisionPolygon2D, Node2D);
 
 public:
@@ -56,7 +55,7 @@ protected:
 	bool one_way_collision;
 	float one_way_collision_margin;
 
-	Vector<Vector<Vector2> > _decompose_in_convex();
+	Vector<Vector<Vector2>> _decompose_in_convex();
 
 	void _build_polygon();
 

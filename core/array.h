@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@ class Object;
 class StringName;
 
 class Array {
-
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
@@ -57,6 +56,7 @@ public:
 	bool empty() const;
 	void clear();
 
+	bool deep_equal(const Array &p_array, int p_recursion_count = 0) const;
 	bool operator==(const Array &p_array) const;
 
 	uint32_t hash() const;
@@ -64,10 +64,12 @@ public:
 
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
+	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
 
 	void insert(int p_pos, const Variant &p_value);
 	void remove(int p_pos);
+	void fill(const Variant &p_value);
 
 	Variant front() const;
 	Variant back() const;
@@ -90,6 +92,7 @@ public:
 	void push_front(const Variant &p_value);
 	Variant pop_back();
 	Variant pop_front();
+	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
 

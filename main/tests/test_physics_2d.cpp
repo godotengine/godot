@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@ static const unsigned char convex_png[] = {
 };
 
 class TestPhysics2DMainLoop : public MainLoop {
-
 	GDCLASS(TestPhysics2DMainLoop, MainLoop);
 
 	RID circle_img;
@@ -57,7 +56,6 @@ class TestPhysics2DMainLoop : public MainLoop {
 	Vector2 ray_from, ray_to;
 
 	struct BodyShapeData {
-
 		RID image;
 		RID shape;
 	};
@@ -71,13 +69,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 		// SEGMENT
 
 		{
-
 			PoolVector<uint8_t> pixels;
 			pixels.resize(32 * 2 * 2);
 			for (int i = 0; i < 2; i++) {
-
 				for (int j = 0; j < 32; j++) {
-
 					pixels.set(i * 32 * 2 + j * 2 + 0, (j == 0) ? 255 : 0);
 					pixels.set(i * 32 * 2 + j * 2 + 1, 255);
 				}
@@ -85,7 +80,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 2, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = RID_PRIME(vs->texture_create_from_image(image));
 
 			RID segment_shape = ps->segment_shape_create();
 			Rect2 sg(Point2(-16, 0), Point2(16, 0));
@@ -96,13 +91,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 		// CIRCLE
 
 		{
-
 			PoolVector<uint8_t> pixels;
 			pixels.resize(32 * 32 * 2);
 			for (int i = 0; i < 32; i++) {
-
 				for (int j = 0; j < 32; j++) {
-
 					bool black = Vector2(i - 16, j - 16).length_squared() < 16 * 16;
 
 					pixels.set(i * 32 * 2 + j * 2 + 0, (i == 16 || j == 16) ? 255 : 0);
@@ -112,7 +104,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = RID_PRIME(vs->texture_create_from_image(image));
 
 			RID circle_shape = ps->circle_shape_create();
 			ps->shape_set_data(circle_shape, 16);
@@ -123,13 +115,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 		// BOX
 
 		{
-
 			PoolVector<uint8_t> pixels;
 			pixels.resize(32 * 32 * 2);
 			for (int i = 0; i < 32; i++) {
-
 				for (int j = 0; j < 32; j++) {
-
 					bool black = i > 0 && i < 31 && j > 0 && j < 31;
 
 					pixels.set(i * 32 * 2 + j * 2 + 0, black ? 0 : 255);
@@ -139,7 +128,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = RID_PRIME(vs->texture_create_from_image(image));
 
 			RID rectangle_shape = ps->rectangle_shape_create();
 			ps->shape_set_data(rectangle_shape, Vector2(16, 16));
@@ -150,13 +139,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 		// CAPSULE
 
 		{
-
 			PoolVector<uint8_t> pixels;
 			pixels.resize(32 * 64 * 2);
 			for (int i = 0; i < 64; i++) {
-
 				for (int j = 0; j < 32; j++) {
-
 					int si = i > 48 ? i - 32 : (i < 16 ? i : 16);
 					bool black = Vector2(si - 16, j - 16).length_squared() < 16 * 16;
 
@@ -167,7 +153,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 64, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = RID_PRIME(vs->texture_create_from_image(image));
 
 			RID capsule_shape = ps->capsule_shape_create();
 			ps->shape_set_data(capsule_shape, Vector2(16, 32));
@@ -178,10 +164,9 @@ class TestPhysics2DMainLoop : public MainLoop {
 		// CONVEX
 
 		{
-
 			Ref<Image> image = memnew(Image(convex_png));
 
-			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = RID_PRIME(vs->texture_create_from_image(image));
 
 			RID convex_polygon_shape = ps->convex_polygon_shape_create();
 
@@ -201,7 +186,6 @@ class TestPhysics2DMainLoop : public MainLoop {
 	}
 
 	void _do_ray_query() {
-
 		/*
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 		ps->query_intersection_segment(ray_query,ray_from,ray_to);
@@ -210,13 +194,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 protected:
 	void input_event(const Ref<InputEvent> &p_event) {
-
 		Ref<InputEventMouseButton> mb = p_event;
 
 		if (mb.is_valid()) {
-
 			if (mb->is_pressed()) {
-
 				Point2 p(mb->get_position().x, mb->get_position().y);
 
 				if (mb->get_button_index() == 1) {
@@ -232,7 +213,6 @@ protected:
 		Ref<InputEventMouseMotion> mm = p_event;
 
 		if (mm.is_valid()) {
-
 			Point2 p = mm->get_position();
 
 			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
@@ -246,18 +226,17 @@ protected:
 	}
 
 	RID _add_body(Physics2DServer::ShapeType p_shape, const Transform2D &p_xform) {
-
 		VisualServer *vs = VisualServer::get_singleton();
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 
-		RID body = ps->body_create();
+		RID body = RID_PRIME(ps->body_create());
 		ps->body_add_shape(body, body_shape_data[p_shape].shape);
 		ps->body_set_space(body, space);
 		ps->body_set_continuous_collision_detection_mode(body, Physics2DServer::CCD_MODE_CAST_SHAPE);
 		ps->body_set_state(body, Physics2DServer::BODY_STATE_TRANSFORM, p_xform);
 
 		//print_line("add body with xform: "+p_xform);
-		RID sprite = vs->canvas_item_create();
+		RID sprite = RID_PRIME(vs->canvas_item_create());
 		vs->canvas_item_set_parent(sprite, canvas);
 		vs->canvas_item_set_transform(sprite, p_xform);
 		Size2 imgsize(vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
@@ -271,7 +250,6 @@ protected:
 	}
 
 	void _add_plane(const Vector2 &p_normal, real_t p_d) {
-
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 
 		Array arr;
@@ -281,26 +259,25 @@ protected:
 		RID plane = ps->line_shape_create();
 		ps->shape_set_data(plane, arr);
 
-		RID plane_body = ps->body_create();
+		RID plane_body = RID_PRIME(ps->body_create());
 		ps->body_set_mode(plane_body, Physics2DServer::BODY_MODE_STATIC);
 		ps->body_set_space(plane_body, space);
 		ps->body_add_shape(plane_body, plane);
 	}
 
 	void _add_concave(const Vector<Vector2> &p_points, const Transform2D &p_xform = Transform2D()) {
-
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 		VisualServer *vs = VisualServer::get_singleton();
 
 		RID concave = ps->concave_polygon_shape_create();
 		ps->shape_set_data(concave, p_points);
-		RID body = ps->body_create();
+		RID body = RID_PRIME(ps->body_create());
 		ps->body_set_mode(body, Physics2DServer::BODY_MODE_STATIC);
 		ps->body_set_space(body, space);
 		ps->body_add_shape(body, concave);
 		ps->body_set_state(body, Physics2DServer::BODY_STATE_TRANSFORM, p_xform);
 
-		RID sprite = vs->canvas_item_create();
+		RID sprite = RID_PRIME(vs->canvas_item_create());
 		vs->canvas_item_set_parent(sprite, canvas);
 		vs->canvas_item_set_transform(sprite, p_xform);
 		for (int i = 0; i < p_points.size(); i += 2) {
@@ -314,7 +291,6 @@ protected:
 	}
 
 	void _ray_query_callback(const RID &p_rid, ObjectID p_id, int p_shape, const Vector2 &p_point, const Vector2 &p_normal) {
-
 		Vector2 ray_end;
 
 		if (p_rid.is_valid()) {
@@ -327,32 +303,30 @@ protected:
 
 		vs->canvas_item_clear(ray);
 		vs->canvas_item_add_line(ray, ray_from, ray_end, p_rid.is_valid() ? Color(0, 1, 0.4) : Color(1, 0.4, 0), 2);
-		if (p_rid.is_valid())
+		if (p_rid.is_valid()) {
 			vs->canvas_item_add_line(ray, ray_end, ray_end + p_normal * 20, p_rid.is_valid() ? Color(0, 1, 0.4) : Color(1, 0.4, 0), 2);
+		}
 	}
 
 	static void _bind_methods() {
-
 		ClassDB::bind_method(D_METHOD("_body_moved"), &TestPhysics2DMainLoop::_body_moved);
 		ClassDB::bind_method(D_METHOD("_ray_query_callback"), &TestPhysics2DMainLoop::_ray_query_callback);
 	}
 
 public:
 	virtual void init() {
-
 		VisualServer *vs = VisualServer::get_singleton();
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 
-		space = ps->space_create();
+		space = RID_PRIME(ps->space_create());
 		ps->space_set_active(space, true);
 		ps->set_active(true);
 		ps->area_set_param(space, Physics2DServer::AREA_PARAM_GRAVITY_VECTOR, Vector2(0, 1));
 		ps->area_set_param(space, Physics2DServer::AREA_PARAM_GRAVITY, 98);
 
 		{
-
-			RID vp = vs->viewport_create();
-			canvas = vs->canvas_create();
+			RID vp = RID_PRIME(vs->viewport_create());
+			canvas = RID_PRIME(vs->canvas_create());
 
 			Size2i screen_size = OS::get_singleton()->get_window_size();
 			vs->viewport_attach_canvas(vp, canvas);
@@ -368,7 +342,7 @@ public:
 			vs->viewport_set_canvas_transform(vp, canvas, view_xform);
 		}
 
-		ray = vs->canvas_item_create();
+		ray = RID_PRIME(vs->canvas_item_create());
 		vs->canvas_item_set_parent(ray, canvas);
 		//ray_query = ps->query_create(this,"_ray_query_callback",Variant());
 		//ps->query_intersection(ray_query,space);
@@ -376,7 +350,6 @@ public:
 		_create_body_shape_data();
 
 		for (int i = 0; i < 32; i++) {
-
 			Physics2DServer::ShapeType types[4] = {
 				Physics2DServer::SHAPE_CIRCLE,
 				Physics2DServer::SHAPE_CAPSULE,
@@ -401,7 +374,6 @@ public:
 
 		Vector<Point2> parr;
 		for (int i = 0; i < 30; i++) {
-
 			Point2 p(i * 60, Math::randf() * 70 + 340);
 			if (i > 0) {
 				parr.push_back(prev);
@@ -417,7 +389,6 @@ public:
 	}
 
 	virtual bool idle(float p_time) {
-
 		return false;
 	}
 	virtual void finish() {
@@ -429,7 +400,6 @@ public:
 namespace TestPhysics2D {
 
 MainLoop *test() {
-
 	return memnew(TestPhysics2DMainLoop);
 }
 } // namespace TestPhysics2D

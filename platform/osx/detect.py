@@ -12,7 +12,6 @@ def get_name():
 
 
 def can_build():
-
     if sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ):
         return True
 
@@ -25,48 +24,46 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
+        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
+        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
     ]
 
 
 def get_flags():
-
     return []
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize", "-msse2"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize", "-msse2"])
+            env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize"])
+        elif env["optimize"] == "size":  # optimize for size
+            env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize"])
+        if env["arch"] != "arm64":
+            env.Prepend(CCFLAGS=["-msse2"])
 
-        if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Prepend(CCFLAGS=["-O2"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
-        if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
+
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
+        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     ## Architecture
 
@@ -80,14 +77,20 @@ def configure(env):
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
 
+    if env["arch"] == "arm64":
+        print("Building for macOS 10.15+, platform arm64.")
+        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
+    else:
+        print("Building for macOS 10.12+, platform x86-64.")
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+
     if not "osxcross" in env:  # regular native build
-        env.Append(CCFLAGS=["-arch", "x86_64"])
-        env.Append(LINKFLAGS=["-arch", "x86_64"])
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
             env["CC"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang"
-            env["LINK"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["CXX"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
@@ -103,7 +106,10 @@ def configure(env):
 
     else:  # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)
-        basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
+        if env["arch"] == "arm64":
+            basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
+        else:
+            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         ccache_path = os.environ.get("CCACHE")
         if ccache_path is None:
@@ -119,12 +125,7 @@ def configure(env):
         env["AS"] = basecmd + "as"
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
-    if env["CXX"] == "clang++":
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
-        env["CC"] = "clang"
-        env["LINK"] = "clang++"
-
-    if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
+    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
@@ -135,6 +136,10 @@ def configure(env):
             env.Append(CCFLAGS=["-fsanitize=address"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
+        if env["use_lsan"]:
+            env.Append(CCFLAGS=["-fsanitize=leak"])
+            env.Append(LINKFLAGS=["-fsanitize=leak"])
+
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
@@ -142,7 +147,8 @@ def configure(env):
     ## Dependencies
 
     if env["builtin_libtheora"]:
-        env["x86_libtheora_opt_gcc"] = True
+        if env["arch"] != "arm64":
+            env["x86_libtheora_opt_gcc"] = True
 
     ## Flags
 
@@ -155,6 +161,7 @@ def configure(env):
             "APPLE_STYLE_KEYS",
             "COREAUDIO_ENABLED",
             "COREMIDI_ENABLED",
+            "GL_SILENCE_DEPRECATION",
         ]
     )
     env.Append(
@@ -187,6 +194,3 @@ def configure(env):
         ]
     )
     env.Append(LIBS=["pthread"])
-
-    env.Append(CCFLAGS=["-mmacosx-version-min=10.9"])
-    env.Append(LINKFLAGS=["-mmacosx-version-min=10.9"])

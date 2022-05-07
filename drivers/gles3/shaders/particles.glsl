@@ -1,6 +1,10 @@
 /* clang-format off */
 [vertex]
 
+#if defined(IS_UBERSHADER)
+uniform highp uint ubershader_flags;
+#endif
+
 layout(location = 0) in highp vec4 color;
 /* clang-format on */
 layout(location = 1) in highp vec4 velocity_active;
@@ -10,7 +14,6 @@ layout(location = 4) in highp vec4 xform_2;
 layout(location = 5) in highp vec4 xform_3;
 
 struct Attractor {
-
 	vec3 pos;
 	vec3 dir;
 	float radius;
@@ -64,7 +67,6 @@ VERTEX_SHADER_GLOBALS
 /* clang-format on */
 
 uint hash(uint x) {
-
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
 	x = (x >> uint(16)) ^ x;
@@ -72,18 +74,6 @@ uint hash(uint x) {
 }
 
 void main() {
-
-#ifdef PARTICLES_COPY
-
-	out_color = color;
-	out_velocity_active = velocity_active;
-	out_custom = custom;
-	out_xform_1 = xform_1;
-	out_xform_2 = xform_2;
-	out_xform_3 = xform_3;
-
-#else
-
 	bool apply_forces = true;
 	bool apply_velocity = true;
 	float local_delta = delta;
@@ -112,22 +102,22 @@ void main() {
 
 		if (restart_phase >= prev_system_phase && restart_phase < system_phase) {
 			restart = true;
-#ifdef USE_FRACTIONAL_DELTA
+#ifdef USE_FRACTIONAL_DELTA //ubershader-runtime
 			local_delta = (system_phase - restart_phase) * lifetime;
-#endif
+#endif //ubershader-runtime
 		}
 
 	} else if (delta > 0.0) {
 		if (restart_phase >= prev_system_phase) {
 			restart = true;
-#ifdef USE_FRACTIONAL_DELTA
+#ifdef USE_FRACTIONAL_DELTA //ubershader-runtime
 			local_delta = (1.0 - restart_phase + system_phase) * lifetime;
-#endif
+#endif //ubershader-runtime
 		} else if (restart_phase < system_phase) {
 			restart = true;
-#ifdef USE_FRACTIONAL_DELTA
+#ifdef USE_FRACTIONAL_DELTA //ubershader-runtime
 			local_delta = (system_phase - restart_phase) * lifetime;
-#endif
+#endif //ubershader-runtime
 		}
 	}
 
@@ -183,10 +173,8 @@ VERTEX_SHADER_CODE
 #if !defined(DISABLE_FORCE)
 
 		if (false) {
-
 			vec3 force = vec3(0.0);
 			for (int i = 0; i < attractor_count; i++) {
-
 				vec3 rel_vec = xform[3].xyz - attractors[i].pos;
 				float dist = length(rel_vec);
 				if (attractors[i].radius < dist)
@@ -214,7 +202,6 @@ VERTEX_SHADER_CODE
 #if !defined(DISABLE_VELOCITY)
 
 		if (true) {
-
 			xform[3].xyz += out_velocity_active.xyz * local_delta;
 		}
 #endif
@@ -229,12 +216,14 @@ VERTEX_SHADER_CODE
 	out_xform_1 = xform[0];
 	out_xform_2 = xform[1];
 	out_xform_3 = xform[2];
-
-#endif //PARTICLES_COPY
 }
 
 /* clang-format off */
 [fragment]
+
+#if defined(IS_UBERSHADER)
+uniform highp uint ubershader_flags;
+#endif
 
 // any code here is never executed, stuff is filled just so it works
 

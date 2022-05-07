@@ -4,7 +4,7 @@
  *
  *   PostScript Type 1 decoding routines (body).
  *
- * Copyright (C) 2000-2020 by
+ * Copyright (C) 2000-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,20 +16,22 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_HASH_H
-#include FT_OUTLINE_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/ftoutln.h>
 
 #include "t1decode.h"
 #include "psobjs.h"
 
 #include "psauxerr.h"
 
+
 /* ensure proper sign extension */
-#define Fix2Int( f )  ( (FT_Int)(FT_Short)( (f) >> 16 ) )
+#define Fix2Int( f )   ( (FT_Int) (FT_Short)( (f) >> 16 ) )
+#define Fix2UInt( f )  ( (FT_UInt)(FT_Short)( (f) >> 16 ) )
+
 
   /**************************************************************************
    *
@@ -518,7 +520,7 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( bol )
       {
-        FT_TRACE5(( " (%d)", decoder->top - decoder->stack ));
+        FT_TRACE5(( " (%ld)", decoder->top - decoder->stack ));
         bol = FALSE;
       }
 #endif
@@ -1026,16 +1028,16 @@
           /* <val> <idx> 2 24 callothersubr               */
           /* ==> set BuildCharArray[cvi( <idx> )] = <val> */
           {
-            FT_Int    idx;
+            FT_UInt   idx;
             PS_Blend  blend = decoder->blend;
 
 
             if ( arg_cnt != 2 || !blend )
               goto Unexpected_OtherSubr;
 
-            idx = Fix2Int( top[1] );
+            idx = Fix2UInt( top[1] );
 
-            if ( idx < 0 || (FT_UInt) idx >= decoder->len_buildchar )
+            if ( idx >= decoder->len_buildchar )
               goto Unexpected_OtherSubr;
 
             decoder->buildchar[idx] = top[0];
@@ -1047,16 +1049,16 @@
           /* ==> push BuildCharArray[cvi( idx )] */
           /*     onto T1 stack                   */
           {
-            FT_Int    idx;
+            FT_UInt   idx;
             PS_Blend  blend = decoder->blend;
 
 
             if ( arg_cnt != 1 || !blend )
               goto Unexpected_OtherSubr;
 
-            idx = Fix2Int( top[0] );
+            idx = Fix2UInt( top[0] );
 
-            if ( idx < 0 || (FT_UInt) idx >= decoder->len_buildchar )
+            if ( idx >= decoder->len_buildchar )
               goto Unexpected_OtherSubr;
 
             top[0] = decoder->buildchar[idx];
@@ -1163,9 +1165,9 @@
           if ( top - decoder->stack != num_args )
             FT_TRACE0(( "t1_decoder_parse_charstrings:"
                         " too much operands on the stack"
-                        " (seen %d, expected %d)\n",
+                        " (seen %ld, expected %d)\n",
                         top - decoder->stack, num_args ));
-            break;
+          break;
         }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -1210,7 +1212,7 @@
             FT_TRACE4(( "BuildCharArray = [ " ));
 
             for ( i = 0; i < decoder->len_buildchar; i++ )
-              FT_TRACE4(( "%d ", decoder->buildchar[i] ));
+              FT_TRACE4(( "%ld ", decoder->buildchar[i] ));
 
             FT_TRACE4(( "]\n" ));
           }
@@ -1238,8 +1240,8 @@
 
           FT_UNUSED( orig_y );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
           {
@@ -1273,8 +1275,8 @@
           x = ADD_LONG( builder->pos_x, top[0] );
           y = ADD_LONG( builder->pos_y, top[1] );
 
-          /* the `metrics_only' indicates that we only want to compute */
-          /* the glyph's metrics (lsb + advance width), not load the   */
+          /* `metrics_only' indicates that we only want to compute the */
+          /* glyph's metrics (lsb + advance width) without loading the */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
           {
@@ -1651,7 +1653,8 @@
 
     } /* while ip < limit */
 
-    FT_TRACE4(( "..end..\n\n" ));
+    FT_TRACE4(( "..end..\n" ));
+    FT_TRACE4(( "\n" ));
 
   Fail:
     return error;
@@ -1728,7 +1731,7 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( bol )
       {
-        FT_TRACE5(( " (%d)", decoder->top - decoder->stack ));
+        FT_TRACE5(( " (%ld)", decoder->top - decoder->stack ));
         bol = FALSE;
       }
 #endif
@@ -1750,8 +1753,6 @@
       case 7:
       case 8:
       case 9:
-      case 10:
-      case 11:
       case 14:
       case 15:
       case 21:
@@ -1759,6 +1760,13 @@
       case 30:
       case 31:
         goto No_Width;
+
+      case 10:
+        op = op_callsubr;
+        break;
+      case 11:
+        op = op_return;
+        break;
 
       case 13:
         op = op_hsbw;
@@ -1899,13 +1907,20 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-        if ( op != op_div )
+        switch ( op )
         {
+        case op_callsubr:
+        case op_div:
+        case op_return:
+          break;
+
+        default:
           if ( top - decoder->stack != num_args )
             FT_TRACE0(( "t1_decoder_parse_metrics:"
                         " too much operands on the stack"
-                        " (seen %d, expected %d)\n",
+                        " (seen %ld, expected %d)\n",
                         top - decoder->stack, num_args ));
+          break;
         }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -1926,8 +1941,8 @@
           builder->advance.y = 0;
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width) without loading the   */
+          /* rest of it; so exit immediately             */
           FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
 
@@ -1945,8 +1960,8 @@
           builder->advance.y = top[3];
 
           /* we only want to compute the glyph's metrics */
-          /* (lsb + advance width), not load the rest of */
-          /* it; so exit immediately                     */
+          /* (lsb + advance width), without loading the  */
+          /* rest of it; so exit immediately             */
           FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
 
@@ -1962,6 +1977,91 @@
           large_int = FALSE;
           break;
 
+        case op_callsubr:
+          {
+            FT_Int  idx;
+
+
+            FT_TRACE4(( " callsubr" ));
+
+            idx = Fix2Int( top[0] );
+
+            if ( decoder->subrs_hash )
+            {
+              size_t*  val = ft_hash_num_lookup( idx,
+                                                 decoder->subrs_hash );
+
+
+              if ( val )
+                idx = *val;
+              else
+                idx = -1;
+            }
+
+            if ( idx < 0 || idx >= decoder->num_subrs )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invalid subrs index\n" ));
+              goto Syntax_Error;
+            }
+
+            if ( zone - decoder->zones >= T1_MAX_SUBRS_CALLS )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " too many nested subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            zone->cursor = ip;  /* save current instruction pointer */
+
+            zone++;
+
+            /* The Type 1 driver stores subroutines without the seed bytes. */
+            /* The CID driver stores subroutines with seed bytes.  This     */
+            /* case is taken care of when decoder->subrs_len == 0.          */
+            zone->base = decoder->subrs[idx];
+
+            if ( decoder->subrs_len )
+              zone->limit = zone->base + decoder->subrs_len[idx];
+            else
+            {
+              /* We are using subroutines from a CID font.  We must adjust */
+              /* for the seed bytes.                                       */
+              zone->base  += ( decoder->lenIV >= 0 ? decoder->lenIV : 0 );
+              zone->limit  = decoder->subrs[idx + 1];
+            }
+
+            zone->cursor = zone->base;
+
+            if ( !zone->base )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " invoking empty subrs\n" ));
+              goto Syntax_Error;
+            }
+
+            decoder->zone = zone;
+            ip            = zone->base;
+            limit         = zone->limit;
+            break;
+          }
+
+        case op_return:
+          FT_TRACE4(( " return" ));
+
+          if ( zone <= decoder->zones )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " unexpected return\n" ));
+            goto Syntax_Error;
+          }
+
+          zone--;
+          ip            = zone->cursor;
+          limit         = zone->limit;
+          decoder->zone = zone;
+          break;
+
         default:
           FT_ERROR(( "t1_decoder_parse_metrics:"
                      " unhandled opcode %d\n", op ));
@@ -1974,7 +2074,8 @@
 
     } /* while ip < limit */
 
-    FT_TRACE4(( "..end..\n\n" ));
+    FT_TRACE4(( "..end..\n" ));
+    FT_TRACE4(( "\n" ));
 
   No_Width:
     FT_ERROR(( "t1_decoder_parse_metrics:"

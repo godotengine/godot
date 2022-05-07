@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ public:
 	};
 
 	struct Viewport : public RID_Data {
-
 		RID self;
 		RID parent;
 
@@ -78,12 +77,12 @@ public:
 		bool transparent_bg;
 
 		struct CanvasKey {
-
 			int64_t stacking;
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
-				if (stacking == p_canvas.stacking)
+				if (stacking == p_canvas.stacking) {
 					return canvas < p_canvas.canvas;
+				}
 				return stacking < p_canvas.stacking;
 			}
 			CanvasKey() {
@@ -98,7 +97,6 @@ public:
 		};
 
 		struct CanvasData {
-
 			CanvasBase *canvas;
 			Transform2D transform;
 			int layer;
@@ -131,12 +129,10 @@ public:
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
-
 			bool left_to_screen = p_left->viewport_to_screen_rect.size != Size2();
 			bool right_to_screen = p_right->viewport_to_screen_rect.size != Size2();
 
 			if (left_to_screen == right_to_screen) {
-
 				return p_left->parent == p_right->self;
 			}
 			return right_to_screen;
@@ -190,7 +186,11 @@ public:
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
+	void viewport_set_use_fxaa(RID p_viewport, bool p_fxaa);
+	void viewport_set_use_debanding(RID p_viewport, bool p_debanding);
+	void viewport_set_sharpen_intensity(RID p_viewport, float p_intensity);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
+	void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
 
 	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);

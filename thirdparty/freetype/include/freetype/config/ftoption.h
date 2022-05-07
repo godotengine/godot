@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -42,7 +42,7 @@ FT_BEGIN_HEADER
    *   the name of a directory that is included _before_ the FreeType include
    *   path during compilation.
    *
-   *   The default FreeType Makefiles and Jamfiles use the build directory
+   *   The default FreeType Makefiles use the build directory
    *   `builds/<system>` by default, but you can easily change that for your
    *   own projects.
    *
@@ -105,8 +105,7 @@ FT_BEGIN_HEADER
    *
    * ```
    *   FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                       cff:no-stem-darkening=1 \
-   *                       autofitter:warping=1
+   *                       cff:no-stem-darkening=1
    * ```
    *
    */
@@ -121,10 +120,8 @@ FT_BEGIN_HEADER
    * mitigate color fringes inherent to this technology, you also need to
    * explicitly set up LCD filtering.
    *
-   * Note that this feature is covered by several Microsoft patents and
-   * should not be activated in any default build of the library.  When this
-   * macro is not defined, FreeType offers alternative LCD rendering
-   * technology that produces excellent output without LCD filtering.
+   * When this macro is not defined, FreeType offers alternative LCD
+   * rendering technology that produces excellent output.
    */
 /* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
@@ -435,6 +432,23 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
+   * Logging
+   *
+   *   Compiling FreeType in debug or trace mode makes FreeType write error
+   *   and trace log messages to `stderr`.  Enabling this macro
+   *   automatically forces the `FT_DEBUG_LEVEL_ERROR` and
+   *   `FT_DEBUG_LEVEL_TRACE` macros and allows FreeType to write error and
+   *   trace log messages to a file instead of `stderr`.  For writing logs
+   *   to a file, FreeType uses an the external `dlg` library (the source
+   *   code is in `src/dlg`).
+   *
+   *   This option needs a C99 compiler.
+   */
+/* #define FT_DEBUG_LOGGING */
+
+
+  /**************************************************************************
+   *
    * Autofitter debugging
    *
    *   If `FT_DEBUG_AUTOFIT` is defined, FreeType provides some means to
@@ -542,7 +556,7 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
-   * Define `TT_CONFIG_OPTION_COLOR_LAYERS` if you want to support coloured
+   * Define `TT_CONFIG_OPTION_COLOR_LAYERS` if you want to support colored
    * outlines (from the 'COLR'/'CPAL' tables) in all formats using the 'sfnt'
    * module (namely TrueType~& OpenType).
    */
@@ -896,24 +910,6 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
-   * Compile 'autofit' module with warp hinting.  The idea of the warping
-   * code is to slightly scale and shift a glyph within a single dimension so
-   * that as much of its segments are aligned (more or less) on the grid.  To
-   * find out the optimal scaling and shifting value, various parameter
-   * combinations are tried and scored.
-   *
-   * You can switch warping on and off with the `warping` property of the
-   * auto-hinter (see file `ftdriver.h` for more information; by default it
-   * is switched off).
-   *
-   * This experimental option is not active if the rendering mode is
-   * `FT_RENDER_MODE_LIGHT`.
-   */
-#define AF_CONFIG_OPTION_USE_WARPER
-
-
-  /**************************************************************************
-   *
    * Use TrueType-like size metrics for 'light' auto-hinting.
    *
    * It is strongly recommended to avoid this option, which exists only to
@@ -960,6 +956,21 @@ FT_BEGIN_HEADER
 #define  TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
 #endif
 #endif
+#endif
+
+
+  /*
+   * The TT_SUPPORT_COLRV1 macro is defined to indicate to clients that this
+   * version of FreeType has support for 'COLR' v1 API.  This definition is
+   * useful to FreeType clients that want to build in support for 'COLR' v1
+   * depending on a tip-of-tree checkout before it is officially released in
+   * FreeType, and while the feature cannot yet be tested against using
+   * version macros.  Don't change this macro.  This may be removed once the
+   * feature is in a FreeType release version and version macros can be used
+   * to test for availability.
+   */
+#ifdef TT_CONFIG_OPTION_COLOR_LAYERS
+#define  TT_SUPPORT_COLRV1
 #endif
 
 

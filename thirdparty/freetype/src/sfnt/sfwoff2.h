@@ -4,7 +4,7 @@
  *
  *   WOFFF2 format management (specification).
  *
- * Copyright (C) 2019-2020 by
+ * Copyright (C) 2019-2021 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,13 +20,13 @@
 #define SFWOFF2_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/ftobjs.h>
 
 
 FT_BEGIN_HEADER
 
+#ifdef FT_CONFIG_OPTION_USE_BROTLI
 
   /* Leave the first byte open to store `flag_byte'. */
 #define WOFF2_FLAGS_TRANSFORM   1 << 8
@@ -67,6 +67,7 @@ FT_BEGIN_HEADER
                    FT_Int*    face_index,
                    FT_Long*   num_faces );
 
+#endif /* FT_CONFIG_OPTION_USE_BROTLI */
 
 FT_END_HEADER
 

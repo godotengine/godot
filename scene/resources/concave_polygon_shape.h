@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,17 @@
 #include "scene/resources/shape.h"
 
 class ConcavePolygonShape : public Shape {
-
 	GDCLASS(ConcavePolygonShape, Shape);
 
 	struct DrawEdge {
-
 		Vector3 a;
 		Vector3 b;
 		bool operator<(const DrawEdge &p_edge) const {
-			if (a == p_edge.a)
+			if (a == p_edge.a) {
 				return b < p_edge.b;
-			else
+			} else {
 				return a < p_edge.a;
+			}
 		}
 
 		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
@@ -67,6 +66,7 @@ public:
 	PoolVector<Vector3> get_faces() const;
 
 	Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const;
 
 	ConcavePolygonShape();
 };

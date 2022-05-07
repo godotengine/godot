@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@ static ImageLoaderPNG *image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
-
 	image_loader_png = memnew(ImageLoaderPNG);
 	ImageLoader::add_image_format_loader(image_loader_png);
 
@@ -46,9 +45,9 @@ void register_core_driver_types() {
 }
 
 void unregister_core_driver_types() {
-
-	if (image_loader_png)
+	if (image_loader_png) {
 		memdelete(image_loader_png);
+	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_png);
 	resource_saver_png.unref();

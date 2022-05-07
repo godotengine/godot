@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,8 @@
 #include "editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-class EditorQuickOpen : public ConfirmationDialog {
 
+class EditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(EditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
@@ -44,13 +44,12 @@ class EditorQuickOpen : public ConfirmationDialog {
 	StringName base_type;
 	StringName ei;
 	StringName ot;
-	bool add_directories;
 
 	void _update_search();
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture> > > &list);
-	Vector<Pair<String, Ref<Texture> > > _sort_fs(Vector<Pair<String, Ref<Texture> > > &list);
+	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture>>> &list);
+	Vector<Pair<String, Ref<Texture>>> _sort_fs(Vector<Pair<String, Ref<Texture>>> &list);
 	float _path_cmp(String search, String path) const;
 
 	void _confirmed();
@@ -66,7 +65,7 @@ public:
 	String get_selected() const;
 	Vector<String> get_selected_files() const;
 
-	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_add_dirs = false, bool p_dontclear = false);
+	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_dontclear = false);
 	EditorQuickOpen();
 };
 

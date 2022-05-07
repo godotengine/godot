@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/main/viewport.h"
 
 class Listener : public Spatial {
-
 	GDCLASS(Listener, Spatial);
 
 private:
@@ -43,9 +42,6 @@ private:
 	bool current;
 
 	RID scenario_id;
-
-	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
 
 	friend class Viewport;
 	void _update_audio_listener_state();
@@ -67,9 +63,6 @@ public:
 	bool is_current() const;
 
 	virtual Transform get_listener_transform() const;
-
-	void set_visible_layers(uint32_t p_layers);
-	uint32_t get_visible_layers() const;
 
 	Listener();
 	~Listener();

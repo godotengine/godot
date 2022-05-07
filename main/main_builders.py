@@ -19,6 +19,7 @@ def make_splash(target, source, env):
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_H\n")
         g.write("#define BOOT_SPLASH_H\n")
+        # Use a neutral gray color to better fit various kinds of projects.
         g.write("static const Color boot_splash_bg_color = Color(0.14, 0.14, 0.14);\n")
         g.write("static const unsigned char boot_splash_png[] = {\n")
         for i in range(len(buf)):
@@ -38,7 +39,9 @@ def make_splash_editor(target, source, env):
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
         g.write("#define BOOT_SPLASH_EDITOR_H\n")
-        g.write("static const Color boot_splash_editor_bg_color = Color(0.14, 0.14, 0.14);\n")
+        # The editor splash background color is taken from the default editor theme's background color.
+        # This helps achieve a visually "smoother" transition between the splash screen and the editor.
+        g.write("static const Color boot_splash_editor_bg_color = Color(0.125, 0.145, 0.192);\n")
         g.write("static const unsigned char boot_splash_editor_png[] = {\n")
         for i in range(len(buf)):
             g.write(byte_to_str(buf[i]) + ",\n")
@@ -99,18 +102,7 @@ def make_default_controller_mappings(target, source, env):
                             src_path, current_platform, platform_mappings[current_platform][guid]
                         )
                     )
-                valid_mapping = True
-                for input_map in line_parts[2:]:
-                    if "+" in input_map or "-" in input_map or "~" in input_map:
-                        g.write(
-                            "// WARNING - DISCARDED UNSUPPORTED MAPPING TYPE FROM DATABASE {}: {} {}\n".format(
-                                src_path, current_platform, line
-                            )
-                        )
-                        valid_mapping = False
-                        break
-                if valid_mapping:
-                    platform_mappings[current_platform][guid] = line
+                platform_mappings[current_platform][guid] = line
 
     platform_variables = {
         "Linux": "#if X11_ENABLED",

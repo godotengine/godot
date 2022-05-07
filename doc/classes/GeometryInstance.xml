@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GeometryInstance" inherits="VisualInstance" version="3.2">
+<class name="GeometryInstance" inherits="VisualInstance" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base node for geometry-based visual instances.
 	</brief_description>
@@ -10,30 +10,23 @@
 	</tutorials>
 	<methods>
 		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags" />
 			<description>
 				Returns the [enum GeometryInstance.Flags] that have been set for this object.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="aabb" type="AABB" />
 			<description>
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
 		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets the [enum GeometryInstance.Flags] specified. See [enum GeometryInstance.Flags] for options.
 			</description>
@@ -45,6 +38,12 @@
 		</member>
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
 			The extra distance added to the GeometryInstance's bounding box ([AABB]) to increase its cull box.
+		</member>
+		<member name="generate_lightmap" type="bool" setter="set_generate_lightmap" getter="get_generate_lightmap" default="true">
+			When disabled, the mesh will be taken into account when computing indirect lighting, but the resulting lightmap will not be saved. Useful for emissive only materials or shadow casters.
+		</member>
+		<member name="lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance.LightmapScale" default="0">
+			Scale factor for the generated baked lightmap. Useful for adding detail to certain mesh instances.
 		</member>
 		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
 			The GeometryInstance's max LOD distance.
@@ -62,6 +61,10 @@
 			The GeometryInstance's min LOD margin.
 			[b]Note:[/b] This property currently has no effect.
 		</member>
+		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
+			The material overlay for the whole geometry.
+			If a material is assigned to this property, it will be rendered on top of any other active material for all the surfaces.
+		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
@@ -71,6 +74,20 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
+			The generated lightmap texture will have the original size.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale">
+			The generated lightmap texture will be twice as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale">
+			The generated lightmap texture will be 4 times as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
+			The generated lightmap texture will be 8 times as large, on each axis.
+		</constant>
+		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
+		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 			Will not cast any shadows.
 		</constant>

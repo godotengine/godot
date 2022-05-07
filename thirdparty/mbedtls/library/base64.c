@@ -1,7 +1,7 @@
 /*
  *  RFC 1521 base64 encoding/decoding
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,19 +15,14 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_BASE64_C)
 
 #include "mbedtls/base64.h"
+#include "constant_time_internal.h"
 
 #include <stdint.h>
 
@@ -40,34 +35,6 @@
 #define mbedtls_printf printf
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
-
-static const unsigned char base64_enc_map[64] =
-{
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-    'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', '+', '/'
-};
-
-static const unsigned char base64_dec_map[128] =
-{
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127,  62, 127, 127, 127,  63,  52,  53,
-     54,  55,  56,  57,  58,  59,  60,  61, 127, 127,
-    127,  64, 127, 127, 127,   0,   1,   2,   3,   4,
-      5,   6,   7,   8,   9,  10,  11,  12,  13,  14,
-     15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
-     25, 127, 127, 127, 127, 127, 127,  26,  27,  28,
-     29,  30,  31,  32,  33,  34,  35,  36,  37,  38,
-     39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
-     49,  50,  51, 127, 127, 127, 127, 127
-};
 
 #define BASE64_SIZE_T_MAX   ( (size_t) -1 ) /* SIZE_T_MAX is not standard */
 
@@ -111,10 +78,12 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C2 = *src++;
         C3 = *src++;
 
-        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
-        *p++ = base64_enc_map[(((C1 &  3) << 4) + (C2 >> 4)) & 0x3F];
-        *p++ = base64_enc_map[(((C2 & 15) << 2) + (C3 >> 6)) & 0x3F];
-        *p++ = base64_enc_map[C3 & 0x3F];
+        *p++ = mbedtls_ct_base64_enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C1 &  3 ) << 4 ) + ( C2 >> 4 ) )
+                                        & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C2 & 15 ) << 2 ) + ( C3 >> 6 ) )
+                                        & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( C3 & 0x3F );
     }
 
     if( i < slen )
@@ -122,11 +91,12 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C1 = *src++;
         C2 = ( ( i + 1 ) < slen ) ? *src++ : 0;
 
-        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
-        *p++ = base64_enc_map[(((C1 & 3) << 4) + (C2 >> 4)) & 0x3F];
+        *p++ = mbedtls_ct_base64_enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C1 & 3 ) << 4 ) + ( C2 >> 4 ) )
+                                        & 0x3F );
 
         if( ( i + 1 ) < slen )
-             *p++ = base64_enc_map[((C2 & 15) << 2) & 0x3F];
+             *p++ = mbedtls_ct_base64_enc_char( ( ( C2 & 15 ) << 2 ) & 0x3F );
         else *p++ = '=';
 
         *p++ = '=';
@@ -144,19 +114,23 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
 int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
                    const unsigned char *src, size_t slen )
 {
-    size_t i, n;
-    uint32_t j, x;
+    size_t i; /* index in source */
+    size_t n; /* number of digits or trailing = in source */
+    uint32_t x; /* value accumulator */
+    unsigned accumulated_digits = 0;
+    unsigned equals = 0;
+    int spaces_present = 0;
     unsigned char *p;
 
     /* First pass: check for validity and get output length */
-    for( i = n = j = 0; i < slen; i++ )
+    for( i = n = 0; i < slen; i++ )
     {
         /* Skip spaces before checking for EOL */
-        x = 0;
+        spaces_present = 0;
         while( i < slen && src[i] == ' ' )
         {
             ++i;
-            ++x;
+            spaces_present = 1;
         }
 
         /* Spaces at end of buffer are OK */
@@ -171,18 +145,24 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
             continue;
 
         /* Space inside a line is an error */
-        if( x != 0 )
+        if( spaces_present )
             return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
 
-        if( src[i] == '=' && ++j > 2 )
+        if( src[i] > 127 )
             return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
 
-        if( src[i] > 127 || base64_dec_map[src[i]] == 127 )
-            return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
-
-        if( base64_dec_map[src[i]] < 64 && j != 0 )
-            return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
-
+        if( src[i] == '=' )
+        {
+            if( ++equals > 2 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+        }
+        else
+        {
+            if( equals != 0 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+            if( mbedtls_ct_base64_dec_value( src[i] ) < 0 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+        }
         n++;
     }
 
@@ -197,7 +177,7 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
      *     n = ( ( n * 6 ) + 7 ) >> 3;
      */
     n = ( 6 * ( n >> 3 ) ) + ( ( 6 * ( n & 0x7 ) + 7 ) >> 3 );
-    n -= j;
+    n -= equals;
 
     if( dst == NULL || dlen < n )
     {
@@ -205,20 +185,24 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
         return( MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL );
     }
 
-   for( j = 3, n = x = 0, p = dst; i > 0; i--, src++ )
-   {
+    equals = 0;
+    for( x = 0, p = dst; i > 0; i--, src++ )
+    {
         if( *src == '\r' || *src == '\n' || *src == ' ' )
             continue;
 
-        j -= ( base64_dec_map[*src] == 64 );
-        x  = ( x << 6 ) | ( base64_dec_map[*src] & 0x3F );
+        x = x << 6;
+        if( *src == '=' )
+            ++equals;
+        else
+            x |= mbedtls_ct_base64_dec_value( *src );
 
-        if( ++n == 4 )
+        if( ++accumulated_digits == 4 )
         {
-            n = 0;
-            if( j > 0 ) *p++ = (unsigned char)( x >> 16 );
-            if( j > 1 ) *p++ = (unsigned char)( x >>  8 );
-            if( j > 2 ) *p++ = (unsigned char)( x       );
+            accumulated_digits = 0;
+            *p++ = MBEDTLS_BYTE_2( x );
+            if( equals <= 1 ) *p++ = MBEDTLS_BYTE_1( x );
+            if( equals <= 0 ) *p++ = MBEDTLS_BYTE_0( x );
         }
     }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSON" inherits="Object" version="3.2">
+<class name="JSON" inherits="Object" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class for parsing JSON data.
 	</brief_description>
@@ -10,25 +10,58 @@
 	</tutorials>
 	<methods>
 		<method name="parse">
-			<return type="JSONParseResult">
-			</return>
-			<argument index="0" name="json" type="String">
-			</argument>
+			<return type="JSONParseResult" />
+			<argument index="0" name="json" type="String" />
 			<description>
-				Parses a JSON encoded string and returns a [JSONParseResult] containing the result.
+				Parses a JSON-encoded string and returns a [JSONParseResult] containing the result.
 			</description>
 		</method>
 		<method name="print">
-			<return type="String">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="indent" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="sort_keys" type="bool" default="false">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="indent" type="String" default="&quot;&quot;" />
+			<argument index="2" name="sort_keys" type="bool" default="false" />
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
+				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
+				The [code]indent[/code] parameter controls if and how something is indented, the string used for this parameter will be used where there should be an indent in the output, even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
+				[b]Example output:[/b]
+				[codeblock]
+				## JSON.print(my_dictionary)
+				{"name":"my_dictionary","version":"1.0.0","entities":[{"name":"entity_0","value":"value_0"},{"name":"entity_1","value":"value_1"}]}
+
+				## JSON.print(my_dictionary, "\t")
+				{
+				    "name": "my_dictionary",
+				    "version": "1.0.0",
+				    "entities": [
+				        {
+				            "name": "entity_0",
+				            "value": "value_0"
+				        },
+				        {
+				            "name": "entity_1",
+				            "value": "value_1"
+				        }
+				    ]
+				}
+
+				## JSON.print(my_dictionary, "...")
+				{
+				..."name": "my_dictionary",
+				..."version": "1.0.0",
+				..."entities": [
+				......{
+				........."name": "entity_0",
+				........."value": "value_0"
+				......},
+				......{
+				........."name": "entity_1",
+				........."value": "value_1"
+				......}
+				...]
+				}
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

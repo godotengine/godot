@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,10 +57,10 @@
 
 // <--------------- Joint creation asserts
 /// Assert the body is assigned to a space
-#define JointAssertSpace(body, bIndex, ret)                                                           \
-	if (!body->get_space()) {                                                                         \
-		ERR_PRINTS("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
-		return ret;                                                                                   \
+#define JointAssertSpace(body, bIndex, ret)                                                          \
+	if (!body->get_space()) {                                                                        \
+		ERR_PRINT("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
+		return ret;                                                                                  \
 	}
 
 /// Assert the two bodies of joint are in the same space
@@ -86,39 +86,31 @@ BulletPhysicsServer::BulletPhysicsServer() :
 BulletPhysicsServer::~BulletPhysicsServer() {}
 
 RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
-	ShapeBullet *shape = NULL;
+	ShapeBullet *shape = nullptr;
 
 	switch (p_shape) {
 		case SHAPE_PLANE: {
-
 			shape = bulletnew(PlaneShapeBullet);
 		} break;
 		case SHAPE_SPHERE: {
-
 			shape = bulletnew(SphereShapeBullet);
 		} break;
 		case SHAPE_BOX: {
-
 			shape = bulletnew(BoxShapeBullet);
 		} break;
 		case SHAPE_CAPSULE: {
-
 			shape = bulletnew(CapsuleShapeBullet);
 		} break;
 		case SHAPE_CYLINDER: {
-
 			shape = bulletnew(CylinderShapeBullet);
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
-
 			shape = bulletnew(ConvexPolygonShapeBullet);
 		} break;
 		case SHAPE_CONCAVE_POLYGON: {
-
 			shape = bulletnew(ConcavePolygonShapeBullet);
 		} break;
 		case SHAPE_HEIGHTMAP: {
-
 			shape = bulletnew(HeightMapShapeBullet);
 		} break;
 		case SHAPE_RAY: {
@@ -178,7 +170,6 @@ RID BulletPhysicsServer::space_create() {
 }
 
 void BulletPhysicsServer::space_set_active(RID p_space, bool p_active) {
-
 	SpaceBullet *space = space_owner.get(p_space);
 	ERR_FAIL_COND(!space);
 
@@ -216,7 +207,7 @@ real_t BulletPhysicsServer::space_get_param(RID p_space, SpaceParameter p_param)
 
 PhysicsDirectSpaceState *BulletPhysicsServer::space_get_direct_state(RID p_space) {
 	SpaceBullet *space = space_owner.get(p_space);
-	ERR_FAIL_COND_V(!space, NULL);
+	ERR_FAIL_COND_V(!space, nullptr);
 
 	return space->get_direct_state();
 }
@@ -252,7 +243,7 @@ RID BulletPhysicsServer::area_create() {
 void BulletPhysicsServer::area_set_space(RID p_area, RID p_space) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	SpaceBullet *space = NULL;
+	SpaceBullet *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
@@ -262,7 +253,12 @@ void BulletPhysicsServer::area_set_space(RID p_area, RID p_space) {
 
 RID BulletPhysicsServer::area_get_space(RID p_area) const {
 	AreaBullet *area = area_owner.get(p_area);
-	return area->get_space()->get_self();
+	ERR_FAIL_COND_V(!area, RID());
+	SpaceBullet *space = area->get_space();
+	if (!space) {
+		return RID();
+	}
+	return space->get_self();
 }
 
 void BulletPhysicsServer::area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) {
@@ -337,8 +333,9 @@ void BulletPhysicsServer::area_clear_shapes(RID p_area) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	for (int i = area->get_shape_count(); 0 < i; --i)
+	for (int i = area->get_shape_count(); 0 < i; --i) {
 		area->remove_shape_full(0);
+	}
 }
 
 void BulletPhysicsServer::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
@@ -373,7 +370,6 @@ void BulletPhysicsServer::area_set_param(RID p_area, AreaParameter p_param, cons
 			space->set_param(p_param, p_value);
 		}
 	} else {
-
 		AreaBullet *area = area_owner.get(p_area);
 		ERR_FAIL_COND(!area);
 
@@ -455,23 +451,25 @@ RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
 	body->set_mode(p_mode);
 	body->set_collision_layer(1);
 	body->set_collision_mask(1);
-	if (p_init_sleeping)
+	if (p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
+	}
 	CreateThenReturnRID(rigid_body_owner, body);
 }
 
 void BulletPhysicsServer::body_set_space(RID p_body, RID p_space) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	SpaceBullet *space = NULL;
+	SpaceBullet *space = nullptr;
 
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointles
+	}
 
 	body->set_space(space);
 }
@@ -481,8 +479,9 @@ RID BulletPhysicsServer::body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	SpaceBullet *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 }
 
@@ -499,7 +498,6 @@ PhysicsServer::BodyMode BulletPhysicsServer::body_get_mode(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
-
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -570,14 +568,14 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 }
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
@@ -653,7 +651,6 @@ void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_ma
 	ERR_FAIL_COND(!body);
 
 	if (body->get_kinematic_utilities()) {
-
 		body->get_kinematic_utilities()->setSafeMargin(p_margin);
 	}
 }
@@ -663,7 +660,6 @@ real_t BulletPhysicsServer::body_get_kinematic_safe_margin(RID p_body) const {
 	ERR_FAIL_COND_V(!body, 0);
 
 	if (body->get_kinematic_utilities()) {
-
 		return body->get_kinematic_utilities()->safe_margin;
 	}
 
@@ -860,17 +856,26 @@ bool BulletPhysicsServer::body_is_ray_pickable(RID p_body) const {
 }
 
 PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
+	if (!rigid_body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	return BulletPhysicsDirectBodyState::get_singleton(body);
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
+
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
+	return body->get_direct_state();
 }
 
-bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, r_result, p_exclude_raycast_shapes);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, r_result, p_exclude_raycast_shapes, p_exclude);
 }
 
 int BulletPhysicsServer::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
@@ -885,8 +890,9 @@ RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	SoftBodyBullet *body = bulletnew(SoftBodyBullet);
 	body->set_collision_layer(1);
 	body->set_collision_mask(1);
-	if (p_init_sleeping)
+	if (p_init_sleeping) {
 		body->set_activation_state(false);
+	}
 	CreateThenReturnRID(soft_body_owner, body);
 }
 
@@ -900,15 +906,16 @@ void BulletPhysicsServer::soft_body_update_visual_server(RID p_body, class SoftB
 void BulletPhysicsServer::soft_body_set_space(RID p_body, RID p_space) {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	SpaceBullet *space = NULL;
+	SpaceBullet *space = nullptr;
 
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointles
+	}
 
 	body->set_space(space);
 }
@@ -918,8 +925,9 @@ RID BulletPhysicsServer::soft_body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	SpaceBullet *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 }
 
@@ -1214,7 +1222,7 @@ RID BulletPhysicsServer::joint_create_pin(RID p_body_A, const Vector3 &p_local_A
 
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1282,7 +1290,7 @@ RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform &p_hin
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1302,7 +1310,7 @@ RID BulletPhysicsServer::joint_create_hinge_simple(RID p_body_A, const Vector3 &
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1354,7 +1362,7 @@ RID BulletPhysicsServer::joint_create_slider(RID p_body_A, const Transform &p_lo
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1390,7 +1398,7 @@ RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform &
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1424,7 +1432,7 @@ RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	RigidBodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = nullptr;
 	if (p_body_B.is_valid()) {
 		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
@@ -1471,25 +1479,8 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
-void BulletPhysicsServer::generic_6dof_joint_set_precision(RID p_joint, int p_precision) {
-	JointBullet *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	generic_6dof_joint->set_precision(p_precision);
-}
-
-int BulletPhysicsServer::generic_6dof_joint_get_precision(RID p_joint) {
-	JointBullet *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	return generic_6dof_joint->get_precision();
-}
-
 void BulletPhysicsServer::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
-
 		ShapeBullet *shape = shape_owner.get(p_rid);
 
 		// Notify the shape is configured
@@ -1500,10 +1491,9 @@ void BulletPhysicsServer::free(RID p_rid) {
 		shape_owner.free(p_rid);
 		bulletdelete(shape);
 	} else if (rigid_body_owner.owns(p_rid)) {
-
 		RigidBodyBullet *body = rigid_body_owner.get(p_rid);
 
-		body->set_space(NULL);
+		body->set_space(nullptr);
 
 		body->remove_all_shapes(true, true);
 
@@ -1511,19 +1501,17 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(body);
 
 	} else if (soft_body_owner.owns(p_rid)) {
-
 		SoftBodyBullet *body = soft_body_owner.get(p_rid);
 
-		body->set_space(NULL);
+		body->set_space(nullptr);
 
 		soft_body_owner.free(p_rid);
 		bulletdelete(body);
 
 	} else if (area_owner.owns(p_rid)) {
-
 		AreaBullet *area = area_owner.get(p_rid);
 
-		area->set_space(NULL);
+		area->set_space(nullptr);
 
 		area->remove_all_shapes(true, true);
 
@@ -1531,14 +1519,12 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(area);
 
 	} else if (joint_owner.owns(p_rid)) {
-
 		JointBullet *joint = joint_owner.get(p_rid);
 		joint->destroy_internal_constraint();
 		joint_owner.free(p_rid);
 		bulletdelete(joint);
 
 	} else if (space_owner.owns(p_rid)) {
-
 		SpaceBullet *space = space_owner.get(p_rid);
 
 		space->remove_all_collision_objects();
@@ -1547,42 +1533,38 @@ void BulletPhysicsServer::free(RID p_rid) {
 		space_owner.free(p_rid);
 		bulletdelete(space);
 	} else {
-
 		ERR_FAIL_MSG("Invalid ID.");
 	}
 }
 
 void BulletPhysicsServer::init() {
-	BulletPhysicsDirectBodyState::initSingleton();
 }
 
 void BulletPhysicsServer::step(float p_deltaTime) {
-	if (!active)
+	if (!active) {
 		return;
-
-	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
+	}
 
 	for (int i = 0; i < active_spaces_count; ++i) {
-
 		active_spaces[i]->step(p_deltaTime);
 	}
-}
-
-void BulletPhysicsServer::sync() {
 }
 
 void BulletPhysicsServer::flush_queries() {
 }
 
 void BulletPhysicsServer::finish() {
-	BulletPhysicsDirectBodyState::destroySingleton();
+}
+
+void BulletPhysicsServer::set_collision_iterations(int p_iterations) {
+	WARN_PRINT("Changing the number of 3D physics collision iterations is only supported when using GodotPhysics, not Bullet.");
 }
 
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
 	return 0;
 }
 
-CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) const {
+CollisionObjectBullet *BulletPhysicsServer::get_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
@@ -1592,15 +1574,15 @@ CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) co
 	if (soft_body_owner.owns(p_object)) {
 		return soft_body_owner.getornull(p_object);
 	}
-	return NULL;
+	return nullptr;
 }
 
-RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collisin_object(RID p_object) const {
+RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
 	if (area_owner.owns(p_object)) {
 		return area_owner.getornull(p_object);
 	}
-	return NULL;
+	return nullptr;
 }

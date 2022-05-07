@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="bool" version="3.2">
+<class name="bool" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Boolean built-in type.
 	</brief_description>
 	<description>
-		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as an switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
+		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as a switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
 		Booleans can be directly used in [code]if[/code] statements. The code below demonstrates this on the [code]if can_shoot:[/code] line. You don't need to use [code]== true[/code], you only need [code]if can_shoot:[/code]. Similarly, use [code]if not can_shoot:[/code] rather than [code]== false[/code].
 		[codeblock]
 		var can_shoot = true
@@ -41,28 +41,22 @@
 	</tutorials>
 	<methods>
 		<method name="bool">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="from" type="int" />
 			<description>
 				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
 			</description>
 		</method>
 		<method name="bool">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="from" type="float" />
 			<description>
 				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
 			</description>
 		</method>
 		<method name="bool">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Cast a [String] value to a boolean value, this method will return [code]false[/code] if [code]""[/code] is passed in, and [code]true[/code] for all non-empty strings.
 				Examples: [code]bool("False")[/code] returns [code]true[/code], [code]bool("")[/code] returns [code]false[/code].

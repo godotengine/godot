@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Generic6DOFJoint" inherits="Joint" version="3.2">
+<class name="Generic6DOFJoint" inherits="Joint" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		The generic 6-degrees-of-freedom joint can implement a variety of joint types by locking certain axes' rotation or translation.
 	</brief_description>
@@ -10,110 +10,80 @@
 	</tutorials>
 	<methods>
 		<method name="get_flag_x" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_y" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_z" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_x" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_y" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_z" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
@@ -347,8 +317,6 @@
 		<member name="linear_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
 		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z" default="0.01">
-		</member>
-		<member name="precision" type="int" setter="set_precision" getter="get_precision" default="1">
 		</member>
 	</members>
 	<constants>

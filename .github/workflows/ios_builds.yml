@@ -1,0 +1,37 @@
+name: 🍏 iOS Builds
+on: [push, pull_request]
+
+# Global Settings
+env:
+  GODOT_BASE_BRANCH: 3.x
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-ios
+  cancel-in-progress: true
+
+jobs:
+  ios-template:
+    runs-on: "macos-latest"
+    name: Template (target=release, tools=no)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation (armv7)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }}
+          platform: iphone
+          target: release
+          tools: false
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,6 @@
 
 template <class... ParamTypes>
 struct GDMonoMethodThunk {
-
 	typedef void(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
 	M mono_method_thunk;
@@ -92,7 +91,6 @@ public:
 
 template <class R, class... ParamTypes>
 struct GDMonoMethodThunkR {
-
 	typedef R(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
 	M mono_method_thunk;
@@ -247,7 +245,6 @@ struct VariadicInvokeMonoMethodR<1, R, P1> {
 
 template <class... ParamTypes>
 struct GDMonoMethodThunk {
-
 	GDMonoMethod *mono_method;
 
 public:
@@ -288,7 +285,6 @@ public:
 
 template <class R, class... ParamTypes>
 struct GDMonoMethodThunkR {
-
 	GDMonoMethod *mono_method;
 
 public:

@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 Glyph Loader (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,17 +16,16 @@
  */
 
 
-#include <ft2build.h>
 #include "cidload.h"
 #include "cidgload.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_OUTLINE_H
-#include FT_INTERNAL_CALC_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/ftoutln.h>
+#include <freetype/internal/ftcalc.h>
 
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_CFF_TYPES_H
-#include FT_DRIVER_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/cfftypes.h>
+#include <freetype/ftdriver.h>
 
 #include "ciderrs.h"
 
@@ -64,7 +63,7 @@
 #endif
 
 
-    FT_TRACE1(( "cid_load_glyph: glyph index %d\n", glyph_index ));
+    FT_TRACE1(( "cid_load_glyph: glyph index %u\n", glyph_index ));
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
 
@@ -77,20 +76,17 @@
 
       error = inc->funcs->get_glyph_data( inc->object,
                                           glyph_index, &glyph_data );
-      if ( error )
+      if ( error || glyph_data.length < cid->fd_bytes )
         goto Exit;
 
       p         = (FT_Byte*)glyph_data.pointer;
-      fd_select = cid_get_offset( &p, (FT_Byte)cid->fd_bytes );
+      fd_select = cid_get_offset( &p, cid->fd_bytes );
 
-      if ( glyph_data.length != 0 )
-      {
-        glyph_length = (FT_ULong)( glyph_data.length - cid->fd_bytes );
-        (void)FT_ALLOC( charstring, glyph_length );
-        if ( !error )
-          ft_memcpy( charstring, glyph_data.pointer + cid->fd_bytes,
+      glyph_length = glyph_data.length - cid->fd_bytes;
+
+      if ( !FT_QALLOC( charstring, glyph_length ) )
+        FT_MEM_COPY( charstring, glyph_data.pointer + cid->fd_bytes,
                      glyph_length );
-      }
 
       inc->funcs->free_glyph_data( inc->object, &glyph_data );
 
@@ -105,7 +101,7 @@
     /* For ordinary fonts read the CID font dictionary index */
     /* and charstring offset from the CIDMap.                */
     {
-      FT_UInt   entry_len = (FT_UInt)( cid->fd_bytes + cid->gd_bytes );
+      FT_UInt   entry_len = cid->fd_bytes + cid->gd_bytes;
       FT_ULong  off1, off2;
 
 
@@ -115,15 +111,15 @@
         goto Exit;
 
       p         = (FT_Byte*)stream->cursor;
-      fd_select = cid_get_offset( &p, (FT_Byte)cid->fd_bytes );
-      off1      = cid_get_offset( &p, (FT_Byte)cid->gd_bytes );
+      fd_select = cid_get_offset( &p, cid->fd_bytes );
+      off1      = cid_get_offset( &p, cid->gd_bytes );
       p        += cid->fd_bytes;
-      off2      = cid_get_offset( &p, (FT_Byte)cid->gd_bytes );
+      off2      = cid_get_offset( &p, cid->gd_bytes );
       FT_FRAME_EXIT();
 
-      if ( fd_select >= (FT_ULong)cid->num_dicts ||
-           off2 > stream->size                   ||
-           off1 > off2                           )
+      if ( fd_select >= cid->num_dicts ||
+           off2 > stream->size         ||
+           off1 > off2                 )
       {
         FT_TRACE0(( "cid_load_glyph: invalid glyph stream offsets\n" ));
         error = FT_THROW( Invalid_Offset );
@@ -131,11 +127,10 @@
       }
 
       glyph_length = off2 - off1;
-      if ( glyph_length == 0 )
-        goto Exit;
-      if ( FT_ALLOC( charstring, glyph_length ) )
-        goto Exit;
-      if ( FT_STREAM_READ_AT( cid->data_offset + off1,
+
+      if ( glyph_length == 0                             ||
+           FT_QALLOC( charstring, glyph_length )         ||
+           FT_STREAM_READ_AT( cid->data_offset + off1,
                               charstring, glyph_length ) )
         goto Exit;
     }

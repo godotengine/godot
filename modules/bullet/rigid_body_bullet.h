@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,49 +45,15 @@ class AreaBullet;
 class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
-class BulletPhysicsDirectBodyState;
 
-/// This class could be used in multi thread with few changes but currently
-/// is set to be only in one single thread.
-///
-/// In the system there is only one object at a time that manage all bodies and is
-/// created by BulletPhysicsServer and is held by the "singleton" variable of this class
-/// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
 	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
-	static BulletPhysicsDirectBodyState *singleton;
-
 public:
-	/// This class avoid the creation of more object of this class
-	static void initSingleton() {
-		if (!singleton) {
-			singleton = memnew(BulletPhysicsDirectBodyState);
-		}
-	}
+	RigidBodyBullet *body = nullptr;
 
-	static void destroySingleton() {
-		memdelete(singleton);
-		singleton = NULL;
-	}
-
-	static void singleton_setDeltaTime(real_t p_deltaTime) {
-		singleton->deltaTime = p_deltaTime;
-	}
-
-	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
-		singleton->body = p_body;
-		return singleton;
-	}
-
-public:
-	RigidBodyBullet *body;
-	real_t deltaTime;
-
-private:
 	BulletPhysicsDirectBodyState() {}
 
-public:
 	virtual Vector3 get_total_gravity() const;
 	virtual float get_total_angular_damp() const;
 	virtual float get_total_linear_damp() const;
@@ -109,6 +75,8 @@ public:
 
 	virtual void set_transform(const Transform &p_transform);
 	virtual Transform get_transform() const;
+
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const;
 
 	virtual void add_central_force(const Vector3 &p_force);
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
@@ -133,7 +101,7 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const;
 
-	virtual real_t get_step() const { return deltaTime; }
+	virtual real_t get_step() const;
 	virtual void integrate_forces() {
 		// Skip the execution of this function
 	}
@@ -142,7 +110,6 @@ public:
 };
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
-
 public:
 	struct CollisionData {
 		RigidBodyBullet *otherObject;
@@ -166,7 +133,7 @@ public:
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
+				shape(nullptr) {}
 		bool is_active() const { return shape; }
 	};
 
@@ -187,6 +154,7 @@ public:
 	};
 
 private:
+	BulletPhysicsDirectBodyState *direct_access = nullptr;
 	friend class BulletPhysicsDirectBodyState;
 
 	// This is required only for Kinematic movement
@@ -231,6 +199,8 @@ public:
 	RigidBodyBullet();
 	~RigidBodyBullet();
 
+	BulletPhysicsDirectBodyState *get_direct_state() const { return direct_access; }
+
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
 	_FORCE_INLINE_ KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
@@ -250,7 +220,6 @@ public:
 	virtual void on_collision_checker_end();
 
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
-
 		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
 
 		maxCollisionsDetection = p_maxCollisionsDetection;
@@ -269,8 +238,6 @@ public:
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
 	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
 	bool was_colliding(RigidBodyBullet *p_other_object);
-
-	void assert_no_constraints();
 
 	void set_activation_state(bool p_active);
 	bool is_active() const;

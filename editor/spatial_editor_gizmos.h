@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 class Camera;
 
 class LightSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(LightSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -55,7 +54,6 @@ public:
 };
 
 class AudioStreamPlayer3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(AudioStreamPlayer3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -72,8 +70,20 @@ public:
 	AudioStreamPlayer3DSpatialGizmoPlugin();
 };
 
-class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class ListenerSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(ListenerSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	ListenerSpatialGizmoPlugin();
+};
+
+class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 	GDCLASS(CameraSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -91,7 +101,6 @@ public:
 };
 
 class MeshInstanceSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(MeshInstanceSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -105,7 +114,6 @@ public:
 };
 
 class Sprite3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(Sprite3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -119,7 +127,6 @@ public:
 };
 
 class Position3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(Position3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
@@ -135,7 +142,6 @@ public:
 };
 
 class SkeletonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SkeletonSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -148,7 +154,6 @@ public:
 };
 
 class PhysicalBoneSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(PhysicalBoneSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -161,7 +166,6 @@ public:
 };
 
 class RayCastSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(RayCastSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -174,7 +178,6 @@ public:
 };
 
 class SpringArmSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SpringArmSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -187,7 +190,6 @@ public:
 };
 
 class VehicleWheelSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(VehicleWheelSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -200,7 +202,6 @@ public:
 };
 
 class SoftBodySpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SoftBodySpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -219,7 +220,6 @@ public:
 };
 
 class VisibilityNotifierGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(VisibilityNotifierGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -249,7 +249,6 @@ public:
 };
 
 class ParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(ParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -268,7 +267,6 @@ public:
 };
 
 class ReflectionProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(ReflectionProbeGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -286,7 +284,6 @@ public:
 };
 
 class GIProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(GIProbeGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -304,7 +301,6 @@ public:
 };
 
 class BakedIndirectLightGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(BakedIndirectLightGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -321,8 +317,19 @@ public:
 	BakedIndirectLightGizmoPlugin();
 };
 
-class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class CollisionObjectGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(CollisionObjectGizmoPlugin, EditorSpatialGizmoPlugin);
 
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	CollisionObjectGizmoPlugin();
+};
+
+class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 	GDCLASS(CollisionShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -351,11 +358,9 @@ public:
 };
 
 class NavigationMeshSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(NavigationMeshSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 
@@ -387,7 +392,6 @@ public:
 };
 
 class JointSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(JointSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	Timer *update_timer;
@@ -436,6 +440,114 @@ public:
 			Vector<Vector3> *r_body_b_points);
 
 	JointSpatialGizmoPlugin();
+};
+
+class Room;
+
+class RoomSpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(RoomSpatialGizmo, EditorSpatialGizmo);
+
+	Room *_room = nullptr;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual void redraw();
+
+	RoomSpatialGizmo(Room *p_room = nullptr);
+};
+
+class RoomGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(RoomGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
+
+public:
+	RoomGizmoPlugin();
+};
+
+class Portal;
+
+class PortalSpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(PortalSpatialGizmo, EditorSpatialGizmo);
+
+	Portal *_portal = nullptr;
+	Color _color_portal_front;
+	Color _color_portal_back;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual void redraw();
+
+	PortalSpatialGizmo(Portal *p_portal = nullptr);
+};
+
+class PortalGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(PortalGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
+
+public:
+	PortalGizmoPlugin();
+};
+
+class Occluder;
+class OccluderShape;
+class OccluderShapeSphere;
+class OccluderShapePolygon;
+
+class OccluderSpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(OccluderSpatialGizmo, EditorSpatialGizmo);
+
+	Occluder *_occluder = nullptr;
+
+	const OccluderShape *get_occluder_shape() const;
+	const OccluderShapeSphere *get_occluder_shape_sphere() const;
+	const OccluderShapePolygon *get_occluder_shape_poly() const;
+	OccluderShape *get_occluder_shape();
+	OccluderShapeSphere *get_occluder_shape_sphere();
+	OccluderShapePolygon *get_occluder_shape_poly();
+
+	Color _color_poly_front;
+	Color _color_poly_back;
+	Color _color_hole;
+
+	void _redraw_poly(bool p_hole, const Vector<Vector2> &p_pts, const PoolVector<Vector2> &p_pts_raw);
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual void redraw();
+
+	OccluderSpatialGizmo(Occluder *p_occluder = nullptr);
+};
+
+class OccluderGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(OccluderGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
+
+public:
+	OccluderGizmoPlugin();
 };
 
 #endif // SPATIAL_EDITOR_GIZMOS_H

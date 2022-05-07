@@ -4,7 +4,7 @@
  *
  *   TrueType character mapping table (cmap) support (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,14 +16,13 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
-#include "sferrors.h"           /* must come before FT_INTERNAL_VALIDATE_H */
+#include "sferrors.h"                      /* must come before `ftvalid.h' */
 
-#include FT_INTERNAL_VALIDATE_H
-#include FT_INTERNAL_STREAM_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/internal/ftvalid.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/services/svpscmap.h>
 #include "ttload.h"
 #include "ttcmap.h"
 #include "ttpost.h"
@@ -913,6 +912,16 @@
     {
       if ( valid->level >= FT_VALIDATE_TIGHT )
         FT_INVALID_TOO_SHORT;
+
+      length = (FT_UInt)( valid->limit - table );
+    }
+
+    /* it also happens that the `length' field is too small; */
+    /* this is easy to correct                               */
+    if ( length < (FT_UInt)( valid->limit - table ) )
+    {
+      if ( valid->level >= FT_VALIDATE_PARANOID )
+        FT_INVALID_DATA;
 
       length = (FT_UInt)( valid->limit - table );
     }
@@ -3752,6 +3761,7 @@
 
   static const TT_CMap_Class  tt_cmap_classes[] =
   {
+#undef  TTCMAPCITEM
 #define TTCMAPCITEM( a )  &a,
 #include "ttcmapc.h"
     NULL,
@@ -3788,8 +3798,9 @@
     p += 2;
 
     num_cmaps = TT_NEXT_USHORT( p );
-    limit     = table + face->cmap_size;
+    FT_TRACE4(( "tt_face_build_cmaps: %d cmaps\n", num_cmaps ));
 
+    limit = table + face->cmap_size;
     for ( ; num_cmaps > 0 && p + 8 <= limit; num_cmaps-- )
     {
       FT_CharMapRec  charmap;

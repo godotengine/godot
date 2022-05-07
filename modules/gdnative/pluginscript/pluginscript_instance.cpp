@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,7 +126,7 @@ bool PluginScriptInstance::init(PluginScript *p_script, Object *p_owner) {
 	_script = Ref<PluginScript>(p_script);
 	_desc = &p_script->_desc->instance_desc;
 	_data = _desc->init(p_script->_data, (godot_object *)p_owner);
-	ERR_FAIL_COND_V(_data == NULL, false);
+	ERR_FAIL_COND_V(_data == nullptr, false);
 	p_owner->set_script_instance(this);
 	return true;
 }

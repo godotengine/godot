@@ -9,7 +9,6 @@ out vec2 uv_interp;
 out vec2 pos_interp;
 
 void main() {
-
 	uv_interp = uv_in;
 	gl_Position = vertex_attrib;
 	pos_interp.xy = gl_Position.xy;
@@ -55,7 +54,6 @@ vec2 view_to_screen(vec3 view_pos, out float w) {
 #define M_PI 3.14159265359
 
 void main() {
-
 	vec4 diffuse = texture(source_diffuse, uv_interp);
 	vec4 normal_roughness = texture(source_normal_roughness, uv_interp);
 
@@ -139,7 +137,6 @@ void main() {
 	float steps_taken = 0.0;
 
 	for (int i = 0; i < num_steps; i++) {
-
 		pos += line_advance;
 		z += z_advance;
 		w += w_advance;
@@ -159,8 +156,8 @@ void main() {
 
 		if (depth > z_to) {
 			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + depth_tolerance) {
-				// check the depth tolerance
+			if ((depth <= max(z_to, z_from) + depth_tolerance) && (-depth < camera_z_far)) {
+				// check the depth tolerance and far clip
 				found = true;
 			}
 			break;
@@ -171,26 +168,25 @@ void main() {
 	}
 
 	if (found) {
-
 		float margin_blend = 1.0;
 
 		vec2 margin = vec2((viewport_size.x + viewport_size.y) * 0.5 * 0.05); // make a uniform margin
-		if (any(bvec4(lessThan(pos, -margin), greaterThan(pos, viewport_size + margin)))) {
-			// clip outside screen + margin
+		if (any(bvec4(lessThan(pos, vec2(0.0, 0.0)), greaterThan(pos, viewport_size * 0.5)))) {
+			// clip at the screen edges
 			frag_color = vec4(0.0);
 			return;
 		}
 
 		{
-			//blend fading out towards external margin
-			vec2 margin_grad = mix(pos - viewport_size, -pos, lessThan(pos, vec2(0.0)));
-			margin_blend = 1.0 - smoothstep(0.0, margin.x, max(margin_grad.x, margin_grad.y));
+			//blend fading out towards inner margin
+			// 0.25 = midpoint of half-resolution reflection
+			vec2 margin_grad = mix(viewport_size * 0.5 - pos, pos, lessThan(pos, viewport_size * 0.25));
+			margin_blend = smoothstep(0.0, margin.x * margin.y, margin_grad.x * margin_grad.y);
 			//margin_blend = 1.0;
 		}
 
 		vec2 final_pos;
-		float grad;
-		grad = steps_taken / float(num_steps);
+		float grad = (steps_taken + 1.0) / float(num_steps);
 		float initial_fade = curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), distance_fade) * initial_fade;
 		final_pos = pos;
@@ -215,7 +211,6 @@ void main() {
 			final_color = vec4(0.0);
 
 			for (int i = 0; i < 7; i++) {
-
 				float op_len = 2.0 * tan(cone_angle) * cone_len; // opposite side of iso triangle
 				float radius;
 				{

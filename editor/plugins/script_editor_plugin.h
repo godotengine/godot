@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,6 @@
 #include "scene/resources/text_file.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
-
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
@@ -76,7 +75,6 @@ public:
 class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
-
 	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
@@ -90,6 +88,7 @@ public:
 	virtual RES get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
 	virtual void set_edited_resource(const RES &p_res) = 0;
+	virtual void enable_editor() = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
 	virtual Ref<Texture> get_icon() = 0;
@@ -131,7 +130,6 @@ class FindInFilesDialog;
 class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
-
 	GDCLASS(ScriptEditor, PanelContainer);
 
 	EditorNode *editor;
@@ -159,10 +157,10 @@ class ScriptEditor : public PanelContainer {
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_SHOW,
-		DEBUG_SHOW_KEEP_OPEN,
+		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 		SEARCH_IN_FILES,
+		REPLACE_IN_FILES,
 		SEARCH_HELP,
 		SEARCH_WEBSITE,
 		HELP_SEARCH_FIND,
@@ -257,7 +255,6 @@ class ScriptEditor : public PanelContainer {
 	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
 
 	struct ScriptHistory {
-
 		Control *control;
 		Variant state;
 	};
@@ -266,11 +263,16 @@ class ScriptEditor : public PanelContainer {
 	int history_pos;
 
 	List<String> previous_scripts;
+	List<int> script_close_queue;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
+	void _update_debug_options();
 	void _theme_option(int p_option);
 	void _show_save_theme_as_dialog();
+	bool _has_docs_tab() const;
+	bool _has_script_tab() const;
+	void _prepare_file_menu();
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
@@ -280,7 +282,6 @@ class ScriptEditor : public PanelContainer {
 	String _get_debug_tooltip(const String &p_text, Node *_se);
 
 	void _resave_scripts(const String &p_str);
-	void _reload_scripts();
 
 	bool _test_script_times_on_disk(RES p_for_script = Ref<Resource>());
 
@@ -292,11 +293,12 @@ class ScriptEditor : public PanelContainer {
 
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
 
-	void _close_current_tab();
+	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();
+	void _queue_close_tabs();
 
 	void _copy_script_path();
 
@@ -306,6 +308,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -320,12 +323,11 @@ class ScriptEditor : public PanelContainer {
 
 	void _add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _scene_saved_callback(const String &p_path);
 
 	bool trim_trailing_whitespace_on_save;
 	bool use_space_indentation;
 	bool convert_indent_on_save;
-
-	void _trim_trailing_whitespace(TextEdit *tx);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script, int p_line);
@@ -333,7 +335,6 @@ class ScriptEditor : public PanelContainer {
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _show_debugger(bool p_show);
-	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 
 	ScriptEditorBase *_get_current_editor() const;
@@ -359,7 +360,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
-	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
+	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used);
 
 	void _tree_changed();
 
@@ -369,13 +370,13 @@ class ScriptEditor : public PanelContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _input(const Ref<InputEvent> &p_event);
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
 	void _make_script_list_context_menu();
 
 	void _help_search(String p_text);
-	void _help_index(String p_text);
 
 	void _history_forward();
 	void _history_back();
@@ -402,6 +403,7 @@ class ScriptEditor : public PanelContainer {
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);
+	void _on_replace_in_files_requested(String text);
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PoolStringArray paths);
@@ -422,6 +424,7 @@ public:
 	void ensure_focus_current();
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
+	void reload_scripts();
 
 	void ensure_select_current();
 
@@ -430,13 +433,14 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	void save_current_script();
 	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	void set_scene_root_script(Ref<Script> p_script);
-	Vector<Ref<Script> > get_open_scripts() const;
+	Vector<Ref<Script>> get_open_scripts() const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
@@ -464,7 +468,6 @@ public:
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;

@@ -1,110 +1,91 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform" version="3.2">
+<class name="Transform" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3D transformation (3×4 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [member basis] and an [member origin]. It is similar to a 3×4 matrix.
+		3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
+		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+		<link title="Math tutorial index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
 		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="x_axis" type="Vector3">
-			</argument>
-			<argument index="1" name="y_axis" type="Vector3">
-			</argument>
-			<argument index="2" name="z_axis" type="Vector3">
-			</argument>
-			<argument index="3" name="origin" type="Vector3">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="x_axis" type="Vector3" />
+			<argument index="1" name="y_axis" type="Vector3" />
+			<argument index="2" name="z_axis" type="Vector3" />
+			<argument index="3" name="origin" type="Vector3" />
 			<description>
-				Constructs the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="basis" type="Basis">
-			</argument>
-			<argument index="1" name="origin" type="Vector3">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="basis" type="Basis" />
+			<argument index="1" name="origin" type="Vector3" />
 			<description>
-				Constructs the Transform from a [Basis] and [Vector3].
+				Constructs a Transform from a [Basis] and [Vector3].
 			</description>
 		</method>
 		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="from" type="Transform2D">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="from" type="Transform2D" />
 			<description>
-				Constructs the Transform from a [Transform2D].
+				Constructs a Transform from a [Transform2D].
 			</description>
 		</method>
 		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="from" type="Quat" />
 			<description>
-				Constructs the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
+				Constructs a Transform from a [Quat]. The origin will be [code]Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="from" type="Basis" />
 			<description>
 				Constructs the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="affine_inverse">
-			<return type="Transform">
-			</return>
+			<return type="Transform" />
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="interpolate_with">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="transform" type="Transform">
-			</argument>
-			<argument index="1" name="weight" type="float">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="transform" type="Transform" />
+			<argument index="1" name="weight" type="float" />
 			<description>
-				Interpolates the transform to other Transform by weight amount (0-1).
+				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse">
-			<return type="Transform">
-			</return>
+			<return type="Transform" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx">
-			<return type="bool">
-			</return>
-			<argument index="0" name="transform" type="Transform">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="transform" type="Transform" />
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="looking_at">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="target" type="Vector3">
-			</argument>
-			<argument index="1" name="up" type="Vector3">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="target" type="Vector3" />
+			<argument index="1" name="up" type="Vector3" />
 			<description>
 				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.
 				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
@@ -112,58 +93,46 @@
 			</description>
 		</method>
 		<method name="orthonormalized">
-			<return type="Transform">
-			</return>
+			<return type="Transform" />
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
 		<method name="rotated">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="phi" type="float">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="scale" type="Vector3" />
 			<description>
-				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
+				Returns a copy of the transform with its basis and origin scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
+			<return type="Transform" />
+			<argument index="0" name="offset" type="Vector3" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
 		<method name="xform">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="v" type="Variant" />
 			<description>
 				Transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="v" type="Variant" />
 			<description>
-				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform, under the assumption that the transformation is composed of rotation and translation (no scaling). Equivalent to calling [code]inverse().xform(v)[/code] on this transform. For affine transformations (e.g. with scaling) see [method affine_inverse] method.
 			</description>
 		</method>
 	</methods>
@@ -172,7 +141,7 @@
 			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="origin" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			The translation offset of the transform.
+			The translation offset of the transform (column 3, the fourth column). Equivalent to array index [code]3[/code].
 		</member>
 	</members>
 	<constants>

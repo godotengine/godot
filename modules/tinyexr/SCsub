@@ -6,6 +6,9 @@ Import("env_modules")
 env_tinyexr = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
 # Not unbundled for now as they are not commonly available as shared library
 thirdparty_dir = "#thirdparty/tinyexr/"
 thirdparty_sources = [
@@ -17,10 +20,21 @@ env_tinyexr.Prepend(CPPPATH=[thirdparty_dir])
 
 # Enable threaded loading with C++11.
 env_tinyexr.Append(CPPDEFINES=["TINYEXR_USE_THREAD"])
+# miniz is an external dependency, we could add it but we can instead rely
+# on our existing bundled zlib.
+env_tinyexr.Append(CPPDEFINES=[("TINYEXR_USE_MINIZ", 0)])
 
 env_thirdparty = env_tinyexr.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
 
-# Godot's own source files
-env_tinyexr.add_source_files(env.modules_sources, "*.cpp")
+# Godot source files
+
+module_obj = []
+
+env_tinyexr.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

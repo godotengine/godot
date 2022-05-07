@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,11 @@
 #include "websocket_server.h"
 
 class EMWSServer : public WebSocketServer {
-
 	GDCIIMPL(EMWSServer, WebSocketServer);
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	void set_extra_headers(const Vector<String> &p_headers);
 	Error listen(int p_port, Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;

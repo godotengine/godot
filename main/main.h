@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,14 +36,13 @@
 #include "core/typedefs.h"
 
 class Main {
-
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
-	static uint64_t target_ticks;
 	static uint32_t frames;
 	static uint32_t frame;
 	static bool force_redraw_requested;
 	static int iterating;
+	static bool agile_input_event_flushing;
 
 public:
 	static bool is_project_manager();
@@ -57,7 +56,7 @@ public:
 
 	static bool is_iterating();
 
-	static void cleanup();
+	static void cleanup(bool p_force = false);
 };
 
 #endif // MAIN_H

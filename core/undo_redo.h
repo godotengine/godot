@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,9 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "core/object.h"
-#include "core/resource.h"
+#include "core/reference.h"
 
 class UndoRedo : public Object {
-
 	GDCLASS(UndoRedo, Object);
 	OBJ_SAVE_TYPE(UndoRedo);
 
@@ -55,7 +53,6 @@ public:
 
 private:
 	struct Operation {
-
 		enum Type {
 			TYPE_METHOD,
 			TYPE_PROPERTY,
@@ -63,10 +60,12 @@ private:
 		};
 
 		Type type;
-		Ref<Resource> resref;
+		Ref<Reference> ref;
 		ObjectID object;
 		String name;
 		Variant args[VARIANT_ARG_MAX];
+
+		void delete_reference();
 	};
 
 	struct Action {
@@ -118,8 +117,8 @@ public:
 	String get_current_action_name() const;
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

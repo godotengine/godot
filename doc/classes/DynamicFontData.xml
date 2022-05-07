@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DynamicFontData" inherits="Resource" version="3.2">
+<class name="DynamicFontData" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used with [DynamicFont] to describe the location of a font file.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Used with [DynamicFont] to describe the location of a vector font file for dynamic rendering at runtime.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 	</methods>
@@ -19,6 +20,9 @@
 		</member>
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting" default="2">
 			The font hinting mode used by FreeType. See [enum Hinting] for options.
+		</member>
+		<member name="override_oversampling" type="float" setter="set_override_oversampling" getter="get_override_oversampling" default="0.0">
+			If set to a value greater than [code]0.0[/code], it will override default font oversampling, ignoring [member SceneTree.use_font_oversampling] value and viewport stretch mode.
 		</member>
 	</members>
 	<constants>

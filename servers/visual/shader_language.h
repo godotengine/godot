@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "core/list.h"
 #include "core/map.h"
+#include "core/ordered_hash_map.h"
 #include "core/script_language.h"
 #include "core/string_name.h"
 #include "core/typedefs.h"
@@ -40,8 +41,12 @@
 #include "core/variant.h"
 
 class ShaderLanguage {
-
 public:
+	struct TkPos {
+		int char_idx;
+		int tk_line;
+	};
+
 	enum TokenType {
 		TK_EMPTY,
 		TK_IDENTIFIER,
@@ -49,6 +54,7 @@ public:
 		TK_FALSE,
 		TK_REAL_CONSTANT,
 		TK_INT_CONSTANT,
+		TK_UINT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -83,6 +89,7 @@ public:
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
 		TK_CONST,
+		TK_STRUCT,
 		TK_PRECISION_LOW,
 		TK_PRECISION_MID,
 		TK_PRECISION_HIGH,
@@ -202,6 +209,7 @@ public:
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
 		TYPE_SAMPLEREXT,
+		TYPE_STRUCT,
 	};
 
 	enum DataPrecision {
@@ -257,6 +265,7 @@ public:
 		OP_POST_DECREMENT,
 		OP_CALL,
 		OP_CONSTRUCT,
+		OP_STRUCT,
 		OP_INDEX,
 		OP_MAX
 	};
@@ -286,6 +295,17 @@ public:
 		TAG_ARRAY,
 	};
 
+	struct VaryingFunctionNames {
+		StringName fragment;
+		StringName vertex;
+		StringName light;
+		VaryingFunctionNames() {
+			fragment = "fragment";
+			vertex = "vertex";
+			light = "light";
+		}
+	};
+
 	struct Node {
 		Node *next;
 
@@ -301,13 +321,17 @@ public:
 			TYPE_MEMBER,
 			TYPE_ARRAY,
 			TYPE_ARRAY_DECLARATION,
+			TYPE_ARRAY_CONSTRUCT,
+			TYPE_STRUCT,
 		};
 
 		Type type;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
+		virtual String get_datatype_name() const { return ""; }
+
 		Node(Type t) :
-				next(NULL),
+				next(nullptr),
 				type(t) {}
 		virtual ~Node() {}
 	};
@@ -326,31 +350,39 @@ public:
 		DataType return_cache;
 		DataPrecision return_precision_cache;
 		Operator op;
+		StringName struct_name;
 		Vector<Node *> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		OperatorNode() :
 				Node(TYPE_OPERATOR),
 				return_cache(TYPE_VOID),
 				return_precision_cache(PRECISION_DEFAULT),
-				op(OP_EQUAL) {}
+				op(OP_EQUAL),
+				struct_name("") {}
 	};
 
 	struct VariableNode : public Node {
 		DataType datatype_cache;
 		StringName name;
+		StringName struct_name;
 		virtual DataType get_datatype() const { return datatype_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 		bool is_const;
+		bool is_local;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
 				datatype_cache(TYPE_VOID),
-				is_const(false) {}
+				is_const(false),
+				is_local(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		String struct_name;
 		bool is_const;
 
 		struct Declaration {
@@ -370,24 +402,42 @@ public:
 
 	struct ArrayNode : public Node {
 		DataType datatype_cache;
+		StringName struct_name;
 		StringName name;
 		Node *index_expression;
 		Node *call_expression;
+		Node *assign_expression;
 		bool is_const;
+		bool is_local;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		ArrayNode() :
 				Node(TYPE_ARRAY),
 				datatype_cache(TYPE_VOID),
-				index_expression(NULL),
-				call_expression(NULL),
-				is_const(false) {}
+				index_expression(nullptr),
+				call_expression(nullptr),
+				assign_expression(nullptr),
+				is_const(false),
+				is_local(false) {}
+	};
+
+	struct ArrayConstructNode : public Node {
+		DataType datatype;
+		String struct_name;
+		Vector<Node *> initializer;
+
+		ArrayConstructNode() :
+				Node(TYPE_ARRAY_CONSTRUCT),
+				datatype(TYPE_VOID) {
+		}
 	};
 
 	struct ArrayDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		String struct_name;
 		bool is_const;
 
 		struct Declaration {
@@ -408,6 +458,8 @@ public:
 
 	struct ConstantNode : public Node {
 		DataType datatype;
+		String struct_name = "";
+		int array_size = 0;
 
 		union Value {
 			bool boolean;
@@ -417,7 +469,9 @@ public:
 		};
 
 		Vector<Value> values;
+		Vector<ArrayDeclarationNode::Declaration> array_declarations;
 		virtual DataType get_datatype() const { return datatype; }
+		virtual String get_datatype_name() const { return struct_name; }
 
 		ConstantNode() :
 				Node(TYPE_CONSTANT),
@@ -442,6 +496,7 @@ public:
 
 		struct Variable {
 			DataType type;
+			StringName struct_name;
 			DataPrecision precision;
 			int line; //for completion
 			int array_size;
@@ -454,8 +509,8 @@ public:
 
 		BlockNode() :
 				Node(TYPE_BLOCK),
-				parent_function(NULL),
-				parent_block(NULL),
+				parent_function(nullptr),
+				parent_block(nullptr),
 				block_type(BLOCK_TYPE_STANDART),
 				block_tag(SubClassTag::TAG_GLOBAL),
 				single_statement(false) {}
@@ -473,17 +528,37 @@ public:
 
 	struct MemberNode : public Node {
 		DataType basetype;
+		bool basetype_const;
+		StringName base_struct_name;
+		DataPrecision precision;
 		DataType datatype;
+		int array_size;
+		StringName struct_name;
 		StringName name;
 		Node *owner;
+		Node *index_expression;
+		Node *assign_expression;
+		bool has_swizzling_duplicates;
 
 		virtual DataType get_datatype() const { return datatype; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		MemberNode() :
 				Node(TYPE_MEMBER),
 				basetype(TYPE_VOID),
+				basetype_const(false),
 				datatype(TYPE_VOID),
-				owner(NULL) {}
+				array_size(0),
+				owner(nullptr),
+				index_expression(nullptr),
+				assign_expression(nullptr),
+				has_swizzling_duplicates(false) {}
+	};
+
+	struct StructNode : public Node {
+		List<MemberNode *> members;
+		StructNode() :
+				Node(TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
@@ -491,11 +566,14 @@ public:
 			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
+			StringName type_str;
 			DataPrecision precision;
+			bool is_const;
 		};
 
 		StringName name;
 		DataType return_type;
+		StringName return_struct_name;
 		DataPrecision return_precision;
 		Vector<Argument> arguments;
 		BlockNode *body;
@@ -505,17 +583,18 @@ public:
 				Node(TYPE_FUNCTION),
 				return_type(TYPE_VOID),
 				return_precision(PRECISION_DEFAULT),
-				body(NULL),
+				body(nullptr),
 				can_discard(false) {}
 	};
 
 	struct ShaderNode : public Node {
-
 		struct Constant {
 			StringName name;
 			DataType type;
+			StringName type_str;
 			DataPrecision precision;
 			ConstantNode *initializer;
+			int array_size;
 		};
 
 		struct Function {
@@ -525,13 +604,29 @@ public:
 			bool callable;
 		};
 
+		struct Struct {
+			StringName name;
+			StructNode *shader_struct;
+		};
+
 		struct Varying {
+			enum Stage {
+				STAGE_UNKNOWN,
+				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
+				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
+				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
+				STAGE_FRAGMENT_TO_LIGHT,
+			};
+
+			Stage stage;
 			DataType type;
 			DataInterpolation interpolation;
 			DataPrecision precision;
 			int array_size;
+			TkPos tkpos;
 
 			Varying() :
+					stage(STAGE_UNKNOWN),
 					type(TYPE_VOID),
 					interpolation(INTERPOLATION_FLAT),
 					precision(PRECISION_DEFAULT),
@@ -573,12 +668,14 @@ public:
 		};
 
 		Map<StringName, Constant> constants;
-		Map<StringName, Varying> varyings;
-		Map<StringName, Uniform> uniforms;
+		OrderedHashMap<StringName, Varying> varyings;
+		OrderedHashMap<StringName, Uniform> uniforms;
+		Map<StringName, Struct> structs;
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
 		Vector<Constant> vconstants;
+		Vector<Struct> vstructs;
 
 		ShaderNode() :
 				Node(TYPE_SHADER) {}
@@ -599,12 +696,15 @@ public:
 
 	enum CompletionType {
 		COMPLETION_NONE,
+		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
 		COMPLETION_FUNCTION_CALL,
 		COMPLETION_CALL_ARGUMENTS,
 		COMPLETION_INDEX,
+		COMPLETION_STRUCT,
+		COMPLETION_HINT,
 	};
 
 	struct Token {
@@ -612,6 +712,9 @@ public:
 		StringName text;
 		double constant;
 		uint16_t line;
+		bool is_integer_constant() const {
+			return type == TK_INT_CONSTANT || type == TK_UINT_CONSTANT;
+		}
 	};
 
 	static String get_operator_text(Operator p_op);
@@ -628,8 +731,10 @@ public:
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
+	static bool is_token_operator_assign(TokenType p_type);
+	static bool is_token_hint(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = NULL);
+	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
@@ -637,6 +742,7 @@ public:
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 
 	static void get_keyword_list(List<String> *r_keywords);
+	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
 	struct BuiltInInfo {
@@ -655,6 +761,11 @@ public:
 	struct FunctionInfo {
 		Map<StringName, BuiltInInfo> built_ins;
 		bool can_discard;
+		bool main_function;
+
+		FunctionInfo() :
+				can_discard(false), main_function(false) {
+		}
 	};
 	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
@@ -675,11 +786,9 @@ private:
 	int tk_line;
 
 	StringName current_function;
+	bool last_const = false;
 
-	struct TkPos {
-		int char_idx;
-		int tk_line;
-	};
+	VaryingFunctionNames varying_function_names;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -694,8 +803,9 @@ private:
 	}
 
 	void _set_error(const String &p_str) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 
 		error_line = tk_line;
 		error_set = true;
@@ -719,10 +829,10 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
 	bool _is_operator_assign(Operator p_op) const;
-	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
-	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
+	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = nullptr);
+	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
@@ -744,18 +854,25 @@ private:
 	DataType completion_base;
 	SubClassTag completion_class;
 	StringName completion_function;
+	StringName completion_struct;
 	int completion_argument;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 
-	Error _validate_datatype(DataType p_type);
+	static bool is_const_suffix_lut_initialized;
 
-	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
-	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
+	Error _validate_datatype(DataType p_type);
+	bool _compare_datatypes_in_nodes(Node *a, Node *b) const;
+
+	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = nullptr);
+	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
+	Error _parse_array_size(BlockNode *p_block, int *r_array_size);
+	Node *_parse_array_constructor(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);

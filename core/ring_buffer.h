@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 
 template <typename T>
 class RingBuffer {
-
 	Vector<T> data;
 	int read_pos;
 	int write_pos;
@@ -78,12 +77,12 @@ public:
 	};
 
 	int copy(T *p_buf, int p_offset, int p_size) const {
-
 		int left = data_left();
 		if ((p_offset + p_size) > left) {
 			p_size -= left - p_offset;
-			if (p_size <= 0)
+			if (p_size <= 0) {
 				return 0;
+			}
 		}
 		p_size = MIN(left, p_size);
 		int pos = read_pos;
@@ -104,12 +103,12 @@ public:
 	};
 
 	int find(const T &t, int p_offset, int p_max_size) const {
-
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
 			p_max_size -= left - p_offset;
-			if (p_max_size <= 0)
+			if (p_max_size <= 0) {
 				return 0;
+			}
 		}
 		p_max_size = MIN(left, p_max_size);
 		int pos = read_pos;
@@ -120,8 +119,9 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				if (data[pos + i] == t)
+				if (data[pos + i] == t) {
 					return i + (p_max_size - to_read);
+				}
 			};
 			to_read -= total;
 			pos = 0;
@@ -148,7 +148,6 @@ public:
 	};
 
 	int write(const T *p_buf, int p_size) {
-
 		int left = space_left();
 		p_size = MIN(left, p_size);
 
@@ -156,7 +155,6 @@ public:
 		int to_write = p_size;
 		int src = 0;
 		while (to_write) {
-
 			int end = pos + to_write;
 			end = MIN(end, size());
 			int total = end - pos;

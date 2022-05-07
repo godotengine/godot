@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,6 @@ JoypadWindows::JoypadWindows() {
 }
 
 JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
-
 	input = _input;
 	hWnd = hwnd;
 	joypad_count = 0;
@@ -78,7 +77,6 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 }
 
 JoypadWindows::~JoypadWindows() {
-
 	close_joypad();
 	if (dinput) {
 		dinput->Release();
@@ -87,11 +85,8 @@ JoypadWindows::~JoypadWindows() {
 }
 
 bool JoypadWindows::have_device(const GUID &p_guid) {
-
 	for (int i = 0; i < JOYPADS_MAX; i++) {
-
 		if (d_joypads[i].guid == p_guid) {
-
 			d_joypads[i].confirmed = true;
 			return true;
 		}
@@ -101,12 +96,13 @@ bool JoypadWindows::have_device(const GUID &p_guid) {
 
 // adapted from SDL2, works a lot better than the MSDN version
 bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
-
-	static GUID IID_ValveStreamingGamepad = { MAKELONG(0x28DE, 0x11FF), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_ValveStreamingGamepad = { MAKELONG(0x28DE, 0x11FF), 0x28DE, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WiredGamepad = { MAKELONG(0x045E, 0x02A1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WirelessGamepad = { MAKELONG(0x045E, 0x028E), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 
-	if (p_guid == &IID_ValveStreamingGamepad || p_guid == &IID_X360WiredGamepad || p_guid == &IID_X360WirelessGamepad)
+	if (memcmp(p_guid, &IID_ValveStreamingGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_X360WiredGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_X360WirelessGamepad, sizeof(*p_guid)) == 0)
 		return true;
 
 	PRAWINPUTDEVICELIST dev_list = NULL;
@@ -115,15 +111,14 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
-	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-	if (!dev_list) return false;
+	dev_list = (PRAWINPUTDEVICELIST)memalloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
+	ERR_FAIL_NULL_V_MSG(dev_list, false, "Out of memory.");
 
 	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
-		free(dev_list);
+		memfree(dev_list);
 		return false;
 	}
 	for (unsigned int i = 0; i < dev_list_count; i++) {
-
 		RID_DEVICE_INFO rdi;
 		char dev_name[128];
 		UINT rdiSize = sizeof(rdi);
@@ -135,17 +130,15 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
 				(strstr(dev_name, "IG_") != NULL)) {
-
-			free(dev_list);
+			memfree(dev_list);
 			return true;
 		}
 	}
-	free(dev_list);
+	memfree(dev_list);
 	return false;
 }
 
 bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
-
 	ERR_FAIL_NULL_V_MSG(dinput, false, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	HRESULT hr;
 	int num = input->get_unused_joy_id();
@@ -153,12 +146,12 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	if (have_device(instance->guidInstance) || num == -1)
 		return false;
 
-	d_joypads[joypad_count] = dinput_gamepad();
-	dinput_gamepad *joy = &d_joypads[joypad_count];
+	d_joypads[num] = dinput_gamepad();
+	dinput_gamepad *joy = &d_joypads[num];
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
-	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
+	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON) && (devtype != DI8DEVTYPE_DRIVING)) {
 		return false;
 	}
 
@@ -178,7 +171,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	WORD version = 0;
 	sprintf_s(uid, "%04x%04x%04x%04x%04x%04x%04x%04x", type, 0, vendor, 0, product, 0, version, 0);
 
-	id_to_change = joypad_count;
+	id_to_change = num;
 	slider_count = 0;
 
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
@@ -197,13 +190,11 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 }
 
 void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id) {
-
 	if (ob->dwType & DIDFT_AXIS) {
-
 		HRESULT res;
 		DIPROPRANGE prop_range;
 		DIPROPDWORD dilong;
-		DWORD ofs;
+		LONG ofs;
 		if (ob->guidType == GUID_XAxis)
 			ofs = DIJOFS_X;
 		else if (ob->guidType == GUID_YAxis)
@@ -253,7 +244,6 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 }
 
 BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context) {
-
 	JoypadWindows *self = (JoypadWindows *)p_context;
 	if (self->is_xinput_device(&p_instance->guidProduct)) {
 		return DIENUM_CONTINUE;
@@ -263,7 +253,6 @@ BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE *p_instance, vo
 }
 
 BOOL CALLBACK JoypadWindows::objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context) {
-
 	JoypadWindows *self = (JoypadWindows *)context;
 	self->setup_joypad_object(instance, self->id_to_change);
 
@@ -271,17 +260,15 @@ BOOL CALLBACK JoypadWindows::objectsCallback(const DIDEVICEOBJECTINSTANCE *insta
 }
 
 void JoypadWindows::close_joypad(int id) {
-
 	if (id == -1) {
-
 		for (int i = 0; i < JOYPADS_MAX; i++) {
-
 			close_joypad(i);
 		}
 		return;
 	}
 
-	if (!d_joypads[id].attached) return;
+	if (!d_joypads[id].attached)
+		return;
 
 	d_joypads[id].di_joy->Unacquire();
 	d_joypads[id].di_joy->Release();
@@ -293,19 +280,15 @@ void JoypadWindows::close_joypad(int id) {
 }
 
 void JoypadWindows::probe_joypads() {
-
 	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
-
 		ZeroMemory(&x_joypads[i].state, sizeof(XINPUT_STATE));
 
 		dwResult = xinput_get_state(i, &x_joypads[i].state);
 		if (dwResult == ERROR_SUCCESS) {
-
 			int id = input->get_unused_joy_id();
 			if (id != -1 && !x_joypads[i].attached) {
-
 				x_joypads[i].attached = true;
 				x_joypads[i].id = id;
 				x_joypads[i].ff_timestamp = 0;
@@ -315,7 +298,6 @@ void JoypadWindows::probe_joypads() {
 				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__");
 			}
 		} else if (x_joypads[i].attached) {
-
 			x_joypads[i].attached = false;
 			attached_joypads[x_joypads[i].id] = false;
 			input->joy_connection_changed(x_joypads[i].id, false, "");
@@ -323,27 +305,22 @@ void JoypadWindows::probe_joypads() {
 	}
 
 	for (int i = 0; i < joypad_count; i++) {
-
 		d_joypads[i].confirmed = false;
 	}
 
 	dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumCallback, this, DIEDFL_ATTACHEDONLY);
 
 	for (int i = 0; i < joypad_count; i++) {
-
 		if (!d_joypads[i].confirmed) {
-
 			close_joypad(i);
 		}
 	}
 }
 
 void JoypadWindows::process_joypads() {
-
 	HRESULT hr;
 
 	for (int i = 0; i < XUSER_MAX_COUNT; i++) {
-
 		xinput_gamepad &joy = x_joypads[i];
 		if (!joy.attached) {
 			continue;
@@ -352,10 +329,8 @@ void JoypadWindows::process_joypads() {
 
 		xinput_get_state(i, &joy.state);
 		if (joy.state.dwPacketNumber != joy.last_packet) {
-
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
 			for (int j = 0; j <= 16; j++) {
-
 				input->joy_button(joy.id, j, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
 			}
@@ -385,7 +360,6 @@ void JoypadWindows::process_joypads() {
 	}
 
 	for (int i = 0; i < JOYPADS_MAX; i++) {
-
 		dinput_gamepad *joy = &d_joypads[i];
 
 		if (!joy->attached)
@@ -406,18 +380,13 @@ void JoypadWindows::process_joypads() {
 		post_hat(joy->id, js.rgdwPOV[0]);
 
 		for (int j = 0; j < 128; j++) {
-
 			if (js.rgbButtons[j] & 0x80) {
-
 				if (!joy->last_buttons[j]) {
-
 					input->joy_button(joy->id, j, true);
 					joy->last_buttons[j] = true;
 				}
 			} else {
-
 				if (joy->last_buttons[j]) {
-
 					input->joy_button(joy->id, j, false);
 					joy->last_buttons[j] = false;
 				}
@@ -426,11 +395,10 @@ void JoypadWindows::process_joypads() {
 
 		// on mingw, these constants are not constants
 		int count = 8;
-		unsigned int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, DIJOFS_SLIDER(0), DIJOFS_SLIDER(1) };
+		LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
 		for (int j = 0; j < joy->joy_axis.size(); j++) {
-
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
 					input->joy_axis(joy->id, j, axis_correct(values[k]));
@@ -443,7 +411,6 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-
 	int dpad_val = 0;
 
 	// Should be -1 when centered, but according to docs:
@@ -454,69 +421,53 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 		dpad_val = InputDefault::HAT_MASK_CENTER;
 	}
 	if (p_dpad == 0) {
-
 		dpad_val = InputDefault::HAT_MASK_UP;
 
 	} else if (p_dpad == 4500) {
-
 		dpad_val = (InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT);
 
 	} else if (p_dpad == 9000) {
-
 		dpad_val = InputDefault::HAT_MASK_RIGHT;
 
 	} else if (p_dpad == 13500) {
-
 		dpad_val = (InputDefault::HAT_MASK_RIGHT | InputDefault::HAT_MASK_DOWN);
 
 	} else if (p_dpad == 18000) {
-
 		dpad_val = InputDefault::HAT_MASK_DOWN;
 
 	} else if (p_dpad == 22500) {
-
 		dpad_val = (InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT);
 
 	} else if (p_dpad == 27000) {
-
 		dpad_val = InputDefault::HAT_MASK_LEFT;
 
 	} else if (p_dpad == 31500) {
-
 		dpad_val = (InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 };
 
-InputDefault::JoyAxis JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
-
-	InputDefault::JoyAxis jx;
+float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
 	if (Math::abs(p_val) < MIN_JOY_AXIS) {
-		jx.min = p_trigger ? 0 : -1;
-		jx.value = 0.0f;
-		return jx;
+		return p_trigger ? -1.0f : 0.0f;
 	}
-	if (p_xinput) {
-
-		if (p_trigger) {
-			jx.min = 0;
-			jx.value = (float)p_val / MAX_TRIGGER;
-			return jx;
-		}
-		jx.min = -1;
-		if (p_val < 0) {
-			jx.value = (float)p_val / MAX_JOY_AXIS;
-		} else {
-			jx.value = (float)p_val / (MAX_JOY_AXIS - 1);
-		}
-		if (p_negate) {
-			jx.value = -jx.value;
-		}
-		return jx;
+	if (!p_xinput) {
+		return (float)p_val / MAX_JOY_AXIS;
 	}
-	jx.min = -1;
-	jx.value = (float)p_val / MAX_JOY_AXIS;
-	return jx;
+	if (p_trigger) {
+		// Convert to a value between -1.0f and 1.0f.
+		return 2.0f * p_val / MAX_TRIGGER - 1.0f;
+	}
+	float value;
+	if (p_val < 0) {
+		value = (float)p_val / MAX_JOY_AXIS;
+	} else {
+		value = (float)p_val / (MAX_JOY_AXIS - 1);
+	}
+	if (p_negate) {
+		value = -value;
+	}
+	return value;
 }
 
 void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
@@ -547,7 +498,6 @@ void JoypadWindows::joypad_vibration_stop_xinput(int p_device, uint64_t p_timest
 }
 
 void JoypadWindows::load_xinput() {
-
 	xinput_get_state = &_xinput_get_state;
 	xinput_set_state = &_xinput_set_state;
 	xinput_dll = LoadLibrary("XInput1_4.dll");
@@ -574,9 +524,7 @@ void JoypadWindows::load_xinput() {
 }
 
 void JoypadWindows::unload_xinput() {
-
 	if (xinput_dll) {
-
 		FreeLibrary((HMODULE)xinput_dll);
 	}
 }

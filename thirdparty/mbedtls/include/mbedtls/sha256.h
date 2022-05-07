@@ -7,7 +7,7 @@
  * hash functions are defined in <em>FIPS 180-4: Secure Hash Standard (SHS)</em>.
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -21,14 +21,12 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_SHA256_H
 #define MBEDTLS_SHA256_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
@@ -37,8 +35,10 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED                -0x0037  /**< SHA-256 hardware accelerator failed */
-#define MBEDTLS_ERR_SHA256_BAD_INPUT_DATA                 -0x0074  /**< SHA-256 input data was malformed. */
+/** SHA-256 hardware accelerator failed */
+#define MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED                -0x0037
+/** SHA-256 input data was malformed. */
+#define MBEDTLS_ERR_SHA256_BAD_INPUT_DATA                 -0x0074
 
 #ifdef __cplusplus
 extern "C" {
@@ -237,6 +237,9 @@ MBEDTLS_DEPRECATED void mbedtls_sha256_process( mbedtls_sha256_context *ctx,
  *                 be a writable buffer of length \c 32 Bytes.
  * \param is224    Determines which function to use. This must be
  *                 either \c 0 for SHA-256, or \c 1 for SHA-224.
+ *
+ * \return         \c 0 on success.
+ * \return         A negative error code on failure.
  */
 int mbedtls_sha256_ret( const unsigned char *input,
                         size_t ilen,

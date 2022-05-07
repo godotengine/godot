@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		bt_soft_body(NULL),
+		bt_soft_body(nullptr),
 		isScratched(false),
 		simulation_precision(5),
 		total_mass(1.),
@@ -77,8 +77,9 @@ void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	/// Update visual server vertices
 	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
@@ -116,27 +117,24 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
+	destroy_soft_body();
 
-	if (p_mesh.is_null())
-		soft_mesh.unref();
-	else
-		soft_mesh = p_mesh;
+	soft_mesh = p_mesh;
 
 	if (soft_mesh.is_null()) {
-
-		destroy_soft_body();
 		return;
 	}
 
-	Array arrays = soft_mesh->surface_get_arrays(0);
 	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
+
+	Array arrays = soft_mesh->surface_get_arrays(0);
 	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
 }
 
 void SoftBodyBullet::destroy_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	if (space) {
 		/// Remove from world before deletion
@@ -144,7 +142,7 @@ void SoftBodyBullet::destroy_soft_body() {
 	}
 
 	destroyBulletCollisionObject();
-	bt_soft_body = NULL;
+	bt_soft_body = nullptr;
 }
 
 void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
@@ -153,8 +151,9 @@ void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
 }
 
 void SoftBodyBullet::move_all_nodes(const Transform &p_transform) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 	btTransform bt_transf;
 	G_TO_B(p_transform, bt_transf);
 	bt_soft_body->transform(bt_transf);
@@ -168,6 +167,7 @@ void SoftBodyBullet::set_node_position(int p_node_index, const Vector3 &p_global
 
 void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_global_position) {
 	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
 		bt_soft_body->m_nodes[p_node_index].m_q = bt_soft_body->m_nodes[p_node_index].m_x;
 		bt_soft_body->m_nodes[p_node_index].m_x = p_global_position;
 	}
@@ -175,13 +175,15 @@ void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_glob
 
 void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) const {
 	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
 		B_TO_G(bt_soft_body->m_nodes[p_node_index].m_x, r_position);
 	}
 }
 
 void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
@@ -197,22 +199,24 @@ void SoftBodyBullet::get_node_offset(int p_node_index, btVector3 &r_offset) cons
 	G_TO_B(off, r_offset);
 }
 
-void SoftBodyBullet::set_node_mass(int node_index, btScalar p_mass) {
+void SoftBodyBullet::set_node_mass(int p_node_index, btScalar p_mass) {
 	if (0 >= p_mass) {
-		pin_node(node_index);
+		pin_node(p_node_index);
 	} else {
-		unpin_node(node_index);
+		unpin_node(p_node_index);
 	}
 	if (bt_soft_body) {
-		bt_soft_body->setMass(node_index, p_mass);
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+		bt_soft_body->setMass(p_node_index, p_mass);
 	}
 }
 
-btScalar SoftBodyBullet::get_node_mass(int node_index) const {
+btScalar SoftBodyBullet::get_node_mass(int p_node_index) const {
 	if (bt_soft_body) {
-		return bt_soft_body->getMass(node_index);
+		ERR_FAIL_INDEX_V(p_node_index, bt_soft_body->m_nodes.size(), 1);
+		return bt_soft_body->getMass(p_node_index);
 	} else {
-		return -1 == search_node_pinned(node_index) ? 1 : 0;
+		return -1 == search_node_pinned(p_node_index) ? 1 : 0;
 	}
 }
 
@@ -226,15 +230,15 @@ void SoftBodyBullet::reset_all_node_mass() {
 }
 
 void SoftBodyBullet::reset_all_node_positions() {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null() || !bt_soft_body) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
 	PoolVector<Vector3>::Read vs_vertices_read = vs_vertices.read();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
-
 		G_TO_B(vs_vertices_read[indices_table[vertex_index][0]], bt_soft_body->m_nodes[vertex_index].m_x);
 
 		bt_soft_body->m_nodes[vertex_index].m_q = bt_soft_body->m_nodes[vertex_index].m_x;
@@ -244,6 +248,10 @@ void SoftBodyBullet::reset_all_node_positions() {
 }
 
 void SoftBodyBullet::set_activation_state(bool p_active) {
+	if (!bt_soft_body) {
+		return;
+	}
+
 	if (p_active) {
 		bt_soft_body->setActivationState(ACTIVE_TAG);
 	} else {
@@ -342,7 +350,6 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
 
 			for (int vs_vertex_index = 0; vs_vertex_index < vs_vertices_size; ++vs_vertex_index) {
-
 				Map<Vector3, int>::Element *e = unique_vertices.find(p_vertices_read[vs_vertex_index]);
 				int vertex_id;
 				if (e) {
@@ -398,13 +405,13 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 }
 
 void SoftBodyBullet::setup_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	// Soft body setup
 	setupBulletCollisionObject(bt_soft_body);
-	bt_soft_body->m_worldInfo = NULL; // Remove fake world info
+	bt_soft_body->m_worldInfo = nullptr; // Remove fake world info
 	bt_soft_body->getCollisionShape()->setMargin(0.01);
 	bt_soft_body->setCollisionFlags(bt_soft_body->getCollisionFlags() & (~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT)));
 
@@ -448,17 +455,25 @@ void SoftBodyBullet::setup_soft_body() {
 
 	// Set pinned nodes
 	for (int i = pinned_nodes.size() - 1; 0 <= i; --i) {
-		bt_soft_body->setMass(pinned_nodes[i], 0);
+		const int node_index = pinned_nodes[i];
+		ERR_CONTINUE(0 > node_index || bt_soft_body->m_nodes.size() <= node_index);
+		bt_soft_body->setMass(node_index, 0);
 	}
 }
 
 void SoftBodyBullet::pin_node(int p_node_index) {
+	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+	}
 	if (-1 == search_node_pinned(p_node_index)) {
 		pinned_nodes.push_back(p_node_index);
 	}
 }
 
 void SoftBodyBullet::unpin_node(int p_node_index) {
+	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+	}
 	const int id = search_node_pinned(p_node_index);
 	if (-1 != id) {
 		pinned_nodes.remove(id);

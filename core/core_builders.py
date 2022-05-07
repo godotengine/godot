@@ -1,8 +1,8 @@
 """Functions used to generate source files during build time
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
 """
+
 from platform_methods import subprocess_main
 from compat import iteritems, itervalues, open_utf8, escape_string, byte_to_str
 
@@ -86,10 +86,21 @@ def make_authors_header(target, source, env):
 
 
 def make_donors_header(target, source, env):
-    sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors", "Gold donors", "Silver donors", "Bronze donors"]
+    sections = [
+        "Platinum sponsors",
+        "Gold sponsors",
+        "Silver sponsors",
+        "Bronze sponsors",
+        "Mini sponsors",
+        "Gold donors",
+        "Silver donors",
+        "Bronze donors",
+    ]
     sections_id = [
-        "DONORS_SPONSOR_PLAT",
+        "DONORS_SPONSOR_PLATINUM",
         "DONORS_SPONSOR_GOLD",
+        "DONORS_SPONSOR_SILVER",
+        "DONORS_SPONSOR_BRONZE",
         "DONORS_SPONSOR_MINI",
         "DONORS_GOLD",
         "DONORS_SILVER",

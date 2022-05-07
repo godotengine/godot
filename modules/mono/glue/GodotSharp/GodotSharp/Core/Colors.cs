@@ -1,8 +1,11 @@
-using System;
 using System.Collections.Generic;
 
 namespace Godot
 {
+    /// <summary>
+    /// This class contains color constants created from standardized color names.
+    /// The standardized color set is based on the X11 and .NET color names.
+    /// </summary>
     public static class Colors
     {
         // Color names and values are derived from core/color_names.inc
@@ -155,6 +158,7 @@ namespace Godot
             {"yellowgreen", new Color(0.60f, 0.80f, 0.20f)},
         };
 
+#pragma warning disable CS1591 // Disable warning: "Missing XML comment for publicly visible type or member"
         public static Color AliceBlue { get { return namedColors["aliceblue"]; } }
         public static Color AntiqueWhite { get { return namedColors["antiquewhite"]; } }
         public static Color Aqua { get { return namedColors["aqua"]; } }
@@ -301,5 +305,6 @@ namespace Godot
         public static Color WhiteSmoke { get { return namedColors["whitesmoke"]; } }
         public static Color Yellow { get { return namedColors["yellow"]; } }
         public static Color YellowGreen { get { return namedColors["yellowgreen"]; } }
+#pragma warning restore CS1591
     }
 }

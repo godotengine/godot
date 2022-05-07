@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class PlaneShape : public Shape {
-
 	GDCLASS(PlaneShape, Shape);
 	Plane plane;
 
@@ -47,6 +46,10 @@ public:
 	Plane get_plane() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const {
+		// Should be infinite?
+		return 0;
+	};
 
 	PlaneShape();
 };

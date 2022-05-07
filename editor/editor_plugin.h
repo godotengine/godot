@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,8 +70,17 @@ public:
 
 	Control *get_editor_viewport();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
+	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
+
+	void play_main_scene();
+	void play_current_scene();
+	void play_custom_scene(const String &scene_path);
+	void stop_playing_scene();
+	bool is_playing_scene() const;
+	String get_playing_scene() const;
 
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
@@ -81,7 +90,7 @@ public:
 	String get_selected_path() const;
 	String get_current_path() const;
 
-	void inspect_object(Object *p_obj, const String &p_for_property = String());
+	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
@@ -92,6 +101,7 @@ public:
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
@@ -101,7 +111,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -111,7 +121,6 @@ public:
 };
 
 class EditorPlugin : public Node {
-
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
 	UndoRedo *undo_redo;
@@ -253,7 +262,6 @@ VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
 class EditorPlugins {
-
 	enum {
 		MAX_CREATE_FUNCS = 64
 	};
@@ -269,7 +277,7 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
-		ERR_FAIL_INDEX_V(p_idx, creation_func_count, NULL);
+		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx](p_editor);
 	}
 
@@ -279,7 +287,6 @@ public:
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
-
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}

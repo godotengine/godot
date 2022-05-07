@@ -320,7 +320,12 @@ extern void VP8FiltersInitSSE2(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void VP8FiltersInitSSE2(void) {
   WebPUnfilters[WEBP_FILTER_HORIZONTAL] = HorizontalUnfilter_SSE2;
+#if defined(CHROMIUM)
+  // TODO(crbug.com/654974)
+  (void)VerticalUnfilter_SSE2;
+#else
   WebPUnfilters[WEBP_FILTER_VERTICAL] = VerticalUnfilter_SSE2;
+#endif
   WebPUnfilters[WEBP_FILTER_GRADIENT] = GradientUnfilter_SSE2;
 
   WebPFilters[WEBP_FILTER_HORIZONTAL] = HorizontalFilter_SSE2;

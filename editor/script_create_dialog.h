@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *error_label;
 	Label *path_error_label;
 	Label *builtin_warning_label;
+	Label *script_name_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
@@ -56,6 +57,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	OptionButton *language_menu;
 	OptionButton *template_menu;
 	LineEdit *file_path;
+	LineEdit *internal_name;
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
@@ -80,6 +82,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int default_language;
 	bool re_check_path;
 
+	Control *path_controls[2];
+	Control *name_controls[2];
+
 	enum ScriptOrigin {
 		SCRIPT_ORIGIN_PROJECT,
 		SCRIPT_ORIGIN_EDITOR,
@@ -94,7 +99,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 
 	String script_template;
 	Vector<ScriptTemplateInfo> template_list;
-	Map<String, Vector<int> > template_overrides; // name : indices
+	Map<String, Vector<int>> template_overrides; // name : indices
 
 	void _update_script_templates(const String &p_extension);
 
@@ -109,6 +114,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool _validate_parent(const String &p_string);
 	bool _validate_class(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
+	String _get_class_name() const;
 	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);

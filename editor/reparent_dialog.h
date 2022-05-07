@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,13 +41,11 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 class ReparentDialog : public ConfirmationDialog {
-
 	GDCLASS(ReparentDialog, ConfirmationDialog);
 
 	SceneTreeEditor *tree;
 	CheckBox *keep_transform;
 
-	void update_tree();
 	void _reparent();
 	void _cancel();
 
@@ -57,7 +55,6 @@ protected:
 
 public:
 	void set_current(const Set<Node *> &p_selection);
-	String get_selected_type();
 
 	ReparentDialog();
 	~ReparentDialog();

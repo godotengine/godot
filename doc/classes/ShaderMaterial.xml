@@ -1,51 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShaderMaterial" inherits="Material" version="3.2">
+<class name="ShaderMaterial" inherits="Material" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A material that uses a custom [Shader] program.
 	</brief_description>
 	<description>
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+		[b]Note:[/b] Due to a renderer limitation, emissive [ShaderMaterial]s cannot emit light when used in a [GIProbe]. Only emissive [SpatialMaterial]s can emit light in a [GIProbe].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/shading/index.html</link>
+		<link>$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_shader_param" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="param" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="param" type="String" />
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
 		<method name="property_can_revert">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
 			</description>
 		</method>
 		<method name="property_get_revert">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the default value of the material property with given [code]name[/code].
 			</description>
 		</method>
 		<method name="set_shader_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="String" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
-				Changes the value set for this material of a uniform in the shader. [b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				Changes the value set for this material of a uniform in the shader.
+				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
 			</description>
 		</method>
 	</methods>

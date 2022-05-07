@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2020 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ if (codes == NULL || serialized_bytes == NULL || serialized_size == NULL)
 if (number_of_codes <= 0) return PCRE2_ERROR_BADDATA;
 
 /* Compute total size. */
-total_size = sizeof(pcre2_serialized_data) + tables_length;
+total_size = sizeof(pcre2_serialized_data) + TABLES_LENGTH;
 tables = NULL;
 
 for (i = 0; i < number_of_codes; i++)
@@ -121,8 +121,8 @@ data->number_of_codes = number_of_codes;
 
 /* Copy all compiled code data. */
 dst_bytes = bytes + sizeof(pcre2_serialized_data);
-memcpy(dst_bytes, tables, tables_length);
-dst_bytes += tables_length;
+memcpy(dst_bytes, tables, TABLES_LENGTH);
+dst_bytes += TABLES_LENGTH;
 
 for (i = 0; i < number_of_codes; i++)
   {
@@ -189,12 +189,12 @@ src_bytes = bytes + sizeof(pcre2_serialized_data);
 /* Decode tables. The reference count for the tables is stored immediately
 following them. */
 
-tables = memctl->malloc(tables_length + sizeof(PCRE2_SIZE), memctl->memory_data);
+tables = memctl->malloc(TABLES_LENGTH + sizeof(PCRE2_SIZE), memctl->memory_data);
 if (tables == NULL) return PCRE2_ERROR_NOMEMORY;
 
-memcpy(tables, src_bytes, tables_length);
-*(PCRE2_SIZE *)(tables + tables_length) = number_of_codes;
-src_bytes += tables_length;
+memcpy(tables, src_bytes, TABLES_LENGTH);
+*(PCRE2_SIZE *)(tables + TABLES_LENGTH) = number_of_codes;
+src_bytes += TABLES_LENGTH;
 
 /* Decode the byte stream. We must not try to read the size from the compiled
 code block in the stream, because it might be unaligned, which causes errors on

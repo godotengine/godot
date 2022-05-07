@@ -8,7 +8,7 @@ namespace GodotTools.Utils
 {
     public static class FsPathUtils
     {
-        private static readonly string ResourcePath = ProjectSettings.GlobalizePath("res://");
+        private static readonly string _resourcePath = ProjectSettings.GlobalizePath("res://");
 
         private static bool PathStartsWithAlreadyNorm(this string childPath, string parentPath)
         {
@@ -34,7 +34,7 @@ namespace GodotTools.Utils
         public static string LocalizePathWithCaseChecked(string path)
         {
             string pathNorm = path.NormalizePath() + Path.DirectorySeparatorChar;
-            string resourcePathNorm = ResourcePath.NormalizePath() + Path.DirectorySeparatorChar;
+            string resourcePathNorm = _resourcePath.NormalizePath() + Path.DirectorySeparatorChar;
 
             if (!pathNorm.PathStartsWithAlreadyNorm(resourcePathNorm))
                 return null;

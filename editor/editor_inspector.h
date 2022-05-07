@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
@@ -39,16 +40,24 @@ class UndoRedo;
 
 class EditorPropertyRevert {
 public:
-	static bool may_node_be_in_instance(Node *p_node);
-	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
+	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
+	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
 	static bool can_property_revert(Object *p_object, const StringName &p_property);
 };
 
 class EditorProperty : public Container {
-
 	GDCLASS(EditorProperty, Container);
+
+public:
+	enum MenuItems {
+		MENU_PIN_VALUE,
+		MENU_COPY_PROPERTY,
+		MENU_PASTE_PROPERTY,
+		MENU_COPY_PROPERTY_PATH,
+	};
 
 private:
 	String label;
@@ -56,6 +65,7 @@ private:
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
+	String property_path;
 
 	int property_usage;
 
@@ -76,12 +86,15 @@ private:
 	bool check_hover;
 
 	bool can_revert;
+	bool can_pin;
+	bool pin_hidden;
+	bool is_pinned;
 
 	bool use_folding;
 	bool draw_top_bg;
 
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
+	void _update_popup();
+	void _menu_option(int p_option);
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -93,14 +106,18 @@ private:
 	Vector<Control *> focusables;
 	Control *label_reference;
 	Control *bottom_editor;
+	PopupMenu *menu;
 
 	mutable String tooltip_text;
+
+	void _update_pin_flags();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -117,7 +134,7 @@ public:
 	StringName get_edited_property();
 
 	virtual void update_property();
-	void update_reload_status();
+	void update_revert_and_pin_status();
 
 	virtual bool use_keying_next() const;
 
@@ -242,8 +259,6 @@ public:
 	void unfold();
 	void fold();
 
-	Object *get_edited_object();
-
 	EditorInspectorSection();
 	~EditorInspectorSection();
 };
@@ -261,7 +276,7 @@ class EditorInspector : public ScrollContainer {
 	VBoxContainer *main_vbox;
 
 	//map use to cache the instanced editors
-	Map<StringName, List<EditorProperty *> > editor_property_map;
+	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
 
@@ -274,7 +289,7 @@ class EditorInspector : public ScrollContainer {
 	bool show_categories;
 	bool hide_script;
 	bool use_doc_hints;
-	bool capitalize_paths;
+	EditorPropertyNameProcessor::Style property_name_style;
 	bool use_filter;
 	bool autoclear;
 	bool use_folding;
@@ -291,7 +306,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String> > descr_cache;
+	Map<StringName, Map<StringName, String>> descr_cache;
 	Map<StringName, String> class_descr_cache;
 	Set<StringName> restart_request_props;
 
@@ -299,6 +314,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
+	Variant property_clipboard;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -307,8 +323,8 @@ class EditorInspector : public ScrollContainer {
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
-
 	void _property_checked(const String &p_path, bool p_checked);
+	void _property_pinned(const String &p_path, bool p_pinned);
 
 	void _resource_selected(const String &p_path, RES p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -327,6 +343,8 @@ class EditorInspector : public ScrollContainer {
 	void _feature_profile_changed();
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
+
+	void _update_inspector_bg();
 
 protected:
 	static void _bind_methods();
@@ -354,8 +372,9 @@ public:
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
 
-	bool is_capitalize_paths_enabled() const;
-	void set_enable_capitalize_paths(bool p_capitalize);
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
+	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
@@ -381,6 +400,10 @@ public:
 	String get_object_class() const;
 
 	void set_sub_inspector(bool p_enable);
+	bool is_sub_inspector() const { return sub_inspector; }
+
+	void set_property_clipboard(const Variant &p_value);
+	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };

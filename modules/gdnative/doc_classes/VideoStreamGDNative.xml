@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoStreamGDNative" inherits="VideoStream" version="3.2">
+<class name="VideoStreamGDNative" inherits="VideoStream" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		[VideoStream] resource for for video formats implemented via GDNative.
 	</brief_description>
@@ -11,17 +11,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_file">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the video file handled by this [VideoStreamGDNative].
 			</description>
 		</method>
 		<method name="set_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Sets the video file that this [VideoStreamGDNative] resource handles. The supported extensions depend on the GDNative plugins used to expose video formats.
 			</description>

@@ -4,7 +4,7 @@
  *
  *   OpenType objects manager (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,32 +16,31 @@
  */
 
 
-#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_STREAM_H
-#include FT_ERRORS_H
-#include FT_TRUETYPE_IDS_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_SFNT_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/fterrors.h>
+#include <freetype/ttnameid.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ftdriver.h>
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
-#include FT_INTERNAL_CFF_OBJECTS_TYPES_H
+#include <freetype/internal/cffotypes.h>
 #include "cffobjs.h"
 #include "cffload.h"
 #include "cffcmap.h"
 
 #include "cfferrs.h"
 
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/services/svcfftl.h>
 
 
   /**************************************************************************
@@ -167,46 +166,56 @@
     FT_Error           error = FT_Err_Ok;
     PSH_Globals_Funcs  funcs = cff_size_get_globals_funcs( size );
 
+    FT_Memory     memory   = cffsize->face->memory;
+    CFF_Internal  internal = NULL;
+    CFF_Face      face     = (CFF_Face)cffsize->face;
+    CFF_Font      font     = (CFF_Font)face->extra.data;
 
-    if ( funcs )
-    {
-      CFF_Face      face     = (CFF_Face)cffsize->face;
-      CFF_Font      font     = (CFF_Font)face->extra.data;
-      CFF_Internal  internal = NULL;
+    PS_PrivateRec priv;
 
-      PS_PrivateRec  priv;
-      FT_Memory      memory = cffsize->face->memory;
+    FT_UInt       i;
 
-      FT_UInt  i;
+    if ( !funcs )
+      goto Exit;
 
+    if ( FT_NEW( internal ) )
+      goto Exit;
 
-      if ( FT_NEW( internal ) )
-        goto Exit;
-
-      cff_make_private_dict( &font->top_font, &priv );
-      error = funcs->create( cffsize->face->memory, &priv,
+    cff_make_private_dict( &font->top_font, &priv );
+    error = funcs->create( cffsize->face->memory, &priv,
                              &internal->topfont );
+    if ( error )
+      goto Exit;
+
+    for ( i = font->num_subfonts; i > 0; i-- )
+    {
+      CFF_SubFont  sub = font->subfonts[i - 1];
+
+
+      cff_make_private_dict( sub, &priv );
+      error = funcs->create( cffsize->face->memory, &priv,
+                               &internal->subfonts[i - 1] );
       if ( error )
         goto Exit;
-
-      for ( i = font->num_subfonts; i > 0; i-- )
-      {
-        CFF_SubFont  sub = font->subfonts[i - 1];
-
-
-        cff_make_private_dict( sub, &priv );
-        error = funcs->create( cffsize->face->memory, &priv,
-                               &internal->subfonts[i - 1] );
-        if ( error )
-          goto Exit;
-      }
-
-      cffsize->internal->module_data = internal;
     }
+
+    cffsize->internal->module_data = internal;
 
     size->strike_index = 0xFFFFFFFFUL;
 
   Exit:
+    if ( error )
+    {
+      if ( internal )
+      {
+        for ( i = font->num_subfonts; i > 0; i-- )
+          FT_FREE( internal->subfonts[i - 1] );
+        FT_FREE( internal->topfont );
+      }
+
+      FT_FREE( internal );
+    }
+
     return error;
   }
 
@@ -274,6 +283,8 @@
   cff_size_request( FT_Size          size,
                     FT_Size_Request  req )
   {
+    FT_Error  error;
+
     CFF_Size           cffsize = (CFF_Size)size;
     PSH_Globals_Funcs  funcs;
 
@@ -295,7 +306,9 @@
 
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
-    FT_Request_Metrics( size->face, req );
+    error = FT_Request_Metrics( size->face, req );
+    if ( error )
+      goto Exit;
 
     funcs = cff_size_get_globals_funcs( cffsize );
 
@@ -336,7 +349,8 @@
       }
     }
 
-    return FT_Err_Ok;
+  Exit:
+    return error;
   }
 
 
@@ -349,7 +363,8 @@
   FT_LOCAL_DEF( void )
   cff_slot_done( FT_GlyphSlot  slot )
   {
-    slot->internal->glyph_hints = NULL;
+    if ( slot->internal )
+      slot->internal->glyph_hints = NULL;
   }
 
 
@@ -649,8 +664,8 @@
       if ( dict->cid_registry == 0xFFFFU && !psnames )
       {
         FT_ERROR(( "cff_face_init:"
-                   " cannot open CFF & CEF fonts\n"
-                   "              "
+                   " cannot open CFF & CEF fonts\n" ));
+        FT_ERROR(( "              "
                    " without the `psnames' module\n" ));
         error = FT_THROW( Missing_Module );
         goto Exit;
@@ -674,13 +689,13 @@
 
         /* In Multiple Master CFFs, two SIDs hold the Normalize Design  */
         /* Vector (NDV) and Convert Design Vector (CDV) charstrings,    */
-        /* which may contain NULL bytes in the middle of the data, too. */
+        /* which may contain null bytes in the middle of the data, too. */
         /* We thus access `cff->strings' directly.                      */
         for ( idx = 1; idx < cff->num_strings; idx++ )
         {
           FT_Byte*    s1    = cff->strings[idx - 1];
           FT_Byte*    s2    = cff->strings[idx];
-          FT_PtrDist  s1len = s2 - s1 - 1; /* without the final NULL byte */
+          FT_PtrDist  s1len = s2 - s1 - 1; /* without the final null byte */
           FT_PtrDist  l;
 
 
@@ -940,7 +955,8 @@
                 style_name = cff_strcpy( memory, fullp );
 
                 /* remove the style part from the family name (if present) */
-                remove_style( cffface->family_name, style_name );
+                if ( style_name )
+                  remove_style( cffface->family_name, style_name );
               }
               break;
             }
@@ -1038,11 +1054,11 @@
       {
         FT_CharMapRec  cmaprec;
         FT_CharMap     cmap;
-        FT_UInt        nn;
+        FT_Int         nn;
         CFF_Encoding   encoding = &cff->encoding;
 
 
-        for ( nn = 0; nn < (FT_UInt)cffface->num_charmaps; nn++ )
+        for ( nn = 0; nn < cffface->num_charmaps; nn++ )
         {
           cmap = cffface->charmaps[nn];
 
@@ -1067,7 +1083,7 @@
         cmaprec.encoding_id = TT_MS_ID_UNICODE_CS;
         cmaprec.encoding    = FT_ENCODING_UNICODE;
 
-        nn = (FT_UInt)cffface->num_charmaps;
+        nn = cffface->num_charmaps;
 
         error = FT_CMap_New( &cff_cmap_unicode_class_rec, NULL,
                              &cmaprec, NULL );
@@ -1078,7 +1094,7 @@
         error = FT_Err_Ok;
 
         /* if no Unicode charmap was previously selected, select this one */
-        if ( !cffface->charmap && nn != (FT_UInt)cffface->num_charmaps )
+        if ( !cffface->charmap && nn != cffface->num_charmaps )
           cffface->charmap = cffface->charmaps[nn];
 
       Skip_Unicode:
@@ -1163,11 +1179,7 @@
 
 
     /* set default property values, cf. `ftcffdrv.h' */
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-    driver->hinting_engine = FT_HINTING_FREETYPE;
-#else
     driver->hinting_engine = FT_HINTING_ADOBE;
-#endif
 
     driver->no_stem_darkening = TRUE;
 

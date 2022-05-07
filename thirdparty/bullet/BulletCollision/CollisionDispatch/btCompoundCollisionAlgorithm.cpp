@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -139,7 +139,12 @@ public:
 
 		if (TestAabbAgainstAabb2(aabbMin0, aabbMax0, aabbMin1, aabbMax1))
 		{
-			btCollisionObjectWrapper compoundWrap(this->m_compoundColObjWrap, childShape, m_compoundColObjWrap->getCollisionObject(), newChildWorldTrans, childTrans, -1, index);
+			btTransform preTransform = childTrans;
+			if (this->m_compoundColObjWrap->m_preTransform)
+			{
+				preTransform = preTransform *(*(this->m_compoundColObjWrap->m_preTransform));
+			}
+			btCollisionObjectWrapper compoundWrap(this->m_compoundColObjWrap, childShape, m_compoundColObjWrap->getCollisionObject(), newChildWorldTrans, preTransform, -1, index);
 
 			btCollisionAlgorithm* algo = 0;
 			bool allocatedAlgorithm = false;

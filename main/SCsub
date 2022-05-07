@@ -10,26 +10,24 @@ env.main_sources = []
 env.add_source_files(env.main_sources, "*.cpp")
 
 # Order matters here. Higher index controller database files write on top of lower index database files.
-controller_databases = ["#main/gamecontrollerdb.txt", "#main/godotcontrollerdb.txt"]
+controller_databases = ["gamecontrollerdb.txt", "godotcontrollerdb.txt"]
 
-env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
-env.CommandNoCache(
-    "#main/default_controller_mappings.gen.cpp",
+gensource = env.CommandNoCache(
+    "default_controller_mappings.gen.cpp",
     controller_databases,
     run_in_subprocess(main_builders.make_default_controller_mappings),
 )
 
-# Don't warn about duplicate entry here, we need it registered manually for first build,
-# even if later builds will pick it up twice due to above *.cpp globbing.
-env.add_source_files(env.main_sources, "#main/default_controller_mappings.gen.cpp", warn_duplicates=False)
+env.add_source_files(env.main_sources, gensource)
 
 env.Depends("#main/splash.gen.h", "#main/splash.png")
 env.CommandNoCache("#main/splash.gen.h", "#main/splash.png", run_in_subprocess(main_builders.make_splash))
 
-env.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
-env.CommandNoCache(
-    "#main/splash_editor.gen.h", "#main/splash_editor.png", run_in_subprocess(main_builders.make_splash_editor)
-)
+if not env["no_editor_splash"]:
+    env.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
+    env.CommandNoCache(
+        "#main/splash_editor.gen.h", "#main/splash_editor.png", run_in_subprocess(main_builders.make_splash_editor)
+    )
 
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env.CommandNoCache("#main/app_icon.gen.h", "#main/app_icon.png", run_in_subprocess(main_builders.make_app_icon))

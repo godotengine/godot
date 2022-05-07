@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,10 @@
 #include "scene/resources/curve.h"
 
 class Path2D : public Node2D {
-
 	GDCLASS(Path2D, Node2D);
 
 	Ref<Curve2D> curve;
+	Vector<Vector2> _cached_draw_pts;
 
 	void _curve_changed();
 
@@ -60,7 +60,6 @@ public:
 };
 
 class PathFollow2D : public Node2D {
-
 	GDCLASS(PathFollow2D, Node2D);
 
 public:

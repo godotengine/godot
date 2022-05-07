@@ -1,0 +1,29 @@
+<Project>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
+
+  <PropertyGroup>
+    <!--
+    Define constant to determine whether the real_t type in Godot is double precision or not.
+    By default this is false, like the official Godot builds. If someone is using a custom
+    Godot build where real_t is double, they can override the GodotRealTIsDouble property.
+    -->
+    <DefineConstants Condition=" '$(GodotRealTIsDouble)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Backported from newer Microsoft.NET.Sdk version -->
+  <Target Name="GodotIncludeTargetingPackReference" BeforeTargets="_GetRestoreSettingsPerFramework;_CheckForInvalidConfigurationAndPlatform"
+          Condition=" '$(GodotUseNETFrameworkRefAssemblies)' == 'true' and '$(TargetFrameworkMoniker)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(AutomaticallyUseReferenceAssemblyPackages)' == 'true' ">
+    <GetReferenceAssemblyPaths
+        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+        RootPath="$(TargetFrameworkRootPath)"
+        TargetFrameworkFallbackSearchPaths="$(TargetFrameworkFallbackSearchPaths)"
+        BypassFrameworkInstallChecks="$(BypassFrameworkInstallChecks)"
+        SuppressNotFoundError="true">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
+    </GetReferenceAssemblyPaths>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)" IsImplicitlyDefined="true" Condition="'$(_FullFrameworkReferenceAssemblyPaths)' == ''"/>
+    </ItemGroup>
+  </Target>
+</Project>

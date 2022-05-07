@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 }
 
@@ -34,14 +33,13 @@ uniform highp float max_luminance;
 layout(location = 0) out highp float exposure;
 
 void main() {
-
 #ifdef EXPOSURE_BEGIN
 
 	ivec2 src_pos = ivec2(gl_FragCoord.xy) * source_render_size / target_size;
 
 #if 1
 	//more precise and expensive, but less jittery
-	ivec2 next_pos = ivec2(gl_FragCoord.xy + ivec2(1)) * source_render_size / target_size;
+	ivec2 next_pos = (ivec2(gl_FragCoord.xy) + ivec2(1)) * source_render_size / target_size;
 	next_pos = max(next_pos, src_pos + ivec2(1)); //so it at least reads one pixel
 	highp vec3 source_color = vec3(0.0);
 	for (int i = src_pos.x; i < next_pos.x; i++) {

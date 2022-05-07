@@ -4,7 +4,7 @@
  *
  *   Auto-fitter scripts (specification only).
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -242,6 +242,12 @@
           HB_SCRIPT_MALAYALAM,
           HINTING_BOTTOM_TO_TOP,
           "\xE0\xB4\xA0 \xE0\xB4\xB1" ) /* ഠ റ */
+
+  SCRIPT( medf, MEDF,
+          "Medefaidrin",
+          HB_SCRIPT_MEDEFAIDRIN,
+          HINTING_BOTTOM_TO_TOP,
+          "\xF0\x96\xB9\xA1 \xF0\x96\xB9\x9B \xF0\x96\xB9\xAF" ) /* 𖹡 𖹛 𖹯 */
 
   SCRIPT( mong, MONG,
           "Mongolian",

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" version="3.2">
+<class name="ConfirmationDialog" inherits="AcceptDialog" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Dialog for confirmation of actions.
 	</brief_description>
@@ -14,16 +14,16 @@
 	</tutorials>
 	<methods>
 		<method name="get_cancel">
-			<return type="Button">
-			</return>
+			<return type="Button" />
 			<description>
 				Returns the cancel button.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" override="true" default="Vector2( 200, 70 )" />
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Please Confirm...&quot;" />
+		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" overrides="Control" default="Vector2( 200, 70 )" />
+		<member name="window_title" type="String" setter="set_title" getter="get_title" overrides="WindowDialog" default="&quot;Please Confirm...&quot;" />
 	</members>
 	<constants>
 	</constants>

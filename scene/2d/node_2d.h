@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/2d/canvas_item.h"
 
 class Node2D : public CanvasItem {
-
 	GDCLASS(Node2D, CanvasItem);
 
 	Point2 pos;
@@ -116,6 +115,10 @@ public:
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
 	Transform2D get_transform() const;
+
+#ifdef TOOLS_ENABLED
+	virtual StringName get_property_store_alias(const StringName &p_property) const;
+#endif
 
 	Node2D();
 };

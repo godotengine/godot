@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ class GDNative;
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource);
 
-	static Map<String, Vector<Ref<GDNative> > > loaded_libraries;
+	static Map<String, Vector<Ref<GDNative>>> loaded_libraries;
 
 	friend class GDNativeLibraryResourceLoader;
 	friend class GDNative;
@@ -76,7 +76,7 @@ public:
 
 	// things that change per-platform
 	// so there are no setters for this
-	_FORCE_INLINE_ String get_current_library_path() const {
+	_FORCE_INLINE_ const String &get_current_library_path() const {
 		return current_library_path;
 	}
 	_FORCE_INLINE_ Vector<String> get_current_dependencies() const {

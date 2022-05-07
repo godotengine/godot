@@ -1,7 +1,7 @@
 /*
  *  TLS server tickets callbacks implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,15 +15,9 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_SSL_TICKET_C)
 
@@ -35,7 +29,9 @@
 #define mbedtls_free      free
 #endif
 
+#include "mbedtls/ssl_internal.h"
 #include "mbedtls/ssl_ticket.h"
+#include "mbedtls/error.h"
 #include "mbedtls/platform_util.h"
 
 #include <string.h>
@@ -54,13 +50,26 @@ void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx )
 
 #define MAX_KEY_BYTES 32    /* 256 bits */
 
+#define TICKET_KEY_NAME_BYTES    4
+#define TICKET_IV_BYTES         12
+#define TICKET_CRYPT_LEN_BYTES   2
+#define TICKET_AUTH_TAG_BYTES   16
+
+#define TICKET_MIN_LEN ( TICKET_KEY_NAME_BYTES  +        \
+                         TICKET_IV_BYTES        +        \
+                         TICKET_CRYPT_LEN_BYTES +        \
+                         TICKET_AUTH_TAG_BYTES )
+#define TICKET_ADD_DATA_LEN ( TICKET_KEY_NAME_BYTES  +        \
+                              TICKET_IV_BYTES        +        \
+                              TICKET_CRYPT_LEN_BYTES )
+
 /*
  * Generate/update a key
  */
 static int ssl_ticket_gen_key( mbedtls_ssl_ticket_context *ctx,
                                unsigned char index )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char buf[MAX_KEY_BYTES];
     mbedtls_ssl_ticket_key *key = ctx->keys + index;
 
@@ -120,7 +129,7 @@ int mbedtls_ssl_ticket_setup( mbedtls_ssl_ticket_context *ctx,
     mbedtls_cipher_type_t cipher,
     uint32_t lifetime )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const mbedtls_cipher_info_t *cipher_info;
 
     ctx->f_rng = f_rng;
@@ -141,126 +150,33 @@ int mbedtls_ssl_ticket_setup( mbedtls_ssl_ticket_context *ctx,
     if( cipher_info->key_bitlen > 8 * MAX_KEY_BYTES )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
-    if( ( ret = mbedtls_cipher_setup( &ctx->keys[0].ctx, cipher_info ) ) != 0 ||
-        ( ret = mbedtls_cipher_setup( &ctx->keys[1].ctx, cipher_info ) ) != 0 )
-    {
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+    ret = mbedtls_cipher_setup_psa( &ctx->keys[0].ctx,
+                                    cipher_info, TICKET_AUTH_TAG_BYTES );
+    if( ret != 0 && ret != MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE )
         return( ret );
-    }
+    /* We don't yet expect to support all ciphers through PSA,
+     * so allow fallback to ordinary mbedtls_cipher_setup(). */
+    if( ret == MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE )
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
+    if( ( ret = mbedtls_cipher_setup( &ctx->keys[0].ctx, cipher_info ) ) != 0 )
+        return( ret );
+
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+    ret = mbedtls_cipher_setup_psa( &ctx->keys[1].ctx,
+                                    cipher_info, TICKET_AUTH_TAG_BYTES );
+    if( ret != 0 && ret != MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE )
+        return( ret );
+    if( ret == MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE )
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
+    if( ( ret = mbedtls_cipher_setup( &ctx->keys[1].ctx, cipher_info ) ) != 0 )
+        return( ret );
 
     if( ( ret = ssl_ticket_gen_key( ctx, 0 ) ) != 0 ||
         ( ret = ssl_ticket_gen_key( ctx, 1 ) ) != 0 )
     {
         return( ret );
     }
-
-    return( 0 );
-}
-
-/*
- * Serialize a session in the following format:
- *  0   .   n-1     session structure, n = sizeof(mbedtls_ssl_session)
- *  n   .   n+2     peer_cert length = m (0 if no certificate)
- *  n+3 .   n+2+m   peer cert ASN.1
- */
-static int ssl_save_session( const mbedtls_ssl_session *session,
-                             unsigned char *buf, size_t buf_len,
-                             size_t *olen )
-{
-    unsigned char *p = buf;
-    size_t left = buf_len;
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
-    size_t cert_len;
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
-
-    if( left < sizeof( mbedtls_ssl_session ) )
-        return( MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL );
-
-    memcpy( p, session, sizeof( mbedtls_ssl_session ) );
-    p += sizeof( mbedtls_ssl_session );
-    left -= sizeof( mbedtls_ssl_session );
-
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
-    if( session->peer_cert == NULL )
-        cert_len = 0;
-    else
-        cert_len = session->peer_cert->raw.len;
-
-    if( left < 3 + cert_len )
-        return( MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL );
-
-    *p++ = (unsigned char)( ( cert_len >> 16 ) & 0xFF );
-    *p++ = (unsigned char)( ( cert_len >>  8 ) & 0xFF );
-    *p++ = (unsigned char)( ( cert_len       ) & 0xFF );
-
-    if( session->peer_cert != NULL )
-        memcpy( p, session->peer_cert->raw.p, cert_len );
-
-    p += cert_len;
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
-
-    *olen = p - buf;
-
-    return( 0 );
-}
-
-/*
- * Unserialise session, see ssl_save_session()
- */
-static int ssl_load_session( mbedtls_ssl_session *session,
-                             const unsigned char *buf, size_t len )
-{
-    const unsigned char *p = buf;
-    const unsigned char * const end = buf + len;
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
-    size_t cert_len;
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
-
-    if( sizeof( mbedtls_ssl_session ) > (size_t)( end - p ) )
-        return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
-
-    memcpy( session, p, sizeof( mbedtls_ssl_session ) );
-    p += sizeof( mbedtls_ssl_session );
-
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
-    if( 3 > (size_t)( end - p ) )
-        return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
-
-    cert_len = ( p[0] << 16 ) | ( p[1] << 8 ) | p[2];
-    p += 3;
-
-    if( cert_len == 0 )
-    {
-        session->peer_cert = NULL;
-    }
-    else
-    {
-        int ret;
-
-        if( cert_len > (size_t)( end - p ) )
-            return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
-
-        session->peer_cert = mbedtls_calloc( 1, sizeof( mbedtls_x509_crt ) );
-
-        if( session->peer_cert == NULL )
-            return( MBEDTLS_ERR_SSL_ALLOC_FAILED );
-
-        mbedtls_x509_crt_init( session->peer_cert );
-
-        if( ( ret = mbedtls_x509_crt_parse_der( session->peer_cert,
-                                                p, cert_len ) ) != 0 )
-        {
-            mbedtls_x509_crt_free( session->peer_cert );
-            mbedtls_free( session->peer_cert );
-            session->peer_cert = NULL;
-            return( ret );
-        }
-
-        p += cert_len;
-    }
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
-
-    if( p != end )
-        return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
     return( 0 );
 }
@@ -278,6 +194,7 @@ static int ssl_load_session( mbedtls_ssl_session *session,
  * The key_name, iv, and length of encrypted_state are the additional
  * authenticated data.
  */
+
 int mbedtls_ssl_ticket_write( void *p_ticket,
                               const mbedtls_ssl_session *session,
                               unsigned char *start,
@@ -285,14 +202,13 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
                               size_t *tlen,
                               uint32_t *ticket_lifetime )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ssl_ticket_context *ctx = p_ticket;
     mbedtls_ssl_ticket_key *key;
     unsigned char *key_name = start;
-    unsigned char *iv = start + 4;
-    unsigned char *state_len_bytes = iv + 12;
-    unsigned char *state = state_len_bytes + 2;
-    unsigned char *tag;
+    unsigned char *iv = start + TICKET_KEY_NAME_BYTES;
+    unsigned char *state_len_bytes = iv + TICKET_IV_BYTES;
+    unsigned char *state = state_len_bytes + TICKET_CRYPT_LEN_BYTES;
     size_t clear_len, ciph_len;
 
     *tlen = 0;
@@ -302,8 +218,7 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
 
     /* We need at least 4 bytes for key_name, 12 for IV, 2 for len 16 for tag,
      * in addition to session itself, that will be checked when writing it. */
-    if( end - start < 4 + 12 + 2 + 16 )
-        return( MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL );
+    MBEDTLS_SSL_CHK_BUF_PTR( start, end, TICKET_MIN_LEN );
 
 #if defined(MBEDTLS_THREADING_C)
     if( ( ret = mbedtls_mutex_lock( &ctx->mutex ) ) != 0 )
@@ -317,36 +232,39 @@ int mbedtls_ssl_ticket_write( void *p_ticket,
 
     *ticket_lifetime = ctx->ticket_lifetime;
 
-    memcpy( key_name, key->name, 4 );
+    memcpy( key_name, key->name, TICKET_KEY_NAME_BYTES );
 
-    if( ( ret = ctx->f_rng( ctx->p_rng, iv, 12 ) ) != 0 )
+    if( ( ret = ctx->f_rng( ctx->p_rng, iv, TICKET_IV_BYTES ) ) != 0 )
         goto cleanup;
 
     /* Dump session state */
-    if( ( ret = ssl_save_session( session,
-                                  state, end - state, &clear_len ) ) != 0 ||
+    if( ( ret = mbedtls_ssl_session_save( session,
+                                          state, end - state,
+                                          &clear_len ) ) != 0 ||
         (unsigned long) clear_len > 65535 )
     {
          goto cleanup;
     }
-    state_len_bytes[0] = ( clear_len >> 8 ) & 0xff;
-    state_len_bytes[1] = ( clear_len      ) & 0xff;
+    MBEDTLS_PUT_UINT16_BE( clear_len, state_len_bytes, 0 );
 
     /* Encrypt and authenticate */
-    tag = state + clear_len;
-    if( ( ret = mbedtls_cipher_auth_encrypt( &key->ctx,
-                    iv, 12, key_name, 4 + 12 + 2,
-                    state, clear_len, state, &ciph_len, tag, 16 ) ) != 0 )
+    if( ( ret = mbedtls_cipher_auth_encrypt_ext( &key->ctx,
+                    iv, TICKET_IV_BYTES,
+                    /* Additional data: key name, IV and length */
+                    key_name, TICKET_ADD_DATA_LEN,
+                    state, clear_len,
+                    state, end - state, &ciph_len,
+                    TICKET_AUTH_TAG_BYTES ) ) != 0 )
     {
         goto cleanup;
     }
-    if( ciph_len != clear_len )
+    if( ciph_len != clear_len + TICKET_AUTH_TAG_BYTES )
     {
         ret = MBEDTLS_ERR_SSL_INTERNAL_ERROR;
         goto cleanup;
     }
 
-    *tlen = 4 + 12 + 2 + 16 + ciph_len;
+    *tlen = TICKET_MIN_LEN + ciph_len - TICKET_AUTH_TAG_BYTES;
 
 cleanup:
 #if defined(MBEDTLS_THREADING_C)
@@ -381,21 +299,19 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
                               unsigned char *buf,
                               size_t len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ssl_ticket_context *ctx = p_ticket;
     mbedtls_ssl_ticket_key *key;
     unsigned char *key_name = buf;
-    unsigned char *iv = buf + 4;
-    unsigned char *enc_len_p = iv + 12;
-    unsigned char *ticket = enc_len_p + 2;
-    unsigned char *tag;
+    unsigned char *iv = buf + TICKET_KEY_NAME_BYTES;
+    unsigned char *enc_len_p = iv + TICKET_IV_BYTES;
+    unsigned char *ticket = enc_len_p + TICKET_CRYPT_LEN_BYTES;
     size_t enc_len, clear_len;
 
     if( ctx == NULL || ctx->f_rng == NULL )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
-    /* See mbedtls_ssl_ticket_write() */
-    if( len < 4 + 12 + 2 + 16 )
+    if( len < TICKET_MIN_LEN )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
 
 #if defined(MBEDTLS_THREADING_C)
@@ -407,9 +323,8 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
         goto cleanup;
 
     enc_len = ( enc_len_p[0] << 8 ) | enc_len_p[1];
-    tag = ticket + enc_len;
 
-    if( len != 4 + 12 + 2 + enc_len + 16 )
+    if( len != TICKET_MIN_LEN + enc_len )
     {
         ret = MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
         goto cleanup;
@@ -425,9 +340,13 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
     }
 
     /* Decrypt and authenticate */
-    if( ( ret = mbedtls_cipher_auth_decrypt( &key->ctx, iv, 12,
-                    key_name, 4 + 12 + 2, ticket, enc_len,
-                    ticket, &clear_len, tag, 16 ) ) != 0 )
+    if( ( ret = mbedtls_cipher_auth_decrypt_ext( &key->ctx,
+                    iv, TICKET_IV_BYTES,
+                    /* Additional data: key name, IV and length */
+                    key_name, TICKET_ADD_DATA_LEN,
+                    ticket, enc_len + TICKET_AUTH_TAG_BYTES,
+                    ticket, enc_len, &clear_len,
+                    TICKET_AUTH_TAG_BYTES ) ) != 0 )
     {
         if( ret == MBEDTLS_ERR_CIPHER_AUTH_FAILED )
             ret = MBEDTLS_ERR_SSL_INVALID_MAC;
@@ -441,7 +360,7 @@ int mbedtls_ssl_ticket_parse( void *p_ticket,
     }
 
     /* Actually load session */
-    if( ( ret = ssl_load_session( session, ticket, clear_len ) ) != 0 )
+    if( ( ret = mbedtls_ssl_session_load( session, ticket, clear_len ) ) != 0 )
         goto cleanup;
 
 #if defined(MBEDTLS_HAVE_TIME)

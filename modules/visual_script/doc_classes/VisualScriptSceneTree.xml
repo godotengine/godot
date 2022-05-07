@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptSceneTree" inherits="VisualScriptNode" version="3.2">
+<class name="VisualScriptSceneTree" inherits="VisualScriptNode" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		A Visual Script node for accessing [SceneTree] methods.
 	</brief_description>
 	<description>
+		A Visual Script node for accessing [SceneTree] methods.
 	</description>
 	<tutorials>
 	</tutorials>

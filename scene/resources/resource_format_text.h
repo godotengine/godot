@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 #include "scene/resources/packed_scene.h"
 
 class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
-
 	bool translation_remapped;
 	String local_path;
 	String res_path;
@@ -49,6 +48,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	VariantParser::StreamFile stream;
 
 	struct ExtResource {
+		RES cache;
 		String path;
 		String type;
 	};
@@ -61,6 +61,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	//Map<String,String> remaps;
 
 	Map<int, ExtResource> ext_resources;
+	Map<int, RES> int_resources;
 
 	int resources_total;
 	int resource_current;
@@ -85,7 +86,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	};
 
 	struct DummyReadData {
-
 		Map<RES, int> external_resources;
 		Map<int, RES> rev_external_resources;
 		Set<RES> resource_set;
@@ -102,7 +102,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
 	friend class ResourceFormatLoaderText;
 
-	List<RES> resource_cache;
 	Error error;
 
 	RES resource;
@@ -130,7 +129,7 @@ public:
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
 	static ResourceFormatLoaderText *singleton;
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -144,7 +143,6 @@ public:
 };
 
 class ResourceFormatSaverTextInstance {
-
 	String local_path;
 
 	Ref<PackedScene> packed_scene;

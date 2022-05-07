@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,10 +65,10 @@ int UPNPDevice::add_port_mapping(int port, int port_internal, String desc, Strin
 			itos(port).utf8().get_data(),
 			itos(port_internal).utf8().get_data(),
 			igd_our_addr.utf8().get_data(),
-			desc.empty() ? 0 : desc.utf8().get_data(),
+			desc.empty() ? nullptr : desc.utf8().get_data(),
 			proto.utf8().get_data(),
-			NULL, // Remote host, always NULL as IGDs don't support it
-			duration > 0 ? itos(duration).utf8().get_data() : 0);
+			nullptr, // Remote host, always NULL as IGDs don't support it
+			duration > 0 ? itos(duration).utf8().get_data() : nullptr);
 
 	ERR_FAIL_COND_V(i != UPNPCOMMAND_SUCCESS, UPNP::upnp_result(i));
 
@@ -84,7 +84,7 @@ int UPNPDevice::delete_port_mapping(int port, String proto) const {
 			igd_service_type.utf8().get_data(),
 			itos(port).utf8().get_data(),
 			proto.utf8().get_data(),
-			NULL // Remote host, always NULL as IGDs don't support it
+			nullptr // Remote host, always NULL as IGDs don't support it
 	);
 
 	ERR_FAIL_COND_V(i != UPNPCOMMAND_SUCCESS, UPNP::upnp_result(i));

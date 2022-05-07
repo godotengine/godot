@@ -8,6 +8,7 @@
 #include "LinearMath/btConvexHullComputer.cpp"
 #include "LinearMath/btQuickprof.cpp"
 #include "LinearMath/btThreads.cpp"
+#include "LinearMath/btReducedVector.cpp"
 #include "LinearMath/TaskScheduler/btTaskScheduler.cpp"
 #include "LinearMath/TaskScheduler/btThreadSupportPosix.cpp"
 #include "LinearMath/TaskScheduler/btThreadSupportWin32.cpp"

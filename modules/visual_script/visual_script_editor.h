@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,10 +133,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 		String name;
 		Variant::Type ret;
 		bool ret_variant;
-		Vector<Pair<Variant::Type, String> > args;
+		Vector<Pair<Variant::Type, String>> args;
 	};
 
-	HashMap<StringName, Ref<StyleBox> > node_styles;
+	HashMap<StringName, Ref<StyleBox>> node_styles;
 	StringName edited_func;
 	StringName default_func;
 
@@ -146,14 +146,14 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool updating_members;
 
 	void _update_members();
+	String _sanitized_variant_text(const StringName &property_name);
 
 	StringName selected;
 
 	String _validate_name(const String &p_name) const;
 
 	struct Clipboard {
-
-		Map<int, Ref<VisualScriptNode> > nodes;
+		Map<int, Ref<VisualScriptNode>> nodes;
 		Map<int, Vector2> nodes_positions;
 
 		Set<VisualScript::SequenceConnection> sequence_connections;
@@ -179,6 +179,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _port_action_menu(int p_option, const StringName &p_func);
 
+	NodePath drop_path;
+	Node *drop_node = nullptr;
+	Vector2 drop_position;
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
@@ -228,7 +231,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
+	Vector2 _get_pos_in_graph(Vector2 p_point) const;
+	Vector2 _get_available_pos(bool p_centered = true, Vector2 p_pos = Vector2()) const;
 	StringName _get_function_of_node(int p_id) const;
 
 	void _move_nodes_with_rescan(const StringName &p_func_from, const StringName &p_func_to, int p_id);
@@ -251,6 +255,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _node_item_selected();
 	void _node_item_unselected();
 
+	void _on_nodes_copy();
+	void _on_nodes_paste();
 	void _on_nodes_delete();
 	void _on_nodes_duplicate();
 
@@ -295,6 +301,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,13 +54,11 @@ const char *ScriptClassParser::token_names[ScriptClassParser::TK_MAX] = {
 };
 
 String ScriptClassParser::get_token_name(ScriptClassParser::Token p_token) {
-
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
 	return token_names[p_token];
 }
 
 ScriptClassParser::Token ScriptClassParser::get_token() {
-
 	while (true) {
 		switch (code[idx]) {
 			case '\n': {
@@ -181,14 +179,24 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						CharType res = 0;
 
 						switch (next) {
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
 							case 'r':
 								res = 13;
 								break;
-							case '\"': res = '\"'; break;
+							case '\"':
+								res = '\"';
+								break;
 							case '\\':
 								res = '\\';
 								break;
@@ -258,7 +266,6 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 }
 
 Error ScriptClassParser::_skip_generic_type_params() {
-
 	Token tk;
 
 	while (true) {
@@ -327,7 +334,6 @@ Error ScriptClassParser::_skip_generic_type_params() {
 }
 
 Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
-
 	Token tk = get_token();
 
 	if (tk != TK_IDENTIFIER) {
@@ -360,7 +366,6 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 }
 
 Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
-
 	String name;
 
 	Error err = _parse_type_full_name(name);
@@ -460,7 +465,6 @@ Error ScriptClassParser::_parse_type_constraints() {
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
-
 	Token tk = get_token();
 
 	if (tk == TK_IDENTIFIER) {
@@ -479,6 +483,9 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 	} else if (tk == TK_CURLY_BRACKET_OPEN) {
 		r_curly_stack++;
 		return OK;
+	} else if (tk == TK_SYMBOL && String(value) == ";") {
+		// for file-scoped namespace declaration
+		return OK;
 	} else {
 		error_str = "Unexpected token: " + get_token_name(tk);
 		error = true;
@@ -487,7 +494,6 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 }
 
 Error ScriptClassParser::parse(const String &p_code) {
-
 	code = p_code;
 	idx = 0;
 	line = 0;
@@ -635,15 +641,13 @@ static String get_preprocessor_directive(const String &p_line, int p_from) {
 	CRASH_COND(p_line[p_from] != '#');
 	p_from++;
 	int i = p_from;
-	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') ||
-										  (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
+	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') || (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
 		i++;
 	}
 	return p_line.substr(p_from, i - p_from);
 }
 
 static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
-
 	Vector<String> lines = r_source.split("\n", /* p_allow_empty: */ true);
 
 	bool *include_lines = memnew_arr(bool, lines.size());
@@ -710,16 +714,15 @@ static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 }
 
 Error ScriptClassParser::parse_file(const String &p_filepath) {
-
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					"File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
-											" Please ensure that scripts are saved in valid UTF-8 unicode." :
-					"Failed to read file: '" + p_filepath + "'.");
+			ferr == ERR_INVALID_DATA
+					? "File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											  " Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_filepath + "'.");
 
 	run_dummy_preprocessor(source, p_filepath);
 

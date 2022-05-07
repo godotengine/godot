@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,11 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/io/json.h"
-#include "core/os/copymem.h"
 #include "core/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
-GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = NULL;
+GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
 Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 	int read = 0;
@@ -48,10 +47,11 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK)
+			if (err != OK) {
 				return FAILED;
-			else if (read != 1) // Busy, wait until next poll
+			} else if (read != 1) { // Busy, wait until next poll
 				return ERR_BUSY;
+			}
 			char *r = (char *)req_buf;
 			int l = req_pos;
 
@@ -76,10 +76,11 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK)
+			if (err != OK) {
 				return FAILED;
-			else if (read != 1)
+			} else if (read != 1) {
 				return ERR_BUSY;
+			}
 			req_pos++;
 		}
 
@@ -146,7 +147,6 @@ String GDScriptLanguageProtocol::process_message(const String &p_text) {
 }
 
 String GDScriptLanguageProtocol::format_output(const String &p_text) {
-
 	String header = "Content-Length: ";
 	CharString charstr = p_text.utf8();
 	size_t len = charstr.length();
@@ -161,7 +161,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialized", "params"), &GDScriptLanguageProtocol::initialized);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
 	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
-	ClassDB::bind_method(D_METHOD("notify_client", "method", "params"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("notify_client", "method", "params", "client_id"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
 	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
 	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
@@ -169,7 +169,6 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-
 	lsp::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
@@ -184,7 +183,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace->root_uri = root_uri;
 	} else {
-
 		workspace->root_uri = "file://" + workspace->root;
 
 		Dictionary params;
@@ -194,7 +192,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != NULL) {
+		if (peer != nullptr) {
 			String msg = JSON::print(request);
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
@@ -211,12 +209,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-
 	lsp::GodotCapabilities capabilities;
 
 	DocData *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
-
 		lsp::GodotNativeClassInfo gdclass;
 		gdclass.name = E->get().name;
 		gdclass.class_doc = &(E->get());
@@ -233,26 +229,26 @@ void GDScriptLanguageProtocol::poll() {
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
-	const int *id = NULL;
+	const int *id = nullptr;
 	while ((id = clients.next(id))) {
 		Ref<LSPeer> peer = clients.get(*id);
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			on_client_disconnected(*id);
-			id = NULL;
+			id = nullptr;
 		} else {
 			if (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = *id;
 				Error err = peer->handle_data();
 				if (err != OK && err != ERR_BUSY) {
 					on_client_disconnected(*id);
-					id = NULL;
+					id = nullptr;
 				}
 			}
 			Error err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
 				on_client_disconnected(*id);
-				id = NULL;
+				id = nullptr;
 			}
 		}
 	}
@@ -263,7 +259,7 @@ Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *id = NULL;
+	const int *id = nullptr;
 	while ((id = clients.next(id))) {
 		Ref<LSPeer> peer = clients.get(*id);
 		peer->connection->disconnect_from_host();
@@ -280,9 +276,26 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == NULL);
+	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
+	String msg = JSON::print(message);
+	msg = format_output(msg);
+	peer->res_queue.push_back(msg.utf8());
+}
+
+void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
+		p_client_id = latest_client_id;
+	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
+	Ref<LSPeer> peer = clients.get(p_client_id);
+	ERR_FAIL_COND(peer == nullptr);
+
+	Dictionary message = make_request(p_method, p_params, next_server_id);
+	next_server_id++;
 	String msg = JSON::print(message);
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());

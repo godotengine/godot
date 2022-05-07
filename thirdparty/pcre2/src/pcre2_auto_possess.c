@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -292,6 +292,7 @@ possessification, and if so, fills a list with its properties.
 Arguments:
   code        points to start of expression
   utf         TRUE if in UTF mode
+  ucp         TRUE if in UCP mode
   fcc         points to the case-flipping table
   list        points to output list
               list[0] will be filled with the opcode
@@ -304,7 +305,7 @@ Returns:      points to the start of the next opcode if *code is accepted
 */
 
 static PCRE2_SPTR
-get_chr_property_list(PCRE2_SPTR code, BOOL utf, const uint8_t *fcc,
+get_chr_property_list(PCRE2_SPTR code, BOOL utf, BOOL ucp, const uint8_t *fcc,
   uint32_t *list)
 {
 PCRE2_UCHAR c = *code;
@@ -316,7 +317,8 @@ uint32_t chr;
 uint32_t *clist_dest;
 const uint32_t *clist_src;
 #else
-(void)utf;    /* Suppress "unused parameter" compiler warning */
+(void)utf;    /* Suppress "unused parameter" compiler warnings */
+(void)ucp;
 #endif
 
 list[0] = c;
@@ -396,7 +398,7 @@ switch(c)
   list[2] = chr;
 
 #ifdef SUPPORT_UNICODE
-  if (chr < 128 || (chr < 256 && !utf))
+  if (chr < 128 || (chr < 256 && !utf && !ucp))
     list[3] = fcc[chr];
   else
     list[3] = UCD_OTHERCASE(chr);
@@ -488,6 +490,7 @@ switch(c)
   list[2] = (uint32_t)(end - code);
   return end;
   }
+
 return NULL;    /* Opcode not accepted */
 }
 
@@ -503,6 +506,7 @@ which case the base cannot be possessified.
 Arguments:
   code        points to the byte code
   utf         TRUE in UTF mode
+  ucp         TRUE in UCP mode
   cb          compile data block
   base_list   the data list of the base opcode
   base_end    the end of the base opcode
@@ -512,7 +516,7 @@ Returns:      TRUE if the auto-possessification is possible
 */
 
 static BOOL
-compare_opcodes(PCRE2_SPTR code, BOOL utf, const compile_block *cb,
+compare_opcodes(PCRE2_SPTR code, BOOL utf, BOOL ucp, const compile_block *cb,
   const uint32_t *base_list, PCRE2_SPTR base_end, int *rec_limit)
 {
 PCRE2_UCHAR c;
@@ -651,7 +655,7 @@ for(;;)
 
     while (*next_code == OP_ALT)
       {
-      if (!compare_opcodes(code, utf, cb, base_list, base_end, rec_limit))
+      if (!compare_opcodes(code, utf, ucp, cb, base_list, base_end, rec_limit))
         return FALSE;
       code = next_code + 1 + LINK_SIZE;
       next_code += GET(next_code, 1);
@@ -672,7 +676,8 @@ for(;;)
     /* The bracket content will be checked by the OP_BRA/OP_CBRA case above. */
 
     next_code += 1 + LINK_SIZE;
-    if (!compare_opcodes(next_code, utf, cb, base_list, base_end, rec_limit))
+    if (!compare_opcodes(next_code, utf, ucp, cb, base_list, base_end,
+         rec_limit))
       return FALSE;
 
     code += PRIV(OP_lengths)[c];
@@ -688,7 +693,7 @@ for(;;)
   /* We now have the next appropriate opcode to compare with the base. Check
   for a supported opcode, and load its properties. */
 
-  code = get_chr_property_list(code, utf, cb->fcc, list);
+  code = get_chr_property_list(code, utf, ucp, cb->fcc, list);
   if (code == NULL) return FALSE;    /* Unsupported */
 
   /* If either opcode is a small character list, set pointers for comparing
@@ -1100,7 +1105,6 @@ leaving the remainder of the pattern unpossessified.
 
 Arguments:
   code        points to start of the byte code
-  utf         TRUE in UTF mode
   cb          compile data block
 
 Returns:      0 for success
@@ -1108,13 +1112,15 @@ Returns:      0 for success
 */
 
 int
-PRIV(auto_possessify)(PCRE2_UCHAR *code, BOOL utf, const compile_block *cb)
+PRIV(auto_possessify)(PCRE2_UCHAR *code, const compile_block *cb)
 {
 PCRE2_UCHAR c;
 PCRE2_SPTR end;
 PCRE2_UCHAR *repeat_opcode;
 uint32_t list[8];
 int rec_limit = 1000;  /* Was 10,000 but clang+ASAN uses a lot of stack. */
+BOOL utf = (cb->external_options & PCRE2_UTF) != 0;
+BOOL ucp = (cb->external_options & PCRE2_UCP) != 0;
 
 for (;;)
   {
@@ -1126,10 +1132,11 @@ for (;;)
     {
     c -= get_repeat_base(c) - OP_STAR;
     end = (c <= OP_MINUPTO) ?
-      get_chr_property_list(code, utf, cb->fcc, list) : NULL;
+      get_chr_property_list(code, utf, ucp, cb->fcc, list) : NULL;
     list[1] = c == OP_STAR || c == OP_PLUS || c == OP_QUERY || c == OP_UPTO;
 
-    if (end != NULL && compare_opcodes(end, utf, cb, list, end, &rec_limit))
+    if (end != NULL && compare_opcodes(end, utf, ucp, cb, list, end,
+        &rec_limit))
       {
       switch(c)
         {
@@ -1180,12 +1187,16 @@ for (;;)
     c = *repeat_opcode;
     if (c >= OP_CRSTAR && c <= OP_CRMINRANGE)
       {
-      /* end must not be NULL. */
-      end = get_chr_property_list(code, utf, cb->fcc, list);
+      /* The return from get_chr_property_list() will never be NULL when
+      *code (aka c) is one of the three class opcodes. However, gcc with
+      -fanalyzer notes that a NULL return is possible, and grumbles. Hence we
+      put in a check. */
 
+      end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
       list[1] = (c & 1) == 0;
 
-      if (compare_opcodes(end, utf, cb, list, end, &rec_limit))
+      if (end != NULL &&
+          compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
         {
         switch (c)
           {

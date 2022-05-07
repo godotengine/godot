@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,6 @@ public:                                                                         
 private:
 
 class Resource : public Reference {
-
 	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
 	RES_BASE_EXTENSION("res");
@@ -59,8 +58,6 @@ class Resource : public Reference {
 	String name;
 	String path_cache;
 	int subindex;
-
-	virtual bool _use_builtin_script() const { return true; }
 
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time;
@@ -104,8 +101,8 @@ public:
 	int get_subindex() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
-	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
-	void configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
+	void configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
@@ -148,23 +145,22 @@ typedef Ref<Resource> RES;
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; //need the lock
-	static RWLock *lock;
+	static RWLock lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
-	static HashMap<String, HashMap<String, int> > resource_path_cache; // each tscn has a set of resource paths and IDs
-	static RWLock *path_cache_lock;
+	static HashMap<String, HashMap<String, int>> resource_path_cache; // each tscn has a set of resource paths and IDs
+	static RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();
 	static void clear();
 	friend void register_core_types();
-	static void setup();
 
 public:
 	static void reload_externals();
 	static bool has(const String &p_path);
 	static Resource *get(const String &p_path);
-	static void dump(const char *p_file = NULL, bool p_short = false);
-	static void get_cached_resources(List<Ref<Resource> > *p_resources);
+	static void dump(const char *p_file = nullptr, bool p_short = false);
+	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };
 

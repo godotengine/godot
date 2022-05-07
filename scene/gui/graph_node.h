@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:
@@ -115,11 +114,23 @@ public:
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left = Ref<Texture>(), const Ref<Texture> &p_custom_right = Ref<Texture>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
+
 	bool is_slot_enabled_left(int p_idx) const;
+	void set_slot_enabled_left(int p_idx, bool p_enable_left);
+
+	void set_slot_type_left(int p_idx, int p_type_left);
 	int get_slot_type_left(int p_idx) const;
+
+	void set_slot_color_left(int p_idx, const Color &p_color_left);
 	Color get_slot_color_left(int p_idx) const;
+
 	bool is_slot_enabled_right(int p_idx) const;
+	void set_slot_enabled_right(int p_idx, bool p_enable_right);
+
+	void set_slot_type_right(int p_idx, int p_type_right);
 	int get_slot_type_right(int p_idx) const;
+
+	void set_slot_color_right(int p_idx, const Color &p_color_right);
 	Color get_slot_color_right(int p_idx) const;
 
 	void set_title(const String &p_title);

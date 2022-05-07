@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "os_x11.h"
 
 int main(int argc, char *argv[]) {
-
 	OS_X11 os;
 
 	setlocale(LC_CTYPE, "");
@@ -52,8 +51,9 @@ int main(int argc, char *argv[]) {
 		return 255;
 	}
 
-	if (Main::start())
+	if (Main::start()) {
 		os.run(); // it is actually the OS that decides how to run
+	}
 	Main::cleanup();
 
 	if (ret) { // Previous getcwd was successful

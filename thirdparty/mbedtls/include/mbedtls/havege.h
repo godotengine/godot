@@ -4,7 +4,7 @@
  * \brief HAVEGE: HArdware Volatile Entropy Gathering and Expansion
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,19 +18,18 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_HAVEGE_H
 #define MBEDTLS_HAVEGE_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 
 #define MBEDTLS_HAVEGE_COLLECT_SIZE 1024
 
@@ -43,9 +42,9 @@ extern "C" {
  */
 typedef struct mbedtls_havege_state
 {
-    int PT1, PT2, offset[2];
-    int pool[MBEDTLS_HAVEGE_COLLECT_SIZE];
-    int WALK[8192];
+    uint32_t PT1, PT2, offset[2];
+    uint32_t pool[MBEDTLS_HAVEGE_COLLECT_SIZE];
+    uint32_t WALK[8192];
 }
 mbedtls_havege_state;
 

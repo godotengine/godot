@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,10 @@ private:
 	int fixed_fps;
 	bool fractional_delta;
 
+#ifdef TOOLS_ENABLED
+	bool show_visibility_rect;
+#endif
+
 	Ref<Material> process_material;
 
 	DrawOrder draw_order;
@@ -86,6 +90,10 @@ public:
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
+
+#ifdef TOOLS_ENABLED
+	void set_show_visibility_rect(bool p_show_visibility_rect);
+#endif
 
 	bool is_emitting() const;
 	int get_amount() const;

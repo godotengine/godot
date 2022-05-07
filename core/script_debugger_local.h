@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,8 @@
 #include "core/script_language.h"
 
 class ScriptDebuggerLocal : public ScriptDebugger {
-
 	bool profiling;
-	float frame_time, idle_time, physics_time, physics_frame_time;
+	float frame_time, process_time, physics_time, physics_frame_time;
 	uint64_t idle_accum;
 	String target_function;
 	Map<String, String> options;
@@ -59,7 +58,7 @@ public:
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	virtual void profiling_set_frame_times(float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time);
 
 	ScriptDebuggerLocal();
 };

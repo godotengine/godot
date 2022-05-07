@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "core/ustring.h"
 
 class BindingsGenerator {
-
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
@@ -441,7 +440,6 @@ class BindingsGenerator {
 		}
 
 		TypeInterface() {
-
 			api_type = ClassDB::API_NONE;
 
 			is_enum = false;
@@ -510,7 +508,7 @@ class BindingsGenerator {
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName> > blacklisted_methods;
+	Map<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 
@@ -524,6 +522,7 @@ class BindingsGenerator {
 		StringName type_Reference;
 		StringName type_RID;
 		StringName type_String;
+		StringName type_NodePath;
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
 
@@ -548,6 +547,7 @@ class BindingsGenerator {
 			type_Reference = StaticCString::create("Reference");
 			type_RID = StaticCString::create("RID");
 			type_String = StaticCString::create("String");
+			type_NodePath = StaticCString::create("NodePath");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
 
@@ -573,7 +573,8 @@ class BindingsGenerator {
 	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
 		const List<InternalCall>::Element *it = p_list.front();
 		while (it) {
-			if (it->get().name == p_name) return it;
+			if (it->get().name == p_name)
+				return it;
 			it = it->next();
 		}
 		return NULL;

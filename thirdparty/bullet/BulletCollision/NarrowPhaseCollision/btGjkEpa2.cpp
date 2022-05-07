@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2008 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2008 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the
@@ -1049,7 +1049,8 @@ btScalar btGjkEpaSolver2::SignedDistance(const btVector3& position,
 		const btScalar length = delta.length();
 		results.normal = delta / length;
 		results.witnesses[0] += results.normal * margin;
-		return (length - margin);
+		results.distance = length - margin;
+		return results.distance;
 	}
 	else
 	{

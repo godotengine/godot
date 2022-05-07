@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,10 @@
 #include "i_mono_class_member.h"
 
 class GDMonoMethod : public IMonoClassMember {
-
 	StringName name;
 
-	int params_count;
+	uint16_t params_count;
+	unsigned int params_buffer_size;
 	ManagedType return_type;
 	Vector<ManagedType> param_types;
 
@@ -71,14 +71,14 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
 	void fetch_attributes();
 
-	_FORCE_INLINE_ MonoMethod *get_mono_ptr() { return mono_method; }
+	_FORCE_INLINE_ MonoMethod *get_mono_ptr() const { return mono_method; }
 
-	_FORCE_INLINE_ int get_parameters_count() { return params_count; }
-	_FORCE_INLINE_ ManagedType get_return_type() { return return_type; }
+	_FORCE_INLINE_ uint16_t get_parameters_count() const { return params_count; }
+	_FORCE_INLINE_ ManagedType get_return_type() const { return return_type; }
 
-	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL);
-	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL);
-	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
+	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL) const;
+	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL) const;
+	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL) const;
 
 	String get_full_name(bool p_signature = false) const;
 	String get_full_name_no_class() const;

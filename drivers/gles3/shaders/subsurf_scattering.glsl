@@ -8,7 +8,6 @@ layout(location = 4) in vec2 uv_in;
 out vec2 uv_interp;
 
 void main() {
-
 	uv_interp = uv_in;
 	gl_Position = vertex_attrib;
 }
@@ -102,7 +101,6 @@ uniform sampler2D source_depth; //texunit:2
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	float strength = texture(source_sss, uv_interp).r;
 	strength *= strength; //stored as sqrt
 
@@ -110,7 +108,6 @@ void main() {
 	vec4 base_color = texture(source_diffuse, uv_interp);
 
 	if (strength > 0.0) {
-
 		// Fetch linear depth of current pixel:
 		float depth = texture(source_depth, uv_interp).r * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION

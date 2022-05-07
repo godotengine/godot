@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 class CollisionObject2D;
 
 class TileMap : public Node2D {
-
 	GDCLASS(TileMap, Node2D);
 
 public:
@@ -80,9 +79,9 @@ private:
 	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
+	bool show_collision = false;
 
 	union PosKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -112,7 +111,6 @@ private:
 	};
 
 	union Cell {
-
 		struct {
 			int32_t id : 24;
 			bool flip_h : 1;
@@ -130,7 +128,6 @@ private:
 	List<PosKey> dirty_bitmask;
 
 	struct Quadrant {
-
 		Vector2 pos;
 		List<RID> canvas_items;
 		RID body;
@@ -139,7 +136,7 @@ private:
 		SelfList<Quadrant> dirty_list;
 
 		struct NavPoly {
-			int id;
+			RID region;
 			Transform2D xform;
 		};
 
@@ -152,6 +149,8 @@ private:
 		Map<PosKey, Occluder> occluder_instances;
 
 		VSet<PosKey> cells;
+
+		void clear_navpoly();
 
 		void operator=(const Quadrant &q) {
 			pos = q.pos;
@@ -257,7 +256,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	void set_cell(int p_x, int p_y, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false, Vector2 p_autotile_coord = Vector2());
+	void set_cell(int p_x, int p_y, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false, const Vector2 &p_autotile_coord = Vector2());
 	int get_cell(int p_x, int p_y) const;
 	bool is_cell_x_flipped(int p_x, int p_y) const;
 	bool is_cell_y_flipped(int p_x, int p_y) const;
@@ -266,7 +265,7 @@ public:
 	Vector2 get_cell_autotile_coord(int p_x, int p_y) const;
 
 	void _set_celld(const Vector2 &p_pos, const Dictionary &p_data);
-	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
+	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false, const Vector2 &p_autotile_coord = Vector2());
 	int get_cellv(const Vector2 &p_pos) const;
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
@@ -276,6 +275,9 @@ public:
 	void update_dirty_bitmask();
 
 	void update_dirty_quadrants();
+
+	void set_show_collision(bool p_value);
+	bool is_show_collision_enabled() const;
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

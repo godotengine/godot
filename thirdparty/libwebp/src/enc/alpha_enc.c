@@ -303,7 +303,7 @@ static int EncodeAlpha(VP8Encoder* const enc,
   int ok = 1;
   const int reduce_levels = (quality < 100);
 
-  // quick sanity checks
+  // quick correctness checks
   assert((uint64_t)data_size == (uint64_t)width * height);  // as per spec
   assert(enc != NULL && pic != NULL && pic->a != NULL);
   assert(output != NULL && output_size != NULL);
@@ -361,7 +361,7 @@ static int EncodeAlpha(VP8Encoder* const enc,
 //------------------------------------------------------------------------------
 // Main calls
 
-static int CompressAlphaJob(void* arg1, void* dummy) {
+static int CompressAlphaJob(void* arg1, void* unused) {
   VP8Encoder* const enc = (VP8Encoder*)arg1;
   const WebPConfig* config = enc->config_;
   uint8_t* alpha_data = NULL;
@@ -375,13 +375,13 @@ static int CompressAlphaJob(void* arg1, void* dummy) {
                    filter, effort_level, &alpha_data, &alpha_size)) {
     return 0;
   }
-  if (alpha_size != (uint32_t)alpha_size) {  // Sanity check.
+  if (alpha_size != (uint32_t)alpha_size) {  // Soundness check.
     WebPSafeFree(alpha_data);
     return 0;
   }
   enc->alpha_data_size_ = (uint32_t)alpha_size;
   enc->alpha_data_ = alpha_data;
-  (void)dummy;
+  (void)unused;
   return 1;
 }
 

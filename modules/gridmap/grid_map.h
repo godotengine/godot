@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,8 +39,9 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
-class GridMap : public Spatial {
+class PhysicsMaterial;
 
+class GridMap : public Spatial {
 	GDCLASS(GridMap, Spatial);
 
 	enum {
@@ -49,7 +50,6 @@ class GridMap : public Spatial {
 	};
 
 	union IndexKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -58,7 +58,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -69,7 +68,6 @@ class GridMap : public Spatial {
 	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
 	 */
 	union Cell {
-
 		struct {
 			unsigned int item : 16;
 			unsigned int rot : 5;
@@ -89,9 +87,8 @@ class GridMap : public Spatial {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-
 		struct NavMesh {
-			int id;
+			RID region;
 			Transform xform;
 		};
 
@@ -118,7 +115,6 @@ class GridMap : public Spatial {
 	};
 
 	union OctantKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -129,7 +125,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -139,6 +134,7 @@ class GridMap : public Spatial {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
+	Ref<PhysicsMaterial> physics_material;
 
 	Transform last_transform;
 
@@ -158,6 +154,7 @@ class GridMap : public Spatial {
 	Vector3::Axis clip_axis;
 
 	Ref<MeshLibrary> mesh_library;
+	bool use_in_baked_light;
 
 	Map<OctantKey, Octant *> octant_map;
 	Map<IndexKey, Cell> cell_map;
@@ -165,7 +162,6 @@ class GridMap : public Spatial {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-
 		VS::LightType type;
 		Vector3 pos;
 		Vector3 dir;
@@ -173,7 +169,6 @@ class GridMap : public Spatial {
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
-
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
@@ -227,8 +222,16 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
+	void set_physics_material(Ref<PhysicsMaterial> p_material);
+	Ref<PhysicsMaterial> get_physics_material() const;
+
+	Array get_collision_shapes() const;
+
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
+
+	void set_use_in_baked_light(bool p_use_baked_light);
+	bool get_use_in_baked_light() const;
 
 	void set_cell_size(const Vector3 &p_size);
 	Vector3 get_cell_size() const;
@@ -256,8 +259,9 @@ public:
 	float get_cell_scale() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_item(int p_item) const;
 
-	Array get_meshes();
+	Array get_meshes() const;
 
 	void clear_baked_meshes();
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);

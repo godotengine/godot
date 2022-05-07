@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,10 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
-#include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
-//#include "power_android.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 
@@ -45,43 +42,16 @@ class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
 class OS_Android : public OS_Unix {
-public:
-	struct TouchPos {
-		int id;
-		Point2 pos;
-	};
-
-	enum {
-		JOY_EVENT_BUTTON = 0,
-		JOY_EVENT_AXIS = 1,
-		JOY_EVENT_HAT = 2
-	};
-
-	struct JoypadEvent {
-
-		int device;
-		int type;
-		int index;
-		bool pressed;
-		float value;
-		int hat;
-	};
-
-private:
-	Vector<TouchPos> touch;
-	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
-
 	bool use_gl2;
 	bool use_apk_expansion;
 
-	bool use_16bits_fbo;
+	bool secondary_gl_available = false;
 
 	VisualServer *visual_server;
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
-	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
 
 	const char *gl_extensions;
@@ -97,7 +67,11 @@ private:
 
 	int video_driver_index;
 
+	bool transparency_enabled = false;
+
 public:
+	static const char *ANDROID_EXEC_PATH;
+
 	// functions used by main to initialize/deinitialize the OS
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
@@ -117,7 +91,6 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 
@@ -142,6 +115,8 @@ public:
 	virtual void set_keep_screen_on(bool p_enabled);
 
 	virtual Size2 get_window_size() const;
+	virtual Rect2 get_window_safe_area() const;
+	virtual Array get_display_cutouts() const;
 
 	virtual String get_name() const;
 	virtual MainLoop *get_main_loop() const;
@@ -149,8 +124,7 @@ public:
 	virtual bool can_draw() const;
 
 	void main_loop_begin();
-	bool main_loop_iterate();
-	void main_loop_request_go_back();
+	bool main_loop_iterate(bool *r_should_swap_buffers = nullptr);
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -158,55 +132,63 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
 	void set_opengl_extensions(const char *p_gl_extensions);
 	void set_display_size(Size2 p_size);
 
-	void set_context_is_16_bits(bool p_is_16);
+	void set_offscreen_gl_available(bool p_available);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
+	virtual ScreenOrientation get_screen_orientation() const;
 
 	virtual Error shell_open(String p_uri);
+	virtual String get_executable_path() const;
 	virtual String get_user_data_dir() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual bool has_clipboard() const;
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
+	virtual float get_screen_refresh_rate(int p_screen = 0) const;
+
+	virtual bool get_window_per_pixel_transparency_enabled() const { return transparency_enabled; }
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) { ERR_FAIL_MSG("Setting per-pixel transparency is not supported at runtime, please set it in project settings instead."); }
 
 	virtual String get_unique_id() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_double_tap(Point2 p_pos);
-	void process_scroll(Point2 p_pos);
-	void process_joy_event(JoypadEvent p_event);
-	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
-
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-	virtual bool native_video_is_playing() const;
-	virtual void native_video_pause();
-	virtual void native_video_stop();
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
-	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 	void vibrate_handheld(int p_duration_ms);
+
+	virtual String get_config_path() const;
+
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
+
+private:
+	Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id);
 };
 
 #endif

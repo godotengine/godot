@@ -4,7 +4,7 @@
  *
  *   Auto-fitter Unicode script ranges (body).
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -660,6 +660,18 @@
     AF_UNIRANGE_REC(  0x0D3B,  0x0D3C ),
     AF_UNIRANGE_REC(  0x0D4D,  0x0D4E ),
     AF_UNIRANGE_REC(  0x0D62,  0x0D63 ),
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+
+  const AF_Script_UniRangeRec  af_medf_uniranges[] =
+  {
+    AF_UNIRANGE_REC( 0x16E40, 0x16E9F ),  /* Medefaidrin */
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+  const AF_Script_UniRangeRec  af_medf_nonbase_uniranges[] =
+  {
     AF_UNIRANGE_REC(       0,       0 )
   };
 

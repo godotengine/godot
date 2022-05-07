@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Button" inherits="BaseButton" version="3.2">
+<class name="Button" inherits="BaseButton" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Standard themed Button.
 	</brief_description>
 	<description>
 		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
+		[b]Example of creating a button and assigning an action when pressed by code:[/b]
+		[codeblock]
+		func _ready():
+		    var button = Button.new()
+		    button.text = "Click me"
+		    button.connect("pressed", self, "_button_pressed")
+		    add_child(button)
+
+		func _button_pressed():
+		    print("Hello world!")
+		[/codeblock]
+		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
+		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions, as [TouchScreenButton] supports multitouch.
 	</description>
 	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 	</methods>
@@ -25,6 +41,10 @@
 		</member>
 		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
+			To edit margin and spacing of the icon, use [code]hseparation[/code] theme property of [Button] and [code]content_margin_*[/code] properties of the used [StyleBox]es.
+		</member>
+		<member name="icon_align" type="int" setter="set_icon_align" getter="get_icon_align" enum="Button.TextAlign" default="0">
+			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum TextAlign] constants as the text alignment. If centered, text will draw on top of the icon.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
@@ -42,37 +62,40 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="disabled" type="StyleBox">
-			[StyleBox] used when the [Button] is disabled.
-		</theme_item>
-		<theme_item name="focus" type="StyleBox">
-			[StyleBox] used when the [Button] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
-		</theme_item>
-		<theme_item name="font" type="Font">
-			[Font] of the [Button]'s text.
-		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [Button].
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+		<theme_item name="font_color_disabled" data_type="color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			Text [Color] used when the [Button] is disabled.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_color_focus" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] used when the [Button] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
+		<theme_item name="font_color_hover" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [Button] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_color_pressed" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="hover" type="StyleBox">
-			[StyleBox] used when the [Button] is being hovered.
-		</theme_item>
-		<theme_item name="hseparation" type="int" default="2">
+		<theme_item name="hseparation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
 		</theme_item>
-		<theme_item name="normal" type="StyleBox">
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [Button]'s text.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is disabled.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being hovered.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [Button].
 		</theme_item>
-		<theme_item name="pressed" type="StyleBox">
+		<theme_item name="pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is being pressed.
 		</theme_item>
 	</theme_items>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "core/os/file_access.h"
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
-
 	bool translation_remapped;
 	String local_path;
 	String res_path;
@@ -101,7 +100,7 @@ public:
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -111,7 +110,6 @@ public:
 };
 
 class ResourceFormatSaverBinaryInstance {
-
 	String local_path;
 	String path;
 
@@ -144,7 +142,6 @@ class ResourceFormatSaverBinaryInstance {
 	};
 
 	struct ResourceData {
-
 		String type;
 		List<Property> properties;
 	};

@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -265,6 +265,7 @@ enum bt6DofFlags2
 	BT_6DOF_FLAGS_ERP_STOP2 = 2,
 	BT_6DOF_FLAGS_CFM_MOTO2 = 4,
 	BT_6DOF_FLAGS_ERP_MOTO2 = 8,
+	BT_6DOF_FLAGS_USE_INFINITE_ERROR = (1<<16)
 };
 #define BT_6DOF_FLAGS_AXIS_SHIFT2 4  // bits per axis
 

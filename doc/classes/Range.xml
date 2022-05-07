@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Range" inherits="Control" version="3.2">
+<class name="Range" inherits="Control" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for range-based controls.
 	</brief_description>
@@ -10,19 +10,16 @@
 	</tutorials>
 	<methods>
 		<method name="share">
-			<return type="void">
-			</return>
-			<argument index="0" name="with" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="with" type="Node" />
 			<description>
-				Binds two ranges together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
+				Binds two [Range]s together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Stops range from sharing its member variables with any other.
+				Stops the [Range] from sharing its member variables with any other.
 			</description>
 		</method>
 	</methods>
@@ -65,10 +62,10 @@
 			</description>
 		</signal>
 		<signal name="value_changed">
-			<argument index="0" name="value" type="float">
-			</argument>
+			<argument index="0" name="value" type="float" />
 			<description>
-				Emitted when [member value] changes.
+				Emitted when [member value] changes. When used on a [Slider], this is called continuously while dragging (potentially every frame). If you are performing an expensive operation in a function connected to [signal value_changed], consider using a [i]debouncing[/i] [Timer] to call the function less often.
+				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [code]value[/code] is set directly via code.
 			</description>
 		</signal>
 	</signals>

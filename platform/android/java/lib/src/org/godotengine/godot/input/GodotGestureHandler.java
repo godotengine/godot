@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@ package org.godotengine.godot.input;
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotView;
 
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
@@ -42,7 +41,6 @@ import android.view.MotionEvent;
  * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
  */
 public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
-
 	private final GodotView godotView;
 
 	public GodotGestureHandler(GodotView godotView) {
@@ -76,12 +74,8 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onDoubleTap");
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.doubletap(x, y);
-			}
-		});
+		final int buttonMask = event.getButtonState();
+		GodotLib.doubleTap(buttonMask, x, y);
 		return true;
 	}
 
@@ -90,12 +84,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onScroll");
 		final int x = Math.round(distanceX);
 		final int y = Math.round(distanceY);
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.scroll(x, y);
-			}
-		});
+		GodotLib.scroll(x, y);
 		return true;
 	}
 

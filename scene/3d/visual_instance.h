@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,11 @@
 
 #include "core/math/face3.h"
 #include "core/rid.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/cull_instance.h"
 #include "scene/resources/material.h"
 
-class VisualInstance : public Spatial {
-
-	GDCLASS(VisualInstance, Spatial);
+class VisualInstance : public CullInstance {
+	GDCLASS(VisualInstance, CullInstance);
 	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID base;
@@ -49,6 +48,9 @@ class VisualInstance : public Spatial {
 
 protected:
 	void _update_visibility();
+	virtual void _refresh_portal_mode();
+	virtual void _physics_interpolated_changed();
+	void set_instance_use_identity_transform(bool p_enable);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -58,7 +60,6 @@ public:
 		FACES_SOLID = 1, // solid geometry
 		FACES_ENCLOSING = 2,
 		FACES_DYNAMIC = 4 // dynamic object geometry
-
 	};
 
 	RID get_instance() const;
@@ -81,7 +82,6 @@ public:
 };
 
 class GeometryInstance : public VisualInstance {
-
 	GDCLASS(GeometryInstance, VisualInstance);
 
 public:
@@ -89,6 +89,14 @@ public:
 		FLAG_USE_BAKED_LIGHT = VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
 		FLAG_DRAW_NEXT_FRAME_IF_VISIBLE = VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
 		FLAG_MAX = VS::INSTANCE_FLAG_MAX,
+	};
+
+	enum LightmapScale {
+		LIGHTMAP_SCALE_1X,
+		LIGHTMAP_SCALE_2X,
+		LIGHTMAP_SCALE_4X,
+		LIGHTMAP_SCALE_8X,
+		LIGHTMAP_SCALE_MAX,
 	};
 
 	enum ShadowCastingSetting {
@@ -100,8 +108,11 @@ public:
 
 private:
 	bool flags[FLAG_MAX];
+	bool generate_lightmap;
+	LightmapScale lightmap_scale;
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 	float lod_min_distance;
 	float lod_max_distance;
 	float lod_min_hysteresis;
@@ -120,6 +131,12 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
+	void set_generate_lightmap(bool p_enabled);
+	bool get_generate_lightmap();
+
+	void set_lightmap_scale(LightmapScale p_scale);
+	LightmapScale get_lightmap_scale() const;
+
 	void set_lod_min_distance(float p_dist);
 	float get_lod_min_distance() const;
 
@@ -132,8 +149,11 @@ public:
 	void set_lod_max_hysteresis(float p_dist);
 	float get_lod_max_hysteresis() const;
 
-	void set_material_override(const Ref<Material> &p_material);
+	virtual void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	virtual void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
@@ -144,6 +164,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(GeometryInstance::Flags);
+VARIANT_ENUM_CAST(GeometryInstance::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
 
 #endif

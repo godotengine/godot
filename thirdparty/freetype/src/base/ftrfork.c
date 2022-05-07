@@ -4,7 +4,7 @@
  *
  *   Embedded resource forks accessor (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * Masatake YAMATO and Redhat K.K.
  *
  * FT_Raccess_Get_HeaderInfo() and raccess_guess_darwin_hfsplus() are
@@ -24,10 +24,9 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_RFORK_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftrfork.h>
 
 #include "ftbase.h"
 
@@ -168,16 +167,11 @@
   }
 
 
-  static int
-  ft_raccess_sort_ref_by_id( FT_RFork_Ref*  a,
-                             FT_RFork_Ref*  b )
+  FT_COMPARE_DEF( int )
+  ft_raccess_sort_ref_by_id( const void*  a,
+                             const void*  b )
   {
-    if ( a->res_id < b->res_id )
-      return -1;
-    else if ( a->res_id > b->res_id )
-      return 1;
-    else
-      return 0;
+    return  ( (FT_RFork_Ref*)a )->res_id - ( (FT_RFork_Ref*)b )->res_id;
   }
 
 
@@ -240,7 +234,7 @@
                   (char)( 0xFF & ( tag_internal >> 16 ) ),
                   (char)( 0xFF & ( tag_internal >>  8 ) ),
                   (char)( 0xFF & ( tag_internal >>  0 ) ) ));
-      FT_TRACE3(( "             : subcount=%d, suboffset=0x%04x\n",
+      FT_TRACE3(( "             : subcount=%d, suboffset=0x%04lx\n",
                   subcnt, rpos ));
 
       if ( tag_internal == tag )
@@ -257,7 +251,7 @@
         if ( error )
           return error;
 
-        if ( FT_NEW_ARRAY( ref, *count ) )
+        if ( FT_QNEW_ARRAY( ref, *count ) )
           return error;
 
         for ( j = 0; j < *count; j++ )
@@ -286,7 +280,7 @@
           ref[j].offset = temp & 0xFFFFFFL;
 
           FT_TRACE3(( "             [%d]:"
-                      " resource_id=0x%04x, offset=0x%08x\n",
+                      " resource_id=0x%04x, offset=0x%08lx\n",
                       j, (FT_UShort)ref[j].res_id, ref[j].offset ));
         }
 
@@ -295,18 +289,17 @@
           ft_qsort( ref,
                     (size_t)*count,
                     sizeof ( FT_RFork_Ref ),
-                    ( int(*)(const void*,
-                             const void*) )ft_raccess_sort_ref_by_id );
+                    ft_raccess_sort_ref_by_id );
 
           FT_TRACE3(( "             -- sort resources by their ids --\n" ));
 
           for ( j = 0; j < *count; j++ )
             FT_TRACE3(( "             [%d]:"
-                        " resource_id=0x%04x, offset=0x%08x\n",
+                        " resource_id=0x%04x, offset=0x%08lx\n",
                         j, ref[j].res_id, ref[j].offset ));
         }
 
-        if ( FT_NEW_ARRAY( offsets_internal, *count ) )
+        if ( FT_QNEW_ARRAY( offsets_internal, *count ) )
           goto Exit;
 
         /* XXX: duplicated reference ID,
@@ -609,7 +602,7 @@
     if ( base_file_len + 6 > FT_INT_MAX )
       return FT_THROW( Array_Too_Large );
 
-    if ( FT_ALLOC( newpath, base_file_len + 6 ) )
+    if ( FT_QALLOC( newpath, base_file_len + 6 ) )
       return error;
 
     FT_MEM_COPY( newpath, base_file_name, base_file_len );
@@ -645,7 +638,7 @@
     if ( base_file_len + 18 > FT_INT_MAX )
       return FT_THROW( Array_Too_Large );
 
-    if ( FT_ALLOC( newpath, base_file_len + 18 ) )
+    if ( FT_QALLOC( newpath, base_file_len + 18 ) )
       return error;
 
     FT_MEM_COPY( newpath, base_file_name, base_file_len );
@@ -881,7 +874,7 @@
 
 
     new_length = ft_strlen( original_name ) + ft_strlen( insertion );
-    if ( FT_ALLOC( new_name, new_length + 1 ) )
+    if ( FT_QALLOC( new_name, new_length + 1 ) )
       return NULL;
 
     tmp = ft_strrchr( original_name, '/' );

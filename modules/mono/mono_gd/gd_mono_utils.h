@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,9 @@
 #include "../utils/macros.h"
 #include "../utils/thread_local.h"
 #include "gd_mono_header.h"
+#ifdef JAVASCRIPT_ENABLED
+#include "gd_mono_wasm_m2n.h"
+#endif
 
 #include "core/object.h"
 #include "core/reference.h"
@@ -58,6 +61,8 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
 bool type_is_generic_icollection(MonoReflectionType *p_reftype);
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
+
+void get_generic_type_definition(MonoReflectionType *p_reftype, MonoReflectionType **r_generic_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
@@ -132,7 +137,6 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 }
 
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
 MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
@@ -151,6 +155,21 @@ private:
 	MonoThread *mono_thread;
 };
 
+template <typename... P>
+void add_internal_call(const char *p_name, void (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolines<P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
+
+template <typename R, typename... P>
+void add_internal_call(const char *p_name, R (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolinesR<R, P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL)))

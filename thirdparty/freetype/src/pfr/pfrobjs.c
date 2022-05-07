@@ -4,7 +4,7 @@
  *
  *   FreeType PFR object methods (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,10 +21,10 @@
 #include "pfrgload.h"
 #include "pfrcmap.h"
 #include "pfrsbit.h"
-#include FT_OUTLINE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_TRUETYPE_IDS_H
+#include <freetype/ftoutln.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/ttnameid.h>
 
 #include "pfrerror.h"
 
@@ -83,7 +83,11 @@
     /* load the header and check it */
     error = pfr_header_load( &face->header, stream );
     if ( error )
+    {
+      FT_TRACE2(( "  not a PFR font\n" ));
+      error = FT_THROW( Unknown_File_Format );
       goto Exit;
+    }
 
     if ( !pfr_header_check( &face->header ) )
     {
@@ -213,7 +217,7 @@
         FT_Memory        memory = pfrface->stream->memory;
 
 
-        if ( FT_NEW_ARRAY( pfrface->available_sizes, count ) )
+        if ( FT_QNEW_ARRAY( pfrface->available_sizes, count ) )
           goto Exit;
 
         size   = pfrface->available_sizes;

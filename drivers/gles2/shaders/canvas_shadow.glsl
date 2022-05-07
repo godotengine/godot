@@ -21,7 +21,6 @@ uniform highp float distance_norm;
 varying highp vec4 position_interp;
 
 void main() {
-
 	gl_Position = projection_matrix * (light_matrix * (world_matrix * vec4(vertex, 1.0)));
 	position_interp = gl_Position;
 }
@@ -47,7 +46,6 @@ varying highp vec4 position_interp;
 /* clang-format on */
 
 void main() {
-
 	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
 
 #ifdef USE_RGBA_SHADOWS

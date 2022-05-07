@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +69,8 @@ public:
 	virtual int get_max_retransmits() const = 0;
 	virtual String get_protocol() const = 0;
 	virtual bool is_negotiated() const = 0;
+
+	virtual int get_buffered_amount() const = 0;
 
 	virtual Error poll() = 0;
 	virtual void close() = 0;

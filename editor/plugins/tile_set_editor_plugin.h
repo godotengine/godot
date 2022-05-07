@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 class TilesetEditorContext;
 
 class TileSetEditor : public HSplitContainer {
-
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
@@ -114,7 +113,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<RID, Ref<Texture> > texture_map;
+	Map<String, Ref<Texture>> texture_map;
 
 	bool creating_shape;
 	int dragging_point;
@@ -174,11 +173,9 @@ class TileSetEditor : public HSplitContainer {
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
 
-	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();
@@ -216,6 +213,7 @@ private:
 	void _select_previous_tile();
 	Array _get_tiles_in_current_texture(bool sorted = false);
 	bool _sort_tiles(Variant p_a, Variant p_b);
+	Vector2 _get_subtiles_count(int p_tile_id);
 	void _select_next_subtile();
 	void _select_previous_subtile();
 	void _select_next_shape();
@@ -232,6 +230,7 @@ private:
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();
+	void _zoom_on_position(float p_zoom, const Vector2 &p_position);
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
@@ -253,7 +252,6 @@ private:
 };
 
 class TilesetEditorContext : public Object {
-
 	friend class TileSetEditor;
 	GDCLASS(TilesetEditorContext, Object);
 
@@ -279,7 +277,6 @@ public:
 };
 
 class TileSetEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;

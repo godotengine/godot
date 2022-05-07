@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -61,7 +61,8 @@ public:
 	virtual void cleanOverlappingPair(btBroadphasePair& pair, btDispatcher* dispatcher) = 0;
 
 	virtual int getNumOverlappingPairs() const = 0;
-
+	virtual bool needsBroadphaseCollision(btBroadphaseProxy * proxy0, btBroadphaseProxy * proxy1) const = 0;
+	virtual btOverlapFilterCallback* getOverlapFilterCallback() = 0;
 	virtual void cleanProxyFromPairs(btBroadphaseProxy* proxy, btDispatcher* dispatcher) = 0;
 
 	virtual void setOverlapFilterCallback(btOverlapFilterCallback* callback) = 0;
@@ -380,6 +381,14 @@ public:
 	{
 	}
 
+	bool needsBroadphaseCollision(btBroadphaseProxy*, btBroadphaseProxy*) const
+	{
+		return true;
+	}
+	btOverlapFilterCallback* getOverlapFilterCallback()
+	{
+		return 0;
+	}
 	virtual void setOverlapFilterCallback(btOverlapFilterCallback* /*callback*/)
 	{
 	}

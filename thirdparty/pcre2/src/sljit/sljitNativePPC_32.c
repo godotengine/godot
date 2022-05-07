@@ -119,9 +119,10 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, ADDIC | D(dst) | A(src1) | compiler->imm);
 		}
+		SLJIT_ASSERT(!(flags & ALT_FORM4));
 		if (!(flags & ALT_SET_FLAGS))
 			return push_inst(compiler, ADD | D(dst) | A(src1) | B(src2));
-		if (flags & ALT_FORM4)
+		if (flags & ALT_FORM5)
 			return push_inst(compiler, ADDC | RC(ALT_SET_FLAGS) | D(dst) | A(src1) | B(src2));
 		return push_inst(compiler, ADD | RC(flags) | D(dst) | A(src1) | B(src2));
 
@@ -143,22 +144,27 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		}
 
 		if (flags & ALT_FORM2) {
+			if (flags & ALT_FORM3) {
+				FAIL_IF(push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm));
+				if (!(flags & ALT_FORM4))
+					return SLJIT_SUCCESS;
+				return push_inst(compiler, ADDI | D(dst) | A(src1) | (-compiler->imm & 0xffff));
+			}
+			FAIL_IF(push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2)));
+			if (!(flags & ALT_FORM4))
+				return SLJIT_SUCCESS;
+			return push_inst(compiler, SUBF | D(dst) | A(src2) | B(src1));
+		}
+
+		if (flags & ALT_FORM3) {
 			/* Setting XER SO is not enough, CR SO is also needed. */
 			return push_inst(compiler, SUBF | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
 		}
 
-		if (flags & ALT_FORM3) {
+		if (flags & ALT_FORM4) {
 			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, SUBFIC | D(dst) | A(src1) | compiler->imm);
-		}
-
-		if (flags & ALT_FORM4) {
-			if (flags & ALT_FORM5) {
-				SLJIT_ASSERT(src2 == TMP_REG2);
-				return push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm);
-			}
-			return push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2));
 		}
 
 		if (!(flags & ALT_SET_FLAGS))
@@ -258,21 +264,18 @@ static SLJIT_INLINE sljit_s32 emit_const(struct sljit_compiler *compiler, sljit_
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)
 {
 	sljit_ins *inst = (sljit_ins *)addr;
+	SLJIT_UNUSED_ARG(executable_offset);
 
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
 	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
 	inst[0] = (inst[0] & 0xffff0000) | ((new_target >> 16) & 0xffff);
 	inst[1] = (inst[1] & 0xffff0000) | (new_target & 0xffff);
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 2);
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset)
 {
-	sljit_ins *inst = (sljit_ins *)addr;
-
-	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
-	inst[0] = (inst[0] & 0xffff0000) | ((new_constant >> 16) & 0xffff);
-	inst[1] = (inst[1] & 0xffff0000) | (new_constant & 0xffff);
-	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
-	SLJIT_CACHE_FLUSH(inst, inst + 2);
+	sljit_set_jump_addr(addr, new_constant, executable_offset);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,7 +233,8 @@
 		cmd->method = p_method;                                              \
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
 		unlock();                                                            \
-		if (sync) sync->post();                                              \
+		if (sync)                                                            \
+			sync->post();                                                    \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -249,8 +250,9 @@
 		cmd->ret = r_ret;                                                                      \
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
-		if (sync) sync->post();                                                                \
-		ss->sem->wait();                                                                       \
+		if (sync)                                                                              \
+			sync->post();                                                                      \
+		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
 
@@ -266,41 +268,38 @@
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
-		if (sync) sync->post();                                                       \
-		ss->sem->wait();                                                              \
+		if (sync)                                                                     \
+			sync->post();                                                             \
+		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
 
 #define MAX_CMD_PARAMS 13
 
 class CommandQueueMT {
-
 	struct SyncSemaphore {
-
-		Semaphore *sem;
+		Semaphore sem;
 		bool in_use;
 	};
 
 	struct CommandBase {
-
 		virtual void call() = 0;
 		virtual void post(){};
 		virtual ~CommandBase(){};
 	};
 
 	struct SyncCommand : public CommandBase {
-
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
-			sync_sem->sem->post();
+			sync_sem->sem.post();
 		}
 	};
 
 	DECL_CMD(0)
 	SPACE_SEP_LIST(DECL_CMD, 13)
 
-	/* comands that return */
+	/* commands that return */
 	DECL_CMD_RET(0)
 	SPACE_SEP_LIST(DECL_CMD_RET, 13)
 
@@ -311,41 +310,43 @@ class CommandQueueMT {
 	/***** BASE *******/
 
 	enum {
-		COMMAND_MEM_SIZE_KB = 256,
-		COMMAND_MEM_SIZE = COMMAND_MEM_SIZE_KB * 1024,
+		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
 		SYNC_SEMAPHORES = 8
 	};
 
 	uint8_t *command_mem;
-	uint32_t read_ptr;
-	uint32_t write_ptr;
+	uint32_t read_ptr_and_epoch;
+	uint32_t write_ptr_and_epoch;
 	uint32_t dealloc_ptr;
+	uint32_t command_mem_size;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
-	Mutex *mutex;
+	Mutex mutex;
 	Semaphore *sync;
 
 	template <class T>
 	T *allocate() {
-
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
+		// Assert that the buffer is big enough to hold at least two messages.
+		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, nullptr);
+
 	tryagain:
+		uint32_t write_ptr = write_ptr_and_epoch >> 1;
 
 		if (write_ptr < dealloc_ptr) {
 			// behind dealloc_ptr, check that there is room
 			if ((dealloc_ptr - write_ptr) <= alloc_size) {
-
 				// There is no more room, try to deallocate something
 				if (dealloc_one()) {
 					goto tryagain;
 				}
-				return NULL;
+				return nullptr;
 			}
 		} else {
 			// ahead of dealloc_ptr, check that there is room
 
-			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {
+			if ((command_mem_size - write_ptr) < alloc_size + sizeof(uint32_t)) {
 				// no room at the end, wrap down;
 
 				if (dealloc_ptr == 0) { // don't want write_ptr to become dealloc_ptr
@@ -354,16 +355,21 @@ class CommandQueueMT {
 					if (dealloc_one()) {
 						goto tryagain;
 					}
-					return NULL;
+					return nullptr;
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
-				*p = 0;
-				write_ptr = 0;
+				*p = 1;
+				write_ptr_and_epoch = 0 | (1 & ~write_ptr_and_epoch); // Invert epoch.
+				// See if we can get the thread to run and clear up some more space while we wait.
+				// This is required if alloc_size * 2 + 4 > COMMAND_MEM_SIZE
+				if (sync) {
+					sync->post();
+				}
 				goto tryagain;
 			}
 		}
@@ -377,17 +383,16 @@ class CommandQueueMT {
 		// allocate the command
 		T *cmd = memnew_placement(&command_mem[write_ptr], T);
 		write_ptr += size;
+		write_ptr_and_epoch = (write_ptr << 1) | (write_ptr_and_epoch & 1);
 		return cmd;
 	}
 
 	template <class T>
 	T *allocate_and_lock() {
-
 		lock();
 		T *ret;
 
-		while ((ret = allocate<T>()) == NULL) {
-
+		while ((ret = allocate<T>()) == nullptr) {
 			unlock();
 			// sleep a little until fetch happened and some room is made
 			wait_for_flush();
@@ -398,21 +403,27 @@ class CommandQueueMT {
 	}
 
 	bool flush_one(bool p_lock = true) {
-		if (p_lock) lock();
+		if (p_lock) {
+			lock();
+		}
 	tryagain:
 
 		// tried to read an empty queue
-		if (read_ptr == write_ptr) {
-			if (p_lock) unlock();
+		if (read_ptr_and_epoch == write_ptr_and_epoch) {
+			if (p_lock) {
+				unlock();
+			}
 			return false;
 		}
 
+		uint32_t read_ptr = read_ptr_and_epoch >> 1;
 		uint32_t size_ptr = read_ptr;
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
 
 		if (size == 0) {
+			*(uint32_t *)&command_mem[read_ptr] = 0; // clear in-use bit.
 			//end of ringbuffer, wrap
-			read_ptr = 0;
+			read_ptr_and_epoch = 0 | (1 & ~read_ptr_and_epoch); // Invert epoch.
 			goto tryagain;
 		}
 
@@ -422,15 +433,23 @@ class CommandQueueMT {
 
 		read_ptr += size;
 
-		if (p_lock) unlock();
+		read_ptr_and_epoch = (read_ptr << 1) | (read_ptr_and_epoch & 1);
+
+		if (p_lock) {
+			unlock();
+		}
 		cmd->call();
-		if (p_lock) lock();
+		if (p_lock) {
+			lock();
+		}
 
 		cmd->post();
 		cmd->~CommandBase();
 		*(uint32_t *)&command_mem[size_ptr] &= ~1;
 
-		if (p_lock) unlock();
+		if (p_lock) {
+			unlock();
+		}
 		return true;
 	}
 
@@ -460,11 +479,11 @@ public:
 	}
 
 	void flush_all() {
-
 		//ERR_FAIL_COND(sync);
 		lock();
-		while (flush_one(false))
+		while (flush_one(false)) {
 			;
+		}
 		unlock();
 	}
 

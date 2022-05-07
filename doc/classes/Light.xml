@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Light" inherits="VisualInstance" version="3.2">
+<class name="Light" inherits="VisualInstance" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a base class for different kinds of light nodes.
 	</brief_description>
@@ -7,25 +7,21 @@
 		Light is the [i]abstract[/i] base class for light nodes. As it can't be instanced, it shouldn't be used directly. Other types of light nodes inherit from it. Light contains the common variables and parameters used for lighting.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Light.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Light.Param" />
 			<description>
 				Returns the value of the specified [enum Light.Param] parameter.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Light.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Light.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 				Sets the value of the specified [enum Light.Param] parameter.
 			</description>
@@ -53,6 +49,9 @@
 		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
 			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
 		</member>
+		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
+			The size of the light in Godot units. Only considered in baked lightmaps and only if [member light_bake_mode] is set to [constant BAKE_ALL]. Increasing this value will make the shadows appear blurrier. This can be used to simulate area lights to an extent.
+		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
 		</member>
@@ -63,7 +62,8 @@
 			The color of shadows cast by this light.
 		</member>
 		<member name="shadow_contact" type="float" setter="set_param" getter="get_param" default="0.0">
-			Attempts to reduce [member shadow_bias] gap.
+			Attempts to reduce [member shadow_bias] gap by rendering screen-space contact shadows. This has a performance impact, especially at higher values.
+			[b]Note:[/b] Contact shadows can look broken, so leaving this property to [code]0.0[/code] is recommended.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast shadows.
@@ -79,46 +79,49 @@
 		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
 			Constant for accessing [member light_indirect_energy].
 		</constant>
-		<constant name="PARAM_SPECULAR" value="2" enum="Param">
+		<constant name="PARAM_SIZE" value="2" enum="Param">
+			Constant for accessing [member light_size].
+		</constant>
+		<constant name="PARAM_SPECULAR" value="3" enum="Param">
 			Constant for accessing [member light_specular].
 		</constant>
-		<constant name="PARAM_RANGE" value="3" enum="Param">
+		<constant name="PARAM_RANGE" value="4" enum="Param">
 			Constant for accessing [member OmniLight.omni_range] or [member SpotLight.spot_range].
 		</constant>
-		<constant name="PARAM_ATTENUATION" value="4" enum="Param">
+		<constant name="PARAM_ATTENUATION" value="5" enum="Param">
 			Constant for accessing [member OmniLight.omni_attenuation] or [member SpotLight.spot_attenuation].
 		</constant>
-		<constant name="PARAM_SPOT_ANGLE" value="5" enum="Param">
+		<constant name="PARAM_SPOT_ANGLE" value="6" enum="Param">
 			Constant for accessing [member SpotLight.spot_angle].
 		</constant>
-		<constant name="PARAM_SPOT_ATTENUATION" value="6" enum="Param">
+		<constant name="PARAM_SPOT_ATTENUATION" value="7" enum="Param">
 			Constant for accessing [member SpotLight.spot_angle_attenuation].
 		</constant>
-		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="7" enum="Param">
+		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="8" enum="Param">
 			Constant for accessing [member shadow_contact].
 		</constant>
-		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8" enum="Param">
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_max_distance].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_1].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_2].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_3].
 		</constant>
-		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="12" enum="Param">
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="13" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_normal_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS" value="13" enum="Param">
+		<constant name="PARAM_SHADOW_BIAS" value="14" enum="Param">
 			Constant for accessing [member shadow_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
+		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_bias_split_scale].
 		</constant>
-		<constant name="PARAM_MAX" value="15" enum="Param">
+		<constant name="PARAM_MAX" value="16" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

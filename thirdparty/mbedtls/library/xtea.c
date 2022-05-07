@@ -1,7 +1,7 @@
 /*
  *  An 32-bit implementation of the XTEA algorithm
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,15 +15,9 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_XTEA_C)
 
@@ -42,29 +36,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_XTEA_ALT)
-
-/*
- * 32-bit integer manipulation macros (big endian)
- */
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (n) = ( (uint32_t) (b)[(i)    ] << 24 )             \
-        | ( (uint32_t) (b)[(i) + 1] << 16 )             \
-        | ( (uint32_t) (b)[(i) + 2] <<  8 )             \
-        | ( (uint32_t) (b)[(i) + 3]       );            \
-}
-#endif
-
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
-    (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
-    (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
-    (b)[(i) + 3] = (unsigned char) ( (n)       );       \
-}
-#endif
 
 void mbedtls_xtea_init( mbedtls_xtea_context *ctx )
 {
@@ -90,7 +61,7 @@ void mbedtls_xtea_setup( mbedtls_xtea_context *ctx, const unsigned char key[16] 
 
     for( i = 0; i < 4; i++ )
     {
-        GET_UINT32_BE( ctx->k[i], key, i << 2 );
+        ctx->k[i] = MBEDTLS_GET_UINT32_BE( key, i << 2 );
     }
 }
 
@@ -104,8 +75,8 @@ int mbedtls_xtea_crypt_ecb( mbedtls_xtea_context *ctx, int mode,
 
     k = ctx->k;
 
-    GET_UINT32_BE( v0, input, 0 );
-    GET_UINT32_BE( v1, input, 4 );
+    v0 = MBEDTLS_GET_UINT32_BE( input, 0 );
+    v1 = MBEDTLS_GET_UINT32_BE( input, 4 );
 
     if( mode == MBEDTLS_XTEA_ENCRYPT )
     {
@@ -130,8 +101,8 @@ int mbedtls_xtea_crypt_ecb( mbedtls_xtea_context *ctx, int mode,
         }
     }
 
-    PUT_UINT32_BE( v0, output, 0 );
-    PUT_UINT32_BE( v1, output, 4 );
+    MBEDTLS_PUT_UINT32_BE( v0, output, 0 );
+    MBEDTLS_PUT_UINT32_BE( v1, output, 4 );
 
     return( 0 );
 }

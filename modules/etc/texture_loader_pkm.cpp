@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,18 +43,20 @@ struct ETC1Header {
 };
 
 RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f)
+	if (!f) {
 		return RES();
+	}
 
 	FileAccessRef fref(f);
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
+	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open PKM texture file '" + p_path + "'.");
 
@@ -88,8 +90,9 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	f->close();
 	memdelete(f);
@@ -97,18 +100,16 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 }
 
 void ResourceFormatPKM::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("pkm");
 }
 
 bool ResourceFormatPKM::handles_type(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 String ResourceFormatPKM::get_resource_type(const String &p_path) const {
-
-	if (p_path.get_extension().to_lower() == "pkm")
+	if (p_path.get_extension().to_lower() == "pkm") {
 		return "ImageTexture";
+	}
 	return "";
 }

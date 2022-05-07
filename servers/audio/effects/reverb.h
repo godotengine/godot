@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,6 @@ private:
 	static const float allpass_tunings[MAX_ALLPASS];
 
 	struct Comb {
-
 		int size;
 		float *buffer;
 		float feedback;
@@ -68,7 +67,7 @@ private:
 
 		Comb() {
 			size = 0;
-			buffer = 0;
+			buffer = nullptr;
 			feedback = 0;
 			damp_h = 0;
 			pos = 0;
@@ -76,14 +75,13 @@ private:
 	};
 
 	struct AllPass {
-
 		int size;
 		float *buffer;
 		int pos;
 		int extra_spread_frames;
 		AllPass() {
 			size = 0;
-			buffer = 0;
+			buffer = nullptr;
 			pos = 0;
 		}
 	};
@@ -98,7 +96,6 @@ private:
 	float hpf_h1, hpf_h2;
 
 	struct Parameters {
-
 		float room_size;
 		float damp;
 		float wet;

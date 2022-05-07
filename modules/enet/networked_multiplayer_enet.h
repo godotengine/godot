@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 #include <enet/enet.h>
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
-
 	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer);
 
 public:
@@ -86,7 +85,6 @@ private:
 	Map<int, ENetPeer *> peer_map;
 
 	struct Packet {
-
 		ENetPacket *packet;
 		int from;
 		int channel;
@@ -116,6 +114,7 @@ private:
 	Ref<CryptoKey> dtls_key;
 	Ref<X509Certificate> dtls_cert;
 	bool dtls_verify;
+	String dtls_hostname;
 
 protected:
 	static void _bind_methods();
@@ -129,6 +128,7 @@ public:
 
 	virtual IP_Address get_peer_address(int p_peer_id) const;
 	virtual int get_peer_port(int p_peer_id) const;
+	void set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max);
 
 	Error create_server(int p_port, int p_max_clients = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	Error create_client(const String &p_address, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_client_port = 0);
@@ -178,6 +178,8 @@ public:
 	bool is_dtls_verify_enabled() const;
 	void set_dtls_key(Ref<CryptoKey> p_key);
 	void set_dtls_certificate(Ref<X509Certificate> p_cert);
+	void set_dtls_hostname(const String &p_hostname);
+	String get_dtls_hostname() const;
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);

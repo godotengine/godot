@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFTexture" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF loading and saving is [i]not[/i] available in exported projects. References to [GLTFTexture] within a script will cause an error in an exported project.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="src_image" type="int" setter="set_src_image" getter="get_src_image" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

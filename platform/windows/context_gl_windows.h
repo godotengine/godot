@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,15 +38,16 @@
 #include "core/error_list.h"
 #include "core/os/os.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
 class ContextGL_Windows {
-
 	HDC hDC;
 	HGLRC hRC;
+	HGLRC hRC_offscreen;
 	unsigned int pixel_format;
 	HWND hWnd;
 	bool opengl_3_context;
@@ -62,6 +63,13 @@ public:
 	void release_current();
 
 	void make_current();
+
+	bool is_offscreen_available() const;
+	void make_offscreen_current();
+	void release_offscreen_current();
+
+	HDC get_hdc();
+	HGLRC get_hglrc();
 
 	int get_window_width();
 	int get_window_height();

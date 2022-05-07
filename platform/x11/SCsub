@@ -15,7 +15,10 @@ common_x11 = [
     "detect_prime.cpp",
 ]
 
+if "udev" in env and env["udev"]:
+    common_x11.append("libudev-so_wrap.c")
+
 prog = env.add_program("#bin/godot", ["godot_x11.cpp"] + common_x11)
 
-if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
+if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(platform_x11_builders.make_debug_x11))

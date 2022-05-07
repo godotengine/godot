@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 #define NAVIGATION_POLYGON_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/navigation_mesh.h"
 
 class NavigationPolygon : public Resource {
-
 	GDCLASS(NavigationPolygon, Resource);
 
 	PoolVector<Vector2> vertices;
@@ -42,10 +42,14 @@ class NavigationPolygon : public Resource {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector<PoolVector<Vector2> > outlines;
+	Vector<PoolVector<Vector2>> outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty;
+
+	Mutex navmesh_generation;
+	// Navigation mesh
+	Ref<NavigationMesh> navmesh;
 
 protected:
 	static void _bind_methods();
@@ -81,17 +85,19 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
+	Ref<NavigationMesh> get_mesh();
+
 	NavigationPolygon();
+	~NavigationPolygon();
 };
 
 class Navigation2D;
 
 class NavigationPolygonInstance : public Node2D {
-
 	GDCLASS(NavigationPolygonInstance, Node2D);
 
 	bool enabled;
-	int nav_id;
+	RID region;
 	Navigation2D *navigation;
 	Ref<NavigationPolygon> navpoly;
 
@@ -110,12 +116,15 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	RID get_region_rid() const;
+
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
 	String get_configuration_warning() const;
 
 	NavigationPolygonInstance();
+	~NavigationPolygonInstance();
 };
 
 #endif // NAVIGATIONPOLYGON_H

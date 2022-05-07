@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,8 +39,9 @@ bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 
 bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return false;
+	}
 
 	String name = p_name;
 
@@ -48,22 +49,30 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		name = "script";
 	}
 
+	Node *node_path_target = nullptr;
+	if (p_value.get_type() == Variant::NODE_PATH && p_value != NodePath()) {
+		node_path_target = es->get_node(p_value);
+	}
+
 	UndoRedo *ur = EditorNode::get_undo_redo();
 
 	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		if (p_value.get_type() == Variant::NODE_PATH) {
-			Node *tonode = n->get_node(p_value);
-			NodePath p_path = n->get_path_to(tonode);
-			ur->add_do_property(n, name, p_path);
+			NodePath path;
+			if (node_path_target) {
+				path = n->get_path_to(node_path_target);
+			}
+			ur->add_do_property(n, name, path);
 		} else {
 			Variant new_value;
 			if (p_field == "") {
@@ -87,8 +96,9 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return false;
+	}
 
 	String name = p_name;
 	if (name == "scripts") { // script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
@@ -96,18 +106,20 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		const Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		bool found;
 		r_ret = n->get(name, &found);
-		if (found)
+		if (found) {
 			return true;
+		}
 	}
 
 	return false;
@@ -117,29 +129,31 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 	HashMap<String, PLData> usage;
 
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	if (!es)
+	if (!es) {
 		return;
+	}
 
 	int nc = 0;
 
 	List<PLData *> data_list;
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-
-		if (!es->has_node(E->get()))
+		if (!es->has_node(E->get())) {
 			continue;
+		}
 
 		Node *n = es->get_node(E->get());
-		if (!n)
+		if (!n) {
 			continue;
+		}
 
 		List<PropertyInfo> plist;
 		n->get_property_list(&plist, true);
 
 		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-
-			if (F->get().name == "script")
+			if (F->get().name == "script") {
 				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
+			}
 			if (!usage.has(F->get().name)) {
 				PLData pld;
 				pld.uses = 0;
@@ -149,15 +163,15 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear
-			if (usage[F->get().name].info == F->get())
+			if (usage[F->get().name].info == F->get()) {
 				usage[F->get().name].uses++;
+			}
 		}
 
 		nc++;
 	}
 
 	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
-
 		if (nc == E->get()->uses) {
 			p_list->push_back(E->get()->info);
 		}

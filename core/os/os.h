@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,27 +40,31 @@
 #include "core/vector.h"
 
 #include <stdarg.h>
-
-class Mutex;
+#include <stdlib.h>
 
 class OS {
-
 	static OS *singleton;
+	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
+	bool _update_vital_only;
 	bool _verbose_stdout;
+	bool _debug_stdout;
 	String _local_clipboard;
+	String _primary_clipboard;
 	uint64_t _msec_splash;
 	bool _no_window;
-	int _exit_code;
+	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
+	bool _is_custom_exit_code = false;
 	int _orientation;
 	bool _allow_hidpi;
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _delta_smoothing_enabled;
 
 	char *last_error;
 
@@ -72,6 +76,8 @@ class OS {
 	List<String> restart_commandline;
 
 protected:
+	bool _update_pending;
+
 	void _set_logger(CompositeLogger *p_logger);
 
 public:
@@ -93,7 +99,6 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 	struct VideoMode {
-
 		int width, height;
 		bool fullscreen;
 		bool resizable;
@@ -138,7 +143,6 @@ protected:
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
-	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
@@ -172,9 +176,13 @@ public:
 	virtual Point2 get_mouse_position() const = 0;
 	virtual int get_mouse_button_state() const = 0;
 	virtual void set_window_title(const String &p_title) = 0;
+	virtual void set_window_mouse_passthrough(const PoolVector2Array &p_region){};
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual bool has_clipboard() const;
+	virtual void set_clipboard_primary(const String &p_text);
+	virtual String get_clipboard_primary() const;
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0) = 0;
 	virtual VideoMode get_video_mode(int p_screen = 0) const = 0;
@@ -190,6 +198,9 @@ public:
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const = 0;
 
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
@@ -202,12 +213,18 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	// Returned by get_screen_refresh_rate if the method fails.
+	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0;
+
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
 	virtual void set_current_screen(int p_screen) {}
 	virtual Point2 get_screen_position(int p_screen = -1) const { return Point2(); }
 	virtual Size2 get_screen_size(int p_screen = -1) const { return get_window_size(); }
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
+	virtual float get_screen_scale(int p_screen = -1) const { return 1.0; }
+	virtual float get_screen_max_scale() const { return 1.0; };
+	virtual float get_screen_refresh_rate(int p_screen = -1) const { return SCREEN_REFRESH_RATE_FALLBACK; };
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
 	virtual Size2 get_max_window_size() const { return Size2(); };
@@ -228,10 +245,24 @@ public:
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
 	virtual bool is_window_focused() const { return true; }
-	virtual void set_console_visible(bool p_enabled) {}
-	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
+
+	// Returns internal pointers and handles.
+	// While exposed to GDScript this is mostly to give GDNative plugins access to this information.
+	// Note that whether a valid handle is returned depends on whether it applies to the given
+	// platform and often to the chosen render driver.
+	// NULL will be returned if a handle is not available.
+
+	enum HandleType {
+		APPLICATION_HANDLE, // HINSTANCE, NSApplication*, UIApplication*, JNIEnv* ...
+		DISPLAY_HANDLE, // X11::Display* ...
+		WINDOW_HANDLE, // HWND, X11::Window*, NSWindow*, UIWindow*, Android activity ...
+		WINDOW_VIEW, // HDC, NSView*, UIView*, Android surface ...
+		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
+	};
+
+	virtual void *get_native_handle(int p_handle_type) { return nullptr; };
 
 	// Returns window area free of hardware controls and other obstacles.
 	// The application should use this to determine where to place UI elements.
@@ -244,9 +275,10 @@ public:
 		Size2 window_size = get_window_size();
 		return Rect2(0, 0, window_size.width, window_size.height);
 	}
+	virtual Array get_display_cutouts() const { return Array(); }
 
 	virtual void set_borderless_window(bool p_borderless) {}
-	virtual bool get_borderless_window() { return 0; }
+	virtual bool get_borderless_window() { return false; }
 
 	virtual bool get_window_per_pixel_transparency_enabled() const { return false; }
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) {}
@@ -266,11 +298,33 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+	virtual void set_update_vital_only(bool p_enabled);
+	virtual void set_update_pending(bool p_pending) { _update_pending = p_pending; }
+
+	// Convenience easy switch for turning this off outside tools builds, without littering calling code
+	// with #ifdefs. It will also hopefully be compiled out in release.
+#ifdef TOOLS_ENABLED
+	// This function is used to throttle back updates of animations and particle systems when using UPDATE_VITAL_ONLY mode.
+
+	// CASE 1) We are not in UPDATE_VITAL_ONLY mode - always return true and update.
+	// CASE 2) We are in UPDATE_VITAL_ONLY mode -
+
+	// In most cases this will return false and prevent animations etc updating.
+	// The exception is that we can also choose to receive a true
+	// each time a frame is redrawn as a result of moving the mouse, clicking etc.
+	// This enables us to keep e.g. particle systems processing, but ONLY when other
+	// events have caused a redraw.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return !_update_vital_only || (_update_pending && p_include_redraws); }
+#else
+	// Always update when outside the editor, UPDATE_VITAL_ONLY has no effect outside the editor.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return true; }
+#endif
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
@@ -283,6 +337,8 @@ public:
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
+
+	void ensure_user_data_dir();
 
 	virtual MainLoop *get_main_loop() const = 0;
 
@@ -316,7 +372,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -325,7 +380,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;
@@ -345,6 +399,8 @@ public:
 	virtual uint64_t get_system_time_msecs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
+	virtual void add_frame_delay(bool p_can_draw);
+
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_splash_tick_msec() const;
@@ -354,6 +410,7 @@ public:
 	virtual bool is_userfs_persistent() const { return true; }
 
 	bool is_stdout_verbose() const;
+	bool is_stdout_debug_enabled() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
@@ -381,11 +438,12 @@ public:
 	};
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int get_virtual_keyboard_height() const;
+	virtual uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual CursorShape get_cursor_shape() const;
@@ -405,6 +463,9 @@ public:
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 
 	virtual String get_locale() const;
+	String get_locale_language() const;
+
+	virtual uint64_t get_embedded_pck_offset() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
@@ -413,6 +474,7 @@ public:
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
 	virtual String get_bundle_resource_dir() const;
+	virtual String get_bundle_icon_path() const;
 
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
@@ -428,7 +490,7 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
@@ -449,7 +511,8 @@ public:
 	};
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
-	ScreenOrientation get_screen_orientation() const;
+	virtual ScreenOrientation get_screen_orientation() const;
+	ScreenOrientation get_screen_orientation_from_string(const String &p_orientation) const;
 
 	virtual void enable_for_stealing_focus(ProcessID pid) {}
 	virtual void move_window_to_foreground() {}
@@ -465,8 +528,11 @@ public:
 
 	virtual int get_exit_code() const;
 	virtual void set_exit_code(int p_code);
+	virtual bool is_custom_exit_code();
 
 	virtual int get_processor_count() const;
+	virtual String get_processor_name() const;
+	virtual int get_default_thread_pool_size() const { return get_processor_count(); }
 
 	virtual String get_unique_id() const;
 
@@ -523,6 +589,9 @@ public:
 
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();

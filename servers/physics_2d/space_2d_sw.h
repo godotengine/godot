@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 #include "core/typedefs.h"
 
 class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
-
 	GDCLASS(Physics2DDirectSpaceStateSW, Physics2DDirectSpaceState);
 
 	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = 0);
@@ -62,7 +61,6 @@ public:
 };
 
 class Space2DSW : public RID_Data {
-
 public:
 	enum ElapsedTime {
 		ELAPSED_TIME_INTEGRATE_FORCES,
@@ -93,8 +91,8 @@ private:
 	SelfList<Area2DSW>::List monitor_query_list;
 	SelfList<Area2DSW>::List area_moved_list;
 
-	static void *_broadphase_pair(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_self);
-	static void _broadphase_unpair(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_data, void *p_self);
+	static void *_broadphase_pair(CollisionObject2DSW *p_object_A, int p_subindex_A, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self);
+	static void _broadphase_unpair(CollisionObject2DSW *p_object_A, int p_subindex_A, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self);
 
 	Set<CollisionObject2DSW *> objects;
 
@@ -104,7 +102,6 @@ private:
 	real_t contact_max_separation;
 	real_t contact_max_allowed_penetration;
 	real_t constraint_bias;
-	real_t test_motion_min_contact_depth;
 
 	enum {
 
@@ -120,6 +117,7 @@ private:
 
 	bool locked;
 
+	real_t step;
 	int island_count;
 	int active_objects;
 	int collision_pairs;
@@ -134,6 +132,9 @@ private:
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ void set_step(const real_t &p_step) { step = p_step; }
+	_FORCE_INLINE_ real_t get_step() const { return step; }
 
 	void set_default_area(Area2DSW *p_area) { area = p_area; }
 	Area2DSW *get_default_area() const { return area; }
@@ -186,13 +187,15 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
+	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>());
 	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
 	_FORCE_INLINE_ void add_debug_contact(const Vector2 &p_contact) {
-		if (contact_debug_count < contact_debug.size()) contact_debug.write[contact_debug_count++] = p_contact;
+		if (contact_debug_count < contact_debug.size()) {
+			contact_debug.write[contact_debug_count++] = p_contact;
+		}
 	}
 	_FORCE_INLINE_ Vector<Vector2> get_debug_contacts() { return contact_debug; }
 	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }

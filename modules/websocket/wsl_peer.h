@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,6 @@
 #define WSL_MAX_HEADER_SIZE 4096
 
 class WSLPeer : public WebSocketPeer {
-
 	GDCIIMPL(WSLPeer, WebSocketPeer);
 
 public:
@@ -67,10 +66,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
+			ctx = nullptr;
+			obj = nullptr;
 			closing = false;
-			peer = NULL;
+			peer = nullptr;
 		}
 	};
 
@@ -90,6 +89,9 @@ private:
 
 	WriteMode write_mode;
 
+	int _out_buf_size;
+	int _out_pkt_size;
+
 public:
 	int close_code;
 	String close_reason;
@@ -99,6 +101,7 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 	virtual int get_max_packet_size() const { return _packet_buffer.size(); };
+	virtual int get_current_outbound_buffered_amount() const;
 
 	virtual void close_now();
 	virtual void close(int p_code = 1000, String p_reason = "");

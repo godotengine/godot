@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CharFXTransform" inherits="Reference" version="3.2">
+<class name="CharFXTransform" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Controls how an individual character will be displayed in a [RichTextEffect].
 	</brief_description>
@@ -7,14 +7,14 @@
 		By setting various properties on this object, you can control how individual characters will be displayed in a [RichTextEffect].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="absolute_index" type="int" setter="set_absolute_index" getter="get_absolute_index" default="0">
-			The index of the current character (starting from 0). Setting this property won't affect drawing.
+			The index of the current character (starting from 0) for the [RichTextLabel]'s BBCode text. Setting this property won't affect drawing.
 		</member>
 		<member name="character" type="int" setter="set_character" getter="get_character" default="0">
 			The Unicode codepoint the character will use. This only affects non-whitespace characters. [method @GDScript.ord] can be useful here. For example, the following will replace all characters with asterisks:
@@ -28,7 +28,7 @@
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
-			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the project is paused, unless the [RichTextLabel]'s [member Node.pause_mode] is set to [constant Node.PAUSE_MODE_PROCESS].
+			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.pause_mode]). Resets when the text in the [RichTextLabel] is changed.
 			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
@@ -42,7 +42,7 @@
 			The position offset the character will be drawn with (in pixels).
 		</member>
 		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
-			The index of the current character (starting from 0). Setting this property won't affect drawing.
+			The index of the current character (starting from 0) for this [RichTextEffect] custom block. Setting this property won't affect drawing.
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.

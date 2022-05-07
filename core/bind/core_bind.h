@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -143,6 +144,14 @@ public:
 		MONTH_DECEMBER
 	};
 
+	enum HandleType {
+		APPLICATION_HANDLE, // HINSTANCE, NSApplication*, UIApplication*, JNIEnv* ...
+		DISPLAY_HANDLE, // X11::Display* ...
+		WINDOW_HANDLE, // HWND, X11::Window*, NSWindow*, UIWindow*, Android activity ...
+		WINDOW_VIEW, // HDC, NSView*, UIView*, Android surface ...
+		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
+	};
+
 	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
 	void global_menu_add_separator(const String &p_menu);
 	void global_menu_remove_item(const String &p_menu, int p_idx);
@@ -150,10 +159,12 @@ public:
 
 	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
+	void set_window_mouse_passthrough(const PoolVector2Array &p_region);
 	int get_mouse_button_state() const;
 
 	void set_clipboard(const String &p_text);
 	String get_clipboard() const;
+	bool has_clipboard() const;
 
 	void set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen = 0);
 	Size2 get_video_mode(int p_screen = 0) const;
@@ -178,6 +189,9 @@ public:
 	virtual Point2 get_screen_position(int p_screen = -1) const;
 	virtual Size2 get_screen_size(int p_screen = -1) const;
 	virtual int get_screen_dpi(int p_screen = -1) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
+	virtual float get_screen_refresh_rate(int p_screen = -1) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_max_window_size() const;
@@ -185,6 +199,7 @@ public:
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
+	virtual Array get_display_cutouts() const;
 	virtual void set_max_window_size(const Size2 &p_size);
 	virtual void set_min_window_size(const Size2 &p_size);
 	virtual void set_window_size(const Size2 &p_size);
@@ -202,6 +217,8 @@ public:
 	virtual void request_attention();
 	virtual void center_window();
 	virtual void move_window_to_foreground();
+
+	virtual int64_t get_native_handle(HandleType p_handle_type);
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;
@@ -227,26 +244,30 @@ public:
 	int get_low_processor_usage_mode_sleep_usec() const;
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true, Array p_output = Array(), bool p_read_stderr = false);
+	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true, Array p_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
+	bool set_environment(const String &p_var, const String &p_value) const;
 
 	String get_name() const;
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_locale_language() const;
 	String get_latin_keyboard_variant() const;
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout() const;
 	void keyboard_set_current_layout(int p_index);
 	String keyboard_get_layout_language(int p_index) const;
 	String keyboard_get_layout_name(int p_index) const;
+	uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	String get_model_name() const;
 
@@ -254,7 +275,7 @@ public:
 	void dump_resources_to_file(const String &p_file);
 
 	bool has_virtual_keyboard() const;
-	void show_virtual_keyboard(const String &p_existing_text = "");
+	void show_virtual_keyboard(const String &p_existing_text = "", bool p_multiline = false);
 	void hide_virtual_keyboard();
 	int get_virtual_keyboard_height();
 
@@ -294,9 +315,9 @@ public:
 	uint64_t get_static_memory_peak_usage() const;
 	uint64_t get_dynamic_memory_usage() const;
 
-	void delay_usec(uint32_t p_usec) const;
-	void delay_msec(uint32_t p_msec) const;
-	uint32_t get_ticks_msec() const;
+	void delay_usec(int p_usec) const;
+	void delay_msec(int p_msec) const;
+	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
 
@@ -309,6 +330,7 @@ public:
 	bool is_stdout_verbose() const;
 
 	int get_processor_count() const;
+	String get_processor_name() const;
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,
@@ -332,11 +354,16 @@ public:
 		SCREEN_ORIENTATION_SENSOR,
 	};
 
-	String get_system_dir(SystemDir p_dir) const;
+	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	Error move_to_trash(const String &p_path) const;
 	String get_user_data_dir() const;
+	String get_config_dir() const;
+	String get_data_dir() const;
+	String get_cache_dir() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
+	void crash(const String &p_message);
 
 	void set_screen_orientation(ScreenOrientation p_orientation);
 	ScreenOrientation get_screen_orientation() const;
@@ -347,12 +374,17 @@ public:
 	bool is_ok_left_and_cancel_right() const;
 
 	Error set_thread_name(const String &p_name);
+	Thread::ID get_thread_caller_id() const;
+	Thread::ID get_main_thread_id() const;
 
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	PowerState get_power_state();
 	int get_power_seconds_left();
@@ -380,9 +412,9 @@ VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 VARIANT_ENUM_CAST(_OS::ScreenOrientation);
+VARIANT_ENUM_CAST(_OS::HandleType);
 
 class _Geometry : public Object {
-
 	GDCLASS(_Geometry, Object);
 
 	static _Geometry *singleton;
@@ -463,7 +495,6 @@ VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
 VARIANT_ENUM_CAST(_Geometry::PolyEndType);
 
 class _File : public Reference {
-
 	GDCLASS(_File, Reference);
 	FileAccess *f;
 	bool eswap;
@@ -492,6 +523,7 @@ public:
 	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
 	Error open(const String &p_path, ModeFlags p_mode_flags); // open a file.
+	void flush(); // Flush a file (write its buffer to disk).
 	void close(); // Close a file.
 	bool is_open() const; // True when file is open.
 
@@ -500,8 +532,8 @@ public:
 
 	void seek(int64_t p_position); // Seek to a given position.
 	void seek_end(int64_t p_position = 0); // Seek from the end of file.
-	int64_t get_position() const; // Get position in the file.
-	int64_t get_len() const; // Get size of the file.
+	uint64_t get_position() const; // Get position in the file.
+	uint64_t get_len() const; // Get size of the file.
 
 	bool eof_reached() const; // Reading passed EOF.
 
@@ -516,7 +548,7 @@ public:
 
 	Variant get_var(bool p_allow_objects = false) const;
 
-	PoolVector<uint8_t> get_buffer(int p_length) const; // Get an array of bytes.
+	PoolVector<uint8_t> get_buffer(int64_t p_length) const; // Get an array of bytes.
 	String get_line() const;
 	Vector<String> get_csv_line(const String &p_delim = ",") const;
 	String get_as_text() const;
@@ -565,7 +597,6 @@ VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
 class _Directory : public Reference {
-
 	GDCLASS(_Directory, Reference);
 	DirAccess *d;
 
@@ -594,7 +625,7 @@ public:
 	bool file_exists(String p_file);
 	bool dir_exists(String p_dir);
 
-	int get_space_left();
+	uint64_t get_space_left();
 
 	Error copy(String p_from, String p_to);
 	Error rename(String p_from, String p_to);
@@ -609,7 +640,6 @@ private:
 };
 
 class _Marshalls : public Object {
-
 	GDCLASS(_Marshalls, Object);
 
 	static _Marshalls *singleton;
@@ -630,13 +660,12 @@ public:
 	String base64_to_utf8(const String &p_str);
 
 	_Marshalls() { singleton = this; }
-	~_Marshalls() { singleton = NULL; }
+	~_Marshalls() { singleton = nullptr; }
 };
 
 class _Mutex : public Reference {
-
 	GDCLASS(_Mutex, Reference);
-	Mutex *mutex;
+	Mutex mutex;
 
 	static void _bind_methods();
 
@@ -644,37 +673,30 @@ public:
 	void lock();
 	Error try_lock();
 	void unlock();
-
-	_Mutex();
-	~_Mutex();
 };
 
 class _Semaphore : public Reference {
-
 	GDCLASS(_Semaphore, Reference);
-	Semaphore *semaphore;
+	Semaphore semaphore;
 
 	static void _bind_methods();
 
 public:
 	Error wait();
+	Error try_wait();
 	Error post();
-
-	_Semaphore();
-	~_Semaphore();
 };
 
 class _Thread : public Reference {
-
 	GDCLASS(_Thread, Reference);
 
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
-	Object *target_instance;
+	SafeFlag running;
+	ObjectID target_instance_id;
 	StringName target_method;
-	Thread *thread;
+	Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
@@ -690,6 +712,7 @@ public:
 	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
+	bool is_alive() const;
 	Variant wait_to_finish();
 
 	_Thread();
@@ -699,7 +722,6 @@ public:
 VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
-
 	GDCLASS(_ClassDB, Object);
 
 protected:
@@ -730,6 +752,11 @@ public:
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
 	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 	StringName get_category(const StringName &p_node) const;
+
+	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	PoolStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	PoolStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(StringName p_class) const;
 
@@ -781,6 +808,9 @@ public:
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	void set_print_error_messages(bool p_enabled);
+	bool is_printing_error_messages() const;
 
 	_Engine();
 };

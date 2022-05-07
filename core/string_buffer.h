@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
-
 	CharType short_buffer[SHORT_BUFFER_SIZE];
 	String buffer;
 	int string_length;
@@ -123,8 +122,9 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const C
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size())
+	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size()) {
 		return *this;
+	}
 
 	bool need_copy = string_length > 0 && buffer.empty();
 	buffer.resize(next_power_of_2(p_size));

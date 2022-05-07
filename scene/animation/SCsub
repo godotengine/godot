@@ -2,4 +2,9 @@
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
+# Godot source files
+
+scene_obj = []
+
+env.add_source_files(scene_obj, "*.cpp")
+env.scene_sources += scene_obj

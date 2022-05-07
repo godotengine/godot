@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/range.h"
 
 class TextureProgress : public Range {
-
 	GDCLASS(TextureProgress, Range);
 
 	Ref<Texture> under;
@@ -55,11 +54,15 @@ public:
 		FILL_COUNTER_CLOCKWISE,
 		FILL_BILINEAR_LEFT_AND_RIGHT,
 		FILL_BILINEAR_TOP_AND_BOTTOM,
-		FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE
+		FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE,
+		FILL_MODE_MAX,
 	};
 
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
+
+	void set_progress_offset(Point2 p_offset);
+	Point2 get_progress_offset() const;
 
 	void set_radial_initial_angle(float p_angle);
 	float get_radial_initial_angle();
@@ -100,6 +103,7 @@ public:
 
 private:
 	FillMode mode;
+	Point2 progress_offset;
 	float rad_init_angle;
 	float rad_max_degrees;
 	Point2 rad_center_off;

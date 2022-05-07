@@ -4,7 +4,7 @@
  *
  *   OpenType font driver implementation (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,18 +16,17 @@
  */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_POSTSCRIPT_PROPS_H
-#include FT_SERVICE_CID_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_TT_CMAP_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/ftpsprop.h>
+#include <freetype/internal/services/svcid.h>
+#include <freetype/internal/services/svpsinfo.h>
+#include <freetype/internal/services/svpostnm.h>
+#include <freetype/internal/services/svttcmap.h>
+#include <freetype/internal/services/svcfftl.h>
 
 #include "cffdrivr.h"
 #include "cffgload.h"
@@ -37,16 +36,16 @@
 #include "cffobjs.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
 #include "cfferrs.h"
 
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svgldict.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/ftdriver.h>
 
 
   /**************************************************************************
@@ -346,8 +345,8 @@
       else
       {
         FT_ERROR(( "cff_get_glyph_name:"
-                   " cannot get glyph name from a CFF2 font\n"
-                   "                   "
+                   " cannot get glyph name from a CFF2 font\n" ));
+        FT_ERROR(( "                   "
                    " without the `psnames' module\n" ));
         error = FT_THROW( Missing_Module );
         goto Exit;
@@ -357,8 +356,8 @@
     if ( !font->psnames )
     {
       FT_ERROR(( "cff_get_glyph_name:"
-                 " cannot get glyph name from CFF & CEF fonts\n"
-                 "                   "
+                 " cannot get glyph name from CFF & CEF fonts\n" ));
+      FT_ERROR(( "                   "
                  " without the `psnames' module\n" ));
       error = FT_THROW( Missing_Module );
       goto Exit;
@@ -413,8 +412,8 @@
       else
       {
         FT_ERROR(( "cff_get_name_index:"
-                   " cannot get glyph index from a CFF2 font\n"
-                   "                   "
+                   " cannot get glyph index from a CFF2 font\n" ));
+        FT_ERROR(( "                   "
                    " without the `psnames' module\n" ));
         return 0;
       }
@@ -475,11 +474,11 @@
     if ( cff && !cff->font_info )
     {
       CFF_FontRecDict  dict      = &cff->top_font.font_dict;
-      PS_FontInfoRec  *font_info = NULL;
       FT_Memory        memory    = face->root.memory;
+      PS_FontInfoRec*  font_info = NULL;
 
 
-      if ( FT_ALLOC( font_info, sizeof ( *font_info ) ) )
+      if ( FT_QNEW( font_info ) )
         goto Fail;
 
       font_info->version     = cff_index_get_sid_string( cff,
@@ -516,15 +515,15 @@
     FT_Error  error = FT_Err_Ok;
 
 
-    if ( cff && cff->font_extra == NULL )
+    if ( cff && !cff->font_extra )
     {
       CFF_FontRecDict   dict       = &cff->top_font.font_dict;
-      PS_FontExtraRec*  font_extra = NULL;
       FT_Memory         memory     = face->root.memory;
+      PS_FontExtraRec*  font_extra = NULL;
       FT_String*        embedded_postscript;
 
 
-      if ( FT_ALLOC( font_extra, sizeof ( *font_extra ) ) )
+      if ( FT_QNEW( font_extra ) )
         goto Fail;
 
       font_extra->fs_type = 0U;
@@ -738,7 +737,7 @@
       {
         if ( dict->cid_supplement < FT_INT_MIN ||
              dict->cid_supplement > FT_INT_MAX )
-          FT_TRACE1(( "cff_get_ros: too large supplement %d is truncated\n",
+          FT_TRACE1(( "cff_get_ros: too large supplement %ld is truncated\n",
                       dict->cid_supplement ));
         *supplement = (FT_Int)dict->cid_supplement;
       }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ class NoiseTexture : public Texture {
 private:
 	Ref<Image> data;
 
-	Thread *noise_thread;
+	Thread noise_thread;
 
 	bool first_time;
 	bool update_queued;
@@ -56,6 +56,7 @@ private:
 
 	Ref<OpenSimplexNoise> noise;
 	Vector2i size;
+	Vector2 noise_offset;
 	bool seamless;
 	bool as_normalmap;
 	float bump_strength;
@@ -78,6 +79,9 @@ public:
 
 	void set_width(int p_width);
 	void set_height(int p_height);
+
+	void set_noise_offset(Vector2 p_noise_offset);
+	Vector2 get_noise_offset() const;
 
 	void set_seamless(bool p_seamless);
 	bool get_seamless();

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Portal" inherits="Spatial" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Portal nodes are used to enable visibility between [Room]s.
+	</brief_description>
+	<description>
+		[Portal]s are a special type of [MeshInstance] that allow the portal culling system to 'see' from one room to the next. They often correspond to doors and windows in level geometry. By only allowing [Camera]s to see through portals, this allows the system to cull out all the objects in rooms that cannot be seen through portals. This is a form of [b]occlusion culling[/b], and can greatly increase performance.
+		There are some limitations to the form of portals:
+		They must be single sided convex polygons, and usually you would orientate their front faces [b]outward[/b] from the [Room] they are placed in. The vertices should be positioned on a single plane (although their positioning does not have to be perfect).
+		There is no need to place an opposite portal in an adjacent room, links are made two-way automatically.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector2" />
+			<description>
+				Sets individual points. Primarily for use by the editor.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="linked_room" type="NodePath" setter="set_linked_room" getter="get_linked_room" default="NodePath(&quot;&quot;)">
+			This is a shortcut for setting the linked [Room] in the name of the [Portal] (the name is used during conversion).
+		</member>
+		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array( 1, -1, 1, 1, -1, 1, -1, -1 )">
+			The points defining the shape of the [Portal] polygon (which should be convex).
+			These are defined in 2D, with [code]0,0[/code] being the origin of the [Portal] node's [member Spatial.global_transform].
+			[b]Note:[/b] These raw points are sanitized for winding order internally.
+		</member>
+		<member name="portal_active" type="bool" setter="set_portal_active" getter="get_portal_active" default="true">
+			Visibility through [Portal]s can be turned on and off at runtime - this is useful for having closable doors.
+		</member>
+		<member name="portal_margin" type="float" setter="set_portal_margin" getter="get_portal_margin" default="1.0">
+			Some objects are so big that they may be present in more than one [Room] ('sprawling'). As we often don't want objects that *just* breach the edges to be assigned to neighbouring rooms, you can assign an extra margin through the [Portal] to allow objects to breach without sprawling.
+		</member>
+		<member name="two_way" type="bool" setter="set_two_way" getter="is_two_way" default="true">
+			Portals default to being two way - see through in both directions, however you can make them one way, visible from the source room only.
+		</member>
+		<member name="use_default_margin" type="bool" setter="set_use_default_margin" getter="get_use_default_margin" default="true">
+			In most cases you will want to use the default [Portal] margin in your portals (this is set in the [RoomManager]).
+			If you want to override this default, set this value to [code]false[/code], and the local [member portal_margin] will take effect.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

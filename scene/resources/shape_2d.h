@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,8 +58,12 @@ public:
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) {}
 	virtual Rect2 get_rect() const { return Rect2(); }
+	/// Returns the radius of a sphere that fully enclose this shape
+	virtual real_t get_enclosing_radius() const = 0;
 	virtual RID get_rid() const;
-	Shape2D();
+
+	bool is_collision_outline_enabled();
+
 	~Shape2D();
 };
 

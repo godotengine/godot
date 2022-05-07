@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,17 @@ import java.security.MessageDigest;
 import java.util.Random;
 
 public class Crypt {
-
 	public static String md5(String input) {
 		try {
 			// Create MD5 Hash
 			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
 			digest.update(input.getBytes());
-			byte messageDigest[] = digest.digest();
+			byte[] messageDigest = digest.digest();
 
 			// Create Hex String
-			StringBuffer hexString = new StringBuffer();
-			for (int i = 0; i < messageDigest.length; i++)
-				hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : messageDigest)
+				hexString.append(Integer.toHexString(0xFF & b));
 			return hexString.toString();
 
 		} catch (Exception e) {

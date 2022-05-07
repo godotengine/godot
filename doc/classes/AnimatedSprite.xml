@@ -1,35 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedSprite" inherits="Node2D" version="3.2">
+<class name="AnimatedSprite" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Sprite node that can use multiple textures for animation.
 	</brief_description>
 	<description>
 		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
+		[b]Note:[/b] You can associate a set of normal maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] suffix. For example, having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/code] will make it so the [code]run[/code] animation uses the normal map.
 	</description>
 	<tutorials>
+		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if an animation is currently being played.
-			</description>
-		</method>
 		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="1" name="backwards" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="String" default="&quot;&quot;" />
+			<argument index="1" name="backwards" type="bool" default="false" />
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the current animation (does not reset the frame counter).
 			</description>
@@ -57,7 +49,7 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">

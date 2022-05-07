@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Bone2D" inherits="Node2D" version="3.2">
+<class name="Bone2D" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
@@ -13,22 +13,19 @@
 	</tutorials>
 	<methods>
 		<method name="apply_rest">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stores the node's current transforms in [member rest].
 			</description>
 		</method>
 		<method name="get_index_in_skeleton" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the node's index as part of the entire skeleton. See [Skeleton2D].
 			</description>
 		</method>
 		<method name="get_skeleton_rest" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
 				Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have a parent, or its rest pose relative to its parent.
 			</description>

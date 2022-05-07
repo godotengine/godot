@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -113,8 +113,7 @@ namespace GodotTools.IdeMessaging.CLI
                         }
                     }
 
-                    ExitMainLoop:
-
+                ExitMainLoop:
                     await forwarder.WriteLineToOutput("Event=Quit");
                 }
 

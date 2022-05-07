@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@
 #include "scene/main/viewport.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
-
 	for (int i = 0; i < add_options.size(); i++) {
 		ERR_FAIL_COND(add_options[i].script == p_script);
 	}
@@ -57,7 +56,6 @@ void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const R
 }
 
 void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
-
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].script == p_script) {
 			add_options.remove(i);
@@ -68,10 +66,13 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 	_update_options_menu();
 }
 
-void AnimationNodeBlendTreeEditor::_update_options_menu() {
-
+void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
 	add_node->get_popup()->clear();
+	add_node->get_popup()->set_size(Size2i(-1, -1));
 	for (int i = 0; i < add_options.size(); i++) {
+		if (p_has_input_ports && add_options[i].input_port_count == 0) {
+			continue;
+		}
 		add_node->get_popup()->add_item(add_options[i].name, i);
 	}
 
@@ -86,15 +87,13 @@ void AnimationNodeBlendTreeEditor::_update_options_menu() {
 }
 
 Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
-
 	return Size2(10, 200);
 }
 
 void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
-
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_tree();
 	updating = true;
-	undo_redo->create_action(TTR("Parameter Changed") + ": " + String(p_property), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Parameter Changed:") + " " + String(p_property), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(tree, p_property, p_value);
 	undo_redo->add_undo_property(tree, p_property, tree->get(p_property));
 	undo_redo->add_do_method(this, "_update_graph");
@@ -104,9 +103,9 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 }
 
 void AnimationNodeBlendTreeEditor::_update_graph() {
-
-	if (updating)
+	if (updating || blend_tree.is_null()) {
 		return;
+	}
 
 	visible_properties.clear();
 
@@ -115,7 +114,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	graph->clear_connections();
 	//erase all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
-
 		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
 			memdelete(graph->get_child(i));
 			i--;
@@ -128,7 +126,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	blend_tree->get_node_list(&nodes);
 
 	for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
-
 		GraphNode *node = memnew(GraphNode);
 		graph->add_child(node);
 
@@ -146,7 +143,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			name->set_expand_to_text_length(true);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
-			name->connect("text_entered", this, "_node_renamed", varray(agnode));
+			name->connect("text_entered", this, "_node_renamed", varray(agnode), CONNECT_DEFERRED);
 			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
@@ -163,7 +160,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		List<PropertyInfo> pinfo;
 		agnode->get_parameter_list(&pinfo);
 		for (List<PropertyInfo>::Element *F = pinfo.front(); F; F = F->next()) {
-
 			if (!(F->get().usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
@@ -192,7 +188,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		}
 
 		if (agnode->has_filter()) {
-
 			node->add_child(memnew(HSeparator));
 			Button *edit_filters = memnew(Button);
 			edit_filters->set_text(TTR("Edit Filters"));
@@ -204,7 +199,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 		Ref<AnimationNodeAnimation> anim = agnode;
 		if (anim.is_valid()) {
-
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
 			mb->set_icon(get_icon("Animation", "EditorIcons"));
@@ -259,17 +253,18 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	blend_tree->get_node_connections(&connections);
 
 	for (List<AnimationNodeBlendTree::NodeConnection>::Element *E = connections.front(); E; E = E->next()) {
-
 		StringName from = E->get().output_node;
 		StringName to = E->get().input_node;
 		int to_idx = E->get().input_index;
 
 		graph->connect_node(from, 0, to, to_idx);
 	}
+
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
-
 	file_loaded = ResourceLoader::load(p_file);
 	if (file_loaded.is_valid()) {
 		_add_node(MENU_LOAD_FILE_CONFIRM);
@@ -277,13 +272,11 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 }
 
 void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
-
 	Ref<AnimationNode> anode;
 
 	String base_name;
 
 	if (p_idx == MENU_LOAD_FILE) {
-
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", &filters);
@@ -297,7 +290,6 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		file_loaded.unref();
 		base_name = anode->get_class();
 	} else if (p_idx == MENU_PASTE) {
-
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
 		ERR_FAIL_COND(!anode.is_valid());
 		base_name = anode->get_class();
@@ -322,6 +314,11 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		return;
 	}
 
+	if (!from_node.empty() && anode->get_input_count() == 0) {
+		from_node = "";
+		return;
+	}
+
 	Point2 instance_pos = graph->get_scroll_ofs();
 	if (use_popup_menu_position) {
 		instance_pos += popup_menu_position;
@@ -341,13 +338,52 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	undo_redo->create_action(TTR("Add Node to BlendTree"));
 	undo_redo->add_do_method(blend_tree.ptr(), "add_node", name, anode, instance_pos / EDSCALE);
 	undo_redo->add_undo_method(blend_tree.ptr(), "remove_node", name);
+
+	if (!from_node.empty()) {
+		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", name, 0, from_node);
+		from_node = "";
+	}
+	if (!to_node.empty() && to_slot != -1) {
+		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", to_node, to_slot, name);
+		to_node = "";
+		to_slot = -1;
+	}
+
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which) {
+void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position) {
+	_update_options_menu(p_has_input_ports);
+	use_popup_menu_position = true;
+	popup_menu_position = p_popup_position;
+	add_node->get_popup()->set_position(p_node_position);
+	add_node->get_popup()->popup();
+}
 
+void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
+	_popup(false, graph->get_local_mouse_position(), p_position);
+}
+
+void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
+	Ref<AnimationNode> node = blend_tree->get_node(p_from);
+	if (node.is_valid()) {
+		from_node = p_from;
+		_popup(true, p_release_position, graph->get_global_mouse_position());
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position) {
+	Ref<AnimationNode> node = blend_tree->get_node(p_to);
+	if (node.is_valid()) {
+		to_node = p_to;
+		to_slot = p_to_slot;
+		_popup(false, p_release_position, graph->get_global_mouse_position());
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which) {
 	updating = true;
 	undo_redo->create_action(TTR("Node Moved"));
 	undo_redo->add_do_method(blend_tree.ptr(), "set_node_position", p_which, p_to / EDSCALE);
@@ -359,7 +395,6 @@ void AnimationNodeBlendTreeEditor::_node_dragged(const Vector2 &p_from, const Ve
 }
 
 void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index) {
-
 	AnimationNodeBlendTree::ConnectionError err = blend_tree->can_connect_node(p_to, p_to_index, p_from);
 
 	if (err != AnimationNodeBlendTree::CONNECTION_OK) {
@@ -376,7 +411,6 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 }
 
 void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index) {
-
 	graph->disconnect_node(p_from, p_from_index, p_to, p_to_index);
 
 	updating = true;
@@ -390,7 +424,6 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 }
 
 void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, const String &p_node) {
-
 	String option = p_options[p_index];
 
 	Ref<AnimationNodeAnimation> anim = blend_tree->get_node(p_node);
@@ -405,7 +438,6 @@ void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, 
 }
 
 void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
-
 	undo_redo->create_action(TTR("Delete Node"));
 	undo_redo->add_do_method(blend_tree.ptr(), "remove_node", p_which);
 	undo_redo->add_undo_method(blend_tree.ptr(), "add_node", p_which, blend_tree->get_node(p_which), blend_tree.ptr()->get_node_position(p_which));
@@ -425,7 +457,6 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 }
 
 void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
-
 	List<StringName> to_erase;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
@@ -437,8 +468,9 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
 		}
 	}
 
-	if (to_erase.empty())
+	if (to_erase.empty()) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Delete Node(s)"));
 
@@ -449,17 +481,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
-
-	_update_options_menu();
-	use_popup_menu_position = true;
-	popup_menu_position = graph->get_local_mouse_position();
-	add_node->get_popup()->set_position(p_position);
-	add_node->get_popup()->popup();
-}
-
 void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
-
 	GraphNode *gn = Object::cast_to<GraphNode>(p_node);
 	ERR_FAIL_COND(!gn);
 
@@ -472,14 +494,12 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 }
 
 void AnimationNodeBlendTreeEditor::_open_in_editor(const String &p_which) {
-
 	Ref<AnimationNode> an = blend_tree->get_node(p_which);
 	ERR_FAIL_COND(!an.is_valid());
 	AnimationTreeEditor::get_singleton()->enter_editor(p_which);
 }
 
 void AnimationNodeBlendTreeEditor::_filter_toggled() {
-
 	updating = true;
 	undo_redo->create_action(TTR("Toggle Filter On/Off"));
 	undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_enabled", filter_enabled->is_pressed());
@@ -491,7 +511,6 @@ void AnimationNodeBlendTreeEditor::_filter_toggled() {
 }
 
 void AnimationNodeBlendTreeEditor::_filter_edited() {
-
 	TreeItem *edited = filters->get_edited();
 	ERR_FAIL_COND(!edited);
 
@@ -509,9 +528,9 @@ void AnimationNodeBlendTreeEditor::_filter_edited() {
 }
 
 bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &anode) {
-
-	if (updating || _filter_edit != anode)
+	if (updating || _filter_edit != anode) {
 		return false;
+	}
 
 	NodePath player_path = AnimationTreeEditor::get_singleton()->get_tree()->get_animation_player();
 
@@ -536,13 +555,12 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	updating = true;
 
 	Set<String> paths;
-	HashMap<String, Set<String> > types;
+	HashMap<String, Set<String>> types;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);
 
 		for (List<StringName>::Element *E = animations.front(); E; E = E->next()) {
-
 			Ref<Animation> anim = player->get_animation(E->get());
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String track_path = anim->track_get_path(i);
@@ -577,9 +595,8 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	Map<String, TreeItem *> parenthood;
 
 	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-
 		NodePath path = E->get();
-		TreeItem *ti = NULL;
+		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
@@ -608,15 +625,15 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		}
 
-		Node *node = NULL;
+		Node *node = nullptr;
 		if (base->has_node(accum)) {
 			node = base->get_node(accum);
 		}
-		if (!node)
+		if (!node) {
 			continue; //no node, can't edit
+		}
 
 		if (path.get_subname_count()) {
-
 			String concat = path.get_concatenated_subnames();
 
 			Skeleton *skeleton = Object::cast_to<Skeleton>(node);
@@ -697,36 +714,34 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 }
 
 void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
-
 	Ref<AnimationNode> anode = blend_tree->get_node(p_which);
 	ERR_FAIL_COND(!anode.is_valid());
 
 	_filter_edit = anode;
-	if (!_update_filters(anode))
+	if (!_update_filters(anode)) {
 		return;
+	}
 
 	filter_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
 }
 
 void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 	if (is_visible()) {
-		EditorNode::get_singleton()->edit_item(NULL);
+		EditorNode::get_singleton()->edit_item(nullptr);
 	}
 }
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 
-		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
+		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 			_update_graph();
+		}
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
-
 		String error;
 
 		if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
@@ -756,7 +771,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		}
 
 		AnimationTree *graph_player = AnimationTreeEditor::get_singleton()->get_tree();
-		AnimationPlayer *player = NULL;
+		AnimationPlayer *player = nullptr;
 		if (graph_player->has_node(graph_player->get_animation_player())) {
 			player = Object::cast_to<AnimationPlayer>(graph_player->get_node(graph_player->get_animation_player()));
 		}
@@ -789,15 +804,15 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 }
 
 void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	updating = true;
 	blend_tree->set_graph_offset(p_scroll / EDSCALE);
 	updating = false;
 }
 
 void AnimationNodeBlendTreeEditor::_bind_methods() {
-
 	ClassDB::bind_method("_update_graph", &AnimationNodeBlendTreeEditor::_update_graph);
 	ClassDB::bind_method("_add_node", &AnimationNodeBlendTreeEditor::_add_node);
 	ClassDB::bind_method("_node_dragged", &AnimationNodeBlendTreeEditor::_node_dragged);
@@ -819,14 +834,15 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_property_changed", &AnimationNodeBlendTreeEditor::_property_changed);
 	ClassDB::bind_method("_file_opened", &AnimationNodeBlendTreeEditor::_file_opened);
 	ClassDB::bind_method("_update_options_menu", &AnimationNodeBlendTreeEditor::_update_options_menu);
+	ClassDB::bind_method("_connection_to_empty", &AnimationNodeBlendTreeEditor::_connection_to_empty);
+	ClassDB::bind_method("_connection_from_empty", &AnimationNodeBlendTreeEditor::_connection_from_empty);
 
 	ClassDB::bind_method("_anim_selected", &AnimationNodeBlendTreeEditor::_anim_selected);
 }
 
-AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = NULL;
+AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
-
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name == String());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
@@ -879,7 +895,6 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	blend_tree->get_node_connections(&connections);
 
 	for (List<AnimationNodeBlendTree::NodeConnection>::Element *E = connections.front(); E; E = E->next()) {
-
 		StringName from = E->get().output_node;
 		StringName to = E->get().input_node;
 		int to_idx = E->get().input_index;
@@ -900,6 +915,9 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 }
 
 void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
+	if (le == nullptr) {
+		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
+	}
 	_node_renamed(le->call("get_text"), p_node);
 }
 
@@ -909,7 +927,6 @@ bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
 }
 
 void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
-
 	if (blend_tree.is_valid()) {
 		blend_tree->disconnect("removed_from_graph", this, "_removed_from_graph");
 	}
@@ -926,7 +943,6 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 }
 
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
-
 	singleton = this;
 	updating = false;
 	use_popup_menu_position = false;
@@ -942,6 +958,10 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("delete_nodes_request", this, "_delete_nodes_request");
 	graph->connect("popup_request", this, "_popup_request");
+	graph->connect("connection_to_empty", this, "_connection_to_empty");
+	graph->connect("connection_from_empty", this, "_connection_from_empty");
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);
@@ -952,16 +972,16 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("id_pressed", this, "_add_node");
-	add_node->connect("about_to_show", this, "_update_options_menu");
+	add_node->connect("about_to_show", this, "_update_options_menu", varray(false));
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
-	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot"));
-	add_options.push_back(AddOption("Add2", "AnimationNodeAdd2"));
-	add_options.push_back(AddOption("Add3", "AnimationNodeAdd3"));
-	add_options.push_back(AddOption("Blend2", "AnimationNodeBlend2"));
-	add_options.push_back(AddOption("Blend3", "AnimationNodeBlend3"));
-	add_options.push_back(AddOption("Seek", "AnimationNodeTimeSeek"));
-	add_options.push_back(AddOption("TimeScale", "AnimationNodeTimeScale"));
+	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot", 2));
+	add_options.push_back(AddOption("Add2", "AnimationNodeAdd2", 2));
+	add_options.push_back(AddOption("Add3", "AnimationNodeAdd3", 3));
+	add_options.push_back(AddOption("Blend2", "AnimationNodeBlend2", 2));
+	add_options.push_back(AddOption("Blend3", "AnimationNodeBlend3", 3));
+	add_options.push_back(AddOption("Seek", "AnimationNodeTimeSeek", 1));
+	add_options.push_back(AddOption("TimeScale", "AnimationNodeTimeScale", 1));
 	add_options.push_back(AddOption("Transition", "AnimationNodeTransition"));
 	add_options.push_back(AddOption("BlendTree", "AnimationNodeBlendTree"));
 	add_options.push_back(AddOption("BlendSpace1D", "AnimationNodeBlendSpace1D"));

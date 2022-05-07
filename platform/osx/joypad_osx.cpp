@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@ void joypad::free() {
 	if (ff_device) {
 		FFDeviceReleaseEffect(ff_device, ff_object);
 		FFReleaseDevice(ff_device);
+		ff_device = nullptr;
 		memfree(ff_axes);
 		memfree(ff_directions);
 	}
@@ -150,6 +151,8 @@ void joypad::add_hid_element(IOHIDElementRef p_element) {
 						switch (usage) {
 							case kHIDUsage_Sim_Rudder:
 							case kHIDUsage_Sim_Throttle:
+							case kHIDUsage_Sim_Accelerator:
+							case kHIDUsage_Sim_Brake:
 								if (!has_element(cookie, &axis_elements)) {
 									list = &axis_elements;
 								}
@@ -240,7 +243,6 @@ static bool is_joypad(IOHIDDeviceRef p_device_ref) {
 }
 
 void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
-
 	if (p_res != kIOReturnSuccess || have_device(p_device)) {
 		return;
 	}
@@ -249,7 +251,7 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 	if (is_joypad(p_device)) {
 		configure_joypad(p_device, &new_joypad);
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-		if (IOHIDDeviceGetService != NULL) {
+		if (IOHIDDeviceGetService) {
 #endif
 			const io_service_t ioservice = IOHIDDeviceGetService(p_device);
 			if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK) && new_joypad.config_force_feedback(ioservice)) {
@@ -264,7 +266,6 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 }
 
 void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
-
 	int device = get_joy_ref(p_device);
 	ERR_FAIL_COND(device == -1);
 
@@ -274,7 +275,6 @@ void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
 }
 
 static String _hex_str(uint8_t p_byte) {
-
 	static const char *dict = "0123456789abcdef";
 	char ret[3];
 	ret[2] = 0;
@@ -286,7 +286,6 @@ static String _hex_str(uint8_t p_byte) {
 }
 
 bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
-
 	p_joy->device_ref = p_device_ref;
 	/* get device name */
 	String name;
@@ -297,8 +296,9 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	}
 	if ((!refCF) || (!CFStringGetCString((CFStringRef)refCF, c_name, sizeof(c_name), kCFStringEncodingUTF8))) {
 		name = "Unidentified Joypad";
+	} else {
+		name = c_name;
 	}
-	name = c_name;
 
 	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);
@@ -342,6 +342,13 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 		p_joy->add_hid_elements(array);
 		CFRelease(array);
 	}
+	// Xbox controller hat values start at 1 rather than 0.
+	p_joy->offset_hat = vendor == 0x45e &&
+			(product_id == 0x0b05 ||
+					product_id == 0x02e0 ||
+					product_id == 0x02fd ||
+					product_id == 0x0b13);
+
 	return true;
 }
 
@@ -349,11 +356,11 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	{                                   \
 		if (ret != FF_OK) {             \
 			FFReleaseDevice(ff_device); \
+			ff_device = nullptr;        \
 			return false;               \
 		}                               \
 	}
 bool joypad::config_force_feedback(io_service_t p_service) {
-
 	HRESULT ret = FFCreateDevice(p_service, &ff_device);
 	ERR_FAIL_COND_V(ret != FF_OK, false);
 
@@ -369,19 +376,20 @@ bool joypad::config_force_feedback(io_service_t p_service) {
 		return true;
 	}
 	FFReleaseDevice(ff_device);
+	ff_device = nullptr;
 	return false;
 }
 #undef FF_ERR
 
 #define TEST_FF(ff) (features.supportedEffects & (ff))
 bool joypad::check_ff_features() {
-
 	FFCAPABILITIES features;
 	HRESULT ret = FFDeviceGetForceFeedbackCapabilities(ff_device, &features);
 	if (ret == FF_OK && (features.supportedEffects & FFCAP_ET_CONSTANTFORCE)) {
 		uint32_t val;
 		ret = FFDeviceGetForceFeedbackProperty(ff_device, FFPROP_FFGAIN, &val, sizeof(val));
-		if (ret != FF_OK) return false;
+		if (ret != FF_OK)
+			return false;
 		int num_axes = features.numFfAxes;
 		ff_axes = (DWORD *)memalloc(sizeof(DWORD) * num_axes);
 		ff_directions = (LONG *)memalloc(sizeof(LONG) * num_axes);
@@ -399,12 +407,15 @@ bool joypad::check_ff_features() {
 	return false;
 }
 
-static int process_hat_value(int p_min, int p_max, int p_value) {
+static int process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
 	int hat_value = InputDefault::HAT_MASK_CENTER;
 	if (range == 4) {
 		value *= 2;
+	}
+	if (p_offset_hat) {
+		value -= 1;
 	}
 
 	switch (value) {
@@ -445,20 +456,9 @@ void JoypadOSX::poll_joypads() const {
 	}
 }
 
-static const InputDefault::JoyAxis axis_correct(int p_value, int p_min, int p_max) {
-	InputDefault::JoyAxis jx;
-	if (p_min < 0) {
-		jx.min = -1;
-		if (p_value < 0) {
-			jx.value = (float)-p_value / p_min;
-		} else
-			jx.value = (float)p_value / p_max;
-	}
-	if (p_min == 0) {
-		jx.min = 0;
-		jx.value = 0.0f + (float)p_value / p_max;
-	}
-	return jx;
+static float axis_correct(int p_value, int p_min, int p_max) {
+	// Convert to a value between -1.0f and 1.0f.
+	return 2.0f * (p_value - p_min) / (p_max - p_min) - 1.0f;
 }
 
 void JoypadOSX::process_joypads() {
@@ -479,7 +479,7 @@ void JoypadOSX::process_joypads() {
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			int hat_value = process_hat_value(elem.min, elem.max, value);
+			int hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
 			input->joy_hat(joy.id, hat_value);
 		}
 
@@ -516,14 +516,16 @@ void JoypadOSX::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 
 int JoypadOSX::get_joy_index(int p_id) const {
 	for (int i = 0; i < device_list.size(); i++) {
-		if (device_list[i].id == p_id) return i;
+		if (device_list[i].id == p_id)
+			return i;
 	}
 	return -1;
 }
 
 int JoypadOSX::get_joy_ref(IOHIDDeviceRef p_device) const {
 	for (int i = 0; i < device_list.size(); i++) {
-		if (device_list[i].device_ref == p_device) return i;
+		if (device_list[i].device_ref == p_device)
+			return i;
 	}
 	return -1;
 }
@@ -563,7 +565,6 @@ static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 u
 }
 
 void JoypadOSX::config_hid_manager(CFArrayRef p_matching_array) const {
-
 	CFRunLoopRef runloop = CFRunLoopGetCurrent();
 	IOReturn ret = IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
 	ERR_FAIL_COND(ret != kIOReturnSuccess);
@@ -599,7 +600,7 @@ JoypadOSX::JoypadOSX() {
 
 	if (array) {
 		hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-		if (hid_manager != NULL) {
+		if (hid_manager) {
 			config_hid_manager(array);
 		}
 		CFRelease(array);
@@ -607,7 +608,6 @@ JoypadOSX::JoypadOSX() {
 }
 
 JoypadOSX::~JoypadOSX() {
-
 	for (int i = 0; i < device_list.size(); i++) {
 		device_list.write[i].free();
 	}

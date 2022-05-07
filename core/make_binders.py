@@ -7,14 +7,15 @@ class MethodBind$argc$$ifret R$$ifconst C$ : public MethodBind {
 public:
 
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
-#ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+#ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
 		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
 		$
 		return GodotTypeInfo::METADATA_NONE;
 	}
+#endif
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
 		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
@@ -27,7 +28,6 @@ public:
 		$
 		return PropertyInfo();
 	}
-#endif
 	virtual String get_instance_class() const {
 		return T::get_class_static();
 	}
@@ -69,10 +69,8 @@ public:
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
-		_generate_argument_types($argc$);
-#else
-		set_argument_count($argc$);
 #endif
+		_generate_argument_types($argc$);
 
 		$ifret _set_returns(true); $
 	};
@@ -98,14 +96,15 @@ public:
 	StringName type_name;
 	$ifret R$ $ifnoret void$ (__UnexistingClass::*method)($arg, P@$) $ifconst const$;
 
-#ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+#ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
 		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
 		$
 		return GodotTypeInfo::METADATA_NONE;
 	}
+#endif
 
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
@@ -121,7 +120,6 @@ public:
 		return PropertyInfo();
 	}
 
-#endif
 	virtual String get_instance_class() const {
 		return type_name;
 	}
@@ -163,10 +161,8 @@ public:
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
-		_generate_argument_types($argc$);
-#else
-		set_argument_count($argc$);
 #endif
+		_generate_argument_types($argc$);
 		$ifret _set_returns(true); $
 
 
@@ -198,7 +194,6 @@ class FunctionBind$argc$$ifret R$$ifconst C$ : public MethodBind {
 public:
 
 	$ifret R$ $ifnoret void$ (*method) ($ifconst const$ T *$ifargs , $$arg, P@$);
-#ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
@@ -218,7 +213,6 @@ public:
 		$
 		return PropertyInfo();
 	}
-#endif
 	virtual String get_instance_class() const {
 		return T::get_class_static();
 	}
@@ -260,10 +254,8 @@ public:
 	FunctionBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
-		_generate_argument_types($argc$);
-#else
-		set_argument_count($argc$);
 #endif
+		_generate_argument_types($argc$);
 
 		$ifret _set_returns(true); $
 	};

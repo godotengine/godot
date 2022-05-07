@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,14 +33,19 @@
 #include "core/math/basis.h"
 #include "core/print_string.h"
 
+real_t Quat::angle_to(const Quat &p_to) const {
+	real_t d = dot(p_to);
+	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
+}
+
 // set_euler_xyz expects a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
 // This implementation uses XYZ convention (Z is the first rotation).
 void Quat::set_euler_xyz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.x * 0.5;
-	real_t half_a2 = p_euler.y * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
+	real_t half_a1 = p_euler.x * 0.5f;
+	real_t half_a2 = p_euler.y * 0.5f;
+	real_t half_a3 = p_euler.z * 0.5f;
 
 	// R = X(a1).Y(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-2)
@@ -73,9 +78,9 @@ Vector3 Quat::get_euler_xyz() const {
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
 void Quat::set_euler_yxz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.y * 0.5;
-	real_t half_a2 = p_euler.x * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
+	real_t half_a1 = p_euler.y * 0.5f;
+	real_t half_a2 = p_euler.x * 0.5f;
+	real_t half_a3 = p_euler.z * 0.5f;
 
 	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
@@ -106,28 +111,24 @@ Vector3 Quat::get_euler_yxz() const {
 	return m.get_euler_yxz();
 }
 
-void Quat::operator*=(const Quat &q) {
-
-	set(w * q.x + x * q.w + y * q.z - z * q.y,
-			w * q.y + y * q.w + z * q.x - x * q.z,
-			w * q.z + z * q.w + x * q.y - y * q.x,
-			w * q.w - x * q.x - y * q.y - z * q.z);
+void Quat::operator*=(const Quat &p_q) {
+	set(w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y,
+			w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z,
+			w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x,
+			w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z);
 }
 
-Quat Quat::operator*(const Quat &q) const {
-
+Quat Quat::operator*(const Quat &p_q) const {
 	Quat r = *this;
-	r *= q;
+	r *= p_q;
 	return r;
 }
 
 bool Quat::is_equal_approx(const Quat &p_quat) const {
-
 	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
 }
 
 real_t Quat::length() const {
-
 	return Math::sqrt(length_squared());
 }
 
@@ -140,7 +141,7 @@ Quat Quat::normalized() const {
 }
 
 bool Quat::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON); //use less epsilon
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); //use less epsilon
 }
 
 Quat Quat::inverse() const {
@@ -150,44 +151,44 @@ Quat Quat::inverse() const {
 	return Quat(-x, -y, -z, w);
 }
 
-Quat Quat::slerp(const Quat &q, const real_t &t) const {
+Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!q.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
 #endif
 	Quat to1;
 	real_t omega, cosom, sinom, scale0, scale1;
 
 	// calc cosine
-	cosom = dot(q);
+	cosom = dot(p_to);
 
 	// adjust signs (if necessary)
-	if (cosom < 0.0) {
+	if (cosom < 0) {
 		cosom = -cosom;
-		to1.x = -q.x;
-		to1.y = -q.y;
-		to1.z = -q.z;
-		to1.w = -q.w;
+		to1.x = -p_to.x;
+		to1.y = -p_to.y;
+		to1.z = -p_to.z;
+		to1.w = -p_to.w;
 	} else {
-		to1.x = q.x;
-		to1.y = q.y;
-		to1.z = q.z;
-		to1.w = q.w;
+		to1.x = p_to.x;
+		to1.y = p_to.y;
+		to1.z = p_to.z;
+		to1.w = p_to.w;
 	}
 
 	// calculate coefficients
 
-	if ((1.0 - cosom) > CMP_EPSILON) {
+	if ((1 - cosom) > (real_t)CMP_EPSILON) {
 		// standard case (slerp)
 		omega = Math::acos(cosom);
 		sinom = Math::sin(omega);
-		scale0 = Math::sin((1.0 - t) * omega) / sinom;
-		scale1 = Math::sin(t * omega) / sinom;
+		scale0 = Math::sin((1 - p_weight) * omega) / sinom;
+		scale1 = Math::sin(p_weight * omega) / sinom;
 	} else {
 		// "from" and "to" quaternions are very close
 		//  ... so we can do a linear interpolation
-		scale0 = 1.0 - t;
-		scale1 = t;
+		scale0 = 1 - p_weight;
+		scale1 = p_weight;
 	}
 	// calculate final values
 	return Quat(
@@ -197,42 +198,43 @@ Quat Quat::slerp(const Quat &q, const real_t &t) const {
 			scale0 * w + scale1 * to1.w);
 }
 
-Quat Quat::slerpni(const Quat &q, const real_t &t) const {
+Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!q.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
 #endif
 	const Quat &from = *this;
 
-	real_t dot = from.dot(q);
+	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999) return from;
+	if (Math::absf(dot) > 0.9999f) {
+		return from;
+	}
 
 	real_t theta = Math::acos(dot),
-		   sinT = 1.0 / Math::sin(theta),
-		   newFactor = Math::sin(t * theta) * sinT,
-		   invFactor = Math::sin((1.0 - t) * theta) * sinT;
+		   sinT = 1 / Math::sin(theta),
+		   newFactor = Math::sin(p_weight * theta) * sinT,
+		   invFactor = Math::sin((1 - p_weight) * theta) * sinT;
 
-	return Quat(invFactor * from.x + newFactor * q.x,
-			invFactor * from.y + newFactor * q.y,
-			invFactor * from.z + newFactor * q.z,
-			invFactor * from.w + newFactor * q.w);
+	return Quat(invFactor * from.x + newFactor * p_to.x,
+			invFactor * from.y + newFactor * p_to.y,
+			invFactor * from.z + newFactor * p_to.z,
+			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const {
+Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!q.is_normalized(), Quat(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quat(), "The end quaternion must be normalized.");
 #endif
 	//the only way to do slerp :|
-	real_t t2 = (1.0 - t) * t * 2;
-	Quat sp = this->slerp(q, t);
-	Quat sq = prep.slerpni(postq, t);
+	real_t t2 = (1 - p_weight) * p_weight * 2;
+	Quat sp = this->slerp(p_b, p_weight);
+	Quat sq = p_pre_a.slerpni(p_post_b, p_weight);
 	return sp.slerpni(sq, t2);
 }
 
 Quat::operator String() const {
-
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
@@ -241,11 +243,11 @@ void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
 	ERR_FAIL_COND_MSG(!axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	real_t d = axis.length();
-	if (d == 0)
+	if (d == 0) {
 		set(0, 0, 0, 0);
-	else {
-		real_t sin_angle = Math::sin(angle * 0.5);
-		real_t cos_angle = Math::cos(angle * 0.5);
+	} else {
+		real_t sin_angle = Math::sin(angle * 0.5f);
+		real_t cos_angle = Math::cos(angle * 0.5f);
 		real_t s = sin_angle / d;
 		set(axis.x * s, axis.y * s, axis.z * s,
 				cos_angle);

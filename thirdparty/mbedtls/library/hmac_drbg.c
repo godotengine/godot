@@ -1,7 +1,7 @@
 /*
  *  HMAC_DRBG implementation (NIST SP 800-90)
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,8 +15,6 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
 /*
@@ -25,16 +23,13 @@
  *  References below are based on rev. 1 (January 2012).
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_HMAC_DRBG_C)
 
 #include "mbedtls/hmac_drbg.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 
@@ -58,9 +53,7 @@ void mbedtls_hmac_drbg_init( mbedtls_hmac_drbg_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_hmac_drbg_context ) );
 
-#if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_init( &ctx->mutex );
-#endif
+    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 }
 
 /*
@@ -74,7 +67,7 @@ int mbedtls_hmac_drbg_update_ret( mbedtls_hmac_drbg_context *ctx,
     unsigned char rounds = ( additional != NULL && add_len != 0 ) ? 2 : 1;
     unsigned char sep[1];
     unsigned char K[MBEDTLS_MD_MAX_SIZE];
-    int ret;
+    int ret = MBEDTLS_ERR_MD_BAD_INPUT_DATA;
 
     for( sep[0] = 0; sep[0] < rounds; sep[0]++ )
     {
@@ -127,10 +120,14 @@ int mbedtls_hmac_drbg_seed_buf( mbedtls_hmac_drbg_context *ctx,
                         const mbedtls_md_info_t * md_info,
                         const unsigned char *data, size_t data_len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if( ( ret = mbedtls_md_setup( &ctx->md_ctx, md_info, 1 ) ) != 0 )
         return( ret );
+
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_init( &ctx->mutex );
+#endif
 
     /*
      * Set initial working state.
@@ -159,7 +156,7 @@ static int hmac_drbg_reseed_core( mbedtls_hmac_drbg_context *ctx,
 {
     unsigned char seed[MBEDTLS_HMAC_DRBG_MAX_SEED_INPUT];
     size_t seedlen = 0;
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     {
         size_t total_entropy_len;
@@ -251,11 +248,16 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
                     const unsigned char *custom,
                     size_t len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t md_size;
 
     if( ( ret = mbedtls_md_setup( &ctx->md_ctx, md_info, 1 ) ) != 0 )
         return( ret );
+
+    /* The mutex is initialized iff the md context is set up. */
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_init( &ctx->mutex );
+#endif
 
     md_size = mbedtls_md_get_size( md_info );
 
@@ -270,8 +272,6 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
 
     ctx->f_entropy = f_entropy;
     ctx->p_entropy = p_entropy;
-
-    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 
     if( ctx->entropy_len == 0 )
     {
@@ -329,7 +329,7 @@ int mbedtls_hmac_drbg_random_with_add( void *p_rng,
                                unsigned char *output, size_t out_len,
                                const unsigned char *additional, size_t add_len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_hmac_drbg_context *ctx = (mbedtls_hmac_drbg_context *) p_rng;
     size_t md_len = mbedtls_md_get_size( ctx->md_ctx.md_info );
     size_t left = out_len;
@@ -398,7 +398,7 @@ exit:
  */
 int mbedtls_hmac_drbg_random( void *p_rng, unsigned char *output, size_t out_len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_hmac_drbg_context *ctx = (mbedtls_hmac_drbg_context *) p_rng;
 
 #if defined(MBEDTLS_THREADING_C)
@@ -417,7 +417,8 @@ int mbedtls_hmac_drbg_random( void *p_rng, unsigned char *output, size_t out_len
 }
 
 /*
- * Free an HMAC_DRBG context
+ *  This function resets HMAC_DRBG context to the state immediately
+ *  after initial call of mbedtls_hmac_drbg_init().
  */
 void mbedtls_hmac_drbg_free( mbedtls_hmac_drbg_context *ctx )
 {
@@ -425,16 +426,19 @@ void mbedtls_hmac_drbg_free( mbedtls_hmac_drbg_context *ctx )
         return;
 
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_free( &ctx->mutex );
+    /* The mutex is initialized iff the md context is set up. */
+    if( ctx->md_ctx.md_info != NULL )
+        mbedtls_mutex_free( &ctx->mutex );
 #endif
     mbedtls_md_free( &ctx->md_ctx );
     mbedtls_platform_zeroize( ctx, sizeof( mbedtls_hmac_drbg_context ) );
+    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 }
 
 #if defined(MBEDTLS_FS_IO)
 int mbedtls_hmac_drbg_write_seed_file( mbedtls_hmac_drbg_context *ctx, const char *path )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     FILE *f;
     unsigned char buf[ MBEDTLS_HMAC_DRBG_MAX_INPUT ];
 

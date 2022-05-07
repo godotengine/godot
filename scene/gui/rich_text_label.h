@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_bar.h"
 
 class RichTextLabel : public Control {
-
 	GDCLASS(RichTextLabel, Control);
 
 public:
@@ -84,7 +83,6 @@ private:
 	struct Item;
 
 	struct Line {
-
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
@@ -98,7 +96,7 @@ private:
 		int maximum_width;
 
 		Line() {
-			from = NULL;
+			from = nullptr;
 			char_count = 0;
 		}
 	};
@@ -119,8 +117,8 @@ private:
 		}
 
 		Item() {
-			parent = NULL;
-			E = NULL;
+			parent = nullptr;
+			E = nullptr;
 			line = 0;
 		}
 		virtual ~Item() { _clear_children(); }
@@ -135,7 +133,7 @@ private:
 
 		ItemFrame() {
 			type = ITEM_FRAME;
-			parent_frame = NULL;
+			parent_frame = nullptr;
 			cell = false;
 			parent_line = 0;
 		}
@@ -243,12 +241,12 @@ private:
 
 		uint64_t offset_random(int index) {
 			return (_current_rng >> (index % 64)) |
-				   (_current_rng << (64 - (index % 64)));
+					(_current_rng << (64 - (index % 64)));
 		}
 
 		uint64_t offset_previous_random(int index) {
 			return (_previous_rng >> (index % 64)) |
-				   (_previous_rng << (64 - (index % 64)));
+					(_previous_rng << (64 - (index % 64)));
 		}
 	};
 
@@ -330,7 +328,7 @@ private:
 	ItemMeta *meta_hovering;
 	Variant current_meta;
 
-	Vector<Ref<RichTextEffect> > custom_effects;
+	Vector<Ref<RichTextEffect>> custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
 	void _validate_line_caches(ItemFrame *p_frame);
@@ -350,7 +348,6 @@ private:
 	};
 
 	struct Selection {
-
 		Item *click;
 		int click_char;
 
@@ -361,15 +358,18 @@ private:
 
 		bool active; // anything selected? i.e. from, to, etc. valid?
 		bool enabled; // allow selections?
+		bool drag_attempt;
 	};
 
 	Selection selection;
+	bool deselect_on_focus_loss_enabled;
 
 	int visible_characters;
 	float percent_visible;
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
+	bool _is_click_inside_selection() const;
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	Ref<Font> _find_font(Item *p_item);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
@@ -377,7 +377,7 @@ private:
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
@@ -396,8 +396,6 @@ private:
 
 	bool use_bbcode;
 	String bbcode;
-
-	void _update_all_lines();
 
 	int fixed_width;
 
@@ -470,10 +468,15 @@ public:
 	VScrollBar *get_v_scroll() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual Variant get_drag_data(const Point2 &p_point);
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
+	String get_selected_text();
 	void selection_copy();
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
+	void deselect();
 
 	Error parse_bbcode(const String &p_bbcode);
 	Error append_bbcode(const String &p_bbcode);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvexPolygonShape" inherits="Shape" version="3.2">
+<class name="ConvexPolygonShape" inherits="Shape" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Convex polygon shape for 3D physics.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Convex polygon shape resource, which can be added to a [PhysicsBody] or area.
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 	</methods>

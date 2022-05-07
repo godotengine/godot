@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "core/os/thread_safe.h"
 
 class Input : public Object {
-
 	GDCLASS(Input, Object);
 
 	static Input *singleton;
@@ -80,12 +79,17 @@ public:
 	static Input *get_singleton();
 
 	virtual bool is_key_pressed(int p_scancode) const = 0;
+	virtual bool is_physical_key_pressed(int p_scancode) const = 0;
 	virtual bool is_mouse_button_pressed(int p_button) const = 0;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const = 0;
-	virtual bool is_action_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_released(const StringName &p_action) const = 0;
-	virtual float get_action_strength(const StringName &p_action) const = 0;
+	virtual bool is_action_pressed(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual bool is_action_just_released(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual float get_action_strength(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const = 0;
+
+	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
+	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;
@@ -113,6 +117,10 @@ public:
 	virtual Vector3 get_accelerometer() const = 0;
 	virtual Vector3 get_magnetometer() const = 0;
 	virtual Vector3 get_gyroscope() const = 0;
+	virtual void set_gravity(const Vector3 &p_gravity) = 0;
+	virtual void set_accelerometer(const Vector3 &p_accel) = 0;
+	virtual void set_magnetometer(const Vector3 &p_magnetometer) = 0;
+	virtual void set_gyroscope(const Vector3 &p_gyroscope) = 0;
 
 	virtual void action_press(const StringName &p_action, float p_strength = 1.f) = 0;
 	virtual void action_release(const StringName &p_action) = 0;
@@ -133,8 +141,9 @@ public:
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void flush_accumulated_events() = 0;
+	virtual void flush_buffered_events() = 0;
+	virtual bool is_using_input_buffering() = 0;
+	virtual void set_use_input_buffering(bool p_enable) = 0;
 	virtual void set_use_accumulated_input(bool p_enable) = 0;
 
 	Input();

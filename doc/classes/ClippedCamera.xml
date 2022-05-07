@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ClippedCamera" inherits="Camera" version="3.2">
+<class name="ClippedCamera" inherits="Camera" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Camera] that includes collision.
 	</brief_description>
@@ -10,72 +10,57 @@
 	</tutorials>
 	<methods>
 		<method name="add_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="Object" />
 			<description>
 				Adds a collision exception so the camera does not collide with the specified node.
 			</description>
 		</method>
 		<method name="add_exception_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Adds a collision exception so the camera does not collide with the specified [RID].
 			</description>
 		</method>
 		<method name="clear_exceptions">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all collision exceptions.
 			</description>
 		</method>
 		<method name="get_clip_offset" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the distance the camera has been offset due to a collision.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bit" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified bit index is on.
 				[b]Note:[/b] Bit indices range from 0-19.
 			</description>
 		</method>
 		<method name="remove_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="Object" />
 			<description>
 				Removes a collision exception with the specified node.
 			</description>
 		</method>
 		<method name="remove_exception_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Removes a collision exception with the specified [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bit" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 				Sets the specified bit index to the [code]value[/code].
 				[b]Note:[/b] Bit indices range from 0-19.
@@ -90,7 +75,7 @@
 			If [code]true[/code], the camera stops on contact with [PhysicsBody]s.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected.
+			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The camera's collision margin. The camera can't get closer than this distance to a colliding object.

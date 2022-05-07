@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@ class Font;
 class StyleBox;
 
 class CanvasItemMaterial : public Material {
-
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
@@ -66,7 +65,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
@@ -99,7 +97,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
@@ -108,7 +105,7 @@ private:
 		return mk;
 	}
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<CanvasItemMaterial>::List *dirty_materials;
 	SelfList<CanvasItemMaterial> element;
 
@@ -116,6 +113,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	bool is_initialized = false;
 	BlendMode blend_mode;
 	LightMode light_mode;
 	bool particles_animation;
@@ -162,8 +160,9 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 
 class CanvasItem : public Node {
-
 	GDCLASS(CanvasItem, Node);
+
+	friend class CanvasLayer;
 
 public:
 	enum BlendMode {
@@ -209,6 +208,7 @@ private:
 	mutable bool global_invalid;
 
 	void _toplevel_raise_self();
+	void _toplevel_visibility_changed(bool p_visible);
 
 	void _propagate_visibility_changed(bool p_visible);
 
@@ -226,9 +226,13 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) return;
+		if (!is_inside_tree()) {
+			return;
+		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		if (!block_transform_notify && notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
 	}
 
 	void item_rect_changed(bool p_size_changed = true);

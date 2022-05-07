@@ -705,7 +705,7 @@ static int AllocateMemory(VP8Decoder* const dec) {
                         + cache_size + alpha_size + WEBP_ALIGN_CST;
   uint8_t* mem;
 
-  if (needed != (size_t)needed) return 0;  // check for overflow
+  if (!CheckSizeOverflow(needed)) return 0;  // check for overflow
   if (needed > dec->mem_size_) {
     WebPSafeFree(dec->mem_);
     dec->mem_size_ = 0;

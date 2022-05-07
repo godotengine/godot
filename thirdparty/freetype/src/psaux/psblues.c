@@ -37,7 +37,7 @@
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 #include "psblues.h"
 #include "pshints.h"
@@ -506,7 +506,8 @@
             /* guarantee minimum of 1 pixel overshoot */
             dsNew = FT_MIN(
                       cf2_fixedRound( bottomHintEdge->dsCoord ),
-                      blues->zone[i].dsFlatEdge - cf2_intToFixed( 1 ) );
+                      SUB_INT32( blues->zone[i].dsFlatEdge,
+                                 cf2_intToFixed( 1 ) ) );
           }
 
           else

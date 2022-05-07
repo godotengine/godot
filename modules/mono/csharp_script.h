@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,6 @@ TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 
 class CSharpScript : public Script {
-
 	GDCLASS(CSharpScript, Script);
 
 	friend class CSharpInstance;
@@ -75,6 +74,7 @@ class CSharpScript : public Script {
 
 	bool tool;
 	bool valid;
+	bool reload_invalidated;
 
 	bool builtin;
 
@@ -91,7 +91,7 @@ class CSharpScript : public Script {
 		// TODO
 		// Replace with buffer containing the serialized state of managed scripts.
 		// Keep variant state backup to use only with script instance placeholders.
-		List<Pair<StringName, Variant> > properties;
+		List<Pair<StringName, Variant>> properties;
 	};
 
 	Set<ObjectID> pending_reload_instances;
@@ -110,7 +110,7 @@ class CSharpScript : public Script {
 		Variant::Type type;
 	};
 
-	Map<StringName, Vector<Argument> > _signals;
+	Map<StringName, Vector<Argument>> _signals;
 	bool signals_invalidated;
 
 #ifdef TOOLS_ENABLED
@@ -129,14 +129,15 @@ class CSharpScript : public Script {
 	Set<StringName> exported_members_names;
 #endif
 
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
-	bool _update_exports();
+	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
@@ -179,10 +180,12 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 	virtual void update_exports();
 
-	void get_members(Set<StringName> *p_members) override;
+	virtual void get_members(Set<StringName> *p_members);
 
 	virtual bool is_tool() const { return tool; }
 	virtual bool is_valid() const { return valid; }
+
+	bool inherits_script(const Ref<Script> &p_script) const;
 
 	virtual Ref<Script> get_base_script() const;
 	virtual ScriptLanguage *get_language() const;
@@ -206,7 +209,6 @@ public:
 };
 
 class CSharpInstance : public ScriptInstance {
-
 	friend class CSharpScript;
 	friend class CSharpLanguage;
 
@@ -240,7 +242,7 @@ class CSharpInstance : public ScriptInstance {
 
 	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
-	void get_properties_state_for_reloading(List<Pair<StringName, Variant> > &r_state);
+	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
 
 public:
 	MonoObject *get_mono_object() const;
@@ -254,7 +256,7 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const;
 
-	/* TODO */ virtual void get_method_list(List<MethodInfo> *p_list) const {}
+	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -296,7 +298,6 @@ struct CSharpScriptBinding {
 };
 
 class CSharpLanguage : public ScriptLanguage {
-
 	friend class CSharpScript;
 	friend class CSharpInstance;
 
@@ -307,20 +308,19 @@ class CSharpLanguage : public ScriptLanguage {
 	GDMono *gdmono;
 	SelfList<CSharpScript>::List script_list;
 
-	Mutex *script_instances_mutex;
-	Mutex *script_gchandle_release_mutex;
-	Mutex *language_bind_mutex;
+	Mutex script_instances_mutex;
+	Mutex script_gchandle_release_mutex;
+	Mutex language_bind_mutex;
 
 	Map<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
 	// List of unsafe object references
 	Map<ObjectID, int> unsafe_object_references;
-	Mutex *unsafe_object_references_lock;
+	Mutex unsafe_object_references_lock;
 #endif
 
 	struct StringNameCache {
-
 		StringName _signal_callback;
 		StringName _set;
 		StringName _get;
@@ -358,7 +358,7 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	StringNameCache string_names;
 
-	Mutex *get_language_bind_mutex() { return language_bind_mutex; }
+	Mutex &get_language_bind_mutex() { return language_bind_mutex; }
 
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
@@ -403,6 +403,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
@@ -440,7 +441,7 @@ public:
 	virtual void frame();
 
 	/* TODO? */ virtual void get_public_functions(List<MethodInfo> *p_functions) const {}
-	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const {}
+	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const {}
 
 	virtual void reload_all_scripts();
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);

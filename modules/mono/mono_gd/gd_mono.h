@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,8 +54,8 @@ struct Version {
 
 	bool operator==(const Version &p_other) const {
 		return godot_api_hash == p_other.godot_api_hash &&
-			   bindings_version == p_other.bindings_version &&
-			   cs_glue_version == p_other.cs_glue_version;
+				bindings_version == p_other.bindings_version &&
+				cs_glue_version == p_other.cs_glue_version;
 	}
 
 	Version() :
@@ -79,7 +79,6 @@ String to_string(Type p_type);
 } // namespace ApiAssemblyInfo
 
 class GDMono {
-
 public:
 	enum UnhandledExceptionPolicy {
 		POLICY_TERMINATE_APP,
@@ -105,7 +104,7 @@ private:
 	MonoDomain *root_domain;
 	MonoDomain *scripts_domain;
 
-	HashMap<uint32_t, HashMap<String, GDMonoAssembly *> > assemblies;
+	HashMap<uint32_t, HashMap<String, GDMonoAssembly *>> assemblies;
 
 	GDMonoAssembly *corlib_assembly;
 	GDMonoAssembly *project_assembly;
@@ -241,6 +240,7 @@ public:
 
 	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
 	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs);
 	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly = false);
 
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
@@ -255,7 +255,6 @@ public:
 namespace gdmono {
 
 class ScopeDomain {
-
 	MonoDomain *prev_domain;
 
 public:

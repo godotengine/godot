@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "scene/resources/environment.h"
 
 class Camera : public Spatial {
-
 	GDCLASS(Camera, Spatial);
 
 public:
@@ -83,8 +82,6 @@ private:
 
 	Ref<Environment> environment;
 
-	virtual bool _can_gizmo_scale() const;
-
 	//void _camera_make_current(Node *p_camera);
 	friend class Viewport;
 	void _update_audio_listener_state();
@@ -96,6 +93,8 @@ protected:
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
+
+	virtual void _physics_interpolated_changed();
 
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -180,7 +179,6 @@ VARIANT_ENUM_CAST(Camera::KeepAspect);
 VARIANT_ENUM_CAST(Camera::DopplerTracking);
 
 class ClippedCamera : public Camera {
-
 	GDCLASS(ClippedCamera, Camera);
 
 public:

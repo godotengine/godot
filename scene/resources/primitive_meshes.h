@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 	This class is set apart that it assumes a single surface is always generated for our mesh.
 */
 class PrimitiveMesh : public Mesh {
-
 	GDCLASS(PrimitiveMesh, Mesh);
 
 private:
@@ -76,6 +75,7 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const;
 	virtual int get_blend_shape_count() const;
 	virtual StringName get_blend_shape_name(int p_index) const;
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name);
 	virtual AABB get_aabb() const;
 	virtual RID get_rid() const;
 
@@ -101,6 +101,10 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 8;
+
+private:
 	float radius;
 	float mid_height;
 	int radial_segments;
@@ -111,6 +115,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float mid_height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -130,8 +136,12 @@ public:
 	Similar to test cube but with subdivision support and different texture coordinates
 */
 class CubeMesh : public PrimitiveMesh {
-
 	GDCLASS(CubeMesh, PrimitiveMesh);
+
+private:
+	static constexpr int default_subdivide_w = 0;
+	static constexpr int default_subdivide_h = 0;
+	static constexpr int default_subdivide_d = 0;
 
 private:
 	Vector3 size;
@@ -144,6 +154,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = default_subdivide_w, int subdivide_h = default_subdivide_h, int subdivide_d = default_subdivide_d);
+
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
@@ -164,8 +176,11 @@ public:
 */
 
 class CylinderMesh : public PrimitiveMesh {
-
 	GDCLASS(CylinderMesh, PrimitiveMesh);
+
+private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 4;
 
 private:
 	float top_radius;
@@ -179,6 +194,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
 
@@ -201,13 +218,13 @@ public:
 	Similar to quadmesh but with tessellation support
 */
 class PlaneMesh : public PrimitiveMesh {
-
 	GDCLASS(PlaneMesh, PrimitiveMesh);
 
 private:
 	Size2 size;
 	int subdivide_w;
 	int subdivide_d;
+	Vector3 center_offset;
 
 protected:
 	static void _bind_methods();
@@ -223,6 +240,9 @@ public:
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
 
+	void set_center_offset(const Vector3 p_offset);
+	Vector3 get_center_offset() const;
+
 	PlaneMesh();
 };
 
@@ -230,7 +250,6 @@ public:
 	A prism shapen, handy for ramps, triangles, etc.
 */
 class PrismMesh : public PrimitiveMesh {
-
 	GDCLASS(PrismMesh, PrimitiveMesh);
 
 private:
@@ -268,11 +287,11 @@ public:
 */
 
 class QuadMesh : public PrimitiveMesh {
-
 	GDCLASS(QuadMesh, PrimitiveMesh);
 
 private:
 	Size2 size;
+	Vector3 center_offset;
 
 protected:
 	static void _bind_methods();
@@ -283,14 +302,21 @@ public:
 
 	void set_size(const Size2 &p_size);
 	Size2 get_size() const;
+
+	void set_center_offset(const Vector3 p_offset);
+	Vector3 get_center_offset() const;
 };
 
 /**
 	A sphere..
 */
 class SphereMesh : public PrimitiveMesh {
-
 	GDCLASS(SphereMesh, PrimitiveMesh);
+
+private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 32;
+	static constexpr bool default_is_hemisphere = false;
 
 private:
 	float radius;
@@ -304,6 +330,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = default_radial_segments, int rings = default_rings, bool is_hemisphere = default_is_hemisphere);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -327,7 +355,6 @@ public:
 */
 
 class PointMesh : public PrimitiveMesh {
-
 	GDCLASS(PointMesh, PrimitiveMesh)
 
 protected:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,9 @@ subject to the following restrictions:
 #include "pin_joint_sw.h"
 
 bool PinJointSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
 
 	m_appliedImpulse = real_t(0.);
 
@@ -57,16 +60,18 @@ bool PinJointSW::setup(real_t p_step) {
 
 	for (int i = 0; i < 3; i++) {
 		normal[i] = 1;
-		memnew_placement(&m_jac[i], JacobianEntrySW(
-											A->get_principal_inertia_axes().transposed(),
-											B->get_principal_inertia_axes().transposed(),
-											A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
-											B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
-											normal,
-											A->get_inv_inertia(),
-											A->get_inv_mass(),
-											B->get_inv_inertia(),
-											B->get_inv_mass()));
+		memnew_placement(
+				&m_jac[i],
+				JacobianEntrySW(
+						A->get_principal_inertia_axes().transposed(),
+						B->get_principal_inertia_axes().transposed(),
+						A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
+						B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
+						normal,
+						A->get_inv_inertia(),
+						A->get_inv_mass(),
+						B->get_inv_inertia(),
+						B->get_inv_mass()));
 		normal[i] = 0;
 	}
 
@@ -74,14 +79,10 @@ bool PinJointSW::setup(real_t p_step) {
 }
 
 void PinJointSW::solve(real_t p_step) {
-
 	Vector3 pivotAInW = A->get_transform().xform(m_pivotInA);
 	Vector3 pivotBInW = B->get_transform().xform(m_pivotInB);
 
 	Vector3 normal(0, 0, 0);
-
-	//Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
-	//Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
 
 	for (int i = 0; i < 3; i++) {
 		normal[i] = 1;
@@ -98,12 +99,6 @@ void PinJointSW::solve(real_t p_step) {
 		real_t rel_vel;
 		rel_vel = normal.dot(vel);
 
-		/*
-		//velocity error (first order error)
-		real_t rel_vel = m_jac[i].getRelativeVelocity(A->getLinearVelocity(),angvelA,
-														B->getLinearVelocity(),angvelB);
-	*/
-
 		//positional error (zeroth order error)
 		real_t depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal
 
@@ -111,10 +106,12 @@ void PinJointSW::solve(real_t p_step) {
 
 		real_t impulseClamp = m_impulseClamp;
 		if (impulseClamp > 0) {
-			if (impulse < -impulseClamp)
+			if (impulse < -impulseClamp) {
 				impulse = -impulseClamp;
-			if (impulse > impulseClamp)
+			}
+			if (impulse > impulseClamp) {
 				impulse = impulseClamp;
+			}
 		}
 
 		m_appliedImpulse += impulse;
@@ -127,20 +124,27 @@ void PinJointSW::solve(real_t p_step) {
 }
 
 void PinJointSW::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: m_tau = p_value; break;
-		case PhysicsServer::PIN_JOINT_DAMPING: m_damping = p_value; break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: m_impulseClamp = p_value; break;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			m_tau = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			m_damping = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			m_impulseClamp = p_value;
+			break;
 	}
 }
 
 real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
-
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: return m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING: return m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: return m_impulseClamp;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			return m_tau;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			return m_damping;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			return m_impulseClamp;
 	}
 
 	return 0;
@@ -148,7 +152,6 @@ real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
 
 PinJointSW::PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b) :
 		JointSW(_arr, 2) {
-
 	A = p_body_a;
 	B = p_body_b;
 	m_pivotInA = p_pos_a;

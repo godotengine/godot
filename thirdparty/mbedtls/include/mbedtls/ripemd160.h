@@ -4,7 +4,7 @@
  * \brief RIPE MD-160 message digest
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,14 +18,12 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_RIPEMD160_H
 #define MBEDTLS_RIPEMD160_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
@@ -35,7 +33,8 @@
 
 /* MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031  /**< RIPEMD160 hardware accelerator failed */
+/** RIPEMD160 hardware accelerator failed */
+#define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +56,7 @@ typedef struct mbedtls_ripemd160_context
 mbedtls_ripemd160_context;
 
 #else  /* MBEDTLS_RIPEMD160_ALT */
-#include "ripemd160.h"
+#include "ripemd160_alt.h"
 #endif /* MBEDTLS_RIPEMD160_ALT */
 
 /**

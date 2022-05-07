@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "editor_scale.h"
 
 void NodeDock::show_groups() {
-
 	groups_button->set_pressed(true);
 	connections_button->set_pressed(false);
 	groups->show();
@@ -42,7 +41,6 @@ void NodeDock::show_groups() {
 }
 
 void NodeDock::show_connections() {
-
 	groups_button->set_pressed(false);
 	connections_button->set_pressed(true);
 	groups->hide();
@@ -50,36 +48,33 @@ void NodeDock::show_connections() {
 }
 
 void NodeDock::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("show_groups"), &NodeDock::show_groups);
 	ClassDB::bind_method(D_METHOD("show_connections"), &NodeDock::show_connections);
 }
 
 void NodeDock::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
 	}
 }
 
-NodeDock *NodeDock::singleton = NULL;
+NodeDock *NodeDock::singleton = nullptr;
 
 void NodeDock::update_lists() {
-
 	connections->update_tree();
 }
 
 void NodeDock::set_node(Node *p_node) {
-
 	connections->set_node(p_node);
 	groups->set_current(p_node);
 
 	if (p_node) {
-		if (connections_button->is_pressed())
+		if (connections_button->is_pressed()) {
 			connections->show();
-		else
+		} else {
 			groups->show();
+		}
 
 		mode_hb->show();
 		select_a_node->hide();
@@ -92,7 +87,6 @@ void NodeDock::set_node(Node *p_node) {
 }
 
 NodeDock::NodeDock() {
-
 	singleton = this;
 
 	set_name("Node");

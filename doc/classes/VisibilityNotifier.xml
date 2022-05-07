@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibilityNotifier" inherits="Spatial" version="3.2">
+<class name="VisibilityNotifier" inherits="CullInstance" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Detects approximately when the node is visible on screen.
 	</brief_description>
 	<description>
 		The VisibilityNotifier detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a [Camera]'s view.
-		[b]Note:[/b] VisibilityNotifier uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. If you need exact visibility checking, use another method such as adding an [Area] node as a child of a [Camera] node.
+		If you want nodes to be disabled automatically when they exit the screen, use [VisibilityEnabler] instead.
+		[b]Note:[/b] VisibilityNotifier uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account (unless you are using [Portal]s). The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area] node as a child of a [Camera] node and/or [method Vector3.dot].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], the bounding box is on the screen.
 				[b]Note:[/b] It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
@@ -26,15 +26,13 @@
 	</members>
 	<signals>
 		<signal name="camera_entered">
-			<argument index="0" name="camera" type="Camera">
-			</argument>
+			<argument index="0" name="camera" type="Camera" />
 			<description>
 				Emitted when the VisibilityNotifier enters a [Camera]'s view.
 			</description>
 		</signal>
 		<signal name="camera_exited">
-			<argument index="0" name="camera" type="Camera">
-			</argument>
+			<argument index="0" name="camera" type="Camera" />
 			<description>
 				Emitted when the VisibilityNotifier exits a [Camera]'s view.
 			</description>

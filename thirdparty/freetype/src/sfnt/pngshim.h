@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2021 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -21,7 +21,6 @@
 #define PNGSHIM_H_
 
 
-#include <ft2build.h>
 #include "ttload.h"
 
 

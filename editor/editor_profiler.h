@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,28 +41,24 @@
 #include "scene/gui/tree.h"
 
 class EditorProfiler : public VBoxContainer {
-
 	GDCLASS(EditorProfiler, VBoxContainer);
 
 public:
 	struct Metric {
-
 		bool valid;
 
 		int frame_number;
 		float frame_time;
-		float idle_time;
+		float process_time;
 		float physics_time;
 		float physics_frame_time;
 
 		struct Category {
-
 			StringName signature;
 			String name;
 			float total_time; //total for category
 
 			struct Item {
-
 				StringName signature;
 				String name;
 				String script;
@@ -169,7 +165,7 @@ public:
 
 	void clear();
 
-	Vector<Vector<String> > get_data_as_csv() const;
+	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorProfiler();
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,13 +47,13 @@ class SkinReference : public Reference {
 	GDCLASS(SkinReference, Reference)
 	friend class Skeleton;
 
-	Skeleton *skeleton_node;
+	Skeleton *skeleton_node = nullptr;
 	RID skeleton;
 	Ref<Skin> skin;
 	uint32_t bind_count = 0;
 	uint64_t skeleton_version = 0;
 	Vector<uint32_t> skin_bone_indices;
-	uint32_t *skin_bone_indices_ptrs;
+	uint32_t *skin_bone_indices_ptrs = nullptr;
 	void _skin_changed();
 
 protected:
@@ -61,12 +61,12 @@ protected:
 
 public:
 	RID get_skeleton() const;
+	Skeleton *get_skeleton_node() const;
 	Ref<Skin> get_skin() const;
 	~SkinReference();
 };
 
 class Skeleton : public Spatial {
-
 	GDCLASS(Skeleton, Spatial);
 
 private:
@@ -77,7 +77,6 @@ private:
 	void _skin_changed();
 
 	struct Bone {
-
 		String name;
 
 		bool enabled;
@@ -89,6 +88,7 @@ private:
 
 		Transform pose;
 		Transform pose_global;
+		Transform pose_global_no_override;
 
 		bool custom_pose_enable;
 		Transform custom_pose;
@@ -112,8 +112,8 @@ private:
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
 #ifndef _3D_DISABLED
-			physical_bone = NULL;
-			cache_parent_physical_bone = NULL;
+			physical_bone = nullptr;
+			cache_parent_physical_bone = nullptr;
 #endif // _3D_DISABLED
 		}
 	};
@@ -129,13 +129,11 @@ private:
 
 	// bind helpers
 	Array _get_bound_child_nodes_to_bone(int p_bone) const {
-
 		Array bound;
 		List<Node *> children;
 		get_bound_child_nodes_to_bone(p_bone, &children);
 
 		for (int i = 0; i < children.size(); i++) {
-
 			bound.push_back(children[i]);
 		}
 		return bound;
@@ -160,6 +158,7 @@ public:
 	void add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
+	void set_bone_name(int p_bone, const String &p_name);
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 
@@ -176,6 +175,7 @@ public:
 	void set_bone_rest(int p_bone, const Transform &p_rest);
 	Transform get_bone_rest(int p_bone) const;
 	Transform get_bone_global_pose(int p_bone) const;
+	Transform get_bone_global_pose_no_override(int p_bone) const;
 
 	void clear_bones_global_pose_override();
 	void set_bone_global_pose_override(int p_bone, const Transform &p_pose, float p_amount, bool p_persistent = false);

@@ -2,48 +2,173 @@
 # Each line is a file pattern followed by one or more owners.
 # Owners can be @users, @org/teams or emails
 
-/doc/                @godotengine/documentation
-doc_classes/*        @godotengine/documentation
+# Buildsystem
 
-# Rendering
-/drivers/gl_context/ @reduz
-/drivers/gles2/      @reduz
-/drivers/gles3/      @reduz
+.*                                  @godotengine/buildsystem
+.github/                            @godotengine/buildsystem
+*.py                                @godotengine/buildsystem
+SConstruct                          @godotengine/buildsystem
+SCsub                               @godotengine/buildsystem
 
-# Audio
-/drivers/alsa/       @marcelofg55
-/drivers/alsamidi/   @marcelofg55
-/drivers/coreaudio/  @marcelofg55
-/drivers/coremidi/   @marcelofg55
-/drivers/pulseaudio/ @marcelofg55
-/drivers/wasapi/     @marcelofg55
-/drivers/winmidi/    @marcelofg55
-/drivers/xaudio2/    @marcelofg55
+# Core
 
-/drivers/unix/       @hpvb
-/drivers/windows/    @hpvb
+/core/                              @godotengine/core
+/core/crypto/                       @godotengine/network
+/core/input*.*                      @godotengine/input
 
-/editor/icons/       @djrm
+# Doc
 
-/misc/               @akien-mga
+/doc/                               @godotengine/documentation
+doc_classes/*                       @godotengine/documentation
 
-/modules/bullet/     @AndreaCatania
-/modules/csg/        @BastiaanOlij
-/modules/enet/       @godotengine/network
-/modules/gdnative/*arvr/ @BastiaanOlij
-/modules/gdscript/   @vnen @bojidar-bg
-/modules/mbedtls/    @godotengine/network
-/modules/mobile_vr/  @BastiaanOlij
-/modules/mono/       @neikeq
-/modules/opensimplex/ @JFonS
-/modules/regex/      @LeeZH
-/modules/upnp/       @godotengine/network
-/modules/websocket/  @godotengine/network
+# Drivers
 
-/platform/javascript/ @eska014
-/platform/uwp/       @vnen
+## Audio
+/drivers/alsa/                      @godotengine/audio
+/drivers/alsamidi/                  @godotengine/audio
+/drivers/coreaudio/                 @godotengine/audio
+/drivers/coremidi/                  @godotengine/audio
+/drivers/pulseaudio/                @godotengine/audio
+/drivers/wasapi/                    @godotengine/audio
+/drivers/winmidi/                   @godotengine/audio
+/drivers/xaudio2/                   @godotengine/audio
 
-/server/physics*/    @reduz @AndreaCatania
-/server/visual*/     @reduz
+## Rendering
+/drivers/dummy/                     @godotengine/rendering
+/drivers/gl_context/                @godotengine/rendering
+/drivers/gles2/                     @godotengine/rendering
+/drivers/gles3/                     @godotengine/rendering
+/drivers/gles_common/               @godotengine/rendering
 
-/thirdparty/         @akien-mga
+## OS
+/drivers/unix/                      @godotengine/_platforms
+/drivers/windows/                   @godotengine/windows
+
+## Misc
+/drivers/png/                       @godotengine/import
+
+# Editor
+
+/editor/*debugger*                  @godotengine/debugger
+/editor/icons/                      @godotengine/usability
+/editor/import/                     @godotengine/import
+/editor/plugins/*2d_*.*             @godotengine/2d-editor
+/editor/plugins/script_*.*          @godotengine/script-editor
+/editor/plugins/*shader*.*          @godotengine/shaders
+/editor/code_editor.*               @godotengine/script-editor
+/editor/*dock*.*                    @godotengine/docks
+
+# Main
+
+/main/                              @godotengine/core
+/main/tests/                        @godotengine/tests
+
+# Misc
+
+/misc/                              @godotengine/buildsystem
+
+# Modules
+
+## Audio (+ video)
+/modules/minimp3/                   @godotengine/audio
+/modules/ogg/                       @godotengine/audio
+/modules/opus/                      @godotengine/audio
+/modules/stb_vorbis/                @godotengine/audio
+/modules/theora/                    @godotengine/audio
+/modules/vorbis/                    @godotengine/audio
+/modules/webm/                      @godotengine/audio
+
+## Import
+/modules/basis_universal/           @godotengine/import
+/modules/bmp/                       @godotengine/import
+/modules/cvtt/                      @godotengine/import
+/modules/dds/                       @godotengine/import
+/modules/etc/                       @godotengine/import
+/modules/fbx/                       @godotengine/import
+/modules/gltf/                      @godotengine/import
+/modules/hdr/                       @godotengine/import
+/modules/jpg/                       @godotengine/import
+/modules/pvr/                       @godotengine/import
+/modules/squish/                    @godotengine/import
+/modules/svg/                       @godotengine/import
+/modules/tga/                       @godotengine/import
+/modules/tinyexr/                   @godotengine/import
+/modules/webp/                      @godotengine/import
+
+## Network
+/modules/enet/                      @godotengine/network
+/modules/mbedtls/                   @godotengine/network
+/modules/upnp/                      @godotengine/network
+/modules/webrtc/                    @godotengine/network
+/modules/websocket/                 @godotengine/network
+
+## Rendering
+/modules/denoise/                   @godotengine/rendering
+/modules/glslang/                   @godotengine/rendering
+/modules/lightmapper_cpu/           @godotengine/rendering
+/modules/meshoptimizer/             @godotengine/rendering
+/modules/raycast/                   @godotengine/rendering
+/modules/vhacd/                     @godotengine/rendering
+/modules/xatlas_unwrap/             @godotengine/rendering
+
+## Scripting
+/modules/gdnative/                  @godotengine/gdnative
+/modules/gdscript/                  @godotengine/gdscript
+/modules/jsonrpc/                   @godotengine/gdscript
+/modules/mono/                      @godotengine/mono
+/modules/visual_script/             @godotengine/visualscript
+
+## Text
+/modules/freetype/                  @godotengine/buildsystem
+/modules/gdnative/text/             @godotengine/gui-nodes
+/modules/text_server_adv/           @godotengine/gui-nodes
+/modules/text_server_fb/            @godotengine/gui-nodes
+
+## XR
+/modules/camera/                    @godotengine/xr
+/modules/gdnative/arvr/             @godotengine/xr
+/modules/mobile_vr/                 @godotengine/xr
+/modules/webxr/                     @godotengine/xr
+
+## Misc
+/modules/bullet/                    @godotengine/physics
+/modules/csg/                       @godotengine/3d-nodes
+/modules/gridmap/                   @godotengine/3d-nodes
+/modules/opensimplex/               @godotengine/3d-nodes
+/modules/recast/                    @godotengine/navigation
+/modules/regex/                     @godotengine/core
+
+# Platform
+
+/platform/android/                  @godotengine/android
+/platform/iphone/                   @godotengine/ios
+/platform/javascript/               @godotengine/html5
+/platform/x11/                      @godotengine/linux-bsd
+/platform/osx/                      @godotengine/macos
+/platform/uwp/                      @godotengine/uwp
+/platform/windows/                  @godotengine/windows
+
+# Scene
+
+/scene/2d/                          @godotengine/2d-nodes
+/scene/3d/                          @godotengine/3d-nodes
+/scene/animation/                   @godotengine/animation
+/scene/audio/                       @godotengine/audio
+/scene/debugger/                    @godotengine/debugger
+/scene/gui/                         @godotengine/gui-nodes
+/scene/main/                        @godotengine/core
+/scene/resources/default_theme/     @godotengine/gui-nodes
+/scene/resources/font.*             @godotengine/gui-nodes
+/scene/resources/visual_shader*.*   @godotengine/shaders
+
+# Servers
+
+/servers/arvr*                      @godotengine/xr
+/servers/audio*                     @godotengine/audio
+/servers/camera*                    @godotengine/xr
+/servers/physics*                   @godotengine/physics
+/servers/visual*                    @godotengine/rendering
+
+# Thirdparty
+
+/thirdparty/                        @godotengine/buildsystem

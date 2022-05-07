@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "cylinder_shape.h"
+
 #include "servers/physics_server.h"
 
 Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
-
 	float radius = get_radius();
 	float height = get_height();
 
@@ -40,7 +40,6 @@ Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
 
 	Vector3 d(0, height * 0.5, 0);
 	for (int i = 0; i < 360; i++) {
-
 		float ra = Math::deg2rad((float)i);
 		float rb = Math::deg2rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
@@ -53,7 +52,6 @@ Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
 		points.push_back(Vector3(b.x, 0, b.y) - d);
 
 		if (i % 90 == 0) {
-
 			points.push_back(Vector3(a.x, 0, a.y) + d);
 			points.push_back(Vector3(a.x, 0, a.y) - d);
 		}
@@ -62,8 +60,11 @@ Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
 	return points;
 }
 
-void CylinderShape::_update_shape() {
+real_t CylinderShape::get_enclosing_radius() const {
+	return Vector2(radius, height * 0.5).length();
+}
 
+void CylinderShape::_update_shape() {
 	Dictionary d;
 	d["radius"] = radius;
 	d["height"] = height;
@@ -72,7 +73,6 @@ void CylinderShape::_update_shape() {
 }
 
 void CylinderShape::set_radius(float p_radius) {
-
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
@@ -80,12 +80,10 @@ void CylinderShape::set_radius(float p_radius) {
 }
 
 float CylinderShape::get_radius() const {
-
 	return radius;
 }
 
 void CylinderShape::set_height(float p_height) {
-
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
@@ -93,24 +91,21 @@ void CylinderShape::set_height(float p_height) {
 }
 
 float CylinderShape::get_height() const {
-
 	return height;
 }
 
 void CylinderShape::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CylinderShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CylinderShape::get_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderShape::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderShape::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_radius", "get_radius");
 }
 
 CylinderShape::CylinderShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CYLINDER)) {
-
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CYLINDER))) {
 	radius = 1.0;
 	height = 2.0;
 	_update_shape();

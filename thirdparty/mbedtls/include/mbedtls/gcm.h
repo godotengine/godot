@@ -12,7 +12,7 @@
  *
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,32 +26,33 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 
 #ifndef MBEDTLS_GCM_H
 #define MBEDTLS_GCM_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "cipher.h"
+#include "mbedtls/cipher.h"
 
 #include <stdint.h>
 
 #define MBEDTLS_GCM_ENCRYPT     1
 #define MBEDTLS_GCM_DECRYPT     0
 
-#define MBEDTLS_ERR_GCM_AUTH_FAILED                       -0x0012  /**< Authenticated decryption failed. */
+/** Authenticated decryption failed. */
+#define MBEDTLS_ERR_GCM_AUTH_FAILED                       -0x0012
 
 /* MBEDTLS_ERR_GCM_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_GCM_HW_ACCEL_FAILED                   -0x0013  /**< GCM hardware accelerator failed. */
+/** GCM hardware accelerator failed. */
+#define MBEDTLS_ERR_GCM_HW_ACCEL_FAILED                   -0x0013
 
-#define MBEDTLS_ERR_GCM_BAD_INPUT                         -0x0014  /**< Bad input parameters to function. */
+/** Bad input parameters to function. */
+#define MBEDTLS_ERR_GCM_BAD_INPUT                         -0x0014
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,7 +158,7 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                  than zero, this must be a writable buffer of at least that
  *                  size in Bytes.
  * \param tag_len   The length of the tag to generate.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  *
  * \return          \c 0 if the encryption or decryption was performed
@@ -285,7 +286,7 @@ int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
  *                  tag. The tag can have a maximum length of 16 Bytes.
  *
  * \param ctx       The GCM context. This must be initialized.
- * \param tag       The buffer for holding the tag. This must be a readable
+ * \param tag       The buffer for holding the tag. This must be a writable
  *                  buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the tag to generate. This must be at least
  *                  four.

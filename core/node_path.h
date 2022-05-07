@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,7 @@
 #include "core/ustring.h"
 
 class NodePath {
-
 	struct Data {
-
 		SafeRefCount refcount;
 		Vector<StringName> path;
 		Vector<StringName> subpath;
@@ -55,7 +53,6 @@ class NodePath {
 
 public:
 	_FORCE_INLINE_ StringName get_sname() const {
-
 		if (data && data->path.size() == 1 && data->subpath.empty()) {
 			return data->path[0];
 		} else {
@@ -77,11 +74,10 @@ public:
 
 	void prepend_period();
 
-	NodePath get_parent() const;
-
 	_FORCE_INLINE_ uint32_t hash() const {
-		if (!data)
+		if (!data) {
 			return 0;
+		}
 		if (!data->hash_cache_valid) {
 			_update_hash_cache();
 		}

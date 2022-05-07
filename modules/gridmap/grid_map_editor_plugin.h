@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,6 @@ class GridMapEditor : public VBoxContainer {
 	Label *spin_box_label;
 
 	struct SetItem {
-
 		Vector3 pos;
 		int new_value;
 		int new_orientation;
@@ -133,7 +132,6 @@ class GridMapEditor : public VBoxContainer {
 	bool updating;
 
 	struct Selection {
-
 		Vector3 click;
 		Vector3 current;
 		Vector3 begin;
@@ -143,7 +141,6 @@ class GridMapEditor : public VBoxContainer {
 	Selection last_selection;
 
 	struct PasteIndicator {
-
 		Vector3 click;
 		Vector3 current;
 		Vector3 begin;
@@ -191,7 +188,6 @@ class GridMapEditor : public VBoxContainer {
 	SpatialEditorPlugin *spatial_editor;
 
 	struct AreaDisplay {
-
 		RID mesh;
 		RID instance;
 	};
@@ -251,7 +247,6 @@ public:
 };
 
 class GridMapEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor;

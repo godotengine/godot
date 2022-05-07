@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BakedLightmapData" inherits="Resource" version="3.2">
+<class name="BakedLightmapData" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,42 +8,39 @@
 	</tutorials>
 	<methods>
 		<method name="add_user">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<argument index="1" name="lightmap" type="Texture">
-			</argument>
-			<argument index="2" name="instance" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="lightmap" type="Resource" />
+			<argument index="2" name="lightmap_slice" type="int" />
+			<argument index="3" name="lightmap_uv_rect" type="Rect2" />
+			<argument index="4" name="instance" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_data">
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="clear_users">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_user_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_user_lightmap" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="user_idx" type="int">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="user_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_user_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="user_idx" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="user_idx" type="int" />
 			<description>
 			</description>
 		</method>
@@ -56,6 +53,11 @@
 		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv" default="1">
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
+			Global energy multiplier for baked and dynamic capture objects. This can be changed at run-time without having to bake lightmaps again.
+			To adjust only the energy of indirect lighting (without affecting direct lighting or emissive materials), adjust [member BakedLightmap.bounce_indirect_energy] and bake lightmaps again.
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
+			Controls whether dynamic capture objects receive environment lighting or not.
 		</member>
 		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree" default="PoolByteArray(  )">
 		</member>

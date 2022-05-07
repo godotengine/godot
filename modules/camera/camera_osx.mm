@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +29,11 @@
 /*************************************************************************/
 
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
-// If you fix something here, make sure you fix it there as wel!
+// If you fix something here, make sure you fix it there as well!
 
 #include "camera_osx.h"
 #include "servers/camera/camera_feed.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,7 +231,7 @@ void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 
 	// get some info
 	NSString *device_name = p_device.localizedName;
-	name = device_name.UTF8String;
+	name = String::utf8(device_name.UTF8String);
 	position = CameraFeed::FEED_UNSPECIFIED;
 	if ([p_device position] == AVCaptureDevicePositionBack) {
 		position = CameraFeed::FEED_BACK;
@@ -253,10 +254,25 @@ CameraFeedOSX::~CameraFeedOSX() {
 
 bool CameraFeedOSX::activate_feed() {
 	if (capture_session) {
-		// already recording!
+		// Already recording!
 	} else {
-		// start camera capture
-		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		// Start camera capture, check permission.
+		if (@available(macOS 10.14, *)) {
+			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+			if (status == AVAuthorizationStatusAuthorized) {
+				capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+			} else if (status == AVAuthorizationStatusNotDetermined) {
+				// Request permission.
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+										 completionHandler:^(BOOL granted) {
+											 if (granted) {
+												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+											 }
+										 }];
+			}
+		} else {
+			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		}
 	};
 
 	return true;
@@ -313,7 +329,12 @@ MyDeviceNotifications *device_notifications = nil;
 // CameraOSX - Subclass for our camera server on OSX
 
 void CameraOSX::update_feeds() {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSArray *devices = session.devices;
+#else
 	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+#endif
 
 	// remove devices that are gone..
 	for (int i = feeds.size() - 1; i >= 0; i--) {

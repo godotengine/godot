@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/image_loader.h"
+#include "core/math/geometry.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "mesh.h"
@@ -39,7 +40,6 @@
 #include "servers/camera/camera_feed.h"
 
 Size2 Texture::get_size() const {
-
 	return Size2(get_width(), get_height());
 }
 
@@ -47,23 +47,19 @@ bool Texture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 void Texture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose, normal_rid);
 }
 void Texture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose, normal_rid);
 }
 void Texture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
 }
 
 bool Texture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-
 	r_rect = p_rect;
 	r_src_rect = p_src_rect;
 
@@ -71,7 +67,6 @@ bool Texture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect
 }
 
 void Texture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture::get_size);
@@ -84,7 +79,7 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
 	ADD_GROUP("Flags", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
@@ -103,10 +98,10 @@ Texture::Texture() {
 /////////////////////
 
 void ImageTexture::reload_from_file() {
-
 	String path = ResourceLoader::path_remap(get_path());
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	uint32_t flags = get_flags();
 	Ref<Image> img;
@@ -122,55 +117,54 @@ void ImageTexture::reload_from_file() {
 }
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
-
-	if (p_name == "image")
+	if (p_name == "image") {
 		create_from_image(p_value, flags);
-	else if (p_name == "flags")
-		if (w * h == 0)
+	} else if (p_name == "flags") {
+		if (w * h == 0) {
 			flags = p_value;
-		else
+		} else {
 			set_flags(p_value);
-	else if (p_name == "size") {
+		}
+	} else if (p_name == "size") {
 		Size2 s = p_value;
 		w = s.width;
 		h = s.height;
 		VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 	} else if (p_name == "_data") {
 		_set_data(p_value);
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (p_name == "image_data") {
-
-	} else if (p_name == "image")
+	} else if (p_name == "image") {
 		r_ret = get_data();
-	else if (p_name == "flags")
+	} else if (p_name == "flags") {
 		r_ret = flags;
-	else if (p_name == "size")
+	} else if (p_name == "size") {
 		r_ret = Size2(w, h);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
 }
 
 void ImageTexture::_reload_hook(const RID &p_hook) {
-
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	Ref<Image> img;
 	img.instance();
@@ -185,7 +179,6 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 }
 
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
-
 	flags = p_flags;
 	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, 0, p_format, VS::TEXTURE_TYPE_2D, p_flags);
 	format = p_format;
@@ -194,9 +187,9 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 	_change_notify();
 	emit_changed();
 }
-void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
-	ERR_FAIL_COND(p_image.is_null());
+void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
+	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->empty(), "Invalid image");
 	flags = p_flags;
 	w = p_image->get_width();
 	h = p_image->get_height();
@@ -211,9 +204,9 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 }
 
 void ImageTexture::set_flags(uint32_t p_flags) {
-
-	if (flags == p_flags)
+	if (flags == p_flags) {
 		return;
+	}
 
 	flags = p_flags;
 	if (w == 0 || h == 0) {
@@ -225,17 +218,14 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ImageTexture::get_flags() const {
-
 	return ImageTexture::flags;
 }
 
 Image::Format ImageTexture::get_format() const {
-
 	return format;
 }
 #ifndef DISABLE_DEPRECATED
 Error ImageTexture::load(const String &p_path) {
-
 	WARN_DEPRECATED;
 	Ref<Image> img;
 	img.instance();
@@ -247,8 +237,7 @@ Error ImageTexture::load(const String &p_path) {
 }
 #endif
 void ImageTexture::set_data(const Ref<Image> &p_image) {
-
-	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
 
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
@@ -260,12 +249,10 @@ void ImageTexture::set_data(const Ref<Image> &p_image) {
 }
 
 void ImageTexture::_resource_path_changed() {
-
 	String path = get_path();
 }
 
 Ref<Image> ImageTexture::get_data() const {
-
 	if (image_stored) {
 		return VisualServer::get_singleton()->texture_get_data(texture);
 	} else {
@@ -274,49 +261,46 @@ Ref<Image> ImageTexture::get_data() const {
 }
 
 int ImageTexture::get_width() const {
-
 	return w;
 }
 
 int ImageTexture::get_height() const {
-
 	return h;
 }
 
 RID ImageTexture::get_rid() const {
-
 	return texture;
 }
 
 bool ImageTexture::has_alpha() const {
-
 	return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
 }
 
 void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
 }
-void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	if ((w | h) == 0)
+void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
 }
-void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
-	if ((w | h) == 0)
+void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
 }
 
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
-
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_data();
 		if (img.is_valid()) {
@@ -331,7 +315,6 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	}
 
 	if (alpha_cache.is_valid()) {
-
 		int aw = int(alpha_cache->get_size().width);
 		int ah = int(alpha_cache->get_size().height);
 		if (aw == 0 || ah == 0) {
@@ -351,17 +334,17 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 }
 
 void ImageTexture::set_size_override(const Size2 &p_size) {
-
 	Size2 s = p_size;
-	if (s.x != 0)
+	if (s.x != 0) {
 		w = s.x;
-	if (s.y != 0)
+	}
+	if (s.y != 0) {
 		h = s.y;
+	}
 	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 }
 
 void ImageTexture::set_path(const String &p_path, bool p_take_over) {
-
 	if (texture.is_valid()) {
 		VisualServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -370,27 +353,22 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 }
 
 void ImageTexture::set_storage(Storage p_storage) {
-
 	storage = p_storage;
 }
 
 ImageTexture::Storage ImageTexture::get_storage() const {
-
 	return storage;
 }
 
 void ImageTexture::set_lossy_storage_quality(float p_lossy_storage_quality) {
-
 	lossy_storage_quality = p_lossy_storage_quality;
 }
 
 float ImageTexture::get_lossy_storage_quality() const {
-
 	return lossy_storage_quality;
 }
 
 void ImageTexture::_set_data(Dictionary p_data) {
-
 	Ref<Image> img = p_data["image"];
 	ERR_FAIL_COND(!img.is_valid());
 	uint32_t flags = p_data["flags"];
@@ -404,7 +382,6 @@ void ImageTexture::_set_data(Dictionary p_data) {
 };
 
 void ImageTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "format", "flags"), &ImageTexture::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("create_from_image", "image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
@@ -429,10 +406,9 @@ void ImageTexture::_bind_methods() {
 }
 
 ImageTexture::ImageTexture() {
-
 	w = h = 0;
 	flags = FLAGS_DEFAULT;
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RID_PRIME(VisualServer::get_singleton()->texture_create());
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
 	image_stored = false;
@@ -440,14 +416,12 @@ ImageTexture::ImageTexture() {
 }
 
 ImageTexture::~ImageTexture() {
-
 	VisualServer::get_singleton()->free(texture);
 }
 
 //////////////////////////////////////////
 
 void StreamTexture::set_path(const String &p_path, bool p_take_over) {
-
 	if (texture.is_valid()) {
 		VisualServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -456,7 +430,6 @@ void StreamTexture::set_path(const String &p_path, bool p_take_over) {
 }
 
 void StreamTexture::_requested_3d(void *p_ud) {
-
 	StreamTexture *st = (StreamTexture *)p_ud;
 	Ref<StreamTexture> stex(st);
 	ERR_FAIL_COND(!request_3d_callback);
@@ -464,7 +437,6 @@ void StreamTexture::_requested_3d(void *p_ud) {
 }
 
 void StreamTexture::_requested_srgb(void *p_ud) {
-
 	StreamTexture *st = (StreamTexture *)p_ud;
 	Ref<StreamTexture> stex(st);
 	ERR_FAIL_COND(!request_srgb_callback);
@@ -472,34 +444,30 @@ void StreamTexture::_requested_srgb(void *p_ud) {
 }
 
 void StreamTexture::_requested_normal(void *p_ud) {
-
 	StreamTexture *st = (StreamTexture *)p_ud;
 	Ref<StreamTexture> stex(st);
 	ERR_FAIL_COND(!request_normal_callback);
 	request_normal_callback(stex);
 }
 
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = NULL;
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback = NULL;
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = NULL;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = nullptr;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback = nullptr;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = nullptr;
 
 uint32_t StreamTexture::get_flags() const {
-
 	return flags;
 }
 Image::Format StreamTexture::get_format() const {
-
 	return format;
 }
 
 Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, int &flags, Ref<Image> &image, int p_size_limit) {
-
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
@@ -529,7 +497,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
 	} else {
 		//print_line("not requesting detect 3D at " + p_path);
-		VS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_srgb_callback && df & FORMAT_BIT_DETECT_SRGB) {
@@ -537,7 +505,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_srgb_callback(texture, _requested_srgb, this);
 	} else {
 		//print_line("not requesting detect srgb at " + p_path);
-		VS::get_singleton()->texture_set_detect_srgb_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_srgb_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_srgb_callback && df & FORMAT_BIT_DETECT_NORMAL) {
@@ -545,14 +513,14 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
 	} else {
 		//print_line("not requesting detect normal at " + p_path);
-		VS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, nullptr, nullptr);
 	}
 #endif
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;
 	}
 
-	if (df & FORMAT_BIT_LOSSLESS || df & FORMAT_BIT_LOSSY) {
+	if (df & FORMAT_BIT_PNG || df & FORMAT_BIT_WEBP) {
 		//look for a PNG or WEBP file inside
 
 		int sw = tw;
@@ -564,7 +532,6 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		//print_line("mipmaps: " + itos(mipmaps));
 
 		while (mipmaps > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
-
 			f->seek(f->get_position() + size);
 			mipmaps = f->get_32();
 			size = f->get_32();
@@ -575,11 +542,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		}
 
 		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image> > mipmap_images;
-		int total_size = 0;
+		Vector<Ref<Image>> mipmap_images;
+		uint64_t total_size = 0;
 
 		for (uint32_t i = 0; i < mipmaps; i++) {
-
 			if (i) {
 				size = f->get_32();
 			}
@@ -592,15 +558,20 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			}
 
 			Ref<Image> img;
-			if (df & FORMAT_BIT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
-			} else {
-				img = Image::lossy_unpacker(pv);
+			bool is_png = df & FORMAT_BIT_PNG;
+			if (is_png && Image::png_unpacker) {
+				img = Image::png_unpacker(pv);
+			} else if (!is_png && Image::webp_unpacker) {
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->empty()) {
 				memdelete(f);
 				ERR_FAIL_COND_V(img.is_null() || img->empty(), ERR_FILE_CORRUPT);
+			}
+
+			if (i != 0) {
+				img->convert(mipmap_images[0]->get_format()); // ensure the same format for all mipmaps
 			}
 
 			total_size += img->get_data().size();
@@ -613,7 +584,6 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		memdelete(f); //no longer needed
 
 		if (mipmap_images.size() == 1) {
-
 			image = mipmap_images[0];
 			return OK;
 
@@ -626,11 +596,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 				int ofs = 0;
 				for (int i = 0; i < mipmap_images.size(); i++) {
-
 					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					PoolVector<uint8_t>::Read r = id.read();
-					copymem(&w[ofs], r.ptr(), len);
+					memcpy(&w[ofs], r.ptr(), len);
 					ofs += len;
 				}
 			}
@@ -640,7 +609,6 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		}
 
 	} else {
-
 		//look for regular format
 		Image::Format format = (Image::Format)(df & FORMAT_MASK_IMAGE_FORMAT);
 		bool mipmaps = df & FORMAT_BIT_HAS_MIPMAPS;
@@ -661,16 +629,14 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			image->create(tw, th, false, format, img_data);
 			return OK;
 		} else {
-
 			int sw = tw;
 			int sh = th;
 
 			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
-			int total_size = Image::get_image_data_size(tw, th, format, true);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, true);
 			int idx = 0;
 
 			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
-
 				sw = MAX(sw >> 1, 1);
 				sh = MAX(sh >> 1, 1);
 				mipmaps2--;
@@ -691,15 +657,15 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size - ofs);
 				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
 
 				memdelete(f);
 
-				int expected = total_size - ofs;
+				uint64_t expected = total_size - ofs;
 				if (bytes < expected) {
 					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
-					zeromem(w.ptr() + bytes, (expected - bytes));
+					memset(w.ptr() + bytes, 0, (expected - bytes));
 				} else if (bytes != expected) {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
 				}
@@ -715,13 +681,13 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 }
 
 Error StreamTexture::load(const String &p_path) {
-
 	int lw, lh, lwc, lhc, lflags;
 	Ref<Image> image;
 	image.instance();
 	Error err = _load_data(p_path, lw, lh, lwc, lhc, lflags, image);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	if (get_path() == String()) {
 		//temporarily set path if no path set for resource, helps find errors
@@ -745,57 +711,50 @@ Error StreamTexture::load(const String &p_path) {
 	return OK;
 }
 String StreamTexture::get_load_path() const {
-
 	return path_to_file;
 }
 
 int StreamTexture::get_width() const {
-
 	return w;
 }
 int StreamTexture::get_height() const {
-
 	return h;
 }
 RID StreamTexture::get_rid() const {
-
 	return texture;
 }
 
 void StreamTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
 }
 void StreamTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
 }
 void StreamTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
 }
 
 bool StreamTexture::has_alpha() const {
-
 	return false;
 }
 
 Ref<Image> StreamTexture::get_data() const {
-
 	return VS::get_singleton()->texture_get_data(texture);
 }
 
 bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
-
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_data();
 		if (img.is_valid()) {
@@ -811,7 +770,6 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 	}
 
 	if (alpha_cache.is_valid()) {
-
 		int aw = int(alpha_cache->get_size().width);
 		int ah = int(alpha_cache->get_size().height);
 		if (aw == 0 || ah == 0) {
@@ -837,15 +795,16 @@ void StreamTexture::set_flags(uint32_t p_flags) {
 }
 
 void StreamTexture::reload_from_file() {
-
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	path = ResourceLoader::path_remap(path); //remap for translation
 	path = ResourceLoader::import_remap(path); //remap for import
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	load(path);
 }
@@ -857,7 +816,6 @@ void StreamTexture::_validate_property(PropertyInfo &property) const {
 }
 
 void StreamTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTexture::get_load_path);
 
@@ -865,155 +823,155 @@ void StreamTexture::_bind_methods() {
 }
 
 StreamTexture::StreamTexture() {
-
 	format = Image::FORMAT_MAX;
 	flags = 0;
 	w = 0;
 	h = 0;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 StreamTexture::~StreamTexture() {
-
 	VS::get_singleton()->free(texture);
 }
 
 RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
 	Ref<StreamTexture> st;
 	st.instance();
 	Error err = st->load(p_path);
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
-	if (err != OK)
+	}
+	if (err != OK) {
 		return RES();
+	}
 
 	return st;
 }
 
 void ResourceFormatLoaderStreamTexture::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("stex");
 }
 bool ResourceFormatLoaderStreamTexture::handles_type(const String &p_type) const {
 	return p_type == "StreamTexture";
 }
 String ResourceFormatLoaderStreamTexture::get_resource_type(const String &p_path) const {
-
-	if (p_path.get_extension().to_lower() == "stex")
+	if (p_path.get_extension().to_lower() == "stex") {
 		return "StreamTexture";
+	}
 	return "";
 }
 
 //////////////////////////////////////////
 
 int AtlasTexture::get_width() const {
-
 	if (region.size.width == 0) {
-		if (atlas.is_valid())
+		if (atlas.is_valid()) {
 			return atlas->get_width();
+		}
 		return 1;
 	} else {
 		return region.size.width + margin.size.width;
 	}
 }
 int AtlasTexture::get_height() const {
-
 	if (region.size.height == 0) {
-		if (atlas.is_valid())
+		if (atlas.is_valid()) {
 			return atlas->get_height();
+		}
 		return 1;
 	} else {
 		return region.size.height + margin.size.height;
 	}
 }
 RID AtlasTexture::get_rid() const {
-
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->get_rid();
+	}
 
 	return RID();
 }
 
 bool AtlasTexture::has_alpha() const {
-
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->has_alpha();
+	}
 
 	return false;
 }
 
 void AtlasTexture::set_flags(uint32_t p_flags) {
-
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		atlas->set_flags(p_flags);
+	}
 }
 
 uint32_t AtlasTexture::get_flags() const {
-
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->get_flags();
+	}
 
 	return 0;
 }
 
 void AtlasTexture::set_atlas(const Ref<Texture> &p_atlas) {
-
 	ERR_FAIL_COND(p_atlas == this);
-	if (atlas == p_atlas)
+	if (atlas == p_atlas) {
 		return;
+	}
 	atlas = p_atlas;
 	emit_changed();
 	_change_notify("atlas");
 }
 Ref<Texture> AtlasTexture::get_atlas() const {
-
 	return atlas;
 }
 
 void AtlasTexture::set_region(const Rect2 &p_region) {
-
-	if (region == p_region)
+	if (region == p_region) {
 		return;
+	}
 	region = p_region;
 	emit_changed();
 	_change_notify("region");
 }
 
 Rect2 AtlasTexture::get_region() const {
-
 	return region;
 }
 
 void AtlasTexture::set_margin(const Rect2 &p_margin) {
-
-	if (margin == p_margin)
+	if (margin == p_margin) {
 		return;
+	}
 	margin = p_margin;
 	emit_changed();
 	_change_notify("margin");
 }
 
 Rect2 AtlasTexture::get_margin() const {
-
 	return margin;
 }
 
 void AtlasTexture::set_filter_clip(const bool p_enable) {
-
 	filter_clip = p_enable;
 	emit_changed();
 	_change_notify("filter_clip");
 }
 
 bool AtlasTexture::has_filter_clip() const {
-
 	return filter_clip;
 }
 
-void AtlasTexture::_bind_methods() {
+Ref<Image> AtlasTexture::get_data() const {
+	if (!atlas.is_valid() || !atlas->get_data().is_valid()) {
+		return Ref<Image>();
+	}
 
+	return atlas->get_data()->get_rect(region);
+}
+
+void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_atlas", "atlas"), &AtlasTexture::set_atlas);
 	ClassDB::bind_method(D_METHOD("get_atlas"), &AtlasTexture::get_atlas);
 
@@ -1033,9 +991,9 @@ void AtlasTexture::_bind_methods() {
 }
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 rc = region;
 
@@ -1047,14 +1005,13 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 		rc.size.height = atlas->get_height();
 	}
 
-	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, filter_clip);
+	atlas->draw_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose, p_normal_map);
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 rc = region;
 
@@ -1069,27 +1026,25 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	Vector2 scale = p_rect.size / (region.size + margin.size);
 	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
 
-	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, filter_clip);
+	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, p_normal_map);
 }
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 dr;
 	Rect2 src_c;
 	get_rect_region(p_rect, p_src_rect, dr, src_c);
 
-	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose, normal_rid, filter_clip);
+	atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, p_normal_map);
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return false;
+	}
 
 	Rect2 rc = region;
 
@@ -1101,8 +1056,9 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 
 	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
-	if (src_c.size == Size2())
+	if (src_c.size == Size2()) {
 		return false;
+	}
 	Vector2 ofs = (src_c.position - src.position);
 
 	if (scale.x < 0) {
@@ -1123,16 +1079,20 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
-
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return true;
+	}
 
 	int x = p_x + region.position.x - margin.position.x;
 	int y = p_y + region.position.y - margin.position.y;
 
 	// margin edge may outside of atlas
-	if (x < 0 || x >= atlas->get_width()) return false;
-	if (y < 0 || y >= atlas->get_height()) return false;
+	if (x < 0 || x >= atlas->get_width()) {
+		return false;
+	}
+	if (y < 0 || y >= atlas->get_height()) {
+		return false;
+	}
 
 	return atlas->is_pixel_opaque(x, y);
 }
@@ -1176,7 +1136,6 @@ void MeshTexture::set_image_size(const Size2 &p_size) {
 }
 
 Size2 MeshTexture::get_image_size() const {
-
 	return size;
 }
 
@@ -1189,7 +1148,6 @@ Ref<Texture> MeshTexture::get_base_texture() const {
 }
 
 void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
 	if (mesh.is_null() || base_texture.is_null()) {
 		return;
 	}
@@ -1225,7 +1183,6 @@ void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile,
 	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
 }
 void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-
 	if (mesh.is_null() || base_texture.is_null()) {
 		return;
 	}
@@ -1276,45 +1233,40 @@ MeshTexture::MeshTexture() {
 //////////////////////////////////////////
 
 int LargeTexture::get_width() const {
-
 	return size.width;
 }
 int LargeTexture::get_height() const {
-
 	return size.height;
 }
 RID LargeTexture::get_rid() const {
-
 	return RID();
 }
 
 bool LargeTexture::has_alpha() const {
-
 	for (int i = 0; i < pieces.size(); i++) {
-		if (pieces[i].texture->has_alpha())
+		if (pieces[i].texture->has_alpha()) {
 			return true;
+		}
 	}
 
 	return false;
 }
 
 void LargeTexture::set_flags(uint32_t p_flags) {
-
 	for (int i = 0; i < pieces.size(); i++) {
 		pieces.write[i].texture->set_flags(p_flags);
 	}
 }
 
 uint32_t LargeTexture::get_flags() const {
-
-	if (pieces.size())
+	if (pieces.size()) {
 		return pieces[0].texture->get_flags();
+	}
 
 	return 0;
 }
 
 int LargeTexture::add_piece(const Point2 &p_offset, const Ref<Texture> &p_texture) {
-
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Piece p;
 	p.offset = p_offset;
@@ -1325,13 +1277,11 @@ int LargeTexture::add_piece(const Point2 &p_offset, const Ref<Texture> &p_textur
 }
 
 void LargeTexture::set_piece_offset(int p_idx, const Point2 &p_offset) {
-
 	ERR_FAIL_INDEX(p_idx, pieces.size());
 	pieces.write[p_idx].offset = p_offset;
 };
 
 void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture> &p_texture) {
-
 	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_COND(p_texture.is_null());
 	ERR_FAIL_INDEX(p_idx, pieces.size());
@@ -1339,17 +1289,14 @@ void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture> &p_texture) {
 };
 
 void LargeTexture::set_size(const Size2 &p_size) {
-
 	size = p_size;
 }
 void LargeTexture::clear() {
-
 	pieces.clear();
 	size = Size2i();
 }
 
 Array LargeTexture::_get_data() const {
-
 	Array arr;
 	for (int i = 0; i < pieces.size(); i++) {
 		arr.push_back(pieces[i].offset);
@@ -1359,7 +1306,6 @@ Array LargeTexture::_get_data() const {
 	return arr;
 }
 void LargeTexture::_set_data(const Array &p_array) {
-
 	ERR_FAIL_COND(p_array.size() < 1);
 	ERR_FAIL_COND(!(p_array.size() & 1));
 	clear();
@@ -1370,24 +1316,19 @@ void LargeTexture::_set_data(const Array &p_array) {
 }
 
 int LargeTexture::get_piece_count() const {
-
 	return pieces.size();
 }
 Vector2 LargeTexture::get_piece_offset(int p_idx) const {
-
 	ERR_FAIL_INDEX_V(p_idx, pieces.size(), Vector2());
 	return pieces[p_idx].offset;
 }
 Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const {
-
 	ERR_FAIL_INDEX_V(p_idx, pieces.size(), Ref<Texture>());
 	return pieces[p_idx].texture;
 }
 Ref<Image> LargeTexture::to_image() const {
-
 	Ref<Image> img = memnew(Image(this->get_width(), this->get_height(), false, Image::FORMAT_RGBA8));
 	for (int i = 0; i < pieces.size(); i++) {
-
 		Ref<Image> src_img = pieces[i].texture->get_data();
 		img->blit_rect(src_img, Rect2(0, 0, src_img->get_width(), src_img->get_height()), pieces[i].offset);
 	}
@@ -1396,7 +1337,6 @@ Ref<Image> LargeTexture::to_image() const {
 }
 
 void LargeTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_piece", "ofs", "texture"), &LargeTexture::add_piece);
 	ClassDB::bind_method(D_METHOD("set_piece_offset", "idx", "ofs"), &LargeTexture::set_piece_offset);
 	ClassDB::bind_method(D_METHOD("set_piece_texture", "idx", "texture"), &LargeTexture::set_piece_texture);
@@ -1414,42 +1354,39 @@ void LargeTexture::_bind_methods() {
 }
 
 void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
 	for (int i = 0; i < pieces.size(); i++) {
-
 		// TODO
 		pieces[i].texture->draw(p_canvas_item, pieces[i].offset + p_pos, p_modulate, p_transpose, p_normal_map);
 	}
 }
 
 void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-
 	//tiling not supported for this
-	if (size.x == 0 || size.y == 0)
+	if (size.x == 0 || size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / size;
 
 	for (int i = 0; i < pieces.size(); i++) {
-
 		// TODO
 		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.position, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose, p_normal_map);
 	}
 }
 void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-
 	//tiling not supported for this
-	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0)
+	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / p_src_rect.size;
 
 	for (int i = 0; i < pieces.size(); i++) {
-
 		// TODO
 		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
-		if (!p_src_rect.intersects(rect))
+		if (!p_src_rect.intersects(rect)) {
 			continue;
+		}
 		Rect2 local = p_src_rect.clip(rect);
 		Rect2 target = local;
 		target.size *= scale;
@@ -1460,12 +1397,11 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 }
 
 bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
-
 	for (int i = 0; i < pieces.size(); i++) {
-
 		// TODO
-		if (!pieces[i].texture.is_valid())
+		if (!pieces[i].texture.is_valid()) {
 			continue;
+		}
 
 		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
 		if (rect.has_point(Point2(p_x, p_y))) {
@@ -1482,19 +1418,17 @@ LargeTexture::LargeTexture() {
 ///////////////////////////////////////////////
 
 void CubeMap::set_flags(uint32_t p_flags) {
-
 	flags = p_flags;
-	if (_is_valid())
+	if (_is_valid()) {
 		VS::get_singleton()->texture_set_flags(cubemap, flags);
+	}
 }
 
 uint32_t CubeMap::get_flags() const {
-
 	return flags;
 }
 
 void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
-
 	ERR_FAIL_COND(p_image.is_null());
 	ERR_FAIL_COND(p_image->empty());
 	ERR_FAIL_INDEX(p_side, 6);
@@ -1511,53 +1445,44 @@ void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 }
 
 Ref<Image> CubeMap::get_side(Side p_side) const {
-
 	ERR_FAIL_INDEX_V(p_side, 6, Ref<Image>());
-	if (!valid[p_side])
+	if (!valid[p_side]) {
 		return Ref<Image>();
+	}
 	return VS::get_singleton()->texture_get_data(cubemap, VS::CubeMapSide(p_side));
 }
 
 Image::Format CubeMap::get_format() const {
-
 	return format;
 }
 int CubeMap::get_width() const {
-
 	return w;
 }
 int CubeMap::get_height() const {
-
 	return h;
 }
 
 RID CubeMap::get_rid() const {
-
 	return cubemap;
 }
 
 void CubeMap::set_storage(Storage p_storage) {
-
 	storage = p_storage;
 }
 
 CubeMap::Storage CubeMap::get_storage() const {
-
 	return storage;
 }
 
 void CubeMap::set_lossy_storage_quality(float p_lossy_storage_quality) {
-
 	lossy_storage_quality = p_lossy_storage_quality;
 }
 
 float CubeMap::get_lossy_storage_quality() const {
-
 	return lossy_storage_quality;
 }
 
 void CubeMap::set_path(const String &p_path, bool p_take_over) {
-
 	if (cubemap.is_valid()) {
 		VisualServer::get_singleton()->texture_set_path(cubemap, p_path);
 	}
@@ -1566,7 +1491,6 @@ void CubeMap::set_path(const String &p_path, bool p_take_over) {
 }
 
 bool CubeMap::_set(const StringName &p_name, const Variant &p_value) {
-
 	if (p_name == "side/left") {
 		set_side(SIDE_LEFT, p_value);
 	} else if (p_name == "side/right") {
@@ -1583,14 +1507,14 @@ bool CubeMap::_set(const StringName &p_name, const Variant &p_value) {
 		storage = Storage(p_value.operator int());
 	} else if (p_name == "lossy_quality") {
 		lossy_storage_quality = p_value;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool CubeMap::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (p_name == "side/left") {
 		r_ret = get_side(SIDE_LEFT);
 	} else if (p_name == "side/right") {
@@ -1607,14 +1531,14 @@ bool CubeMap::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = storage;
 	} else if (p_name == "lossy_quality") {
 		r_ret = lossy_storage_quality;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/right", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/bottom", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
@@ -1624,7 +1548,6 @@ void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void CubeMap::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_width"), &CubeMap::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &CubeMap::get_height);
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &CubeMap::set_flags);
@@ -1658,19 +1581,18 @@ void CubeMap::_bind_methods() {
 }
 
 CubeMap::CubeMap() {
-
 	w = h = 0;
 	flags = FLAGS_DEFAULT;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++) {
 		valid[i] = false;
-	cubemap = VisualServer::get_singleton()->texture_create();
+	}
+	cubemap = RID_PRIME(VisualServer::get_singleton()->texture_create());
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
 	format = Image::FORMAT_BPTC_RGBA;
 }
 
 CubeMap::~CubeMap() {
-
 	VisualServer::get_singleton()->free(cubemap);
 }
 
@@ -1686,7 +1608,6 @@ CubeMap::~CubeMap() {
 ///////////////////////////
 
 void CurveTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
 
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &CurveTexture::set_curve);
@@ -1694,19 +1615,17 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 }
 
 void CurveTexture::set_width(int p_width) {
-
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
 	_width = p_width;
 	_update();
 }
 
 int CurveTexture::get_width() const {
-
 	return _width;
 }
 
@@ -1736,7 +1655,6 @@ void CurveTexture::set_curve(Ref<Curve> p_curve) {
 }
 
 void CurveTexture::_update() {
-
 	PoolVector<uint8_t> data;
 	data.resize(_width * sizeof(float));
 
@@ -1768,18 +1686,16 @@ void CurveTexture::_update() {
 }
 
 Ref<Curve> CurveTexture::get_curve() const {
-
 	return _curve;
 }
 
 RID CurveTexture::get_rid() const {
-
 	return _texture;
 }
 
 CurveTexture::CurveTexture() {
 	_width = 2048;
-	_texture = VS::get_singleton()->texture_create();
+	_texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 CurveTexture::~CurveTexture() {
 	VS::get_singleton()->free(_texture);
@@ -1796,7 +1712,7 @@ GradientTexture::GradientTexture() {
 	update_pending = false;
 	width = 2048;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 	_queue_update();
 }
 
@@ -1805,7 +1721,6 @@ GradientTexture::~GradientTexture() {
 }
 
 void GradientTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &GradientTexture::set_gradient);
 	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
 
@@ -1814,12 +1729,13 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
-	if (p_gradient == gradient)
+	if (p_gradient == gradient) {
 		return;
+	}
 	if (gradient.is_valid()) {
 		gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_update");
 	}
@@ -1836,20 +1752,20 @@ Ref<Gradient> GradientTexture::get_gradient() const {
 }
 
 void GradientTexture::_queue_update() {
-
-	if (update_pending)
+	if (update_pending) {
 		return;
+	}
 
 	update_pending = true;
 	call_deferred("_update");
 }
 
 void GradientTexture::_update() {
-
 	update_pending = false;
 
-	if (gradient.is_null())
+	if (gradient.is_null()) {
 		return;
+	}
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
@@ -1858,7 +1774,6 @@ void GradientTexture::_update() {
 		Gradient &g = **gradient;
 
 		for (int i = 0; i < width; i++) {
-
 			float ofs = float(i) / (width - 1);
 			Color color = g.get_color_at_offset(ofs);
 
@@ -1878,12 +1793,10 @@ void GradientTexture::_update() {
 }
 
 void GradientTexture::set_width(int p_width) {
-
 	width = p_width;
 	_queue_update();
 }
 int GradientTexture::get_width() const {
-
 	return width;
 }
 
@@ -1891,10 +1804,277 @@ Ref<Image> GradientTexture::get_data() const {
 	return VisualServer::get_singleton()->texture_get_data(texture);
 }
 
+GradientTexture2D::GradientTexture2D() {
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
+	_queue_update();
+}
+
+GradientTexture2D::~GradientTexture2D() {
+	VS::get_singleton()->free(texture);
+}
+
+void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
+	if (gradient == p_gradient) {
+		return;
+	}
+	if (gradient.is_valid()) {
+		gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+	}
+	gradient = p_gradient;
+	if (gradient.is_valid()) {
+		gradient->connect(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+	}
+	_queue_update();
+}
+
+Ref<Gradient> GradientTexture2D::get_gradient() const {
+	return gradient;
+}
+
+void GradientTexture2D::_queue_update() {
+	if (update_pending) {
+		return;
+	}
+	update_pending = true;
+	call_deferred("_update");
+}
+
+void GradientTexture2D::_update() {
+	update_pending = false;
+
+	if (gradient.is_null()) {
+		return;
+	}
+	Ref<Image> image;
+	image.instance();
+
+	if (gradient->get_points_count() <= 1) { // No need to interpolate.
+		image->create(width, height, false, (use_hdr) ? Image::FORMAT_RGBAF : Image::FORMAT_RGBA8);
+		image->fill((gradient->get_points_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
+	} else {
+		if (use_hdr) {
+			image->create(width, height, false, Image::FORMAT_RGBAF);
+			Gradient &g = **gradient;
+			// `create()` isn't available for non-uint8_t data, so fill in the data manually.
+			image->lock();
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					float ofs = _get_gradient_offset_at(x, y);
+					image->set_pixel(x, y, g.get_color_at_offset(ofs));
+				}
+			}
+			image->unlock();
+		} else {
+			PoolVector<uint8_t> data;
+			data.resize(width * height * 4);
+			{
+				uint8_t *wd8 = data.write().ptr();
+				Gradient &g = **gradient;
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						float ofs = _get_gradient_offset_at(x, y);
+						const Color &c = g.get_color_at_offset(ofs);
+
+						wd8[(x + (y * width)) * 4 + 0] = uint8_t(CLAMP(c.r * 255.0, 0, 255));
+						wd8[(x + (y * width)) * 4 + 1] = uint8_t(CLAMP(c.g * 255.0, 0, 255));
+						wd8[(x + (y * width)) * 4 + 2] = uint8_t(CLAMP(c.b * 255.0, 0, 255));
+						wd8[(x + (y * width)) * 4 + 3] = uint8_t(CLAMP(c.a * 255.0, 0, 255));
+					}
+				}
+			}
+			image->create(width, height, false, Image::FORMAT_RGBA8, data);
+		}
+	}
+	VS::get_singleton()->texture_allocate(texture, width, height, 0, image->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_set_data(texture, image);
+
+	emit_changed();
+}
+
+float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
+	if (fill_to == fill_from) {
+		return 0;
+	}
+	float ofs = 0;
+	Vector2 pos;
+	if (width > 1) {
+		pos.x = static_cast<float>(x) / (width - 1);
+	}
+	if (height > 1) {
+		pos.y = static_cast<float>(y) / (height - 1);
+	}
+	if (fill == Fill::FILL_LINEAR) {
+		Vector2 segment[2];
+		segment[0] = fill_from;
+		segment[1] = fill_to;
+		Vector2 closest = Geometry::get_closest_point_to_segment_uncapped_2d(pos, &segment[0]);
+		ofs = (closest - fill_from).length() / (fill_to - fill_from).length();
+		if ((closest - fill_from).dot(fill_to - fill_from) < 0) {
+			ofs *= -1;
+		}
+	} else if (fill == Fill::FILL_RADIAL) {
+		ofs = (pos - fill_from).length() / (fill_to - fill_from).length();
+	}
+	if (repeat == Repeat::REPEAT_NONE) {
+		ofs = CLAMP(ofs, 0.0, 1.0);
+	} else if (repeat == Repeat::REPEAT) {
+		ofs = Math::fmod(ofs, 1.0f);
+		if (ofs < 0) {
+			ofs = 1 + ofs;
+		}
+	} else if (repeat == Repeat::REPEAT_MIRROR) {
+		ofs = Math::abs(ofs);
+		ofs = Math::fmod(ofs, 2.0f);
+		if (ofs > 1.0) {
+			ofs = 2.0 - ofs;
+		}
+	}
+	return ofs;
+}
+
+void GradientTexture2D::set_width(int p_width) {
+	width = p_width;
+	_queue_update();
+}
+
+int GradientTexture2D::get_width() const {
+	return width;
+}
+
+void GradientTexture2D::set_height(int p_height) {
+	height = p_height;
+	_queue_update();
+}
+
+int GradientTexture2D::get_height() const {
+	return height;
+}
+
+void GradientTexture2D::set_flags(uint32_t p_flags) {
+	if (p_flags == flags) {
+		return;
+	}
+
+	flags = p_flags;
+	VS::get_singleton()->texture_set_flags(texture, flags);
+	_change_notify("flags");
+	emit_changed();
+}
+
+uint32_t GradientTexture2D::get_flags() const {
+	return flags;
+}
+
+void GradientTexture2D::set_use_hdr(bool p_enabled) {
+	if (p_enabled == use_hdr) {
+		return;
+	}
+
+	use_hdr = p_enabled;
+	_queue_update();
+}
+
+bool GradientTexture2D::is_using_hdr() const {
+	return use_hdr;
+}
+
+void GradientTexture2D::set_fill_from(Vector2 p_fill_from) {
+	fill_from = p_fill_from;
+	_queue_update();
+}
+
+Vector2 GradientTexture2D::get_fill_from() const {
+	return fill_from;
+}
+
+void GradientTexture2D::set_fill_to(Vector2 p_fill_to) {
+	fill_to = p_fill_to;
+	_queue_update();
+}
+
+Vector2 GradientTexture2D::get_fill_to() const {
+	return fill_to;
+}
+
+void GradientTexture2D::set_fill(Fill p_fill) {
+	fill = p_fill;
+	_queue_update();
+}
+
+GradientTexture2D::Fill GradientTexture2D::get_fill() const {
+	return fill;
+}
+
+void GradientTexture2D::set_repeat(Repeat p_repeat) {
+	repeat = p_repeat;
+	_queue_update();
+}
+
+GradientTexture2D::Repeat GradientTexture2D::get_repeat() const {
+	return repeat;
+}
+
+RID GradientTexture2D::get_rid() const {
+	if (!texture.is_valid()) {
+		texture = RID();
+	}
+	return texture;
+}
+
+Ref<Image> GradientTexture2D::get_image() const {
+	if (!texture.is_valid()) {
+		return Ref<Image>();
+	}
+	return VS::get_singleton()->texture_get_data(texture);
+}
+
+void GradientTexture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &GradientTexture2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture2D::get_gradient);
+
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture2D::set_width);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &GradientTexture2D::set_height);
+
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "enabled"), &GradientTexture2D::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &GradientTexture2D::is_using_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_fill", "fill"), &GradientTexture2D::set_fill);
+	ClassDB::bind_method(D_METHOD("get_fill"), &GradientTexture2D::get_fill);
+	ClassDB::bind_method(D_METHOD("set_fill_from", "fill_from"), &GradientTexture2D::set_fill_from);
+	ClassDB::bind_method(D_METHOD("get_fill_from"), &GradientTexture2D::get_fill_from);
+	ClassDB::bind_method(D_METHOD("set_fill_to", "fill_to"), &GradientTexture2D::set_fill_to);
+	ClassDB::bind_method(D_METHOD("get_fill_to"), &GradientTexture2D::get_fill_to);
+
+	ClassDB::bind_method(D_METHOD("set_repeat", "repeat"), &GradientTexture2D::set_repeat);
+	ClassDB::bind_method(D_METHOD("get_repeat"), &GradientTexture2D::get_repeat);
+
+	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture2D::_update);
+	ClassDB::bind_method(D_METHOD("_queue_update"), &GradientTexture2D::_queue_update);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
+
+	ADD_GROUP("Fill", "fill_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill", PROPERTY_HINT_ENUM, "Linear,Radial"), "set_fill", "get_fill");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_from"), "set_fill_from", "get_fill_from");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_to"), "set_fill_to", "get_fill_to");
+
+	ADD_GROUP("Repeat", "repeat_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "repeat", PROPERTY_HINT_ENUM, "No Repeat,Repeat,Mirror Repeat"), "set_repeat", "get_repeat");
+
+	BIND_ENUM_CONSTANT(FILL_LINEAR);
+	BIND_ENUM_CONSTANT(FILL_RADIAL);
+
+	BIND_ENUM_CONSTANT(REPEAT_NONE);
+	BIND_ENUM_CONSTANT(REPEAT);
+	BIND_ENUM_CONSTANT(REPEAT_MIRROR);
+}
+
 //////////////////////////////////////
 
 void ProxyTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
 
@@ -1902,7 +2082,6 @@ void ProxyTexture::_bind_methods() {
 }
 
 void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
-
 	ERR_FAIL_COND(p_texture == this);
 	base = p_texture;
 	if (base.is_valid()) {
@@ -1913,31 +2092,29 @@ void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
 }
 
 Ref<Texture> ProxyTexture::get_base() const {
-
 	return base;
 }
 
 int ProxyTexture::get_width() const {
-
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_width();
+	}
 	return 1;
 }
 int ProxyTexture::get_height() const {
-
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_height();
+	}
 	return 1;
 }
 RID ProxyTexture::get_rid() const {
-
 	return proxy;
 }
 
 bool ProxyTexture::has_alpha() const {
-
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->has_alpha();
+	}
 	return false;
 }
 
@@ -1945,25 +2122,22 @@ void ProxyTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ProxyTexture::get_flags() const {
-
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_flags();
+	}
 	return 0;
 }
 
 ProxyTexture::ProxyTexture() {
-
-	proxy = VS::get_singleton()->texture_create();
+	proxy = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 ProxyTexture::~ProxyTexture() {
-
 	VS::get_singleton()->free(proxy);
 }
 //////////////////////////////////////////////
 
 void AnimatedTexture::_update_proxy() {
-
 	RWLockRead r(rw_lock);
 
 	float delta;
@@ -2051,7 +2225,6 @@ bool AnimatedTexture::get_oneshot() const {
 }
 
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture> &p_texture) {
-
 	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
@@ -2114,7 +2287,6 @@ RID AnimatedTexture::get_rid() const {
 }
 
 bool AnimatedTexture::has_alpha() const {
-
 	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
@@ -2125,7 +2297,6 @@ bool AnimatedTexture::has_alpha() const {
 }
 
 Ref<Image> AnimatedTexture::get_data() const {
-
 	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
@@ -2136,7 +2307,6 @@ Ref<Image> AnimatedTexture::get_data() const {
 }
 
 bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
-
 	RWLockRead r(rw_lock);
 
 	if (frames[current_frame].texture.is_valid()) {
@@ -2145,10 +2315,9 @@ bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void AnimatedTexture::set_flags(uint32_t p_flags) {
-}
-uint32_t AnimatedTexture::get_flags() const {
+void AnimatedTexture::set_flags(uint32_t p_flags) {}
 
+uint32_t AnimatedTexture::get_flags() const {
 	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
@@ -2159,7 +2328,6 @@ uint32_t AnimatedTexture::get_flags() const {
 }
 
 void AnimatedTexture::_validate_property(PropertyInfo &property) const {
-
 	String prop = property.name;
 	if (prop.begins_with("frame_")) {
 		int frame = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
@@ -2208,7 +2376,7 @@ void AnimatedTexture::_bind_methods() {
 }
 
 AnimatedTexture::AnimatedTexture() {
-	proxy = VS::get_singleton()->texture_create();
+	proxy = RID_PRIME(VS::get_singleton()->texture_create());
 	VisualServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
 	time = 0;
 	frame_count = 1;
@@ -2218,19 +2386,10 @@ AnimatedTexture::AnimatedTexture() {
 	pause = false;
 	oneshot = false;
 	VisualServer::get_singleton()->connect("frame_pre_draw", this, "_update_proxy");
-
-#ifndef NO_THREADS
-	rw_lock = RWLock::create();
-#else
-	rw_lock = NULL;
-#endif
 }
 
 AnimatedTexture::~AnimatedTexture() {
 	VS::get_singleton()->free(proxy);
-	if (rw_lock) {
-		memdelete(rw_lock);
-	}
 }
 ///////////////////////////////
 
@@ -2250,6 +2409,136 @@ Image::Format TextureLayered::get_format() const {
 	return format;
 }
 
+Error TextureLayered::load(const String &p_path) {
+	Error error;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &error);
+	ERR_FAIL_COND_V(error, error);
+
+	uint8_t header[5] = { 0, 0, 0, 0, 0 };
+	f->get_buffer(header, 4);
+
+	if (header[0] == 'G' && header[1] == 'D' && header[2] == '3' && header[3] == 'T') {
+		if (!Object::cast_to<Texture3D>(this)) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V(ERR_INVALID_DATA);
+		}
+	} else if (header[0] == 'G' && header[1] == 'D' && header[2] == 'A' && header[3] == 'T') {
+		if (!Object::cast_to<TextureArray>(this)) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V(ERR_INVALID_DATA);
+		}
+	} else {
+		f->close();
+		memdelete(f);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Unrecognized layered texture file format: " + String((const char *)header));
+	}
+
+	int tw = f->get_32();
+	int th = f->get_32();
+	int td = f->get_32();
+	int flags = f->get_32(); //texture flags!
+	Image::Format format = Image::Format(f->get_32());
+	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
+
+	create(tw, th, td, format, flags);
+
+	for (int layer = 0; layer < td; layer++) {
+		Ref<Image> image;
+		image.instance();
+
+		if (compression == COMPRESS_LOSSLESS) {
+			//look for a PNG file inside
+
+			int mipmaps = f->get_32();
+			Vector<Ref<Image>> mipmap_images;
+
+			for (int i = 0; i < mipmaps; i++) {
+				uint32_t size = f->get_32();
+
+				PoolVector<uint8_t> pv;
+				pv.resize(size);
+				{
+					PoolVector<uint8_t>::Write w = pv.write();
+					f->get_buffer(w.ptr(), size);
+				}
+
+				Ref<Image> img = Image::png_unpacker(pv);
+
+				if (img.is_null() || img->empty() || format != img->get_format()) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+
+				mipmap_images.push_back(img);
+			}
+
+			if (mipmap_images.size() == 1) {
+				image = mipmap_images[0];
+
+			} else {
+				int total_size = Image::get_image_data_size(tw, th, format, true);
+				PoolVector<uint8_t> img_data;
+				img_data.resize(total_size);
+
+				{
+					PoolVector<uint8_t>::Write w = img_data.write();
+
+					int ofs = 0;
+					for (int i = 0; i < mipmap_images.size(); i++) {
+						PoolVector<uint8_t> id = mipmap_images[i]->get_data();
+						int len = id.size();
+						PoolVector<uint8_t>::Read r = id.read();
+						memcpy(&w[ofs], r.ptr(), len);
+						ofs += len;
+					}
+				}
+
+				image->create(tw, th, true, format, img_data);
+				if (image->empty()) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+			}
+
+		} else {
+			//look for regular format
+			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, mipmaps);
+
+			PoolVector<uint8_t> img_data;
+			img_data.resize(total_size);
+
+			{
+				PoolVector<uint8_t>::Write w = img_data.write();
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size);
+				if (bytes != total_size) {
+					f->close();
+					memdelete(f);
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+			}
+
+			image->create(tw, th, mipmaps, format, img_data);
+		}
+
+		set_layer_data(image, layer);
+	}
+
+	memdelete(f);
+
+	path_to_file = p_path;
+	_change_notify();
+	return OK;
+}
+
+String TextureLayered::get_load_path() const {
+	return path_to_file;
+}
+
 uint32_t TextureLayered::get_width() const {
 	return width;
 }
@@ -2260,6 +2549,21 @@ uint32_t TextureLayered::get_height() const {
 
 uint32_t TextureLayered::get_depth() const {
 	return depth;
+}
+
+void TextureLayered::reload_from_file() {
+	String path = get_path();
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	path = ResourceLoader::path_remap(path); //remap for translation
+	path = ResourceLoader::import_remap(path); //remap for import
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	load(path);
 }
 
 void TextureLayered::_set_data(const Dictionary &p_data) {
@@ -2318,11 +2622,13 @@ void TextureLayered::create(uint32_t p_width, uint32_t p_height, uint32_t p_dept
 void TextureLayered::set_layer_data(const Ref<Image> &p_image, int p_layer) {
 	ERR_FAIL_COND(!texture.is_valid());
 	ERR_FAIL_COND(!p_image.is_valid());
+	ERR_FAIL_COND_MSG(
+			p_image->get_width() > width || p_image->get_height() > height,
+			vformat("Image size(%dx%d) is bigger than texture size (%dx%d).", p_image->get_width(), p_image->get_height(), width, height));
 	VS::get_singleton()->texture_set_data(texture, p_image, p_layer);
 }
 
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
-
 	ERR_FAIL_COND_V(!texture.is_valid(), Ref<Image>());
 	return VS::get_singleton()->texture_get_data(texture, p_layer);
 }
@@ -2355,7 +2661,6 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &TextureLayered::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextureLayered::get_depth);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureLayered::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("set_layer_data", "image", "layer"), &TextureLayered::set_layer_data);
 	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::get_layer_data);
 	ClassDB::bind_method(D_METHOD("set_data_partial", "image", "x_offset", "y_offset", "layer", "mipmap"), &TextureLayered::set_data_partial, DEFVAL(0));
@@ -2363,25 +2668,27 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &TextureLayered::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &TextureLayered::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter"), "set_flags", "get_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
 
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_ARRAY);
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_3D);
 	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_FILTER);
-	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
+	BIND_ENUM_CONSTANT(FLAG_ANISOTROPIC_FILTER);
 }
 
 TextureLayered::TextureLayered(bool p_3d) {
 	is_3d = p_3d;
+	flags = p_3d ? FLAGS_DEFAULT_TEXTURE_3D : FLAGS_DEFAULT_TEXTURE_ARRAY;
 	format = Image::FORMAT_MAX;
-	flags = FLAGS_DEFAULT;
 
 	width = 0;
 	height = 0;
 	depth = 0;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 TextureLayered::~TextureLayered() {
@@ -2390,8 +2697,15 @@ TextureLayered::~TextureLayered() {
 	}
 }
 
-RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
+void Texture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &Texture3D::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_3D));
+}
 
+void TextureArray::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureArray::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_ARRAY));
+}
+
+RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -2410,145 +2724,18 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture extension.");
 	}
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
-
-	uint8_t header[5] = { 0, 0, 0, 0, 0 };
-	f->get_buffer(header, 4);
-
-	if (header[0] == 'G' && header[1] == 'D' && header[2] == '3' && header[3] == 'T') {
-		if (tex3d.is_null()) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_COND_V(tex3d.is_null(), RES())
-		}
-	} else if (header[0] == 'G' && header[1] == 'D' && header[2] == 'A' && header[3] == 'T') {
-		if (texarr.is_null()) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_COND_V(texarr.is_null(), RES())
-		}
-	} else {
-
-		f->close();
-		memdelete(f);
-		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture file format '" + String((const char *)header) + "'.");
-	}
-
-	int tw = f->get_32();
-	int th = f->get_32();
-	int td = f->get_32();
-	int flags = f->get_32(); //texture flags!
-	Image::Format format = Image::Format(f->get_32());
-	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
-
-	lt->create(tw, th, td, format, flags);
-
-	for (int layer = 0; layer < td; layer++) {
-
-		Ref<Image> image;
-		image.instance();
-
-		if (compression == COMPRESSION_LOSSLESS) {
-			//look for a PNG file inside
-
-			int mipmaps = f->get_32();
-			Vector<Ref<Image> > mipmap_images;
-
-			for (int i = 0; i < mipmaps; i++) {
-				uint32_t size = f->get_32();
-
-				PoolVector<uint8_t> pv;
-				pv.resize(size);
-				{
-					PoolVector<uint8_t>::Write w = pv.write();
-					f->get_buffer(w.ptr(), size);
-				}
-
-				Ref<Image> img = Image::lossless_unpacker(pv);
-
-				if (img.is_null() || img->empty() || format != img->get_format()) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-
-				mipmap_images.push_back(img);
-			}
-
-			if (mipmap_images.size() == 1) {
-
-				image = mipmap_images[0];
-
-			} else {
-				int total_size = Image::get_image_data_size(tw, th, format, true);
-				PoolVector<uint8_t> img_data;
-				img_data.resize(total_size);
-
-				{
-					PoolVector<uint8_t>::Write w = img_data.write();
-
-					int ofs = 0;
-					for (int i = 0; i < mipmap_images.size(); i++) {
-
-						PoolVector<uint8_t> id = mipmap_images[i]->get_data();
-						int len = id.size();
-						PoolVector<uint8_t>::Read r = id.read();
-						copymem(&w[ofs], r.ptr(), len);
-						ofs += len;
-					}
-				}
-
-				image->create(tw, th, true, format, img_data);
-				if (image->empty()) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-			}
-
-		} else {
-
-			//look for regular format
-			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
-			int total_size = Image::get_image_data_size(tw, th, format, mipmaps);
-
-			PoolVector<uint8_t> img_data;
-			img_data.resize(total_size);
-
-			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size);
-				if (bytes != total_size) {
-					if (r_error) {
-						*r_error = ERR_FILE_CORRUPT;
-					}
-					f->close();
-					memdelete(f);
-					ERR_FAIL_V(RES());
-				}
-			}
-
-			image->create(tw, th, mipmaps, format, img_data);
-		}
-
-		lt->set_layer_data(image, layer);
-	}
-
-	if (r_error)
+	Error err = lt->load(p_path);
+	if (r_error) {
 		*r_error = OK;
+	}
+	if (err != OK) {
+		return RES();
+	}
 
 	return lt;
 }
 
 void ResourceFormatLoaderTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("tex3d");
 	p_extensions->push_back("texarr");
 }
@@ -2556,11 +2743,12 @@ bool ResourceFormatLoaderTextureLayered::handles_type(const String &p_type) cons
 	return p_type == "Texture3D" || p_type == "TextureArray";
 }
 String ResourceFormatLoaderTextureLayered::get_resource_type(const String &p_path) const {
-
-	if (p_path.get_extension().to_lower() == "tex3d")
+	if (p_path.get_extension().to_lower() == "tex3d") {
 		return "Texture3D";
-	if (p_path.get_extension().to_lower() == "texarr")
+	}
+	if (p_path.get_extension().to_lower() == "texarr") {
 		return "TextureArray";
+	}
 	return "";
 }
 
@@ -2680,7 +2868,6 @@ uint32_t ExternalTexture::get_external_texture_id() {
 }
 
 void ExternalTexture::set_size(const Size2 &p_size) {
-
 	if (p_size.width > 0 && p_size.height > 0) {
 		size = p_size;
 		VisualServer::get_singleton()->texture_set_size_override(texture, size.width, size.height, 0);
@@ -2712,15 +2899,14 @@ void ExternalTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ExternalTexture::get_flags() const {
-	// not supported
-	return 0;
+	return Texture::FLAG_VIDEO_SURFACE;
 }
 
 ExternalTexture::ExternalTexture() {
 	size = Size2(1.0, 1.0);
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RID_PRIME(VisualServer::get_singleton()->texture_create());
 
-	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, Texture::FLAG_VIDEO_SURFACE);
 	_change_notify();
 	emit_changed();
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 class SoftBody;
 
 class SoftBodyVisualServerHandler {
-
 	friend class SoftBody;
 
 	RID mesh;
@@ -50,7 +49,7 @@ class SoftBodyVisualServerHandler {
 
 private:
 	SoftBodyVisualServerHandler();
-	bool is_ready() { return mesh.is_valid(); }
+	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
 	void open();
@@ -83,7 +82,9 @@ private:
 
 	RID physics_rid;
 
-	bool mesh_owner;
+	bool physics_enabled = true;
+
+	RID owned_mesh;
 	uint32_t collision_mask;
 	uint32_t collision_layer;
 	NodePath parent_collision_ignore;
@@ -98,6 +99,12 @@ private:
 	bool ray_pickable;
 
 	void _update_pickable();
+
+	void _update_physics_server();
+	void _draw_soft_mesh();
+
+	void _prepare_physics_server();
+	void _become_mesh_owner();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -115,14 +122,7 @@ protected:
 
 	virtual String get_configuration_warning() const;
 
-protected:
-	void _update_physics_server();
-	void _draw_soft_mesh();
-
 public:
-	void prepare_physics_server();
-	void become_mesh_owner();
-
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
@@ -137,6 +137,9 @@ public:
 
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
+
+	void set_physics_enabled(bool p_enabled);
+	bool is_physics_enabled() const;
 
 	void set_pinned_points_indices(PoolVector<PinnedPoint> p_pinned_points_indices);
 	PoolVector<PinnedPoint> get_pinned_points_indices();

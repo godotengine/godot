@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security;
 using Microsoft.Build.Framework;
-using GodotTools.Core;
 
 namespace GodotTools.BuildLogger
 {
@@ -13,17 +12,21 @@ namespace GodotTools.BuildLogger
         public string Parameters { get; set; }
         public LoggerVerbosity Verbosity { get; set; }
 
+        private StreamWriter _logStreamWriter;
+        private StreamWriter _issuesStreamWriter;
+        private int _indent;
+
         public void Initialize(IEventSource eventSource)
         {
             if (null == Parameters)
-                throw new LoggerException("Log directory was not set.");
+                throw new LoggerException("Log directory parameter not specified.");
 
-            var parameters = Parameters.Split(new[] { ';' });
+            string[] parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 
             if (string.IsNullOrEmpty(logDir))
-                throw new LoggerException("Log directory was not set.");
+                throw new LoggerException("Log directory parameter is empty.");
 
             if (parameters.Length > 1)
                 throw new LoggerException("Too many parameters passed.");
@@ -36,8 +39,8 @@ namespace GodotTools.BuildLogger
                 if (!Directory.Exists(logDir))
                     Directory.CreateDirectory(logDir);
 
-                logStreamWriter = new StreamWriter(logFile);
-                issuesStreamWriter = new StreamWriter(issuesFile);
+                _logStreamWriter = new StreamWriter(logFile);
+                _issuesStreamWriter = new StreamWriter(issuesFile);
             }
             catch (Exception ex)
             {
@@ -52,36 +55,46 @@ namespace GodotTools.BuildLogger
                 {
                     throw new LoggerException("Failed to create log file: " + ex.Message);
                 }
-                else
-                {
-                    // Unexpected failure
-                    throw;
-                }
+
+                // Unexpected failure
+                throw;
             }
 
             eventSource.ProjectStarted += eventSource_ProjectStarted;
-            eventSource.TaskStarted += eventSource_TaskStarted;
+            eventSource.ProjectFinished += eventSource_ProjectFinished;
             eventSource.MessageRaised += eventSource_MessageRaised;
             eventSource.WarningRaised += eventSource_WarningRaised;
             eventSource.ErrorRaised += eventSource_ErrorRaised;
-            eventSource.ProjectFinished += eventSource_ProjectFinished;
         }
 
-        void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
+        private void eventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
+        {
+            WriteLine(e.Message);
+            _indent++;
+        }
+
+        private void eventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
+        {
+            _indent--;
+            WriteLine(e.Message);
+        }
+
+        private void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): error {e.Code}: {e.Message}";
 
-            if (e.ProjectFile.Length > 0)
+            if (!string.IsNullOrEmpty(e.ProjectFile))
                 line += $" [{e.ProjectFile}]";
 
             WriteLine(line);
 
             string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
-                               $@"{e.Code.CsvEscape()},{e.Message.CsvEscape()},{e.ProjectFile.CsvEscape()}";
-            issuesStreamWriter.WriteLine(errorLine);
+                               $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                               $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
+            _issuesStreamWriter.WriteLine(errorLine);
         }
 
-        void eventSource_WarningRaised(object sender, BuildWarningEventArgs e)
+        private void eventSource_WarningRaised(object sender, BuildWarningEventArgs e)
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): warning {e.Code}: {e.Message}";
 
@@ -90,9 +103,10 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber},{e.Code.CsvEscape()}," +
-                                 $@"{e.Message.CsvEscape()},{(e.ProjectFile != null ? e.ProjectFile.CsvEscape() : string.Empty)}";
-            issuesStreamWriter.WriteLine(warningLine);
+            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+                                 $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                                 $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
+            _issuesStreamWriter.WriteLine(warningLine);
         }
 
         private void eventSource_MessageRaised(object sender, BuildMessageEventArgs e)
@@ -104,40 +118,6 @@ namespace GodotTools.BuildLogger
                 || e.Importance == MessageImportance.Low && IsVerbosityAtLeast(LoggerVerbosity.Detailed))
             {
                 WriteLineWithSenderAndMessage(string.Empty, e);
-            }
-        }
-
-        private void eventSource_TaskStarted(object sender, TaskStartedEventArgs e)
-        {
-            // TaskStartedEventArgs adds ProjectFile, TaskFile, TaskName
-            // To keep this log clean, this logger will ignore these events.
-        }
-
-        private void eventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
-        {
-            WriteLine(e.Message);
-            indent++;
-        }
-
-        private void eventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
-        {
-            indent--;
-            WriteLine(e.Message);
-        }
-
-        /// <summary>
-        /// Write a line to the log, adding the SenderName
-        /// </summary>
-        private void WriteLineWithSender(string line, BuildEventArgs e)
-        {
-            if (0 == string.Compare(e.SenderName, "MSBuild", StringComparison.OrdinalIgnoreCase))
-            {
-                // Well, if the sender name is MSBuild, let's leave it out for prettiness
-                WriteLine(line);
-            }
-            else
-            {
-                WriteLine(e.SenderName + ": " + line);
             }
         }
 
@@ -160,27 +140,36 @@ namespace GodotTools.BuildLogger
 
         private void WriteLine(string line)
         {
-            for (int i = indent; i > 0; i--)
+            for (int i = _indent; i > 0; i--)
             {
-                logStreamWriter.Write("\t");
+                _logStreamWriter.Write("\t");
             }
 
-            logStreamWriter.WriteLine(line);
+            _logStreamWriter.WriteLine(line);
         }
 
         public void Shutdown()
         {
-            logStreamWriter.Close();
-            issuesStreamWriter.Close();
+            _logStreamWriter.Close();
+            _issuesStreamWriter.Close();
         }
 
         private bool IsVerbosityAtLeast(LoggerVerbosity checkVerbosity)
         {
             return Verbosity >= checkVerbosity;
         }
+    }
 
-        private StreamWriter logStreamWriter;
-        private StreamWriter issuesStreamWriter;
-        private int indent;
+    internal static class StringExtensions
+    {
+        public static string CsvEscape(this string value, char delimiter = ',')
+        {
+            bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
+
+            if (hasSpecialChar)
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+
+            return value;
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -48,9 +48,10 @@ btSoftRigidCollisionAlgorithm::~btSoftRigidCollisionAlgorithm()
 }
 
 #include <stdio.h>
-
+#include "LinearMath/btQuickprof.h"
 void btSoftRigidCollisionAlgorithm::processCollision(const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
 {
+	BT_PROFILE("btSoftRigidCollisionAlgorithm::processCollision");
 	(void)dispatchInfo;
 	(void)resultOut;
 	//printf("btSoftRigidCollisionAlgorithm\n");

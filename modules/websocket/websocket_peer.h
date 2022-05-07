@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "websocket_macros.h"
 
 class WebSocketPeer : public PacketPeer {
-
 	GDCLASS(WebSocketPeer, PacketPeer);
 	GDCICLASS(WebSocketPeer);
 
@@ -54,6 +53,7 @@ public:
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
 	virtual int get_max_packet_size() const = 0;
+	virtual int get_current_outbound_buffered_amount() const = 0;
 
 	virtual WriteMode get_write_mode() const = 0;
 	virtual void set_write_mode(WriteMode p_mode) = 0;

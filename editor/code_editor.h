@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
-
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
 	Label *line_label;
@@ -55,12 +54,10 @@ public:
 	void popup_find_line(TextEdit *p_edit);
 	int get_line() const;
 
-	void set_text_editor(TextEdit *p_text_editor);
 	GotoLineDialog();
 };
 
 class FindReplaceBar : public HBoxContainer {
-
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
@@ -101,7 +98,6 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_entered(const String &p_text);
 	void _replace_text_entered(const String &p_text);
-	void _update_size();
 
 protected:
 	void _notification(int p_what);
@@ -138,7 +134,6 @@ public:
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
-
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	TextEdit *text_editor;
@@ -220,7 +215,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
-	void clone_lines_down();
+	void duplicate_selection();
 
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter

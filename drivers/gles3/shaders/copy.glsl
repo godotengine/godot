@@ -34,7 +34,6 @@ uniform highp mat4 display_transform;
 #endif
 
 void main() {
-
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 	cube_interp = cube_in;
 #elif defined(USE_ASYM_PANO)
@@ -120,7 +119,6 @@ uniform float multiplier;
 uniform highp mat4 sky_transform;
 
 vec4 texturePanorama(vec3 normal, sampler2D pano) {
-
 	vec2 st = vec2(
 			atan(normal.x, normal.z),
 			acos(normal.y));
@@ -154,7 +152,6 @@ uniform sampler2D color_correction; //texunit:1
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	//vec4 color = color_interp;
 
 #ifdef USE_PANORAMA
@@ -214,7 +211,7 @@ void main() {
 						vec3(1.00000, 1.00000, 1.00000),
 						vec3(0.00000, -0.18732, 1.85560),
 						vec3(1.57481, -0.46813, 0.00000)) *
-				color.rgb;
+			color.rgb;
 
 #endif
 

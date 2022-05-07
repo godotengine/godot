@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "src/webp/types.h"
+#include "src/webp/encode.h"
 #include "src/webp/format_constants.h"
 
 #ifdef __cplusplus
@@ -218,14 +219,19 @@ enum VP8LLZ77Type {
 // Evaluates best possible backward references for specified quality.
 // The input cache_bits to 'VP8LGetBackwardReferences' sets the maximum cache
 // bits to use (passing 0 implies disabling the local color cache).
-// The optimal cache bits is evaluated and set for the *cache_bits parameter.
-// The return value is the pointer to the best of the two backward refs viz,
-// refs[0] or refs[1].
-VP8LBackwardRefs* VP8LGetBackwardReferences(
+// The optimal cache bits is evaluated and set for the *cache_bits_best
+// parameter with the matching refs_best.
+// If do_no_cache == 0, refs is an array of 2 values and the best
+// VP8LBackwardRefs is put in the first element.
+// If do_no_cache != 0, refs is an array of 3 values and the best
+// VP8LBackwardRefs is put in the first element, the best value with no-cache in
+// the second element.
+// In both cases, the last element is used as temporary internally.
+WebPEncodingError VP8LGetBackwardReferences(
     int width, int height, const uint32_t* const argb, int quality,
-    int low_effort, int lz77_types_to_try, int* const cache_bits,
-    const VP8LHashChain* const hash_chain, VP8LBackwardRefs* const refs_tmp1,
-    VP8LBackwardRefs* const refs_tmp2);
+    int low_effort, int lz77_types_to_try, int cache_bits_max, int do_no_cache,
+    const VP8LHashChain* const hash_chain, VP8LBackwardRefs* const refs,
+    int* const cache_bits_best);
 
 #ifdef __cplusplus
 }

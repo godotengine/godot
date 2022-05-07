@@ -10,22 +10,22 @@ namespace GodotTools.Ides
 {
     public sealed class GodotIdeManager : Node, ISerializationListener
     {
-        private MessagingServer MessagingServer { get; set; }
+        private MessagingServer _messagingServer;
 
-        private MonoDevelop.Instance monoDevelInstance;
-        private MonoDevelop.Instance vsForMacInstance;
+        private MonoDevelop.Instance _monoDevelInstance;
+        private MonoDevelop.Instance _vsForMacInstance;
 
         private MessagingServer GetRunningOrNewServer()
         {
-            if (MessagingServer != null && !MessagingServer.IsDisposed)
-                return MessagingServer;
+            if (_messagingServer != null && !_messagingServer.IsDisposed)
+                return _messagingServer;
 
-            MessagingServer?.Dispose();
-            MessagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            _messagingServer?.Dispose();
+            _messagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
-            _ = MessagingServer.Listen();
+            _ = _messagingServer.Listen();
 
-            return MessagingServer;
+            return _messagingServer;
         }
 
         public override void _Ready()
@@ -48,7 +48,7 @@ namespace GodotTools.Ides
 
             if (disposing)
             {
-                MessagingServer?.Dispose();
+                _messagingServer?.Dispose();
             }
         }
 
@@ -113,14 +113,14 @@ namespace GodotTools.Ides
                     {
                         if (Utils.OS.IsOSX && editorId == ExternalEditorId.VisualStudioForMac)
                         {
-                            vsForMacInstance = (vsForMacInstance?.IsDisposed ?? true ? null : vsForMacInstance) ??
+                            _vsForMacInstance = (_vsForMacInstance?.IsDisposed ?? true ? null : _vsForMacInstance) ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);
-                            return vsForMacInstance;
+                            return _vsForMacInstance;
                         }
 
-                        monoDevelInstance = (monoDevelInstance?.IsDisposed ?? true ? null : monoDevelInstance) ??
+                        _monoDevelInstance = (_monoDevelInstance?.IsDisposed ?? true ? null : _monoDevelInstance) ??
                                             new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.MonoDevelop);
-                        return monoDevelInstance;
+                        return _monoDevelInstance;
                     }
 
                     try
@@ -157,17 +157,17 @@ namespace GodotTools.Ides
             }
         }
 
-        public struct EditorPick
+        public readonly struct EditorPick
         {
-            private readonly string identity;
+            private readonly string _identity;
 
             public EditorPick(string identity)
             {
-                this.identity = identity;
+                _identity = identity;
             }
 
             public bool IsAnyConnected() =>
-                GodotSharpEditor.Instance.GodotIdeManager.GetRunningOrNewServer().IsAnyConnected(identity);
+                GodotSharpEditor.Instance.GodotIdeManager.GetRunningOrNewServer().IsAnyConnected(_identity);
 
             private void SendRequest<TResponse>(Request request)
                 where TResponse : Response, new()
@@ -175,7 +175,7 @@ namespace GodotTools.Ides
                 // Logs an error if no client is connected with the specified identity
                 GodotSharpEditor.Instance.GodotIdeManager
                     .GetRunningOrNewServer()
-                    .BroadcastRequest<TResponse>(identity, request);
+                    .BroadcastRequest<TResponse>(_identity, request);
             }
 
             public void SendOpenFile(string file)

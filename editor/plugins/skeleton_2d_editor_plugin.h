@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,12 +37,11 @@
 #include "scene/gui/spin_box.h"
 
 class Skeleton2DEditor : public Control {
-
 	GDCLASS(Skeleton2DEditor, Control);
 
 	enum Menu {
-		MENU_OPTION_MAKE_REST,
 		MENU_OPTION_SET_REST,
+		MENU_OPTION_MAKE_REST,
 	};
 
 	Skeleton2D *node;
@@ -65,7 +64,6 @@ public:
 };
 
 class Skeleton2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(Skeleton2DEditorPlugin, EditorPlugin);
 
 	Skeleton2DEditor *sprite_editor;

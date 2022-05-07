@@ -3,10 +3,17 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
-from compat import iteritems, isbasestring, decode_utf8, qualname
+from collections.abc import Mapping
+from typing import Iterator
+from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
+
+from SCons import Node
+from SCons.Script import ARGUMENTS
+from SCons.Script import Glob
+from SCons.Variables.BoolVariable import _text2bool
 
 
-def add_source_files(self, sources, files, warn_duplicates=True):
+def add_source_files(self, sources, files):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isbasestring(files):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -16,17 +23,20 @@ def add_source_files(self, sources, files, warn_duplicates=True):
                 return
             files = [files]
         else:
+            # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
+            # They should instead be added manually.
+            skip_gen_cpp = "*" in files
             dir_path = self.Dir(".").abspath
             files = sorted(glob.glob(dir_path + "/" + files))
+            if skip_gen_cpp:
+                files = [f for f in files if not f.endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
     for path in files:
         obj = self.Object(path)
         if obj in sources:
-            if warn_duplicates:
-                print('WARNING: Object "{}" already included in environment sources.'.format(obj))
-            else:
-                continue
+            print('WARNING: Object "{}" already included in environment sources.'.format(obj))
+            continue
         sources.append(obj)
 
 
@@ -53,10 +63,9 @@ def add_module_version_string(self, s):
 
 
 def update_version(module_version_string=""):
-
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
-        build_name = os.getenv("BUILD_NAME")
+        build_name = str(os.getenv("BUILD_NAME"))
         print("Using custom build name: " + build_name)
 
     import version
@@ -68,15 +77,25 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
     f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
-    f.write('#define VERSION_STATUS "' + str(version.status) + '"\n')
+    # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,
+    # so this define provides a way to override it without having to modify the source.
+    godot_status = str(version.status)
+    if os.getenv("GODOT_VERSION_STATUS") != None:
+        godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
+        print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
+    f.write('#define VERSION_STATUS "' + godot_status + '"\n')
     f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
+    f.write('#define VERSION_DOCS_BRANCH "' + str(version.docs) + '"\n')
+    f.write('#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH\n')
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    fhash = open("core/version_hash.gen.h", "w")
+    fhash = open("core/version_hash.gen.cpp", "w")
+    fhash.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    fhash.write('#include "core/version.h"\n')
     githash = ""
     gitfolder = ".git"
 
@@ -86,7 +105,7 @@ def update_version(module_version_string=""):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
+        head = open_utf8(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
             head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
@@ -94,7 +113,7 @@ def update_version(module_version_string=""):
         else:
             githash = head
 
-    fhash.write('#define VERSION_HASH "' + githash + '"')
+    fhash.write('const char *const VERSION_HASH = "' + githash + '";\n')
     fhash.close()
 
 
@@ -131,33 +150,96 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-def detect_modules(at_path):
-    module_list = OrderedDict()  # name : path
+def get_cmdline_bool(option, default):
+    """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
+    and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
+    """
+    cmdline_val = ARGUMENTS.get(option)
+    if cmdline_val is not None:
+        return _text2bool(cmdline_val)
+    else:
+        return default
 
-    modules_glob = os.path.join(at_path, "*")
-    files = glob.glob(modules_glob)
-    files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
 
-    for x in files:
-        if not is_module(x):
-            continue
-        name = os.path.basename(x)
-        path = x.replace("\\", "/")  # win32
-        module_list[name] = path
+def detect_modules(search_path, recursive=False):
+    """Detects and collects a list of C++ modules at specified path
 
-    return module_list
+    `search_path` - a directory path containing modules. The path may point to
+    a single module, which may have other nested modules. A module must have
+    "register_types.h", "SCsub", "config.py" files created to be detected.
+
+    `recursive` - if `True`, then all subdirectories are searched for modules as
+    specified by the `search_path`, otherwise collects all modules under the
+    `search_path` directory. If the `search_path` is a module, it is collected
+    in all cases.
+
+    Returns an `OrderedDict` with module names as keys, and directory paths as
+    values. If a path is relative, then it is a built-in module. If a path is
+    absolute, then it is a custom module collected outside of the engine source.
+    """
+    modules = OrderedDict()
+
+    def add_module(path):
+        module_name = os.path.basename(path)
+        module_path = path.replace("\\", "/")  # win32
+        modules[module_name] = module_path
+
+    def is_engine(path):
+        # Prevent recursively detecting modules in self and other
+        # Godot sources when using `custom_modules` build option.
+        version_path = os.path.join(path, "version.py")
+        if os.path.exists(version_path):
+            with open(version_path) as f:
+                if 'short_name = "godot"' in f.read():
+                    return True
+        return False
+
+    def get_files(path):
+        files = glob.glob(os.path.join(path, "*"))
+        # Sort so that `register_module_types` does not change that often,
+        # and plugins are registered in alphabetic order as well.
+        files.sort()
+        return files
+
+    if not recursive:
+        if is_module(search_path):
+            add_module(search_path)
+        for path in get_files(search_path):
+            if is_engine(path):
+                continue
+            if is_module(path):
+                add_module(path)
+    else:
+        to_search = [search_path]
+        while to_search:
+            path = to_search.pop()
+            if is_module(path):
+                add_module(path)
+            for child in get_files(path):
+                if not os.path.isdir(child):
+                    continue
+                if is_engine(child):
+                    continue
+                to_search.insert(0, child)
+    return modules
 
 
 def is_module(path):
-    return os.path.isdir(path) and os.path.exists(os.path.join(path, "SCsub"))
+    if not os.path.isdir(path):
+        return False
+    must_exist = ["register_types.h", "SCsub", "config.py"]
+    for f in must_exist:
+        if not os.path.exists(os.path.join(path, f)):
+            return False
+    return True
 
 
-def write_modules(module_list):
+def write_modules(modules):
     includes_cpp = ""
     register_cpp = ""
     unregister_cpp = ""
 
-    for name, path in module_list.items():
+    for name, path in modules.items():
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
@@ -170,27 +252,25 @@ def write_modules(module_list):
         except IOError:
             pass
 
-    modules_cpp = (
-        """
-// modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
+    modules_cpp = """// register_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "register_module_types.h"
 
-"""
-        + includes_cpp
-        + """
+#include "modules/modules_enabled.gen.h"
+
+%s
 
 void register_module_types() {
-"""
-        + register_cpp
-        + """
+%s
 }
 
 void unregister_module_types() {
-"""
-        + unregister_cpp
-        + """
+%s
 }
-"""
+""" % (
+        includes_cpp,
+        register_cpp,
+        unregister_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -201,14 +281,13 @@ void unregister_module_types() {
 def convert_custom_modules_path(path):
     if not path:
         return path
+    path = os.path.realpath(os.path.expanduser(os.path.expandvars(path)))
     err_msg = "Build option 'custom_modules' must %s"
     if not os.path.isdir(path):
         raise ValueError(err_msg % "point to an existing directory.")
-    if os.path.realpath(path) == os.path.realpath("modules"):
+    if path == os.path.realpath("modules"):
         raise ValueError(err_msg % "be a directory other than built-in `modules` directory.")
-    if is_module(path):
-        raise ValueError(err_msg % "point to a directory with modules, not a single module.")
-    return os.path.realpath(os.path.expanduser(path))
+    return path
 
 
 def disable_module(self):
@@ -544,7 +623,11 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
-    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
+    from SCons.Tool.MSCommon.vc import (
+        get_default_version,
+        get_host_target,
+        find_batch_file,
+    )
 
     version = get_default_version(env)
     (host_platform, target_platform, _) = get_host_target(env)
@@ -563,57 +646,167 @@ def generate_cpp_hint_file(filename):
             print("Could not write cpp.hint file.")
 
 
+def glob_recursive(pattern, node="."):
+    results = []
+    for f in Glob(str(node) + "/*", source=True):
+        if type(f) is Node.FS.Dir:
+            results += glob_recursive(pattern, f)
+    results += Glob(str(node) + "/" + pattern, source=True)
+    return results
+
+
+def add_to_vs_project(env, sources):
+    for x in sources:
+        if type(x) == type(""):
+            fname = env.File(x).path
+        else:
+            fname = env.File(x)[0].path
+        pieces = fname.split(".")
+        if len(pieces) > 0:
+            basename = pieces[0]
+            basename = basename.replace("\\\\", "/")
+            if os.path.isfile(basename + ".h"):
+                env.vs_incs += [basename + ".h"]
+            elif os.path.isfile(basename + ".hpp"):
+                env.vs_incs += [basename + ".hpp"]
+            if os.path.isfile(basename + ".c"):
+                env.vs_srcs += [basename + ".c"]
+            elif os.path.isfile(basename + ".cpp"):
+                env.vs_srcs += [basename + ".cpp"]
+
+
 def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
 
-        def build_commandline(commands):
-            common_build_prefix = [
-                'cmd /V /C set "plat=$(PlatformTarget)"',
-                '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                'set "tools=yes"',
-                '(if "$(Configuration)"=="release" (set "tools=no"))',
-                'call "' + batch_file + '" !plat!',
-            ]
+        class ModuleConfigs(Mapping):
+            # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+            # required for Visual Studio to understand that it needs to generate an NMAKE
+            # project. Do not modify without knowing what you are doing.
+            PLATFORMS = ["Win32", "x64"]
+            PLATFORM_IDS = ["32", "64"]
+            CONFIGURATIONS = ["debug", "release", "release_debug"]
+            CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
 
-            result = " ^& ".join(common_build_prefix + [commands])
-            return result
+            @staticmethod
+            def for_every_variant(value):
+                return [value for _ in range(len(ModuleConfigs.CONFIGURATIONS) * len(ModuleConfigs.PLATFORMS))]
 
-        env.AddToVSProject(env.core_sources)
-        env.AddToVSProject(env.main_sources)
-        env.AddToVSProject(env.modules_sources)
-        env.AddToVSProject(env.scene_sources)
-        env.AddToVSProject(env.servers_sources)
-        env.AddToVSProject(env.editor_sources)
+            def __init__(self):
 
-        # windows allows us to have spaces in paths, so we need
-        # to double quote off the directory. However, the path ends
-        # in a backslash, so we need to remove this, lest it escape the
-        # last double quote off, confusing MSBuild
-        env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! -j"
-            + str(num_jobs)
-        )
-        env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j"
-            + str(num_jobs)
-        )
-        env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j"
-            + str(num_jobs)
-        )
+                shared_targets_array = []
+                self.names = []
+                self.arg_dict = {
+                    "variant": [],
+                    "runfile": shared_targets_array,
+                    "buildtarget": shared_targets_array,
+                    "cpppaths": [],
+                    "cppdefines": [],
+                    "cmdargs": [],
+                }
+                self.add_mode()  # default
 
-        # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
-        # required for Visual Studio to understand that it needs to generate an NMAKE
-        # project. Do not modify without knowing what you are doing.
-        debug_variants = ["debug|Win32"] + ["debug|x64"]
-        release_variants = ["release|Win32"] + ["release|x64"]
-        release_debug_variants = ["release_debug|Win32"] + ["release_debug|x64"]
-        variants = debug_variants + release_variants + release_debug_variants
-        debug_targets = ["bin\\godot.windows.tools.32.exe"] + ["bin\\godot.windows.tools.64.exe"]
-        release_targets = ["bin\\godot.windows.opt.32.exe"] + ["bin\\godot.windows.opt.64.exe"]
-        release_debug_targets = ["bin\\godot.windows.opt.tools.32.exe"] + ["bin\\godot.windows.opt.tools.64.exe"]
-        targets = debug_targets + release_targets + release_debug_targets
+            def add_mode(
+                self,
+                name: str = "",
+                includes: str = "",
+                cli_args: str = "",
+                defines=None,
+            ):
+                if defines is None:
+                    defines = []
+                self.names.append(name)
+                self.arg_dict["variant"] += [
+                    f'{config}{f"_[{name}]" if name else ""}|{platform}'
+                    for config in ModuleConfigs.CONFIGURATIONS
+                    for platform in ModuleConfigs.PLATFORMS
+                ]
+                self.arg_dict["runfile"] += [
+                    f'bin\\godot.windows.{config_id}.{plat_id}{f".{name}" if name else ""}.exe'
+                    for config_id in ModuleConfigs.CONFIGURATION_IDS
+                    for plat_id in ModuleConfigs.PLATFORM_IDS
+                ]
+                self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
+                self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
+                self.arg_dict["cmdargs"] += ModuleConfigs.for_every_variant(cli_args)
+
+            def build_commandline(self, commands):
+
+                configuration_getter = (
+                    "$(Configuration"
+                    + "".join([f'.Replace("{name}", "")' for name in self.names[1:]])
+                    + '.Replace("_[]", "")'
+                    + ")"
+                )
+
+                common_build_prefix = [
+                    'cmd /V /C set "plat=$(PlatformTarget)"',
+                    '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
+                    'set "tools=%s"' % env["tools"],
+                    f'(if "{configuration_getter}"=="release" (set "tools=no"))',
+                    'call "' + batch_file + '" !plat!',
+                ]
+
+                # Windows allows us to have spaces in paths, so we need
+                # to double quote off the directory. However, the path ends
+                # in a backslash, so we need to remove this, lest it escape the
+                # last double quote off, confusing MSBuild
+                common_build_postfix = [
+                    "--directory=\"$(ProjectDir.TrimEnd('\\'))\"",
+                    "platform=windows",
+                    f"target={configuration_getter}",
+                    "progress=no",
+                    "tools=!tools!",
+                    "-j%s" % num_jobs,
+                ]
+
+                if env["custom_modules"]:
+                    common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+                result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
+                return result
+
+            # Mappings interface definitions
+
+            def __iter__(self) -> Iterator[str]:
+                for x in self.arg_dict:
+                    yield x
+
+            def __len__(self) -> int:
+                return len(self.names)
+
+            def __getitem__(self, k: str):
+                return self.arg_dict[k]
+
+        add_to_vs_project(env, env.core_sources)
+        add_to_vs_project(env, env.drivers_sources)
+        add_to_vs_project(env, env.main_sources)
+        add_to_vs_project(env, env.modules_sources)
+        add_to_vs_project(env, env.scene_sources)
+        add_to_vs_project(env, env.servers_sources)
+        add_to_vs_project(env, env.editor_sources)
+
+        for header in glob_recursive("**/*.h"):
+            env.vs_incs.append(str(header))
+
+        module_configs = ModuleConfigs()
+        import modules.mono.build_scripts.mono_reg_utils as mono_reg
+
+        if env.get("module_mono_enabled"):
+            mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
+            if mono_root:
+                module_configs.add_mode(
+                    "mono",
+                    includes=os.path.join(mono_root, "include", "mono-2.0"),
+                    cli_args="module_mono_enabled=yes mono_glue=yes",
+                    defines=[("MONO_GLUE_ENABLED",)],
+                )
+            else:
+                print("Mono installation directory not found. Generated project will not have build variants for Mono.")
+
+        env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
+        env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")
+        env["MSVSCLEANCOM"] = module_configs.build_commandline("scons --clean")
         if not env.get("MSVS"):
             env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
             env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"
@@ -621,10 +814,8 @@ def generate_vs_project(env, num_jobs):
             target=["#godot" + env["MSVSPROJECTSUFFIX"]],
             incs=env.vs_incs,
             srcs=env.vs_srcs,
-            runfile=targets,
-            buildtarget=targets,
             auto_build_solution=1,
-            variant=variants,
+            **module_configs,
         )
     else:
         print(
@@ -660,6 +851,24 @@ def CommandNoCache(env, target, sources, command, **args):
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
     return result
+
+
+def get_darwin_sdk_version(platform):
+    sdk_name = ""
+    if platform == "osx":
+        sdk_name = "macosx"
+    elif platform == "iphone":
+        sdk_name = "iphoneos"
+    elif platform == "iphonesimulator":
+        sdk_name = "iphonesimulator"
+    else:
+        raise Exception("Invalid platform argument passed to get_darwin_sdk_version")
+
+    try:
+        return float(decode_utf8(subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-version"]).strip()))
+    except (subprocess.CalledProcessError, OSError):
+        print("Failed to find SDK version while running xcrun --sdk {} --show-sdk-version.".format(sdk_name))
+        return 0.0
 
 
 def detect_darwin_sdk_path(platform, env):
@@ -714,6 +923,10 @@ def using_gcc(env):
 
 def using_clang(env):
     return "clang" in os.path.basename(env["CC"])
+
+
+def using_emcc(env):
+    return "emcc" in os.path.basename(env["CC"])
 
 
 def show_progress(env):
@@ -820,14 +1033,17 @@ def show_progress(env):
             return total_size
 
     def progress_finish(target, source, env):
-        with open(node_count_data["fname"], "w") as f:
-            f.write("%d\n" % node_count_data["count"])
-        progressor.delete(progressor.file_list())
+        try:
+            with open(node_count_data["fname"], "w") as f:
+                f.write("%d\n" % node_count_data["count"])
+            progressor.delete(progressor.file_list())
+        except Exception:
+            pass
 
     try:
         with open(node_count_data["fname"]) as f:
             node_count_data["max"] = int(f.readline())
-    except:
+    except Exception:
         pass
 
     cache_directory = os.environ.get("SCONS_CACHE")

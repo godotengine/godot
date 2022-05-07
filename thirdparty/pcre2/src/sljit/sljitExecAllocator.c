@@ -72,14 +72,14 @@
    alloc_chunk / free_chunk :
      * allocate executable system memory chunks
      * the size is always divisible by CHUNK_SIZE
-   allocator_grab_lock / allocator_release_lock :
-     * make the allocator thread safe
-     * can be empty if the OS (or the application) does not support threading
+   SLJIT_ALLOCATOR_LOCK / SLJIT_ALLOCATOR_UNLOCK :
+     * provided as part of sljitUtils
      * only the allocator requires this lock, sljit is fully thread safe
        as it only uses local variables
 */
 
 #ifdef _WIN32
+#define SLJIT_UPDATE_WX_FLAGS(from, to, enable_exec)
 
 static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 {
@@ -92,88 +92,107 @@ static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 	VirtualFree(chunk, 0, MEM_RELEASE);
 }
 
-#else
+#else /* POSIX */
 
-#ifdef __APPLE__
-/* Configures TARGET_OS_OSX when appropriate */
+#if defined(__APPLE__) && defined(MAP_JIT)
+/*
+   On macOS systems, returns MAP_JIT if it is defined _and_ we're running on a
+   version where it's OK to have more than one JIT block or where MAP_JIT is
+   required.
+   On non-macOS systems, returns MAP_JIT if it is defined.
+*/
 #include <TargetConditionals.h>
-
-#if TARGET_OS_OSX && defined(MAP_JIT)
+#if TARGET_OS_OSX
+#if defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86
+#ifdef MAP_ANON
 #include <sys/utsname.h>
-#endif /* TARGET_OS_OSX && MAP_JIT */
+#include <stdlib.h>
 
-#ifdef MAP_JIT
+#define SLJIT_MAP_JIT	(get_map_jit_flag())
 
 static SLJIT_INLINE int get_map_jit_flag()
 {
-#if TARGET_OS_OSX
-	/* On macOS systems, returns MAP_JIT if it is defined _and_ we're running on a version
-	   of macOS where it's OK to have more than one JIT block. On non-macOS systems, returns
-	   MAP_JIT if it is defined. */
+	sljit_sw page_size;
+	void *ptr;
+	struct utsname name;
 	static int map_jit_flag = -1;
 
-	/* The following code is thread safe because multiple initialization
-	   sets map_jit_flag to the same value and the code has no side-effects.
-	   Changing the kernel version witout system restart is (very) unlikely. */
-	if (map_jit_flag == -1) {
-		struct utsname name;
-
+	if (map_jit_flag < 0) {
 		map_jit_flag = 0;
 		uname(&name);
 
-		/* Kernel version for 10.14.0 (Mojave) */
+		/* Kernel version for 10.14.0 (Mojave) or later */
 		if (atoi(name.release) >= 18) {
-			/* Only use MAP_JIT if a hardened runtime is used, because MAP_JIT is incompatible with fork(). */
-			void *ptr = mmap(NULL, getpagesize(), PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+			page_size = get_page_alignment() + 1;
+			/* Only use MAP_JIT if a hardened runtime is used */
+			ptr = mmap(NULL, page_size, PROT_WRITE | PROT_EXEC,
+					MAP_PRIVATE | MAP_ANON, -1, 0);
 
-			if (ptr == MAP_FAILED) {
+			if (ptr != MAP_FAILED)
+				munmap(ptr, page_size);
+			else
 				map_jit_flag = MAP_JIT;
-			} else {
-				munmap(ptr, getpagesize());
-			}
 		}
 	}
-
 	return map_jit_flag;
-#else /* !TARGET_OS_OSX */
-	return MAP_JIT;
-#endif /* TARGET_OS_OSX */
 }
+#endif /* MAP_ANON */
+#else /* !SLJIT_CONFIG_X86 */
+#if !(defined SLJIT_CONFIG_ARM && SLJIT_CONFIG_ARM)
+#error Unsupported architecture
+#endif /* SLJIT_CONFIG_ARM */
+#include <pthread.h>
 
-#endif /* MAP_JIT */
+#define SLJIT_MAP_JIT	(MAP_JIT)
+#define SLJIT_UPDATE_WX_FLAGS(from, to, enable_exec) \
+                        apple_update_wx_flags(enable_exec)
 
-#endif /* __APPLE__ */
+static SLJIT_INLINE void apple_update_wx_flags(sljit_s32 enable_exec)
+{
+	pthread_jit_write_protect_np(enable_exec);
+}
+#endif /* SLJIT_CONFIG_X86 */
+#else /* !TARGET_OS_OSX */
+#define SLJIT_MAP_JIT	(MAP_JIT)
+#endif /* TARGET_OS_OSX */
+#endif /* __APPLE__ && MAP_JIT */
+#ifndef SLJIT_UPDATE_WX_FLAGS
+#define SLJIT_UPDATE_WX_FLAGS(from, to, enable_exec)
+#endif /* !SLJIT_UPDATE_WX_FLAGS */
+#ifndef SLJIT_MAP_JIT
+#define SLJIT_MAP_JIT	(0)
+#endif /* !SLJIT_MAP_JIT */
 
 static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 {
 	void *retval;
-	const int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+	int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+	int flags = MAP_PRIVATE;
+	int fd = -1;
 
-#ifdef MAP_ANON
-
-	int flags = MAP_PRIVATE | MAP_ANON;
-
-#ifdef MAP_JIT
-	flags |= get_map_jit_flag();
+#ifdef PROT_MAX
+	prot |= PROT_MAX(prot);
 #endif
 
-	retval = mmap(NULL, size, prot, flags, -1, 0);
+#ifdef MAP_ANON
+	flags |= MAP_ANON | SLJIT_MAP_JIT;
 #else /* !MAP_ANON */
-	if (dev_zero < 0) {
-		if (open_dev_zero())
-			return NULL;
-	}
-	retval = mmap(NULL, size, prot, MAP_PRIVATE, dev_zero, 0);
+	if (SLJIT_UNLIKELY((dev_zero < 0) && open_dev_zero()))
+		return NULL;
+
+	fd = dev_zero;
 #endif /* MAP_ANON */
 
+	retval = mmap(NULL, size, prot, flags, fd, 0);
 	if (retval == MAP_FAILED)
-		retval = NULL;
-	else {
-		if (mprotect(retval, size, prot) < 0) {
-			munmap(retval, size);
-			retval = NULL;
-		}
+		return NULL;
+
+	if (mprotect(retval, size, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
+		munmap(retval, size);
+		return NULL;
 	}
+
+	SLJIT_UPDATE_WX_FLAGS(retval, (uint8_t *)retval + size, 0);
 
 	return retval;
 }
@@ -183,7 +202,7 @@ static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 	munmap(chunk, size);
 }
 
-#endif
+#endif /* windows */
 
 /* --------------------------------------------------------------------- */
 /*  Common functions                                                     */
@@ -246,7 +265,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	struct free_block *free_block;
 	sljit_uw chunk_size;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
 	if (size < (64 - sizeof(struct block_header)))
 		size = (64 - sizeof(struct block_header));
 	size = ALIGN_SIZE(size);
@@ -255,6 +274,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	while (free_block) {
 		if (free_block->size >= size) {
 			chunk_size = free_block->size;
+			SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 0);
 			if (chunk_size > size + 64) {
 				/* We just cut a block from the end of the free block. */
 				chunk_size -= size;
@@ -270,7 +290,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 			}
 			allocated_size += size;
 			header->size = size;
-			allocator_release_lock();
+			SLJIT_ALLOCATOR_UNLOCK();
 			return MEM_START(header);
 		}
 		free_block = free_block->next;
@@ -279,7 +299,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	chunk_size = (size + sizeof(struct block_header) + CHUNK_SIZE - 1) & CHUNK_MASK;
 	header = (struct block_header*)alloc_chunk(chunk_size);
 	if (!header) {
-		allocator_release_lock();
+		SLJIT_ALLOCATOR_UNLOCK();
 		return NULL;
 	}
 
@@ -306,7 +326,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	}
 	next_header->size = 1;
 	next_header->prev_size = chunk_size;
-	allocator_release_lock();
+	SLJIT_ALLOCATOR_UNLOCK();
 	return MEM_START(header);
 }
 
@@ -315,11 +335,12 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void* ptr)
 	struct block_header *header;
 	struct free_block* free_block;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
 	header = AS_BLOCK_HEADER(ptr, -(sljit_sw)sizeof(struct block_header));
 	allocated_size -= header->size;
 
 	/* Connecting free blocks together if possible. */
+	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 0);
 
 	/* If header->prev_size == 0, free_block will equal to header.
 	   In this case, free_block->header.size will be > 0. */
@@ -352,7 +373,8 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void* ptr)
 		}
 	}
 
-	allocator_release_lock();
+	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 1);
+	SLJIT_ALLOCATOR_UNLOCK();
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
@@ -360,7 +382,8 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
 	struct free_block* free_block;
 	struct free_block* next_free_block;
 
-	allocator_grab_lock();
+	SLJIT_ALLOCATOR_LOCK();
+	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 0);
 
 	free_block = free_blocks;
 	while (free_block) {
@@ -375,5 +398,6 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
 	}
 
 	SLJIT_ASSERT((total_size && free_blocks) || (!total_size && !free_blocks));
-	allocator_release_lock();
+	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 1);
+	SLJIT_ALLOCATOR_UNLOCK();
 }

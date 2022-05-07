@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "script_editor_plugin.h"
 
 class ConnectionInfoDialog : public AcceptDialog {
-
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
 
 	Label *method;
@@ -52,7 +51,6 @@ public:
 };
 
 class ScriptTextEditor : public ScriptEditorBase {
-
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
 	CodeTextEditor *code_editor;
@@ -60,6 +58,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Ref<Script> script;
 	bool script_is_valid;
+	bool editor_enabled;
 
 	Vector<String> functions;
 
@@ -71,10 +70,12 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	MenuButton *goto_menu;
 	PopupMenu *bookmarks_menu;
 	PopupMenu *breakpoints_menu;
 	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
+	PopupMenu *convert_case;
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
@@ -90,6 +91,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	struct ColorsCache {
 		Color symbol_color;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color basetype_color;
 		Color type_color;
 		Color usertype_color;
@@ -117,7 +119,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
@@ -133,6 +135,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
 		SEARCH_IN_FILES,
+		REPLACE_IN_FILES,
 		BOOKMARK_TOGGLE,
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
@@ -144,6 +147,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
 	};
+
+	void _enable_code_editor();
 
 protected:
 	void _update_breakpoint_list();
@@ -162,7 +167,6 @@ protected:
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 	Map<String, SyntaxHighlighter *> highlighters;
@@ -173,6 +177,7 @@ protected:
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
+	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
@@ -197,6 +202,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

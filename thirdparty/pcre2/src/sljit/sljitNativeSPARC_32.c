@@ -93,18 +93,21 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		return push_inst(compiler, ADD | D(dst) | S1(dst) | IMM(1), UNMOVABLE_INS);
 
 	case SLJIT_ADD:
+		compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 		return push_inst(compiler, ADD | (flags & SET_FLAGS) | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst) | (flags & SET_FLAGS));
 
 	case SLJIT_ADDC:
 		return push_inst(compiler, ADDC | (flags & SET_FLAGS) | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst) | (flags & SET_FLAGS));
 
 	case SLJIT_SUB:
+		compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 		return push_inst(compiler, SUB | (flags & SET_FLAGS) | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst) | (flags & SET_FLAGS));
 
 	case SLJIT_SUBC:
 		return push_inst(compiler, SUBC | (flags & SET_FLAGS) | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst) | (flags & SET_FLAGS));
 
 	case SLJIT_MUL:
+		compiler->status_flags_state = 0;
 		FAIL_IF(push_inst(compiler, SMUL | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst)));
 		if (!(flags & SET_FLAGS))
 			return SLJIT_SUCCESS;
@@ -266,21 +269,18 @@ static SLJIT_INLINE sljit_s32 emit_const(struct sljit_compiler *compiler, sljit_
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)
 {
 	sljit_ins *inst = (sljit_ins *)addr;
+	SLJIT_UNUSED_ARG(executable_offset);
 
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 0);
 	SLJIT_ASSERT(((inst[0] & 0xc1c00000) == 0x01000000) && ((inst[1] & 0xc1f82000) == 0x80102000));
 	inst[0] = (inst[0] & 0xffc00000) | ((new_target >> 10) & 0x3fffff);
 	inst[1] = (inst[1] & 0xfffffc00) | (new_target & 0x3ff);
+	SLJIT_UPDATE_WX_FLAGS(inst, inst + 2, 1);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 2);
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset)
 {
-	sljit_ins *inst = (sljit_ins *)addr;
-
-	SLJIT_ASSERT(((inst[0] & 0xc1c00000) == 0x01000000) && ((inst[1] & 0xc1f82000) == 0x80102000));
-	inst[0] = (inst[0] & 0xffc00000) | ((new_constant >> 10) & 0x3fffff);
-	inst[1] = (inst[1] & 0xfffffc00) | (new_constant & 0x3ff);
-	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
-	SLJIT_CACHE_FLUSH(inst, inst + 2);
+	sljit_set_jump_addr(addr, new_constant, executable_offset);
 }

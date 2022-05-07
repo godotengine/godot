@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,6 @@ void Skin::add_bind(int p_bone, const Transform &p_pose) {
 }
 
 void Skin::add_named_bind(const String &p_name, const Transform &p_pose) {
-
 	uint32_t index = bind_count;
 	set_bind_count(bind_count + 1);
 	set_bind_name(index, p_name);
@@ -105,7 +104,6 @@ bool Skin::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String name = p_name;
 	if (name == "bind_count") {
 		r_ret = get_bind_count();
@@ -136,7 +134,6 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Skin::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_bind_count", "bind_count"), &Skin::set_bind_count);
 	ClassDB::bind_method(D_METHOD("get_bind_count"), &Skin::get_bind_count);
 

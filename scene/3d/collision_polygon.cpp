@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,18 +35,20 @@
 #include "scene/resources/convex_polygon_shape.h"
 
 void CollisionPolygon::_build_polygon() {
-
-	if (!parent)
+	if (!parent) {
 		return;
+	}
 
 	parent->shape_owner_clear_shapes(owner_id);
 
-	if (polygon.size() == 0)
+	if (polygon.size() == 0) {
 		return;
+	}
 
-	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(polygon);
-	if (decomp.size() == 0)
+	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
+	if (decomp.size() == 0) {
 		return;
+	}
 
 	//here comes the sun, lalalala
 	//decompose concave into multiple convex polygons and add them
@@ -60,7 +62,6 @@ void CollisionPolygon::_build_polygon() {
 			PoolVector<Vector3>::Write w = cp.write();
 			int idx = 0;
 			for (int j = 0; j < cs; j++) {
-
 				Vector2 d = decomp[i][j];
 				w[idx++] = Vector3(d.x, d.y, depth * 0.5);
 				w[idx++] = Vector3(d.x, d.y, -depth * 0.5);
@@ -68,23 +69,22 @@ void CollisionPolygon::_build_polygon() {
 		}
 
 		convex->set_points(cp);
+		convex->set_margin(margin);
 		parent->shape_owner_add_shape(owner_id, convex);
 		parent->shape_owner_set_disabled(owner_id, disabled);
 	}
 }
 
 void CollisionPolygon::_update_in_shape_owner(bool p_xform_only) {
-
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 
 void CollisionPolygon::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
 			parent = Object::cast_to<CollisionObject>(get_parent());
 			if (parent) {
@@ -94,14 +94,12 @@ void CollisionPolygon::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (parent) {
 				_update_in_shape_owner();
 			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
@@ -112,13 +110,12 @@ void CollisionPolygon::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
 
 void CollisionPolygon::set_polygon(const Vector<Point2> &p_polygon) {
-
 	polygon = p_polygon;
 	if (parent) {
 		_build_polygon();
@@ -128,24 +125,20 @@ void CollisionPolygon::set_polygon(const Vector<Point2> &p_polygon) {
 }
 
 Vector<Point2> CollisionPolygon::get_polygon() const {
-
 	return polygon;
 }
 
 AABB CollisionPolygon::get_item_rect() const {
-
 	return aabb;
 }
 
 void CollisionPolygon::set_depth(float p_depth) {
-
 	depth = p_depth;
 	_build_polygon();
 	update_gizmo();
 }
 
 float CollisionPolygon::get_depth() const {
-
 	return depth;
 }
 
@@ -162,24 +155,40 @@ bool CollisionPolygon::is_disabled() const {
 	return disabled;
 }
 
-String CollisionPolygon::get_configuration_warning() const {
+real_t CollisionPolygon::get_margin() const {
+	return margin;
+}
 
+void CollisionPolygon::set_margin(real_t p_margin) {
+	margin = p_margin;
+	if (parent) {
+		_build_polygon();
+	}
+}
+
+String CollisionPolygon::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
-		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 
 	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon has no effect on collision.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("An empty CollisionPolygon has no effect on collision.");
 	}
 
-	return String();
+	return warning;
 }
 
 bool CollisionPolygon::_is_editable_3d_polygon() const {
 	return true;
 }
 void CollisionPolygon::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &CollisionPolygon::get_depth);
 
@@ -189,19 +198,22 @@ void CollisionPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon::is_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &CollisionPolygon::set_margin);
+	ClassDB::bind_method(D_METHOD("get_margin"), &CollisionPolygon::get_margin);
+
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon::_is_editable_3d_polygon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 
 CollisionPolygon::CollisionPolygon() {
-
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	disabled = false;
 }

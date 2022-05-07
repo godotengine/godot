@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "servers/visual/rasterizer.h"
 
 class RasterizerGLES3 : public Rasterizer {
-
 	static Rasterizer *_create_current();
 
 	RasterizerStorageGLES3 *storage;
@@ -70,6 +69,8 @@ public:
 	static void register_config();
 
 	virtual bool is_low_end() const { return false; }
+
+	static bool gl_check_errors();
 
 	RasterizerGLES3();
 	~RasterizerGLES3();

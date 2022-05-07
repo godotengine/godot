@@ -10,7 +10,6 @@ uniform vec2 scale;
 out vec2 uv_interp;
 
 void main() {
-
 	uv_interp = vertex_attrib.xy * 2.0 - 1.0;
 
 	vec2 v = vertex_attrib.xy * scale + offset;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="3.2">
+<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A WebSocket client implementation.
 	</brief_description>
@@ -13,45 +13,36 @@
 	</tutorials>
 	<methods>
 		<method name="connect_to_url">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="url" type="String">
-			</argument>
-			<argument index="1" name="protocols" type="PoolStringArray" default="PoolStringArray(  )">
-			</argument>
-			<argument index="2" name="gd_mp_api" type="bool" default="false">
-			</argument>
-			<argument index="3" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="url" type="String" />
+			<argument index="1" name="protocols" type="PoolStringArray" default="PoolStringArray(  )" />
+			<argument index="2" name="gd_mp_api" type="bool" default="false" />
+			<argument index="3" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )" />
 			<description>
 				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. If the list empty (default), no sub-protocol will be requested.
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
 				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request.
+				[b]Note:[/b] To avoid mixed content warnings or errors in HTML5, you may have to use a [code]url[/code] that starts with [code]wss://[/code] (secure) instead of [code]ws://[/code]. When doing so, make sure to use the fully qualified domain name that matches the one defined in the server's SSL certificate. Do not connect directly via the IP address for [code]wss://[/code] connections, as it won't match with the SSL certificate.
 				[b]Note:[/b] Specifying [code]custom_headers[/code] is not supported in HTML5 exports due to browsers restrictions.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
-			<return type="void">
-			</return>
-			<argument index="0" name="code" type="int" default="1000">
-			</argument>
-			<argument index="1" name="reason" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="code" type="int" default="1000" />
+			<argument index="1" name="reason" type="String" default="&quot;&quot;" />
 			<description>
 				Disconnects this client from the connected host. See [method WebSocketPeer.close] for more information.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Return the IP address of the currently connected host.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Return the IP port of the currently connected host.
 			</description>
@@ -69,8 +60,7 @@
 	</members>
 	<signals>
 		<signal name="connection_closed">
-			<argument index="0" name="was_clean_close" type="bool">
-			</argument>
+			<argument index="0" name="was_clean_close" type="bool" />
 			<description>
 				Emitted when the connection to the server is closed. [code]was_clean_close[/code] will be [code]true[/code] if the connection was shutdown cleanly.
 			</description>
@@ -81,8 +71,7 @@
 			</description>
 		</signal>
 		<signal name="connection_established">
-			<argument index="0" name="protocol" type="String">
-			</argument>
+			<argument index="0" name="protocol" type="String" />
 			<description>
 				Emitted when a connection with the server is established, [code]protocol[/code] will contain the sub-protocol agreed with the server.
 			</description>
@@ -94,10 +83,8 @@
 			</description>
 		</signal>
 		<signal name="server_close_request">
-			<argument index="0" name="code" type="int">
-			</argument>
-			<argument index="1" name="reason" type="String">
-			</argument>
+			<argument index="0" name="code" type="int" />
+			<argument index="1" name="reason" type="String" />
 			<description>
 				Emitted when the server requests a clean close. You should keep polling until you get a [signal connection_closed] signal to achieve the clean close. See [method WebSocketPeer.close] for more details.
 			</description>

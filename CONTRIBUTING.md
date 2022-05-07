@@ -66,8 +66,10 @@ understand that:
 
 To speed up our work, **please upload a minimal project** that isolates
 and reproduces the issue. This is always the **best way for us to fix it**.
-You can attach a ZIP file with the minimal project directly to the bug report,
-by drag and dropping the file in the GitHub edition field.
+We recommend attaching a ZIP file with the minimal project directly to the bug report,
+by drag and dropping the file in the GitHub edition field. This ensures the file
+can remain available for a long period of time. Only use third-party file hosts
+if your ZIP file isn't accepted by GitHub because it's too large.
 
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
@@ -79,7 +81,7 @@ it'll be considered too difficult to diagnose.
 Now that you've read the guidelines, click the link below to create a
 bug report:
 
-- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.md&title=)**
+- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.yml)**
 
 ## Proposing features or improvements
 
@@ -213,25 +215,21 @@ discussions and support, others more for development discussions.
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
 
-- [GitHub issues](https://github.com/godotengine/godot/issues): If there is an
-  existing issue about a topic you want to discuss, just add a comment to it -
-  all developers watch the repository and will get an email notification. You
-  can also create a new issue - please keep in mind to create issues only to
-  discuss quite specific points about the development, and not general user
-  feedback or support requests.
-- [#godotengine-devel IRC channel on
-  Freenode](https://webchat.freenode.net/?channels=godotengine-devel): You will
-  find most core developers there, so it's the go-to channel for direct chat
+- [Godot Contributors Chat](https://chat.godotengine.org): You will
+  find most core developers there, so it's the go-to platform for direct chat
   about Godot Engine development. Feel free to start discussing something there
   to get some early feedback before writing up a detailed proposal in a GitHub
   issue.
-- [devel@godotengine.org mailing
-  list](https://listengine.tuxfamily.org/godotengine.org/devel/): Mailing list
-  for Godot developers, used primarily to announce developer meetings on IRC
-  and other important discussions that need to reach people directly in their
-  mailbox. See the [index
-  page](https://listengine.tuxfamily.org/godotengine.org/devel/) for
-  subscription instructions.
+- [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
+  existing issue about a topic you want to discuss, just add a comment to it -
+  many developers watch the repository and will get a notification. You can
+  also create a new issue - please keep in mind to create issues only to
+  discuss quite specific points about the development, and not general user
+  feedback or support requests.
+- [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
+  To propose a new feature, we have a dedicated issue tracker for that. Don't
+  hesitate to start by talking about your idea on the Godot Contributors Chat
+  to make sure that it makes sense in Godot's context.
 
 Thanks for your interest in contributing!
 

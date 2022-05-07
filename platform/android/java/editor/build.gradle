@@ -1,0 +1,74 @@
+// Gradle build config for Godot Engine's Android port.
+apply plugin: 'com.android.application'
+
+dependencies {
+    implementation libraries.kotlinStdLib
+    implementation libraries.androidxFragment
+    implementation project(":lib")
+}
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
+
+    defaultConfig {
+        // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
+        applicationId "org.godotengine.editor.v3"
+        versionCode getGodotLibraryVersionCode()
+        versionName getGodotLibraryVersionName()
+        minSdkVersion versions.minSdk
+        //noinspection ExpiredTargetSdkVersion - Restrict to version 29 until https://github.com/godotengine/godot/pull/51815 is submitted
+        targetSdkVersion 29 // versions.targetSdk
+
+        missingDimensionStrategy 'products', 'editor'
+    }
+
+    compileOptions {
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
+    }
+
+    buildTypes {
+        dev {
+            initWith debug
+            applicationIdSuffix ".dev"
+        }
+
+        debug {
+            initWith release
+
+            // Need to swap with the release signing config when this is ready for public release.
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            // This buildtype is disabled below.
+            // The editor can't be used with target=release only, as debugging tools are then not
+            // included, and it would crash on errors instead of reporting them.
+        }
+    }
+
+    packagingOptions {
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
+    }
+
+    // Disable 'release' buildtype.
+    // The editor can't be used with target=release only, as debugging tools are then not
+    // included, and it would crash on errors instead of reporting them.
+    variantFilter { variant ->
+        if (variant.buildType.name == "release") {
+            setIgnore(true)
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def suffix = variant.name == "dev" ? "_dev" : ""
+            output.outputFileName = "android_editor${suffix}.apk"
+        }
+    }
+}

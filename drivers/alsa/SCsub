@@ -2,4 +2,7 @@
 
 Import("env")
 
+if "alsa" in env and env["alsa"]:
+    env.add_source_files(env.drivers_sources, "asound-so_wrap.c")
+
 env.add_source_files(env.drivers_sources, "*.cpp")

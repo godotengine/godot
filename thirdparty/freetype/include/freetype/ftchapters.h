@@ -15,6 +15,7 @@
    *   General Remarks
    *
    * @sections:
+   *   preamble
    *   header_inclusion
    *   user_allocation
    *
@@ -123,6 +124,7 @@
    *   gzip
    *   lzw
    *   bzip2
+   *   debugging_apis
    *
    */
 

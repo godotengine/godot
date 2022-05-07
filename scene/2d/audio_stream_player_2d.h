@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef AUDIO_STREAM_PLAYER_2D_H
 #define AUDIO_STREAM_PLAYER_2D_H
 
+#include "core/safe_refcount.h"
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
 class AudioStreamPlayer2D : public Node2D {
-
 	GDCLASS(AudioStreamPlayer2D, Node2D);
 
 private:
@@ -47,15 +47,14 @@ private:
 	};
 
 	struct Output {
-
 		AudioFrame vol;
 		int bus_index;
 		Viewport *viewport; //pointer only used for reference to previous mix
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count;
-	volatile bool output_ready;
+	SafeNumeric<int> output_count;
+	SafeFlag output_ready;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
@@ -65,9 +64,9 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile float setplay;
+	SafeNumeric<float> setseek;
+	SafeFlag active;
+	SafeNumeric<float> setplay;
 
 	float volume_db;
 	float pitch_scale;

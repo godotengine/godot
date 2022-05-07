@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,13 +16,12 @@
  */
 
 
-#include <ft2build.h>
 #include "cffparse.h"
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_LIST_H
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/ftlist.h>
 
 #include "cfferrs.h"
 #include "cffload.h"
@@ -63,7 +62,7 @@
     parser->num_axes    = num_axes;
 
     /* allocate the stack buffer */
-    if ( FT_NEW_ARRAY( parser->stack, stackSize ) )
+    if ( FT_QNEW_ARRAY( parser->stack, stackSize ) )
     {
       FT_FREE( parser->stack );
       goto Exit;
@@ -714,9 +713,10 @@
            ( max_scaling - min_scaling ) > 9 )
       {
         FT_TRACE1(( "cff_parse_font_matrix:"
-                    " strange scaling values (minimum %d, maximum %d),\n"
-                    "                      "
-                    " using default matrix\n", min_scaling, max_scaling ));
+                    " strange scaling values (minimum %ld, maximum %ld),\n",
+                    min_scaling, max_scaling ));
+        FT_TRACE1(( "                      "
+                    " using default matrix\n" ));
         goto Unlikely;
       }
 
@@ -811,7 +811,7 @@
       bbox->yMax = FT_RoundFix( cff_parse_fixed( parser, data   ) );
       error = FT_Err_Ok;
 
-      FT_TRACE4(( " [%d %d %d %d]\n",
+      FT_TRACE4(( " [%ld %ld %ld %ld]\n",
                   bbox->xMin / 65536,
                   bbox->yMin / 65536,
                   bbox->xMax / 65536,
@@ -934,11 +934,11 @@
         FT_TRACE1(( "cff_parse_cid_ros: real supplement is rounded\n" ));
       dict->cid_supplement = cff_parse_num( parser, data );
       if ( dict->cid_supplement < 0 )
-        FT_TRACE1(( "cff_parse_cid_ros: negative supplement %d is found\n",
+        FT_TRACE1(( "cff_parse_cid_ros: negative supplement %ld is found\n",
                    dict->cid_supplement ));
       error = FT_Err_Ok;
 
-      FT_TRACE4(( " %d %d %d\n",
+      FT_TRACE4(( " %d %d %ld\n",
                   dict->cid_registry,
                   dict->cid_ordering,
                   dict->cid_supplement ));
@@ -1264,11 +1264,11 @@
         FT_Byte*     charstring_base;
         FT_ULong     charstring_len;
 
-        FT_Fixed*     stack;
-        FT_ListNode   node;
-        CFF_T2_String t2;
-        size_t        t2_size;
-        FT_Byte*      q;
+        FT_Fixed*      stack;
+        FT_ListNode    node;
+        CFF_T2_String  t2;
+        FT_Fixed       t2_size;
+        FT_Byte*       q;
 
 
         charstring_base = ++p;
@@ -1516,6 +1516,7 @@
 
               case cff_kind_fixed_thousand:
                 FT_TRACE4(( " %f\n", (double)val / 65536 / 1000 ));
+                break;
 
               default:
                 ; /* never reached */

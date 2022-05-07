@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollContainer" inherits="Container" version="3.2">
+<class name="ScrollContainer" inherits="Container" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A helper node for displaying scrollable elements such as lists.
 	</brief_description>
@@ -7,20 +7,34 @@
 		A ScrollContainer node meant to contain a [Control] child. ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.rect_min_size] of the Control relative to the ScrollContainer. Works great with a [Panel] control. You can set [code]EXPAND[/code] on the children's size flags, so they will upscale to the ScrollContainer's size if it's larger (scroll is invisible for the chosen dimension).
 	</description>
 	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
+		<method name="ensure_control_visible">
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
+			<description>
+				Ensures the given [code]control[/code] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+				[b]Note:[/b] This will not work on a node that was just added during the same frame. If you want to scroll to a newly added child, you must wait until the next frame using [signal SceneTree.idle_frame]:
+				[codeblock]
+				add_child(child_node)
+				yield(get_tree(), "idle_frame")
+				ensure_control_visible(child_node)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_h_scrollbar">
-			<return type="HScrollBar">
-			</return>
+			<return type="HScrollBar" />
 			<description>
 				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the horizontal scrollbar, use [member scroll_horizontal_enabled]. If you want to only hide it instead, use its [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_v_scrollbar">
-			<return type="VScrollBar">
-			</return>
+			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the vertical scrollbar, use [member scroll_vertical_enabled]. If you want to only hide it instead, use its [member CanvasItem.visible] property.
 			</description>
 		</method>
 	</methods>
@@ -28,7 +42,7 @@
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
@@ -59,7 +73,7 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="bg" type="StyleBox">
+		<theme_item name="bg" data_type="style" type="StyleBox">
 			The background [StyleBox] of the [ScrollContainer].
 		</theme_item>
 	</theme_items>

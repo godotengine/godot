@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
-
 	enum {
 		MAX_DRIVES = 26
 	};
@@ -80,8 +79,11 @@ public:
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
-	//virtual FileType get_file_type() const;
-	size_t get_space_left();
+	virtual bool is_link(String p_file) { return false; };
+	virtual String read_link(String p_file) { return p_file; };
+	virtual Error create_link(String p_source, String p_target) { return FAILED; };
+
+	uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

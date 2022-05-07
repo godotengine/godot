@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +29,15 @@
 /*************************************************************************/
 
 #include "sphere_shape.h"
+
 #include "servers/physics_server.h"
 
 Vector<Vector3> SphereShape::get_debug_mesh_lines() {
-
 	float r = get_radius();
 
 	Vector<Vector3> points;
 
 	for (int i = 0; i <= 360; i++) {
-
 		float ra = Math::deg2rad((float)i);
 		float rb = Math::deg2rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
@@ -55,14 +54,16 @@ Vector<Vector3> SphereShape::get_debug_mesh_lines() {
 	return points;
 }
 
-void SphereShape::_update_shape() {
+real_t SphereShape::get_enclosing_radius() const {
+	return radius;
+}
 
+void SphereShape::_update_shape() {
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), radius);
 	Shape::_update_shape();
 }
 
 void SphereShape::set_radius(float p_radius) {
-
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
@@ -70,20 +71,17 @@ void SphereShape::set_radius(float p_radius) {
 }
 
 float SphereShape::get_radius() const {
-
 	return radius;
 }
 
 void SphereShape::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereShape::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_radius", "get_radius");
 }
 
 SphereShape::SphereShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE)) {
-
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE))) {
 	set_radius(1.0);
 }

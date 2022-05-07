@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,11 +64,13 @@ class EditorSpinSlider : public Range {
 
 	LineEdit *value_input;
 	bool value_input_just_closed;
+	bool value_input_dirty;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
 	void _value_input_entered(const String &);
 	void _value_focus_exited();
+	void _value_input_gui_input(const Ref<InputEvent> &p_event);
 	bool hide_slider;
 	bool flat;
 
@@ -76,6 +78,8 @@ class EditorSpinSlider : public Range {
 	Color custom_label_color;
 
 	void _evaluate_input_text();
+
+	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);

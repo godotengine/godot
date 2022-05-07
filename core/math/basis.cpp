@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,26 +31,22 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
 
 void Basis::from_z(const Vector3 &p_z) {
-
-	if (Math::abs(p_z.z) > Math_SQRT12) {
-
+	if (Math::abs(p_z.z) > (real_t)Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = p_z[1] * p_z[1] + p_z[2] * p_z[2];
-		real_t k = 1.0 / Math::sqrt(a);
+		real_t k = 1 / Math::sqrt(a);
 		elements[0] = Vector3(0, -p_z[2] * k, p_z[1] * k);
 		elements[1] = Vector3(a * k, -p_z[0] * elements[0][2], p_z[0] * elements[0][1]);
 	} else {
-
 		// choose p in x-y plane
 		real_t a = p_z.x * p_z.x + p_z.y * p_z.y;
-		real_t k = 1.0 / Math::sqrt(a);
+		real_t k = 1 / Math::sqrt(a);
 		elements[0] = Vector3(-p_z.y * k, p_z.x * k, 0);
 		elements[1] = Vector3(-p_z.z * elements[0].y, p_z.z * elements[0].x, a * k);
 	}
@@ -58,17 +54,16 @@ void Basis::from_z(const Vector3 &p_z) {
 }
 
 void Basis::invert() {
-
 	real_t co[3] = {
 		cofac(1, 1, 2, 2), cofac(1, 2, 2, 0), cofac(1, 0, 2, 1)
 	};
 	real_t det = elements[0][0] * co[0] +
-				 elements[0][1] * co[1] +
-				 elements[0][2] * co[2];
+			elements[0][1] * co[1] +
+			elements[0][2] * co[2];
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t s = 1.0 / det;
+	real_t s = 1 / det;
 
 	set(co[0] * s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s,
 			co[1] * s, cofac(0, 0, 2, 2) * s, cofac(0, 2, 1, 0) * s,
@@ -76,7 +71,6 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
-
 	// Gram-Schmidt Process
 
 	Vector3 x = get_axis(0);
@@ -95,7 +89,6 @@ void Basis::orthonormalize() {
 }
 
 Basis Basis::orthonormalized() const {
-
 	Basis c = *this;
 	c.orthonormalize();
 	return c;
@@ -116,23 +109,24 @@ bool Basis::is_diagonal() const {
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
+	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
 }
 
 bool Basis::is_symmetric() const {
-
-	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON))
+	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], (real_t)UNIT_EPSILON)) {
 		return false;
-	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON))
+	}
+	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], (real_t)UNIT_EPSILON)) {
 		return false;
-	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON))
+	}
+	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], (real_t)UNIT_EPSILON)) {
 		return false;
+	}
 
 	return true;
 }
 
 Basis Basis::diagonalize() {
-
 //NOTE: only implemented for symmetric matrices
 //with the Jacobi iterative method method
 #ifdef MATH_CHECKS
@@ -144,7 +138,7 @@ Basis Basis::diagonalize() {
 
 	int ite = 0;
 	Basis acc_rot;
-	while (off_matrix_norm_2 > CMP_EPSILON2 && ite++ < ite_max) {
+	while (off_matrix_norm_2 > (real_t)CMP_EPSILON2 && ite++ < ite_max) {
 		real_t el01_2 = elements[0][1] * elements[0][1];
 		real_t el02_2 = elements[0][2] * elements[0][2];
 		real_t el12_2 = elements[1][2] * elements[1][2];
@@ -173,7 +167,7 @@ Basis Basis::diagonalize() {
 		if (Math::is_equal_approx(elements[j][j], elements[i][i])) {
 			angle = Math_PI / 4;
 		} else {
-			angle = 0.5 * Math::atan(2 * elements[i][j] / (elements[j][j] - elements[i][i]));
+			angle = 0.5f * Math::atan(2 * elements[i][j] / (elements[j][j] - elements[i][i]));
 		}
 
 		// Compute the rotation matrix
@@ -193,21 +187,18 @@ Basis Basis::diagonalize() {
 }
 
 Basis Basis::inverse() const {
-
 	Basis inv = *this;
 	inv.invert();
 	return inv;
 }
 
 void Basis::transpose() {
-
 	SWAP(elements[0][1], elements[1][0]);
 	SWAP(elements[0][2], elements[2][0]);
 	SWAP(elements[1][2], elements[2][1]);
 }
 
 Basis Basis::transposed() const {
-
 	Basis tr = *this;
 	tr.transpose();
 	return tr;
@@ -216,7 +207,6 @@ Basis Basis::transposed() const {
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
-
 	elements[0][0] *= p_scale.x;
 	elements[0][1] *= p_scale.x;
 	elements[0][2] *= p_scale.x;
@@ -248,7 +238,6 @@ Basis Basis::scaled_local(const Vector3 &p_scale) const {
 }
 
 Vector3 Basis::get_scale_abs() const {
-
 	return Vector3(
 			Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
 			Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
@@ -283,10 +272,7 @@ Vector3 Basis::get_scale() const {
 	//
 	// The rotation part of this decomposition is returned by get_rotation* functions.
 	real_t det_sign = SGN(determinant());
-	return det_sign * Vector3(
-							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
-							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
-							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+	return det_sign * get_scale_abs();
 }
 
 // Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
@@ -315,22 +301,21 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
 // The main use of Basis is as Transform.basis, which is used a the transformation matrix
 // of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
 // not the matrix itself (which is R * (*this) * R.transposed()).
-Basis Basis::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Basis(p_axis, p_phi) * (*this);
+Basis Basis::rotated(const Vector3 &p_axis, real_t p_angle) const {
+	return Basis(p_axis, p_angle) * (*this);
 }
 
-void Basis::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = rotated(p_axis, p_phi);
+void Basis::rotate(const Vector3 &p_axis, real_t p_angle) {
+	*this = rotated(p_axis, p_angle);
 }
 
-void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
+void Basis::rotate_local(const Vector3 &p_axis, real_t p_angle) {
 	// performs a rotation in object-local coordinate system:
 	// M -> (M.R.Minv).M = M.R.
-	*this = rotated_local(p_axis, p_phi);
+	*this = rotated_local(p_axis, p_angle);
 }
-Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
-
-	return (*this) * Basis(p_axis, p_phi);
+Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_angle) const {
+	return (*this) * Basis(p_axis, p_angle);
 }
 
 Basis Basis::rotated(const Vector3 &p_euler) const {
@@ -418,7 +403,6 @@ void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) cons
 // the angles in the decomposition R = X(a1).Y(a2).Z(a3) where Z(a) rotates
 // around the z-axis by a and so on.
 Vector3 Basis::get_euler_xyz() const {
-
 	// Euler angles in XYZ convention.
 	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 	//
@@ -428,10 +412,10 @@ Vector3 Basis::get_euler_xyz() const {
 
 	Vector3 euler;
 	real_t sy = elements[0][2];
-	if (sy < (1.0 - CMP_EPSILON)) {
-		if (sy > -(1.0 - CMP_EPSILON)) {
+	if (sy < (1 - (real_t)CMP_EPSILON)) {
+		if (sy > -(1 - (real_t)CMP_EPSILON)) {
 			// is this a pure Y rotation?
-			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
+			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
 				// return the simplest form (human friendlier in editor and scripts)
 				euler.x = 0;
 				euler.y = atan2(elements[0][2], elements[0][0]);
@@ -459,20 +443,19 @@ Vector3 Basis::get_euler_xyz() const {
 // and similar for other axes.
 // The current implementation uses XYZ convention (Z is the first rotation).
 void Basis::set_euler_xyz(const Vector3 &p_euler) {
-
 	real_t c, s;
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	//optimizer will optimize away all this anyway
 	*this = xmat * (ymat * zmat);
@@ -488,8 +471,8 @@ Vector3 Basis::get_euler_xzy() const {
 
 	Vector3 euler;
 	real_t sz = elements[0][1];
-	if (sz < (1.0 - CMP_EPSILON)) {
-		if (sz > -(1.0 - CMP_EPSILON)) {
+	if (sz < (1 - (real_t)CMP_EPSILON)) {
+		if (sz > -(1 - (real_t)CMP_EPSILON)) {
 			euler.x = Math::atan2(elements[2][1], elements[1][1]);
 			euler.y = Math::atan2(elements[0][2], elements[0][0]);
 			euler.z = Math::asin(-sz);
@@ -513,15 +496,15 @@ void Basis::set_euler_xzy(const Vector3 &p_euler) {
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	*this = xmat * zmat * ymat;
 }
@@ -536,8 +519,8 @@ Vector3 Basis::get_euler_yzx() const {
 
 	Vector3 euler;
 	real_t sz = elements[1][0];
-	if (sz < (1.0 - CMP_EPSILON)) {
-		if (sz > -(1.0 - CMP_EPSILON)) {
+	if (sz < (1 - (real_t)CMP_EPSILON)) {
+		if (sz > -(1 - (real_t)CMP_EPSILON)) {
 			euler.x = Math::atan2(-elements[1][2], elements[1][1]);
 			euler.y = Math::atan2(-elements[2][0], elements[0][0]);
 			euler.z = Math::asin(sz);
@@ -561,15 +544,15 @@ void Basis::set_euler_yzx(const Vector3 &p_euler) {
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	*this = ymat * zmat * xmat;
 }
@@ -589,8 +572,8 @@ Vector3 Basis::get_euler_yxz() const {
 
 	real_t m12 = elements[1][2];
 
-	if (m12 < (1 - CMP_EPSILON)) {
-		if (m12 > -(1 - CMP_EPSILON)) {
+	if (m12 < (1 - (real_t)CMP_EPSILON)) {
+		if (m12 > -(1 - (real_t)CMP_EPSILON)) {
 			// is this a pure X rotation?
 			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
 				// return the simplest form (human friendlier in editor and scripts)
@@ -621,20 +604,19 @@ Vector3 Basis::get_euler_yxz() const {
 // and similar for other axes.
 // The current implementation uses YXZ convention (Z is the first rotation).
 void Basis::set_euler_yxz(const Vector3 &p_euler) {
-
 	real_t c, s;
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	//optimizer will optimize away all this anyway
 	*this = ymat * xmat * zmat;
@@ -649,8 +631,8 @@ Vector3 Basis::get_euler_zxy() const {
 	//        -cx*sy            sx                    cx*cy
 	Vector3 euler;
 	real_t sx = elements[2][1];
-	if (sx < (1.0 - CMP_EPSILON)) {
-		if (sx > -(1.0 - CMP_EPSILON)) {
+	if (sx < (1 - (real_t)CMP_EPSILON)) {
+		if (sx > -(1 - (real_t)CMP_EPSILON)) {
 			euler.x = Math::asin(sx);
 			euler.y = Math::atan2(-elements[2][0], elements[2][2]);
 			euler.z = Math::atan2(-elements[0][1], elements[1][1]);
@@ -674,15 +656,15 @@ void Basis::set_euler_zxy(const Vector3 &p_euler) {
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	*this = zmat * xmat * ymat;
 }
@@ -696,8 +678,8 @@ Vector3 Basis::get_euler_zyx() const {
 	//        -sy               cy*sx                 cy*cx
 	Vector3 euler;
 	real_t sy = elements[2][0];
-	if (sy < (1.0 - CMP_EPSILON)) {
-		if (sy > -(1.0 - CMP_EPSILON)) {
+	if (sy < (1 - (real_t)CMP_EPSILON)) {
+		if (sy > -(1 - (real_t)CMP_EPSILON)) {
 			euler.x = Math::atan2(elements[2][1], elements[2][2]);
 			euler.y = Math::asin(-sy);
 			euler.z = Math::atan2(elements[1][0], elements[0][0]);
@@ -721,30 +703,29 @@ void Basis::set_euler_zyx(const Vector3 &p_euler) {
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+	Basis xmat(1, 0, 0, 0, c, -s, 0, s, c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+	Basis ymat(c, 0, s, 0, 1, 0, -s, 0, c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	*this = zmat * ymat * xmat;
 }
 
 bool Basis::is_equal_approx(const Basis &p_basis) const {
-
 	return elements[0].is_equal_approx(p_basis.elements[0]) && elements[1].is_equal_approx(p_basis.elements[1]) && elements[2].is_equal_approx(p_basis.elements[2]);
 }
 
 bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
-
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon))
+			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon)) {
 				return false;
+			}
 		}
 	}
 
@@ -752,11 +733,11 @@ bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsil
 }
 
 bool Basis::operator==(const Basis &p_matrix) const {
-
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (elements[i][j] != p_matrix.elements[i][j])
+			if (elements[i][j] != p_matrix.elements[i][j]) {
 				return false;
+			}
 		}
 	}
 
@@ -764,19 +745,16 @@ bool Basis::operator==(const Basis &p_matrix) const {
 }
 
 bool Basis::operator!=(const Basis &p_matrix) const {
-
 	return (!(*this == p_matrix));
 }
 
 Basis::operator String() const {
-
 	String mtx;
 	for (int i = 0; i < 3; i++) {
-
 		for (int j = 0; j < 3; j++) {
-
-			if (i != 0 || j != 0)
+			if (i != 0 || j != 0) {
 				mtx += ", ";
+			}
 
 			mtx += rtos(elements[i][j]);
 		}
@@ -786,33 +764,32 @@ Basis::operator String() const {
 }
 
 Quat Basis::get_quat() const {
-
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
 	real_t trace = m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
 	real_t temp[4];
 
-	if (trace > 0.0) {
-		real_t s = Math::sqrt(trace + 1.0);
-		temp[3] = (s * 0.5);
-		s = 0.5 / s;
+	if (trace > 0) {
+		real_t s = Math::sqrt(trace + 1);
+		temp[3] = (s * 0.5f);
+		s = 0.5f / s;
 
 		temp[0] = ((m.elements[2][1] - m.elements[1][2]) * s);
 		temp[1] = ((m.elements[0][2] - m.elements[2][0]) * s);
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
-		int i = m.elements[0][0] < m.elements[1][1] ?
-						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+		int i = m.elements[0][0] < m.elements[1][1]
+				? (m.elements[1][1] < m.elements[2][2] ? 2 : 1)
+				: (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
-		real_t s = Math::sqrt(m.elements[i][i] - m.elements[j][j] - m.elements[k][k] + 1.0);
-		temp[i] = s * 0.5;
-		s = 0.5 / s;
+		real_t s = Math::sqrt(m.elements[i][i] - m.elements[j][j] - m.elements[k][k] + 1);
+		temp[i] = s * 0.5f;
+		s = 0.5f / s;
 
 		temp[3] = (m.elements[k][j] - m.elements[j][k]) * s;
 		temp[j] = (m.elements[j][i] + m.elements[i][j]) * s;
@@ -850,35 +827,33 @@ static const Basis _ortho_bases[24] = {
 };
 
 int Basis::get_orthogonal_index() const {
-
 	//could be sped up if i come up with a way
 	Basis orth = *this;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-
 			real_t v = orth[i][j];
-			if (v > 0.5)
-				v = 1.0;
-			else if (v < -0.5)
-				v = -1.0;
-			else
+			if (v > 0.5f) {
+				v = 1;
+			} else if (v < -0.5f) {
+				v = -1;
+			} else {
 				v = 0;
+			}
 
 			orth[i][j] = v;
 		}
 	}
 
 	for (int i = 0; i < 24; i++) {
-
-		if (_ortho_bases[i] == orth)
+		if (_ortho_bases[i] == orth) {
 			return i;
+		}
 	}
 
 	return 0;
 }
 
 void Basis::set_orthogonal_index(int p_index) {
-
 	//there only exist 24 orthogonal bases in r3
 	ERR_FAIL_INDEX(p_index, 24);
 
@@ -952,7 +927,9 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	real_t s = Math::sqrt((elements[1][2] - elements[2][1]) * (elements[1][2] - elements[2][1]) + (elements[2][0] - elements[0][2]) * (elements[2][0] - elements[0][2]) + (elements[0][1] - elements[1][0]) * (elements[0][1] - elements[1][0])); // s=|axis||sin(angle)|, used to normalise
 
 	angle = Math::acos((elements[0][0] + elements[1][1] + elements[2][2] - 1) / 2);
-	if (angle < 0) s = -s;
+	if (angle < 0) {
+		s = -s;
+	}
 	x = (elements[2][1] - elements[1][2]) / s;
 	y = (elements[0][2] - elements[2][0]) / s;
 	z = (elements[1][0] - elements[0][1]) / s;
@@ -962,30 +939,29 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 }
 
 void Basis::set_quat(const Quat &p_quat) {
-
 	real_t d = p_quat.length_squared();
-	real_t s = 2.0 / d;
+	real_t s = 2 / d;
 	real_t xs = p_quat.x * s, ys = p_quat.y * s, zs = p_quat.z * s;
 	real_t wx = p_quat.w * xs, wy = p_quat.w * ys, wz = p_quat.w * zs;
 	real_t xx = p_quat.x * xs, xy = p_quat.x * ys, xz = p_quat.x * zs;
 	real_t yy = p_quat.y * ys, yz = p_quat.y * zs, zz = p_quat.z * zs;
-	set(1.0 - (yy + zz), xy - wz, xz + wy,
-			xy + wz, 1.0 - (xx + zz), yz - wx,
-			xz - wy, yz + wx, 1.0 - (xx + yy));
+	set(1 - (yy + zz), xy - wz, xz + wy,
+			xy + wz, 1 - (xx + zz), yz - wx,
+			xz - wy, yz + wx, 1 - (xx + yy));
 }
 
-void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
+void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
-	real_t cosine = Math::cos(p_phi);
-	elements[0][0] = axis_sq.x + cosine * (1.0 - axis_sq.x);
-	elements[1][1] = axis_sq.y + cosine * (1.0 - axis_sq.y);
-	elements[2][2] = axis_sq.z + cosine * (1.0 - axis_sq.z);
+	real_t cosine = Math::cos(p_angle);
+	elements[0][0] = axis_sq.x + cosine * (1 - axis_sq.x);
+	elements[1][1] = axis_sq.y + cosine * (1 - axis_sq.y);
+	elements[2][2] = axis_sq.z + cosine * (1 - axis_sq.z);
 
-	real_t sine = Math::sin(p_phi);
+	real_t sine = Math::sin(p_angle);
 	real_t t = 1 - cosine;
 
 	real_t xyzt = p_axis.x * p_axis.y * t;
@@ -1004,9 +980,9 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 	elements[2][1] = xyzt + zyxs;
 }
 
-void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
+void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) {
 	set_diagonal(p_scale);
-	rotate(p_axis, p_phi);
+	rotate(p_axis, p_angle);
 }
 
 void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
@@ -1033,16 +1009,15 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[2][2] = p_diag.z;
 }
 
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
-
+Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
 	Quat from(*this);
-	Quat to(target);
+	Quat to(p_to);
 
-	Basis b(from.slerp(to, t));
-	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
-	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
-	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+	Basis b(from.slerp(to, p_weight));
+	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
+	b.elements[1] *= Math::lerp(elements[1].length(), p_to.elements[1].length(), p_weight);
+	b.elements[2] *= Math::lerp(elements[2].length(), p_to.elements[2].length(), p_weight);
 
 	return b;
 }

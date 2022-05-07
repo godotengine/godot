@@ -31,20 +31,18 @@ namespace GodotTools.Build
                         string dotnetCliPath = OS.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Visual Studio.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Visual Studio.");
                         goto case BuildTool.MsBuildVs;
                     }
                     case BuildTool.MsBuildVs:
                     {
-                        if (_msbuildToolsPath.Empty() || !File.Exists(_msbuildToolsPath))
+                        if (string.IsNullOrEmpty(_msbuildToolsPath) || !File.Exists(_msbuildToolsPath))
                         {
                             // Try to search it again if it wasn't found last time or if it was removed from its location
                             _msbuildToolsPath = FindMsBuildToolsPathOnWindows();
 
-                            if (_msbuildToolsPath.Empty())
-                            {
+                            if (string.IsNullOrEmpty(_msbuildToolsPath))
                                 throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
-                            }
                         }
 
                         if (!_msbuildToolsPath.EndsWith("\\"))
@@ -57,15 +55,14 @@ namespace GodotTools.Build
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
 
                         if (!File.Exists(msbuildPath))
-                        {
                             throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
-                        }
 
                         return (msbuildPath, BuildTool.MsBuildMono);
                     }
                     case BuildTool.JetBrainsMsBuild:
                     {
-                        var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+                        string editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+
                         if (!File.Exists(editorPath))
                             throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
 
@@ -83,16 +80,16 @@ namespace GodotTools.Build
                 }
             }
 
-            if (OS.IsUnixLike())
+            if (OS.IsUnixLike)
             {
                 switch (buildTool)
                 {
                     case BuildTool.DotnetCli:
                     {
-                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        string dotnetCliPath = FindBuildEngineOnUnix("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Mono.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Mono.");
                         goto case BuildTool.MsBuildMono;
                     }
                     case BuildTool.MsBuildMono:
@@ -125,7 +122,11 @@ namespace GodotTools.Build
                 if (OS.IsOSX)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
+                    result.Add("/opt/local/bin/");
                     result.Add("/usr/local/var/homebrew/linked/mono/bin/");
+                    result.Add("/usr/local/bin/");
+                    result.Add("/usr/local/bin/dotnet/");
+                    result.Add("/usr/local/share/dotnet/");
                 }
 
                 result.Add("/opt/novell/mono/bin/");
@@ -138,12 +139,12 @@ namespace GodotTools.Build
         {
             string ret = OS.PathWhich(name);
 
-            if (!ret.Empty())
+            if (!string.IsNullOrEmpty(ret))
                 return ret;
 
             string retFallback = OS.PathWhich($"{name}.exe");
 
-            if (!retFallback.Empty())
+            if (!string.IsNullOrEmpty(retFallback))
                 return retFallback;
 
             foreach (string hintDir in MsBuildHintDirs)
@@ -164,10 +165,25 @@ namespace GodotTools.Build
 
             // Try to find 15.0 with vswhere
 
-            string vsWherePath = Environment.GetEnvironmentVariable(Internal.GodotIs32Bits() ? "ProgramFiles" : "ProgramFiles(x86)");
-            vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            string[] envNames = Internal.GodotIs32Bits() ?
+                envNames = new[] { "ProgramFiles", "ProgramW6432" } :
+                envNames = new[] { "ProgramFiles(x86)", "ProgramFiles" };
 
-            var vsWhereArgs = new[] { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
+            string vsWherePath = null;
+            foreach (var envName in envNames)
+            {
+                vsWherePath = Environment.GetEnvironmentVariable(envName);
+                if (!string.IsNullOrEmpty(vsWherePath))
+                {
+                    vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+                    if (File.Exists(vsWherePath))
+                        break;
+                }
+
+                vsWherePath = null;
+            }
+
+            var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
@@ -195,7 +211,7 @@ namespace GodotTools.Build
 
                 string value = line.Substring(sepIdx + 1).StripEdges();
 
-                if (value.Empty())
+                if (string.IsNullOrEmpty(value))
                     throw new FormatException("installationPath value is empty");
 
                 if (!value.EndsWith("\\"))

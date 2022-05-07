@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,25 +63,21 @@ void SkeletonEditor::create_physical_skeleton() {
 	bones_infos.resize(bc);
 
 	for (int bone_id = 0; bc > bone_id; ++bone_id) {
-
 		const int parent = skeleton->get_bone_parent(bone_id);
 
 		if (parent < 0) {
-
 			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
 
 		} else {
-
 			const int parent_parent = skeleton->get_bone_parent(parent);
 
 			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
 			/// create physical bone on parent
 			if (!bones_infos[parent].physical_bone) {
-
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
-				ur->create_action(TTR("Create physical bones"));
+				ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
 				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
 				ur->add_do_reference(bones_infos[parent].physical_bone);
 				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
@@ -93,7 +89,6 @@ void SkeletonEditor::create_physical_skeleton() {
 
 				/// Create joint between parent of parent
 				if (-1 != parent_parent) {
-
 					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone::JOINT_TYPE_PIN);
 				}
 			}
@@ -102,8 +97,9 @@ void SkeletonEditor::create_physical_skeleton() {
 }
 
 PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
+	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
 
-	real_t half_height(skeleton->get_bone_rest(bone_child_id).origin.length() * 0.5);
+	real_t half_height(child_rest.origin.length() * 0.5);
 	real_t radius(half_height * 0.2);
 
 	CapsuleShape *bone_shape_capsule = memnew(CapsuleShape);
@@ -113,8 +109,17 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	CollisionShape *bone_shape = memnew(CollisionShape);
 	bone_shape->set_shape(bone_shape_capsule);
 
+	Transform capsule_transform;
+	bone_shape->set_transform(capsule_transform);
+
+	Vector3 up = Vector3(0, 1, 0);
+	if (up.cross(child_rest.origin).is_equal_approx(Vector3())) {
+		up = Vector3(0, 0, 1);
+	}
+
 	Transform body_transform;
-	body_transform.origin = Vector3(0, 0, -half_height);
+	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin, up);
+	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);
@@ -128,7 +133,6 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 }
 
 void SkeletonEditor::edit(Skeleton *p_node) {
-
 	skeleton = p_node;
 }
 
@@ -139,9 +143,8 @@ void SkeletonEditor::_notification(int p_what) {
 }
 
 void SkeletonEditor::_node_removed(Node *p_node) {
-
 	if (p_node == skeleton) {
-		skeleton = NULL;
+		skeleton = nullptr;
 		options->hide();
 	}
 }
@@ -152,7 +155,7 @@ void SkeletonEditor::_bind_methods() {
 }
 
 SkeletonEditor::SkeletonEditor() {
-	skeleton = NULL;
+	skeleton = nullptr;
 	options = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
@@ -179,9 +182,8 @@ void SkeletonEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		skeleton_editor->options->show();
 	} else {
-
 		skeleton_editor->options->hide();
-		skeleton_editor->edit(NULL);
+		skeleton_editor->edit(nullptr);
 	}
 }
 

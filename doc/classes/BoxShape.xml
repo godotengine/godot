@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BoxShape" inherits="Shape" version="3.2">
+<class name="BoxShape" inherits="Shape" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Box shape resource.
 	</brief_description>
@@ -7,6 +7,9 @@
 		3D box shape that can be a child of a [PhysicsBody] or [Area].
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 	</tutorials>
 	<methods>
 	</methods>

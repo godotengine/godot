@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
-
 	DIR *dir_stream;
 
 	static DirAccess *create_fs();
@@ -52,6 +51,7 @@ class DirAccessUnix : public DirAccess {
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
+	virtual bool is_hidden(const String &p_name);
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing
@@ -63,6 +63,7 @@ public:
 
 	virtual int get_drive_count();
 	virtual String get_drive(int p_drive);
+	virtual int get_current_drive();
 	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
@@ -77,7 +78,11 @@ public:
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
-	virtual size_t get_space_left();
+	virtual bool is_link(String p_file);
+	virtual String read_link(String p_file);
+	virtual Error create_link(String p_source, String p_target);
+
+	virtual uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "scroll_bar.h"
 
 class ScrollContainer : public Container {
-
 	GDCLASS(ScrollContainer, Container);
 
 	HScrollBar *h_scroll;
@@ -70,13 +69,13 @@ protected:
 	Size2 get_minimum_size() const;
 
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
+	void _gui_focus_changed(Control *p_control);
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
 	static void _bind_methods();
 
 	void _update_scrollbar_position();
-	void _ensure_focused_visible(Control *p_node);
 
 public:
 	int get_v_scroll() const;
@@ -99,6 +98,7 @@ public:
 
 	HScrollBar *get_h_scrollbar();
 	VScrollBar *get_v_scrollbar();
+	void ensure_control_visible(Control *p_control);
 
 	virtual bool clips_input() const;
 

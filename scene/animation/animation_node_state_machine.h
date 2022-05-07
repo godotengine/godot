@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,9 +95,9 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	float len_total;
 
-	float len_current;
-	float pos_current;
-	int loops_current;
+	float len_current = 0.0;
+	float pos_current = 0.0;
+	bool end_loop = false;
 
 	StringName current;
 
@@ -134,7 +134,6 @@ public:
 };
 
 class AnimationNodeStateMachine : public AnimationRootNode {
-
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 private:
@@ -148,7 +147,6 @@ private:
 	Map<StringName, State> states;
 
 	struct Transition {
-
 		StringName from;
 		StringName to;
 		Ref<AnimationNodeStateMachineTransition> transition;

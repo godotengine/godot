@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "constraint_2d_sw.h"
 
 class Joint2DSW : public Constraint2DSW {
-
 	real_t max_force;
 	real_t bias;
 	real_t max_bias;
@@ -51,7 +50,7 @@ public:
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
 	virtual Physics2DServer::JointType get_type() const = 0;
-	Joint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) :
+	Joint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint2DSW(p_body_ptr, p_body_count) {
 		bias = 0;
 		max_force = max_bias = 3.40282e+38;
@@ -59,7 +58,6 @@ public:
 };
 
 class PinJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -86,12 +84,11 @@ public:
 	void set_param(Physics2DServer::PinJointParam p_param, real_t p_value);
 	real_t get_param(Physics2DServer::PinJointParam p_param) const;
 
-	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = NULL);
+	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = nullptr);
 	~PinJoint2DSW();
 };
 
 class GrooveJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -126,7 +123,6 @@ public:
 };
 
 class DampedSpringJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;

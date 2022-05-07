@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,6 @@ public:
 	int exposure_shrink_size;
 
 	struct State {
-
 		bool texscreen_copied;
 		int current_blend_mode;
 		float current_line_width;
@@ -154,15 +153,18 @@ public:
 			float fog_height_min;
 			float fog_height_max;
 			float fog_height_curve;
+
+			uint32_t view_index;
+
 			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-			float pad[2];
+			float pad[3];
 
 		} ubo_data;
+		static_assert(sizeof(SceneDataUBO) % 16 == 0, "SceneDataUBO size must be a multiple of 16 bytes");
 
 		GLuint scene_ubo;
 
 		struct EnvironmentRadianceUBO {
-
 			float transform[16];
 			float ambient_contribution;
 			uint8_t padding[12];
@@ -217,7 +219,6 @@ public:
 	/* SHADOW ATLAS API */
 
 	struct ShadowAtlas : public RID_Data {
-
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
@@ -225,7 +226,6 @@ public:
 		};
 
 		struct Quadrant {
-
 			uint32_t subdivision;
 
 			struct Shadow {
@@ -259,7 +259,6 @@ public:
 	};
 
 	struct ShadowCubeMap {
-
 		GLuint fbo_id[6];
 		GLuint cubemap;
 		uint32_t size;
@@ -269,6 +268,9 @@ public:
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
 
+	int directional_shadow_size;
+
+	void directional_shadow_create();
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas, int p_size);
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
@@ -289,7 +291,6 @@ public:
 	/* REFLECTION PROBE ATLAS API */
 
 	struct ReflectionAtlas : public RID_Data {
-
 		int subdiv;
 		int size;
 
@@ -313,7 +314,6 @@ public:
 	/* REFLECTION CUBEMAPS */
 
 	struct ReflectionCubeMap {
-
 		GLuint fbo_id[6];
 		GLuint cubemap;
 		GLuint depth;
@@ -325,7 +325,6 @@ public:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance : public RID_Data {
-
 		RasterizerStorageGLES3::ReflectionProbe *probe_ptr;
 		RID probe;
 		RID self;
@@ -342,7 +341,6 @@ public:
 	};
 
 	struct ReflectionProbeDataUBO {
-
 		float box_extents[4];
 		float box_ofs[4];
 		float params[4]; // intensity, 0, 0, boxproject
@@ -365,7 +363,6 @@ public:
 	/* ENVIRONMENT API */
 
 	struct Environment : public RID_Data {
-
 		VS::EnvironmentBG bg_mode;
 
 		RID sky;
@@ -414,6 +411,7 @@ public:
 		float glow_hdr_bleed_scale;
 		float glow_hdr_luminance_cap;
 		bool glow_bicubic_upscale;
+		bool glow_high_quality;
 
 		VS::EnvironmentToneMapper tone_mapper;
 		float tone_mapper_exposure;
@@ -494,6 +492,7 @@ public:
 				glow_hdr_bleed_scale(2.0),
 				glow_hdr_luminance_cap(12.0),
 				glow_bicubic_upscale(false),
+				glow_high_quality(false),
 				tone_mapper(VS::ENV_TONE_MAPPER_LINEAR),
 				tone_mapper_exposure(1.0),
 				tone_mapper_exposure_white(1.0),
@@ -549,7 +548,8 @@ public:
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
+
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale, bool p_high_quality);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
@@ -571,7 +571,6 @@ public:
 	/* LIGHT INSTANCE */
 
 	struct LightDataUBO {
-
 		float light_pos_inv_radius[4];
 		float light_direction_attenuation[4];
 		float light_color_energy[4];
@@ -591,9 +590,7 @@ public:
 	};
 
 	struct LightInstance : public RID_Data {
-
 		struct ShadowTransform {
-
 			CameraMatrix camera;
 			Transform transform;
 			float farplane;
@@ -648,7 +645,7 @@ public:
 		Transform transform_to_data;
 
 		GIProbeInstance() :
-				probe(NULL),
+				probe(nullptr),
 				tex_cache(0) {
 		}
 	};
@@ -663,7 +660,6 @@ public:
 	/* RENDER LIST */
 
 	struct RenderList {
-
 		enum {
 			DEFAULT_MAX_ELEMENTS = 65536,
 			SORT_FLAG_SKELETON = 1,
@@ -671,6 +667,7 @@ public:
 			MAX_DIRECTIONAL_LIGHTS = 16,
 			DEFAULT_MAX_LIGHTS = 4096,
 			DEFAULT_MAX_REFLECTIONS = 1024,
+			DEFAULT_MAX_LIGHTS_PER_OBJECT = 32,
 
 			SORT_KEY_PRIORITY_SHIFT = 56,
 			SORT_KEY_PRIORITY_MASK = 0xFF,
@@ -678,14 +675,15 @@ public:
 			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
 			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
 //64 bits unsupported in MSVC
-#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 49)
-#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 48)
-#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 47)
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 50)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 49)
+#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 48)
+#define SORT_KEY_LIGHTMAP_LAYERED_FLAG (uint64_t(1) << 47)
 #define SORT_KEY_LIGHTMAP_FLAG (uint64_t(1) << 46)
 #define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 45)
 #define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 44)
 			SORT_KEY_SHADING_SHIFT = 44,
-			SORT_KEY_SHADING_MASK = 63,
+			SORT_KEY_SHADING_MASK = 127,
 			//44-28 material index
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 28,
 			//28-8 geometry index
@@ -703,9 +701,9 @@ public:
 		int max_elements;
 		int max_lights;
 		int max_reflections;
+		int max_lights_per_object;
 
 		struct Element {
-
 			RasterizerScene::InstanceBase *instance;
 			RasterizerStorageGLES3::Geometry *geometry;
 			RasterizerStorageGLES3::Material *material;
@@ -720,7 +718,6 @@ public:
 		int alpha_element_count;
 
 		void clear() {
-
 			element_count = 0;
 			alpha_element_count = 0;
 		}
@@ -728,14 +725,12 @@ public:
 		//should eventually be replaced by radix
 
 		struct SortByKey {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->sort_key < B->sort_key;
 			}
 		};
 
 		void sort_by_key(bool p_alpha) {
-
 			SortArray<Element *, SortByKey> sorter;
 			if (p_alpha) {
 				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
@@ -745,7 +740,6 @@ public:
 		}
 
 		struct SortByDepth {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth < B->instance->depth;
 			}
@@ -762,7 +756,6 @@ public:
 		}
 
 		struct SortByReverseDepthAndPriority {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				uint32_t layer_A = uint32_t(A->sort_key >> SORT_KEY_PRIORITY_SHIFT);
 				uint32_t layer_B = uint32_t(B->sort_key >> SORT_KEY_PRIORITY_SHIFT);
@@ -785,17 +778,17 @@ public:
 		}
 
 		_FORCE_INLINE_ Element *add_element() {
-
-			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+			if (element_count + alpha_element_count >= max_elements) {
+				return nullptr;
+			}
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
 		}
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
-
-			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+			if (element_count + alpha_element_count >= max_elements) {
+				return nullptr;
+			}
 			int idx = max_elements - alpha_element_count - 1;
 			elements[idx] = &base_elements[idx];
 			alpha_element_count++;
@@ -803,17 +796,16 @@ public:
 		}
 
 		void init() {
-
 			element_count = 0;
 			alpha_element_count = 0;
 			elements = memnew_arr(Element *, max_elements);
 			base_elements = memnew_arr(Element, max_elements);
-			for (int i = 0; i < max_elements; i++)
+			for (int i = 0; i < max_elements; i++) {
 				elements[i] = &base_elements[i]; // assign elements
+			}
 		}
 
 		RenderList() {
-
 			max_elements = DEFAULT_MAX_ELEMENTS;
 			max_lights = DEFAULT_MAX_LIGHTS;
 			max_reflections = DEFAULT_MAX_REFLECTIONS;
@@ -827,6 +819,7 @@ public:
 
 	LightInstance *directional_light;
 	LightInstance *directional_lights[RenderList::MAX_DIRECTIONAL_LIGHTS];
+	RID first_directional_light;
 
 	RenderList render_list;
 
@@ -835,7 +828,7 @@ public:
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e, const Transform &p_view_transform);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
-	_FORCE_INLINE_ void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
+	void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
 
 	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, RasterizerStorageGLES3::Sky *p_sky, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows);
 
@@ -845,7 +838,7 @@ public:
 
 	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
-	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog = false);
+	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, const int p_eye = 0, bool p_no_fog = false);
 	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transform, bool p_use_shadows);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_shadow_atlas);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_reflection_atlas, Environment *p_env);
@@ -862,7 +855,8 @@ public:
 	void _prepare_depth_texture();
 	void _bind_depth_texture();
 
-	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	bool _element_needs_directional_add(RenderList::Element *e);
+	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const int p_eye, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 	virtual bool free(RID p_rid);
 

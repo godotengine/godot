@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LinkButton" inherits="BaseButton" version="3.2">
+<class name="LinkButton" inherits="BaseButton" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Simple button used to represent a link to some resource.
 	</brief_description>
 	<description>
 		This kind of button is primarily used when the interaction with the button causes a context change (like linking to a web page).
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" override="true" enum="Control.FocusMode" default="0" />
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="0" />
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="0" />
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="2" />
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
 		</member>
@@ -33,23 +33,26 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="focus" type="StyleBox">
-			[StyleBox] used when the [LinkButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
-		</theme_item>
-		<theme_item name="font" type="Font">
-			[Font] of the [LinkButton]'s text.
-		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_color_focus" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] used when the [LinkButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
+		<theme_item name="font_color_hover" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [LinkButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_color_pressed" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [LinkButton] is being pressed.
 		</theme_item>
-		<theme_item name="underline_spacing" type="int" default="2">
+		<theme_item name="underline_spacing" data_type="constant" type="int" default="2">
 			The vertical space between the baseline of text and the underline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [LinkButton]'s text.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [LinkButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
 	</theme_items>
 </class>

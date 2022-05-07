@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,20 +31,26 @@
 #ifndef VISIBILITY_NOTIFIER_H
 #define VISIBILITY_NOTIFIER_H
 
-#include "scene/3d/spatial.h"
+#include "scene/3d/cull_instance.h"
 
+class World;
 class Camera;
-class VisibilityNotifier : public Spatial {
+class VisibilityNotifier : public CullInstance {
+	GDCLASS(VisibilityNotifier, CullInstance);
 
-	GDCLASS(VisibilityNotifier, Spatial);
-
+	Ref<World> world;
 	Set<Camera *> cameras;
 
 	AABB aabb;
 
+	// if using rooms and portals
+	RID _cull_instance_rid;
+	bool _in_gameplay;
+
 protected:
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
+	virtual void _refresh_portal_mode();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -59,10 +65,10 @@ public:
 	bool is_on_screen() const;
 
 	VisibilityNotifier();
+	~VisibilityNotifier();
 };
 
 class VisibilityEnabler : public VisibilityNotifier {
-
 	GDCLASS(VisibilityEnabler, VisibilityNotifier);
 
 public:

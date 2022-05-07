@@ -4,7 +4,7 @@
  *
  *   WOFFF format management (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,18 +20,20 @@
 #define SFWOFF_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/ftobjs.h>
 
 
 FT_BEGIN_HEADER
 
+#ifdef FT_CONFIG_OPTION_USE_ZLIB
 
   FT_LOCAL( FT_Error )
   woff_open_font( FT_Stream  stream,
                   TT_Face    face );
 
+
+#endif
 
 FT_END_HEADER
 

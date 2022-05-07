@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #ifndef COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
@@ -52,6 +54,17 @@ class CollisionShape2DEditor : public Control {
 		SEGMENT_SHAPE
 	};
 
+	const Point2 RECT_HANDLES[8] = {
+		Point2(1, 0),
+		Point2(1, 1),
+		Point2(0, 1),
+		Point2(-1, 1),
+		Point2(-1, 0),
+		Point2(-1, -1),
+		Point2(0, -1),
+		Point2(1, -1),
+	};
+
 	EditorNode *editor;
 	UndoRedo *undo_redo;
 	CanvasItemEditor *canvas_item_editor;
@@ -63,6 +76,8 @@ class CollisionShape2DEditor : public Control {
 	int edit_handle;
 	bool pressed;
 	Variant original;
+	Transform2D original_transform;
+	Point2 last_point;
 
 	Variant get_handle_value(int idx) const;
 	void set_handle(int idx, Point2 &p_point);

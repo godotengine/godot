@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 class DocData {
 public:
 	struct ArgumentDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -46,7 +45,6 @@ public:
 	};
 
 	struct MethodDoc {
-
 		String name;
 		String return_type;
 		String return_enum;
@@ -59,15 +57,14 @@ public:
 	};
 
 	struct ConstantDoc {
-
 		String name;
 		String value;
+		bool is_value_valid;
 		String enumeration;
 		String description;
 	};
 
 	struct PropertyDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -75,11 +72,27 @@ public:
 		String setter, getter;
 		String default_value;
 		bool overridden;
+		String overrides;
 		bool operator<(const PropertyDoc &p_prop) const {
 			return name < p_prop.name;
 		}
 		PropertyDoc() {
 			overridden = false;
+		}
+	};
+
+	struct ThemeItemDoc {
+		String name;
+		String type;
+		String data_type;
+		String description;
+		String default_value;
+		bool operator<(const ThemeItemDoc &p_theme_item) const {
+			// First sort by the data type, then by name.
+			if (data_type == p_theme_item.data_type) {
+				return name < p_theme_item.name;
+			}
+			return data_type < p_theme_item.data_type;
 		}
 	};
 
@@ -89,7 +102,6 @@ public:
 	};
 
 	struct ClassDoc {
-
 		String name;
 		String inherits;
 		String category;
@@ -100,7 +112,7 @@ public:
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
-		Vector<PropertyDoc> theme_properties;
+		Vector<ThemeItemDoc> theme_properties;
 	};
 
 	String version;

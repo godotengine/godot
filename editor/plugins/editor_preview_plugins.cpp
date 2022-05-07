@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,9 +43,9 @@
 #include "servers/audio/audio_stream.h"
 
 void post_process_preview(Ref<Image> p_image) {
-
-	if (p_image->get_format() != Image::FORMAT_RGBA8)
+	if (p_image->get_format() != Image::FORMAT_RGBA8) {
 		p_image->convert(Image::FORMAT_RGBA8);
+	}
 
 	p_image->lock();
 
@@ -75,7 +75,6 @@ void post_process_preview(Ref<Image> p_image) {
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
@@ -84,7 +83,6 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 }
 
 Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
 	Ref<LargeTexture> ltex = p_from;
@@ -112,14 +110,16 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 		}
 	}
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Texture>();
+	}
 
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -148,23 +148,23 @@ EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
 ////////////////////////////////////////////////////////////////////////////
 
 bool EditorImagePreviewPlugin::handles(const String &p_type) const {
-
 	return p_type == "Image";
 }
 
 Ref<Texture> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<Image> img = p_from;
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Image>();
+	}
 
 	img = img->duplicate();
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Image>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -196,12 +196,10 @@ bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 ////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "BitMap");
 }
 
 Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<BitMap> bm = p_from;
 
 	if (bm->get_size() == Size2()) {
@@ -228,11 +226,12 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	Ref<Image> img;
 	img.instance();
-	img->create(bm->get_size().width, bm->get_size().height, 0, Image::FORMAT_L8, data);
+	img->create(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -264,16 +263,13 @@ EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "PackedScene");
 }
 Ref<Texture> EditorPackedScenePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	return generate_from_path(p_from->get_path(), p_size);
 }
 
 Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
-
 	String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
 	cache_base = temp_path.plus_file("resthumb-" + cache_base);
@@ -282,14 +278,14 @@ Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_
 
 	String path = cache_base + ".png";
 
-	if (!FileAccess::exists(path))
+	if (!FileAccess::exists(path)) {
 		return Ref<Texture>();
+	}
 
 	Ref<Image> img;
 	img.instance();
 	Error err = img->load(path);
 	if (err == OK) {
-
 		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
 		post_process_preview(img);
@@ -307,17 +303,14 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 //////////////////////////////////////////////////////////////////
 
 void EditorMaterialPreviewPlugin::_preview_done(const Variant &p_udata) {
-
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMaterialPreviewPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_preview_done", &EditorMaterialPreviewPlugin::_preview_done);
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Material"); //any material
 }
 
@@ -326,20 +319,18 @@ bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
 }
 
 Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<Material> material = p_from;
 	ERR_FAIL_COND_V(material.is_null(), Ref<Texture>());
 
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
-
 		VS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
 		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-		preview_done = false;
+		preview_done.clear();
 		VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
-		while (!preview_done) {
+		while (!preview_done.is_set()) {
 			OS::get_singleton()->delay_usec(10);
 		}
 
@@ -361,10 +352,9 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size
 }
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
+	scenario = RID_PRIME(VS::get_singleton()->scenario_create());
 
-	scenario = VS::get_singleton()->scenario_create();
-
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
@@ -373,16 +363,16 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
-	camera = VS::get_singleton()->camera_create();
+	camera = RID_PRIME(VS::get_singleton()->camera_create());
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);
 	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
 	VS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
-	light = VS::get_singleton()->directional_light_create();
+	light = RID_PRIME(VS::get_singleton()->directional_light_create());
 	light_instance = VS::get_singleton()->instance_create2(light, scenario);
 	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->directional_light_create();
+	light2 = RID_PRIME(VS::get_singleton()->directional_light_create());
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	//VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
@@ -390,7 +380,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	sphere = VS::get_singleton()->mesh_create();
+	sphere = RID_PRIME(VS::get_singleton()->mesh_create());
 	sphere_instance = VS::get_singleton()->instance_create2(sphere, scenario);
 
 	int lats = 32;
@@ -413,7 +403,6 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 		double zr1 = Math::cos(lat1);
 
 		for (int j = lons; j >= 1; j--) {
-
 			double lng0 = 2 * Math_PI * (double)(j - 1) / lons;
 			double x0 = Math::cos(lng0);
 			double y0 = Math::sin(lng0);
@@ -467,7 +456,6 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
-
 	VS::get_singleton()->free(sphere);
 	VS::get_singleton()->free(sphere_instance);
 	VS::get_singleton()->free(viewport);
@@ -482,33 +470,36 @@ EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 static bool _is_text_char(CharType c) {
-
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
 bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Script");
 }
 
 Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<Script> scr = p_from;
-	if (scr.is_null())
+	if (scr.is_null()) {
 		return Ref<Texture>();
+	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code == "")
+	if (code == "") {
 		return Ref<Texture>();
+	}
 
 	List<String> kwors;
 	scr->get_language()->get_reserved_words(&kwors);
 
+	Set<String> control_flow_keywords;
 	Set<String> keywords;
 
 	for (List<String>::Element *E = kwors.front(); E; E = E->next()) {
-
-		keywords.insert(E->get());
+		if (scr->get_language()->is_control_flow_keyword(E->get())) {
+			control_flow_keywords.insert(E->get());
+		} else {
+			keywords.insert(E->get());
+		}
 	}
 
 	int line = 0;
@@ -516,17 +507,20 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
 	Ref<Image> img;
 	img.instance();
 	int thumbnail_size = MAX(p_size.x, p_size.y);
-	img->create(thumbnail_size, thumbnail_size, 0, Image::FORMAT_RGBA8);
+	img->create(thumbnail_size, thumbnail_size, false, Image::FORMAT_RGBA8);
 
 	Color bg_color = EditorSettings::get_singleton()->get("text_editor/highlighting/background_color");
 	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/control_flow_keyword_color");
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
+	Color comment_color = EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color");
 
 	img->lock();
 
-	if (bg_color.a == 0)
+	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
+	}
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
 	for (int i = 0; i < thumbnail_size; i++) {
@@ -541,34 +535,53 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
 	col = x0;
 
 	bool prev_is_text = false;
+	bool in_control_flow_keyword = false;
 	bool in_keyword = false;
+	bool in_comment = false;
 	for (int i = 0; i < code.length(); i++) {
-
 		CharType c = code[i];
 		if (c > 32) {
 			if (col < thumbnail_size) {
 				Color color = text_color;
 
-				if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
-					//make symbol a little visible
-					color = symbol_color;
-					in_keyword = false;
-				} else if (!prev_is_text && _is_text_char(c)) {
-					int pos = i;
-
-					while (_is_text_char(code[pos])) {
-						pos++;
-					}
-					String word = code.substr(i, pos - i);
-					if (keywords.has(word))
-						in_keyword = true;
-
-				} else if (!_is_text_char(c)) {
-					in_keyword = false;
+				if (c == '#') {
+					in_comment = true;
 				}
 
-				if (in_keyword)
-					color = keyword_color;
+				if (in_comment) {
+					color = comment_color;
+				} else {
+					if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
+						//make symbol a little visible
+						color = symbol_color;
+						in_control_flow_keyword = false;
+						in_keyword = false;
+					} else if (!prev_is_text && _is_text_char(c)) {
+						int pos = i;
+
+						while (_is_text_char(code[pos])) {
+							pos++;
+						}
+
+						const String word = code.substr(i, pos - i);
+
+						if (control_flow_keywords.has(word)) {
+							in_control_flow_keyword = true;
+						} else if (keywords.has(word)) {
+							in_keyword = true;
+						}
+
+					} else if (!_is_text_char(c)) {
+						in_control_flow_keyword = false;
+						in_keyword = false;
+					}
+
+					if (in_control_flow_keyword) {
+						color = control_flow_keyword_color;
+					} else if (in_keyword) {
+						color = keyword_color;
+					}
+				}
 
 				Color ul = color;
 				ul.a *= 0.5;
@@ -577,21 +590,26 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
 
 				prev_is_text = _is_text_char(c);
 			}
+			col++;
 		} else {
-
 			prev_is_text = false;
+			in_control_flow_keyword = false;
 			in_keyword = false;
 
 			if (c == '\n') {
+				in_comment = false;
+
 				col = x0;
 				line++;
-				if (line >= available_height / 2)
+				if (line >= available_height / 2) {
 					break;
+				}
 			} else if (c == '\t') {
 				col += 3;
+			} else {
+				col++;
 			}
 		}
-		col++;
 	}
 
 	img->unlock();
@@ -609,12 +627,10 @@ EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////
 
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "AudioStream");
 }
 
 Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture>());
 
@@ -644,7 +660,6 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 	playback->stop();
 
 	for (int i = 0; i < w; i++) {
-
 		float max = -1000;
 		float min = 1000;
 		int from = uint64_t(i) * frame_length / w;
@@ -656,7 +671,6 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 		}
 
 		for (int j = from; j < to; j++) {
-
 			max = MAX(max, frames[j].l);
 			max = MAX(max, frames[j].r);
 
@@ -698,21 +712,17 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
-
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMeshPreviewPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_preview_done", &EditorMeshPreviewPlugin::_preview_done);
 }
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
 }
 
 Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	Ref<Mesh> mesh = p_from;
 	ERR_FAIL_COND_V(mesh.is_null(), Ref<Texture>());
 
@@ -726,8 +736,9 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
 	float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-	if (m == 0)
+	if (m == 0) {
 		return Ref<Texture>();
+	}
 	m = 1.0 / m;
 	m *= 0.5;
 	xform.basis.scale(Vector3(m, m, m));
@@ -737,10 +748,10 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-	preview_done = false;
+	preview_done.clear();
 	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
@@ -768,10 +779,9 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 }
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
+	scenario = RID_PRIME(VS::get_singleton()->scenario_create());
 
-	scenario = VS::get_singleton()->scenario_create();
-
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
@@ -797,13 +807,12 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = VS::get_singleton()->mesh_create();
-	mesh_instance = VS::get_singleton()->instance_create();
+	//sphere = RID_PRIME(VS::get_singleton()->mesh_create());
+	mesh_instance = RID_PRIME(VS::get_singleton()->instance_create());
 	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
-
 	//VS::get_singleton()->free(sphere);
 	VS::get_singleton()->free(mesh_instance);
 	VS::get_singleton()->free(viewport);
@@ -818,32 +827,33 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
-
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorFontPreviewPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_preview_done", &EditorFontPreviewPlugin::_preview_done);
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "DynamicFontData") || ClassDB::is_parent_class(p_type, "DynamicFont");
 }
 
 Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
-
-	RES res = ResourceLoader::load(p_path);
+	Ref<ResourceInteractiveLoader> ril = ResourceLoader::load_interactive(p_path);
+	ril.ptr()->wait();
+	RES res = ril.ptr()->get_resource();
 	Ref<DynamicFont> sampled_font;
+	sampled_font.instance();
 	if (res->is_class("DynamicFont")) {
-		sampled_font = res->duplicate();
-		if (sampled_font->get_outline_color() == Color(1, 1, 1, 1)) {
-			sampled_font->set_outline_color(Color(0, 0, 0, 1));
+		Ref<DynamicFont> font = res;
+		if (font->get_font_data().is_valid()) {
+			sampled_font->set_font_data(font->get_font_data()->duplicate());
+		}
+		for (int i = 0; i < font->get_fallback_count(); i++) {
+			sampled_font->add_fallback(font->get_fallback(i)->duplicate());
 		}
 	} else if (res->is_class("DynamicFontData")) {
-		sampled_font.instance();
-		sampled_font->set_font_data(res);
+		sampled_font->set_font_data(res->duplicate());
 	}
 	sampled_font->set_size(50);
 
@@ -857,13 +867,15 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 	Ref<Font> font = sampled_font;
 
-	font->draw(canvas_item, pos, sampled_text);
+	const Color c = GLOBAL_GET("rendering/environment/default_clear_color");
+	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
+	font->draw(canvas_item, pos, sampled_text, Color(fg, fg, fg));
 
-	preview_done = false;
+	preview_done.clear();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
@@ -892,7 +904,6 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 }
 
 Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
-
 	String path = p_from->get_path();
 	if (!FileAccess::exists(path)) {
 		return Ref<Texture>();
@@ -901,23 +912,21 @@ Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p
 }
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
-
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
-	canvas = VS::get_singleton()->canvas_create();
-	canvas_item = VS::get_singleton()->canvas_item_create();
+	canvas = RID_PRIME(VS::get_singleton()->canvas_create());
+	canvas_item = RID_PRIME(VS::get_singleton()->canvas_item_create());
 
 	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
 	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
-
 	VS::get_singleton()->free(canvas_item);
 	VS::get_singleton()->free(canvas);
 	VS::get_singleton()->free(viewport);

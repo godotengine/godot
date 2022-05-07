@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/main/viewport.h"
 
 class Camera2D : public Node2D {
-
 	GDCLASS(Camera2D, Node2D);
 
 public:
@@ -68,6 +67,7 @@ protected:
 	bool current;
 	float smoothing;
 	bool smoothing_enabled;
+	bool smoothing_active; // smoothing can be enabled but not active in the editor
 	int limit[4];
 	bool limit_smoothing_enabled;
 	float drag_margin[4];
@@ -83,11 +83,10 @@ protected:
 	Point2 camera_screen_center;
 	void _update_process_mode();
 	void _update_scroll();
+	void _setup_viewport();
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
-
-	void _set_old_smoothing(float p_enable);
 
 	bool screen_drawing_enabled;
 	bool limit_drawing_enabled;

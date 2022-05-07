@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,9 +35,9 @@ int btDumpMemoryLeaks();
 #define btAlignedFree(ptr) \
 	btAlignedFreeInternal(ptr, __LINE__, __FILE__)
 
-void* btAlignedAllocInternal(size_t size, int alignment, int line, char* filename);
+void* btAlignedAllocInternal(size_t size, int alignment, int line, const char* filename);
 
-void btAlignedFreeInternal(void* ptr, int line, char* filename);
+void btAlignedFreeInternal(void* ptr, int line, const char* filename);
 
 #else
 void* btAlignedAllocInternal(size_t size, int alignment);

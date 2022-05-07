@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -76,12 +75,14 @@ private:
 	Point2 ime_selection;
 
 	bool selecting_enabled;
+	bool deselect_on_focus_loss_enabled;
+	bool popup_show = false;
 
 	bool context_menu_enabled;
 	PopupMenu *menu;
 
 	int cursor_pos;
-	int window_pos;
+	int scroll_offset;
 	int max_length; // 0 for no maximum.
 
 	int cached_width;
@@ -91,10 +92,15 @@ private:
 
 	bool shortcut_keys_enabled;
 
+	bool virtual_keyboard_enabled = true;
+
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+	bool middle_mouse_paste_enabled;
+
 	Ref<Texture> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;
@@ -102,11 +108,12 @@ private:
 		bool creating;
 		bool doubleclick;
 		bool drag_attempt;
+		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {
 		int cursor_pos;
-		int window_pos;
+		int scroll_offset;
 		int cached_width;
 		String text;
 	};
@@ -143,7 +150,8 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_cursor();
-	void set_window_pos(int p_pos);
+	void set_scroll_offset(int p_pos);
+	int get_scroll_offset() const;
 
 	void set_cursor_at_pixel_pos(int p_x);
 	int get_cursor_pixel_pos();
@@ -152,7 +160,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -181,6 +188,9 @@ public:
 	void select_all();
 	void selection_delete();
 	void deselect();
+	bool has_selection() const;
+	int get_selection_from_column() const;
+	int get_selection_to_column() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -206,6 +216,8 @@ public:
 	void copy_text();
 	void cut_text();
 	void paste_text();
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 
@@ -229,13 +241,25 @@ public:
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled() const;
+
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture> &p_icon);
 	Ref<Texture> get_right_icon();
 
 	virtual bool is_text_field() const;
+
+	void show_virtual_keyboard();
+
 	LineEdit();
 	~LineEdit();
 };

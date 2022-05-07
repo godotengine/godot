@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "editor_file_dialog.h"
 
 class EditorAutoloadSettings : public VBoxContainer {
-
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);
 
 	enum {
@@ -63,7 +62,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		AutoLoadInfo() {
 			is_singleton = false;
 			in_editor = false;
-			node = NULL;
+			node = nullptr;
 		}
 	};
 
@@ -77,8 +76,9 @@ class EditorAutoloadSettings : public VBoxContainer {
 	EditorLineEditFileChooser *autoload_add_path;
 	LineEdit *autoload_add_name;
 	Button *add_autoload;
+	Label *error_message;
 
-	bool _autoload_name_is_valid(const String &p_name, String *r_error = NULL);
+	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
 	void _autoload_add();
 	void _autoload_selected();

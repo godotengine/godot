@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,37 +31,53 @@
 #include "multimesh_instance.h"
 
 void MultiMeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance::set_multimesh);
 	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance::get_multimesh);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
 }
 
-void MultiMeshInstance::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
+void MultiMeshInstance::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		_refresh_interpolated();
+	}
+}
 
+void MultiMeshInstance::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	multimesh = p_multimesh;
-	if (multimesh.is_valid())
+	if (multimesh.is_valid()) {
 		set_base(multimesh->get_rid());
-	else
+		_refresh_interpolated();
+	} else {
 		set_base(RID());
+	}
+}
+
+void MultiMeshInstance::_refresh_interpolated() {
+	if (is_inside_tree() && multimesh.is_valid()) {
+		bool interpolated = is_physics_interpolated_and_enabled();
+		multimesh->set_physics_interpolated(interpolated);
+	}
 }
 
 Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
-
 	return multimesh;
 }
 
 PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
-
 	return PoolVector<Face3>();
 }
 
 AABB MultiMeshInstance::get_aabb() const {
-
-	if (multimesh.is_null())
+	if (multimesh.is_null()) {
 		return AABB();
-	else
+	} else {
 		return multimesh->get_aabb();
+	}
+}
+
+void MultiMeshInstance::_physics_interpolated_changed() {
+	VisualInstance::_physics_interpolated_changed();
+	_refresh_interpolated();
 }
 
 MultiMeshInstance::MultiMeshInstance() {

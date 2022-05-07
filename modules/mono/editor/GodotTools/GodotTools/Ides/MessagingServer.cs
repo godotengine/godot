@@ -21,24 +21,26 @@ namespace GodotTools.Ides
 {
     public sealed class MessagingServer : IDisposable
     {
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
 
-        private readonly FileStream metaFile;
-        private string MetaFilePath { get; }
+        private readonly FileStream _metaFile;
+        private string _metaFilePath;
 
-        private readonly SemaphoreSlim peersSem = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim _peersSem = new SemaphoreSlim(1);
 
-        private readonly TcpListener listener;
+        private readonly TcpListener _listener;
 
-        private readonly Dictionary<string, Queue<NotifyAwaiter<bool>>> clientConnectedAwaiters = new Dictionary<string, Queue<NotifyAwaiter<bool>>>();
-        private readonly Dictionary<string, Queue<NotifyAwaiter<bool>>> clientDisconnectedAwaiters = new Dictionary<string, Queue<NotifyAwaiter<bool>>>();
+        private readonly Dictionary<string, Queue<NotifyAwaiter<bool>>> _clientConnectedAwaiters =
+            new Dictionary<string, Queue<NotifyAwaiter<bool>>>();
+        private readonly Dictionary<string, Queue<NotifyAwaiter<bool>>> _clientDisconnectedAwaiters =
+            new Dictionary<string, Queue<NotifyAwaiter<bool>>>();
 
         public async Task<bool> AwaitClientConnected(string identity)
         {
-            if (!clientConnectedAwaiters.TryGetValue(identity, out var queue))
+            if (!_clientConnectedAwaiters.TryGetValue(identity, out var queue))
             {
                 queue = new Queue<NotifyAwaiter<bool>>();
-                clientConnectedAwaiters.Add(identity, queue);
+                _clientConnectedAwaiters.Add(identity, queue);
             }
 
             var awaiter = new NotifyAwaiter<bool>();
@@ -48,10 +50,10 @@ namespace GodotTools.Ides
 
         public async Task<bool> AwaitClientDisconnected(string identity)
         {
-            if (!clientDisconnectedAwaiters.TryGetValue(identity, out var queue))
+            if (!_clientDisconnectedAwaiters.TryGetValue(identity, out var queue))
             {
                 queue = new Queue<NotifyAwaiter<bool>>();
-                clientDisconnectedAwaiters.Add(identity, queue);
+                _clientDisconnectedAwaiters.Add(identity, queue);
             }
 
             var awaiter = new NotifyAwaiter<bool>();
@@ -77,7 +79,7 @@ namespace GodotTools.Ides
             if (IsDisposed)
                 return;
 
-            using (await peersSem.UseAsync())
+            using (await _peersSem.UseAsync())
             {
                 if (IsDisposed) // lock may not be fair
                     return;
@@ -95,19 +97,19 @@ namespace GodotTools.Ides
                 foreach (var connection in Peers)
                     connection.Dispose();
                 Peers.Clear();
-                listener?.Stop();
+                _listener?.Stop();
 
-                metaFile?.Dispose();
+                _metaFile?.Dispose();
 
-                File.Delete(MetaFilePath);
+                File.Delete(_metaFilePath);
             }
         }
 
         public MessagingServer(string editorExecutablePath, string projectMetadataDir, ILogger logger)
         {
-            this.logger = logger;
+            this._logger = logger;
 
-            MetaFilePath = Path.Combine(projectMetadataDir, GodotIdeMetadata.DefaultFileName);
+            _metaFilePath = Path.Combine(projectMetadataDir, GodotIdeMetadata.DefaultFileName);
 
             // Make sure the directory exists
             Directory.CreateDirectory(projectMetadataDir);
@@ -115,13 +117,13 @@ namespace GodotTools.Ides
             // The Godot editor's file system thread can keep the file open for writing, so we are forced to allow write sharing...
             const FileShare metaFileShare = FileShare.ReadWrite;
 
-            metaFile = File.Open(MetaFilePath, FileMode.Create, FileAccess.Write, metaFileShare);
+            _metaFile = File.Open(_metaFilePath, FileMode.Create, FileAccess.Write, metaFileShare);
 
-            listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, port: 0));
-            listener.Start();
+            _listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, port: 0));
+            _listener.Start();
 
-            int port = ((IPEndPoint)listener.Server.LocalEndPoint).Port;
-            using (var metaFileWriter = new StreamWriter(metaFile, Encoding.UTF8))
+            int port = ((IPEndPoint)_listener.Server.LocalEndPoint).Port;
+            using (var metaFileWriter = new StreamWriter(_metaFile, Encoding.UTF8))
             {
                 metaFileWriter.WriteLine(port);
                 metaFileWriter.WriteLine(editorExecutablePath);
@@ -130,30 +132,30 @@ namespace GodotTools.Ides
 
         private async Task AcceptClient(TcpClient tcpClient)
         {
-            logger.LogDebug("Accept client...");
+            _logger.LogDebug("Accept client...");
 
-            using (var peer = new Peer(tcpClient, new ServerHandshake(), new ServerMessageHandler(), logger))
+            using (var peer = new Peer(tcpClient, new ServerHandshake(), new ServerMessageHandler(), _logger))
             {
                 // ReSharper disable AccessToDisposedClosure
                 peer.Connected += () =>
                 {
-                    logger.LogInfo("Connection open with Ide Client");
+                    _logger.LogInfo("Connection open with Ide Client");
 
-                    if (clientConnectedAwaiters.TryGetValue(peer.RemoteIdentity, out var queue))
+                    if (_clientConnectedAwaiters.TryGetValue(peer.RemoteIdentity, out var queue))
                     {
                         while (queue.Count > 0)
                             queue.Dequeue().SetResult(true);
-                        clientConnectedAwaiters.Remove(peer.RemoteIdentity);
+                        _clientConnectedAwaiters.Remove(peer.RemoteIdentity);
                     }
                 };
 
                 peer.Disconnected += () =>
                 {
-                    if (clientDisconnectedAwaiters.TryGetValue(peer.RemoteIdentity, out var queue))
+                    if (_clientDisconnectedAwaiters.TryGetValue(peer.RemoteIdentity, out var queue))
                     {
                         while (queue.Count > 0)
                             queue.Dequeue().SetResult(true);
-                        clientDisconnectedAwaiters.Remove(peer.RemoteIdentity);
+                        _clientDisconnectedAwaiters.Remove(peer.RemoteIdentity);
                     }
                 };
                 // ReSharper restore AccessToDisposedClosure
@@ -162,17 +164,17 @@ namespace GodotTools.Ides
                 {
                     if (!await peer.DoHandshake("server"))
                     {
-                        logger.LogError("Handshake failed");
+                        _logger.LogError("Handshake failed");
                         return;
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.LogError("Handshake failed with unhandled exception: ", e);
+                    _logger.LogError("Handshake failed with unhandled exception: ", e);
                     return;
                 }
 
-                using (await peersSem.UseAsync())
+                using (await _peersSem.UseAsync())
                     Peers.Add(peer);
 
                 try
@@ -181,7 +183,7 @@ namespace GodotTools.Ides
                 }
                 finally
                 {
-                    using (await peersSem.UseAsync())
+                    using (await _peersSem.UseAsync())
                         Peers.Remove(peer);
                 }
             }
@@ -192,7 +194,7 @@ namespace GodotTools.Ides
             try
             {
                 while (!IsDisposed)
-                    _ = AcceptClient(await listener.AcceptTcpClientAsync());
+                    _ = AcceptClient(await _listener.AcceptTcpClientAsync());
             }
             catch (Exception e)
             {
@@ -204,11 +206,11 @@ namespace GodotTools.Ides
         public async void BroadcastRequest<TResponse>(string identity, Request request)
             where TResponse : Response, new()
         {
-            using (await peersSem.UseAsync())
+            using (await _peersSem.UseAsync())
             {
                 if (!IsAnyConnected(identity))
                 {
-                    logger.LogError("Cannot write request. No client connected to the Godot Ide Server.");
+                    _logger.LogError("Cannot write request. No client connected to the Godot Ide Server.");
                     return;
                 }
 
@@ -225,16 +227,19 @@ namespace GodotTools.Ides
 
         private class ServerHandshake : IHandshake
         {
-            private static readonly string ServerHandshakeBase = $"{Peer.ServerHandshakeName},Version={Peer.ProtocolVersionMajor}.{Peer.ProtocolVersionMinor}.{Peer.ProtocolVersionRevision}";
-            private static readonly string ClientHandshakePattern = $@"{Regex.Escape(Peer.ClientHandshakeName)},Version=([0-9]+)\.([0-9]+)\.([0-9]+),([_a-zA-Z][_a-zA-Z0-9]{{0,63}})";
+            private static readonly string _serverHandshakeBase =
+                $"{Peer.ServerHandshakeName},Version={Peer.ProtocolVersionMajor}.{Peer.ProtocolVersionMinor}.{Peer.ProtocolVersionRevision}";
 
-            public string GetHandshakeLine(string identity) => $"{ServerHandshakeBase},{identity}";
+            private static readonly string _clientHandshakePattern =
+                $@"{Regex.Escape(Peer.ClientHandshakeName)},Version=([0-9]+)\.([0-9]+)\.([0-9]+),([_a-zA-Z][_a-zA-Z0-9]{{0,63}})";
+
+            public string GetHandshakeLine(string identity) => $"{_serverHandshakeBase},{identity}";
 
             public bool IsValidPeerHandshake(string handshake, out string identity, ILogger logger)
             {
                 identity = null;
 
-                var match = Regex.Match(handshake, ClientHandshakePattern);
+                var match = Regex.Match(handshake, _clientHandshakePattern);
 
                 if (!match.Success)
                     return false;
@@ -330,9 +335,10 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings = new PlaySettings();
+                    // TODO: Add BuildBeforePlaying flag to PlayRequest
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
                 return Task.FromResult<Response>(new PlayResponse());
             }
@@ -341,10 +347,22 @@ namespace GodotTools.Ides
             {
                 DispatchToMainThread(() =>
                 {
-                    GodotSharpEditor.Instance.CurrentPlaySettings =
-                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, request.BuildBeforePlaying ?? true);
+                    // Tell the build callback whether the editor already built the solution or not
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = !(request.BuildBeforePlaying ?? true);
+
+                    // Pass the debugger agent settings to the player via an environment variables
+                    // TODO: It would be better if this was an argument in EditorRunPlay instead
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT",
+                        "--debugger-agent=transport=dt_socket" +
+                        $",address={request.DebuggerHost}:{request.DebuggerPort}" +
+                        ",server=n");
+
+                    // Run the game
                     Internal.EditorRunPlay();
-                    GodotSharpEditor.Instance.CurrentPlaySettings = null;
+
+                    // Restore normal settings
+                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT", "");
+                    GodotSharpEditor.Instance.SkipBuildBeforePlaying = false;
                 });
                 return Task.FromResult<Response>(new DebugPlayResponse());
             }

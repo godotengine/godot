@@ -4,7 +4,7 @@
  * \brief XTEA block cipher (32-bit)
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,14 +18,12 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_XTEA_H
 #define MBEDTLS_XTEA_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
@@ -36,10 +34,12 @@
 #define MBEDTLS_XTEA_ENCRYPT     1
 #define MBEDTLS_XTEA_DECRYPT     0
 
-#define MBEDTLS_ERR_XTEA_INVALID_INPUT_LENGTH             -0x0028  /**< The data input has an invalid length. */
+/** The data input has an invalid length. */
+#define MBEDTLS_ERR_XTEA_INVALID_INPUT_LENGTH             -0x0028
 
 /* MBEDTLS_ERR_XTEA_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_XTEA_HW_ACCEL_FAILED                  -0x0029  /**< XTEA hardware accelerator failed. */
+/** XTEA hardware accelerator failed. */
+#define MBEDTLS_ERR_XTEA_HW_ACCEL_FAILED                  -0x0029
 
 #ifdef __cplusplus
 extern "C" {

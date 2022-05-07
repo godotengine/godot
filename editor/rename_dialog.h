@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,9 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
@@ -44,7 +47,6 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
 	virtual void ok_pressed() { rename(); };
@@ -96,7 +98,7 @@ class RenameDialog : public ConfirmationDialog {
 	Label *lbl_preview_title;
 	Label *lbl_preview;
 
-	List<Pair<NodePath, String> > to_rename;
+	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node;
 	bool lock_preview_update;
 	ErrorHandlerList eh;
@@ -111,8 +113,10 @@ public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = NULL);
+	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = nullptr);
 	~RenameDialog(){};
 };
 
-#endif
+#endif // MODULE_REGEX_ENABLED
+
+#endif // RENAME_DIALOG_H

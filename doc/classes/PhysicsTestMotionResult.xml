@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsTestMotionResult" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="collider" type="Object" setter="" getter="get_collider">
+		</member>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
+		</member>
+		<member name="collider_shape" type="int" setter="" getter="get_collider_shape" default="0">
+		</member>
+		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="collision_depth" type="float" setter="" getter="get_collision_depth" default="0.0">
+		</member>
+		<member name="collision_normal" type="Vector3" setter="" getter="get_collision_normal" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="collision_point" type="Vector3" setter="" getter="get_collision_point" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="collision_safe_fraction" type="float" setter="" getter="get_collision_safe_fraction" default="0.0">
+		</member>
+		<member name="collision_unsafe_fraction" type="float" setter="" getter="get_collision_unsafe_fraction" default="0.0">
+		</member>
+		<member name="motion" type="Vector3" setter="" getter="get_motion" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="motion_remainder" type="Vector3" setter="" getter="get_motion_remainder" default="Vector3( 0, 0, 0 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
