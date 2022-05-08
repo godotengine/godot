@@ -550,19 +550,21 @@ void PopupMenu::_notification(int p_what) {
 
 				item_ofs.x += items[i].h_ofs;
 				if (items[i].separator) {
-					int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
 					if (text != String()) {
-						int ss = font->get_string_size(text).width;
-						int center = (get_size().width) / 2;
-						int l = center - ss / 2;
-						int r = center + ss / 2;
+						int ss = font->get_string_size(text).width / 2;
+						int center = get_size().width / 2;
+						int l = center - ss;
+						int r = center + ss;
 						if (l > item_ofs.x) {
+							int sep_h = labeled_separator_left->get_center_size().height + labeled_separator_left->get_minimum_size().height;
 							labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, l - item_ofs.x), sep_h)));
 						}
 						if (r < get_size().width - style->get_margin(MARGIN_RIGHT)) {
+							int sep_h = labeled_separator_right->get_center_size().height + labeled_separator_right->get_minimum_size().height;
 							labeled_separator_right->draw(ci, Rect2(Point2(r, item_ofs.y + Math::floor((h - sep_h) / 2.0)), Size2(MAX(0, get_size().width - style->get_margin(MARGIN_RIGHT) - r), sep_h)));
 						}
 					} else {
+						int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
 						separator->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(get_size().width - style->get_minimum_size().width, sep_h)));
 					}
 				}
