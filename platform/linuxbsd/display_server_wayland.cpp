@@ -285,6 +285,21 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	Variant ret;
 	Callable::CallError ce;
 
+	// Close the topmost popup menu if the user clicks outside of it or its safe
+	// rect.
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && wls.popup_menu_stack.size() > 0) {
+		WindowID &front_id = wls.popup_menu_stack.front()->get();
+
+		ERR_FAIL_COND(!wls.windows.has(front_id));
+		WindowData &wd = wls.windows[front_id];
+
+		if (!wd.rect.has_point(mb->get_global_position()) && !wd.safe_rect.has_point(mb->get_global_position())) {
+			_send_window_event(front_id, WINDOW_EVENT_CLOSE_REQUEST);
+			return;
+		}
+	}
+
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
 		// Send to a single window.
@@ -1589,6 +1604,17 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 				// Delete the whole stack, we're creating a new one with a different root.
 				_send_window_event(wls.popup_menu_stack.back()->get(), WINDOW_EVENT_CLOSE_REQUEST);
 				wls.popup_menu_stack.clear();
+			}
+
+			if (wls.current_seat) {
+				// TODO: Investigate serial handling. Right now it only uses the last
+				// button serial, but on sway it doesn't really matter.
+
+				// Grab the popup. This blocks all new keyboard focus events.
+				xdg_popup_grab(wd.xdg_popup, wls.current_seat->wl_seat, wls.current_seat->pointer_data.button_serial);
+
+				// We must still focus the keyboard on the popup menu manually though.
+				wls.current_seat->keyboard_focused_window_id = p_id;
 			}
 
 			wls.popup_menu_stack.push_front(p_id);
