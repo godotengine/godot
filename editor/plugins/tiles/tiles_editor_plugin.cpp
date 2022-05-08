@@ -385,6 +385,15 @@ bool TilesEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("TileMap") || p_object->is_class("TileSet");
 }
 
+void TilesEditorPlugin::draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color) {
+	real_t scale = p_ci->get_global_transform().get_scale().x * 0.5;
+	p_ci->draw_set_transform(p_rect.position, 0, Vector2(1, 1) / scale);
+	RS::get_singleton()->canvas_item_add_nine_patch(
+			p_ci->get_canvas_item(), Rect2(Vector2(), p_rect.size * scale), Rect2(), EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("TileSelection"), SNAME("EditorIcons"))->get_rid(),
+			Vector2(2, 2), Vector2(2, 2), RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, false, p_color);
+	p_ci->draw_set_transform_matrix(Transform2D());
+}
+
 TilesEditorPlugin::TilesEditorPlugin() {
 	set_process_internal(true);
 

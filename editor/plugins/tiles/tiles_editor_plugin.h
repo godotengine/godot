@@ -128,6 +128,8 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
+	static void draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color = Color(1.0, 1.0, 1.0));
+
 	TilesEditorPlugin();
 	~TilesEditorPlugin();
 };
