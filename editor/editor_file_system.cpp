@@ -2078,6 +2078,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
 	Vector<ImportFile> reimport_files;
+	Set<String> file_paths_already_seen;
 
 	Set<String> groups_to_reimport;
 
@@ -2099,11 +2100,12 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		} else if (!group_file.is_empty()) {
 			//it's a group file, add group to import and skip this file
 			groups_to_reimport.insert(group_file);
-		} else {
+		} else if (!file_paths_already_seen.has(file)) {
 			//it's a regular file
 			ImportFile ifile;
 			ifile.path = file;
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
+			file_paths_already_seen.insert(file);
 			reimport_files.push_back(ifile);
 		}
 
