@@ -2123,6 +2123,11 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
+		if (groups_to_reimport.has(reimport_files[i].path)) {
+			// Skip reimporting files that are in groups, as they will be reimported anyways
+			continue;
+		}
+
 		if (use_threads && reimport_files[i].threaded) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
 				if (from - i == 0) {
