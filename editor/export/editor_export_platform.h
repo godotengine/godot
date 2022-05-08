@@ -35,6 +35,7 @@ class EditorFileSystemDirectory;
 struct EditorProgress;
 
 #include "core/io/dir_access.h"
+#include "core/io/zip_io.h"
 #include "editor_export_preset.h"
 #include "editor_export_shared_object.h"
 #include "scene/gui/rich_text_label.h"
@@ -92,7 +93,6 @@ private:
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
 	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
 
-	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
@@ -126,6 +126,13 @@ protected:
 	bool exists_export_template(String template_file_name, String *err) const;
 	String find_export_template(String template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
+	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
+
+	virtual void zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
+
+	Error ssh_run_on_remote(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, String *r_out = nullptr, int p_port_fwd = -1) const;
+	Error ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, OS::ProcessID *r_pid = nullptr, int p_port_fwd = -1) const;
+	Error ssh_push_to_remote(const String &p_host, const String &p_port, const Vector<String> &p_scp_args, const String &p_src_file, const String &p_dst_file) const;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
@@ -215,6 +222,7 @@ public:
 		DEBUG_FLAG_VIEW_NAVIGATION = 16,
 	};
 
+	virtual void cleanup() {}
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 

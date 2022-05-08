@@ -38,11 +38,8 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export_platform.h"
-#include "main/splash.gen.h"
-#include "platform/web/logo.gen.h"
-#include "platform/web/run_icon.gen.h"
-
 #include "editor_http_server.h"
+#include "main/splash.gen.h"
 
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);

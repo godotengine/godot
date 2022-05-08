@@ -32,6 +32,13 @@
 
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "platform/ios/logo_svg.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -1914,7 +1921,15 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-	logo = ImageTexture::create_from_image(memnew(Image(_ios_logo)));
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+#endif
+
 	plugins_changed.set();
 #ifndef ANDROID_ENABLED
 	check_for_changes_thread.start(_check_for_changes_poll_thread, this);

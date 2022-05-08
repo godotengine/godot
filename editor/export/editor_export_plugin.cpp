@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 #include "scene/resources/resource_format_text.h"
 
@@ -226,4 +227,8 @@ void EditorExportPlugin::_bind_methods() {
 }
 
 EditorExportPlugin::EditorExportPlugin() {
+	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", false);
+
+	EDITOR_DEF("export/ssh/ssh", "");
+	EDITOR_DEF("export/ssh/scp", "");
 }
