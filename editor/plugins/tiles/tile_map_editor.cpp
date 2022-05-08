@@ -1697,7 +1697,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 				if (frame > 0) {
 					color.a *= 0.3;
 				}
-				tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E.get_atlas_coords(), frame), color, false);
+				TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E.get_atlas_coords(), frame), color);
 			}
 		}
 	}
@@ -1705,11 +1705,8 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	// Draw the hovered tile.
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile == 0 && !tile_set_dragging_selection) {
 		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(hovered_tile.get_atlas_coords()); frame++) {
-			Color color = Color(1.0, 1.0, 1.0);
-			if (frame > 0) {
-				color.a *= 0.3;
-			}
-			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color, false);
+			Color color = Color(1.0, 0.8, 0.0, frame == 0 ? 0.6 : 0.3);
+			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color);
 		}
 	}
 
@@ -1730,9 +1727,8 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 				}
 			}
 		}
-		Color selection_rect_color = selection_color.lightened(0.2);
 		for (const Vector2i &E : to_draw) {
-			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E), selection_rect_color, false);
+			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E));
 		}
 	}
 }
@@ -1881,7 +1877,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 		if (E.source_id == source_id && E.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && E.alternative_tile > 0) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E.get_atlas_coords(), E.alternative_tile);
 			if (rect != Rect2i()) {
-				alternative_tiles_control->draw_rect(rect, Color(0.2, 0.2, 1.0), false);
+				TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect);
 			}
 		}
 	}
@@ -1890,7 +1886,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile > 0) {
 		Rect2i rect = tile_atlas_view->get_alternative_tile_rect(hovered_tile.get_atlas_coords(), hovered_tile.alternative_tile);
 		if (rect != Rect2i()) {
-			alternative_tiles_control->draw_rect(rect, Color(1.0, 1.0, 1.0), false);
+			TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
 		}
 	}
 }
