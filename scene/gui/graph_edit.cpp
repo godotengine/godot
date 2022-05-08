@@ -523,7 +523,7 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 		}
 	}
 
-	p_comment_enclosed_nodes.set(p_node->get_name(), enclosed_nodes);
+	p_comment_enclosed_nodes.insert(p_node->get_name(), enclosed_nodes);
 }
 
 void GraphEdit::_set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag) {
@@ -1742,11 +1742,11 @@ HashMap<int, Vector<StringName>> GraphEdit::_layering(const Set<StringName> &r_s
 				Vector<StringName> t;
 				t.push_back(E->get());
 				if (!l.has(current_layer)) {
-					l.set(current_layer, Vector<StringName>{});
+					l.insert(current_layer, Vector<StringName>{});
 				}
 				selected = true;
 				t.append_array(l[current_layer]);
-				l.set(current_layer, t);
+				l.insert(current_layer, t);
 				Set<StringName> V;
 				V.insert(E->get());
 				_set_operations(GraphEdit::UNION, u, V);
@@ -1860,10 +1860,10 @@ void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layer
 				}
 				d[q] = crossings;
 			}
-			c.set(p, d);
+			c.insert(p, d);
 		}
 
-		r_layers.set(i, _split(lower_layer, c));
+		r_layers.insert(i, _split(lower_layer, c));
 	}
 }
 
@@ -2026,7 +2026,7 @@ void GraphEdit::_place_block(StringName p_v, float p_delta, const HashMap<int, V
 			threshold = _calculate_threshold(p_v, w, r_node_name, r_layers, r_root, r_align, r_inner_shift, threshold, r_node_positions);
 			w = r_align[w];
 		} while (w != p_v);
-		r_node_positions.set(p_v, pos);
+		r_node_positions.insert(p_v, pos);
 	}
 
 #undef PRED
@@ -2082,10 +2082,10 @@ void GraphEdit::arrange_nodes() {
 							ports = p_ports;
 						}
 					}
-					port_info.set(_connection, ports);
+					port_info.insert(_connection, ports);
 				}
 			}
-			upper_neighbours.set(gn->get_name(), s);
+			upper_neighbours.insert(gn->get_name(), s);
 		}
 	}
 
@@ -2109,7 +2109,7 @@ void GraphEdit::arrange_nodes() {
 		inner_shift[E->get()] = 0.0f;
 		sink[E->get()] = E->get();
 		shift[E->get()] = FLT_MAX;
-		new_positions.set(E->get(), default_position);
+		new_positions.insert(E->get(), default_position);
 		if ((StringName)root[E->get()] == E->get()) {
 			block_heads.insert(E->get());
 		}
@@ -2129,7 +2129,7 @@ void GraphEdit::arrange_nodes() {
 		do {
 			Vector2 cal_pos;
 			cal_pos.y = start_from + (real_t)inner_shift[u];
-			new_positions.set(u, cal_pos);
+			new_positions.insert(u, cal_pos);
 			u = align[u];
 		} while (u != E->get());
 	}
@@ -2161,7 +2161,7 @@ void GraphEdit::arrange_nodes() {
 				}
 				cal_pos.x = current_node_start_pos;
 			}
-			new_positions.set(layer[j], cal_pos);
+			new_positions.insert(layer[j], cal_pos);
 		}
 
 		start_from += largest_node_size + gap_h;

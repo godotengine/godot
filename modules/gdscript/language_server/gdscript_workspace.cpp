@@ -404,9 +404,9 @@ Error GDScriptWorkspace::initialize() {
 			const lsp::DocumentSymbol &class_symbol = E.value;
 			for (int i = 0; i < class_symbol.children.size(); i++) {
 				const lsp::DocumentSymbol &symbol = class_symbol.children[i];
-				members.set(symbol.name, &symbol);
+				members.insert(symbol.name, &symbol);
 			}
-			native_members.set(E.key, members);
+			native_members.insert(E.key, members);
 		}
 
 		// cache member completions
@@ -682,13 +682,11 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 		Vector2i offset;
 		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
 
-		const StringName *class_ptr = native_members.next(nullptr);
-		while (class_ptr) {
-			const ClassMembers &members = native_members.get(*class_ptr);
+		for (const KeyValue<StringName, ClassMembers> &E : native_members) {
+			const ClassMembers &members = native_members.get(E.key);
 			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
 				r_list.push_back(*symbol);
 			}
-			class_ptr = native_members.next(class_ptr);
 		}
 
 		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
@@ -698,15 +696,11 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 				r_list.push_back(*symbol);
 			}
 
-			const HashMap<String, ClassMembers> &inner_classes = script->get_inner_classes();
-			const String *_class = inner_classes.next(nullptr);
-			while (_class) {
-				const ClassMembers *inner_class = inner_classes.getptr(*_class);
+			for (const KeyValue<String, ClassMembers> &F : script->get_inner_classes()) {
+				const ClassMembers *inner_class = &F.value;
 				if (const lsp::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
 					r_list.push_back(*symbol);
 				}
-
-				_class = inner_classes.next(_class);
 			}
 		}
 	}

@@ -31,8 +31,8 @@
 #ifndef EDITOR_PERFORMANCE_PROFILER_H
 #define EDITOR_PERFORMANCE_PROFILER_H
 
+#include "core/templates/hash_map.h"
 #include "core/templates/map.h"
-#include "core/templates/ordered_hash_map.h"
 #include "main/performance.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -59,7 +59,7 @@ private:
 		void reset();
 	};
 
-	OrderedHashMap<StringName, Monitor> monitors;
+	HashMap<StringName, Monitor> monitors;
 
 	Map<StringName, TreeItem *> base_map;
 	Tree *monitor_tree = nullptr;

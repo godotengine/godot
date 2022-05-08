@@ -107,16 +107,13 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	for (int i = 0; i < found_plugins.size(); i++) {
 		// Editable plugin plist values
 		PluginConfigIOS plugin = found_plugins[i];
-		const String *K = nullptr;
 
-		while ((K = plugin.plist.next(K))) {
-			String key = *K;
-			PluginConfigIOS::PlistItem item = plugin.plist[key];
-			switch (item.type) {
+		for (const KeyValue<String, PluginConfigIOS::PlistItem> &E : plugin.plist) {
+			switch (E.value.type) {
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
-					String preset_name = "plugins_plist/" + key;
+					String preset_name = "plugins_plist/" + E.key;
 					if (!plist_keys.has(preset_name)) {
-						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), E.value.value));
 						plist_keys.insert(preset_name);
 					}
 				} break;
@@ -1258,11 +1255,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 		// Plist
 		// Using hash map container to remove duplicates
-		const String *K = nullptr;
 
-		while ((K = plugin.plist.next(K))) {
-			String key = *K;
-			PluginConfigIOS::PlistItem item = plugin.plist[key];
+		for (const KeyValue<String, PluginConfigIOS::PlistItem> &E : plugin.plist) {
+			String key = E.key;
+			const PluginConfigIOS::PlistItem &item = E.value;
 
 			String value;
 
@@ -1301,10 +1297,9 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 	// Updating `Info.plist`
 	{
-		const String *K = nullptr;
-		while ((K = plist_values.next(K))) {
-			String key = *K;
-			String value = plist_values[key];
+		for (const KeyValue<String, String> &E : plist_values) {
+			String key = E.key;
+			String value = E.value;
 
 			if (key.is_empty() || value.is_empty()) {
 				continue;

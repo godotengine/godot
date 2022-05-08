@@ -636,21 +636,21 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		}
 	}
 
-	for (OrderedHashMap<StringName, InputMap::Action>::ConstElement E = InputMap::get_singleton()->get_action_map().front(); E; E = E.next()) {
-		if (InputMap::get_singleton()->event_is_action(p_event, E.key())) {
+	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
+		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key(), false) != p_event->is_action_pressed(E.key())) {
+			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.process_frame = Engine::get_singleton()->get_process_frames();
-				action.pressed = p_event->is_action_pressed(E.key());
+				action.pressed = p_event->is_action_pressed(E.key);
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
-				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key(), true);
-				action_state[E.key()] = action;
+				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
+				action_state[E.key] = action;
 			}
-			action_state[E.key()].strength = p_event->get_action_strength(E.key());
-			action_state[E.key()].raw_strength = p_event->get_action_raw_strength(E.key());
+			action_state[E.key].strength = p_event->get_action_strength(E.key);
+			action_state[E.key].raw_strength = p_event->get_action_raw_strength(E.key);
 		}
 	}
 

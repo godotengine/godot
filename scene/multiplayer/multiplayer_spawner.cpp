@@ -91,9 +91,9 @@ void MultiplayerSpawner::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_update_spawn_node();
-			const ObjectID *oid = nullptr;
-			while ((oid = tracked_nodes.next(oid))) {
-				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(*oid));
+
+			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
+				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
 				// This is unlikely, but might still crash the engine.

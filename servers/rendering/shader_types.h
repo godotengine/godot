@@ -31,7 +31,7 @@
 #ifndef SHADERTYPES_H
 #define SHADERTYPES_H
 
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/map.h"
 #include "servers/rendering_server.h"
 #include "shader_language.h"
 

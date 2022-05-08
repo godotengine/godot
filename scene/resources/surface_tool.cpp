@@ -1165,7 +1165,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 		for (int i = 0; i < 3; i++) {
 			Vector3 *lv = vertex_hash.getptr(v[i]);
 			if (!lv) {
-				vertex_hash.set(v[i], normal);
+				vertex_hash.insert(v[i], normal);
 			} else {
 				(*lv) += normal;
 			}

@@ -49,9 +49,8 @@ void SceneReplicationInterface::make_default() {
 
 void SceneReplicationInterface::_free_remotes(int p_id) {
 	const HashMap<uint32_t, ObjectID> remotes = rep_state->peer_get_remotes(p_id);
-	const uint32_t *k = nullptr;
-	while ((k = remotes.next(k))) {
-		Node *node = rep_state->get_node(remotes.get(*k));
+	for (const KeyValue<uint32_t, ObjectID> &E : remotes) {
+		Node *node = rep_state->get_node(E.value);
 		ERR_CONTINUE(!node);
 		node->queue_delete();
 	}

@@ -438,9 +438,8 @@ bool SceneTree::process(double p_time) {
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
-		const NodePath *rpath = nullptr;
-		while ((rpath = custom_multiplayers.next(rpath))) {
-			custom_multiplayers[*rpath]->poll();
+		for (KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+			E.value->poll();
 		}
 	}
 
@@ -1137,9 +1136,8 @@ Array SceneTree::get_processed_tweens() {
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	Ref<MultiplayerAPI> out = multiplayer;
-	const NodePath *spath = nullptr;
-	while ((spath = custom_multiplayers.next(spath))) {
-		const Vector<StringName> snames = (*spath).get_names();
+	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+		const Vector<StringName> snames = E.key.get_names();
 		const Vector<StringName> tnames = p_for_path.get_names();
 		if (tnames.size() < snames.size()) {
 			continue;
@@ -1154,7 +1152,7 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 			}
 		}
 		if (valid) {
-			out = custom_multiplayers[*spath];
+			out = E.value;
 			break;
 		}
 	}

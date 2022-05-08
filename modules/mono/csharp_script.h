@@ -154,7 +154,7 @@ private:
 	Set<StringName> exported_members_names;
 #endif
 
-	OrderedHashMap<StringName, PropertyInfo> member_info;
+	HashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 

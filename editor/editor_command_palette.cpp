@@ -57,20 +57,19 @@ float EditorCommandPalette::_score_path(const String &p_search, const String &p_
 }
 
 void EditorCommandPalette::_update_command_search(const String &search_text) {
-	commands.get_key_list(&command_keys);
-	ERR_FAIL_COND(command_keys.is_empty());
+	ERR_FAIL_COND(commands.size() == 0);
 
 	Map<String, TreeItem *> sections;
 	TreeItem *first_section = nullptr;
 
 	// Filter possible candidates.
 	Vector<CommandEntry> entries;
-	for (int i = 0; i < command_keys.size(); i++) {
+	for (const KeyValue<String, Command> &E : commands) {
 		CommandEntry r;
-		r.key_name = command_keys[i];
-		r.display_name = commands[r.key_name].name;
-		r.shortcut_text = commands[r.key_name].shortcut;
-		r.last_used = commands[r.key_name].last_used;
+		r.key_name = E.key;
+		r.display_name = E.value.name;
+		r.shortcut_text = E.value.shortcut;
+		r.last_used = E.value.last_used;
 
 		if (search_text.is_subsequence_ofn(r.display_name)) {
 			if (!search_text.is_empty()) {
@@ -180,7 +179,9 @@ void EditorCommandPalette::open_popup() {
 }
 
 void EditorCommandPalette::get_actions_list(List<String> *p_list) const {
-	commands.get_key_list(p_list);
+	for (const KeyValue<String, Command> &E : commands) {
+		p_list->push_back(E.key);
+	}
 }
 
 void EditorCommandPalette::remove_command(String p_key_name) {
@@ -229,17 +230,14 @@ void EditorCommandPalette::execute_command(String &p_command_key) {
 }
 
 void EditorCommandPalette::register_shortcuts_as_command() {
-	const String *key = nullptr;
-	key = unregistered_shortcuts.next(key);
-	while (key != nullptr) {
-		String command_name = unregistered_shortcuts[*key].first;
-		Ref<Shortcut> shortcut = unregistered_shortcuts[*key].second;
+	for (const KeyValue<String, Pair<String, Ref<Shortcut>>> &E : unregistered_shortcuts) {
+		String command_name = E.value.first;
+		Ref<Shortcut> shortcut = E.value.second;
 		Ref<InputEventShortcut> ev;
 		ev.instantiate();
 		ev->set_shortcut(shortcut);
 		String shortcut_text = String(shortcut->get_as_text());
-		add_command(command_name, *key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
-		key = unregistered_shortcuts.next(key);
+		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
 	}
 	unregistered_shortcuts.clear();
 
@@ -276,12 +274,10 @@ void EditorCommandPalette::_theme_changed() {
 
 void EditorCommandPalette::_save_history() const {
 	Dictionary command_history;
-	List<String> command_keys;
-	commands.get_key_list(&command_keys);
 
-	for (const String &key : command_keys) {
-		if (commands[key].last_used > 0) {
-			command_history[key] = commands[key].last_used;
+	for (const KeyValue<String, Command> &E : commands) {
+		if (E.value.last_used > 0) {
+			command_history[E.key] = E.value.last_used;
 		}
 	}
 	EditorSettings::get_singleton()->set_project_metadata("command_palette", "command_history", command_history);

@@ -4218,13 +4218,11 @@ Error GDScriptAnalyzer::resolve_program() {
 	resolve_class_interface(parser->head);
 	resolve_class_body(parser->head);
 
-	List<String> parser_keys;
-	depended_parsers.get_key_list(&parser_keys);
-	for (const String &E : parser_keys) {
-		if (depended_parsers[E].is_null()) {
+	for (KeyValue<String, Ref<GDScriptParserRef>> &K : depended_parsers) {
+		if (K.value.is_null()) {
 			return ERR_PARSE_ERROR;
 		}
-		depended_parsers[E]->raise_status(GDScriptParserRef::FULLY_SOLVED);
+		K.value->raise_status(GDScriptParserRef::FULLY_SOLVED);
 	}
 	return parser->errors.is_empty() ? OK : ERR_PARSE_ERROR;
 }

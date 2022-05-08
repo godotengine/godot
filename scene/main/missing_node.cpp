@@ -53,8 +53,8 @@ bool MissingNode::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MissingNode::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (OrderedHashMap<StringName, Variant>::ConstElement E = properties.front(); E; E = E.next()) {
-		p_list->push_back(PropertyInfo(E.value().get_type(), E.key()));
+	for (const KeyValue<StringName, Variant> &E : properties) {
+		p_list->push_back(PropertyInfo(E.value.get_type(), E.key));
 	}
 }
 

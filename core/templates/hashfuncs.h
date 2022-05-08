@@ -31,14 +31,22 @@
 #ifndef HASHFUNCS_H
 #define HASHFUNCS_H
 
+#include "core/math/aabb.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/object/object_id.h"
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
+
 /**
  * Hashing functions
  */
@@ -178,6 +186,49 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 
+	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) {
+		uint32_t h = hash_djb2_one_32(p_vec.x);
+		return hash_djb2_one_32(p_vec.y, h);
+	}
+	static _FORCE_INLINE_ uint32_t hash(const Vector3i &p_vec) {
+		uint32_t h = hash_djb2_one_32(p_vec.x);
+		h = hash_djb2_one_32(p_vec.y, h);
+		return hash_djb2_one_32(p_vec.z, h);
+	}
+
+	static _FORCE_INLINE_ uint32_t hash(const Vector2 &p_vec) {
+		uint32_t h = hash_djb2_one_float(p_vec.x);
+		return hash_djb2_one_float(p_vec.y, h);
+	}
+	static _FORCE_INLINE_ uint32_t hash(const Vector3 &p_vec) {
+		uint32_t h = hash_djb2_one_float(p_vec.x);
+		h = hash_djb2_one_float(p_vec.y, h);
+		return hash_djb2_one_float(p_vec.z, h);
+	}
+
+	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {
+		uint32_t h = hash_djb2_one_32(p_rect.position.x);
+		h = hash_djb2_one_32(p_rect.position.y, h);
+		h = hash_djb2_one_32(p_rect.size.x, h);
+		return hash_djb2_one_32(p_rect.size.y, h);
+	}
+
+	static _FORCE_INLINE_ uint32_t hash(const Rect2 &p_rect) {
+		uint32_t h = hash_djb2_one_float(p_rect.position.x);
+		h = hash_djb2_one_float(p_rect.position.y, h);
+		h = hash_djb2_one_float(p_rect.size.x, h);
+		return hash_djb2_one_float(p_rect.size.y, h);
+	}
+
+	static _FORCE_INLINE_ uint32_t hash(const AABB &p_aabb) {
+		uint32_t h = hash_djb2_one_float(p_aabb.position.x);
+		h = hash_djb2_one_float(p_aabb.position.y, h);
+		h = hash_djb2_one_float(p_aabb.position.z, h);
+		h = hash_djb2_one_float(p_aabb.size.x, h);
+		h = hash_djb2_one_float(p_aabb.size.y, h);
+		return hash_djb2_one_float(p_aabb.size.z, h);
+	}
+
 	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
 };
 
@@ -194,6 +245,40 @@ struct HashMapComparatorDefault {
 	bool compare(const double &p_lhs, const double &p_rhs) {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
 	}
+};
+
+constexpr uint32_t HASH_TABLE_SIZE_MAX = 29;
+
+const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
+	5,
+	13,
+	23,
+	47,
+	97,
+	193,
+	389,
+	769,
+	1543,
+	3079,
+	6151,
+	12289,
+	24593,
+	49157,
+	98317,
+	196613,
+	393241,
+	786433,
+	1572869,
+	3145739,
+	6291469,
+	12582917,
+	25165843,
+	50331653,
+	100663319,
+	201326611,
+	402653189,
+	805306457,
+	1610612741,
 };
 
 #endif // HASHFUNCS_H

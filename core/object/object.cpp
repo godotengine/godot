@@ -417,9 +417,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else {
-		OrderedHashMap<StringName, Variant>::Element *E = metadata_properties.getptr(p_name);
-		if (E) {
-			E->get() = p_value;
+		Variant **V = metadata_properties.getptr(p_name);
+		if (V) {
+			**V = p_value;
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -508,10 +508,10 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 	}
 
-	const OrderedHashMap<StringName, Variant>::Element *E = metadata_properties.getptr(p_name);
+	const Variant *const *V = metadata_properties.getptr(p_name);
 
-	if (E) {
-		ret = E->get();
+	if (V) {
+		ret = **V;
 		if (r_valid) {
 			*r_valid = true;
 		}
@@ -666,9 +666,9 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		script_instance->get_property_list(p_list);
 	}
 
-	for (OrderedHashMap<StringName, Variant>::ConstElement K = metadata.front(); K; K = K.next()) {
-		PropertyInfo pi = PropertyInfo(K.value().get_type(), "metadata/" + K.key().operator String());
-		if (K.value().get_type() == Variant::OBJECT) {
+	for (const KeyValue<StringName, Variant> &K : metadata) {
+		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
+		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "Resource";
 		}
@@ -944,13 +944,13 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		return;
 	}
 
-	OrderedHashMap<StringName, Variant>::Element E = metadata.find(p_name);
+	HashMap<StringName, Variant>::Iterator E = metadata.find(p_name);
 	if (E) {
-		E.value() = p_value;
+		E->value = p_value;
 	} else {
 		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
-		E = metadata.insert(p_name, p_value);
-		metadata_properties["metadata/" + p_name.operator String()] = E;
+		Variant *V = &metadata.insert(p_name, p_value)->value;
+		metadata_properties["metadata/" + p_name.operator String()] = V;
 		notify_property_list_changed();
 	}
 }
@@ -993,16 +993,16 @@ Array Object::_get_method_list_bind() const {
 Vector<StringName> Object::_get_meta_list_bind() const {
 	Vector<StringName> _metaret;
 
-	for (OrderedHashMap<StringName, Variant>::ConstElement K = metadata.front(); K; K = K.next()) {
-		_metaret.push_back(K.key());
+	for (const KeyValue<StringName, Variant> &K : metadata) {
+		_metaret.push_back(K.key);
 	}
 
 	return _metaret;
 }
 
 void Object::get_meta_list(List<StringName> *p_list) const {
-	for (OrderedHashMap<StringName, Variant>::ConstElement K = metadata.front(); K; K = K.next()) {
-		p_list->push_back(K.key());
+	for (const KeyValue<StringName, Variant> &K : metadata) {
+		p_list->push_back(K.key);
 	}
 }
 
@@ -1250,21 +1250,18 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
 	//find maybe usersignals?
-	const StringName *S = nullptr;
 
-	while ((S = signal_map.next(S))) {
-		if (!signal_map[*S].user.name.is_empty()) {
+	for (const KeyValue<StringName, SignalData> &E : signal_map) {
+		if (!E.value.user.name.is_empty()) {
 			//user signal
-			p_signals->push_back(signal_map[*S].user);
+			p_signals->push_back(E.value.user);
 		}
 	}
 }
 
 void Object::get_all_signal_connections(List<Connection> *p_connections) const {
-	const StringName *S = nullptr;
-
-	while ((S = signal_map.next(S))) {
-		const SignalData *s = &signal_map[*S];
+	for (const KeyValue<StringName, SignalData> &E : signal_map) {
+		const SignalData *s = &E.value;
 
 		for (int i = 0; i < s->slot_map.size(); i++) {
 			p_connections->push_back(s->slot_map.getv(i).conn);
@@ -1285,10 +1282,9 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 
 int Object::get_persistent_signal_connection_count() const {
 	int count = 0;
-	const StringName *S = nullptr;
 
-	while ((S = signal_map.next(S))) {
-		const SignalData *s = &signal_map[*S];
+	for (const KeyValue<StringName, SignalData> &E : signal_map) {
+		const SignalData *s = &E.value;
 
 		for (int i = 0; i < s->slot_map.size(); i++) {
 			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST) {
@@ -1866,15 +1862,15 @@ Object::~Object() {
 		_extension_instance = nullptr;
 	}
 
-	const StringName *S = nullptr;
-
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
 		ERR_PRINT("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
 	}
 
-	while ((S = signal_map.next(nullptr))) {
-		SignalData *s = &signal_map[*S];
+	while (signal_map.size()) {
+		// Avoid regular iteration so erasing is safe.
+		KeyValue<StringName, SignalData> &E = *signal_map.begin();
+		SignalData *s = &E.value;
 
 		//brute force disconnect for performance
 		int slot_count = s->slot_map.size();
@@ -1884,7 +1880,7 @@ Object::~Object() {
 			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
 		}
 
-		signal_map.erase(*S);
+		signal_map.erase(E.key);
 	}
 
 	//signals from nodes that connect to this node

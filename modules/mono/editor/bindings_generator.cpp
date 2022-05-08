@@ -1078,8 +1078,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		compile_items.push_back(output_file);
 	}
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		const TypeInterface &itype = E.get();
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
 
 		if (itype.api_type == ClassDB::API_EDITOR) {
 			continue;
@@ -1187,8 +1187,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	Vector<String> compile_items;
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		const TypeInterface &itype = E.get();
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
 
 		if (itype.api_type != ClassDB::API_EDITOR) {
 			continue;
@@ -1573,9 +1573,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	const TypeInterface *current_type = &p_itype;
 	while (!setter && current_type->base_name != StringName()) {
-		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
-		current_type = &base_match.get();
+		current_type = &base_match->value;
 		setter = current_type->find_method_by_name(p_iprop.setter);
 	}
 
@@ -1584,9 +1584,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	current_type = &p_itype;
 	while (!getter && current_type->base_name != StringName()) {
-		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
-		current_type = &base_match.get();
+		current_type = &base_match->value;
 		getter = current_type->find_method_by_name(p_iprop.getter);
 	}
 
@@ -2096,8 +2096,8 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	generated_icall_funcs.clear();
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element type_elem = obj_types.front(); type_elem; type_elem = type_elem.next()) {
-		const TypeInterface &itype = type_elem.get();
+	for (const KeyValue<StringName, TypeInterface> &type_elem : obj_types) {
+		const TypeInterface &itype = type_elem.value;
 
 		bool is_derived_type = itype.base_name != StringName();
 
@@ -2474,10 +2474,10 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(con
 		return &builtin_type_match->get();
 	}
 
-	const OrderedHashMap<StringName, TypeInterface>::Element obj_type_match = obj_types.find(p_typeref.cname);
+	const HashMap<StringName, TypeInterface>::Iterator obj_type_match = obj_types.find(p_typeref.cname);
 
 	if (obj_type_match) {
-		return &obj_type_match.get();
+		return &obj_type_match->value;
 	}
 
 	if (p_typeref.is_enum) {
@@ -2942,12 +2942,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		// Populate signals
 
 		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
-		const StringName *k = nullptr;
 
-		while ((k = signal_map.next(k))) {
+		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = signal_map.get(*k);
+			const MethodInfo &method_info = E.value;
 
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
@@ -3024,10 +3023,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
 		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
-		k = nullptr;
 
-		while ((k = enum_map.next(k))) {
-			StringName enum_proxy_cname = *k;
+		for (const KeyValue<StringName, List<StringName>> &E : enum_map) {
+			StringName enum_proxy_cname = E.key;
 			String enum_proxy_name = enum_proxy_cname.operator String();
 			if (itype.find_property_by_proxy_name(enum_proxy_cname)) {
 				// We have several conflicts between enums and PascalCase properties,
@@ -3036,7 +3034,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
 			EnumInterface ienum(enum_proxy_cname);
-			const List<StringName> &enum_constants = enum_map.get(*k);
+			const List<StringName> &enum_constants = E.value;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
 				int *value = class_info->constant_map.getptr(constant_cname);
@@ -3066,7 +3064,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(*k);
+			enum_itype.name = itype.name + "." + String(E.key);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -3715,8 +3713,8 @@ void BindingsGenerator::_initialize() {
 	core_custom_icalls.clear();
 	editor_custom_icalls.clear();
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		_generate_method_icalls(E.get());
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		_generate_method_icalls(E.value);
 	}
 
 	initialized = true;

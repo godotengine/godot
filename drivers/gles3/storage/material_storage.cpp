@@ -2077,10 +2077,9 @@ Vector<StringName> MaterialStorage::global_variable_get_list() const {
 		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
-	const StringName *K = nullptr;
 	Vector<StringName> names;
-	while ((K = global_variables.variables.next(K))) {
-		names.push_back(*K);
+	for (const KeyValue<StringName, GlobalVariables::Variable> &E : global_variables.variables) {
+		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 	return names;

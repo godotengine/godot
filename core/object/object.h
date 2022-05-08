@@ -39,7 +39,6 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
-#include "core/templates/ordered_hash_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
 #include "core/templates/vmap.h"
@@ -515,8 +514,8 @@ private:
 #endif
 	ScriptInstance *script_instance = nullptr;
 	Variant script; // Reference does not exist yet, store it in a Variant.
-	OrderedHashMap<StringName, Variant> metadata;
-	HashMap<StringName, OrderedHashMap<StringName, Variant>::Element> metadata_properties;
+	HashMap<StringName, Variant> metadata;
+	HashMap<StringName, Variant *> metadata_properties;
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr = nullptr;
 

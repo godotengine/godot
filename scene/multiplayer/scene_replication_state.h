@@ -81,8 +81,8 @@ private:
 
 public:
 	const Set<int> get_peers() const { return known_peers; }
-	const Set<ObjectID> get_spawned_nodes() const { return spawned_nodes; }
-	const Set<ObjectID> get_path_only_nodes() const { return path_only_nodes; }
+	const Set<ObjectID> &get_spawned_nodes() const { return spawned_nodes; }
+	const Set<ObjectID> &get_path_only_nodes() const { return path_only_nodes; }
 
 	MultiplayerSynchronizer *get_synchronizer(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_synchronizer() : nullptr; }
 	MultiplayerSpawner *get_spawner(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_spawner() : nullptr; }

@@ -478,10 +478,8 @@ void ResourceCache::clear() {
 	if (resources.size()) {
 		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			const String *K = nullptr;
-			while ((K = resources.next(K))) {
-				Resource *r = resources[*K];
-				print_line(vformat("Resource still in use: %s (%s)", *K, r->get_class()));
+			for (const KeyValue<String, Resource *> &E : resources) {
+				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
 			}
 		}
 	}
@@ -516,10 +514,8 @@ Resource *ResourceCache::get(const String &p_path) {
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.read_lock();
-	const String *K = nullptr;
-	while ((K = resources.next(K))) {
-		Resource *r = resources[*K];
-		p_resources->push_back(Ref<Resource>(r));
+	for (KeyValue<String, Resource *> &E : resources) {
+		p_resources->push_back(Ref<Resource>(E.value));
 	}
 	lock.read_unlock();
 }
@@ -544,9 +540,8 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file at path '" + String::utf8(p_file) + "'.");
 	}
 
-	const String *K = nullptr;
-	while ((K = resources.next(K))) {
-		Resource *r = resources[*K];
+	for (KeyValue<String, Resource *> &E : resources) {
+		Resource *r = E.value;
 
 		if (!type_count.has(r->get_class())) {
 			type_count[r->get_class()] = 0;

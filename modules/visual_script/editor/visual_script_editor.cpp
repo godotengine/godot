@@ -1608,7 +1608,7 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 		if (E.from_node == p_id && E.from_port == p_port) {
 			// Push into the connections map.
 			if (!conn_map.has(E.to_node)) {
-				conn_map.set(E.to_node, Set<int>());
+				conn_map.insert(E.to_node, Set<int>());
 			}
 			conn_map[E.to_node].insert(E.to_port);
 		}
@@ -1617,11 +1617,9 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 	undo_redo->add_do_method(vsn.ptr(), "remove_output_data_port", p_port);
 	undo_redo->add_do_method(this, "_update_graph", p_id);
 
-	List<int> keys;
-	conn_map.get_key_list(&keys);
-	for (const int &E : keys) {
-		for (const Set<int>::Element *F = conn_map[E].front(); F; F = F->next()) {
-			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F->get());
+	for (const KeyValue<int, Set<int>> &E : conn_map) {
+		for (const Set<int>::Element *F = E.value.front(); F; F = F->next()) {
+			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E.key, F->get());
 		}
 	}
 
@@ -1912,7 +1910,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 		Ref<VisualScriptNode> dupe = node->duplicate(true);
 
 		int new_id = idc++;
-		remap.set(F->get(), new_id);
+		remap.insert(F->get(), new_id);
 
 		to_select.insert(new_id);
 		undo_redo->add_do_method(script.ptr(), "add_node", new_id, dupe, script->get_node_position(F->get()) + Vector2(20, 20));
