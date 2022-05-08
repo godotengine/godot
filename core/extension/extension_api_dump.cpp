@@ -267,10 +267,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
 			{ Variant::TRANSFORM3D, "basis", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM3D, "origin", (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
-			{ Variant::COLOR, "x", 0, 0, 0, 0 },
-			{ Variant::COLOR, "y", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
-			{ Variant::COLOR, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
-			{ Variant::COLOR, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float) },
+			{ Variant::COLOR, "r", 0, 0, 0, 0 },
+			{ Variant::COLOR, "g", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
+			{ Variant::COLOR, "b", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
+			{ Variant::COLOR, "a", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float) },
 			{ Variant::NIL, nullptr, 0, 0, 0, 0 },
 		};
 
