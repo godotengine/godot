@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
+
 #include "vulkan_context_win.h"
 #ifdef USE_VOLK
 #include <volk.h>
@@ -57,3 +59,5 @@ VulkanContextWindows::VulkanContextWindows() {
 
 VulkanContextWindows::~VulkanContextWindows() {
 }
+
+#endif

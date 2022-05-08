@@ -609,13 +609,16 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 	if (p_base.is_valid()) {
 		instance->base_type = RSG::storage->get_base_type(p_base);
 
+		// fix up a specific malfunctioning case before the switch, so it can be handled
 		if (instance->base_type == RS::INSTANCE_NONE && RendererSceneOcclusionCull::get_singleton()->is_occluder(p_base)) {
 			instance->base_type = RS::INSTANCE_OCCLUDER;
 		}
 
-		ERR_FAIL_COND(instance->base_type == RS::INSTANCE_NONE);
-
 		switch (instance->base_type) {
+			case RS::INSTANCE_NONE: {
+				ERR_PRINT_ONCE("unimplemented base type encountered in renderer scene cull");
+				return;
+			}
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light = memnew(InstanceLightData);
 
