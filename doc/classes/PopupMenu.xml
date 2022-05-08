@@ -527,6 +527,9 @@
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] used for the menu items.
 		</theme_item>
+		<theme_item name="font_separator" data_type="font" type="Font">
+			[Font] used for the labeled separator.
+		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture">
 			[Texture] icon for the checked checkbox items.
 		</theme_item>
