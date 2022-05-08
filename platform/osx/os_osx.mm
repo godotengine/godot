@@ -1079,7 +1079,7 @@ static int translateKey(unsigned int key) {
 }
 
 // Translates a Godot keycode back to a OSX keycode
-static unsigned int unmapKey(int key) {
+static unsigned int unmapKey(unsigned int key) {
 	for (int i = 0; i <= 126; i++) {
 		if (_osx_to_godot_table[i] == key) {
 			return i;
