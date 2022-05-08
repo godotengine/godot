@@ -246,8 +246,6 @@ typedef struct {
 
 typedef void *GDNativeExtensionClassLibraryPtr;
 
-typedef const GDNativePropertyInfo *(*GDNativeExtensionClassGetPropertyList)(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
-
 /* Method */
 
 typedef enum {
