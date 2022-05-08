@@ -1645,6 +1645,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 	Map<String, Map<StringName, Variant>> source_file_options;
 	Map<String, String> base_paths;
+	Map<String, ResourceUID::ID> source_file_uids;
 	for (int i = 0; i < p_files.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
@@ -1657,6 +1658,15 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (!importer_name.is_empty() && importer_name != file_importer_name) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
+		}
+
+		if (config->has_section_key("remap", "uid")) {
+			String uidt = config->get_value("remap", "uid");
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+
+			if (uid != ResourceUID::INVALID_ID) {
+				source_file_uids[p_files[i]] = config->get_value("remap", "uid");
+			}
 		}
 
 		source_file_options[p_files[i]] = Map<StringName, Variant>();
@@ -1718,6 +1728,17 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			if (!importer->get_resource_type().is_empty()) {
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
+
+			ResourceUID::ID uid = ResourceUID::INVALID_ID;
+			if (source_file_uids.has(file)) {
+				uid = source_file_uids[file];
+			}
+
+			if (uid == ResourceUID::INVALID_ID) {
+				uid = ResourceUID::get_singleton()->create_id();
+			}
+
+			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format
 
 			if (err == OK) {
 				String path = base_path + "." + importer->get_save_extension();
