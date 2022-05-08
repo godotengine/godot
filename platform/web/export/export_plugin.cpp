@@ -31,7 +31,15 @@
 #include "export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "platform/web/logo_svg.gen.h"
+#include "platform/web/run_icon_svg.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
@@ -651,8 +659,17 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	server.instantiate();
 	server_thread.start(_server_thread_poll, this);
 
-	logo = ImageTexture::create_from_image(memnew(Image(_web_logo)));
-	run_icon = ImageTexture::create_from_image(memnew(Image(_web_run_icon)));
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+
+	img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
+#endif
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {

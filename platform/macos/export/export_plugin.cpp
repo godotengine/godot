@@ -38,8 +38,14 @@
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_scale.h"
+#include "platform/macos/logo_svg.gen.h"
+#include "platform/macos/run_icon_svg.gen.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/modules_enabled.gen.h" // For svg and regex.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc")) {
@@ -207,6 +213,23 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
+
+	String run_script = "#!/usr/bin/env bash\n"
+						"unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"\n"
+						"open \"{temp_dir}/{exe_name}.app\" --args {cmd_args}";
+
+	String cleanup_script = "#!/usr/bin/env bash\n"
+							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
+							"rm -rf \"{temp_dir}\"";
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
@@ -993,7 +1016,7 @@ Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const Str
 	return OK;
 }
 
-bool EditorExportPlatformMacOS::is_shbang(const String &p_path) const {
+bool EditorExportPlatformMacOS::is_shebang(const String &p_path) const {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("Can't open file: \"%s\".", p_path));
 	uint16_t magic = fb->get_16();
@@ -1001,7 +1024,7 @@ bool EditorExportPlatformMacOS::is_shbang(const String &p_path) const {
 }
 
 bool EditorExportPlatformMacOS::is_executable(const String &p_path) const {
-	return MachO::is_macho(p_path) || LipO::is_lipo(p_path) || is_shbang(p_path);
+	return MachO::is_macho(p_path) || LipO::is_lipo(p_path) || is_shebang(p_path);
 }
 
 Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
@@ -1082,7 +1105,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	} else {
 		pkg_name = "Unnamed";
 	}
-
 	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
 
 	String export_format;
@@ -1684,7 +1706,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
+				zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
 				zipClose(zip, nullptr);
 			}
@@ -1721,119 +1743,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	return err;
-}
-
-void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_folder.is_empty() ? p_root_path : p_root_path.path_join(p_folder);
-
-	Ref<DirAccess> da = DirAccess::open(dir);
-	da->list_dir_begin();
-	String f = da->get_next();
-	while (!f.is_empty()) {
-		if (f == "." || f == "..") {
-			f = da->get_next();
-			continue;
-		}
-		if (da->is_link(f)) {
-			OS::DateTime dt = OS::get_singleton()->get_datetime();
-
-			zip_fileinfo zipfi;
-			zipfi.tmz_date.tm_year = dt.year;
-			zipfi.tmz_date.tm_mon = dt.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_mday = dt.day;
-			zipfi.tmz_date.tm_hour = dt.hour;
-			zipfi.tmz_date.tm_min = dt.minute;
-			zipfi.tmz_date.tm_sec = dt.second;
-			zipfi.dosDate = 0;
-			// 0120000: symbolic link type
-			// 0000755: permissions rwxr-xr-x
-			// 0000644: permissions rw-r--r--
-			uint32_t _mode = 0120644;
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
-			zipfi.internal_fa = 0;
-
-			zipOpenNewFileInZip4(p_zip,
-					p_folder.path_join(f).utf8().get_data(),
-					&zipfi,
-					nullptr,
-					0,
-					nullptr,
-					0,
-					nullptr,
-					Z_DEFLATED,
-					Z_DEFAULT_COMPRESSION,
-					0,
-					-MAX_WBITS,
-					DEF_MEM_LEVEL,
-					Z_DEFAULT_STRATEGY,
-					nullptr,
-					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					0);
-
-			String target = da->read_link(f);
-			zipWriteInFileInZip(p_zip, target.utf8().get_data(), target.utf8().size());
-			zipCloseFileInZip(p_zip);
-		} else if (da->current_is_dir()) {
-			_zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);
-		} else {
-			OS::DateTime dt = OS::get_singleton()->get_datetime();
-
-			zip_fileinfo zipfi;
-			zipfi.tmz_date.tm_year = dt.year;
-			zipfi.tmz_date.tm_mon = dt.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_mday = dt.day;
-			zipfi.tmz_date.tm_hour = dt.hour;
-			zipfi.tmz_date.tm_min = dt.minute;
-			zipfi.tmz_date.tm_sec = dt.second;
-			zipfi.dosDate = 0;
-			// 0100000: regular file type
-			// 0000755: permissions rwxr-xr-x
-			// 0000644: permissions rw-r--r--
-			uint32_t _mode = (is_executable(dir.path_join(f)) ? 0100755 : 0100644);
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
-			zipfi.internal_fa = 0;
-
-			zipOpenNewFileInZip4(p_zip,
-					p_folder.path_join(f).utf8().get_data(),
-					&zipfi,
-					nullptr,
-					0,
-					nullptr,
-					0,
-					nullptr,
-					Z_DEFLATED,
-					Z_DEFAULT_COMPRESSION,
-					0,
-					-MAX_WBITS,
-					DEF_MEM_LEVEL,
-					Z_DEFAULT_STRATEGY,
-					nullptr,
-					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					0);
-
-			Ref<FileAccess> fa = FileAccess::open(dir.path_join(f), FileAccess::READ);
-			if (fa.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.path_join(f)));
-				return;
-			}
-			const int bufsize = 16384;
-			uint8_t buf[bufsize];
-
-			while (true) {
-				uint64_t got = fa->get_buffer(buf, bufsize);
-				if (got == 0) {
-					break;
-				}
-				zipWriteInFileInZip(p_zip, buf, got);
-			}
-
-			zipCloseFileInZip(p_zip);
-		}
-		f = da->get_next();
-	}
-	da->list_dir_end();
 }
 
 bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
@@ -2012,9 +1921,242 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 	return valid;
 }
 
-EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
-	logo = ImageTexture::create_from_image(memnew(Image(_macos_logo)));
+Ref<Texture2D> EditorExportPlatformMacOS::get_run_icon() const {
+	return run_icon;
 }
 
-EditorExportPlatformMacOS::~EditorExportPlatformMacOS() {
+bool EditorExportPlatformMacOS::poll_export() {
+	Ref<EditorExportPreset> preset;
+
+	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+		if (ep->is_runnable() && ep->get_platform() == this) {
+			preset = ep;
+			break;
+		}
+	}
+
+	int prev = menu_options;
+	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
+	if (ssh_pid != 0 || !cleanup_commands.is_empty()) {
+		if (menu_options == 0) {
+			cleanup();
+		} else {
+			menu_options += 1;
+		}
+	}
+	return menu_options != prev;
+}
+
+Ref<ImageTexture> EditorExportPlatformMacOS::get_option_icon(int p_index) const {
+	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+}
+
+int EditorExportPlatformMacOS::get_options_count() const {
+	return menu_options;
+}
+
+String EditorExportPlatformMacOS::get_option_label(int p_index) const {
+	return (p_index) ? TTR("Stop and uninstall") : TTR("Run on remote macOS system");
+}
+
+String EditorExportPlatformMacOS::get_option_tooltip(int p_index) const {
+	return (p_index) ? TTR("Stop and uninstall running project from the remote system") : TTR("Run exported project on remote macOS system");
+}
+
+void EditorExportPlatformMacOS::cleanup() {
+	if (ssh_pid != 0 && OS::get_singleton()->is_process_running(ssh_pid)) {
+		print_line("Terminating connection...");
+		OS::get_singleton()->kill(ssh_pid);
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	if (!cleanup_commands.is_empty()) {
+		print_line("Stopping and deleting previous version...");
+		for (const SSHCleanupCommand &cmd : cleanup_commands) {
+			if (cmd.wait) {
+				ssh_run_on_remote(cmd.host, cmd.port, cmd.ssh_args, cmd.cmd_args);
+			} else {
+				ssh_run_on_remote_no_wait(cmd.host, cmd.port, cmd.ssh_args, cmd.cmd_args);
+			}
+		}
+	}
+	ssh_pid = 0;
+	cleanup_commands.clear();
+}
+
+Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+	cleanup();
+	if (p_device) { // Stop command, cleanup only.
+		return OK;
+	}
+
+	EditorProgress ep("run", TTR("Running..."), 5);
+
+	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("macos");
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (!da->dir_exists(dest)) {
+		Error err = da->make_dir_recursive(dest);
+		if (err != OK) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not create temp directory:") + "\n" + dest);
+			return err;
+		}
+	}
+
+	String pkg_name;
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	} else {
+		pkg_name = "Unnamed";
+	}
+	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
+
+	String host = p_preset->get("ssh_remote_deploy/host").operator String();
+	String port = p_preset->get("ssh_remote_deploy/port").operator String();
+	if (port.is_empty()) {
+		port = "22";
+	}
+	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ");
+	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ");
+
+	const String basepath = dest.path_join("tmp_macos_export");
+
+#define CLEANUP_AND_RETURN(m_err)                      \
+	{                                                  \
+		if (da->file_exists(basepath + ".zip")) {      \
+			da->remove(basepath + ".zip");             \
+		}                                              \
+		if (da->file_exists(basepath + "_start.sh")) { \
+			da->remove(basepath + "_start.sh");        \
+		}                                              \
+		if (da->file_exists(basepath + "_clean.sh")) { \
+			da->remove(basepath + "_clean.sh");        \
+		}                                              \
+		return m_err;                                  \
+	}                                                  \
+	((void)0)
+
+	if (ep.step(TTR("Exporting project..."), 1)) {
+		return ERR_SKIP;
+	}
+	Error err = export_project(p_preset, true, basepath + ".zip", p_debug_flags);
+	if (err != OK) {
+		DirAccess::remove_file_or_error(basepath + ".zip");
+		return err;
+	}
+
+	String cmd_args;
+	{
+		Vector<String> cmd_args_list;
+		gen_debug_flags(cmd_args_list, p_debug_flags);
+		for (int i = 0; i < cmd_args_list.size(); i++) {
+			if (i != 0) {
+				cmd_args += " ";
+			}
+			cmd_args += cmd_args_list[i];
+		}
+	}
+
+	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
+	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+
+	print_line("Creating temporary directory...");
+	ep.step(TTR("Creating temporary directory..."), 2);
+	String temp_dir;
+	err = ssh_run_on_remote(host, port, extra_args_ssh, "mktemp -d", &temp_dir);
+	if (err != OK || temp_dir.is_empty()) {
+		CLEANUP_AND_RETURN(err);
+	}
+
+	print_line("Uploading archive...");
+	ep.step(TTR("Uploading archive..."), 3);
+	err = ssh_push_to_remote(host, port, extra_args_scp, basepath + ".zip", temp_dir);
+	if (err != OK) {
+		CLEANUP_AND_RETURN(err);
+	}
+
+	{
+		String run_script = p_preset->get("ssh_remote_deploy/run_script");
+		run_script = run_script.replace("{temp_dir}", temp_dir);
+		run_script = run_script.replace("{archive_name}", basepath.get_file() + ".zip");
+		run_script = run_script.replace("{exe_name}", pkg_name);
+		run_script = run_script.replace("{cmd_args}", cmd_args);
+
+		Ref<FileAccess> f = FileAccess::open(basepath + "_start.sh", FileAccess::WRITE);
+		if (f.is_null()) {
+			CLEANUP_AND_RETURN(err);
+		}
+
+		f->store_string(run_script);
+	}
+
+	{
+		String clean_script = p_preset->get("ssh_remote_deploy/cleanup_script");
+		clean_script = clean_script.replace("{temp_dir}", temp_dir);
+		clean_script = clean_script.replace("{archive_name}", basepath.get_file() + ".zip");
+		clean_script = clean_script.replace("{exe_name}", pkg_name);
+		clean_script = clean_script.replace("{cmd_args}", cmd_args);
+
+		Ref<FileAccess> f = FileAccess::open(basepath + "_clean.sh", FileAccess::WRITE);
+		if (f.is_null()) {
+			CLEANUP_AND_RETURN(err);
+		}
+
+		f->store_string(clean_script);
+	}
+
+	print_line("Uploading scripts...");
+	ep.step(TTR("Uploading scripts..."), 4);
+	err = ssh_push_to_remote(host, port, extra_args_scp, basepath + "_start.sh", temp_dir);
+	if (err != OK) {
+		CLEANUP_AND_RETURN(err);
+	}
+	err = ssh_run_on_remote(host, port, extra_args_ssh, vformat("chmod +x \"%s/%s\"", temp_dir, basepath.get_file() + "_start.sh"));
+	if (err != OK || temp_dir.is_empty()) {
+		CLEANUP_AND_RETURN(err);
+	}
+	err = ssh_push_to_remote(host, port, extra_args_scp, basepath + "_clean.sh", temp_dir);
+	if (err != OK) {
+		CLEANUP_AND_RETURN(err);
+	}
+	err = ssh_run_on_remote(host, port, extra_args_ssh, vformat("chmod +x \"%s/%s\"", temp_dir, basepath.get_file() + "_clean.sh"));
+	if (err != OK || temp_dir.is_empty()) {
+		CLEANUP_AND_RETURN(err);
+	}
+
+	print_line("Starting project...");
+	ep.step(TTR("Starting project..."), 5);
+	err = ssh_run_on_remote_no_wait(host, port, extra_args_ssh, vformat("\"%s/%s\"", temp_dir, basepath.get_file() + "_start.sh"), &ssh_pid, (use_remote) ? dbg_port : -1);
+	if (err != OK) {
+		CLEANUP_AND_RETURN(err);
+	}
+
+	cleanup_commands.clear();
+	cleanup_commands.push_back(SSHCleanupCommand(host, port, extra_args_ssh, vformat("\"%s/%s\"", temp_dir, basepath.get_file() + "_clean.sh")));
+
+	print_line("Project started.");
+
+	CLEANUP_AND_RETURN(OK);
+#undef CLEANUP_AND_RETURN
+}
+
+EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _macos_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+
+	img_loader.create_image_from_string(img, _macos_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
+#endif
+
+	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+	if (theme.is_valid()) {
+		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+	} else {
+		stop_icon.instantiate();
+	}
 }
