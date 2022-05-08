@@ -257,6 +257,9 @@ void Node::_propagate_after_exit_tree() {
 		}
 
 		if (!found) {
+			if (data.unique_name_in_owner) {
+				_release_unique_name_in_owner();
+			}
 			data.owner->data.owned.erase(data.OW);
 			data.owner = nullptr;
 		}
@@ -650,21 +653,10 @@ void Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg
 }
 
 Ref<MultiplayerAPI> Node::get_multiplayer() const {
-	if (multiplayer.is_valid()) {
-		return multiplayer;
-	}
 	if (!is_inside_tree()) {
 		return Ref<MultiplayerAPI>();
 	}
-	return get_tree()->get_multiplayer();
-}
-
-Ref<MultiplayerAPI> Node::get_custom_multiplayer() const {
-	return multiplayer;
-}
-
-void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
-	multiplayer = p_multiplayer;
+	return get_tree()->get_multiplayer(get_path());
 }
 
 Vector<Multiplayer::RPCConfig> Node::get_node_rpc_methods() const {
@@ -917,10 +909,18 @@ void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
+
+	if (data.unique_name_in_owner && data.owner) {
+		_release_unique_name_in_owner();
+	}
 	data.name = name;
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this, true);
+	}
+
+	if (data.unique_name_in_owner && data.owner) {
+		_acquire_unique_name_in_owner();
 	}
 
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
@@ -1303,6 +1303,24 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 				next = root;
 			}
 
+		} else if (name.is_node_unique_name()) {
+			if (current->data.owned_unique_nodes.size()) {
+				// Has unique nodes in ownership
+				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else if (current->data.owner) {
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else {
+				return nullptr;
+			}
+
 		} else {
 			next = nullptr;
 
@@ -1344,9 +1362,39 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+// Finds the first child node (in tree order) whose name matches the given pattern.
+// Can be recursive or not, and limited to owned nodes.
+Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) const {
+	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
+
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner) {
+			continue;
+		}
+		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+			return cptr[i];
+		}
+
+		if (!p_recursive) {
+			continue;
+		}
+
+		Node *ret = cptr[i]->find_child(p_pattern, true, p_owned);
+		if (ret) {
+			return ret;
+		}
+	}
+	return nullptr;
+}
+
+// Finds child nodes based on their name using pattern matching, or class name,
+// or both (either pattern or type can be left empty).
+// Can be recursive or not, and limited to owned nodes.
+TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	TypedArray<Node> ret;
-	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
@@ -1355,8 +1403,8 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 			continue;
 		}
 
-		if (!p_mask.is_empty()) {
-			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+		if (!p_pattern.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
 				continue;
 			} else if (p_type.is_empty()) {
 				ret.append(cptr[i]);
@@ -1378,7 +1426,7 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 		}
 
 		if (p_recursive) {
-			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
+			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
 		}
 	}
 
@@ -1389,10 +1437,10 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
-Node *Node::find_parent(const String &p_mask) const {
+Node *Node::find_parent(const String &p_pattern) const {
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_mask)) {
+		if (p->data.name.operator String().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -1498,8 +1546,56 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.OW = data.owner->data.owned.back();
 }
 
+void Node::_release_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which == nullptr || *which != this) {
+		return; // Ignore.
+	}
+	data.owner->data.owned_unique_nodes.erase(key);
+}
+
+void Node::_acquire_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which != nullptr && *which != this) {
+		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
+		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name."),
+				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
+		data.unique_name_in_owner = false;
+		return;
+	}
+	data.owner->data.owned_unique_nodes[key] = this;
+}
+
+void Node::set_unique_name_in_owner(bool p_enabled) {
+	if (data.unique_name_in_owner == p_enabled) {
+		return;
+	}
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_release_unique_name_in_owner();
+	}
+	data.unique_name_in_owner = p_enabled;
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_acquire_unique_name_in_owner();
+	}
+
+	update_configuration_warnings();
+}
+
+bool Node::is_unique_name_in_owner() const {
+	return data.unique_name_in_owner;
+}
+
 void Node::set_owner(Node *p_owner) {
 	if (data.owner) {
+		if (data.unique_name_in_owner) {
+			_release_unique_name_in_owner();
+		}
 		data.owner->data.owned.erase(data.OW);
 		data.OW = nullptr;
 		data.owner = nullptr;
@@ -1526,6 +1622,10 @@ void Node::set_owner(Node *p_owner) {
 	ERR_FAIL_COND(!owner_valid);
 
 	_set_owner_nocheck(p_owner);
+
+	if (data.unique_name_in_owner) {
+		_acquire_unique_name_in_owner();
+	}
 }
 
 Node *Node::get_owner() const {
@@ -1912,35 +2012,28 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 #ifdef TOOLS_ENABLED
 void Node::set_property_pinned(const String &p_property, bool p_pinned) {
 	bool current_pinned = false;
-	bool has_pinned = has_meta("_edit_pinned_properties_");
-	Array pinned;
-	String psa = get_property_store_alias(p_property);
-	if (has_pinned) {
-		pinned = get_meta("_edit_pinned_properties_");
-		current_pinned = pinned.has(psa);
-	}
+	Array pinned = get_meta("_edit_pinned_properties_", Array());
+	StringName psa = get_property_store_alias(p_property);
+	current_pinned = pinned.has(psa);
 
 	if (current_pinned != p_pinned) {
 		if (p_pinned) {
 			pinned.append(psa);
-			if (!has_pinned) {
-				set_meta("_edit_pinned_properties_", pinned);
-			}
 		} else {
 			pinned.erase(psa);
-			if (pinned.is_empty()) {
-				remove_meta("_edit_pinned_properties_");
-			}
 		}
+	}
+
+	if (pinned.is_empty()) {
+		remove_meta("_edit_pinned_properties_");
+	} else {
+		set_meta("_edit_pinned_properties_", pinned);
 	}
 }
 
 bool Node::is_property_pinned(const StringName &p_property) const {
-	if (!has_meta("_edit_pinned_properties_")) {
-		return false;
-	}
-	Array pinned = get_meta("_edit_pinned_properties_");
-	String psa = get_property_store_alias(p_property);
+	Array pinned = get_meta("_edit_pinned_properties_", Array());
+	StringName psa = get_property_store_alias(p_property);
 	return pinned.has(psa);
 }
 
@@ -2188,10 +2281,10 @@ Node *Node::duplicate(int p_flags) const {
 
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, Map<RES, RES>());
+	return duplicate_from_editor(r_duplimap, Map<Ref<Resource>, Ref<Resource>>());
 }
 
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const {
+Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
@@ -2207,7 +2300,7 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const M
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2218,7 +2311,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 
 		Variant v = p_node->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
 					p_node->set(E.name, p_resource_remap[res]);
@@ -2233,7 +2326,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 	}
 }
 
-void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
@@ -2244,7 +2337,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 
 		Variant v = p_resource->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
 					p_resource->set(E.name, p_resource_remap[res]);
@@ -2393,7 +2486,7 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 	if (!has_node(p_path)) {
 		return false;
 	}
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 
@@ -2401,7 +2494,7 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 }
 
 Array Node::_get_node_and_resource(const NodePath &p_path) {
-	RES res;
+	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 	Array result;
@@ -2423,9 +2516,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 	return result;
 }
 
-Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
+Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 	Node *node = get_node(p_path);
-	r_res = RES();
+	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
 	if (!node) {
 		return nullptr;
@@ -2441,7 +2534,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 				return nullptr;
 			}
 
-			RES new_res = new_res_v;
+			Ref<Resource> new_res = new_res_v;
 
 			if (new_res.is_null()) { // No longer a resource, assume property
 				break;
@@ -2585,16 +2678,16 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 TypedArray<String> Node::get_configuration_warnings() const {
+	TypedArray<String> ret;
+
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		TypedArray<String> ret;
-		ret.resize(warnings.size());
 		for (int i = 0; i < warnings.size(); i++) {
-			ret[i] = warnings[i];
+			ret.push_back(warnings[i]);
 		}
-		return ret;
 	}
-	return Array();
+
+	return ret;
 }
 
 String Node::get_configuration_warnings_as_string() const {
@@ -2701,8 +2794,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
+	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
@@ -2780,8 +2874,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multiplayer_authority"), &Node::is_multiplayer_authority);
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
-	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "call_local", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(false), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
@@ -2789,6 +2881,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
+
+	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
+	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -2880,10 +2975,10 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "set_custom_multiplayer", "get_custom_multiplayer");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");

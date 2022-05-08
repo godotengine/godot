@@ -1209,8 +1209,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	t.basis = to_local * p_transform.get_basis();
 
 	// Origin.
-	Vector3 orig = Vector3();
-	orig = skeleton->get_bone_pose(p_id).origin;
+	Vector3 orig = skeleton->get_bone_pose(p_id).origin;
 	Vector3 sub = p_transform.origin - skeleton->get_bone_global_pose(p_id).origin;
 	t.origin = orig + to_local.xform(sub);
 
@@ -1283,9 +1282,6 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		surface_tool->set_material(unselected_mat);
 	}
 
-	Vector<Transform3D> grests;
-	grests.resize(skeleton->get_bone_count());
-
 	LocalVector<int> bones;
 	LocalVector<float> weights;
 	bones.resize(4);
@@ -1309,11 +1305,6 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		child_bones_vector = skeleton->get_bone_children(current_bone_idx);
 		int child_bones_size = child_bones_vector.size();
 
-		// You have children but no parent, then you must be a root/parentless bone.
-		if (skeleton->get_bone_parent(current_bone_idx) < 0) {
-			grests.write[current_bone_idx] = skeleton->get_bone_rest(current_bone_idx);
-		}
-
 		for (int i = 0; i < child_bones_size; i++) {
 			// Something wrong.
 			if (child_bones_vector[i] < 0) {
@@ -1322,10 +1313,8 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			int child_bone_idx = child_bones_vector[i];
 
-			grests.write[child_bone_idx] = grests[current_bone_idx] * skeleton->get_bone_rest(child_bone_idx);
-
-			Vector3 v0 = grests[current_bone_idx].origin;
-			Vector3 v1 = grests[child_bone_idx].origin;
+			Vector3 v0 = skeleton->get_bone_global_rest(current_bone_idx).origin;
+			Vector3 v1 = skeleton->get_bone_global_rest(child_bone_idx).origin;
 			Vector3 d = (v1 - v0).normalized();
 			real_t dist = v0.distance_to(v1);
 
@@ -1333,7 +1322,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			int closest = -1;
 			real_t closest_d = 0.0;
 			for (int j = 0; j < 3; j++) {
-				real_t dp = Math::abs(grests[current_bone_idx].basis[j].normalized().dot(d));
+				real_t dp = Math::abs(skeleton->get_bone_global_rest(current_bone_idx).basis[j].normalized().dot(d));
 				if (j == 0 || dp > closest_d) {
 					closest = j;
 				}
@@ -1360,7 +1349,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					for (int j = 0; j < 3; j++) {
 						Vector3 axis;
 						if (first == Vector3()) {
-							axis = d.cross(d.cross(grests[current_bone_idx].basis[j])).normalized();
+							axis = d.cross(d.cross(skeleton->get_bone_global_rest(current_bone_idx).basis[j])).normalized();
 							first = axis;
 						} else {
 							axis = d.cross(first).normalized();
@@ -1415,7 +1404,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->add_vertex(v0);
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
-				surface_tool->add_vertex(v0 + (grests[current_bone_idx].basis.inverse())[j].normalized() * dist * bone_axis_length);
+				surface_tool->add_vertex(v0 + (skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 				if (j == closest) {
 					continue;
@@ -1432,7 +1421,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					surface_tool->add_vertex(v1);
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
-					surface_tool->add_vertex(v1 + (grests[child_bone_idx].basis.inverse())[j].normalized() * dist * bone_axis_length);
+					surface_tool->add_vertex(v1 + (skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 					if (j == closest) {
 						continue;

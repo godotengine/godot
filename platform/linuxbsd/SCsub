@@ -100,6 +100,9 @@ if "wayland" in env and env["wayland"]:
     if "vulkan" in env and env["vulkan"]:
         common_linuxbsd.append("vulkan_context_wayland.cpp")
 
+if "speechd" in env and env["speechd"]:
+    common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])
+
 if "udev" in env and env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")
 

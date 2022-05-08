@@ -485,7 +485,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	add_child(path_hb);
 	path = memnew(LineEdit);
-	path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
 	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));
 	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));
@@ -2085,7 +2085,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	}
 }
 
-///////////////////// VECTOR3i /////////////////////////
+///////////////////// VECTOR3I /////////////////////////
 
 void EditorPropertyVector3i::_set_read_only(bool p_read_only) {
 	for (int i = 0; i < 3; i++) {
@@ -2618,7 +2618,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	set_bottom_editor(g);
 }
 
-///////////////////// TRANSFORM /////////////////////////
+///////////////////// TRANSFORM3D /////////////////////////
 
 void EditorPropertyTransform3D::_set_read_only(bool p_read_only) {
 	for (int i = 0; i < 12; i++) {
@@ -2974,11 +2974,17 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
-	if (p_resource->is_built_in() && !p_resource->get_path().is_empty() && p_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
-		// If the resource belongs to another scene, edit it in that scene instead.
-		EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
-		return;
+void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_edit) {
+	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
+		String parent = p_resource->get_path().get_slice("::", 0);
+		List<String> extensions;
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+
+		if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
+			// If the resource belongs to another scene, edit it in that scene instead.
+			EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
+			return;
+		}
 	}
 
 	if (!p_edit && use_sub_inspector) {
@@ -2990,7 +2996,7 @@ void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_ed
 	}
 }
 
-void EditorPropertyResource::_resource_changed(const RES &p_resource) {
+void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
 	if (get_edited_object() && s.is_valid()) {
@@ -3003,14 +3009,14 @@ void EditorPropertyResource::_resource_changed(const RES &p_resource) {
 		Resource *r = Object::cast_to<Resource>(get_edited_object());
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
-			emit_changed(get_edited_property(), RES());
+			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
 
 		if (r && !r->is_local_to_scene()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on this resource because it's not set as local to scene.\nPlease switch on the 'local to scene' property on it (and all resources containing it up to a node)."));
-			emit_changed(get_edited_property(), RES());
+			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
@@ -3045,7 +3051,7 @@ void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_prope
 	emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
 }
 
-void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
+void EditorPropertyResource::_sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property) {
 	emit_signal(SNAME("resource_selected"), String(get_edited_property()) + ":" + p_property, p_resource);
 }
 
@@ -3054,7 +3060,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 }
 
 void EditorPropertyResource::_open_editor_pressed() {
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
 		EditorNode::get_singleton()->call_deferred(SNAME("edit_item_resource"), res);
@@ -3066,7 +3072,7 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 		return;
 	}
 
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (!res.is_valid()) {
 		return;
 	}
@@ -3118,12 +3124,12 @@ void EditorPropertyResource::_update_property_bg() {
 		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), SNAME("Editor")));
 
 		add_theme_constant_override("font_offset", get_theme_constant(SNAME("sub_inspector_font_offset"), SNAME("Editor")));
-		add_theme_constant_override("vseparation", 0);
+		add_theme_constant_override("v_separation", 0);
 	} else {
 		add_theme_color_override("property_color", get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 		add_theme_style_override("bg_selected", get_theme_stylebox(SNAME("bg_selected"), SNAME("EditorProperty")));
 		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("EditorProperty")));
-		add_theme_constant_override("vseparation", get_theme_constant(SNAME("vseparation"), SNAME("EditorProperty")));
+		add_theme_constant_override("v_separation", get_theme_constant(SNAME("v_separation"), SNAME("EditorProperty")));
 		add_theme_constant_override("font_offset", get_theme_constant(SNAME("font_offset"), SNAME("EditorProperty")));
 	}
 
@@ -3212,7 +3218,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 }
 
 void EditorPropertyResource::update_property() {
-	RES res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {
@@ -3355,10 +3361,8 @@ struct EditorPropertyRangeHint {
 static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step) {
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
-	bool degrees = false;
-
+	Vector<String> slices = p_hint_text.split(",");
 	if (p_hint == PROPERTY_HINT_RANGE) {
-		Vector<String> slices = p_hint_text.split(",");
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
 				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
 
@@ -3375,11 +3379,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		hint.hide_slider = false;
 		for (int i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
-			if (slice == "radians") {
-				hint.radians = true;
-			} else if (slice == "degrees") {
-				degrees = true;
-			} else if (slice == "or_greater") {
+			if (slice == "or_greater") {
 				hint.greater = true;
 			} else if (slice == "or_lesser") {
 				hint.lesser = true;
@@ -3387,9 +3387,18 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
-			} else if (slice.begins_with("suffix:")) {
-				hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
 			}
+		}
+	}
+	bool degrees = false;
+	for (int i = 0; i < slices.size(); i++) {
+		String slice = slices[i].strip_edges();
+		if (slice == "radians") {
+			hint.radians = true;
+		} else if (slice == "degrees") {
+			degrees = true;
+		} else if (slice.begins_with("suffix:")) {
+			hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
 		}
 	}
 

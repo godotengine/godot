@@ -342,7 +342,7 @@
 			<argument index="0" name="alignment" type="int" enum="HorizontalAlignment" />
 			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<argument index="2" name="language" type="String" default="&quot;&quot;" />
-			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0" />
+			<argument index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
 			<description>
 				Adds a [code][p][/code] tag to the tag stack.
 			</description>
@@ -488,7 +488,7 @@
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
-		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
 		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
@@ -667,10 +667,10 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
+		<theme_item name="table_h_separation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
+		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">

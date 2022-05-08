@@ -43,7 +43,7 @@
 				Converts the given Unix timestamp to an ISO 8601 date string (YYYY-MM-DD).
 			</description>
 		</method>
-		<method name="get_datetime_dict_from_string" qualifiers="const">
+		<method name="get_datetime_dict_from_datetime_string" qualifiers="const">
 			<return type="Dictionary" />
 			<argument index="0" name="datetime" type="String" />
 			<argument index="1" name="weekday" type="bool" />
@@ -68,7 +68,7 @@
 				The returned Dictionary's values will be the same as the [method get_datetime_dict_from_system] if the Unix timestamp is the current time, with the exception of Daylight Savings Time as it cannot be determined from the epoch.
 			</description>
 		</method>
-		<method name="get_datetime_string_from_dict" qualifiers="const">
+		<method name="get_datetime_string_from_datetime_dict" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="datetime" type="Dictionary" />
 			<argument index="1" name="use_space" type="bool" />

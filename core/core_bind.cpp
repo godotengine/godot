@@ -58,15 +58,15 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	return (ThreadLoadStatus)tls;
 }
 
-RES ResourceLoader::load_threaded_get(const String &p_path) {
+Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	Error error;
-	RES res = ::ResourceLoader::load_threaded_get(p_path, &error);
+	Ref<Resource> res = ::ResourceLoader::load_threaded_get(p_path, &error);
 	return res;
 }
 
-RES ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
+Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
-	RES ret = ::ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
+	Ref<Resource> ret = ::ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + p_path + "'.");
 	return ret;
@@ -137,12 +137,12 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
 	return ::ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
+Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
@@ -267,6 +267,10 @@ int OS::create_process(const String &p_path, const Vector<String> &p_arguments, 
 
 Error OS::kill(int p_pid) {
 	return ::OS::get_singleton()->kill(p_pid);
+}
+
+bool OS::is_process_running(int p_pid) const {
+	return ::OS::get_singleton()->is_process_running(p_pid);
 }
 
 int OS::get_process_id() const {
@@ -483,6 +487,10 @@ void OS::dump_resources_to_file(const String &p_file) {
 	::OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
 }
 
+Error OS::move_to_trash(const String &p_path) const {
+	return ::OS::get_singleton()->move_to_trash(p_path);
+}
+
 String OS::get_user_data_dir() const {
 	return ::OS::get_singleton()->get_user_data_dir();
 }
@@ -567,6 +575,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
@@ -597,6 +606,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
 
+	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir", "shared_storage"), &OS::get_system_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &OS::get_config_dir);
@@ -1965,7 +1975,7 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 
 	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	if (r) {
-		return REF(r);
+		return Ref<RefCounted>(r);
 	} else {
 		return obj;
 	}

@@ -31,7 +31,9 @@
 #ifndef SQUISH_REGISTER_TYPES_H
 #define SQUISH_REGISTER_TYPES_H
 
-void register_squish_types();
-void unregister_squish_types();
+#include "modules/register_module_types.h"
+
+void initialize_squish_module(ModuleInitializationLevel p_level);
+void uninitialize_squish_module(ModuleInitializationLevel p_level);
 
 #endif // SQUISH_REGISTER_TYPES_H

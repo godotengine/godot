@@ -86,15 +86,15 @@ class FileAccessNetwork : public FileAccess {
 	Semaphore page_sem;
 	Mutex buffer_mutex;
 	bool opened = false;
-	uint64_t total_size;
+	uint64_t total_size = 0;
 	mutable uint64_t pos = 0;
-	int32_t id;
+	int32_t id = -1;
 	mutable bool eof_flag = false;
 	mutable int32_t last_page = -1;
 	mutable uint8_t *last_page_buff = nullptr;
 
-	int32_t page_size;
-	int32_t read_ahead;
+	int32_t page_size = 0;
+	int32_t read_ahead = 0;
 
 	mutable int waiting_on_page = -1;
 
@@ -108,7 +108,8 @@ class FileAccessNetwork : public FileAccess {
 
 	mutable Error response;
 
-	uint64_t exists_modtime;
+	uint64_t exists_modtime = 0;
+
 	friend class FileAccessNetworkClient;
 	void _queue_page(int32_t p_page) const;
 	void _respond(uint64_t p_len, Error p_status);

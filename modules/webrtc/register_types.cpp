@@ -37,7 +37,11 @@
 #include "webrtc_data_channel_extension.h"
 #include "webrtc_peer_connection_extension.h"
 
-void register_webrtc_types() {
+void initialize_webrtc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #define SET_HINT(NAME, _VAL_, _MAX_) \
 	GLOBAL_DEF(NAME, _VAL_);         \
 	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
@@ -55,4 +59,8 @@ void register_webrtc_types() {
 #undef SET_HINT
 }
 
-void unregister_webrtc_types() {}
+void uninitialize_webrtc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

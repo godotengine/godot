@@ -73,7 +73,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	subdirectory_item->set_text(0, dname);
-	subdirectory_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
+	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 	subdirectory_item->set_icon(0, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog")));
 	subdirectory_item->set_selectable(0, true);
@@ -143,7 +143,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			file_item->set_text(0, fi.name);
-			file_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
+			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
 			String file_metadata = lpath.plus_file(fi.name);
 			file_item->set_metadata(0, file_metadata);
@@ -2025,6 +2025,16 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_COPY_UID: {
+			if (!p_selected.is_empty()) {
+				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
+				if (uid != ResourceUID::INVALID_ID) {
+					String uid_string = ResourceUID::get_singleton()->id_to_text(uid);
+					DisplayServer::get_singleton()->clipboard_set(uid_string);
+				}
+			}
+		} break;
+
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
@@ -2070,7 +2080,7 @@ void FileSystemDock::_resource_created() {
 	}
 
 	EditorNode::get_singleton()->push_item(r);
-	EditorNode::get_singleton()->save_resource_as(RES(r), fpath);
+	EditorNode::get_singleton()->save_resource_as(Ref<Resource>(r), fpath);
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
@@ -2550,6 +2560,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
+		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
+			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
+		}
 		if (p_paths[0] != "res://") {
 			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
 			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_DUPLICATE);
@@ -2624,7 +2637,11 @@ void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 }
 
-void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
+void FileSystemDock::_file_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	// Right click is pressed in the file list.
 	Vector<String> paths;
 	for (int i = 0; i < files->get_item_count(); i++) {
@@ -2771,6 +2788,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_DUPLICATE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
 			_tree_rmb_option(FILE_COPY_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
+			_tree_rmb_option(FILE_COPY_UID);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
@@ -2999,6 +3018,7 @@ FileSystemDock::FileSystemDock() {
 
 	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
@@ -3026,7 +3046,7 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);
-	current_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	current_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	current_path->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_text(path);
 	toolbar_hbc->add_child(current_path);
@@ -3112,7 +3132,7 @@ FileSystemDock::FileSystemDock() {
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
-	files->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_file_list_rmb_select));
+	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_clicked));
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));

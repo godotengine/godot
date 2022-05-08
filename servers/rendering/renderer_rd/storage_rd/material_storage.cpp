@@ -339,7 +339,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -361,7 +361,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedVector2Array &a = value;
@@ -385,33 +385,67 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
-				const PackedVector3Array &a = value;
-				int s = a.size();
+				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
+					const PackedColorArray &a = value;
+					int s = a.size();
 
-				for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
-					if (i < s) {
-						gui[j] = a[i].x;
-						gui[j + 1] = a[i].y;
-						gui[j + 2] = a[i].z;
-					} else {
-						gui[j] = 0;
-						gui[j + 1] = 0;
-						gui[j + 2] = 0;
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							Color color = a[i];
+							if (p_linear_color) {
+								color = color.srgb_to_linear();
+							}
+							gui[j] = color.r;
+							gui[j + 1] = color.g;
+							gui[j + 2] = color.b;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
 					}
-					gui[j + 3] = 0; // ignored
+				} else {
+					const PackedVector3Array &a = value;
+					int s = a.size();
+
+					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
+						if (i < s) {
+							gui[j] = a[i].x;
+							gui[j + 1] = a[i].y;
+							gui[j + 2] = a[i].z;
+						} else {
+							gui[j] = 0;
+							gui[j + 1] = 0;
+							gui[j + 2] = 0;
+						}
+						gui[j + 3] = 0; // ignored
+					}
 				}
 			} else {
-				Vector3 v = value;
-				gui[0] = v.x;
-				gui[1] = v.y;
-				gui[2] = v.z;
+				if (value.get_type() == Variant::COLOR) {
+					Color v = value;
+
+					if (p_linear_color) {
+						v = v.srgb_to_linear();
+					}
+
+					gui[0] = v.r;
+					gui[1] = v.g;
+					gui[2] = v.b;
+				} else {
+					Vector3 v = value;
+					gui[0] = v.x;
+					gui[1] = v.y;
+					gui[2] = v.z;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				if (value.get_type() == Variant::PACKED_COLOR_ARRAY) {
@@ -491,7 +525,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -520,19 +554,19 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				Transform2D v = value;
 
 				//in std140 members of mat2 are treated as vec4s
-				gui[0] = v.elements[0][0];
-				gui[1] = v.elements[0][1];
+				gui[0] = v.columns[0][0];
+				gui[1] = v.columns[0][1];
 				gui[2] = 0; // ignored
 				gui[3] = 0; // ignored
 
-				gui[4] = v.elements[1][0];
-				gui[5] = v.elements[1][1];
+				gui[4] = v.columns[1][0];
+				gui[5] = v.columns[1][1];
 				gui[6] = 0; // ignored
 				gui[7] = 0; // ignored
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -570,24 +604,24 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				}
 			} else {
 				Basis v = value;
-				gui[0] = v.elements[0][0];
-				gui[1] = v.elements[1][0];
-				gui[2] = v.elements[2][0];
+				gui[0] = v.rows[0][0];
+				gui[1] = v.rows[1][0];
+				gui[2] = v.rows[2][0];
 				gui[3] = 0; // ignored
 
-				gui[4] = v.elements[0][1];
-				gui[5] = v.elements[1][1];
-				gui[6] = v.elements[2][1];
+				gui[4] = v.rows[0][1];
+				gui[5] = v.rows[1][1];
+				gui[6] = v.rows[2][1];
 				gui[7] = 0; // ignored
 
-				gui[8] = v.elements[0][2];
-				gui[9] = v.elements[1][2];
-				gui[10] = v.elements[2][2];
+				gui[8] = v.rows[0][2];
+				gui[9] = v.rows[1][2];
+				gui[10] = v.rows[2][2];
 				gui[11] = 0; // ignored
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			if (p_array_size > 0) {
 				const PackedFloat32Array &a = value;
@@ -638,19 +672,19 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				}
 			} else {
 				Transform3D v = value;
-				gui[0] = v.basis.elements[0][0];
-				gui[1] = v.basis.elements[1][0];
-				gui[2] = v.basis.elements[2][0];
+				gui[0] = v.basis.rows[0][0];
+				gui[1] = v.basis.rows[1][0];
+				gui[2] = v.basis.rows[2][0];
 				gui[3] = 0;
 
-				gui[4] = v.basis.elements[0][1];
-				gui[5] = v.basis.elements[1][1];
-				gui[6] = v.basis.elements[2][1];
+				gui[4] = v.basis.rows[0][1];
+				gui[5] = v.basis.rows[1][1];
+				gui[6] = v.basis.rows[2][1];
 				gui[7] = 0;
 
-				gui[8] = v.basis.elements[0][2];
-				gui[9] = v.basis.elements[1][2];
-				gui[10] = v.basis.elements[2][2];
+				gui[8] = v.basis.rows[0][2];
+				gui[9] = v.basis.rows[1][2];
+				gui[10] = v.basis.rows[2][2];
 				gui[11] = 0;
 
 				gui[12] = v.origin.x;
@@ -748,12 +782,12 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 			gui[0] = value[0].real;
 
 		} break;
 		case ShaderLanguage::TYPE_VEC2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 2; i++) {
 				gui[i] = value[i].real;
@@ -761,7 +795,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
 				gui[i] = value[i].real;
@@ -769,14 +803,14 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
 				gui[i] = value[i].real;
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			//in std140 members of mat2 are treated as vec4s
 			gui[0] = value[0].real;
@@ -789,7 +823,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			gui[7] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			gui[0] = value[0].real;
 			gui[1] = value[1].real;
@@ -805,7 +839,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			gui[11] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			float *gui = (float *)data;
+			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 16; i++) {
 				gui[i] = value[i].real;
@@ -921,7 +955,7 @@ void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::S
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if (E.value.type == ShaderLanguage::TYPE_VEC4 && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
 			} else {
@@ -1733,19 +1767,19 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 		case RS::GLOBAL_VAR_TYPE_MAT3: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
 			Basis v = p_value;
-			bv[0].x = v.elements[0][0];
-			bv[0].y = v.elements[1][0];
-			bv[0].z = v.elements[2][0];
+			bv[0].x = v.rows[0][0];
+			bv[0].y = v.rows[1][0];
+			bv[0].z = v.rows[2][0];
 			bv[0].w = 0;
 
-			bv[1].x = v.elements[0][1];
-			bv[1].y = v.elements[1][1];
-			bv[1].z = v.elements[2][1];
+			bv[1].x = v.rows[0][1];
+			bv[1].y = v.rows[1][1];
+			bv[1].z = v.rows[2][1];
 			bv[1].w = 0;
 
-			bv[2].x = v.elements[0][2];
-			bv[2].y = v.elements[1][2];
-			bv[2].z = v.elements[2][2];
+			bv[2].x = v.rows[0][2];
+			bv[2].y = v.rows[1][2];
+			bv[2].z = v.rows[2][2];
 			bv[2].w = 0;
 
 		} break;
@@ -1781,18 +1815,18 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
 			Transform2D v = p_value;
-			bv[0].x = v.elements[0][0];
-			bv[0].y = v.elements[0][1];
+			bv[0].x = v.columns[0][0];
+			bv[0].y = v.columns[0][1];
 			bv[0].z = 0;
 			bv[0].w = 0;
 
-			bv[1].x = v.elements[1][0];
-			bv[1].y = v.elements[1][1];
+			bv[1].x = v.columns[1][0];
+			bv[1].y = v.columns[1][1];
 			bv[1].z = 0;
 			bv[1].w = 0;
 
-			bv[2].x = v.elements[2][0];
-			bv[2].y = v.elements[2][1];
+			bv[2].x = v.columns[2][0];
+			bv[2].y = v.columns[2][1];
 			bv[2].z = 1;
 			bv[2].w = 0;
 
@@ -1800,19 +1834,19 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
 			Transform3D v = p_value;
-			bv[0].x = v.basis.elements[0][0];
-			bv[0].y = v.basis.elements[1][0];
-			bv[0].z = v.basis.elements[2][0];
+			bv[0].x = v.basis.rows[0][0];
+			bv[0].y = v.basis.rows[1][0];
+			bv[0].z = v.basis.rows[2][0];
 			bv[0].w = 0;
 
-			bv[1].x = v.basis.elements[0][1];
-			bv[1].y = v.basis.elements[1][1];
-			bv[1].z = v.basis.elements[2][1];
+			bv[1].x = v.basis.rows[0][1];
+			bv[1].y = v.basis.rows[1][1];
+			bv[1].z = v.basis.rows[2][1];
 			bv[1].w = 0;
 
-			bv[2].x = v.basis.elements[0][2];
-			bv[2].y = v.basis.elements[1][2];
-			bv[2].z = v.basis.elements[2][2];
+			bv[2].x = v.basis.rows[0][2];
+			bv[2].y = v.basis.rows[1][2];
+			bv[2].z = v.basis.rows[2][2];
 			bv[2].w = 0;
 
 			bv[3].x = v.origin.x;
@@ -1885,7 +1919,7 @@ void MaterialStorage::global_variable_remove(const StringName &p_name) {
 	if (!global_variables.variables.has(p_name)) {
 		return;
 	}
-	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+	const GlobalVariables::Variable &gv = global_variables.variables[p_name];
 
 	if (gv.buffer_index >= 0) {
 		global_variables.buffer_usage[gv.buffer_index].elements = 0;
@@ -2057,7 +2091,7 @@ void MaterialStorage::global_variables_load_settings(bool p_load_textures) {
 				}
 
 				String path = value;
-				RES resource = ResourceLoader::load(path);
+				Ref<Resource> resource = ResourceLoader::load(path);
 				ERR_CONTINUE(resource.is_null());
 				value = resource;
 			}
@@ -2110,7 +2144,7 @@ void MaterialStorage::global_variables_instance_update(RID p_instance, int p_ind
 	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
 
-	ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
+	const ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
 		ShaderLanguage::TYPE_MAX, //nil
 		ShaderLanguage::TYPE_BOOL, //bool
 		ShaderLanguage::TYPE_INT, //int

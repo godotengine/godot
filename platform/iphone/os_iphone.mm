@@ -204,12 +204,17 @@ void OSIPhone::finalize() {
 
 // MARK: Dynamic Libraries
 
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	if (p_path.length() == 0) {
 		p_library_handle = RTLD_SELF;
+
+		if (r_resolved_path != nullptr) {
+			*r_resolved_path = p_path;
+		}
+
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
+	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path, r_resolved_path);
 }
 
 Error OSIPhone::close_dynamic_library(void *p_library_handle) {
@@ -298,8 +303,12 @@ String OSIPhone::get_processor_name() const {
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
-	// iOS does not support duration for vibration
-	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	if (ios->supports_haptic_engine()) {
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+	} else {
+		// iOS <13 does not support duration for vibration
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	}
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

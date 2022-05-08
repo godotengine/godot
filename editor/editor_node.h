@@ -283,7 +283,7 @@ private:
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
-	int rendering_driver_current;
+	int rendering_driver_current = 0;
 	String rendering_driver_request;
 
 	// Split containers.
@@ -305,12 +305,12 @@ private:
 	PopupMenu *scene_tabs_context_menu = nullptr;
 	Panel *tab_preview_panel = nullptr;
 	TextureRect *tab_preview = nullptr;
-	int tab_closing_idx;
+	int tab_closing_idx = 0;
 
 	bool exiting = false;
 	bool dimmed = false;
 
-	int old_split_ofs;
+	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
@@ -323,6 +323,7 @@ private:
 	MenuButton *settings_menu = nullptr;
 	MenuButton *help_menu = nullptr;
 	PopupMenu *tool_menu = nullptr;
+	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
 	Button *prev_scene = nullptr;
 	Button *play_button = nullptr;
@@ -362,7 +363,7 @@ private:
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
 
-	int overridden_default_layout;
+	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
@@ -411,8 +412,8 @@ private:
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Timer *dock_drag_timer = nullptr;
 	bool docks_visible = true;
-	int dock_popup_selected_idx;
-	int dock_select_rect_over_idx;
+	int dock_popup_selected_idx = -1;
+	int dock_select_rect_over_idx = -1;
 
 	HBoxContainer *tabbar_container = nullptr;
 	Button *distraction_free = nullptr;
@@ -445,24 +446,24 @@ private:
 	bool unsaved_cache = true;
 	bool waiting_for_first_scan = true;
 
-	int current_menu_option;
+	int current_menu_option = 0;
 
 	SubViewport *scene_root = nullptr; // Root of the scene being edited.
 	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
 
-	uint64_t update_spinner_step_msec;
-	uint64_t update_spinner_step_frame;
-	int update_spinner_step;
+	uint64_t update_spinner_step_msec = 0;
+	uint64_t update_spinner_step_frame = 0;
+	int update_spinner_step = 0;
 
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
 	String run_custom_filename;
 
-	uint64_t saved_version;
-	uint64_t last_checked_version;
+	uint64_t saved_version = 1;
+	uint64_t last_checked_version = 0;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -477,6 +478,7 @@ private:
 	PrintHandlerList print_handler;
 
 	Map<String, Ref<Texture2D>> icon_type_cache;
+	Map<Ref<Script>, Ref<Texture>> script_icon_cache;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -502,8 +504,8 @@ private:
 	static void _file_access_close_error_notify(const String &p_str);
 
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
-	static void _resource_saved(RES p_resource, const String &p_path);
-	static void _resource_loaded(RES p_resource, const String &p_path);
+	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
+	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _build_icon_type_cache();
 
@@ -524,6 +526,7 @@ private:
 	void _save_screenshot(NodePath p_path);
 
 	void _tool_menu_option(int p_idx);
+	void _export_as_menu_option(int p_idx);
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
@@ -591,9 +594,9 @@ private:
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
-	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
-	bool _find_and_save_edited_subresources(Object *obj, Map<RES, bool> &processed, int32_t flags);
-	void _save_edited_subresources(Node *scene, Map<RES, bool> &processed, int32_t flags);
+	bool _find_and_save_resource(Ref<Resource> p_res, Map<Ref<Resource>, bool> &processed, int32_t flags);
+	bool _find_and_save_edited_subresources(Object *obj, Map<Ref<Resource>, bool> &processed, int32_t flags);
+	void _save_edited_subresources(Node *scene, Map<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
@@ -753,14 +756,14 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
-	void edit_item_resource(RES p_resource);
+	void edit_item_resource(Ref<Resource> p_resource);
 	bool item_has_editor(Object *p_object);
 	void hide_top_editors();
 
 	void select_editor_by_name(const String &p_name);
 
 	void open_request(const String &p_path);
-	void edit_foreign_resource(RES p_resource);
+	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_changing_scene() const;
 
@@ -793,7 +796,7 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
@@ -839,6 +842,8 @@ public:
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
 	void save_scene_list(Vector<String> p_scene_filenames);

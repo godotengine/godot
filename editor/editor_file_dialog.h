@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORFILEDIALOG_H
-#define EDITORFILEDIALOG_H
+#ifndef EDITOR_FILE_DIALOG_H
+#define EDITOR_FILE_DIALOG_H
 
 #include "core/io/dir_access.h"
 #include "editor/plugins/editor_preview_plugins.h"
@@ -88,11 +88,11 @@ private:
 	LineEdit *makedirname = nullptr;
 
 	Button *makedir = nullptr;
-	Access access;
+	Access access = ACCESS_RESOURCES;
 
 	VBoxContainer *vbox = nullptr;
-	FileMode mode;
-	bool can_create_dir;
+	FileMode mode = FILE_MODE_SAVE_FILE;
+	bool can_create_dir = false;
 	LineEdit *dir = nullptr;
 
 	Button *dir_prev = nullptr;
@@ -130,15 +130,15 @@ private:
 	ItemList *recent = nullptr;
 
 	Vector<String> local_history;
-	int local_history_pos;
+	int local_history_pos = 0;
 	void _push_history();
 
 	Vector<String> filters;
 
 	bool previews_enabled = true;
 	bool preview_waiting = false;
-	int preview_wheel_index;
-	float preview_wheel_timeout;
+	int preview_wheel_index = 0;
+	float preview_wheel_timeout = 0.0f;
 
 	static bool default_show_hidden_files;
 	static DisplayMode default_display_mode;
@@ -165,11 +165,11 @@ private:
 
 	void _item_selected(int p_item);
 	void _multi_selected(int p_item, bool p_selected);
-	void _items_clear_selection();
+	void _items_clear_selection(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _item_dc_selected(int p_item);
 
-	void _item_list_item_rmb_selected(int p_item, const Vector2 &p_pos);
-	void _item_list_rmb_clicked(const Vector2 &p_pos);
+	void _item_list_item_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);
@@ -257,4 +257,4 @@ VARIANT_ENUM_CAST(EditorFileDialog::FileMode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
 
-#endif // EDITORFILEDIALOG_H
+#endif // EDITOR_FILE_DIALOG_H

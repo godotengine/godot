@@ -114,8 +114,8 @@ void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 void GPUParticles2D::_update_particle_emission_transform() {
 	Transform2D xf2d = get_global_transform();
 	Transform3D xf;
-	xf.basis.set_axis(0, Vector3(xf2d.get_axis(0).x, xf2d.get_axis(0).y, 0));
-	xf.basis.set_axis(1, Vector3(xf2d.get_axis(1).x, xf2d.get_axis(1).y, 0));
+	xf.basis.set_column(0, Vector3(xf2d.columns[0].x, xf2d.columns[0].y, 0));
+	xf.basis.set_column(1, Vector3(xf2d.columns[1].x, xf2d.columns[1].y, 0));
 	xf.set_origin(Vector3(xf2d.get_origin().x, xf2d.get_origin().y, 0));
 
 	RS::get_singleton()->particles_set_emission_transform(particles, xf);
@@ -287,6 +287,15 @@ bool GPUParticles2D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
+void GPUParticles2D::set_interpolate(bool p_enable) {
+	interpolate = p_enable;
+	RS::get_singleton()->particles_set_interpolate(particles, p_enable);
+}
+
+bool GPUParticles2D::get_interpolate() const {
+	return interpolate;
+}
+
 TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
@@ -337,8 +346,8 @@ void GPUParticles2D::_validate_property(PropertyInfo &property) const {
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	Transform3D transform;
-	transform.basis.set_axis(0, Vector3(p_transform2d.get_axis(0).x, p_transform2d.get_axis(0).y, 0));
-	transform.basis.set_axis(1, Vector3(p_transform2d.get_axis(1).x, p_transform2d.get_axis(1).y, 0));
+	transform.basis.set_column(0, Vector3(p_transform2d.columns[0].x, p_transform2d.columns[0].y, 0));
+	transform.basis.set_column(1, Vector3(p_transform2d.columns[1].x, p_transform2d.columns[1].y, 0));
 	transform.set_origin(Vector3(p_transform2d.get_origin().x, p_transform2d.get_origin().y, 0));
 	Vector3 velocity = Vector3(p_velocity2d.x, p_velocity2d.y, 0);
 
@@ -543,6 +552,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &GPUParticles2D::set_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &GPUParticles2D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &GPUParticles2D::set_fractional_delta);
+	ClassDB::bind_method(D_METHOD("set_interpolate", "enable"), &GPUParticles2D::set_interpolate);
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles2D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
@@ -558,6 +568,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_local_coordinates"), &GPUParticles2D::get_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("get_fixed_fps"), &GPUParticles2D::get_fixed_fps);
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &GPUParticles2D::get_fractional_delta);
+	ClassDB::bind_method(D_METHOD("get_interpolate"), &GPUParticles2D::get_interpolate);
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles2D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles2D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles2D::get_collision_base_size);
@@ -601,6 +612,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
@@ -644,6 +656,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_lifetime(1);
 	set_fixed_fps(0);
 	set_fractional_delta(true);
+	set_interpolate(true);
 	set_pre_process_time(0);
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);
@@ -653,9 +666,6 @@ GPUParticles2D::GPUParticles2D() {
 	set_speed_scale(1);
 	set_fixed_fps(30);
 	set_collision_base_size(collision_base_size);
-#ifdef TOOLS_ENABLED
-	show_visibility_rect = false;
-#endif
 }
 
 GPUParticles2D::~GPUParticles2D() {

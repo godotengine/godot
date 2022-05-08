@@ -49,10 +49,10 @@ class NativeExtensionMethodBind : public MethodBind {
 	bool vararg;
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		return Variant::Type(get_argument_type_func(method_userdata, p_arg));
 	}
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		GDNativePropertyInfo pinfo;
 		get_argument_info_func(method_userdata, p_arg, &pinfo);
 		PropertyInfo ret;
@@ -66,13 +66,15 @@ protected:
 	}
 
 public:
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+#ifdef DEBUG_METHODS_ENABLED
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return GodotTypeInfo::Metadata(get_argument_metadata_func(method_userdata, p_arg));
 	}
+#endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
-		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
+		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 		GDNativeCallError ce{ GDNATIVE_CALL_OK, 0, 0 };
 		call_func(method_userdata, extension_instance, (const GDNativeVariantPtr *)p_args, p_arg_count, (GDNativeVariantPtr)&ret, &ce);
 		r_error.error = Callable::CallError::Error(ce.error);
@@ -80,16 +82,17 @@ public:
 		r_error.expected = ce.expected;
 		return ret;
 	}
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
 		ptrcall_func(method_userdata, extension_instance, (const GDNativeTypePtr *)p_args, (GDNativeTypePtr)r_ret);
 	}
 
-	virtual bool is_vararg() const {
+	virtual bool is_vararg() const override {
 		return false;
 	}
-	NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
+
+	explicit NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
 		method_userdata = p_method_info->method_userdata;
 		call_func = p_method_info->call_func;
 		ptrcall_func = p_method_info->ptrcall_func;
@@ -98,14 +101,24 @@ public:
 		get_argument_metadata_func = p_method_info->get_argument_metadata_func;
 		set_name(p_method_info->name);
 
-		vararg = p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_VARARG;
+		set_hint_flags(p_method_info->method_flags);
 
+		vararg = p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_VARARG;
 		_set_returns(p_method_info->has_return_value);
 		_set_const(p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_CONST);
+		_set_static(p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_STATIC);
 #ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(p_method_info->argument_count);
 #endif
 		set_argument_count(p_method_info->argument_count);
+
+		Vector<Variant> defargs;
+		defargs.resize(p_method_info->default_argument_count);
+		for (uint32_t i = 0; i < p_method_info->default_argument_count; i++) {
+			defargs.write[i] = *static_cast<Variant *>(p_method_info->default_arguments[i]);
+		}
+
+		set_default_arguments(defargs);
 	}
 };
 
@@ -259,8 +272,14 @@ void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLi
 	self->extension_classes.erase(class_name);
 }
 
+void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path) {
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+
+	*(String *)r_path = self->library_path;
+}
+
 Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true);
+	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
 		return err;
 	}
@@ -326,7 +345,6 @@ void NativeExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SERVERS);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SCENE);
-	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_DRIVER);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_EDITOR);
 }
 
@@ -352,9 +370,10 @@ void NativeExtension::initialize_native_extensions() {
 	gdnative_interface.classdb_register_extension_class_property_subgroup = _register_extension_class_property_subgroup;
 	gdnative_interface.classdb_register_extension_class_signal = _register_extension_class_signal;
 	gdnative_interface.classdb_unregister_extension_class = _unregister_extension_class;
+	gdnative_interface.get_library_path = _get_library_path;
 }
 
-RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
@@ -365,14 +384,14 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	if (!config->has_section_key("configuration", "entry_symbol")) {
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
@@ -404,7 +423,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	if (!library_path.is_resource_file()) {
@@ -421,7 +440,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		return Ref<Resource>();
 	}
 
 	return lib;

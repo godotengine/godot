@@ -1061,6 +1061,28 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				UndoRedo *undo_redo = &editor_data->get_undo_redo();
+				Node *node = e->get();
+				bool enabled = node->is_unique_name_in_owner();
+				if (!enabled && get_tree()->get_edited_scene_root()->get_node_or_null(UNIQUE_NODE_PREFIX + String(node->get_name())) != nullptr) {
+					accept->set_text(TTR("Another node already uses this unique name in the scene."));
+					accept->popup_centered();
+					return;
+				}
+				if (!enabled) {
+					undo_redo->create_action(TTR("Enable Scene Unique Name"));
+				} else {
+					undo_redo->create_action(TTR("Disable Scene Unique Name"));
+				}
+				undo_redo->add_do_method(node, "set_unique_name_in_owner", !enabled);
+				undo_redo->add_undo_method(node, "set_unique_name_in_owner", enabled);
+				undo_redo->commit_action();
+			}
+		} break;
 		case TOOL_CREATE_2D_SCENE:
 		case TOOL_CREATE_3D_SCENE:
 		case TOOL_CREATE_USER_INTERFACE:
@@ -1131,7 +1153,7 @@ void SceneTreeDock::_property_selected(int p_idx) {
 	property_drop_node = nullptr;
 }
 
-void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, RES p_res) {
+void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res) {
 	editor_data->get_undo_redo().create_action(vformat(TTR("Set %s"), p_property));
 	editor_data->get_undo_redo().add_do_property(p_node, p_property, p_res);
 	editor_data->get_undo_redo().add_undo_property(p_node, p_property, p_node->get(p_property));
@@ -1309,8 +1331,17 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
+				bool is_unique = p_node->is_unique_name_in_owner() && p_base->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;
+				if (is_unique) {
+					// Will create a unique name conflict. Disable before setting owner.
+					undo_redo->add_do_method(p_node, "set_unique_name_in_owner", false);
+				}
 				undo_redo->add_do_method(p_node, "set_owner", p_root);
 				undo_redo->add_undo_method(p_node, "set_owner", p_base);
+				if (is_unique) {
+					// Will create a unique name conflict. Enable after setting owner.
+					undo_redo->add_undo_method(p_node, "set_unique_name_in_owner", true);
+				}
 
 			} break;
 			case MODE_DO: {
@@ -2287,24 +2318,6 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 				continue;
 			}
 
-			if (E.name == "__meta__") {
-				Dictionary metadata = n->get(E.name);
-				if (metadata.has("_editor_description_")) {
-					newnode->set_meta("_editor_description_", metadata["_editor_description_"]);
-				}
-
-				if (Object::cast_to<CanvasItem>(newnode) || Object::cast_to<Node3D>(newnode)) {
-					if (metadata.has("_edit_group_") && metadata["_edit_group_"]) {
-						newnode->set_meta("_edit_group_", true);
-					}
-					if (metadata.has("_edit_lock_") && metadata["_edit_lock_"]) {
-						newnode->set_meta("_edit_lock_", true);
-					}
-				}
-
-				continue;
-			}
-
 			if (default_oldnode->get(E.name) != n->get(E.name)) {
 				newnode->set(E.name, n->get(E.name));
 			}
@@ -2774,9 +2787,17 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_separator();
 			menu->add_icon_shortcut(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		}
+
 		if (full_selection.size() == 1) {
 			menu->add_separator();
 			menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
+		}
+
+		if (selection[0]->get_owner() == EditorNode::get_singleton()->get_edited_scene()) {
+			// Only for nodes owned by the edited scene root.
+			menu->add_separator();
+			menu->add_icon_check_item(get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), TTR("Access as Scene Unique Name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
+			menu->set_item_checked(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), selection[0]->is_unique_name_in_owner());
 		}
 
 		bool is_external = (!selection[0]->get_scene_file_path().is_empty());
@@ -2960,7 +2981,7 @@ void SceneTreeDock::attach_shader_to_selected(int p_preferred_mode) {
 	shader_create_dialog->popup_centered();
 }
 
-void SceneTreeDock::open_shader_dialog(Ref<ShaderMaterial> &p_for_material, int p_preferred_mode) {
+void SceneTreeDock::open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode) {
 	selected_shader_material = p_for_material;
 	attach_shader_to_selected(p_preferred_mode);
 }
@@ -3017,14 +3038,14 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	ur.create_action(TTR("Paste Node(s)"));
 	ur.add_do_method(editor_selection, "clear");
 
-	Map<RES, RES> resource_remap;
+	Map<Ref<Resource>, Ref<Resource>> resource_remap;
 	String target_scene;
 	if (edited_scene) {
 		target_scene = edited_scene->get_scene_file_path();
 	}
 	if (target_scene != clipboard_source_scene) {
 		if (!clipboard_resource_remap.has(target_scene)) {
-			Map<RES, RES> remap;
+			Map<Ref<Resource>, Ref<Resource>> remap;
 			for (Node *E : node_clipboard) {
 				_create_remap_for_node(E, remap);
 			}
@@ -3220,7 +3241,7 @@ void SceneTreeDock::_clear_clipboard() {
 	clipboard_resource_remap.clear();
 }
 
-void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap) {
+void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -3234,7 +3255,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 
 		Variant v = p_node->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (!states_stack_ready) {
 					states_stack = PropertyUtils::get_node_states_stack(p_node);
@@ -3259,7 +3280,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 	}
 }
 
-void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap) {
+void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
 	r_remap[p_resource] = p_resource->duplicate();
 
 	List<PropertyInfo> props;
@@ -3272,7 +3293,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 
 		Variant v = p_resource->get(E.name);
 		if (v.is_ref_counted()) {
-			RES res = v;
+			Ref<Resource> res = v;
 			if (res.is_valid()) {
 				if (res->is_built_in() && !r_remap.has(res)) {
 					_create_remap_for_resource(res, r_remap);

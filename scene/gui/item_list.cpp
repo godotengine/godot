@@ -585,6 +585,9 @@ Size2 ItemList::Item::get_icon_size() const {
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+#define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
+#define IS_SAME_ROW(i, row) (i / current_columns == row)
+
 	double prev_scroll = scroll_bar->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -603,7 +606,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT)) && mb->is_pressed()) {
+	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
 		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
@@ -628,7 +631,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (closest != -1) {
+		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_pressed()) {
@@ -642,55 +645,47 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					SWAP(from, to);
 				}
 				for (int j = from; j <= to; j++) {
+					if (!CAN_SELECT(j)) {
+						continue;
+					}
 					bool selected = !items[j].selected;
 					select(j, false);
 					if (selected) {
 						emit_signal(SNAME("multi_selected"), j, true);
 					}
 				}
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::RIGHT) {
-					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-				}
 			} else {
 				if (!mb->is_double_click() && !mb->is_command_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MouseButton::LEFT) {
 					defer_select_single = i;
 					return;
 				}
 
-				if (items[i].selected && mb->get_button_index() == MouseButton::RIGHT) {
-					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-				} else {
-					bool selected = items[i].selected;
-
+				if (!items[i].selected || allow_reselect) {
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
 
-					if (!selected || allow_reselect) {
-						if (select_mode == SELECT_SINGLE) {
-							emit_signal(SNAME("item_selected"), i);
-						} else {
-							emit_signal(SNAME("multi_selected"), i, true);
-						}
+					if (select_mode == SELECT_SINGLE) {
+						emit_signal(SNAME("item_selected"), i);
+					} else {
+						emit_signal(SNAME("multi_selected"), i, true);
 					}
+				}
 
-					if (mb->get_button_index() == MouseButton::RIGHT) {
-						emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_double_click()) {
-						emit_signal(SNAME("item_activated"), i);
-					}
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+
+				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+					emit_signal(SNAME("item_activated"), i);
 				}
 			}
 
 			return;
+		} else if (closest != -1) {
+			emit_signal(SNAME("item_clicked"), closest, get_local_mouse_position(), mb->get_button_index());
+		} else {
+			// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
+			emit_signal(SNAME("empty_clicked"), get_local_mouse_position(), mb->get_button_index());
 		}
-		if (mb->get_button_index() == MouseButton::RIGHT) {
-			emit_signal(SNAME("rmb_clicked"), mb->get_position());
-
-			return;
-		}
-
-		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
-		emit_signal(SNAME("nothing_selected"));
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
@@ -707,7 +702,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
-						if (items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -723,7 +718,15 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (current >= current_columns) {
-				set_current(current - current_columns);
+				int next = current - current_columns;
+				while (next >= 0 && !CAN_SELECT(next)) {
+					next = next - current_columns;
+				}
+				if (next < 0) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -737,7 +740,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
-						if (items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -752,7 +755,15 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (current < items.size() - current_columns) {
-				set_current(current + current_columns);
+				int next = current + current_columns;
+				while (next < items.size() && !CAN_SELECT(next)) {
+					next = next + current_columns;
+				}
+				if (next >= items.size()) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -763,7 +774,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current - current_columns * i >= 0) {
+				if (current - current_columns * i >= 0 && CAN_SELECT(current - current_columns * i)) {
 					set_current(current - current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -777,7 +788,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current + current_columns * i < items.size()) {
+				if (current + current_columns * i < items.size() && CAN_SELECT(current + current_columns * i)) {
 					set_current(current + current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -792,7 +803,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
-				set_current(current - 1);
+				int current_row = current / current_columns;
+				int next = current - 1;
+				while (!CAN_SELECT(next)) {
+					next = next - 1;
+				}
+				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -803,7 +823,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
-				set_current(current + 1);
+				int current_row = current / current_columns;
+				int next = current + 1;
+				while (!CAN_SELECT(next)) {
+					next = next + 1;
+				}
+				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -879,6 +908,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	if (scroll_bar->get_value() != prev_scroll) {
 		accept_event(); //accept event if scroll changed
 	}
+
+#undef CAN_SELECT
+#undef IS_SAME_ROW
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -937,8 +969,8 @@ void ItemList::_notification(int p_what) {
 
 			draw_style_box(bg, Rect2(Point2(), size));
 
-			int hseparation = get_theme_constant(SNAME("hseparation"));
-			int vseparation = get_theme_constant(SNAME("vseparation"));
+			int hseparation = get_theme_constant(SNAME("h_separation"));
+			int vseparation = get_theme_constant(SNAME("v_separation"));
 			int icon_margin = get_theme_constant(SNAME("icon_margin"));
 			int line_separation = get_theme_constant(SNAME("line_separation"));
 			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
@@ -1744,11 +1776,10 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECT_MULTI);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
+	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
-	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers

@@ -96,7 +96,11 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p
 	parameters.max_collisions = p_max_collisions;
 
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(parameters, result, p_test_only)) {
+
+	bool collided = move_and_collide(parameters, result, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && result.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -987,7 +991,7 @@ TypedArray<String> RigidDynamicBody3D::get_configuration_warnings() const {
 
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05) {
+	if (ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidDynamicBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
@@ -1561,8 +1565,8 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	}
 }
 
-void CharacterBody3D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) {
-	if (collision_state.floor || !was_on_floor || vel_dir_facing_up) {
+void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up) {
+	if (collision_state.floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return;
 	}
 
@@ -1596,8 +1600,8 @@ void CharacterBody3D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 	}
 }
 
-bool CharacterBody3D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
-	if (up_direction == Vector3() || collision_state.floor || !was_on_floor || vel_dir_facing_up) {
+bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up) {
+	if (up_direction == Vector3() || collision_state.floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return false;
 	}
 

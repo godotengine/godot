@@ -1211,8 +1211,8 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 	append(p_function_name);
 }
 
-void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures) {
-	append(GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
+void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) {
+	append(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
 	for (int i = 0; i < p_captures.size(); i++) {
 		append(p_captures[i]);
 	}

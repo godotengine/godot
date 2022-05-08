@@ -44,8 +44,8 @@ void FlowContainer::_resort() {
 		return;
 	}
 
-	int separation_horizontal = get_theme_constant(SNAME("hseparation"));
-	int separation_vertical = get_theme_constant(SNAME("vseparation"));
+	int separation_horizontal = get_theme_constant(SNAME("h_separation"));
+	int separation_vertical = get_theme_constant(SNAME("v_separation"));
 
 	bool rtl = is_layout_rtl();
 

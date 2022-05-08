@@ -124,7 +124,7 @@ protected:
 	void _remote_object_requested(ObjectID p_id, int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
-	void _clear_execution(REF p_script) {
+	void _clear_execution(Ref<RefCounted> p_script) {
 		emit_signal(SNAME("clear_execution"), p_script);
 	}
 

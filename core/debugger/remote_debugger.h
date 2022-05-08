@@ -108,7 +108,7 @@ public:
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
-	RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
+	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
 	~RemoteDebugger();
 };
 

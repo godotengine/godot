@@ -270,8 +270,8 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		switch (it->type) {
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				int hseparation = get_theme_constant(SNAME("table_hseparation"));
-				int vseparation = get_theme_constant(SNAME("table_vseparation"));
+				int hseparation = get_theme_constant(SNAME("table_h_separation"));
+				int vseparation = get_theme_constant(SNAME("table_v_separation"));
 				int col_count = table->columns.size();
 
 				for (int i = 0; i < col_count; i++) {
@@ -518,8 +518,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				int hseparation = get_theme_constant(SNAME("table_hseparation"));
-				int vseparation = get_theme_constant(SNAME("table_vseparation"));
+				int hseparation = get_theme_constant(SNAME("table_h_separation"));
+				int vseparation = get_theme_constant(SNAME("table_v_separation"));
 				int col_count = table->columns.size();
 				int t_char_count = 0;
 				// Set minimums to zero.
@@ -853,7 +853,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Color odd_row_bg = get_theme_color(SNAME("table_odd_row_bg"));
 						Color even_row_bg = get_theme_color(SNAME("table_even_row_bg"));
 						Color border = get_theme_color(SNAME("table_border"));
-						int hseparation = get_theme_constant(SNAME("table_hseparation"));
+						int hseparation = get_theme_constant(SNAME("table_h_separation"));
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
 
@@ -1390,8 +1390,8 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 					switch (it->type) {
 						case ITEM_TABLE: {
-							int hseparation = get_theme_constant(SNAME("table_hseparation"));
-							int vseparation = get_theme_constant(SNAME("table_vseparation"));
+							int hseparation = get_theme_constant(SNAME("table_h_separation"));
+							int vseparation = get_theme_constant(SNAME("table_v_separation"));
 
 							ItemTable *table = static_cast<ItemTable *>(it);
 
@@ -1449,7 +1449,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)) - p_frame->padding.position, TS->shaped_text_get_size(rid) + p_frame->padding.position + p_frame->padding.size);
 		if (p_table) {
-			rect.size.y += get_theme_constant(SNAME("table_vseparation"));
+			rect.size.y += get_theme_constant(SNAME("table_v_separation"));
 		}
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
@@ -2248,7 +2248,7 @@ TextServer::Direction RichTextLabel::_find_direction(Item *p_item) {
 	}
 }
 
-Control::StructuredTextParser RichTextLabel::_find_stt(Item *p_item) {
+TextServer::StructuredTextParser RichTextLabel::_find_stt(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
@@ -2838,7 +2838,7 @@ void RichTextLabel::push_strikethrough() {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, Control::StructuredTextParser p_st_parser) {
+void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser) {
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 
 	ItemParagraph *item = memnew(ItemParagraph);
@@ -3463,7 +3463,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
-			Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+			TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
@@ -3489,19 +3489,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						lang = subtag_a[1];
 					} else if (subtag_a[0] == "st" || subtag_a[0] == "bidi_override") {
 						if (subtag_a[1] == "d" || subtag_a[1] == "default") {
-							st_parser = STRUCTURED_TEXT_DEFAULT;
+							st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 						} else if (subtag_a[1] == "u" || subtag_a[1] == "uri") {
-							st_parser = STRUCTURED_TEXT_URI;
+							st_parser = TextServer::STRUCTURED_TEXT_URI;
 						} else if (subtag_a[1] == "f" || subtag_a[1] == "file") {
-							st_parser = STRUCTURED_TEXT_FILE;
+							st_parser = TextServer::STRUCTURED_TEXT_FILE;
 						} else if (subtag_a[1] == "e" || subtag_a[1] == "email") {
-							st_parser = STRUCTURED_TEXT_EMAIL;
+							st_parser = TextServer::STRUCTURED_TEXT_EMAIL;
 						} else if (subtag_a[1] == "l" || subtag_a[1] == "list") {
-							st_parser = STRUCTURED_TEXT_LIST;
+							st_parser = TextServer::STRUCTURED_TEXT_LIST;
 						} else if (subtag_a[1] == "n" || subtag_a[1] == "none") {
-							st_parser = STRUCTURED_TEXT_NONE;
+							st_parser = TextServer::STRUCTURED_TEXT_NONE;
 						} else if (subtag_a[1] == "c" || subtag_a[1] == "custom") {
-							st_parser = STRUCTURED_TEXT_CUSTOM;
+							st_parser = TextServer::STRUCTURED_TEXT_CUSTOM;
 						}
 					}
 				}
@@ -4376,7 +4376,7 @@ void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) 
 	}
 }
 
-void RichTextLabel::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void RichTextLabel::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		main->first_invalid_line = 0; //invalidate ALL
@@ -4385,7 +4385,7 @@ void RichTextLabel::set_structured_text_bidi_override(Control::StructuredTextPar
 	}
 }
 
-Control::StructuredTextParser RichTextLabel::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser RichTextLabel::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 
@@ -4520,7 +4520,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_outline_size", "outline_size"), &RichTextLabel::push_outline_size);
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
-	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(STRUCTURED_TEXT_DEFAULT));
+	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize"), &RichTextLabel::push_list);
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);

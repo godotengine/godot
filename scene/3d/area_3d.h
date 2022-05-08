@@ -49,7 +49,7 @@ public:
 private:
 	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
-	real_t gravity;
+	real_t gravity = 0.0;
 	bool gravity_is_point = false;
 	real_t gravity_distance_scale = 0.0;
 
@@ -228,4 +228,4 @@ public:
 
 VARIANT_ENUM_CAST(Area3D::SpaceOverride);
 
-#endif // AREA__H
+#endif // AREA_3D_H

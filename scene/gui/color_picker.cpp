@@ -436,7 +436,7 @@ ColorPicker::PickerShapeType ColorPicker::get_picker_shape() const {
 }
 
 inline int ColorPicker::_get_preset_size() {
-	return (int(get_minimum_size().width) - (preset_container->get_theme_constant(SNAME("hseparation")) * (preset_column_count - 1))) / preset_column_count;
+	return (int(get_minimum_size().width) - (preset_container->get_theme_constant(SNAME("h_separation")) * (preset_column_count - 1))) / preset_column_count;
 }
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {

@@ -202,7 +202,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -228,6 +228,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (cookie) {
 		remove_dll_directory(cookie);
+	}
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
 	}
 
 	return OK;
@@ -513,6 +517,25 @@ int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
+}
+
 Error OS_Windows::set_cwd(const String &p_cwd) {
 	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0) {
 		return ERR_CANT_OPEN;
@@ -684,6 +707,58 @@ void OS_Windows::run() {
 
 MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
+}
+
+uint64_t OS_Windows::get_embedded_pck_offset() const {
+	Ref<FileAccess> f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+
+	// Process header.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return 0;
+		}
+	}
+
+	int num_sections;
+	{
+		int64_t header_pos = f->get_position();
+
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(f->get_position() + 2 + opt_header_size);
+	}
+	int64_t section_table_pos = f->get_position();
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (strcmp((char *)section_name, "pck") == 0) {
+			f->seek(section_header_pos + 20);
+			off = f->get_32();
+			break;
+		}
+	}
+
+	return off;
 }
 
 String OS_Windows::get_config_path() const {

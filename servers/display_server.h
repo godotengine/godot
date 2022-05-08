@@ -80,7 +80,7 @@ private:
 	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
@@ -121,6 +121,7 @@ public:
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
+		FEATURE_TEXT_TO_SPEECH,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -172,6 +173,40 @@ public:
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
 
+	struct TTSUtterance {
+		String text;
+		String voice;
+		int volume = 50;
+		float pitch = 1.f;
+		float rate = 1.f;
+		int id = 0;
+	};
+
+	enum TTSUtteranceEvent {
+		TTS_UTTERANCE_STARTED,
+		TTS_UTTERANCE_ENDED,
+		TTS_UTTERANCE_CANCELED,
+		TTS_UTTERANCE_BOUNDARY,
+		TTS_UTTERANCE_MAX,
+	};
+
+private:
+	Callable utterance_callback[TTS_UTTERANCE_MAX];
+
+public:
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
+
+	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
+	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
@@ -192,6 +227,9 @@ public:
 	virtual bool clipboard_has() const;
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
+
+	virtual Array get_display_cutouts() const { return Array(); }
+	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
 		SCREEN_OF_MAIN_WINDOW = -1
@@ -372,7 +410,7 @@ public:
 	};
 	virtual void cursor_set_shape(CursorShape p_shape);
 	virtual CursorShape cursor_get_shape() const;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	virtual bool get_swap_cancel_ok();
 
@@ -431,5 +469,6 @@ VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
+VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 
 #endif // DISPLAY_SERVER_H

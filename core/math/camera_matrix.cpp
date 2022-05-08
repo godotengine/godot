@@ -714,17 +714,17 @@ CameraMatrix::operator Transform3D() const {
 	Transform3D tr;
 	const real_t *m = &matrix[0][0];
 
-	tr.basis.elements[0][0] = m[0];
-	tr.basis.elements[1][0] = m[1];
-	tr.basis.elements[2][0] = m[2];
+	tr.basis.rows[0][0] = m[0];
+	tr.basis.rows[1][0] = m[1];
+	tr.basis.rows[2][0] = m[2];
 
-	tr.basis.elements[0][1] = m[4];
-	tr.basis.elements[1][1] = m[5];
-	tr.basis.elements[2][1] = m[6];
+	tr.basis.rows[0][1] = m[4];
+	tr.basis.rows[1][1] = m[5];
+	tr.basis.rows[2][1] = m[6];
 
-	tr.basis.elements[0][2] = m[8];
-	tr.basis.elements[1][2] = m[9];
-	tr.basis.elements[2][2] = m[10];
+	tr.basis.rows[0][2] = m[8];
+	tr.basis.rows[1][2] = m[9];
+	tr.basis.rows[2][2] = m[10];
 
 	tr.origin.x = m[12];
 	tr.origin.y = m[13];
@@ -737,17 +737,17 @@ CameraMatrix::CameraMatrix(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
 	real_t *m = &matrix[0][0];
 
-	m[0] = tr.basis.elements[0][0];
-	m[1] = tr.basis.elements[1][0];
-	m[2] = tr.basis.elements[2][0];
+	m[0] = tr.basis.rows[0][0];
+	m[1] = tr.basis.rows[1][0];
+	m[2] = tr.basis.rows[2][0];
 	m[3] = 0.0;
-	m[4] = tr.basis.elements[0][1];
-	m[5] = tr.basis.elements[1][1];
-	m[6] = tr.basis.elements[2][1];
+	m[4] = tr.basis.rows[0][1];
+	m[5] = tr.basis.rows[1][1];
+	m[6] = tr.basis.rows[2][1];
 	m[7] = 0.0;
-	m[8] = tr.basis.elements[0][2];
-	m[9] = tr.basis.elements[1][2];
-	m[10] = tr.basis.elements[2][2];
+	m[8] = tr.basis.rows[0][2];
+	m[9] = tr.basis.rows[1][2];
+	m[10] = tr.basis.rows[2][2];
 	m[11] = 0.0;
 	m[12] = tr.origin.x;
 	m[13] = tr.origin.y;

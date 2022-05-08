@@ -233,48 +233,48 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform vec3 gravity;\n";
 
 	if (color_ramp.is_valid()) {
-		code += "uniform sampler2D color_ramp;\n";
+		code += "uniform sampler2D color_ramp : repeat_disable;\n";
 	}
 
 	if (color_initial_ramp.is_valid()) {
-		code += "uniform sampler2D color_initial_ramp;\n";
+		code += "uniform sampler2D color_initial_ramp : repeat_disable;\n";
 	}
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-		code += "uniform sampler2D linear_velocity_texture;\n";
+		code += "uniform sampler2D linear_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-		code += "uniform sampler2D orbit_velocity_texture;\n";
+		code += "uniform sampler2D orbit_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "uniform sampler2D angular_velocity_texture;\n";
+		code += "uniform sampler2D angular_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
-		code += "uniform sampler2D linear_accel_texture;\n";
+		code += "uniform sampler2D linear_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
-		code += "uniform sampler2D radial_accel_texture;\n";
+		code += "uniform sampler2D radial_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
-		code += "uniform sampler2D tangent_accel_texture;\n";
+		code += "uniform sampler2D tangent_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_DAMPING].is_valid()) {
-		code += "uniform sampler2D damping_texture;\n";
+		code += "uniform sampler2D damping_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANGLE].is_valid()) {
-		code += "uniform sampler2D angle_texture;\n";
+		code += "uniform sampler2D angle_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_SCALE].is_valid()) {
-		code += "uniform sampler2D scale_texture;\n";
+		code += "uniform sampler2D scale_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_HUE_VARIATION].is_valid()) {
-		code += "uniform sampler2D hue_variation_texture;\n";
+		code += "uniform sampler2D hue_variation_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANIM_SPEED].is_valid()) {
-		code += "uniform sampler2D anim_speed_texture;\n";
+		code += "uniform sampler2D anim_speed_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
-		code += "uniform sampler2D anim_offset_texture;\n";
+		code += "uniform sampler2D anim_offset_texture : repeat_disable;\n";
 	}
 
 	if (collision_enabled) {

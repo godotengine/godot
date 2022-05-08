@@ -60,7 +60,7 @@ struct LocalDebugger::ScriptsProfiler {
 		}
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
 		_print_frame_data(false);
 	}
@@ -372,8 +372,8 @@ LocalDebugger::LocalDebugger() {
 				static_cast<ScriptsProfiler *>(p_user)->toggle(p_enable, p_opts);
 			},
 			nullptr,
-			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-				static_cast<ScriptsProfiler *>(p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+			[](void *p_user, double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
+				static_cast<ScriptsProfiler *>(p_user)->tick(p_frame_time, p_process_time, p_physics_time, p_physics_frame_time);
 			});
 	register_profiler("scripts", scr_prof);
 }

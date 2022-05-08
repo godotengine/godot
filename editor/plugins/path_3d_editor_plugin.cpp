@@ -102,7 +102,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 
 	// Setting curve point positions
 	if (!p_secondary) {
-		const Plane p = Plane(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
+		const Plane p = Plane(p_camera->get_transform().basis.get_column(2), gt.xform(original));
 
 		Vector3 inters;
 
@@ -126,7 +126,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 
 	Vector3 base = c->get_point_position(idx);
 
-	Plane p(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
+	Plane p(p_camera->get_transform().basis.get_column(2), gt.xform(original));
 
 	Vector3 inters;
 
@@ -320,14 +320,14 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
-			int idx = 0;
 			int rc = v3a.size();
 			int closest_seg = -1;
 			Vector3 closest_seg_point;
-			float closest_d = 1e20;
 
 			if (rc >= 2) {
+				int idx = 0;
 				const Vector3 *r = v3a.ptr();
+				float closest_d = 1e20;
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
@@ -396,7 +396,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				} else {
 					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(p_camera->get_transform().basis.get_axis(2), origin);
+				Plane p(p_camera->get_transform().basis.get_column(2), origin);
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
 

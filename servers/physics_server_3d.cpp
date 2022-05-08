@@ -262,7 +262,7 @@ void PhysicsPointQueryParameters3D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape_ref) {
+void PhysicsShapeQueryParameters3D::set_shape(const Ref<Resource> &p_shape_ref) {
 	ERR_FAIL_COND(p_shape_ref.is_null());
 	shape_ref = p_shape_ref;
 	parameters.shape_rid = p_shape_ref->get_rid();
@@ -270,7 +270,7 @@ void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape_ref) {
 
 void PhysicsShapeQueryParameters3D::set_shape_rid(const RID &p_shape) {
 	if (parameters.shape_rid != p_shape) {
-		shape_ref = RES();
+		shape_ref = Ref<Resource>();
 		parameters.shape_rid = p_shape;
 	}
 }

@@ -66,7 +66,7 @@ private:
 	Control *monitor_draw = nullptr;
 	Label *info_message = nullptr;
 	StringName marker_key;
-	int marker_frame;
+	int marker_frame = 0;
 	const int MARGIN = 4;
 	const int POINT_SEPARATION = 5;
 	const int MARKER_MARGIN = 2;

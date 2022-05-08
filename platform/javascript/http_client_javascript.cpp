@@ -76,7 +76,7 @@ void HTTPClientJavaScript::set_connection(const Ref<StreamPeer> &p_connection) {
 }
 
 Ref<StreamPeer> HTTPClientJavaScript::get_connection() const {
-	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClientJavaScript's StreamPeer is not supported for the HTML5 platform.");
+	ERR_FAIL_V_MSG(Ref<RefCounted>(), "Accessing an HTTPClientJavaScript's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Error HTTPClientJavaScript::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len) {

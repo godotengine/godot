@@ -125,7 +125,7 @@ private:
 	VScrollBar *v_scroll = nullptr;
 
 	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical;
+	float port_grab_distance_vertical = 0.0;
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
@@ -142,7 +142,7 @@ private:
 	bool connecting_target = false;
 	Vector2 connecting_to;
 	String connecting_target_to;
-	int connecting_target_index;
+	int connecting_target_index = 0;
 	bool just_disconnected = false;
 	bool connecting_valid = false;
 	Vector2 click_pos;
@@ -155,8 +155,9 @@ private:
 
 	float zoom = 1.0;
 	float zoom_step = 1.2;
-	float zoom_min;
-	float zoom_max;
+	// Proper values set in constructor.
+	float zoom_min = 0.0;
+	float zoom_max = 0.0;
 
 	void _zoom_minus();
 	void _zoom_reset();
@@ -206,7 +207,7 @@ private:
 
 	Array _get_connection_list() const;
 
-	bool lines_on_bg;
+	bool lines_on_bg = false;
 
 	struct ConnType {
 		union {

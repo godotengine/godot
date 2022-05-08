@@ -78,11 +78,11 @@ private:
 
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
-	VkInstance vulkan_instance;
-	VkPhysicalDevice vulkan_physical_device;
-	VkDevice vulkan_device;
-	uint32_t vulkan_queue_family_index;
-	uint32_t vulkan_queue_index;
+	VkInstance vulkan_instance = nullptr;
+	VkPhysicalDevice vulkan_physical_device = nullptr;
+	VkDevice vulkan_device = nullptr;
+	uint32_t vulkan_queue_family_index = 0;
+	uint32_t vulkan_queue_index = 0;
 
 	XrResult xrGetVulkanGraphicsRequirements2KHR(XrInstance p_instance, XrSystemId p_system_id, XrGraphicsRequirementsVulkanKHR *p_graphics_requirements);
 	XrResult xrCreateVulkanInstanceKHR(XrInstance p_instance, const XrVulkanInstanceCreateInfoKHR *p_create_info, VkInstance *r_vulkan_instance, VkResult *r_vulkan_result);

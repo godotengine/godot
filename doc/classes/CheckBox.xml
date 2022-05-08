@@ -35,10 +35,10 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The [CheckBox] text's font color when it's pressed.
 		</theme_item>
-		<theme_item name="check_vadjust" data_type="constant" type="int" default="0">
+		<theme_item name="check_v_adjust" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The separation between the check icon and the text (in pixels).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

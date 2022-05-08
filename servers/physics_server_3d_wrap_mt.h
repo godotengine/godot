@@ -43,7 +43,7 @@
 #endif
 
 class PhysicsServer3DWrapMT : public PhysicsServer3D {
-	mutable PhysicsServer3D *physics_3d_server;
+	mutable PhysicsServer3D *physics_server_3d;
 
 	mutable CommandQueueMT command_queue;
 
@@ -70,7 +70,7 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 public:
 #define ServerName PhysicsServer3D
 #define ServerNameWrapMT PhysicsServer3DWrapMT
-#define server_name physics_3d_server
+#define server_name physics_server_3d
 #define WRITE_ACTION
 
 #include "servers/server_wrap_mt_common.h"
@@ -100,7 +100,7 @@ public:
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform &p_xform_A, const Vector3 &p_motion_A, RID p_shape_B, const Transform &p_xform_B, const Vector3 &p_motion_B, Vector3 *r_results, int p_result_max, int &r_result_count) {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
+		return physics_server_3d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
 #endif
 	/* SPACE API */
@@ -115,18 +115,18 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
-		return physics_3d_server->space_get_direct_state(p_space);
+		return physics_server_3d->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector3>());
-		return physics_3d_server->space_get_contacts(p_space);
+		return physics_server_3d->space_get_contacts(p_space);
 	}
 
 	virtual int space_get_contact_count(RID p_space) const override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
-		return physics_3d_server->space_get_contact_count(p_space);
+		return physics_server_3d->space_get_contact_count(p_space);
 	}
 
 	/* AREA API */
@@ -256,13 +256,13 @@ public:
 
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_motion(p_body, p_parameters, r_result);
+		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
-		return physics_3d_server->body_get_direct_state(p_body);
+		return physics_server_3d->body_get_direct_state(p_body);
 	}
 
 	/* SOFT BODY API */
@@ -385,11 +385,11 @@ public:
 	virtual void finish() override;
 
 	virtual bool is_flushing_queries() const override {
-		return physics_3d_server->is_flushing_queries();
+		return physics_server_3d->is_flushing_queries();
 	}
 
 	int get_process_info(ProcessInfo p_info) override {
-		return physics_3d_server->get_process_info(p_info);
+		return physics_server_3d->get_process_info(p_info);
 	}
 
 	PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread);

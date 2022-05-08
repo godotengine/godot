@@ -610,8 +610,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// Theming.
-	tile_data_editors_tree->add_theme_constant_override("vseparation", 1);
-	tile_data_editors_tree->add_theme_constant_override("hseparation", 3);
+	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
+	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
 	Color group_color = get_theme_color(SNAME("prop_category"), SNAME("Editor"));
 
@@ -1695,8 +1695,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				Size2 zoomed_size = resize_handle->get_size() / tile_atlas_view->get_zoom();
 				Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
 				Rect2 rect = region.grow_individual(zoomed_size.x, zoomed_size.y, 0, 0);
-				Vector2i coords[] = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1) };
-				Vector2i directions[] = { Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0) };
+				const Vector2i coords[] = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1) };
+				const Vector2i directions[] = { Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0) };
 				bool can_grow[4];
 				for (int i = 0; i < 4; i++) {
 					can_grow[i] = tile_set_atlas_source->has_room_for_tile(selected.tile + directions[i], tile_set_atlas_source->get_tile_size_in_atlas(selected.tile), tile_set_atlas_source->get_tile_animation_columns(selected.tile), tile_set_atlas_source->get_tile_animation_separation(selected.tile), tile_set_atlas_source->get_tile_animation_frames_count(selected.tile), selected.tile);

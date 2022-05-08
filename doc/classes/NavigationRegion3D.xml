@@ -12,8 +12,15 @@
 	<methods>
 		<method name="bake_navigation_mesh">
 			<return type="void" />
+			<argument index="0" name="on_thread" type="bool" default="true" />
 			<description>
-				Bakes the [NavigationMesh]. The baking is done in a separate thread because navigation baking is not a cheap operation. This can be done at runtime. When it is completed, it automatically sets the new [NavigationMesh].
+				Bakes the [NavigationMesh]. If [code]on_thread[/code] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization.
+			</description>
+		</method>
+		<method name="get_region_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer3D]. Combined with [method NavigationServer3D.map_get_closest_point_owner] can be used to identify the [NavigationRegion3D] closest to a point on the merged navigation map.
 			</description>
 		</method>
 	</methods>

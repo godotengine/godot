@@ -174,9 +174,9 @@ private:
 	Vector<Color> emission_colors;
 	int emission_point_count = 0;
 	Vector3 emission_ring_axis;
-	real_t emission_ring_height;
-	real_t emission_ring_radius;
-	real_t emission_ring_inner_radius;
+	real_t emission_ring_height = 0.0;
+	real_t emission_ring_radius = 0.0;
+	real_t emission_ring_inner_radius = 0.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;

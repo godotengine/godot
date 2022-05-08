@@ -265,6 +265,10 @@ RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() con
 	return RSG::storage->get_video_adapter_type();
 }
 
+String RenderingServerDefault::get_video_adapter_api_version() const {
+	return RSG::storage->get_video_adapter_api_version();
+}
+
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
 	RSG::storage->capturing_timestamps = p_enable;
 }

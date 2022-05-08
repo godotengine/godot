@@ -108,7 +108,7 @@ public:
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
@@ -132,6 +132,7 @@ public:
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
+	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
@@ -143,6 +144,8 @@ public:
 
 	virtual int get_processor_count() const override;
 	virtual String get_processor_name() const override;
+
+	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

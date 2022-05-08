@@ -111,54 +111,62 @@ static void _editor_init() {
 
 #endif // TOOLS_ENABLED
 
-void register_gdscript_types() {
-	GDREGISTER_CLASS(GDScript);
+void initialize_gdscript_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		GDREGISTER_CLASS(GDScript);
 
-	script_language_gd = memnew(GDScriptLanguage);
-	ScriptServer::register_language(script_language_gd);
+		script_language_gd = memnew(GDScriptLanguage);
+		ScriptServer::register_language(script_language_gd);
 
-	resource_loader_gd.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_gd);
+		resource_loader_gd.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_gd);
 
-	resource_saver_gd.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_gd);
+		resource_saver_gd.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
-	gdscript_cache = memnew(GDScriptCache);
+		gdscript_cache = memnew(GDScriptCache);
+
+		GDScriptUtilityFunctions::register_functions();
+	}
 
 #ifdef TOOLS_ENABLED
-	EditorNode::add_init_callback(_editor_init);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		EditorNode::add_init_callback(_editor_init);
 
-	gdscript_translation_parser_plugin.instantiate();
-	EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		gdscript_translation_parser_plugin.instantiate();
+		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+	}
 #endif // TOOLS_ENABLED
-
-	GDScriptUtilityFunctions::register_functions();
 }
 
-void unregister_gdscript_types() {
-	ScriptServer::unregister_language(script_language_gd);
+void uninitialize_gdscript_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		ScriptServer::unregister_language(script_language_gd);
 
-	if (gdscript_cache) {
-		memdelete(gdscript_cache);
+		if (gdscript_cache) {
+			memdelete(gdscript_cache);
+		}
+
+		if (script_language_gd) {
+			memdelete(script_language_gd);
+		}
+
+		ResourceLoader::remove_resource_format_loader(resource_loader_gd);
+		resource_loader_gd.unref();
+
+		ResourceSaver::remove_resource_format_saver(resource_saver_gd);
+		resource_saver_gd.unref();
+
+		GDScriptParser::cleanup();
+		GDScriptUtilityFunctions::unregister_functions();
 	}
-
-	if (script_language_gd) {
-		memdelete(script_language_gd);
-	}
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_gd);
-	resource_loader_gd.unref();
-
-	ResourceSaver::remove_resource_format_saver(resource_saver_gd);
-	resource_saver_gd.unref();
 
 #ifdef TOOLS_ENABLED
-	EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
-	gdscript_translation_parser_plugin.unref();
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		gdscript_translation_parser_plugin.unref();
+	}
 #endif // TOOLS_ENABLED
-
-	GDScriptParser::cleanup();
-	GDScriptUtilityFunctions::unregister_functions();
 }
 
 #ifdef TESTS_ENABLED

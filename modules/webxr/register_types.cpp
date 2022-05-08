@@ -37,7 +37,11 @@
 Ref<WebXRInterfaceJS> webxr;
 #endif
 
-void register_webxr_types() {
+void initialize_webxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GDREGISTER_ABSTRACT_CLASS(WebXRInterface);
 
 #ifdef JAVASCRIPT_ENABLED
@@ -46,7 +50,11 @@ void register_webxr_types() {
 #endif
 }
 
-void unregister_webxr_types() {
+void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef JAVASCRIPT_ENABLED
 	if (webxr.is_valid()) {
 		// uninitialise our interface if it is initialised

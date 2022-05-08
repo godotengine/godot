@@ -606,7 +606,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		metric.valid = true;
 		metric.frame_number = frame.frame_number;
 		metric.frame_time = frame.frame_time;
-		metric.idle_time = frame.idle_time;
+		metric.process_time = frame.process_time;
 		metric.physics_time = frame.physics_time;
 		metric.physics_frame_time = frame.physics_frame_time;
 
@@ -627,10 +627,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Idle Time";
-			item.total = metric.idle_time;
+			item.name = "Process Time";
+			item.total = metric.process_time;
 			item.self = item.total;
-			item.signature = "idle_time";
+			item.signature = "process_time";
 
 			frame_time.items.push_back(item);
 
@@ -812,7 +812,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					Transform2D transform;
 
 					transform.scale_basis(Size2(zoom, zoom));
-					transform.elements[2] = -offset * zoom;
+					transform.columns[2] = -offset * zoom;
 
 					Array msg;
 					msg.push_back(transform);
@@ -1496,7 +1496,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		item_menu->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {

@@ -99,6 +99,9 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
+		HashMap<StringName, Node *> owned_unique_nodes;
+		bool unique_name_in_owner = false;
+
 		int internal_children_front = 0;
 		int internal_children_back = 0;
 		int pos = -1;
@@ -192,6 +195,9 @@ private:
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
+
+	void _release_unique_name_in_owner();
+	void _acquire_unique_name_in_owner();
 
 protected:
 	void _block() { data.blocked++; }
@@ -304,12 +310,13 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	TypedArray<Node> find_nodes(const String &p_mask, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
+	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
+	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
-	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
+	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
-	Node *find_parent(const String &p_mask) const;
+	Node *find_parent(const String &p_pattern) const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -344,6 +351,9 @@ public:
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
+
+	void set_unique_name_in_owner(bool p_enabled);
+	bool is_unique_name_in_owner() const;
 
 	void remove_and_skip();
 	int get_index(bool p_include_internal = true) const;
@@ -411,9 +421,9 @@ public:
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
-	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const;
-	void remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const;
-	void remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const;
+	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	void remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only
@@ -505,8 +515,6 @@ public:
 	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
-	Ref<MultiplayerAPI> get_custom_multiplayer() const;
-	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 
 	Node();
 	~Node();

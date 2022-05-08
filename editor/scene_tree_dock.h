@@ -91,7 +91,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_SCENE_CLEAR_INHERITANCE,
 		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
 		TOOL_SCENE_OPEN_INHERITED,
-
+		TOOL_TOGGLE_SCENE_UNIQUE_NAME,
 		TOOL_CREATE_2D_SCENE,
 		TOOL_CREATE_3D_SCENE,
 		TOOL_CREATE_USER_INTERFACE,
@@ -108,7 +108,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool restore_script_editor_on_drag = false;
 	bool reset_create_dialog = false;
 
-	int current_option;
+	int current_option = 0;
 	CreateDialog *create_dialog = nullptr;
 #ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog = nullptr;
@@ -138,14 +138,14 @@ class SceneTreeDock : public VBoxContainer {
 
 	Node *property_drop_node = nullptr;
 	String resource_drop_path;
-	void _perform_property_drop(Node *p_node, String p_property, RES p_res);
+	void _perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res);
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
 
 	List<Node *> node_clipboard;
 	String clipboard_source_scene;
-	HashMap<String, Map<RES, RES>> clipboard_resource_remap;
+	HashMap<String, Map<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	ShaderCreateDialog *shader_create_dialog = nullptr;
@@ -258,8 +258,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _feature_profile_changed();
 
 	void _clear_clipboard();
-	void _create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap);
-	void _create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap);
+	void _create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<Resource>> &r_remap);
+	void _create_remap_for_resource(Ref<Resource> p_resource, Map<Ref<Resource>, Ref<Resource>> &r_remap);
 
 	bool profile_allow_editing = true;
 	bool profile_allow_script_editing = true;
@@ -309,7 +309,7 @@ public:
 	void open_script_dialog(Node *p_for_node, bool p_extend);
 
 	void attach_shader_to_selected(int p_preferred_mode = -1);
-	void open_shader_dialog(Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
+	void open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();

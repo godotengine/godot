@@ -155,6 +155,7 @@ class StyleBoxFlat : public StyleBox {
 
 	bool draw_center = true;
 	bool blend_border = false;
+	Vector2 skew;
 	bool anti_aliased = true;
 
 	int corner_detail = 8;
@@ -199,6 +200,9 @@ public:
 
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;
+
+	void set_skew(Vector2 p_skew);
+	Vector2 get_skew() const;
 
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;

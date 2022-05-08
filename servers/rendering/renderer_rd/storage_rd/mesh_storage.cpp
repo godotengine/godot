@@ -50,7 +50,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 3);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -62,7 +62,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 3);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -74,7 +74,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -87,7 +87,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 1.0;
 				fptr[2] = 1.0;
@@ -100,7 +100,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 2);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
@@ -110,7 +110,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 2);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
@@ -121,7 +121,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -134,7 +134,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(uint32_t) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				uint32_t *fptr = (uint32_t *)w;
+				uint32_t *fptr = reinterpret_cast<uint32_t *>(w);
 				fptr[0] = 0;
 				fptr[1] = 0;
 				fptr[2] = 0;
@@ -147,7 +147,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -284,9 +284,9 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 					case RS::ARRAY_CUSTOM2:
 					case RS::ARRAY_CUSTOM3: {
 						int idx = i - RS::ARRAY_CUSTOM0;
-						uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+						const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
 						uint32_t fmt = (p_surface.format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-						uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+						const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
 						attrib_stride += fmtsize[fmt];
 
 					} break;
@@ -609,12 +609,12 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					Transform3D mtx;
 
-					mtx.basis.elements[0].x = dataptr[0];
-					mtx.basis.elements[1].x = dataptr[1];
+					mtx.basis.rows[0].x = dataptr[0];
+					mtx.basis.rows[1].x = dataptr[1];
 					mtx.origin.x = dataptr[3];
 
-					mtx.basis.elements[0].y = dataptr[4];
-					mtx.basis.elements[1].y = dataptr[5];
+					mtx.basis.rows[0].y = dataptr[4];
+					mtx.basis.rows[1].y = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
 					AABB baabb = mtx.xform(skbones[j]);
@@ -636,17 +636,17 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					Transform3D mtx;
 
-					mtx.basis.elements[0][0] = dataptr[0];
-					mtx.basis.elements[0][1] = dataptr[1];
-					mtx.basis.elements[0][2] = dataptr[2];
+					mtx.basis.rows[0][0] = dataptr[0];
+					mtx.basis.rows[0][1] = dataptr[1];
+					mtx.basis.rows[0][2] = dataptr[2];
 					mtx.origin.x = dataptr[3];
-					mtx.basis.elements[1][0] = dataptr[4];
-					mtx.basis.elements[1][1] = dataptr[5];
-					mtx.basis.elements[1][2] = dataptr[6];
+					mtx.basis.rows[1][0] = dataptr[4];
+					mtx.basis.rows[1][1] = dataptr[5];
+					mtx.basis.rows[1][2] = dataptr[6];
 					mtx.origin.y = dataptr[7];
-					mtx.basis.elements[2][0] = dataptr[8];
-					mtx.basis.elements[2][1] = dataptr[9];
-					mtx.basis.elements[2][2] = dataptr[10];
+					mtx.basis.rows[2][0] = dataptr[8];
+					mtx.basis.rows[2][1] = dataptr[9];
+					mtx.basis.rows[2][2] = dataptr[10];
 					mtx.origin.z = dataptr[11];
 
 					AABB baabb = mtx.xform(skbones[j]);
@@ -1098,10 +1098,10 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					vd.offset = attribute_stride;
 
 					int idx = i - RS::ARRAY_CUSTOM0;
-					uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+					const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
 					uint32_t fmt = (s->format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-					uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
-					RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
+					const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+					const RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
 					vd.format = fmtrd[fmt];
 					attribute_stride += fmtsize[fmt];
 					buffer = s->attribute_buffer;
@@ -1238,7 +1238,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		if (multimesh->buffer_set) {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			const uint8_t *r = buffer.ptr();
-			const float *data = (const float *)r;
+			const float *data = reinterpret_cast<const float *>(r);
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		}
 	}
@@ -1331,26 +1331,26 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 		Transform3D t;
 
 		if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
-			t.basis.elements[0][0] = data[0];
-			t.basis.elements[0][1] = data[1];
-			t.basis.elements[0][2] = data[2];
+			t.basis.rows[0][0] = data[0];
+			t.basis.rows[0][1] = data[1];
+			t.basis.rows[0][2] = data[2];
 			t.origin.x = data[3];
-			t.basis.elements[1][0] = data[4];
-			t.basis.elements[1][1] = data[5];
-			t.basis.elements[1][2] = data[6];
+			t.basis.rows[1][0] = data[4];
+			t.basis.rows[1][1] = data[5];
+			t.basis.rows[1][2] = data[6];
 			t.origin.y = data[7];
-			t.basis.elements[2][0] = data[8];
-			t.basis.elements[2][1] = data[9];
-			t.basis.elements[2][2] = data[10];
+			t.basis.rows[2][0] = data[8];
+			t.basis.rows[2][1] = data[9];
+			t.basis.rows[2][2] = data[10];
 			t.origin.z = data[11];
 
 		} else {
-			t.basis.elements[0].x = data[0];
-			t.basis.elements[1].x = data[1];
+			t.basis.rows[0].x = data[0];
+			t.basis.rows[1].x = data[1];
 			t.origin.x = data[3];
 
-			t.basis.elements[0].y = data[4];
-			t.basis.elements[1].y = data[5];
+			t.basis.rows[0].y = data[4];
+			t.basis.rows[1].y = data[5];
 			t.origin.y = data[7];
 		}
 
@@ -1377,17 +1377,17 @@ void MeshStorage::multimesh_instance_set_transform(RID p_multimesh, int p_index,
 
 		float *dataptr = w + p_index * multimesh->stride_cache;
 
-		dataptr[0] = p_transform.basis.elements[0][0];
-		dataptr[1] = p_transform.basis.elements[0][1];
-		dataptr[2] = p_transform.basis.elements[0][2];
+		dataptr[0] = p_transform.basis.rows[0][0];
+		dataptr[1] = p_transform.basis.rows[0][1];
+		dataptr[2] = p_transform.basis.rows[0][2];
 		dataptr[3] = p_transform.origin.x;
-		dataptr[4] = p_transform.basis.elements[1][0];
-		dataptr[5] = p_transform.basis.elements[1][1];
-		dataptr[6] = p_transform.basis.elements[1][2];
+		dataptr[4] = p_transform.basis.rows[1][0];
+		dataptr[5] = p_transform.basis.rows[1][1];
+		dataptr[6] = p_transform.basis.rows[1][2];
 		dataptr[7] = p_transform.origin.y;
-		dataptr[8] = p_transform.basis.elements[2][0];
-		dataptr[9] = p_transform.basis.elements[2][1];
-		dataptr[10] = p_transform.basis.elements[2][2];
+		dataptr[8] = p_transform.basis.rows[2][0];
+		dataptr[9] = p_transform.basis.rows[2][1];
+		dataptr[10] = p_transform.basis.rows[2][2];
 		dataptr[11] = p_transform.origin.z;
 	}
 
@@ -1407,14 +1407,14 @@ void MeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_ind
 
 		float *dataptr = w + p_index * multimesh->stride_cache;
 
-		dataptr[0] = p_transform.elements[0][0];
-		dataptr[1] = p_transform.elements[1][0];
+		dataptr[0] = p_transform.columns[0][0];
+		dataptr[1] = p_transform.columns[1][0];
 		dataptr[2] = 0;
-		dataptr[3] = p_transform.elements[2][0];
-		dataptr[4] = p_transform.elements[0][1];
-		dataptr[5] = p_transform.elements[1][1];
+		dataptr[3] = p_transform.columns[2][0];
+		dataptr[4] = p_transform.columns[0][1];
+		dataptr[5] = p_transform.columns[1][1];
 		dataptr[6] = 0;
-		dataptr[7] = p_transform.elements[2][1];
+		dataptr[7] = p_transform.columns[2][1];
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, true);
@@ -1485,17 +1485,17 @@ Transform3D MeshStorage::multimesh_instance_get_transform(RID p_multimesh, int p
 
 		const float *dataptr = r + p_index * multimesh->stride_cache;
 
-		t.basis.elements[0][0] = dataptr[0];
-		t.basis.elements[0][1] = dataptr[1];
-		t.basis.elements[0][2] = dataptr[2];
+		t.basis.rows[0][0] = dataptr[0];
+		t.basis.rows[0][1] = dataptr[1];
+		t.basis.rows[0][2] = dataptr[2];
 		t.origin.x = dataptr[3];
-		t.basis.elements[1][0] = dataptr[4];
-		t.basis.elements[1][1] = dataptr[5];
-		t.basis.elements[1][2] = dataptr[6];
+		t.basis.rows[1][0] = dataptr[4];
+		t.basis.rows[1][1] = dataptr[5];
+		t.basis.rows[1][2] = dataptr[6];
 		t.origin.y = dataptr[7];
-		t.basis.elements[2][0] = dataptr[8];
-		t.basis.elements[2][1] = dataptr[9];
-		t.basis.elements[2][2] = dataptr[10];
+		t.basis.rows[2][0] = dataptr[8];
+		t.basis.rows[2][1] = dataptr[9];
+		t.basis.rows[2][2] = dataptr[10];
 		t.origin.z = dataptr[11];
 	}
 
@@ -1516,12 +1516,12 @@ Transform2D MeshStorage::multimesh_instance_get_transform_2d(RID p_multimesh, in
 
 		const float *dataptr = r + p_index * multimesh->stride_cache;
 
-		t.elements[0][0] = dataptr[0];
-		t.elements[1][0] = dataptr[1];
-		t.elements[2][0] = dataptr[3];
-		t.elements[0][1] = dataptr[4];
-		t.elements[1][1] = dataptr[5];
-		t.elements[2][1] = dataptr[7];
+		t.columns[0][0] = dataptr[0];
+		t.columns[1][0] = dataptr[1];
+		t.columns[2][0] = dataptr[3];
+		t.columns[0][1] = dataptr[4];
+		t.columns[1][1] = dataptr[5];
+		t.columns[2][1] = dataptr[7];
 	}
 
 	return t;
@@ -1800,17 +1800,17 @@ void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const 
 
 	float *dataptr = skeleton->data.ptrw() + p_bone * 12;
 
-	dataptr[0] = p_transform.basis.elements[0][0];
-	dataptr[1] = p_transform.basis.elements[0][1];
-	dataptr[2] = p_transform.basis.elements[0][2];
+	dataptr[0] = p_transform.basis.rows[0][0];
+	dataptr[1] = p_transform.basis.rows[0][1];
+	dataptr[2] = p_transform.basis.rows[0][2];
 	dataptr[3] = p_transform.origin.x;
-	dataptr[4] = p_transform.basis.elements[1][0];
-	dataptr[5] = p_transform.basis.elements[1][1];
-	dataptr[6] = p_transform.basis.elements[1][2];
+	dataptr[4] = p_transform.basis.rows[1][0];
+	dataptr[5] = p_transform.basis.rows[1][1];
+	dataptr[6] = p_transform.basis.rows[1][2];
 	dataptr[7] = p_transform.origin.y;
-	dataptr[8] = p_transform.basis.elements[2][0];
-	dataptr[9] = p_transform.basis.elements[2][1];
-	dataptr[10] = p_transform.basis.elements[2][2];
+	dataptr[8] = p_transform.basis.rows[2][0];
+	dataptr[9] = p_transform.basis.rows[2][1];
+	dataptr[10] = p_transform.basis.rows[2][2];
 	dataptr[11] = p_transform.origin.z;
 
 	_skeleton_make_dirty(skeleton);
@@ -1827,17 +1827,17 @@ Transform3D MeshStorage::skeleton_bone_get_transform(RID p_skeleton, int p_bone)
 
 	Transform3D t;
 
-	t.basis.elements[0][0] = dataptr[0];
-	t.basis.elements[0][1] = dataptr[1];
-	t.basis.elements[0][2] = dataptr[2];
+	t.basis.rows[0][0] = dataptr[0];
+	t.basis.rows[0][1] = dataptr[1];
+	t.basis.rows[0][2] = dataptr[2];
 	t.origin.x = dataptr[3];
-	t.basis.elements[1][0] = dataptr[4];
-	t.basis.elements[1][1] = dataptr[5];
-	t.basis.elements[1][2] = dataptr[6];
+	t.basis.rows[1][0] = dataptr[4];
+	t.basis.rows[1][1] = dataptr[5];
+	t.basis.rows[1][2] = dataptr[6];
 	t.origin.y = dataptr[7];
-	t.basis.elements[2][0] = dataptr[8];
-	t.basis.elements[2][1] = dataptr[9];
-	t.basis.elements[2][2] = dataptr[10];
+	t.basis.rows[2][0] = dataptr[8];
+	t.basis.rows[2][1] = dataptr[9];
+	t.basis.rows[2][2] = dataptr[10];
 	t.origin.z = dataptr[11];
 
 	return t;
@@ -1852,14 +1852,14 @@ void MeshStorage::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, con
 
 	float *dataptr = skeleton->data.ptrw() + p_bone * 8;
 
-	dataptr[0] = p_transform.elements[0][0];
-	dataptr[1] = p_transform.elements[1][0];
+	dataptr[0] = p_transform.columns[0][0];
+	dataptr[1] = p_transform.columns[1][0];
 	dataptr[2] = 0;
-	dataptr[3] = p_transform.elements[2][0];
-	dataptr[4] = p_transform.elements[0][1];
-	dataptr[5] = p_transform.elements[1][1];
+	dataptr[3] = p_transform.columns[2][0];
+	dataptr[4] = p_transform.columns[0][1];
+	dataptr[5] = p_transform.columns[1][1];
 	dataptr[6] = 0;
-	dataptr[7] = p_transform.elements[2][1];
+	dataptr[7] = p_transform.columns[2][1];
 
 	_skeleton_make_dirty(skeleton);
 }
@@ -1874,12 +1874,12 @@ Transform2D MeshStorage::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bo
 	const float *dataptr = skeleton->data.ptr() + p_bone * 8;
 
 	Transform2D t;
-	t.elements[0][0] = dataptr[0];
-	t.elements[1][0] = dataptr[1];
-	t.elements[2][0] = dataptr[3];
-	t.elements[0][1] = dataptr[4];
-	t.elements[1][1] = dataptr[5];
-	t.elements[2][1] = dataptr[7];
+	t.columns[0][0] = dataptr[0];
+	t.columns[1][0] = dataptr[1];
+	t.columns[2][0] = dataptr[3];
+	t.columns[0][1] = dataptr[4];
+	t.columns[1][1] = dataptr[5];
+	t.columns[2][1] = dataptr[7];
 
 	return t;
 }

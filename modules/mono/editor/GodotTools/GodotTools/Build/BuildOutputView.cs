@@ -334,8 +334,13 @@ namespace GodotTools.Build
             }
         }
 
-        private void IssuesListRmbSelected(int index, Vector2 atPosition)
+        private void IssuesListClicked(int index, Vector2 atPosition, int mouseButtonIndex)
         {
+            if (mouseButtonIndex != (int)MouseButton.Right)
+            {
+                return;
+            }
+
             _ = index; // Unused
 
             _issuesListContextMenu.Clear();
@@ -375,7 +380,7 @@ namespace GodotTools.Build
             };
             _issuesList.ItemActivated += IssueActivated;
             _issuesList.AllowRmbSelect = true;
-            _issuesList.ItemRmbSelected += IssuesListRmbSelected;
+            _issuesList.ItemClicked += IssuesListClicked;
             hsc.AddChild(_issuesList);
 
             _issuesListContextMenu = new PopupMenu();

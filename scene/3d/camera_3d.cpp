@@ -144,8 +144,8 @@ void Camera3D::_notification(int p_what) {
 
 Transform3D Camera3D::get_camera_transform() const {
 	Transform3D tr = get_global_transform().orthonormalized();
-	tr.origin += tr.basis.get_axis(1) * v_offset;
-	tr.origin += tr.basis.get_axis(0) * h_offset;
+	tr.origin += tr.basis.get_column(1) * v_offset;
+	tr.origin += tr.basis.get_column(0) * h_offset;
 	return tr;
 }
 
@@ -307,7 +307,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 	Transform3D t = get_global_transform();
-	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	Vector3 eyedir = -t.basis.get_column(2).normalized();
 	return eyedir.dot(p_pos - t.origin) < near;
 }
 
@@ -475,9 +475,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_near", "near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
 	ClassDB::bind_method(D_METHOD("set_projection", "mode"), &Camera3D::set_projection);
-	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset", "offset"), &Camera3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera3D::get_h_offset);
-	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera3D::set_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset", "offset"), &Camera3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera3D::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);

@@ -989,7 +989,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 
 			if (p_inputs[0]->is_ref_counted()) {
-				REF r = *p_inputs[0];
+				Ref<RefCounted> r = *p_inputs[0];
 				if (!r.is_valid()) {
 					return;
 				}
@@ -1180,8 +1180,8 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 class VisualScriptNodeInstanceBuiltinFunc : public VisualScriptNodeInstance {
 public:
-	VisualScriptBuiltinFunc *node;
-	VisualScriptInstance *instance;
+	VisualScriptBuiltinFunc *node = nullptr;
+	VisualScriptInstance *instance = nullptr;
 
 	VisualScriptBuiltinFunc::BuiltinFunc func;
 

@@ -207,7 +207,7 @@ int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_w
 			break;
 		case Variant::INT: {
 			const int64_t tmp = v->operator int64_t();
-			if (tmp >= 1 << 31) {
+			if (tmp >= 1LL << 31) {
 				r_val->r = (double)tmp;
 				return Variant::FLOAT;
 			}

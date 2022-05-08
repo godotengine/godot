@@ -111,9 +111,9 @@ private:
 	String _current_request;
 	Ref<DAPeer> _current_peer;
 
-	int breakpoint_id;
-	int stackframe_id;
-	int variable_id;
+	int breakpoint_id = 0;
+	int stackframe_id = 0;
+	int variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
 	Map<DAP::StackFrame, List<int>> stackframe_list;
 	Map<int, Array> variable_list;

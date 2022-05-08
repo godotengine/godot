@@ -83,21 +83,20 @@ private:
 	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
-	int last_metric;
+	int last_metric = -1;
+
+	int hover_metric = -1;
 
 	StringName selected_area;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
-	//int cursor_metric;
-	int hover_metric;
+	float graph_height_cpu = 1.0f;
+	float graph_height_gpu = 1.0f;
 
-	float graph_height_cpu;
-	float graph_height_gpu;
+	float graph_limit = 1000.0f / 60;
 
-	float graph_limit;
-
-	bool seeking;
+	bool seeking = false;
 
 	Timer *frame_delay = nullptr;
 	Timer *plot_delay = nullptr;

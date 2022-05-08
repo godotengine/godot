@@ -46,6 +46,10 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
+#if defined(SPEECHD_ENABLED)
+#include "tts_linux.h"
+#endif
+
 #if defined(GLES3_ENABLED)
 #include "gl_manager_x11.h"
 #endif
@@ -96,8 +100,8 @@ class DisplayServerX11 : public DisplayServer {
 	Atom xdnd_finished;
 	Atom xdnd_selection;
 	Atom xdnd_aware;
-	Atom requested;
-	int xdnd_version;
+	Atom requested = None;
+	int xdnd_version = 5;
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
@@ -110,6 +114,10 @@ class DisplayServerX11 : public DisplayServer {
 #if defined(DBUS_ENABLED)
 	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
+#endif
+
+#ifdef SPEECHD_ENABLED
+	TTS_Linux *tts = nullptr;
 #endif
 
 	struct WindowData {
@@ -166,21 +174,21 @@ class DisplayServerX11 : public DisplayServer {
 
 	String internal_clipboard;
 	String internal_clipboard_primary;
-	Window xdnd_source_window;
+	Window xdnd_source_window = 0;
 	::Display *x11_display;
 	char *xmbstring = nullptr;
-	int xmblen;
-	unsigned long last_timestamp;
-	::Time last_keyrelease_time;
+	int xmblen = 0;
+	unsigned long last_timestamp = 0;
+	::Time last_keyrelease_time = 0;
 	::XIM xim;
 	::XIMStyle xim_style;
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
 	Point2i last_mouse_pos;
-	bool last_mouse_pos_valid;
-	Point2i last_click_pos;
-	uint64_t last_click_ms;
+	bool last_mouse_pos_valid = false;
+	Point2i last_click_pos = Point2i(-100, -100);
+	uint64_t last_click_ms = 0;
 	MouseButton last_click_button_index = MouseButton::NONE;
 	MouseButton last_button_state = MouseButton::NONE;
 	bool app_focused = false;
@@ -213,7 +221,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
 
-	MouseMode mouse_mode;
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
@@ -225,30 +233,26 @@ class DisplayServerX11 : public DisplayServer {
 	String _clipboard_get(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
-	//bool minimized;
-	//bool window_has_focus;
-	bool do_mouse_warp;
+	bool do_mouse_warp = false;
 
-	const char *cursor_theme;
-	int cursor_size;
+	const char *cursor_theme = nullptr;
+	int cursor_size = 0;
 	XcursorImage *img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
-	CursorShape current_cursor;
+	CursorShape current_cursor = CURSOR_ARROW;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
-	bool layered_window;
+	bool layered_window = false;
 
 	String rendering_driver;
-	//bool window_focused;
-	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
 
 	typedef xrr_monitor_info *(*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
-	xrr_get_monitors_t xrr_get_monitors;
-	xrr_free_monitors_t xrr_free_monitors;
+	xrr_get_monitors_t xrr_get_monitors = nullptr;
+	xrr_free_monitors_t xrr_free_monitors = nullptr;
 	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
@@ -297,6 +301,17 @@ public:
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+#ifdef SPEECHD_ENABLED
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+#endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
@@ -392,7 +407,7 @@ public:
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

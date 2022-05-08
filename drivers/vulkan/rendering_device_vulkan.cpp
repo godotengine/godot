@@ -6255,7 +6255,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 		//validate with inputs
 		for (uint32_t i = 0; i < 32; i++) {
-			if (!(shader->vertex_input_mask & (1 << i))) {
+			if (!(shader->vertex_input_mask & (1UL << i))) {
 				continue;
 			}
 			bool found = false;
@@ -8649,12 +8649,17 @@ void RenderingDeviceVulkan::draw_command_end_label() {
 String RenderingDeviceVulkan::get_device_vendor_name() const {
 	return context->get_device_vendor_name();
 }
+
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
 
 RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
 	return context->get_device_type();
+}
+
+String RenderingDeviceVulkan::get_device_api_version() const {
+	return context->get_device_api_version();
 }
 
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {

@@ -957,7 +957,7 @@ void GridMapEditor::update_grid() {
 }
 
 void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
-	Vector3 edited_floor = node->has_meta("_editor_floor_") ? node->get_meta("_editor_floor_") : Variant();
+	Vector3 edited_floor = node->get_meta("_editor_floor_", Vector3());
 
 	for (int i = 0; i < 3; i++) {
 		RS::get_singleton()->mesh_clear(grid[i]);

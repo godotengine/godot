@@ -316,7 +316,7 @@
 		</method>
 		<method name="set_scroll">
 			<return type="void" />
-			<argument index="0" name="ofs" type="Vector2" />
+			<argument index="0" name="offset" type="Vector2" />
 			<description>
 				Set the screen center to the given position.
 			</description>

@@ -949,20 +949,20 @@ struct _VariantCall {
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 
 struct VariantBuiltInMethodInfo {
-	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error);
-	Variant::ValidatedBuiltInMethod validated_call;
-	Variant::PTRBuiltInMethod ptrcall;
+	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedBuiltInMethod validated_call = nullptr;
+	Variant::PTRBuiltInMethod ptrcall = nullptr;
 
 	Vector<Variant> default_arguments;
 	Vector<String> argument_names;
 
-	bool is_const;
-	bool is_static;
-	bool has_return_type;
-	bool is_vararg;
+	bool is_const = false;
+	bool is_static = false;
+	bool has_return_type = false;
+	bool is_vararg = false;
 	Variant::Type return_type;
-	int argument_count;
-	Variant::Type (*get_argument_type)(int p_arg);
+	int argument_count = 0;
+	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
@@ -1239,10 +1239,10 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+	const _VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
 #ifdef DEBUG_ENABLED
-	for (List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
+	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
 	for (const KeyValue<StringName, int> &E : cd.value) {
@@ -1251,7 +1251,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	}
 
 #ifdef DEBUG_ENABLED
-	for (List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
+	for (const List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
 	for (const KeyValue<StringName, Variant> &E : cd.variant_value) {
@@ -1495,7 +1495,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, max_axis_index, sarray(), varray());
 	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
-	bind_method(Vector2, rotated, sarray("phi"), varray());
+	bind_method(Vector2, rotated, sarray("angle"), varray());
 	bind_method(Vector2, orthogonal, sarray(), varray());
 	bind_method(Vector2, floor, sarray(), varray());
 	bind_method(Vector2, ceil, sarray(), varray());
@@ -1575,7 +1575,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
-	bind_method(Vector3, rotated, sarray("by_axis", "phi"), varray());
+	bind_method(Vector3, rotated, sarray("axis", "angle"), varray());
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
@@ -1730,7 +1730,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, get_scale, sarray(), varray());
 	bind_method(Transform2D, get_skew, sarray(), varray());
 	bind_method(Transform2D, orthonormalized, sarray(), varray());
-	bind_method(Transform2D, rotated, sarray("phi"), varray());
+	bind_method(Transform2D, rotated, sarray("angle"), varray());
 	bind_method(Transform2D, scaled, sarray("scale"), varray());
 	bind_method(Transform2D, translated, sarray("offset"), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
@@ -1748,7 +1748,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, transposed, sarray(), varray());
 	bind_method(Basis, orthonormalized, sarray(), varray());
 	bind_method(Basis, determinant, sarray(), varray());
-	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "phi"), varray());
+	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "angle"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
 	bind_method(Basis, get_euler, sarray("order"), varray(Basis::EULER_ORDER_YXZ));
@@ -1795,7 +1795,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, inverse, sarray(), varray());
 	bind_method(Transform3D, affine_inverse, sarray(), varray());
 	bind_method(Transform3D, orthonormalized, sarray(), varray());
-	bind_method(Transform3D, rotated, sarray("axis", "phi"), varray());
+	bind_method(Transform3D, rotated, sarray("axis", "angle"), varray());
 	bind_method(Transform3D, scaled, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));

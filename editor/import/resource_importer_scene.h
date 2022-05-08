@@ -119,7 +119,7 @@ protected:
 	GDVIRTUAL1(_get_internal_import_options, int)
 	GDVIRTUAL3RC(Variant, _get_internal_option_visibility, int, bool, String)
 	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String)
-	GDVIRTUAL4(_internal_process, int, Node *, Node *, RES)
+	GDVIRTUAL4(_internal_process, int, Node *, Node *, Ref<Resource>)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 	GDVIRTUAL1(_pre_process, Node *)
@@ -136,7 +136,7 @@ public:
 	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual Variant get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options);
+	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options);
 
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const Map<StringName, Variant> &p_options) const;

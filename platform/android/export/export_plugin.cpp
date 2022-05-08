@@ -1000,15 +1000,22 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 					}
 
-					if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_metadata_name") {
-						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
+					// Hand tracking related configurations
+					if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
+						if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_metadata_name") {
 							string_table.write[attr_value] = "com.oculus.handtracking.frequency";
 						}
-					}
 
-					if (tname == "meta-data" && attrname == "value" && value == "xr_hand_tracking_metadata_value") {
-						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
+						if (tname == "meta-data" && attrname == "value" && value == "xr_hand_tracking_metadata_value") {
 							string_table.write[attr_value] = (hand_tracking_frequency_index == XR_HAND_TRACKING_FREQUENCY_LOW ? "LOW" : "HIGH");
+						}
+
+						if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_version_name") {
+							string_table.write[attr_value] = "com.oculus.handtracking.version";
+						}
+
+						if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_version_value") {
+							string_table.write[attr_value] = "V2.0";
 						}
 					}
 

@@ -57,12 +57,14 @@ public:
 	void set_layers(uint32_t p_layers);
 	uint32_t get_layers() const;
 
+	RID get_region_rid() const;
+
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
-	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// Bakes the navigation mesh; once done, automatically
 	/// sets the new navigation mesh and emits a signal
-	void bake_navigation_mesh();
+	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
 	TypedArray<String> get_configuration_warnings() const override;

@@ -342,7 +342,7 @@
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">
-			<argument index="0" name="ofs" type="Vector2" />
+			<argument index="0" name="offset" type="Vector2" />
 			<description>
 				Emitted when the scroll offset is changed by the user. It will not be emitted when changed in code.
 			</description>

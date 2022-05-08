@@ -328,4 +328,38 @@ VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 
+class PlaceholderMesh : public Mesh {
+	GDCLASS(PlaceholderMesh, Mesh);
+
+	RID rid;
+	AABB aabb;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_surface_count() const override { return 0; }
+	virtual int surface_get_array_len(int p_idx) const override { return 0; }
+	virtual int surface_get_array_index_len(int p_idx) const override { return 0; }
+	virtual Array surface_get_arrays(int p_surface) const override { return Array(); }
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const override { return Array(); }
+	virtual Dictionary surface_get_lods(int p_surface) const override { return Dictionary(); }
+	virtual uint32_t surface_get_format(int p_idx) const override { return 0; }
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override { return PRIMITIVE_TRIANGLES; }
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override {}
+	virtual Ref<Material> surface_get_material(int p_idx) const override { return Ref<Material>(); }
+	virtual int get_blend_shape_count() const override { return 0; }
+	virtual StringName get_blend_shape_name(int p_index) const override { return StringName(); }
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name) override {}
+	virtual RID get_rid() const override { return rid; }
+	virtual AABB get_aabb() const override { return aabb; }
+	void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
+
+	virtual int get_builtin_bind_pose_count() const override { return 0; }
+	virtual Transform3D get_builtin_bind_pose(int p_index) const override { return Transform3D(); }
+
+	PlaceholderMesh();
+	~PlaceholderMesh();
+};
+
 #endif

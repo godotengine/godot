@@ -144,6 +144,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Map<StringName, Color> node_colors;
 	HashMap<StringName, Ref<StyleBox>> node_styles;
+	Map<StringName, Variant::Type> base_type_map;
 
 	void _update_graph_connections();
 	void _update_graph(int p_only_id = -1);
@@ -302,8 +303,8 @@ public:
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 
 	virtual void apply_code() override;
-	virtual RES get_edited_resource() const override;
-	virtual void set_edited_resource(const RES &p_res) override;
+	virtual Ref<Resource> get_edited_resource() const override;
+	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
 	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 	virtual void reload_text() override;
@@ -358,7 +359,7 @@ protected:
 	static void _bind_methods();
 	static VisualScriptCustomNodes *singleton;
 
-	static Map<String, REF> custom_nodes;
+	static Map<String, Ref<RefCounted>> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:

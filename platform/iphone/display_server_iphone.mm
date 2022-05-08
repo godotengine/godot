@@ -38,6 +38,7 @@
 #include "ios.h"
 #import "keyboard_input_view.h"
 #include "os_iphone.h"
+#include "tts_ios.h"
 #import "view_controller.h"
 
 #import <Foundation/Foundation.h>
@@ -51,6 +52,9 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 
 DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
+
+	// Init TTS
+	tts = [[TTS_IOS alloc] init];
 
 #if defined(GLES3_ENABLED)
 	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
@@ -310,6 +314,7 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 		case FEATURE_ORIENTATION:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_VIRTUAL_KEYBOARD:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -318,6 +323,57 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 
 String DisplayServerIPhone::get_name() const {
 	return "iPhone";
+}
+
+bool DisplayServerIPhone::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isSpeaking];
+}
+
+bool DisplayServerIPhone::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isPaused];
+}
+
+Array DisplayServerIPhone::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return [tts getVoices];
+}
+
+void DisplayServerIPhone::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
+}
+
+void DisplayServerIPhone::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	[tts pauseSpeaking];
+}
+
+void DisplayServerIPhone::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	[tts resumeSpeaking];
+}
+
+void DisplayServerIPhone::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	[tts stopSpeaking];
+}
+
+Rect2i DisplayServerIPhone::get_display_safe_area() const {
+	if (@available(iOS 11, *)) {
+		UIEdgeInsets insets = UIEdgeInsetsZero;
+		UIView *view = AppDelegate.viewController.godotView;
+		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+			insets = [view safeAreaInsets];
+		}
+		float scale = screen_get_scale();
+		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+		return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
+	} else {
+		return Rect2i(screen_get_position(), screen_get_size());
+	}
 }
 
 int DisplayServerIPhone::get_screen_count() const {
@@ -339,22 +395,7 @@ Size2i DisplayServerIPhone::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerIPhone::screen_get_usable_rect(int p_screen) const {
-	if (@available(iOS 11, *)) {
-		UIEdgeInsets insets = UIEdgeInsetsZero;
-		UIView *view = AppDelegate.viewController.godotView;
-
-		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
-			insets = [view safeAreaInsets];
-		}
-
-		float scale = screen_get_scale(p_screen);
-		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
-		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
-
-		return Rect2i(screen_get_position(p_screen) + insets_position, screen_get_size(p_screen) - insets_size);
-	} else {
-		return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
-	}
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerIPhone::screen_get_dpi(int p_screen) const {

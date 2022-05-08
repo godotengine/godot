@@ -2537,7 +2537,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (edited_theme->has_font(E.key(), edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_font(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed), varray(E.key()));
@@ -2545,7 +2545,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (Theme::get_default()->has_font(E.key(), edited_type)) {
 					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -2608,7 +2608,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (edited_theme->has_icon(E.key(), edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_icon(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed), varray(E.key()));
@@ -2616,7 +2616,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (Theme::get_default()->has_icon(E.key(), edited_type)) {
 					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -2655,7 +2655,7 @@ void ThemeTypeEditor::_update_type_items() {
 			if (edited_theme->has_stylebox(leading_stylebox.item_name, edited_type)) {
 				item_editor->set_edited_resource(leading_stylebox.stylebox);
 			} else {
-				item_editor->set_edited_resource(RES());
+				item_editor->set_edited_resource(Ref<Resource>());
 			}
 			item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 			item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(leading_stylebox.item_name));
@@ -2680,7 +2680,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (edited_theme->has_stylebox(E.key(), edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(E.key()));
@@ -2696,7 +2696,7 @@ void ThemeTypeEditor::_update_type_items() {
 				if (Theme::get_default()->has_stylebox(E.key(), edited_type)) {
 					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key(), edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -3065,7 +3065,7 @@ void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name)
 	ur->commit_action();
 }
 
-void ThemeTypeEditor::_edit_resource_item(RES p_resource, bool p_edit) {
+void ThemeTypeEditor::_edit_resource_item(Ref<Resource> p_resource, bool p_edit) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
@@ -3131,7 +3131,7 @@ void ThemeTypeEditor::_change_pinned_stylebox() {
 
 		Ref<StyleBox> new_stylebox = edited_theme->get_stylebox(leading_stylebox.item_name, edited_type);
 		leading_stylebox.stylebox = new_stylebox;
-		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : RES());
+		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : Ref<Resource>());
 
 		if (leading_stylebox.stylebox.is_valid()) {
 			new_stylebox->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
@@ -3169,7 +3169,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 	leader.pinned = true;
 	leader.item_name = p_item_name;
 	leader.stylebox = p_stylebox;
-	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : RES());
+	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : Ref<Resource>());
 
 	leading_stylebox = leader;
 	if (p_stylebox.is_valid()) {

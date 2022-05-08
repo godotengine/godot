@@ -30,7 +30,6 @@
 
 #include "nav_map.h"
 
-#include "core/os/threaded_array_processor.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
 
@@ -142,10 +141,10 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	bool is_reachable = true;
 
 	while (true) {
-		gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
-
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
-		for (size_t i = 0; i < least_cost_poly->poly->edges.size(); i++) {
+		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
+			gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
+
 			const gd::Edge &edge = least_cost_poly->poly->edges[i];
 
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
@@ -674,7 +673,10 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
-		thread_process_array(
+		if (step_work_pool.get_thread_count() == 0) {
+			step_work_pool.init();
+		}
+		step_work_pool.do_work(
 				controlled_agents.size(),
 				this,
 				&NavMap::compute_single_step,
@@ -718,4 +720,11 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 			}
 		}
 	}
+}
+
+NavMap::NavMap() {
+}
+
+NavMap::~NavMap() {
+	step_work_pool.finish();
 }

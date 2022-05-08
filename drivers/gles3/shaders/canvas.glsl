@@ -286,7 +286,7 @@ in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-uniform MaterialUniforms{
+layout(std140) uniform MaterialUniforms{
 //ubo:4
 
 #MATERIAL_UNIFORMS
@@ -476,10 +476,6 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 
 float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
-}
-
-vec2 msdf_map(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
-	return out_min + (out_max - out_min) * (value - in_min) / (in_max - in_min);
 }
 
 void main() {

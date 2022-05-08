@@ -111,7 +111,7 @@ private:
 	void _clear_version(Version *p_version);
 	void _initialize_version(Version *p_version);
 
-	RID_Owner<Version> version_owner;
+	RID_Owner<Version, true> version_owner;
 
 	struct StageTemplate {
 		struct Chunk {
@@ -141,7 +141,7 @@ private:
 	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
 
-	GLint max_image_units;
+	GLint max_image_units = 0;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,

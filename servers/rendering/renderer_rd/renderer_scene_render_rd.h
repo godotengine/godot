@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
@@ -46,11 +47,11 @@
 #include "servers/rendering/rendering_device.h"
 
 struct RenderDataRD {
-	RID render_buffers = RID();
+	RID render_buffers;
 
-	Transform3D cam_transform = Transform3D();
-	CameraMatrix cam_projection = CameraMatrix();
-	bool cam_ortogonal = false;
+	Transform3D cam_transform;
+	CameraMatrix cam_projection;
+	bool cam_orthogonal = false;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -66,18 +67,18 @@ struct RenderDataRD {
 	const PagedArray<RID> *decals = nullptr;
 	const PagedArray<RID> *lightmaps = nullptr;
 	const PagedArray<RID> *fog_volumes = nullptr;
-	RID environment = RID();
-	RID camera_effects = RID();
-	RID shadow_atlas = RID();
-	RID reflection_atlas = RID();
-	RID reflection_probe = RID();
+	RID environment;
+	RID camera_effects;
+	RID shadow_atlas;
+	RID reflection_atlas;
+	RID reflection_probe;
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
-	Plane lod_camera_plane = Plane();
+	Plane lod_camera_plane;
 	float screen_mesh_lod_threshold = 0.0;
 
-	RID cluster_buffer = RID();
+	RID cluster_buffer;
 	uint32_t cluster_size = 0;
 	uint32_t cluster_max_elements = 0;
 
@@ -93,8 +94,9 @@ class RendererSceneRenderRD : public RendererSceneRender {
 
 protected:
 	RendererStorageRD *storage = nullptr;
-	double time;
-	double time_step = 0;
+	RendererRD::ToneMapper *tone_mapper = nullptr;
+	double time = 0.0;
+	double time_step = 0.0;
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
@@ -113,7 +115,7 @@ protected:
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
@@ -234,7 +236,7 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform3D transform;
-		uint32_t cull_mask;
+		uint32_t cull_mask = 0;
 		ForwardID forward_id = -1;
 	};
 
@@ -254,7 +256,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -266,27 +268,20 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0;
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				Shadow() {}
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
-
+			Quadrant() {}
 		} quadrants[4];
 
 		int size_order[4] = { 0, 1, 2, 3 };
@@ -335,7 +330,6 @@ private:
 		int size = 0;
 		bool use_16_bits = true;
 		int current_light = 0;
-
 	} directional_shadow;
 
 	void _update_directional_shadow_atlas();
@@ -908,7 +902,7 @@ private:
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
 	struct FogShaderData : public RendererRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		RID pipeline;
@@ -916,13 +910,13 @@ private:
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
 		Map<StringName, Map<int, RID>> default_texture_params;
 
-		bool uses_time;
+		bool uses_time = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
@@ -933,7 +927,8 @@ private:
 		virtual bool casts_shadows() const;
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		FogShaderData();
+
+		FogShaderData() {}
 		virtual ~FogShaderData();
 	};
 
@@ -1411,7 +1406,7 @@ public:
 
 	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
-	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 
 	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
 

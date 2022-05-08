@@ -48,9 +48,6 @@ static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const 
 	p_control->draw_line(p_from + p_shadow_offset, p_from + p_size + p_shadow_offset, p_shadow_color);
 }
 
-void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
-}
-
 void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->clear_filters();
 	List<String> extensions;
@@ -1015,7 +1012,7 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 		return Variant();
 	}
 
-	RES frame = frames->get_frame(edited_anim, idx);
+	Ref<Resource> frame = frames->get_frame(edited_anim, idx);
 
 	if (frame.is_null()) {
 		return Variant();
@@ -1039,7 +1036,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	}
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
-		RES r = d["resource"];
+		Ref<Resource> r = d["resource"];
 
 		Ref<Texture2D> texture = r;
 
@@ -1083,7 +1080,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	int at_pos = tree->get_item_at_position(p_point, true);
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
-		RES r = d["resource"];
+		Ref<Resource> r = d["resource"];
 
 		Ref<Texture2D> texture = r;
 

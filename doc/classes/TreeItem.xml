@@ -284,7 +284,7 @@
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override" qualifiers="const">
-			<return type="int" enum="Control.StructuredTextParser" />
+			<return type="int" enum="TextServer.StructuredTextParser" />
 			<argument index="0" name="column" type="int" />
 			<description>
 			</description>
@@ -620,7 +620,7 @@
 		<method name="set_structured_text_bidi_override">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
-			<argument index="1" name="parser" type="int" enum="Control.StructuredTextParser" />
+			<argument index="1" name="parser" type="int" enum="TextServer.StructuredTextParser" />
 			<description>
 			</description>
 		</method>

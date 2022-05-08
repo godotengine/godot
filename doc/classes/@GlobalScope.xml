@@ -266,7 +266,7 @@
 				- Greater than 1.0 (exclusive): Ease in
 				[/codeblock]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
-				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
+				See also [method smoothstep]. If you need to perform more advanced transitions, use [method Tween.interpolate_value].
 			</description>
 		</method>
 		<method name="error_string">
@@ -457,6 +457,7 @@
 				    rotation = lerp_angle(min_angle, max_angle, elapsed)
 				    elapsed += delta
 				[/codeblock]
+				[b]Note:[/b] This method lerps through the shortest path between [code]from[/code] and [code]to[/code]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
 		</method>
 		<method name="linear2db">
@@ -2013,7 +2014,7 @@
 		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="-16777216" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask">
 			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">

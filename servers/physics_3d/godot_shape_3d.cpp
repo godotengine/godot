@@ -662,7 +662,7 @@ GodotCapsuleShape3D::GodotCapsuleShape3D() {}
 /********** CYLINDER *************/
 
 void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
+	Vector3 cylinder_axis = p_transform.basis.get_column(1).normalized();
 	real_t axis_dot = cylinder_axis.dot(p_normal);
 
 	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
@@ -1438,7 +1438,7 @@ Vector3 GodotConcavePolygonShape3D::get_moment_of_inertia(real_t p_mass) const {
 struct _Volume_BVH_Element {
 	AABB aabb;
 	Vector3 center;
-	int face_index;
+	int face_index = 0;
 };
 
 struct _Volume_BVH_CompareX {
@@ -1461,10 +1461,10 @@ struct _Volume_BVH_CompareZ {
 
 struct _Volume_BVH {
 	AABB aabb;
-	_Volume_BVH *left;
-	_Volume_BVH *right;
+	_Volume_BVH *left = nullptr;
+	_Volume_BVH *right = nullptr;
 
-	int face_index;
+	int face_index = 0;
 };
 
 _Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int &count) {

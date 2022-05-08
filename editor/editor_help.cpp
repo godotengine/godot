@@ -56,8 +56,8 @@ void EditorHelp::_update_theme() {
 
 	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
-	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant(SNAME("table_hseparation"), SNAME("EditorHelp")));
-	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant(SNAME("table_vseparation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));

@@ -116,6 +116,9 @@ private:
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
+#ifdef DEBUG_ENABLED
+	bool is_infinite = false;
+#endif
 
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
@@ -139,7 +142,6 @@ public:
 	void kill();
 
 	bool is_running();
-	void set_valid(bool p_valid);
 	bool is_valid();
 	void clear();
 
@@ -160,8 +162,8 @@ public:
 	Ref<Tween> parallel();
 	Ref<Tween> chain();
 
-	real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
-	Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
+	static Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
 	Variant calculate_delta_value(Variant p_intial_val, Variant p_final_val);
 
 	bool step(float p_delta);
@@ -169,7 +171,8 @@ public:
 	Node *get_bound_node() const;
 	float get_total_time() const;
 
-	Tween() {}
+	Tween();
+	Tween(bool p_valid);
 };
 
 VARIANT_ENUM_CAST(Tween::TweenPauseMode);

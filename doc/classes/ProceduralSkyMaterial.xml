@@ -11,6 +11,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="dither_strength" type="float" setter="set_dither_strength" getter="get_dither_strength" default="1.0">
+			The amount of dithering to use. Dithering helps reduce banding that appears from the smooth changes in color in the sky. Use the lowest value possible for your given sky settings, as higher amounts may add fuzziness to the sky.
+		</member>
 		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.2, 0.169, 0.133, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
 		</member>

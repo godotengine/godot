@@ -36,7 +36,11 @@
 
 RaycastOcclusionCull *raycast_occlusion_cull = nullptr;
 
-void register_raycast_types() {
+void initialize_raycast_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef TOOLS_ENABLED
 	LightmapRaycasterEmbree::make_default_raycaster();
 	StaticRaycasterEmbree::make_default_raycaster();
@@ -44,7 +48,11 @@ void register_raycast_types() {
 	raycast_occlusion_cull = memnew(RaycastOcclusionCull);
 }
 
-void unregister_raycast_types() {
+void uninitialize_raycast_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (raycast_occlusion_cull) {
 		memdelete(raycast_occlusion_cull);
 	}

@@ -31,7 +31,9 @@
 #ifndef SVG_REGISTER_TYPES_H
 #define SVG_REGISTER_TYPES_H
 
-void register_svg_types();
-void unregister_svg_types();
+#include "modules/register_module_types.h"
+
+void initialize_svg_module(ModuleInitializationLevel p_level);
+void uninitialize_svg_module(ModuleInitializationLevel p_level);
 
 #endif // SVG_REGISTER_TYPES_H

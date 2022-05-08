@@ -129,6 +129,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
 #include "scene/main/instance_placeholder.h"
+#include "scene/main/missing_node.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
@@ -226,6 +227,7 @@
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/joint_3d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
@@ -301,6 +303,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Object);
 
 	GDREGISTER_CLASS(Node);
+	GDREGISTER_VIRTUAL_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
@@ -480,6 +483,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);
+	GDREGISTER_CLASS(Label3D);
 	GDREGISTER_ABSTRACT_CLASS(Light3D);
 	GDREGISTER_CLASS(DirectionalLight3D);
 	GDREGISTER_CLASS(OmniLight3D);
@@ -750,6 +754,7 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
 	GDREGISTER_CLASS(ArrayMesh);
+	GDREGISTER_CLASS(PlaceholderMesh);
 	GDREGISTER_CLASS(ImmediateMesh);
 	GDREGISTER_CLASS(MultiMesh);
 	GDREGISTER_CLASS(SurfaceTool);
@@ -771,6 +776,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
+	GDREGISTER_CLASS(PlaceholderMaterial);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
@@ -835,6 +841,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CompressedCubemap);
 	GDREGISTER_CLASS(CompressedCubemapArray);
 	GDREGISTER_CLASS(CompressedTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderTexture2D);
+	GDREGISTER_CLASS(PlaceholderTexture3D);
+	GDREGISTER_ABSTRACT_CLASS(PlaceholderTextureLayered);
+	GDREGISTER_CLASS(PlaceholderTexture2DArray);
+	GDREGISTER_CLASS(PlaceholderCubemap);
+	GDREGISTER_CLASS(PlaceholderCubemapArray);
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
@@ -1083,8 +1095,6 @@ void register_scene_types() {
 	SceneReplicationInterface::make_default();
 	SceneRPCInterface::make_default();
 	SceneCacheInterface::make_default();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void initialize_theme() {
@@ -1107,6 +1117,9 @@ void initialize_theme() {
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
+	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
+
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
@@ -1117,7 +1130,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
 	}
 
 	if (!theme_path.is_empty()) {
@@ -1134,8 +1147,6 @@ void initialize_theme() {
 }
 
 void unregister_scene_types() {
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

@@ -55,7 +55,6 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
-#include "core/extension/native_extension_manager.h"
 #include "debugger/servers_debugger.h"
 #include "display_server.h"
 #include "navigation_server_2d.h"
@@ -85,17 +84,17 @@ ShaderTypes *shader_types = nullptr;
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
-	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
+	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
 
-	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
+	return memnew(PhysicsServer3DWrapMT(physics_server_3d, using_threads));
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
 
-	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
+	PhysicsServer2D *physics_server_2d = memnew(GodotPhysicsServer2D(using_threads));
 
-	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
+	return memnew(PhysicsServer2DWrapMT(physics_server_2d, using_threads));
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
@@ -257,15 +256,10 @@ void register_server_types() {
 
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics3D");
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 }
 
 void unregister_server_types() {
 	ServersDebugger::deinitialize();
-
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
-
 	memdelete(shader_types);
 }
 

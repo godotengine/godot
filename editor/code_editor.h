@@ -82,9 +82,12 @@ class FindReplaceBar : public HBoxContainer {
 	CodeTextEditor *base_text_editor = nullptr;
 	CodeEdit *text_editor = nullptr;
 
-	int result_line;
-	int result_col;
-	int results_count;
+	uint32_t flags = 0;
+
+	int result_line = 0;
+	int result_col = 0;
+	int results_count = -1;
+	int results_count_to_current = -1;
 
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
@@ -130,6 +133,9 @@ public:
 	bool search_current();
 	bool search_prev();
 	bool search_next();
+
+	bool needs_to_count_results = true;
+	bool line_col_changed_for_result = false;
 
 	FindReplaceBar();
 };

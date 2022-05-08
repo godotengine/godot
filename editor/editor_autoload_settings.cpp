@@ -396,7 +396,7 @@ void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
-	RES res = ResourceLoader::load(p_path);
+	Ref<Resource> res = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
 	Ref<PackedScene> scn = res;

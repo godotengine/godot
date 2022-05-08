@@ -65,6 +65,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/surface_tool.h"
@@ -80,6 +81,7 @@
 
 // FIXME: Hardcoded to avoid editor dependency.
 #define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
+#define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -358,9 +360,9 @@ static Transform3D _arr_to_xform(const Array &p_array) {
 	ERR_FAIL_COND_V(p_array.size() != 16, Transform3D());
 
 	Transform3D xform;
-	xform.basis.set_axis(Vector3::AXIS_X, Vector3(p_array[0], p_array[1], p_array[2]));
-	xform.basis.set_axis(Vector3::AXIS_Y, Vector3(p_array[4], p_array[5], p_array[6]));
-	xform.basis.set_axis(Vector3::AXIS_Z, Vector3(p_array[8], p_array[9], p_array[10]));
+	xform.basis.set_column(Vector3::AXIS_X, Vector3(p_array[0], p_array[1], p_array[2]));
+	xform.basis.set_column(Vector3::AXIS_Y, Vector3(p_array[4], p_array[5], p_array[6]));
+	xform.basis.set_column(Vector3::AXIS_Z, Vector3(p_array[8], p_array[9], p_array[10]));
 	xform.set_origin(Vector3(p_array[12], p_array[13], p_array[14]));
 
 	return xform;
@@ -369,17 +371,17 @@ static Transform3D _arr_to_xform(const Array &p_array) {
 static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 	Vector<real_t> array;
 	array.resize(16);
-	Vector3 axis_x = p_transform.get_basis().get_axis(Vector3::AXIS_X);
+	Vector3 axis_x = p_transform.get_basis().get_column(Vector3::AXIS_X);
 	array.write[0] = axis_x.x;
 	array.write[1] = axis_x.y;
 	array.write[2] = axis_x.z;
 	array.write[3] = 0.0f;
-	Vector3 axis_y = p_transform.get_basis().get_axis(Vector3::AXIS_Y);
+	Vector3 axis_y = p_transform.get_basis().get_column(Vector3::AXIS_Y);
 	array.write[4] = axis_y.x;
 	array.write[5] = axis_y.y;
 	array.write[6] = axis_y.z;
 	array.write[7] = 0.0f;
-	Vector3 axis_z = p_transform.get_basis().get_axis(Vector3::AXIS_Z);
+	Vector3 axis_z = p_transform.get_basis().get_column(Vector3::AXIS_Z);
 	array.write[8] = axis_z.x;
 	array.write[9] = axis_z.y;
 	array.write[10] = axis_z.z;
@@ -1958,20 +1960,20 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Transform3D attrib = p_attribs[i];
 		Basis basis = attrib.get_basis();
-		Vector3 axis_0 = basis.get_axis(Vector3::AXIS_X);
+		Vector3 axis_0 = basis.get_column(Vector3::AXIS_X);
 
 		attribs.write[i * element_count + 0] = Math::snapped(axis_0.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 1] = Math::snapped(axis_0.y, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 2] = Math::snapped(axis_0.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 3] = 0.0;
 
-		Vector3 axis_1 = basis.get_axis(Vector3::AXIS_Y);
+		Vector3 axis_1 = basis.get_column(Vector3::AXIS_Y);
 		attribs.write[i * element_count + 4] = Math::snapped(axis_1.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 5] = Math::snapped(axis_1.y, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 6] = Math::snapped(axis_1.z, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 7] = 0.0;
 
-		Vector3 axis_2 = basis.get_axis(Vector3::AXIS_Z);
+		Vector3 axis_2 = basis.get_column(Vector3::AXIS_Z);
 		attribs.write[i * element_count + 8] = Math::snapped(axis_2.x, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 9] = Math::snapped(axis_2.y, CMP_NORMALIZE_TOLERANCE);
 		attribs.write[i * element_count + 10] = Math::snapped(axis_2.z, CMP_NORMALIZE_TOLERANCE);
@@ -2103,9 +2105,9 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, cons
 	ERR_FAIL_COND_V(attribs.size() % 9 != 0, ret);
 	ret.resize(attribs.size() / 9);
 	for (int i = 0; i < ret.size(); i++) {
-		ret.write[i].set_axis(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
-		ret.write[i].set_axis(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
-		ret.write[i].set_axis(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
+		ret.write[i].set_column(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
+		ret.write[i].set_column(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
+		ret.write[i].set_column(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
 	}
 	return ret;
 }
@@ -2121,9 +2123,9 @@ Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state
 	ERR_FAIL_COND_V(attribs.size() % 16 != 0, ret);
 	ret.resize(attribs.size() / 16);
 	for (int i = 0; i < ret.size(); i++) {
-		ret.write[i].basis.set_axis(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
-		ret.write[i].basis.set_axis(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
-		ret.write[i].basis.set_axis(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
+		ret.write[i].basis.set_column(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
+		ret.write[i].basis.set_column(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
+		ret.write[i].basis.set_column(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
 		ret.write[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
 	}
 	return ret;
@@ -2918,30 +2920,32 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			//just add it
-
 			Ref<BaseMaterial3D> mat;
-			if (p.has("material")) {
-				const int material = p["material"];
-				ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
-				Ref<BaseMaterial3D> mat3d = state->materials[material];
-				ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
-				if (has_vertex_color) {
-					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-				}
-				mat = mat3d;
+			String mat_name;
+			if (!state->discard_meshes_and_materials) {
+				if (p.has("material")) {
+					const int material = p["material"];
+					ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
+					Ref<BaseMaterial3D> mat3d = state->materials[material];
+					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+					if (has_vertex_color) {
+						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
 
-			} else {
-				Ref<StandardMaterial3D> mat3d;
-				mat3d.instantiate();
-				if (has_vertex_color) {
-					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				} else {
+					Ref<StandardMaterial3D> mat3d;
+					mat3d.instantiate();
+					if (has_vertex_color) {
+						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
 				}
-				mat = mat3d;
+				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+				mat_name = mat->get_name();
 			}
-			ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
 			import_mesh->add_surface(primitive, array, morphs,
-					Dictionary(), mat, mat->get_name(), flags);
+					Dictionary(), mat, mat_name, flags);
 		}
 
 		Vector<float> blend_weights;
@@ -6908,8 +6912,8 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
-	state->use_named_skin_binds =
-			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	_convert_scene_node(state, p_node, -1, -1);
 	if (!state->buffers.size()) {
@@ -6929,6 +6933,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -6968,20 +6973,22 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE IMAGES */
-	err = _parse_images(state, p_search_path);
+	if (!state->discard_meshes_and_materials) {
+		/* PARSE IMAGES */
+		err = _parse_images(state, p_search_path);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE TEXTURES */
-	err = _parse_textures(state);
+		/* PARSE TEXTURES */
+		err = _parse_textures(state);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE TEXTURES */
-	err = _parse_materials(state);
+		/* PARSE TEXTURES */
+		err = _parse_materials(state);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+	}
 
 	/* PARSE SKINS */
 	err = _parse_skins(state);
@@ -7033,6 +7040,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	}
 	r_state->filename = p_path.get_file().get_basename();
 	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);

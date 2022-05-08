@@ -128,7 +128,7 @@ void ExportTemplateManager::_download_current() {
 		}
 
 		_download_template(mirror_url, true);
-	} else if (!mirrors_available && !is_refreshing_mirrors) {
+	} else if (!is_refreshing_mirrors) {
 		_set_current_progress_status(TTR("Retrieving the mirror list..."));
 		_refresh_mirrors();
 	}

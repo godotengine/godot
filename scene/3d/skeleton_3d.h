@@ -77,6 +77,7 @@ private:
 		int parent;
 
 		Transform3D rest;
+		Transform3D global_rest;
 
 		_FORCE_INLINE_ void update_pose_cache() {
 			if (pose_cache_dirty) {
@@ -136,12 +137,13 @@ private:
 
 	bool animate_physical_bones = true;
 	Vector<Bone> bones;
-	bool process_order_dirty;
+	bool process_order_dirty = false;
 
 	Vector<int> parentless_bones;
 
 	void _make_dirty();
 	bool dirty = false;
+	bool rest_dirty = false;
 
 	bool show_rest_only = false;
 
@@ -198,6 +200,7 @@ public:
 
 	void set_bone_rest(int p_bone, const Transform3D &p_rest);
 	Transform3D get_bone_rest(int p_bone) const;
+	Transform3D get_bone_global_rest(int p_bone) const;
 	Transform3D get_bone_global_pose(int p_bone) const;
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;
 

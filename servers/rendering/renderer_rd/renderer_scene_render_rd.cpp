@@ -2391,7 +2391,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		float bokeh_size = camfx->dof_blur_amount * 64.0;
 		if (can_use_storage) {
-			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_orthogonal);
 		} else {
 			// Set framebuffers.
 			buffers.base_fb = rb->texture_fb;
@@ -2406,7 +2406,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// Set weight buffers.
 			buffers.base_weight_fb = rb->base_weight_fb;
 
-			storage->get_effects()->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
+			storage->get_effects()->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_orthogonal);
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -2486,7 +2486,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	{
 		RD::get_singleton()->draw_command_begin_label("Tonemap");
 
-		EffectsRD::TonemapSettings tonemap;
+		RendererRD::ToneMapper::TonemapSettings tonemap;
 
 		if (can_use_effects && env && env->auto_exposure && rb->luminance.current.is_valid()) {
 			tonemap.use_auto_exposure = true;
@@ -2498,7 +2498,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (can_use_effects && env && env->glow_enabled) {
 			tonemap.use_glow = true;
-			tonemap.glow_mode = EffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
+			tonemap.glow_mode = RendererRD::ToneMapper::TonemapSettings::GlowMode(env->glow_blend_mode);
 			tonemap.glow_intensity = env->glow_blend_mode == RS::ENV_GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
 			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
 				tonemap.glow_levels[i] = env->glow_levels[i];
@@ -2556,7 +2556,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
-		storage->get_effects()->tonemapper(rb->internal_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
+		tone_mapper->tonemapper(rb->internal_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -2587,7 +2587,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
-	EffectsRD::TonemapSettings tonemap;
+	RendererRD::ToneMapper::TonemapSettings tonemap;
 
 	if (env) {
 		tonemap.tonemap_mode = env->tone_mapper;
@@ -2637,7 +2637,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = p_render_data->view_count;
 
-	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
+	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
 	RD::get_singleton()->draw_command_end_label();
 }
@@ -3280,7 +3280,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
 
-	Plane camera_plane(-p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
+	Plane camera_plane(-p_camera_transform.basis.get_column(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
@@ -3735,12 +3735,13 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		float fade = 1.0;
 
 		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
-			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
-			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
+			const real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
+			const float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
+			const float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
-				fade = 1.0 - (distance - fade_begin) / fade_length;
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - fade_begin) / fade_length);
 			}
 		}
 
@@ -3753,7 +3754,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		Transform3D to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
 		RendererStorageRD::store_transform(to_decal_xform, dd.xform);
 
-		Vector3 normal = xform.basis.get_axis(Vector3::AXIS_Y).normalized();
+		Vector3 normal = xform.basis.get_column(Vector3::AXIS_Y).normalized();
 		normal = p_camera_inverse_xform.basis.xform(normal); //camera is normalized, so fine
 
 		dd.normal[0] = normal.x;
@@ -3974,10 +3975,6 @@ RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_sour
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
-}
-
-RendererSceneRenderRD::FogShaderData::FogShaderData() {
-	valid = false;
 }
 
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
@@ -4828,7 +4825,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	render_state.shadows.clear();
 	render_state.directional_shadows.clear();
 
-	Plane camera_plane(-p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
+	Plane camera_plane(-p_render_data->cam_transform.basis.get_column(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
 	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
@@ -4998,7 +4995,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.view_projection[0] = p_camera_data->main_projection;
-		render_data.cam_ortogonal = p_camera_data->is_ortogonal;
+		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
@@ -5024,7 +5021,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 		// this should be the same for all cameras..
 		render_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
-		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
+		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_column(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			render_data.screen_mesh_lod_threshold = 0.0;
@@ -5327,8 +5324,8 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	}
 }
 
-void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
-	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, p_framebuffer, p_region);
+void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+	_render_material(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_instances, p_framebuffer, p_region);
 }
 
 void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) {
@@ -5343,7 +5340,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 	cam_pos.y += extents.y;
 
 	Transform3D cam_xform;
-	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_axis(Vector3::AXIS_Y), -p_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
+	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_column(Vector3::AXIS_Y), -p_transform.basis.get_column(Vector3::AXIS_Z).normalized());
 
 	RID fb = particles_storage->particles_collision_get_heightfield_framebuffer(p_collider);
 
@@ -5838,10 +5835,16 @@ void fog() {
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
+
+	tone_mapper = memnew(RendererRD::ToneMapper);
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	if (tone_mapper) {
+		memdelete(tone_mapper);
+	}
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
 		RD::get_singleton()->free(E.value.cubemap);

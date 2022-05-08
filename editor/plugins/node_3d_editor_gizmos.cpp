@@ -47,6 +47,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/joint_3d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
@@ -475,7 +476,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	}
 }
 
-void EditorNode3DGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
+void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
 	ERR_FAIL_COND(!spatial_node);
 
 	BoxMesh box_mesh;
@@ -588,7 +589,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 	Transform3D camera_xform = p_camera->get_global_transform();
 	Transform3D t = spatial_node->get_global_transform();
 	if (billboard_handle) {
-		t.set_look_at(t.origin, t.origin - camera_xform.basis.get_axis(2), camera_xform.basis.get_axis(1));
+		t.set_look_at(t.origin, t.origin - camera_xform.basis.get_column(2), camera_xform.basis.get_column(1));
 	}
 
 	float min_d = 1e20;
@@ -664,7 +665,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Transform3D orig_camera_transform = p_camera->get_camera_transform();
 
 		if (!orig_camera_transform.origin.is_equal_approx(t.origin) &&
-				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
+				ABS(orig_camera_transform.basis.get_column(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
 			p_camera->look_at(t.origin);
 		}
 
@@ -688,13 +689,13 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (collision_segments.size()) {
-		Plane camp(-p_camera->get_transform().basis.get_axis(2).normalized(), p_camera->get_transform().origin);
+		Plane camp(-p_camera->get_transform().basis.get_column(2).normalized(), p_camera->get_transform().origin);
 
 		int vc = collision_segments.size();
 		const Vector3 *vptr = collision_segments.ptr();
 		Transform3D t = spatial_node->get_global_transform();
 		if (billboard_handle) {
-			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
+			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_column(2), p_camera->get_transform().basis.get_column(1));
 		}
 
 		Vector3 cp;
@@ -741,7 +742,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Transform3D gt = spatial_node->get_global_transform();
 
 		if (billboard_handle) {
-			gt.set_look_at(gt.origin, gt.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
+			gt.set_look_at(gt.origin, gt.origin - p_camera->get_transform().basis.get_column(2), p_camera->get_transform().basis.get_column(1));
 		}
 
 		Transform3D ai = gt.affine_inverse();
@@ -1318,7 +1319,7 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 			light->set_param(Light3D::PARAM_RANGE, d);
 		} else if (Object::cast_to<OmniLight3D>(light)) {
-			Plane cp = Plane(p_camera->get_transform().basis.get_axis(2), gt.origin);
+			Plane cp = Plane(p_camera->get_transform().basis.get_column(2), gt.origin);
 
 			Vector3 inters;
 			if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
@@ -2163,6 +2164,38 @@ void Sprite3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
+	if (tm.is_valid()) {
+		p_gizmo->add_collision_triangles(tm);
+	}
+}
+
+///
+
+Label3DGizmoPlugin::Label3DGizmoPlugin() {
+}
+
+bool Label3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Label3D>(p_spatial) != nullptr;
+}
+
+String Label3DGizmoPlugin::get_gizmo_name() const {
+	return "Label3D";
+}
+
+int Label3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool Label3DGizmoPlugin::can_be_hidden() const {
+	return false;
+}
+
+void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Label3D *label = Object::cast_to<Label3D>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Ref<TriangleMesh> tm = label->generate_triangle_mesh();
 	if (tm.is_valid()) {
 		p_gizmo->add_collision_triangles(tm);
 	}
@@ -4799,7 +4832,7 @@ Basis JointGizmosDrawer::look_body(const Transform3D &p_joint_transform, const T
 	v_y.normalize();
 
 	Basis base;
-	base.set(v_x, v_y, v_z);
+	base.set_columns(v_x, v_y, v_z);
 
 	// Absorb current joint transform
 	base = p_joint_transform.basis.inverse() * base;
@@ -4824,7 +4857,7 @@ Basis JointGizmosDrawer::look_body_toward_x(const Transform3D &p_joint_transform
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
-	const Vector3 p_front(p_joint_transform.basis.get_axis(0));
+	const Vector3 p_front(p_joint_transform.basis.get_column(0));
 
 	Vector3 v_x, v_y, v_z;
 
@@ -4843,7 +4876,7 @@ Basis JointGizmosDrawer::look_body_toward_x(const Transform3D &p_joint_transform
 	v_x.normalize();
 
 	Basis base;
-	base.set(v_x, v_y, v_z);
+	base.set_columns(v_x, v_y, v_z);
 
 	// Absorb current joint transform
 	base = p_joint_transform.basis.inverse() * base;
@@ -4855,7 +4888,7 @@ Basis JointGizmosDrawer::look_body_toward_y(const Transform3D &p_joint_transform
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
-	const Vector3 p_up(p_joint_transform.basis.get_axis(1));
+	const Vector3 p_up(p_joint_transform.basis.get_column(1));
 
 	Vector3 v_x, v_y, v_z;
 
@@ -4874,7 +4907,7 @@ Basis JointGizmosDrawer::look_body_toward_y(const Transform3D &p_joint_transform
 	v_y.normalize();
 
 	Basis base;
-	base.set(v_x, v_y, v_z);
+	base.set_columns(v_x, v_y, v_z);
 
 	// Absorb current joint transform
 	base = p_joint_transform.basis.inverse() * base;
@@ -4886,7 +4919,7 @@ Basis JointGizmosDrawer::look_body_toward_z(const Transform3D &p_joint_transform
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
-	const Vector3 p_lateral(p_joint_transform.basis.get_axis(2));
+	const Vector3 p_lateral(p_joint_transform.basis.get_column(2));
 
 	Vector3 v_x, v_y, v_z;
 
@@ -4905,7 +4938,7 @@ Basis JointGizmosDrawer::look_body_toward_z(const Transform3D &p_joint_transform
 	v_x.normalize();
 
 	Basis base;
-	base.set(v_x, v_y, v_z);
+	base.set_columns(v_x, v_y, v_z);
 
 	// Absorb current joint transform
 	base = p_joint_transform.basis.inverse() * base;

@@ -148,6 +148,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		TabContainer *tab_container = Object::cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 		NodeDock::get_singleton()->get_parent()->call("set_current_tab", tab_container->get_tab_idx_from_control(NodeDock::get_singleton()));
 		NodeDock::get_singleton()->show_groups();
+	} else if (p_id == BUTTON_UNIQUE) {
+		undo_redo->create_action(TTR("Disable Scene Unique Name"));
+		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
+		undo_redo->add_undo_method(n, "set_unique_name_in_owner", true);
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->commit_action();
 	}
 }
 
@@ -229,7 +236,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 	} else if (part_of_subscene) {
 		if (valid_types.size() == 0) {
-			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		}
 	} else if (marked.has(p_node)) {
 		String node_name = p_node->get_name();
@@ -258,6 +265,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		String warning = p_node->get_configuration_warnings_as_string();
 		if (!warning.is_empty()) {
 			item->add_button(0, get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
+		}
+
+		if (p_node->is_unique_name_in_owner()) {
+			item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -344,13 +355,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 
 		if (p_node->is_class("CanvasItem")) {
-			bool is_locked = p_node->has_meta("_edit_lock_"); //_edit_group_
-			if (is_locked) {
+			if (p_node->has_meta("_edit_lock_")) {
 				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped) {
+			if (p_node->has_meta("_edit_group_")) {
 				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
 			}
 
@@ -378,13 +387,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed), varray(p_node));
 			}
 		} else if (p_node->is_class("Node3D")) {
-			bool is_locked = p_node->has_meta("_edit_lock_");
-			if (is_locked) {
+			if (p_node->has_meta("_edit_lock_")) {
 				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped) {
+			if (p_node->has_meta("_edit_group_")) {
 				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
 			}
 
@@ -831,6 +838,13 @@ void SceneTreeEditor::_renamed() {
 
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
+
+	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
+		error->set_text(TTR("Another node already uses this unique name in the scene."));
+		error->popup_centered();
+		which->set_text(0, n->get_name());
+		return;
+	}
 
 	if (!undo_redo) {
 		n->set_name(new_name);

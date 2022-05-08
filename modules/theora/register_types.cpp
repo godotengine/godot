@@ -34,14 +34,22 @@
 
 static Ref<ResourceFormatLoaderTheora> resource_loader_theora;
 
-void register_theora_types() {
+void initialize_theora_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	resource_loader_theora.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_theora, true);
 
 	GDREGISTER_CLASS(VideoStreamTheora);
 }
 
-void unregister_theora_types() {
+void uninitialize_theora_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	ResourceLoader::remove_resource_format_loader(resource_loader_theora);
 	resource_loader_theora.unref();
 }

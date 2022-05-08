@@ -709,10 +709,7 @@ void AudioStreamRandomizer::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLAYBACK_SEQUENTIAL);
 }
 
-AudioStreamRandomizer::AudioStreamRandomizer() {
-	random_pitch_scale = 1.1;
-	random_volume_offset_db = 5;
-}
+AudioStreamRandomizer::AudioStreamRandomizer() {}
 
 void AudioStreamPlaybackRandomizer::start(float p_from_pos) {
 	playing = playback;

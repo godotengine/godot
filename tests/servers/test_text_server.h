@@ -514,6 +514,49 @@ TEST_SUITE("[[TextServer]") {
 				CHECK(ts->strip_diacritics(U"ṽṿ ẁẃẅẇẉ ẋẍ ẏ ẑẓẕ ẖ ẗẘẙẛ") == U"vv wwwww xx y zzz h twys");
 			}
 		}
+
+		SUBCASE("[TextServer] Word break") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+
+				if (!ts->has_feature(TextServer::FEATURE_SIMPLE_LAYOUT)) {
+					continue;
+				}
+
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
+				{
+					String text1 = U"linguistically similar and effectively form";
+					//                           14^     22^ 26^         38^
+					PackedInt32Array breaks = ts->string_get_word_breaks(text1, "en");
+					CHECK(breaks.size() == 4);
+					if (breaks.size() == 4) {
+						CHECK(breaks[0] == 14);
+						CHECK(breaks[1] == 22);
+						CHECK(breaks[2] == 26);
+						CHECK(breaks[3] == 38);
+					}
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					String text2 = U"เป็นภาษาราชการและภาษาประจำชาติของประเทศไทย";
+					//				 เป็น ภาษา ราชการ และ ภาษา ประจำ ชาติ ของ ประเทศไทย
+					//                 3^   7^    13^ 16^  20^   25^ 29^ 32^
+
+					PackedInt32Array breaks = ts->string_get_word_breaks(text2, "th");
+					CHECK(breaks.size() == 8);
+					if (breaks.size() == 8) {
+						CHECK(breaks[0] == 3);
+						CHECK(breaks[1] == 7);
+						CHECK(breaks[2] == 13);
+						CHECK(breaks[3] == 16);
+						CHECK(breaks[4] == 20);
+						CHECK(breaks[5] == 25);
+						CHECK(breaks[6] == 29);
+						CHECK(breaks[7] == 32);
+					}
+				}
+			}
+		}
 	}
 }
 }; // namespace TestTextServer

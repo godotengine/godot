@@ -61,16 +61,16 @@ private:
 	RID particles;
 
 	bool one_shot;
-	int amount;
-	double lifetime;
-	double pre_process_time;
-	real_t explosiveness_ratio;
-	real_t randomness_ratio;
-	double speed_scale;
+	int amount = 0;
+	double lifetime = 0.0;
+	double pre_process_time = 0.0;
+	real_t explosiveness_ratio = 0.0;
+	real_t randomness_ratio = 0.0;
+	double speed_scale = 0.0;
 	AABB visibility_aabb;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
+	bool local_coords = false;
+	int fixed_fps = 0;
+	bool fractional_delta = false;
 	bool interpolate = true;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;

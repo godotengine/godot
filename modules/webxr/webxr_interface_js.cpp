@@ -59,7 +59,7 @@ void _emwebxr_on_session_started(char *p_reference_space_type) {
 	ERR_FAIL_COND(interface.is_null());
 
 	String reference_space_type = String(p_reference_space_type);
-	((WebXRInterfaceJS *)interface.ptr())->_set_reference_space_type(reference_space_type);
+	static_cast<WebXRInterfaceJS *>(interface.ptr())->_set_reference_space_type(reference_space_type);
 	interface->emit_signal(SNAME("session_started"));
 }
 
@@ -94,7 +94,7 @@ void _emwebxr_on_controller_changed() {
 	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
-	((WebXRInterfaceJS *)interface.ptr())->_on_controller_changed();
+	static_cast<WebXRInterfaceJS *>(interface.ptr())->_on_controller_changed();
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(char *p_signal_name, int p_input_source) {
@@ -291,15 +291,15 @@ void WebXRInterfaceJS::uninitialize() {
 Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	Transform3D transform;
 
-	transform.basis.elements[0].x = p_js_matrix[0];
-	transform.basis.elements[1].x = p_js_matrix[1];
-	transform.basis.elements[2].x = p_js_matrix[2];
-	transform.basis.elements[0].y = p_js_matrix[4];
-	transform.basis.elements[1].y = p_js_matrix[5];
-	transform.basis.elements[2].y = p_js_matrix[6];
-	transform.basis.elements[0].z = p_js_matrix[8];
-	transform.basis.elements[1].z = p_js_matrix[9];
-	transform.basis.elements[2].z = p_js_matrix[10];
+	transform.basis.rows[0].x = p_js_matrix[0];
+	transform.basis.rows[1].x = p_js_matrix[1];
+	transform.basis.rows[2].x = p_js_matrix[2];
+	transform.basis.rows[0].y = p_js_matrix[4];
+	transform.basis.rows[1].y = p_js_matrix[5];
+	transform.basis.rows[2].y = p_js_matrix[6];
+	transform.basis.rows[0].z = p_js_matrix[8];
+	transform.basis.rows[1].z = p_js_matrix[9];
+	transform.basis.rows[2].z = p_js_matrix[10];
 	transform.origin.x = p_js_matrix[12];
 	transform.origin.y = p_js_matrix[13];
 	transform.origin.z = p_js_matrix[14];

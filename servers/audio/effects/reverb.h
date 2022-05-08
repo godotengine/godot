@@ -77,10 +77,11 @@ private:
 	AllPass allpass[MAX_ALLPASS];
 	float *input_buffer = nullptr;
 	float *echo_buffer = nullptr;
-	int echo_buffer_size;
-	int echo_buffer_pos;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
 
-	float hpf_h1, hpf_h2 = 0;
+	float hpf_h1 = 0.0f;
+	float hpf_h2 = 0.0f;
 
 	struct Parameters {
 		float room_size;

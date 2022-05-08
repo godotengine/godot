@@ -287,7 +287,7 @@ public:
 
 class ResourceFormatLoaderCompressedTexture2D : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -552,7 +552,7 @@ public:
 
 class ResourceFormatLoaderCompressedTextureLayered : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -673,7 +673,7 @@ public:
 
 class ResourceFormatLoaderCompressedTexture3D : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -1009,6 +1009,100 @@ public:
 
 	CameraTexture();
 	~CameraTexture();
+};
+
+class PlaceholderTexture2D : public Texture2D {
+	GDCLASS(PlaceholderTexture2D, Texture2D)
+
+	RID rid;
+	Size2 size = Size2(1, 1);
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_size(Size2 p_size);
+
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override;
+
+	virtual Ref<Image> get_image() const override;
+
+	PlaceholderTexture2D();
+	~PlaceholderTexture2D();
+};
+
+class PlaceholderTexture3D : public Texture3D {
+	GDCLASS(PlaceholderTexture3D, Texture3D)
+
+	RID rid;
+	Vector3i size = Vector3i(1, 1, 1);
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_size(const Vector3i &p_size);
+	Vector3i get_size() const;
+	virtual Image::Format get_format() const override;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual int get_depth() const override;
+	virtual bool has_mipmaps() const override;
+	virtual Vector<Ref<Image>> get_data() const override;
+
+	PlaceholderTexture3D();
+	~PlaceholderTexture3D();
+};
+
+class PlaceholderTextureLayered : public TextureLayered {
+	GDCLASS(PlaceholderTextureLayered, TextureLayered)
+
+	RID rid;
+	Size2i size = Size2i(1, 1);
+	int layers = 1;
+	LayeredType layered_type = LAYERED_TYPE_2D_ARRAY;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_size(const Size2i &p_size);
+	Size2i get_size() const;
+	void set_layers(int p_layers);
+	virtual Image::Format get_format() const override;
+	virtual LayeredType get_layered_type() const override;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual int get_layers() const override;
+	virtual bool has_mipmaps() const override;
+	virtual Ref<Image> get_layer_data(int p_layer) const override;
+
+	PlaceholderTextureLayered(LayeredType p_type);
+	~PlaceholderTextureLayered();
+};
+
+class PlaceholderTexture2DArray : public PlaceholderTextureLayered {
+	GDCLASS(PlaceholderTexture2DArray, PlaceholderTextureLayered)
+public:
+	PlaceholderTexture2DArray() :
+			PlaceholderTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
+};
+
+class PlaceholderCubemap : public PlaceholderTextureLayered {
+	GDCLASS(PlaceholderCubemap, PlaceholderTextureLayered)
+public:
+	PlaceholderCubemap() :
+			PlaceholderTextureLayered(LAYERED_TYPE_CUBEMAP) {}
+};
+
+class PlaceholderCubemapArray : public PlaceholderTextureLayered {
+	GDCLASS(PlaceholderCubemapArray, PlaceholderTextureLayered)
+public:
+	PlaceholderCubemapArray() :
+			PlaceholderTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
 #endif

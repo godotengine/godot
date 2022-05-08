@@ -146,7 +146,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		Vector3 sideways = up.cross(forward).normalized();
 		up = forward.cross(sideways).normalized();
 
-		t.basis.set(sideways, up, forward);
+		t.basis.set_columns(sideways, up, forward);
 		t.basis.scale_local(scale);
 
 		t.origin = pos + sideways * h_offset + up * v_offset;
@@ -310,7 +310,7 @@ void PathFollow3D::set_offset(real_t p_offset) {
 		if (path->get_curve().is_valid()) {
 			real_t path_length = path->get_curve()->get_baked_length();
 
-			if (loop) {
+			if (loop && path_length) {
 				offset = Math::fposmod(offset, path_length);
 				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
 					offset = path_length;

@@ -147,8 +147,8 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 	Vector3 b1Axis1, b1Axis2, b1Axis3;
 	Vector3 b2Axis1, b2Axis2;
 
-	b1Axis1 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_axis(0));
-	b2Axis1 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(0));
+	b1Axis1 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(0));
+	b2Axis1 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_column(0));
 
 	real_t swing1 = real_t(0.), swing2 = real_t(0.);
 
@@ -158,7 +158,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 
 	// Get Frame into world space
 	if (m_swingSpan1 >= real_t(0.05f)) {
-		b1Axis2 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_axis(1));
+		b1Axis2 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(1));
 		//swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis2);
@@ -169,7 +169,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 	}
 
 	if (m_swingSpan2 >= real_t(0.05f)) {
-		b1Axis3 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_axis(2));
+		b1Axis3 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(2));
 		//swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis3);
@@ -199,7 +199,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 
 	// Twist limits
 	if (m_twistSpan >= real_t(0.)) {
-		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
+		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_column(1));
 		Quaternion rotationArc = Quaternion(b2Axis1, b1Axis1);
 		Vector3 TwistRef = rotationArc.xform(b2Axis22);
 		real_t twist = atan2fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));

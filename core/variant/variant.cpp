@@ -184,7 +184,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	if (p_type_from == p_type_to) {
 		return true;
 	}
-	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
+	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
 	}
 
@@ -490,7 +490,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	if (p_type_from == p_type_to) {
 		return true;
 	}
-	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
+	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
 	}
 
@@ -1620,6 +1620,27 @@ Variant::operator String() const {
 	return stringify(0);
 }
 
+String stringify_variant_clean(const Variant p_variant, int recursion_count) {
+	String s = p_variant.stringify(recursion_count);
+
+	// Wrap strings in quotes to avoid ambiguity.
+	switch (p_variant.get_type()) {
+		case Variant::STRING: {
+			s = s.c_escape().quote();
+		} break;
+		case Variant::STRING_NAME: {
+			s = "&" + s.c_escape().quote();
+		} break;
+		case Variant::NODE_PATH: {
+			s = "^" + s.c_escape().quote();
+		} break;
+		default: {
+		} break;
+	}
+
+	return s;
+}
+
 template <class T>
 String stringify_vector(const T &vec, int recursion_count) {
 	String str("[");
@@ -1627,7 +1648,8 @@ String stringify_vector(const T &vec, int recursion_count) {
 		if (i > 0) {
 			str += ", ";
 		}
-		str = str + Variant(vec[i]).stringify(recursion_count);
+
+		str += stringify_variant_clean(vec[i], recursion_count);
 	}
 	str += "]";
 	return str;
@@ -1691,8 +1713,8 @@ String Variant::stringify(int recursion_count) const {
 			recursion_count++;
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 				_VariantStrPair sp;
-				sp.key = E->get().stringify(recursion_count);
-				sp.value = d[E->get()].stringify(recursion_count);
+				sp.key = stringify_variant_clean(E->get(), recursion_count);
+				sp.value = stringify_variant_clean(d[E->get()], recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -1741,8 +1763,7 @@ String Variant::stringify(int recursion_count) const {
 				return "[...]";
 			}
 
-			String str = stringify_vector(arr, recursion_count);
-			return str;
+			return stringify_vector(arr, recursion_count);
 
 		} break;
 		case OBJECT: {
@@ -1908,12 +1929,12 @@ Variant::operator Transform3D() const {
 	} else if (type == TRANSFORM2D) {
 		const Transform2D &t = *_data._transform2d;
 		Transform3D m;
-		m.basis.elements[0][0] = t.elements[0][0];
-		m.basis.elements[1][0] = t.elements[0][1];
-		m.basis.elements[0][1] = t.elements[1][0];
-		m.basis.elements[1][1] = t.elements[1][1];
-		m.origin[0] = t.elements[2][0];
-		m.origin[1] = t.elements[2][1];
+		m.basis.rows[0][0] = t.columns[0][0];
+		m.basis.rows[1][0] = t.columns[0][1];
+		m.basis.rows[0][1] = t.columns[1][0];
+		m.basis.rows[1][1] = t.columns[1][1];
+		m.origin[0] = t.columns[2][0];
+		m.origin[1] = t.columns[2][1];
 		return m;
 	} else {
 		return Transform3D();
@@ -1926,12 +1947,12 @@ Variant::operator Transform2D() const {
 	} else if (type == TRANSFORM3D) {
 		const Transform3D &t = *_data._transform3d;
 		Transform2D m;
-		m.elements[0][0] = t.basis.elements[0][0];
-		m.elements[0][1] = t.basis.elements[1][0];
-		m.elements[1][0] = t.basis.elements[0][1];
-		m.elements[1][1] = t.basis.elements[1][1];
-		m.elements[2][0] = t.origin[0];
-		m.elements[2][1] = t.origin[1];
+		m.columns[0][0] = t.basis.rows[0][0];
+		m.columns[0][1] = t.basis.rows[1][0];
+		m.columns[1][0] = t.basis.rows[0][1];
+		m.columns[1][1] = t.basis.rows[1][1];
+		m.columns[2][0] = t.origin[0];
+		m.columns[2][1] = t.origin[1];
 		return m;
 	} else {
 		return Transform2D();
@@ -2790,7 +2811,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 2; j++) {
-					hash = hash_djb2_one_float(_data._transform2d->elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._transform2d->columns[i][j], hash);
 				}
 			}
 
@@ -2834,7 +2855,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._basis->elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._basis->rows[i][j], hash);
 				}
 			}
 
@@ -2845,7 +2866,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._transform3d->basis.elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._transform3d->basis.rows[i][j], hash);
 				}
 				hash = hash_djb2_one_float(_data._transform3d->origin[i], hash);
 			}
@@ -3112,7 +3133,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			Transform2D *r = p_variant._data._transform2d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector2(l->elements[i], r->elements[i]))) {
+				if (!(hash_compare_vector2(l->columns[i], r->columns[i]))) {
 					return false;
 				}
 			}
@@ -3162,7 +3183,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Basis *r = p_variant._data._basis;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->elements[i], r->elements[i]))) {
+				if (!(hash_compare_vector3(l->rows[i], r->rows[i]))) {
 					return false;
 				}
 			}
@@ -3175,7 +3196,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Transform3D *r = p_variant._data._transform3d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i]))) {
+				if (!(hash_compare_vector3(l->basis.rows[i], r->basis.rows[i]))) {
 					return false;
 				}
 			}
@@ -3341,27 +3362,7 @@ String Variant::get_construct_string() const {
 }
 
 String Variant::get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	String err_text;
-
-	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-		int errorarg = ce.argument;
-		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		} else {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		}
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Method not found.";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-		err_text = "Instance is null";
-	} else if (ce.error == Callable::CallError::CALL_OK) {
-		return "Call OK";
-	}
-	return "'" + String(p_method) + "': " + err_text;
+	return get_call_error_text(nullptr, p_method, p_argptrs, p_argcount, ce);
 }
 
 String Variant::get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
@@ -3386,37 +3387,20 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 		return "Call OK";
 	}
 
-	String class_name = p_base->get_class();
-	Ref<Resource> script = p_base->get_script();
-	if (script.is_valid() && script->get_path().is_resource_file()) {
-		class_name += "(" + script->get_path().get_file() + ")";
+	String base_text;
+	if (p_base) {
+		base_text = p_base->get_class();
+		Ref<Resource> script = p_base->get_script();
+		if (script.is_valid() && script->get_path().is_resource_file()) {
+			base_text += "(" + script->get_path().get_file() + ")";
+		}
+		base_text += "::";
 	}
-	return "'" + class_name + "::" + String(p_method) + "': " + err_text;
+	return "'" + base_text + String(p_method) + "': " + err_text;
 }
 
 String Variant::get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	String err_text;
-
-	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-		int errorarg = ce.argument;
-		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		} else {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
-		}
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Method not found.";
-	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-		err_text = "Instance is null";
-	} else if (ce.error == Callable::CallError::CALL_OK) {
-		return "Call OK";
-	}
-
-	return String(p_callable) + " : " + err_text;
+	return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, p_argcount, ce);
 }
 
 String vformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {

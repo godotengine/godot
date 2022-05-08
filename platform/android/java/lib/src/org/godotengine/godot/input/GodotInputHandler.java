@@ -34,8 +34,9 @@ import static org.godotengine.godot.utils.GLUtils.DEBUG;
 
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotRenderView;
-import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
+import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
@@ -53,9 +54,9 @@ import java.util.Set;
 /**
  * Handles input related events for the {@link GodotRenderView} view.
  */
-public class GodotInputHandler implements InputDeviceListener {
+public class GodotInputHandler implements InputManager.InputDeviceListener {
 	private final GodotRenderView mRenderView;
-	private final InputManagerCompat mInputManager;
+	private final InputManager mInputManager;
 
 	private final String tag = this.getClass().getSimpleName();
 
@@ -64,7 +65,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public GodotInputHandler(GodotRenderView godotView) {
 		mRenderView = godotView;
-		mInputManager = InputManagerCompat.Factory.getInputManager(mRenderView.getView().getContext());
+		mInputManager = (InputManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_SERVICE);
 		mInputManager.registerInputDeviceListener(this, null);
 	}
 

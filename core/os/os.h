@@ -54,7 +54,6 @@ class OS {
 	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
@@ -68,7 +67,7 @@ class OS {
 	// for the user interface we keep a record of the current display driver
 	// so we can retrieve the rendering drivers available
 	int _display_driver_id = -1;
-	String _current_rendering_driver_name = "";
+	String _current_rendering_driver_name;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -138,7 +137,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
 
@@ -153,6 +152,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
@@ -263,6 +263,8 @@ public:
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
+
+	virtual uint64_t get_embedded_pck_offset() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;

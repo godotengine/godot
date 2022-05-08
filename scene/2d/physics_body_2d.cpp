@@ -58,7 +58,11 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(parameters, result, p_test_only)) {
+
+	bool collided = move_and_collide(parameters, result, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && result.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -119,7 +123,7 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 
 	if (!p_test_only) {
 		Transform2D gt = p_parameters.from;
-		gt.elements[2] += r_result.travel;
+		gt.columns[2] += r_result.travel;
 		set_global_transform(gt);
 	}
 
@@ -924,7 +928,7 @@ TypedArray<String> RigidDynamicBody2D::get_configuration_warnings() const {
 
 	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
 
-	if (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05) {
+	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidDynamicBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
@@ -1106,7 +1110,7 @@ bool CharacterBody2D::move_and_slide() {
 
 	Vector2 current_platform_velocity = platform_velocity;
 	Transform2D gt = get_global_transform();
-	previous_position = gt.elements[2];
+	previous_position = gt.columns[2];
 
 	if ((on_floor || on_wall) && platform_rid.is_valid()) {
 		bool excluded = false;
@@ -1119,7 +1123,7 @@ bool CharacterBody2D::move_and_slide() {
 			//this approach makes sure there is less delay between the actual body velocity and the one we saved
 			PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(platform_rid);
 			if (bs) {
-				Vector2 local_position = gt.elements[2] - bs->get_transform().elements[2];
+				Vector2 local_position = gt.columns[2] - bs->get_transform().columns[2];
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
 			} else {
 				// Body is removed or destroyed, invalidate floor.
@@ -1200,7 +1204,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
 
-		Vector2 prev_position = parameters.from.elements[2];
+		Vector2 prev_position = parameters.from.columns[2];
 
 		PhysicsServer2D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
@@ -1227,7 +1231,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01) {
 				Transform2D gt = get_global_transform();
 				if (result.travel.length() <= margin + CMP_EPSILON) {
-					gt.elements[2] -= result.travel;
+					gt.columns[2] -= result.travel;
 				}
 				set_global_transform(gt);
 				velocity = Vector2();
@@ -1249,11 +1253,11 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					if (result.travel.length() <= margin + CMP_EPSILON) {
 						// Cancels the motion.
 						Transform2D gt = get_global_transform();
-						gt.elements[2] -= result.travel;
+						gt.columns[2] -= result.travel;
 						set_global_transform(gt);
 					}
 					// Determines if you are on the ground.
-					_snap_on_floor(true, false);
+					_snap_on_floor(true, false, true);
 					velocity = Vector2();
 					last_motion = Vector2();
 					motion = Vector2();
@@ -1308,7 +1312,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			can_apply_constant_speed = false;
 			sliding_enabled = true;
 			Transform2D gt = get_global_transform();
-			gt.elements[2] = prev_position;
+			gt.columns[2] = prev_position;
 			set_global_transform(gt);
 
 			Vector2 motion_slide_norm = motion.slide(prev_floor_normal).normalized();
@@ -1392,8 +1396,8 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 	}
 }
 
-void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) {
-	if (on_floor || !was_on_floor || vel_dir_facing_up) {
+void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor) {
+	if (on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return;
 	}
 
@@ -1405,7 +1409,8 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 
 	PhysicsServer2D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
-		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+		if ((result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) ||
+				(p_wall_as_floor && result.get_angle(-up_direction) > floor_max_angle + FLOOR_ANGLE_THRESHOLD)) {
 			on_floor = true;
 			floor_normal = result.collision_normal;
 			_set_platform_data(result);
@@ -1420,14 +1425,14 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 				}
 			}
 
-			parameters.from.elements[2] += result.travel;
+			parameters.from.columns[2] += result.travel;
 			set_global_transform(parameters.from);
 		}
 	}
 }
 
-bool CharacterBody2D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
-	if (up_direction == Vector2() || on_floor || !was_on_floor || vel_dir_facing_up) {
+bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up) {
+	if (up_direction == Vector2() || on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return false;
 	}
 
@@ -1516,7 +1521,7 @@ const Vector2 &CharacterBody2D::get_last_motion() const {
 }
 
 Vector2 CharacterBody2D::get_position_delta() const {
-	return get_global_transform().elements[2] - previous_position;
+	return get_global_transform().columns[2] - previous_position;
 }
 
 const Vector2 &CharacterBody2D::get_real_velocity() const {

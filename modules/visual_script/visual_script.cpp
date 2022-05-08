@@ -930,6 +930,9 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	get_variable_list(&vars);
 
 	for (const StringName &E : vars) {
+		if (!variables[E]._export) {
+			continue;
+		}
 		PropertyInfo pi = variables[E].info;
 		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_list->push_back(pi);
@@ -1118,7 +1121,7 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_function", "name"), &VisualScript::has_function);
 	ClassDB::bind_method(D_METHOD("remove_function", "name"), &VisualScript::remove_function);
 	ClassDB::bind_method(D_METHOD("rename_function", "name", "new_name"), &VisualScript::rename_function);
-	ClassDB::bind_method(D_METHOD("set_scroll", "ofs"), &VisualScript::set_scroll);
+	ClassDB::bind_method(D_METHOD("set_scroll", "offset"), &VisualScript::set_scroll);
 	ClassDB::bind_method(D_METHOD("get_scroll"), &VisualScript::get_scroll);
 
 	ClassDB::bind_method(D_METHOD("add_node", "id", "node", "position"), &VisualScript::add_node, DEFVAL(Point2()));

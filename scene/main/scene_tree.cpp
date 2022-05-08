@@ -438,6 +438,10 @@ bool SceneTree::process(double p_time) {
 
 	if (multiplayer_poll) {
 		multiplayer->poll();
+		const NodePath *rpath = nullptr;
+		while ((rpath = custom_multiplayers.next(rpath))) {
+			custom_multiplayers[*rpath]->poll();
+		}
 	}
 
 	emit_signal(SNAME("process_frame"));
@@ -977,12 +981,12 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
-		return nullptr; //no group
+		return nullptr; // No group.
 	}
 
-	_update_group_order(E->get()); //update order just in case
+	_update_group_order(E->get()); // Update order just in case.
 
-	if (E->get().nodes.size() == 0) {
+	if (E->get().nodes.is_empty()) {
 		return nullptr;
 	}
 
@@ -1113,9 +1117,7 @@ Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_a
 }
 
 Ref<Tween> SceneTree::create_tween() {
-	Ref<Tween> tween;
-	tween.instantiate();
-	tween->set_valid(true);
+	Ref<Tween> tween = memnew(Tween(true));
 	tweens.push_back(tween);
 	return tween;
 }
@@ -1133,8 +1135,51 @@ Array SceneTree::get_processed_tweens() {
 	return ret;
 }
 
-Ref<MultiplayerAPI> SceneTree::get_multiplayer() const {
-	return multiplayer;
+Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
+	Ref<MultiplayerAPI> out = multiplayer;
+	const NodePath *spath = nullptr;
+	while ((spath = custom_multiplayers.next(spath))) {
+		const Vector<StringName> snames = (*spath).get_names();
+		const Vector<StringName> tnames = p_for_path.get_names();
+		if (tnames.size() < snames.size()) {
+			continue;
+		}
+		const StringName *sptr = snames.ptr();
+		const StringName *nptr = tnames.ptr();
+		bool valid = true;
+		for (int i = 0; i < snames.size(); i++) {
+			if (sptr[i] != nptr[i]) {
+				valid = false;
+				break;
+			}
+		}
+		if (valid) {
+			out = custom_multiplayers[*spath];
+			break;
+		}
+	}
+	return out;
+}
+
+void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
+	if (p_root_path.is_empty()) {
+		ERR_FAIL_COND(!p_multiplayer.is_valid());
+		if (multiplayer.is_valid()) {
+			multiplayer->set_root_path(NodePath());
+		}
+		multiplayer = p_multiplayer;
+		multiplayer->set_root_path("/" + root->get_name());
+	} else {
+		if (p_multiplayer.is_valid()) {
+			custom_multiplayers[p_root_path] = p_multiplayer;
+			p_multiplayer->set_root_path(p_root_path);
+		} else {
+			if (custom_multiplayers.has(p_root_path)) {
+				custom_multiplayers[p_root_path]->set_root_path(NodePath());
+				custom_multiplayers.erase(p_root_path);
+			}
+		}
+	}
 }
 
 void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
@@ -1143,13 +1188,6 @@ void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
 
 bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
-}
-
-void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
-	ERR_FAIL_COND(!p_multiplayer.is_valid());
-
-	multiplayer = p_multiplayer;
-	multiplayer->set_root_path("/" + root->get_name());
 }
 
 void SceneTree::_bind_methods() {
@@ -1214,8 +1252,8 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 
-	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer"), &SceneTree::set_multiplayer);
-	ClassDB::bind_method(D_METHOD("get_multiplayer"), &SceneTree::get_multiplayer);
+	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer", "root_path"), &SceneTree::set_multiplayer, DEFVAL(NodePath()));
+	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
@@ -1225,7 +1263,6 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "set_multiplayer", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));

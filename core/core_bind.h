@@ -73,9 +73,9 @@ public:
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
-	RES load_threaded_get(const String &p_path);
+	Ref<Resource> load_threaded_get(const String &p_path);
 
-	RES load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
@@ -107,8 +107,8 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
-	Vector<String> get_recognized_extensions(const RES &p_resource);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags);
+	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 
 	ResourceSaver() { singleton = this; }
 };
@@ -173,6 +173,7 @@ public:
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
@@ -235,6 +236,7 @@ public:
 
 	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	Error move_to_trash(const String &p_path) const;
 	String get_user_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;

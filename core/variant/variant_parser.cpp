@@ -162,6 +162,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						return OK;
 					}
 					if (ch == '\n') {
+						line++;
 						break;
 					}
 				}
@@ -344,7 +345,6 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
 					r_token.value = StringName(str);
-					string_name = false; //reset
 				} else {
 					r_token.type = TK_STRING;
 					r_token.value = str;
@@ -807,7 +807,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			REF ref = REF(Object::cast_to<RefCounted>(obj));
+			Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
@@ -888,7 +888,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			if (p_res_parser && id == "Resource" && p_res_parser->func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -896,7 +896,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				value = res;
 			} else if (p_res_parser && id == "ExtResource" && p_res_parser->ext_func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->ext_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -904,7 +904,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				value = res;
 			} else if (p_res_parser && id == "SubResource" && p_res_parser->sub_func) {
-				RES res;
+				Ref<Resource> res;
 				Error err = p_res_parser->sub_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
 					return err;
@@ -915,7 +915,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_STRING) {
 					String path = token.value;
-					RES res = ResourceLoader::load(path);
+					Ref<Resource> res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						r_err_str = "Can't load resource at path: '" + path + "'.";
 						return ERR_PARSE_ERROR;
@@ -1402,6 +1402,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return ERR_FILE_EOF;
 				}
 				if (ch == '\n') {
+					line++;
 					break;
 				}
 			}
@@ -1556,7 +1557,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.columns[i][j]);
 				}
 			}
 
@@ -1571,7 +1572,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.rows[i][j]);
 				}
 			}
 
@@ -1587,7 +1588,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.rows[i][j]);
 				}
 			}
 
@@ -1625,7 +1626,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				break; // don't save it
 			}
 
-			RES res = p_variant;
+			Ref<Resource> res = p_variant;
 			if (res.is_valid()) {
 				//is resource
 				String res_text;

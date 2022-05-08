@@ -42,7 +42,7 @@ class GDScriptAnalyzer {
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
-	List<const GDScriptParser::LambdaNode *> lambda_stack;
+	List<GDScriptParser::LambdaNode *> lambda_stack;
 
 	// Tests for detecting invalid overloading of script members
 	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node);
@@ -115,6 +115,7 @@ class GDScriptAnalyzer {
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
+	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 #ifdef DEBUG_ENABLED

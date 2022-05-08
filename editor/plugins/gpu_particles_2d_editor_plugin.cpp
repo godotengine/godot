@@ -290,7 +290,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	{
 		uint8_t *tw = texdata.ptrw();
-		float *twf = (float *)tw;
+		float *twf = reinterpret_cast<float *>(tw);
 		for (int i = 0; i < vpc; i++) {
 			twf[i * 2 + 0] = valid_positions[i].x;
 			twf[i * 2 + 1] = valid_positions[i].y;
@@ -334,7 +334,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		{
 			uint8_t *tw = normdata.ptrw();
-			float *twf = (float *)tw;
+			float *twf = reinterpret_cast<float *>(tw);
 			for (int i = 0; i < vpc; i++) {
 				twf[i * 2 + 0] = valid_normals[i].x;
 				twf[i * 2 + 1] = valid_normals[i].y;

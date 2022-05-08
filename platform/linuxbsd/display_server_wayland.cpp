@@ -1990,7 +1990,7 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 	return wls.cursor_shape;
 }
 
-void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 	print_verbose("wayland stub cursor_set_custom_image");
 }

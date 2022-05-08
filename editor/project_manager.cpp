@@ -575,16 +575,16 @@ private:
 					unzClose(pkg);
 
 					if (failed_files.size()) {
-						String msg = TTR("The following files failed extraction from package:") + "\n\n";
+						String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
 						for (int i = 0; i < failed_files.size(); i++) {
 							if (i > 15) {
-								msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+								err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
 								break;
 							}
-							msg += failed_files[i] + "\n";
+							err_msg += failed_files[i] + "\n";
 						}
 
-						dialog_error->set_text(msg);
+						dialog_error->set_text(err_msg);
 						dialog_error->popup_centered();
 
 					} else if (!project_path->get_text().ends_with(".zip")) {
@@ -802,7 +802,7 @@ public:
 
 		project_path = memnew(LineEdit);
 		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		project_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 		pphb->add_child(project_path);
 
 		install_path_container = memnew(VBoxContainer);
@@ -817,7 +817,7 @@ public:
 
 		install_path = memnew(LineEdit);
 		install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		install_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+		install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 		iphb->add_child(install_path);
 
 		// status icon
@@ -1440,7 +1440,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		}
 
 		Label *fpath = memnew(Label(item.path));
-		fpath->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+		fpath->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 		path_hb->add_child(fpath);
 		fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		fpath->set_modulate(Color(1, 1, 1, 0.5));
@@ -2877,17 +2877,15 @@ ProjectManager::ProjectManager() {
 		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
 		Vector2i screen_position = DisplayServer::get_singleton()->screen_get_position();
 
-		// Consider the editor display scale.
-		window_size.x = round((float)window_size.x * scale_factor);
-		window_size.y = round((float)window_size.y * scale_factor);
-
-		// Make the window centered on the screen.
-		Vector2i window_position;
-		window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
-		window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+		window_size *= scale_factor;
 
 		DisplayServer::get_singleton()->window_set_size(window_size);
-		DisplayServer::get_singleton()->window_set_position(window_position);
+		if (screen_size != Vector2i()) {
+			Vector2i window_position;
+			window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
+			window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+			DisplayServer::get_singleton()->window_set_position(window_position);
+		}
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);

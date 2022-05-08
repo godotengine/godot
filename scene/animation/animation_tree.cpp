@@ -541,9 +541,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	player->get_animation_list(&sname);
 
 	Ref<Animation> reset_anim;
-	bool has_reset_anim = player->has_animation("RESET");
+	bool has_reset_anim = player->has_animation(SceneStringNames::get_singleton()->RESET);
 	if (has_reset_anim) {
-		reset_anim = player->get_animation("RESET");
+		reset_anim = player->get_animation(SceneStringNames::get_singleton()->RESET);
 	}
 	for (const StringName &E : sname) {
 		Ref<Animation> anim = player->get_animation(E);
@@ -570,7 +570,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			}
 
 			if (!track) {
-				RES resource;
+				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
@@ -999,7 +999,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
 								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 0);
+								t->rot = Quaternion(0, 0, 0, 1);
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;
@@ -1095,7 +1095,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
 								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 0);
+								t->rot = Quaternion(0, 0, 0, 1);
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;
@@ -1191,7 +1191,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
 								t->loc = Vector3(0, 0, 0);
-								t->rot = Quaternion(0, 0, 0, 0);
+								t->rot = Quaternion(0, 0, 0, 1);
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;

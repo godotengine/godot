@@ -266,7 +266,7 @@ public:
 			}
 		}
 
-		void fix_unit_scale(Collada &state);
+		void fix_unit_scale(const Collada &state);
 
 		bool operator<(const Vertex &p_vert) const {
 			if (uid == p_vert.uid) {
@@ -348,7 +348,7 @@ public:
 
 		Node *parent = nullptr;
 
-		Transform3D compute_transform(Collada &state) const;
+		Transform3D compute_transform(const Collada &state) const;
 		Transform3D get_global_transform() const;
 		Transform3D get_transform() const;
 

@@ -208,8 +208,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), get_theme_color(SNAME("font_disabled_color")));
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), get_theme_color(SNAME("font_outline_color")));
 	tab_bar->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("font")));
-	tab_bar->add_theme_constant_override(SNAME("font_size"), get_theme_constant(SNAME("font_size")));
-	tab_bar->add_theme_constant_override(SNAME("hseparation"), get_theme_constant(SNAME("icon_separation")));
+	tab_bar->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("font_size")));
+	tab_bar->add_theme_constant_override(SNAME("h_separation"), get_theme_constant(SNAME("icon_separation")));
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), get_theme_constant(SNAME("outline_size")));
 
 	_update_margins();
@@ -523,7 +523,7 @@ void TabContainer::move_child_notify(Node *p_child) {
 	Control *c = Object::cast_to<Control>(p_child);
 	if (c && !c->is_set_as_top_level()) {
 		int old_idx = -1;
-		String tab_name = c->has_meta("_tab_name") ? String(c->get_meta("_tab_name")) : String(c->get_name());
+		String tab_name = String(c->get_meta("_tab_name", c->get_name()));
 
 		// Find the previous tab index of the control.
 		for (int i = 0; i < get_tab_count(); i++) {
@@ -556,9 +556,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		update();
 	}
 
-	if (p_child->has_meta("_tab_name")) {
-		p_child->remove_meta("_tab_name");
-	}
+	p_child->remove_meta("_tab_name");
 	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
@@ -679,9 +677,7 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	tab_bar->set_tab_title(p_tab, p_title);
 
 	if (p_title == child->get_name()) {
-		if (child->has_meta("_tab_name")) {
-			child->remove_meta("_tab_name");
-		}
+		child->remove_meta("_tab_name");
 	} else {
 		child->set_meta("_tab_name", p_title);
 	}

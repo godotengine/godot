@@ -2143,7 +2143,7 @@ void TileMap::set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPat
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
 		Vector2i coords = map_pattern(p_position, used_cells[i], p_pattern);
-		set_cell(p_layer, coords, p_pattern->get_cell_source_id(coords), p_pattern->get_cell_atlas_coords(coords), p_pattern->get_cell_alternative_tile(coords));
+		set_cell(p_layer, coords, p_pattern->get_cell_source_id(used_cells[i]), p_pattern->get_cell_atlas_coords(used_cells[i]), p_pattern->get_cell_alternative_tile(used_cells[i]));
 	}
 }
 
@@ -2512,10 +2512,10 @@ void TileMap::_set_tile_data(int p_layer, const Vector<int> &p_data) {
 
 			uint32_t v = decode_uint32(&local[4]);
 			// Extract the transform flags that used to be in the tilemap.
-			bool flip_h = v & (1 << 29);
-			bool flip_v = v & (1 << 30);
-			bool transpose = v & (1 << 31);
-			v &= (1 << 29) - 1;
+			bool flip_h = v & (1UL << 29);
+			bool flip_v = v & (1UL << 30);
+			bool transpose = v & (1UL << 31);
+			v &= (1UL << 29) - 1;
 
 			// Extract autotile/atlas coords.
 			int16_t coord_x = 0;

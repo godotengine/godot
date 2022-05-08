@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedInt32Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of 32-bit integers.
+		A packed array of 32-bit integers.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold 32-bit integer values. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 32-bit integer values. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type stores signed 32-bit integers, which means it can take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. [code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap around. In comparison, [int] uses signed 64-bit integers which can hold much larger values. If you need to pack 64-bit integers tightly, see [PackedInt64Array].
 	</description>
 	<tutorials>

@@ -190,7 +190,11 @@ static String _get_cache_key_function_glsl(const RenderingDevice::Capabilities *
 	return version;
 }
 
-void preregister_glslang_types() {
+void initialize_glslang_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
+		return;
+	}
+
 	// Initialize in case it's not initialized. This is done once per thread
 	// and it's safe to call multiple times.
 	glslang::InitializeProcess();
@@ -198,9 +202,10 @@ void preregister_glslang_types() {
 	RenderingDevice::shader_set_get_cache_key_function(_get_cache_key_function_glsl);
 }
 
-void register_glslang_types() {
-}
+void uninitialize_glslang_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
+		return;
+	}
 
-void unregister_glslang_types() {
 	glslang::FinalizeProcess();
 }

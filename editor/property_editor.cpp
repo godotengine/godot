@@ -85,7 +85,7 @@ bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) co
 }
 
 Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	RES ret;
+	Ref<Resource> ret;
 	if (GDVIRTUAL_CALL(_convert, p_resource, ret)) {
 		return ret;
 	}
@@ -151,7 +151,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				} break;
 
 				case OBJ_MENU_EDIT: {
-					REF r = v;
+					Ref<RefCounted> r = v;
 
 					if (!r.is_null()) {
 						emit_signal(SNAME("resource_edit_request"));
@@ -223,7 +223,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-					RES r = v;
+					Ref<Resource> r = v;
 					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
@@ -234,7 +234,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					if (p_which >= CONVERT_BASE_ID) {
 						int to_type = p_which - CONVERT_BASE_ID;
 
-						Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+						Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(Ref<Resource>(v));
 
 						ERR_FAIL_INDEX(to_type, conversions.size());
 
@@ -768,7 +768,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Transform2D basis = v;
 			for (int i = 0; i < 6; i++) {
-				value_editor[i]->set_text(String::num(basis.elements[i / 2][i % 2]));
+				value_editor[i]->set_text(String::num(basis.columns[i / 2][i % 2]));
 			}
 
 		} break;
@@ -786,7 +786,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Basis basis = v;
 			for (int i = 0; i < 9; i++) {
-				value_editor[i]->set_text(String::num(basis.elements[i / 3][i % 3]));
+				value_editor[i]->set_text(String::num(basis.rows[i / 3][i % 3]));
 			}
 
 		} break;
@@ -807,7 +807,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			Transform3D tr = v;
 			for (int i = 0; i < 9; i++) {
-				value_editor[(i / 3) * 4 + i % 3]->set_text(String::num(tr.basis.elements[i / 3][i % 3]));
+				value_editor[(i / 3) * 4 + i % 3]->set_text(String::num(tr.basis.rows[i / 3][i % 3]));
 			}
 
 			value_editor[3]->set_text(String::num(tr.origin.x));
@@ -928,19 +928,19 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			menu->add_item(TTR("Load"), OBJ_MENU_LOAD);
 
-			if (!RES(v).is_null()) {
+			if (!Ref<Resource>(v).is_null()) {
 				menu->add_item(TTR("Edit"), OBJ_MENU_EDIT);
 				menu->add_item(TTR("Clear"), OBJ_MENU_CLEAR);
 				menu->add_item(TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
-				RES r = v;
+				Ref<Resource> r = v;
 				if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->add_separator();
 					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
 			}
 
-			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
+			Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 			bool paste_valid = false;
 			if (cb.is_valid()) {
 				if (hint_text.is_empty()) {
@@ -955,10 +955,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 			}
 
-			if (!RES(v).is_null() || paste_valid) {
+			if (!Ref<Resource>(v).is_null() || paste_valid) {
 				menu->add_separator();
 
-				if (!RES(v).is_null()) {
+				if (!Ref<Resource>(v).is_null()) {
 					menu->add_item(TTR("Copy"), OBJ_MENU_COPY);
 				}
 
@@ -967,8 +967,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 			}
 
-			if (!RES(v).is_null()) {
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+			if (!Ref<Resource>(v).is_null()) {
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(Ref<Resource>(v));
 				if (conversions.size()) {
 					menu->add_separator();
 				}
@@ -1029,7 +1029,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 		case Variant::OBJECT: {
 			String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 
-			RES res = ResourceLoader::load(p_file, type);
+			Ref<Resource> res = ResourceLoader::load(p_file, type);
 			if (res.is_null()) {
 				error->set_text(TTR("Error loading file: Not a resource!"));
 				error->popup_centered();
@@ -1312,7 +1312,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				file->popup_file_dialog();
 
 			} else if (p_which == 2) {
-				RES r = v;
+				Ref<Resource> r = v;
 
 				if (!r.is_null()) {
 					emit_signal(SNAME("resource_edit_request"));
@@ -1568,7 +1568,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::TRANSFORM2D: {
 			Transform2D m;
 			for (int i = 0; i < 6; i++) {
-				m.elements[i / 2][i % 2] = _parse_real_expression(value_editor[i]->get_text());
+				m.columns[i / 2][i % 2] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1580,7 +1580,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::BASIS: {
 			Basis m;
 			for (int i = 0; i < 9; i++) {
-				m.elements[i / 3][i % 3] = _parse_real_expression(value_editor[i]->get_text());
+				m.rows[i / 3][i % 3] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1592,7 +1592,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::TRANSFORM3D: {
 			Basis basis;
 			for (int i = 0; i < 9; i++) {
-				basis.elements[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
+				basis.rows[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
 			}
 
 			Vector3 origin;

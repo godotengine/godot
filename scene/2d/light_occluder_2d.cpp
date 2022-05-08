@@ -285,7 +285,6 @@ void LightOccluder2D::_bind_methods() {
 
 LightOccluder2D::LightOccluder2D() {
 	occluder = RS::get_singleton()->canvas_light_occluder_create();
-	mask = 1;
 
 	set_notify_transform(true);
 	set_as_sdf_collision(true);

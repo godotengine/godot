@@ -467,9 +467,9 @@
 		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color of the title outline.
 		</theme_item>
-		<theme_item name="close_h_ofs" data_type="constant" type="int" default="18">
+		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
 		</theme_item>
-		<theme_item name="close_v_ofs" data_type="constant" type="int" default="24">
+		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
 		</theme_item>
 		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
 		</theme_item>

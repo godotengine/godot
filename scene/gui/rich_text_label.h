@@ -234,7 +234,7 @@ private:
 		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
-		Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -399,7 +399,7 @@ private:
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	struct Selection {
@@ -467,7 +467,7 @@ private:
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	HorizontalAlignment _find_alignment(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
-	Control::StructuredTextParser _find_stt(Item *p_item);
+	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
@@ -525,7 +525,7 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", Control::StructuredTextParser p_st_parser = STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
@@ -633,8 +633,8 @@ public:
 	void set_autowrap_mode(AutowrapMode p_mode);
 	AutowrapMode get_autowrap_mode() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;

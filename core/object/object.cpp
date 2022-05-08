@@ -434,15 +434,6 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
-	// Something inside the object... :|
-	bool success = _setv(p_name, p_value);
-	if (success) {
-		if (r_valid) {
-			*r_valid = true;
-		}
-		return;
-	}
-
 #ifdef TOOLS_ENABLED
 	if (script_instance) {
 		bool valid;
@@ -455,6 +446,15 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 #endif
+
+	// Something inside the object... :|
+	bool success = _setv(p_name, p_value);
+	if (success) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return;
+	}
 
 	if (r_valid) {
 		*r_valid = false;
@@ -518,15 +518,6 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 
 	} else {
-		// Something inside the object... :|
-		bool success = _getv(p_name, ret);
-		if (success) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return ret;
-		}
-
 #ifdef TOOLS_ENABLED
 		if (script_instance) {
 			bool valid;
@@ -539,6 +530,14 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			}
 		}
 #endif
+		// Something inside the object... :|
+		bool success = _getv(p_name, ret);
+		if (success) {
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return ret;
+		}
 
 		if (r_valid) {
 			*r_valid = false;
@@ -1476,7 +1475,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
-			RES r = p_var;
+			Ref<Resource> r = p_var;
 			if (!r.is_valid()) {
 				return;
 			}

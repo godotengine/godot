@@ -924,7 +924,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	for (Ref<CSharpScript> &script : scripts) {
 		while (script->instances.front()) {
 			Object *obj = script->instances.front()->get();
-			obj->set_script(REF()); // Remove script and existing script instances (placeholder are not removed before domain reload)
+			obj->set_script(Ref<RefCounted>()); // Remove script and existing script instances (placeholder are not removed before domain reload)
 		}
 
 		script->_clear();
@@ -3221,10 +3221,10 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	Object *owner = ClassDB::instantiate(NATIVE_GDMONOCLASS_NAME(native));
 
-	REF ref;
+	Ref<RefCounted> ref;
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
-		ref = REF(r);
+		ref = Ref<RefCounted>(r);
 	}
 
 	CSharpInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
@@ -3586,7 +3586,7 @@ void CSharpScript::get_members(Set<StringName> *p_members) {
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -3599,7 +3599,7 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	Error err = script->load_source_code(p_path);
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load C# script file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + p_path + "'.");
 #endif
 
 	script->set_path(p_original_path);
@@ -3625,7 +3625,7 @@ String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path)
 	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
-Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverCSharpScript::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
@@ -3662,13 +3662,13 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 	return OK;
 }
 
-void ResourceFormatSaverCSharpScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
 		p_extensions->push_back("cs");
 	}
 }
 
-bool ResourceFormatSaverCSharpScript::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
 }
 
