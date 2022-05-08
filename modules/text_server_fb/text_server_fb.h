@@ -67,7 +67,6 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/map.hpp>
 #include <godot_cpp/templates/rid_owner.hpp>
 #include <godot_cpp/templates/set.hpp>
 #include <godot_cpp/templates/thread_work_pool.hpp>
@@ -80,6 +79,7 @@ using namespace godot;
 
 #include "servers/text/text_server_extension.h"
 
+#include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
@@ -106,8 +106,8 @@ class TextServerFallback : public TextServerExtension {
 	GDCLASS(TextServerFallback, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
-	Map<StringName, int32_t> feature_sets;
-	Map<int32_t, StringName> feature_sets_inv;
+	HashMap<StringName, int32_t> feature_sets;
+	HashMap<int32_t, StringName> feature_sets_inv;
 
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag);
@@ -159,7 +159,7 @@ class TextServerFallback : public TextServerExtension {
 
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
-		Map<Vector2i, Vector2> kerning_map;
+		HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> kerning_map;
 
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Face face = nullptr;
@@ -196,15 +196,15 @@ class TextServerFallback : public TextServerExtension {
 		String font_name;
 		String style_name;
 
-		Map<Vector2i, FontDataForSizeFallback *> cache;
+		HashMap<Vector2i, FontDataForSizeFallback *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
 		Dictionary feature_overrides;
 
 		// Language/script support override.
-		Map<String, bool> language_support_overrides;
-		Map<String, bool> script_support_overrides;
+		HashMap<String, bool> language_support_overrides;
+		HashMap<String, bool> script_support_overrides;
 
 		PackedByteArray data;
 		const uint8_t *data_ptr;
@@ -294,7 +294,7 @@ class TextServerFallback : public TextServerExtension {
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 		};
-		Map<Variant, EmbeddedObject> objects;
+		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.

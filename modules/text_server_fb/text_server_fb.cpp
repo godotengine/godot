@@ -1917,7 +1917,7 @@ Vector2 TextServerFallback::font_get_kerning(const RID &p_font_rid, int64_t p_si
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
 
-	const Map<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
+	const HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> &kern = fd->cache[size]->kerning_map;
 
 	if (kern.has(p_glyph_pair)) {
 		if (fd->msdf) {
@@ -1957,7 +1957,7 @@ bool TextServerFallback::font_has_char(const RID &p_font_rid, int64_t p_char) co
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), false);
 	}
-	FontDataForSizeFallback *at_size = fd->cache.front()->get();
+	FontDataForSizeFallback *at_size = fd->cache.begin()->value;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (at_size && at_size->face) {
@@ -1975,7 +1975,7 @@ String TextServerFallback::font_get_supported_chars(const RID &p_font_rid) const
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), String());
 	}
-	FontDataForSizeFallback *at_size = fd->cache.front()->get();
+	FontDataForSizeFallback *at_size = fd->cache.begin()->value;
 
 	String chars;
 #ifdef MODULE_FREETYPE_ENABLED
