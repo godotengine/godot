@@ -61,7 +61,7 @@ class AnimationTreeEditor : public VBoxContainer {
 	Vector<String> edited_path;
 	Vector<AnimationTreeNodeEditorPlugin *> editors;
 
-	void _update_path();
+	void _update_path(bool p_show_root);
 	ObjectID current_root;
 
 	void _path_button_pressed(int p_path);

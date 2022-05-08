@@ -59,10 +59,8 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	Vector<String> path;
 	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
-		edit_path(path);
-	} else {
-		current_root = ObjectID();
 	}
+	edit_path(path);
 }
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
@@ -72,7 +70,7 @@ void AnimationTreeEditor::_path_button_pressed(int p_path) {
 	}
 }
 
-void AnimationTreeEditor::_update_path() {
+void AnimationTreeEditor::_update_path(bool p_show_root) {
 	while (path_hb->get_child_count() > 1) {
 		memdelete(path_hb->get_child(1));
 	}
@@ -80,14 +78,16 @@ void AnimationTreeEditor::_update_path() {
 	Ref<ButtonGroup> group;
 	group.instantiate();
 
-	Button *b = memnew(Button);
-	b->set_text(TTR("Root"));
-	b->set_toggle_mode(true);
-	b->set_button_group(group);
-	b->set_pressed(true);
-	b->set_focus_mode(FOCUS_NONE);
-	b->connect("pressed", callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
-	path_hb->add_child(b);
+	Button *b = nullptr;
+	if (p_show_root) {
+		b->set_text(TTR("Root"));
+		b->set_toggle_mode(true);
+		b->set_button_group(group);
+		b->set_pressed(true);
+		b->set_focus_mode(FOCUS_NONE);
+		b->connect("pressed", callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
+		path_hb->add_child(b);
+	}
 	for (int i = 0; i < button_path.size(); i++) {
 		b = memnew(Button);
 		b->set_text(button_path[i]);
@@ -104,6 +104,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	button_path.clear();
 
 	Ref<AnimationNode> node = tree->get_tree_root();
+	current_root = ObjectID();
 
 	if (node.is_valid()) {
 		current_root = node->get_instance_id();
@@ -114,24 +115,20 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 			node = child;
 			button_path.push_back(p_path[i]);
 		}
-
-		edited_path = button_path;
-
-		for (int i = 0; i < editors.size(); i++) {
-			if (editors[i]->can_edit(node)) {
-				editors[i]->edit(node);
-				editors[i]->show();
-			} else {
-				editors[i]->edit(Ref<AnimationNode>());
-				editors[i]->hide();
-			}
-		}
-	} else {
-		current_root = ObjectID();
-		edited_path = button_path;
 	}
 
-	_update_path();
+	edited_path = button_path;
+	_update_path(node.is_valid());
+
+	for (int i = 0; i < editors.size(); i++) {
+		if (editors[i]->can_edit(node)) {
+			editors[i]->edit(node);
+			editors[i]->show();
+		} else {
+			editors[i]->edit(Ref<AnimationNode>());
+			editors[i]->hide();
+		}
+	}
 }
 
 Vector<String> AnimationTreeEditor::get_edited_path() const {
