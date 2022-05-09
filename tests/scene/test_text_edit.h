@@ -42,8 +42,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();
 
-	Array empty_singal_args;
-	empty_singal_args.push_back(Array());
+	Array empty_signal_args;
+	empty_signal_args.push_back(Array());
 
 	SUBCASE("[TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_set");
@@ -65,7 +65,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK(text_edit->get_line_count() == 1);
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_changed");
@@ -75,16 +75,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "test text");
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK(text_edit->get_line_count() == 1);
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_changed");
@@ -95,8 +95,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "test text");
 			CHECK(text_edit->get_caret_column() == 9);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			text_edit->redo();
@@ -104,8 +104,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Cannot undo when not-editable but should still clear.
@@ -114,8 +114,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "test text");
 			CHECK(text_edit->get_caret_column() == 9);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Clear.
@@ -130,8 +130,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK("text_set", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_clear_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
@@ -153,9 +153,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "test text");
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->set_editable(true);
@@ -165,7 +165,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_set");
 
@@ -173,14 +173,14 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("test text");
 			MessageQueue::get_singleton()->flush();
 			text_edit->select_all();
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "test text");
 			CHECK(text_edit->get_caret_column() == 9);
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->set_text("test");
@@ -188,14 +188,14 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "test");
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->select_all();
 			MessageQueue::get_singleton()->flush();
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			CHECK(text_edit->has_selection());
 
 			text_edit->clear();
@@ -203,9 +203,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 		}
 
@@ -225,7 +225,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_line(0) == "test");
 			CHECK(text_edit->get_line(1) == "");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 			SIGNAL_CHECK_FALSE("caret_changed");
 
@@ -233,7 +233,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->select_all();
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			text_edit->set_line(0, "test text");
 			MessageQueue::get_singleton()->flush();
@@ -241,7 +241,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "test");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_set");
 
@@ -253,8 +253,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "te");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 			text_edit->set_editable(true);
 
@@ -264,8 +264,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_line(0) == "test text");
 			CHECK(text_edit->has_selection());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			text_edit->redo();
@@ -273,8 +273,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_line(0) == "te");
 			CHECK_FALSE(text_edit->has_selection()); // Currently not handled.
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Out of range.
@@ -304,14 +304,14 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("testing\nswap");
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "testing\nswap");
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->set_caret_column(text_edit->get_line(0).length());
 			MessageQueue::get_singleton()->flush();
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			((Array)lines_edited_args[1])[1] = 0;
 			Array swap_args;
@@ -326,8 +326,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "swap\ntesting");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 			text_edit->set_editable(true);
 
@@ -338,8 +338,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "testing\nswap");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			lines_edited_args.reverse();
@@ -348,8 +348,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "swap\ntesting");
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Out of range.
@@ -390,9 +390,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("testing\nswap");
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "testing\nswap");
-			SIGNAL_CHECK("text_set", empty_singal_args);
+			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 
 			text_edit->select_all();
@@ -400,7 +400,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selection_from_line() == 0);
 			CHECK(text_edit->get_selection_to_line() == 1);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			// insert before should move caret and selecion, and works when not editable.
 			text_edit->set_editable(false);
@@ -414,8 +414,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_from_line() == 1);
 			CHECK(text_edit->get_selection_to_line() == 2);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 			text_edit->set_editable(true);
 
@@ -427,8 +427,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "testing\nswap");
 			CHECK_FALSE(text_edit->has_selection()); // Not currently handled.
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			((Array)lines_edited_args[0])[0] = 0;
@@ -438,8 +438,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "new\ntesting\nswap");
 			CHECK_FALSE(text_edit->has_selection()); // Not currently handled.
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Adding inside selection extends selection.
@@ -448,7 +448,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selection_from_line() == 0);
 			CHECK(text_edit->get_selection_to_line() == 2);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			((Array)lines_edited_args[0])[0] = 2;
 			((Array)lines_edited_args[0])[1] = 3;
@@ -461,8 +461,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_from_line() == 0);
 			CHECK(text_edit->get_selection_to_line() == 3);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			// Out of range.
@@ -493,8 +493,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(1).size() - 1);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			text_edit->set_caret_line(0, false);
@@ -508,8 +508,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 5);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			text_edit->select(0, 0, 0, text_edit->get_line(0).length());
@@ -524,8 +524,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).size() - 1);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 			text_edit->set_editable(true);
 
@@ -536,8 +536,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 10);
 			CHECK(text_edit->has_selection());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 
 			text_edit->redo();
@@ -547,8 +547,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 8);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
 		}
 
@@ -615,7 +615,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_mode() == TextEdit::SelectionMode::SELECTION_MODE_SHIFT);
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 9);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			text_edit->set_caret_line(0);
 			text_edit->set_caret_column(0);
@@ -660,7 +660,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_to_column() == 4);
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			text_edit->set_selecting_enabled(false);
 			text_edit->select_word_under_caret();
@@ -817,7 +817,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_to_column() == 3);
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 3);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::MASK_LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
@@ -829,7 +829,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_to_column() == 13);
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 13);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
@@ -1098,8 +1098,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this is\nsome");
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 4);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[0] = 1;
@@ -1109,8 +1109,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this is\nsom");
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 3);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->end_complex_operation();
@@ -1121,8 +1121,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this is\n");
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -1142,8 +1142,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this is\nsom");
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 3);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1167,8 +1167,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "some\n");
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[0] = 0;
@@ -1178,8 +1178,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this is\nsome\n");
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[0] = 1;
@@ -1190,7 +1190,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_text("this is\nsome\n");
@@ -1211,8 +1211,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "this \nsome\n");
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 5);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -1276,8 +1276,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_caret_line(1);
@@ -1304,8 +1304,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1327,8 +1327,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -1363,8 +1363,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -1405,8 +1405,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[1] = 0;
@@ -1418,8 +1418,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_caret_column(text_edit->get_line(0).length());
@@ -1450,8 +1450,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			InputMap::get_singleton()->action_erase_event("ui_text_backspace_all_to_left", tmpevent);
@@ -1479,8 +1479,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			text_edit->end_complex_operation();
 
@@ -1493,8 +1493,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -1525,8 +1525,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 14);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1552,8 +1552,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[1] = 0;
@@ -1565,8 +1565,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_caret_column(text_edit->get_line(0).length());
@@ -1597,8 +1597,29 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 18);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
+
+			// Select the entire text, from right to left
+			text_edit->select(0, 18, 0, 0);
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+			MessageQueue::get_singleton()->flush();
+
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			((Array)lines_edited_args[0])[0] = 0;
+
+			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 0);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1624,8 +1645,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			// End of line should not do anything.
@@ -1674,7 +1695,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			InputMap::get_singleton()->action_erase_event("ui_text_delete_all_to_right", tmpevent);
@@ -1702,8 +1723,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			// With selection should be a normal delete.
@@ -1723,7 +1744,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).length());
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[0] = 0;
@@ -1754,7 +1775,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1780,8 +1801,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			// With selection should be a normal delete.
@@ -1801,7 +1822,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).length());
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			((Array)lines_edited_args[0])[0] = 0;
@@ -1832,7 +1853,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			SEND_GUI_ACTION(text_edit, "ui_text_delete");
@@ -1842,7 +1863,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_caret_mid_grapheme_enabled(false);
@@ -1866,7 +1887,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK_FALSE("caret_changed");
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
@@ -1892,7 +1913,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 5);
 			CHECK(text_edit->get_selected_text() == "is");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -1902,7 +1923,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -1912,7 +1933,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -1935,7 +1956,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 2);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -1946,7 +1967,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 1);
 			CHECK(text_edit->get_selected_text() == "h");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -1966,7 +1987,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -1976,7 +1997,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2003,7 +2024,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 17);
 			CHECK(text_edit->get_selected_text() == "test");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2013,7 +2034,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 22);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2023,7 +2044,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2046,7 +2067,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 20);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2057,7 +2078,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 21);
 			CHECK(text_edit->get_selected_text() == "x");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2077,7 +2098,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 22);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2087,7 +2108,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2114,7 +2135,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 5);
 			CHECK(text_edit->get_selected_text() == "\ngo here");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2124,7 +2145,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 8);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2134,7 +2155,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 12);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			text_edit->set_caret_column(12, false);
@@ -2145,7 +2166,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 7);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2172,7 +2193,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 5);
 			CHECK(text_edit->get_selected_text() == "\nlines");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2182,7 +2203,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 2);
 			CHECK(text_edit->get_caret_column() == 8);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2192,7 +2213,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 3);
 			CHECK(text_edit->get_caret_column() == 7);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			text_edit->set_caret_column(7, false);
@@ -2203,7 +2224,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 3);
 			CHECK(text_edit->get_caret_column() == 12);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2234,7 +2255,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK(text_edit->get_selected_text() == "this is some\nother test\nlines\ngo here");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2275,7 +2296,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 12);
 			CHECK(text_edit->get_selected_text() == "go here\nlines\nother test\nthis is some");
 			CHECK(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2315,7 +2336,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 10);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "some");
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2324,7 +2345,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 2);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2333,7 +2354,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2342,7 +2363,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 2);
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2372,7 +2393,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 9);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "  this is");
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
@@ -2381,7 +2402,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).length());
 			CHECK_FALSE(text_edit->has_selection());
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
@@ -2399,8 +2420,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "aA");
 			CHECK(text_edit->get_caret_column() == 2);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
@@ -2420,8 +2441,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "BA");
 			CHECK(text_edit->get_caret_column() == 1);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			SEND_GUI_ACTION(text_edit, "ui_text_toggle_insert_mode");
@@ -2431,8 +2452,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "BB");
 			CHECK(text_edit->get_caret_column() == 2);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->select(0, 0, 0, 1);
@@ -2440,8 +2461,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "AB");
 			CHECK(text_edit->get_caret_column() == 1);
-			SIGNAL_CHECK("caret_changed", empty_singal_args);
-			SIGNAL_CHECK("text_changed", empty_singal_args);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			text_edit->set_overtype_mode_enabled(false);
 			CHECK_FALSE(text_edit->is_overtype_mode_enabled());
@@ -3357,8 +3378,8 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	Array empty_singal_args;
-	empty_singal_args.push_back(Array());
+	Array empty_signal_args;
+	empty_signal_args.push_back(Array());
 
 	SIGNAL_WATCH(text_edit, "gutter_clicked");
 	SIGNAL_WATCH(text_edit, "gutter_added");
@@ -3367,7 +3388,7 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	SUBCASE("[TextEdit] gutter add and remove") {
 		text_edit->add_gutter();
 		CHECK(text_edit->get_gutter_count() == 1);
-		SIGNAL_CHECK("gutter_added", empty_singal_args);
+		SIGNAL_CHECK("gutter_added", empty_signal_args);
 
 		text_edit->set_gutter_name(0, "test_gutter");
 		CHECK(text_edit->get_gutter_name(0) == "test_gutter");
@@ -3383,7 +3404,7 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		CHECK(text_edit->get_total_gutter_width() < 30);
 		CHECK(text_edit->get_gutter_count() == 2);
 		CHECK(text_edit->get_gutter_name(0) == "test_gutter");
-		SIGNAL_CHECK("gutter_added", empty_singal_args);
+		SIGNAL_CHECK("gutter_added", empty_signal_args);
 
 		text_edit->set_gutter_draw(1, false);
 		CHECK(text_edit->get_total_gutter_width() > 10);
@@ -3392,22 +3413,22 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		text_edit->add_gutter(100);
 		CHECK(text_edit->get_gutter_count() == 3);
 		CHECK(text_edit->get_gutter_name(0) == "test_gutter");
-		SIGNAL_CHECK("gutter_added", empty_singal_args);
+		SIGNAL_CHECK("gutter_added", empty_signal_args);
 
 		text_edit->add_gutter(0);
 		CHECK(text_edit->get_gutter_count() == 4);
 		CHECK(text_edit->get_gutter_name(1) == "test_gutter");
-		SIGNAL_CHECK("gutter_added", empty_singal_args);
+		SIGNAL_CHECK("gutter_added", empty_signal_args);
 
 		text_edit->remove_gutter(2);
 		CHECK(text_edit->get_gutter_name(1) == "test_gutter");
 		CHECK(text_edit->get_gutter_count() == 3);
-		SIGNAL_CHECK("gutter_removed", empty_singal_args);
+		SIGNAL_CHECK("gutter_removed", empty_signal_args);
 
 		text_edit->remove_gutter(0);
 		CHECK(text_edit->get_gutter_name(0) == "test_gutter");
 		CHECK(text_edit->get_gutter_count() == 2);
-		SIGNAL_CHECK("gutter_removed", empty_singal_args);
+		SIGNAL_CHECK("gutter_removed", empty_signal_args);
 
 		ERR_PRINT_OFF;
 		text_edit->remove_gutter(-1);
@@ -3424,7 +3445,7 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	SUBCASE("[TextEdit] gutter data") {
 		text_edit->add_gutter();
 		CHECK(text_edit->get_gutter_count() == 1);
-		SIGNAL_CHECK("gutter_added", empty_singal_args);
+		SIGNAL_CHECK("gutter_added", empty_signal_args);
 
 		text_edit->set_gutter_name(0, "test_gutter");
 		CHECK(text_edit->get_gutter_name(0) == "test_gutter");

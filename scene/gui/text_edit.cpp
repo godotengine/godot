@@ -2388,7 +2388,7 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
-	if (!editable || (caret.column == 0 && caret.line == 0)) {
+	if (!editable || (caret.column == 0 && caret.line == 0 && !has_selection())) {
 		return;
 	}
 
