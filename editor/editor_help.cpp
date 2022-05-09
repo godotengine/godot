@@ -179,9 +179,8 @@ void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
-	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
-	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
+	Ref<FontConfig> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	real_t char_width = doc_code_font->get_char_size('M').width;
 	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
@@ -361,7 +360,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 }
 
 void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons) {
-	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	class_desc->pop();
 	class_desc->pop();
 
@@ -427,9 +426,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 }
 
 void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type) {
-	Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	String link_color_text = title_color.to_html(false);
 	class_desc->pop();
 	class_desc->pop();
@@ -904,7 +903,6 @@ void EditorHelp::_update_doc() {
 		data_type_names["color"] = TTR("Colors");
 		data_type_names["constant"] = TTR("Constants");
 		data_type_names["font"] = TTR("Fonts");
-		data_type_names["font_size"] = TTR("Font Sizes");
 		data_type_names["icon"] = TTR("Icons");
 		data_type_names["style"] = TTR("Styles");
 
@@ -1502,11 +1500,11 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
-	Ref<Font> doc_font = p_rt->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-	Ref<Font> doc_bold_font = p_rt->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-	Ref<Font> doc_italic_font = p_rt->get_theme_font(SNAME("doc_italic"), SNAME("EditorFonts"));
-	Ref<Font> doc_code_font = p_rt->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_font = p_rt->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_bold_font = p_rt->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_italic_font = p_rt->get_theme_font(SNAME("doc_italic"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_code_font = p_rt->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	Ref<FontConfig> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
 	Color link_color = p_rt->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
 	Color code_color = p_rt->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
@@ -1737,7 +1735,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag.begins_with("font=")) {
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
+			Ref<FontConfig> font = ResourceLoader::load(base_path.plus_file(fnt), "FontConfig");
 			if (font.is_valid()) {
 				p_rt->push_font(font);
 			} else {

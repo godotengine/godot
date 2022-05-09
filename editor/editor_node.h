@@ -474,6 +474,8 @@ private:
 	HashSet<FileDialog *> file_dialogs;
 	HashSet<EditorFileDialog *> editor_file_dialogs;
 
+	Vector<Pair<String, String>> fonts;
+
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
 
@@ -673,6 +675,8 @@ private:
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 	void _bottom_panel_raise_toggled(bool);
 
+	void _find_font_resources(EditorFileSystemDirectory *p_dir);
+
 protected:
 	friend class FileSystemDock;
 
@@ -697,6 +701,8 @@ public:
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
+
+	const Vector<Pair<String, String>> &get_project_fonts() const;
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }

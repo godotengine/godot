@@ -43,11 +43,8 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
+		<theme_item name="font" data_type="font" type="FontConfig">
 			Font used to draw the fill percentage if [member percent_visible] is [code]true[/code].
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size used to draw the fill percentage if [member percent_visible] is [code]true[/code].
 		</theme_item>
 		<theme_item name="bg" data_type="style" type="StyleBox">
 			The style of the background.

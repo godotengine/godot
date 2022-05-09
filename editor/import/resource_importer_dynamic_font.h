@@ -43,9 +43,6 @@ class ResourceImporterDynamicFont : public ResourceImporter {
 	};
 
 public:
-	static bool _decode_range(const String &p_token, int32_t &r_pos);
-	static bool _decode_variation(const String &p_token, Dictionary &r_variations, Vector2i &r_size, String &r_name, Vector2i &r_spacing);
-
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

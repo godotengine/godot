@@ -649,11 +649,8 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Sets the default [Font].
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Sets default font size.
+		<theme_item name="font" data_type="font" type="FontConfig">
+			Sets the default [FontConfig].
 		</theme_item>
 		<theme_item name="bookmark" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.

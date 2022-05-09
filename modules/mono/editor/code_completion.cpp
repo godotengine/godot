@@ -226,18 +226,6 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				}
 			}
 		} break;
-		case CompletionKind::THEME_FONT_SIZES: {
-			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());
-			Node *base = _try_find_owner_node_in_tree(script);
-			if (base && Object::cast_to<Control>(base)) {
-				List<StringName> sn;
-				Theme::get_default()->get_font_size_list(base->get_class(), &sn);
-
-				for (const StringName &E : sn) {
-					suggestions.push_back(quoted(E));
-				}
-			}
-		} break;
 		case CompletionKind::THEME_STYLES: {
 			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());
 			Node *base = _try_find_owner_node_in_tree(script);

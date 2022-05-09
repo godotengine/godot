@@ -53,8 +53,7 @@ class ThemeEditorPreview : public VBoxContainer {
 		Ref<StyleBox> preview_picker_overlay;
 		Color preview_picker_overlay_color;
 		Ref<StyleBox> preview_picker_label;
-		Ref<Font> preview_picker_font;
-		int font_size = 16;
+		Ref<FontConfig> preview_picker_font;
 	} theme_cache;
 
 	double time_left = 0;

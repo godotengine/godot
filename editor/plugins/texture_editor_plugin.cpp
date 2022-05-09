@@ -49,7 +49,7 @@ void TexturePreview::_notification(int p_what) {
 			}
 
 			if (metadata_label) {
-				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
+				Ref<FontConfig> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
 				metadata_label->add_theme_font_override("font", metadata_label_font);
 			}
 
@@ -97,7 +97,10 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->add_theme_color_override("font_color", Color::named("white"));
 		metadata_label->add_theme_color_override("font_color_shadow", Color::named("black"));
 
-		metadata_label->add_theme_font_size_override("font_size", 16 * EDSCALE);
+		Ref<FontConfig> metadata_font = get_theme_font("font", "Label")->duplicate();
+		metadata_font->set_size(16 * EDSCALE);
+		metadata_label->add_theme_font_override("font", metadata_font);
+
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
 		metadata_label->add_theme_constant_override("outline_size", 2 * EDSCALE);
 

@@ -448,7 +448,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
 				_ensure_menu();
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")))) / 2);
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height()) / 2);
 				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
 				menu->popup();
@@ -763,7 +763,7 @@ void LineEdit::_notification(int p_what) {
 				style = get_theme_stylebox(SNAME("read_only"));
 				draw_caret = false;
 			}
-			Ref<Font> font = get_theme_font(SNAME("font"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"));
 
 			if (!flat) {
 				style->draw(ci, Rect2(Point2(), size));
@@ -776,7 +776,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM);
+			float text_height = TS->shaped_text_get_size(text_rid).y;
 
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
@@ -913,7 +913,7 @@ void LineEdit::_notification(int p_what) {
 
 					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
 						// No carets, add one at the start.
-						int h = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
+						int h = get_theme_font(SNAME("font"))->get_height();
 						int y = style->get_offset().y + (y_area - h) / 2;
 						if (rtl) {
 							caret.l_dir = TextServer::DIRECTION_RTL;
@@ -1438,29 +1438,6 @@ Control::TextDirection LineEdit::get_text_direction() const {
 	return text_direction;
 }
 
-void LineEdit::clear_opentype_features() {
-	opentype_features.clear();
-	_shape();
-	update();
-}
-
-void LineEdit::set_opentype_feature(const String &p_name, int p_value) {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
-		opentype_features[tag] = p_value;
-		_shape();
-		update();
-	}
-}
-
-int LineEdit::get_opentype_feature(const String &p_name) const {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag)) {
-		return -1;
-	}
-	return opentype_features[tag];
-}
-
 void LineEdit::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
@@ -1669,13 +1646,12 @@ void LineEdit::clear_internal() {
 
 Size2 LineEdit::get_minimum_size() const {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"));
 
 	Size2 min_size;
 
 	// Minimum size of text.
-	float em_space_size = font->get_char_size('M', 0, font_size).x;
+	float em_space_size = font->get_char_size('M').x;
 	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
 
 	if (expand_to_text_length) {
@@ -1683,7 +1659,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + em_space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM), font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height());
 
 	// Take icons into account.
 	int icon_max_width = 0;
@@ -2139,10 +2115,12 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	const Ref<FontConfig> &font = get_theme_font(SNAME("font"));
 	ERR_FAIL_COND(font.is_null());
-	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font->get_size(), font->get_opentype_features(), language);
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
+	}
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;
@@ -2223,56 +2201,6 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
-bool LineEdit::_set(const StringName &p_name, const Variant &p_value) {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		int value = p_value;
-		if (value == -1) {
-			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
-				_shape();
-				update();
-			}
-		} else {
-			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
-				opentype_features[tag] = value;
-				_shape();
-				update();
-			}
-		}
-		notify_property_list_changed();
-		return true;
-	}
-
-	return false;
-}
-
-bool LineEdit::_get(const StringName &p_name, Variant &r_ret) const {
-	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		if (opentype_features.has(tag)) {
-			r_ret = opentype_features[tag];
-			return true;
-		} else {
-			r_ret = -1;
-			return true;
-		}
-	}
-	return false;
-}
-
-void LineEdit::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
-		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-}
-
 void LineEdit::_validate_property(PropertyInfo &property) const {
 	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -2298,9 +2226,6 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_control_chars", "enable"), &LineEdit::set_draw_control_chars);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LineEdit::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LineEdit::get_text_direction);
-	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &LineEdit::set_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &LineEdit::get_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &LineEdit::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LineEdit::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &LineEdit::get_language);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LineEdit::set_structured_text_bidi_override);
@@ -2391,6 +2316,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
+	ADD_PROPERTY_SHORTCUT("font", "theme_override_fonts/font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
@@ -2406,18 +2332,20 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
-	ADD_GROUP("Structured Text", "structured_text_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
+
+	ADD_GROUP("BiDi", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 }
 
 void LineEdit::_ensure_menu() {

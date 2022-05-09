@@ -156,11 +156,9 @@ private:
 		bool tab_size_dirty = false;
 
 		mutable Vector<Line> text;
-		Ref<Font> font;
-		int font_size = -1;
+		Ref<FontConfig> font;
 		int font_height = 0;
 
-		Dictionary opentype_features;
 		String language;
 		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
 		bool draw_control_chars = false;
@@ -178,9 +176,7 @@ private:
 	public:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
-		void set_font(const Ref<Font> &p_font);
-		void set_font_size(int p_font_size);
-		void set_font_features(const Dictionary &p_features);
+		void set_font(const Ref<FontConfig> &p_font);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
 
@@ -271,7 +267,6 @@ private:
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextDirection input_direction = TEXT_DIRECTION_LTR;
 
-	Dictionary opentype_features;
 	String language = "";
 
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -522,8 +517,7 @@ private:
 	Ref<Texture2D> tab_icon;
 	Ref<Texture2D> space_icon;
 
-	Ref<Font> font;
-	int font_size = 16;
+	Ref<FontConfig> font;
 	Color font_color = Color(1, 1, 1);
 	Color font_readonly_color = Color(1, 1, 1);
 	Color font_placeholder_color = Color(1, 1, 1, 0.6);
@@ -577,10 +571,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	/* Internal API for CodeEdit, pending public API. */
 	// brace matching
@@ -647,10 +637,6 @@ public:
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
 
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
-
 	void set_language(const String &p_language);
 	String get_language() const;
 
@@ -683,6 +669,7 @@ public:
 
 	void set_text(const String &p_text);
 	String get_text() const;
+
 	int get_line_count() const;
 
 	void set_placeholder(const String &p_text);

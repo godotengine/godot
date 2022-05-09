@@ -62,15 +62,14 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_update_theme() {
-	Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	Ref<FontConfig> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
 	if (normal_font.is_valid()) {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
 	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
-	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+	Ref<FontConfig> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 	if (bold_font.is_valid()) {
 		log->add_theme_font_override("bold_font", bold_font);
 	}

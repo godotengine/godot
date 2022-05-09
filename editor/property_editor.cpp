@@ -1419,8 +1419,7 @@ void CustomPropertyEditor::_draw_easing() {
 	float exp = v;
 	bool flip = hint_text == "attenuation";
 
-	Ref<Font> f = easing_draw->get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = easing_draw->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<FontConfig> f = easing_draw->get_theme_font(SNAME("font"), SNAME("Label"));
 	Color color = easing_draw->get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 	for (int i = 1; i <= points; i++) {
@@ -1438,7 +1437,7 @@ void CustomPropertyEditor::_draw_easing() {
 		prev = h;
 	}
 
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, color);
 }
 
 void CustomPropertyEditor::_text_edit_changed() {

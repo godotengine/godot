@@ -174,8 +174,7 @@ private:
 
 	struct ItemDropcap : public Item {
 		String text;
-		Ref<Font> font;
-		int font_size = 0;
+		Ref<FontConfig> font;
 		Color color;
 		int ol_size = 0;
 		Color ol_color;
@@ -192,18 +191,8 @@ private:
 	};
 
 	struct ItemFont : public Item {
-		Ref<Font> font;
+		Ref<FontConfig> font;
 		ItemFont() { type = ITEM_FONT; }
-	};
-
-	struct ItemFontSize : public Item {
-		int font_size = 16;
-		ItemFontSize() { type = ITEM_FONT_SIZE; }
-	};
-
-	struct ItemFontFeatures : public Item {
-		Dictionary opentype_features;
-		ItemFontFeatures() { type = ITEM_FONT_FEATURES; }
 	};
 
 	struct ItemColor : public Item {
@@ -469,10 +458,10 @@ private:
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 
-	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
-	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
+	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<FontConfig> &p_base_font, int p_width, float p_h, int *r_char_offset);
+	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<FontConfig> &p_base_font, int p_width, float p_h);
 
-	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
+	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<FontConfig> &p_base_font);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
 
@@ -481,14 +470,12 @@ private:
 
 	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
-	Ref<Font> _find_font(Item *p_item);
-	int _find_font_size(Item *p_item);
-	Dictionary _find_font_features(Item *p_item);
+	Ref<FontConfig> _find_font(Item *p_item);
 	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
-	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
+	int _find_margin(Item *p_item, const Ref<FontConfig> &p_base_font);
 	HorizontalAlignment _find_alignment(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
 	TextServer::StructuredTextParser _find_stt(Item *p_item);
@@ -537,10 +524,8 @@ public:
 	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER);
 	void add_newline();
 	bool remove_line(const int p_line);
-	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
-	void push_font(const Ref<Font> &p_font);
-	void push_font_size(int p_font_size);
-	void push_font_features(const Dictionary &p_features);
+	void push_dropcap(const String &p_string, const Ref<FontConfig> &p_font, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void push_font(const Ref<FontConfig> &p_font);
 	void push_outline_size(int p_font_size);
 	void push_normal();
 	void push_bold();

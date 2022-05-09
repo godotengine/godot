@@ -41,13 +41,6 @@
 				Clears the tree. This removes all items.
 			</description>
 		</method>
-		<method name="clear_column_title_opentype_features">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<description>
-				Removes all OpenType features from the item's text.
-			</description>
-		</method>
 		<method name="create_item">
 			<return type="TreeItem" />
 			<argument index="0" name="parent" type="TreeItem" default="null" />
@@ -111,14 +104,6 @@
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns column title language code.
-			</description>
-		</method>
-		<method name="get_column_title_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the column title.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -305,15 +290,6 @@
 			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
-			</description>
-		</method>
-		<method name="set_column_title_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the column title.
 			</description>
 		</method>
 	</methods>
@@ -547,14 +523,11 @@
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the item's text.
+		<theme_item name="font" data_type="font" type="FontConfig">
+			[FontConfig] of the item's text.
 		</theme_item>
-		<theme_item name="title_button_font" data_type="font" type="Font">
-			[Font] of the title button's text.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the item's text.
+		<theme_item name="title_button_font" data_type="font" type="FontConfig">
+			[FontConfig] of the title button's text.
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon used when a foldable item is not collapsed.

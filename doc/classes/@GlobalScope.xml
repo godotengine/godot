@@ -2596,6 +2596,8 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="1073741824" enum="PropertyUsageFlags">
 		</constant>
+		<constant name="PROPERTY_USAGE_SHROTCUT" value="-2147483648" enum="PropertyUsageFlags">
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
 		</constant>

@@ -190,7 +190,6 @@ void ShaderTextEditor::_load_theme_settings() {
 	if (warnings_panel) {
 		// Warnings panel
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 }
 

@@ -125,6 +125,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 28, //for project or editor settings, show when basic settings are selected
 	PROPERTY_USAGE_READ_ONLY = 1 << 29, // Mark a property as read-only in the inspector.
 	PROPERTY_USAGE_ARRAY = 1 << 30, // Used in the inspector to group properties as elements of an array.
+	PROPERTY_USAGE_SHROTCUT = 1 << 31,
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -132,6 +133,7 @@ enum PropertyUsageFlags {
 };
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
+#define ADD_PROPERTY_SHORTCUT(m_name, m_targetname) ::ClassDB::add_property_shortcut(get_class_static(), m_name, m_targetname)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
 #define ADD_PROPERTY_DEFAULT(m_property, m_default) ::ClassDB::set_property_default_value(get_class_static(), m_property, m_default)

@@ -369,7 +369,7 @@ void DocTools::generate(bool p_basic_types) {
 				EO = EO->next();
 			}
 
-			if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
+			if (E.usage & PROPERTY_USAGE_SHROTCUT || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -608,18 +608,8 @@ void DocTools::generate(bool p_basic_types) {
 			for (const StringName &E : l) {
 				DocData::ThemeItemDoc tid;
 				tid.name = E;
-				tid.type = "Font";
+				tid.type = "FontConfig";
 				tid.data_type = "font";
-				c.theme_properties.push_back(tid);
-			}
-
-			l.clear();
-			Theme::get_default()->get_font_size_list(cname, &l);
-			for (const StringName &E : l) {
-				DocData::ThemeItemDoc tid;
-				tid.name = E;
-				tid.type = "int";
-				tid.data_type = "font_size";
 				c.theme_properties.push_back(tid);
 			}
 

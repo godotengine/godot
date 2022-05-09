@@ -129,6 +129,23 @@ public:
 	EditorResourcePicker();
 };
 
+class EditorFontPicker : public EditorResourcePicker {
+	GDCLASS(EditorFontPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_USER_FONT = 100,
+	};
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	EditorFontPicker();
+};
+
 class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 

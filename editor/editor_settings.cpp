@@ -444,6 +444,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/show_low_level_opentype_features", false, "")
 
 	// Theme
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Gray,Light,Solarized (Dark),Solarized (Light),Custom")

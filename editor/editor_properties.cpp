@@ -161,9 +161,8 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons"));
 			open_big_text->set_icon(df);
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			text->set_custom_minimum_size(Vector2(0, font->get_height() * 6));
 		} break;
 	}
 }
@@ -836,9 +835,8 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 }
 
 Size2 EditorPropertyLayersGrid::get_grid_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	return Vector2(0, font->get_height(font_size) * 3);
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	return Vector2(0, font->get_height() * 3);
 }
 
 void EditorPropertyLayersGrid::set_read_only(bool p_read_only) {
@@ -977,12 +975,11 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 						draw_rect(rect2, color);
 						flag_rects.push_back(rect2);
 
-						Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-						int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+						Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 						Vector2 offset;
 						offset.y = rect2.size.y * 0.75;
 
-						draw_string(font, rect2.position + offset, itos(layer_index + 1), HORIZONTAL_ALIGNMENT_CENTER, rect2.size.x, font_size, on ? text_color_on : text_color);
+						draw_string(font, rect2.position + offset, itos(layer_index + 1), HORIZONTAL_ALIGNMENT_CENTER, rect2.size.x, on ? text_color_on : text_color);
 
 						ofs.x += bsize + 1;
 
@@ -1448,8 +1445,7 @@ void EditorPropertyEasing::_draw_easing() {
 
 	const float exp = get_edited_object()->get(get_edited_property());
 
-	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	const Ref<FontConfig> f = get_theme_font(SNAME("font"), SNAME("Label"));
 	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
@@ -1483,7 +1479,7 @@ void EditorPropertyEasing::_draw_easing() {
 	} else {
 		decimals = 1;
 	}
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TS->format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent()), TS->format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -1549,7 +1545,7 @@ void EditorPropertyEasing::_notification(int p_what) {
 				preset->add_icon_item(get_theme_icon(SNAME("CurveInOut"), SNAME("EditorIcons")), "In-Out", EASING_IN_OUT);
 				preset->add_icon_item(get_theme_icon(SNAME("CurveOutIn"), SNAME("EditorIcons")), "Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SNAME("font"), SNAME("Label"))->get_height(get_theme_font_size(SNAME("font_size"), SNAME("Label"))) * 2));
+			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SNAME("font"), SNAME("Label"))->get_height() * 2));
 		} break;
 	}
 }
@@ -3206,6 +3202,9 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
+	} else if (p_base_type == "Font") {
+		EditorFontPicker *font_picker = memnew(EditorFontPicker);
+		resource_picker = font_picker;
 	} else if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));

@@ -135,7 +135,7 @@ message_patterns = {
     re.compile(r'PNAME\("(?P<message>[^"]+)"\)'): ExtractType.PROPERTY_PATH,
 }
 theme_property_patterns = {
-    re.compile(r'set_(constant|font|font_size|stylebox|color|icon)\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
+    re.compile(r'set_(constant|font|stylebox|color|icon)\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
 }
 
 

@@ -145,7 +145,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 
 		// Draw the axis letter for the positive axes.
 		const String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
-		draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(Math::round(-4.0 * EDSCALE), Math::round(5.0 * EDSCALE)), axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0, alpha));
+		draw_string(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(Math::round(-4.0 * EDSCALE), Math::round(5.0 * EDSCALE)), axis_name, HORIZONTAL_ALIGNMENT_LEFT, -1, Color(0.0, 0.0, 0.0, alpha));
 	} else {
 		// Draw an outline around the negative axes.
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
@@ -2693,7 +2693,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 	}
 }
 
-static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Texture2D> p_icon, const Ref<Font> p_font, int p_font_size, const String &p_text, const Color &p_color) {
+static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Texture2D> p_icon, const Ref<FontConfig> p_font, const String &p_text, const Color &p_color) {
 	// Adjust bar size from control height
 	const Vector2 surface_size = p_surface.get_size();
 	const real_t h = surface_size.y / 2.0;
@@ -2713,7 +2713,8 @@ static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Text
 	p_surface.draw_texture(p_icon, icon_pos, p_color);
 
 	// Draw text below the bar (for speed/zoom information).
-	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_font_size, p_color, Math::round(2 * EDSCALE), Color(0, 0, 0));
+	p_surface.draw_string_outline(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, Math::round(2 * EDSCALE), Color(0, 0, 0));
+	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_color);
 }
 
 void Node3DEditorViewport::_draw() {
@@ -2750,12 +2751,11 @@ void Node3DEditorViewport::_draw() {
 	RID ci = surface->get_canvas_item();
 
 	if (message_time > 0) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		Point2 msgpos = Point2(5, get_size().y - 20);
-		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, Color(1, 1, 1, 1));
 	}
 
 	if (_edit.mode == TRANSFORM_ROTATE && _edit.show_rotation_line) {
@@ -2830,7 +2830,6 @@ void Node3DEditorViewport::_draw() {
 							1.0 - logscale_t,
 							get_theme_icon(SNAME("ViewportSpeed"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
-							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
 							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
 							Color(1.0, 0.95, 0.7));
 				}
@@ -2853,7 +2852,6 @@ void Node3DEditorViewport::_draw() {
 							logscale_t,
 							get_theme_icon(SNAME("ViewportZoom"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
-							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
 							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}

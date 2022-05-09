@@ -203,8 +203,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	Ref<Texture2D> icon = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
 	Ref<Texture2D> icon_selected = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
 
@@ -225,7 +224,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		float x = point;
 
 		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
-		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
+		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height() + font->get_ascent()), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, linecolor);
 		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
 	}
 

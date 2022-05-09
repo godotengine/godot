@@ -1398,7 +1398,6 @@ void ProjectList::create_project_item_control(int p_index) {
 		Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
 		title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-		title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
 		title->add_theme_color_override("font_color", font_color);
 		title->set_clip_text(true);
 		title_hb->add_child(title);

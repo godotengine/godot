@@ -276,10 +276,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_font_sizes/")) {
-			String dname = name.get_slicec('/', 1);
-			data.font_size_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
@@ -302,9 +298,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_override(dname, p_value);
-		} else if (name.begins_with("theme_override_font_sizes/")) {
-			String dname = name.get_slicec('/', 1);
-			add_theme_font_size_override(dname, p_value);
 		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
@@ -348,9 +341,6 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (sname.begins_with("theme_override_fonts/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.font_override.has(name) ? Variant(data.font_override[name]) : Variant();
-	} else if (sname.begins_with("theme_override_font_sizes/")) {
-		String name = sname.get_slicec('/', 1);
-		r_ret = data.font_size_override.has(name) ? Variant(data.font_size_override[name]) : Variant();
 	} else if (sname.begins_with("theme_override_colors/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant();
@@ -402,19 +392,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
-		}
-	}
-	{
-		List<StringName> names;
-		theme->get_font_size_list(get_class_name(), &names);
-		for (const StringName &E : names) {
-			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.font_size_override.has(E)) {
-				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
-			}
-
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "FontConfig", usage));
 		}
 	}
 	{
@@ -1099,30 +1077,17 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 	return get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+Ref<FontConfig> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font && (*font)->get_data_count() > 0) {
+		const Ref<FontConfig> *font = data.font_override.getptr(p_name);
+		if (font) {
 			return *font;
 		}
 	}
 
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
-}
-
-int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const int *font_size = data.font_size_override.getptr(p_name);
-		if (font_size && (*font_size) > 0) {
-			return *font_size;
-		}
-	}
-
-	List<StringName> theme_types;
-	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	return get_theme_item_in_types<Ref<FontConfig>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1162,13 +1127,8 @@ bool Control::has_theme_stylebox_override(const StringName &p_name) const {
 }
 
 bool Control::has_theme_font_override(const StringName &p_name) const {
-	const Ref<Font> *font = data.font_override.getptr(p_name);
+	const Ref<FontConfig> *font = data.font_override.getptr(p_name);
 	return font != nullptr;
-}
-
-bool Control::has_theme_font_size_override(const StringName &p_name) const {
-	const int *font_size = data.font_size_override.getptr(p_name);
-	return font_size != nullptr;
 }
 
 bool Control::has_theme_color_override(const StringName &p_name) const {
@@ -1215,18 +1175,6 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
 	return has_theme_item_in_types(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
-}
-
-bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		if (has_theme_font_size_override(p_name)) {
-			return true;
-		}
-	}
-
-	List<StringName> theme_types;
-	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return has_theme_item_in_types(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
 bool Control::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1304,7 +1252,7 @@ float Control::get_theme_default_base_scale() const {
 	return fetch_theme_default_base_scale(data.theme_owner, data.theme_owner_window);
 }
 
-Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window) {
+Ref<FontConfig> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window) {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
@@ -1351,59 +1299,8 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	return Theme::get_fallback_font();
 }
 
-Ref<Font> Control::get_theme_default_font() const {
+Ref<FontConfig> Control::get_theme_default_font() const {
 	return fetch_theme_default_font(data.theme_owner, data.theme_owner_window);
-}
-
-int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window) {
-	// First, look through each control or window node in the branch, until no valid parent can be found.
-	// Only nodes with a theme resource attached are considered.
-	// For each theme resource see if their assigned theme has the default value defined and valid.
-	Control *theme_owner = p_theme_owner;
-	Window *theme_owner_window = p_theme_owner_window;
-
-	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_font_size()) {
-			return theme_owner->data.theme->get_default_font_size();
-		}
-
-		if (theme_owner_window && theme_owner_window->theme->has_default_font_size()) {
-			return theme_owner_window->theme->get_default_font_size();
-		}
-
-		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
-		Control *parent_c = Object::cast_to<Control>(parent);
-		if (parent_c) {
-			theme_owner = parent_c->data.theme_owner;
-			theme_owner_window = parent_c->data.theme_owner_window;
-		} else {
-			Window *parent_w = Object::cast_to<Window>(parent);
-			if (parent_w) {
-				theme_owner = parent_w->theme_owner;
-				theme_owner_window = parent_w->theme_owner_window;
-			} else {
-				theme_owner = nullptr;
-				theme_owner_window = nullptr;
-			}
-		}
-	}
-
-	// Secondly, check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_font_size()) {
-			return Theme::get_project_default()->get_default_font_size();
-		}
-	}
-
-	// Lastly, fall back on the default Theme.
-	if (Theme::get_default()->has_default_font_size()) {
-		return Theme::get_default()->get_default_font_size();
-	}
-	return Theme::get_fallback_font_size();
-}
-
-int Control::get_theme_default_font_size() const {
-	return fetch_theme_default_font_size(data.theme_owner, data.theme_owner_window);
 }
 
 Rect2 Control::get_parent_anchorable_rect() const {
@@ -2250,7 +2147,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	_notify_theme_changed();
 }
 
-void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+void Control::add_theme_font_override(const StringName &p_name, const Ref<FontConfig> &p_font) {
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (data.font_override.has(p_name)) {
@@ -2259,11 +2156,6 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 
 	data.font_override[p_name] = p_font;
 	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
-}
-
-void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
-	data.font_size_override[p_name] = p_font_size;
 	_notify_theme_changed();
 }
 
@@ -2301,11 +2193,6 @@ void Control::remove_theme_font_override(const StringName &p_name) {
 	}
 
 	data.font_override.erase(p_name);
-	_notify_theme_changed();
-}
-
-void Control::remove_theme_font_size_override(const StringName &p_name) {
-	data.font_size_override.erase(p_name);
 	_notify_theme_changed();
 }
 
@@ -3059,8 +2946,6 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 			Theme::get_default()->get_stylebox_list(get_class(), &sn);
 		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font") {
 			Theme::get_default()->get_font_list(get_class(), &sn);
-		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size") {
-			Theme::get_default()->get_font_size_list(get_class(), &sn);
 		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant") {
 			Theme::get_default()->get_constant_list(get_class(), &sn);
 		}
@@ -3191,41 +3076,35 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_icon_override", "name", "texture"), &Control::add_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("add_theme_stylebox_override", "name", "stylebox"), &Control::add_theme_style_override);
 	ClassDB::bind_method(D_METHOD("add_theme_font_override", "name", "font"), &Control::add_theme_font_override);
-	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Control::remove_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Control::remove_theme_style_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_font_override", "name"), &Control::remove_theme_font_override);
-	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Control::remove_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
 	ClassDB::bind_method(D_METHOD("has_theme_font_override", "name"), &Control::has_theme_font_override);
-	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Control::has_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Control::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);
-	ClassDB::bind_method(D_METHOD("get_theme_default_font_size"), &Control::get_theme_default_font_size);
 
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 

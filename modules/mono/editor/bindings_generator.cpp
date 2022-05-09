@@ -2753,7 +2753,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
+			if (property.usage & PROPERTY_USAGE_SHROTCUT || property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 

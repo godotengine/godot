@@ -281,12 +281,11 @@ void EditorSpinSlider::_draw_spin_slider() {
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
-	int label_width = font->get_string_size(label, font_size).width;
+	int label_width = font->get_string_size(label).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
 	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -297,7 +296,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	String numstr = get_text_value();
 
-	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+	int vofs = (size.height - font->get_height()) / 2 + font->get_ascent();
 
 	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
@@ -317,14 +316,17 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	if (rtl) {
-		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, lc * Color(1, 1, 1, 0.5));
 	} else {
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, lc * Color(1, 1, 1, 0.5));
 	}
 
 	int suffix_start = numstr.length();
 	RID num_rid = TS->create_shaped_text();
-	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size);
+	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font->get_size(), font->get_opentype_features());
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		TS->shaped_text_set_spacing(num_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
+	}
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
@@ -480,11 +482,10 @@ LineEdit *EditorSpinSlider::get_line_edit() {
 
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height(font_size);
+	ms.height += font->get_height();
 
 	return ms;
 }

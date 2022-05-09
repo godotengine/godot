@@ -811,10 +811,10 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
-		font_size = text_editor->get_theme_font_size(SNAME("font_size"));
+		font_size = text_editor->get_theme_font(SNAME("font"))->get_size();
 		font_size *= powf(magnify_gesture->get_factor(), 0.25);
 
-		_add_font_size((int)font_size - text_editor->get_theme_font_size(SNAME("font_size")));
+		_add_font_size((int)font_size - text_editor->get_theme_font(SNAME("font"))->get_size());
 		return;
 	}
 
@@ -853,7 +853,9 @@ void CodeTextEditor::_zoom_changed() {
 
 void CodeTextEditor::_reset_zoom() {
 	EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
-	text_editor->add_theme_font_size_override("font_size", 14 * EDSCALE);
+	Ref<FontConfig> font = text_editor->get_theme_font("font")->duplicate();
+	font->set_size(14 * EDSCALE);
+	text_editor->add_theme_font_override("font", font);
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -978,12 +980,15 @@ void CodeTextEditor::_font_resize_timeout() {
 }
 
 bool CodeTextEditor::_add_font_size(int p_delta) {
-	int old_size = text_editor->get_theme_font_size(SNAME("font_size"));
+	Ref<FontConfig> font = text_editor->get_theme_font("font");
+	int old_size = font->get_size();
 	int new_size = CLAMP(old_size + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 
 	if (new_size != old_size) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
-		text_editor->add_theme_font_size_override("font_size", new_size);
+		Ref<FontConfig> new_font = font->duplicate();
+		new_font->set_size(new_size);
+		text_editor->add_theme_font_override("font", new_font);
 	}
 
 	return true;
@@ -1609,19 +1614,15 @@ void CodeTextEditor::_update_text_editor_theme() {
 
 	error->begin_bulk_theme_override();
 	error->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 	error->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
-	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
-	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts"));
+	Ref<FontConfig> status_bar_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 	error->add_theme_font_override("font", status_bar_font);
-	error->add_theme_font_size_override("font_size", status_bar_font_size);
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
 			n->add_theme_font_override("font", status_bar_font);
-			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
 	error->end_bulk_theme_override();
@@ -1639,25 +1640,25 @@ void CodeTextEditor::_apply_settings_change() {
 	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
 	switch (ot_mode) {
 		case 1: { // Disable ligatures.
-			text_editor->clear_opentype_features();
-			text_editor->set_opentype_feature("calt", 0);
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(Dictionary());
 		} break;
 		case 2: { // Custom.
-			text_editor->clear_opentype_features();
 			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
 			Dictionary ftrs;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
-					text_editor->set_opentype_feature(subtag_a[0], subtag_a[1].to_int());
+					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
 				} else if (subtag_a.size() == 1) {
-					text_editor->set_opentype_feature(subtag_a[0], 1);
+					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
 				}
 			}
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(ftrs);
 		} break;
 		default: { // Default.
-			text_editor->clear_opentype_features();
-			text_editor->set_opentype_feature("calt", 1);
+			Dictionary ftrs;
+			ftrs[TS->name_to_tag("calt")] = 1;
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(ftrs);
 		} break;
 	}
 
@@ -1712,15 +1713,12 @@ void CodeTextEditor::_update_status_bar_theme() {
 	error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
 	warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
 	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
 	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 }
 
 void CodeTextEditor::_notification(int p_what) {
@@ -1863,25 +1861,25 @@ CodeTextEditor::CodeTextEditor() {
 	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
 	switch (ot_mode) {
 		case 1: { // Disable ligatures.
-			text_editor->clear_opentype_features();
-			text_editor->set_opentype_feature("calt", 0);
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(Dictionary());
 		} break;
 		case 2: { // Custom.
-			text_editor->clear_opentype_features();
 			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
 			Dictionary ftrs;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
-					text_editor->set_opentype_feature(subtag_a[0], subtag_a[1].to_int());
+					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
 				} else if (subtag_a.size() == 1) {
-					text_editor->set_opentype_feature(subtag_a[0], 1);
+					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
 				}
 			}
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(ftrs);
 		} break;
 		default: { // Default.
-			text_editor->clear_opentype_features();
-			text_editor->set_opentype_feature("calt", 1);
+			Dictionary ftrs;
+			ftrs[TS->name_to_tag("calt")] = 1;
+			text_editor->get_theme_font(SNAME("font"))->set_opentype_features(ftrs);
 		} break;
 	}
 

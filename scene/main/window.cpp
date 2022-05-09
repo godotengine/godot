@@ -1274,16 +1274,10 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 	return Control::get_theme_item_in_types<Ref<StyleBox>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+Ref<FontConfig> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return Control::get_theme_item_in_types<Ref<Font>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
-}
-
-int Window::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	List<StringName> theme_types;
-	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return Control::get_theme_item_in_types<int>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	return Control::get_theme_item_in_types<Ref<FontConfig>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1316,12 +1310,6 @@ bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_
 	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
-bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	List<StringName> theme_types;
-	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return Control::has_theme_item_in_types(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
-}
-
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
@@ -1338,12 +1326,8 @@ float Window::get_theme_default_base_scale() const {
 	return Control::fetch_theme_default_base_scale(theme_owner, theme_owner_window);
 }
 
-Ref<Font> Window::get_theme_default_font() const {
+Ref<FontConfig> Window::get_theme_default_font() const {
 	return Control::fetch_theme_default_font(theme_owner, theme_owner_window);
-}
-
-int Window::get_theme_default_font_size() const {
-	return Control::fetch_theme_default_font_size(theme_owner, theme_owner_window);
 }
 
 Rect2i Window::get_parent_rect() const {
@@ -1562,20 +1546,17 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Window::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Window::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Window::get_theme_default_font);
-	ClassDB::bind_method(D_METHOD("get_theme_default_font_size"), &Window::get_theme_default_font_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);

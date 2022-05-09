@@ -181,13 +181,6 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
-		<method name="clear_item_opentype_features">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<description>
-				Removes all OpenType features form the item's text.
-			</description>
-		</method>
 		<method name="get_current_index" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -234,14 +227,6 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
-			</description>
-		</method>
-		<method name="get_item_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -436,15 +421,6 @@
 				Sets the state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
-		<method name="set_item_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 		<method name="set_item_shortcut">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
@@ -587,17 +563,11 @@
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical space between each menu item.
 		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] used for the menu items.
+		<theme_item name="font" data_type="font" type="FontConfig">
+			[FontConfig] used for the menu items.
 		</theme_item>
-		<theme_item name="font_separator" data_type="font" type="Font">
-			[Font] used for the labeled separator.
-		</theme_item>
-		<theme_item name="font_separator_size" data_type="font_size" type="int">
-			Font size of the labeled separator.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the menu items.
+		<theme_item name="font_separator" data_type="font" type="FontConfig">
+			[FontConfig] used for the labeled separator.
 		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked checkbox items.

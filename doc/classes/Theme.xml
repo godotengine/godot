@@ -50,17 +50,8 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" />
 			<description>
-				Removes the [Font] property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
+				Removes the [FontConfig] property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
 				Fails if it doesn't exist. Use [method has_font] to check for existence.
-			</description>
-		</method>
-		<method name="clear_font_size">
-			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" />
-			<description>
-				Removes the font size property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
-				Fails if it doesn't exist. Use [method has_font_size] to check for existence.
 			</description>
 		</method>
 		<method name="clear_icon">
@@ -144,11 +135,11 @@
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
-			<return type="Font" />
+			<return type="FontConfig" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" />
 			<description>
-				Returns the [Font] property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
+				Returns the [FontConfig] property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
 				Returns the default theme font if the property doesn't exist and the default theme font is set up (see [member default_font]). Use [method has_font] to check for existence of the property and [method has_default_font] to check for existence of the default theme font.
 				Returns the engine fallback font value, if neither exist.
 			</description>
@@ -157,36 +148,13 @@
 			<return type="PackedStringArray" />
 			<argument index="0" name="theme_type" type="String" />
 			<description>
-				Returns a list of names for [Font] properties defined with [code]theme_type[/code]. Use [method get_font_type_list] to get a list of possible theme type names.
-			</description>
-		</method>
-		<method name="get_font_size" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" />
-			<description>
-				Returns the font size property defined by [code]name[/code] and [code]theme_type[/code], if it exists.
-				Returns the default theme font size if the property doesn't exist and the default theme font size is set up (see [member default_font_size]). Use [method has_font_size] to check for existence of the property and [method has_default_font_size] to check for existence of the default theme font.
-				Returns the engine fallback font size value, if neither exist.
-			</description>
-		</method>
-		<method name="get_font_size_list" qualifiers="const">
-			<return type="PackedStringArray" />
-			<argument index="0" name="theme_type" type="String" />
-			<description>
-				Returns a list of names for font size properties defined with [code]theme_type[/code]. Use [method get_font_size_type_list] to get a list of possible theme type names.
-			</description>
-		</method>
-		<method name="get_font_size_type_list" qualifiers="const">
-			<return type="PackedStringArray" />
-			<description>
-				Returns a list of all unique theme type names for font size properties. Use [method get_type_list] to get a list of all unique theme types.
+				Returns a list of names for [FontConfig] properties defined with [code]theme_type[/code]. Use [method get_font_type_list] to get a list of possible theme type names.
 			</description>
 		</method>
 		<method name="get_font_type_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns a list of all unique theme type names for [Font] properties. Use [method get_type_list] to get a list of all unique theme types.
+				Returns a list of all unique theme type names for [FontConfig] properties. Use [method get_type_list] to get a list of all unique theme types.
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -313,29 +281,13 @@
 				Returns [code]false[/code] if it doesn't.
 			</description>
 		</method>
-		<method name="has_default_font_size" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if [member default_font_size] has a valid value.
-				Returns [code]false[/code] if it doesn't. The value must be greater than [code]0[/code] to be considered valid.
-			</description>
-		</method>
 		<method name="has_font" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [Font] property defined by [code]name[/code] and [code]theme_type[/code] exists, or if the default theme font is set up (see [method has_default_font]).
+				Returns [code]true[/code] if the [FontConfig] property defined by [code]name[/code] and [code]theme_type[/code] exists, or if the default theme font is set up (see [method has_default_font]).
 				Returns [code]false[/code] if neither exist. Use [method set_font] to define the property.
-			</description>
-		</method>
-		<method name="has_font_size" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" />
-			<description>
-				Returns [code]true[/code] if the font size property defined by [code]name[/code] and [code]theme_type[/code] exists, or if the default theme font size is set up (see [method has_default_font_size]).
-				Returns [code]false[/code] if neither exist. Use [method set_font_size] to define the property.
 			</description>
 		</method>
 		<method name="has_icon" qualifiers="const">
@@ -416,18 +368,8 @@
 			<argument index="1" name="name" type="StringName" />
 			<argument index="2" name="theme_type" type="StringName" />
 			<description>
-				Renames the [Font] property defined by [code]old_name[/code] and [code]theme_type[/code] to [code]name[/code], if it exists.
+				Renames the [FontConfig] property defined by [code]old_name[/code] and [code]theme_type[/code] to [code]name[/code], if it exists.
 				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font] to check for existence, and [method clear_font] to remove the existing property.
-			</description>
-		</method>
-		<method name="rename_font_size">
-			<return type="void" />
-			<argument index="0" name="old_name" type="StringName" />
-			<argument index="1" name="name" type="StringName" />
-			<argument index="2" name="theme_type" type="StringName" />
-			<description>
-				Renames the font size property defined by [code]old_name[/code] and [code]theme_type[/code] to [code]name[/code], if it exists.
-				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font_size] to check for existence, and [method clear_font_size] to remove the existing property.
 			</description>
 		</method>
 		<method name="rename_icon">
@@ -484,18 +426,9 @@
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" />
-			<argument index="2" name="font" type="Font" />
+			<argument index="2" name="font" type="FontConfig" />
 			<description>
-				Creates or changes the value of the [Font] property defined by [code]name[/code] and [code]theme_type[/code]. Use [method clear_font] to remove the property.
-			</description>
-		</method>
-		<method name="set_font_size">
-			<return type="void" />
-			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="theme_type" type="StringName" />
-			<argument index="2" name="font_size" type="int" />
-			<description>
-				Creates or changes the value of the font size property defined by [code]name[/code] and [code]theme_type[/code]. Use [method clear_font_size] to remove the property.
+				Creates or changes the value of the [FontConfig] property defined by [code]name[/code] and [code]theme_type[/code]. Use [method clear_font] to remove the property.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -545,13 +478,9 @@
 			The default base scale factor of this theme resource. Used by some controls to scale their visual properties based on the global scale factor. If this value is set to [code]0.0[/code], the global scale factor is used.
 			Use [method has_default_base_scale] to check if this value is valid.
 		</member>
-		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
+		<member name="default_font" type="FontConfig" setter="set_default_font" getter="get_default_font">
 			The default font of this theme resource. Used as the default value when trying to fetch a font resource that doesn't exist in this theme or is in invalid state. If the default font is also missing or invalid, the engine fallback value is used.
 			Use [method has_default_font] to check if this value is valid.
-		</member>
-		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
-			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used.
-			Values below [code]0[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
 		</member>
 	</members>
 	<constants>
@@ -562,18 +491,15 @@
 			Theme's constant item type.
 		</constant>
 		<constant name="DATA_TYPE_FONT" value="2" enum="DataType">
-			Theme's [Font] item type.
+			Theme's [FontConfig] item type.
 		</constant>
-		<constant name="DATA_TYPE_FONT_SIZE" value="3" enum="DataType">
-			Theme's font size item type.
-		</constant>
-		<constant name="DATA_TYPE_ICON" value="4" enum="DataType">
+		<constant name="DATA_TYPE_ICON" value="3" enum="DataType">
 			Theme's icon [Texture2D] item type.
 		</constant>
-		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
+		<constant name="DATA_TYPE_STYLEBOX" value="4" enum="DataType">
 			Theme's [StyleBox] item type.
 		</constant>
-		<constant name="DATA_TYPE_MAX" value="6" enum="DataType">
+		<constant name="DATA_TYPE_MAX" value="5" enum="DataType">
 			Maximum value for the DataType enum.
 		</constant>
 	</constants>

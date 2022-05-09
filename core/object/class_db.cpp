@@ -822,6 +822,14 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	return false;
 }
 
+void ClassDB::add_property_shortcut(const StringName &p_class, const String &p_name, const String &p_target_name) {
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_COND(!type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_target_name, PROPERTY_USAGE_SHROTCUT));
+}
+
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);

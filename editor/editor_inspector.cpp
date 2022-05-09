@@ -60,9 +60,8 @@ static bool _property_path_matches(const String &p_property_path, const String &
 
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height = font->get_height(font_size);
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+	ms.height = font->get_height();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -130,9 +129,8 @@ void EditorProperty::_notification(int p_what) {
 
 			{
 				int child_room = size.width * (1.0 - split_ratio);
-				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-				int height = font->get_height(font_size);
+				Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+				int height = font->get_height();
 				bool no_children = true;
 
 				//compute room needed
@@ -234,8 +232,7 @@ void EditorProperty::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 			Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 			bool rtl = is_layout_rtl();
 
@@ -328,7 +325,7 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
+				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -338,11 +335,11 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= total_icon_w;
 			}
 
-			int v_ofs = (size.height - font->get_height(font_size)) / 2;
+			int v_ofs = (size.height - font->get_height()) / 2;
 			if (rtl) {
-				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent()), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, color);
 			} else {
-				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+				draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, color);
 			}
 
 			if (keying) {
@@ -1079,12 +1076,11 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
-			int w = font->get_string_size(label, font_size).width;
+			int w = font->get_string_size(label).width;
 			if (icon.is_valid()) {
 				w += hs + icon->get_width();
 			}
@@ -1097,7 +1093,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 			}
 
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-			draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
+			draw_string(font, Point2(ofs, font->get_ascent() + (get_size().height - font->get_height()) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, color);
 		} break;
 	}
 }
@@ -1108,12 +1104,11 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 
 	Size2 ms;
 	ms.width = 1;
-	ms.height = font->get_height(font_size);
+	ms.height = font->get_height();
 	if (icon.is_valid()) {
 		ms.height = MAX(icon->get_height(), ms.height);
 	}
@@ -1155,8 +1150,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				return;
 			}
 			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 
 			// Get the right direction arrow texture, if the section is foldable.
 			Ref<Texture2D> arrow;
@@ -1173,7 +1167,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 
 			// Compute the height of the section header.
-			int header_height = font->get_height(font_size);
+			int header_height = font->get_height();
 			if (arrow.is_valid()) {
 				header_height = MAX(header_height, arrow->get_height());
 			}
@@ -1206,8 +1200,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 
 			// Get the right direction arrow texture, if the section is foldable.
 			Ref<Texture2D> arrow;
@@ -1226,7 +1219,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			bool rtl = is_layout_rtl();
 
 			// Compute the height and width of the section header.
-			int header_height = font->get_height(font_size);
+			int header_height = font->get_height();
 			if (arrow.is_valid()) {
 				header_height = MAX(header_height, arrow->get_height());
 			}
@@ -1262,14 +1255,14 @@ void EditorInspectorSection::_notification(int p_what) {
 			const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
 			Color color = get_theme_color(SNAME("font_color"));
 			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE) - section_indent;
-			Point2 text_offset = Point2(0, font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2);
+			Point2 text_offset = Point2(0, font->get_ascent() + (header_height - font->get_height()) / 2);
 			HorizontalAlignment text_align = HORIZONTAL_ALIGNMENT_LEFT;
 			if (rtl) {
 				text_align = HORIZONTAL_ALIGNMENT_RIGHT;
 			} else {
 				text_offset.x = section_indent + Math::round(arrow_width + arrow_margin * EDSCALE);
 			}
-			draw_string(font, text_offset.floor(), label, text_align, text_width, font_size, color);
+			draw_string(font, text_offset.floor(), label, text_align, text_width, color);
 
 			if (arrow.is_valid()) {
 				Point2 arrow_position = Point2(0, (header_height - arrow->get_height()) / 2);
@@ -1357,9 +1350,8 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 		ms.height = MAX(ms.height, minsize.height);
 	}
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+	ms.height += font->get_height() + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 	ms.width += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 
 	int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
@@ -1407,9 +1399,8 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside
+		Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+		if (mb->get_position().y > font->get_height()) { //clicked outside
 			return;
 		}
 
@@ -2466,6 +2457,24 @@ void EditorInspector::update_tree() {
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
 
+		String shortcut_rename;
+		if (p.usage & PROPERTY_USAGE_SHROTCUT) {
+			String target_name = p.hint_string;
+			shortcut_rename = p.name;
+			bool found = false;
+			for (List<PropertyInfo>::Element *F_property = plist.front(); F_property; F_property = F_property->next()) {
+				PropertyInfo &target = F_property->get();
+				if (target.name == target_name) {
+					p = target;
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				continue;
+			}
+		}
+
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
@@ -2608,7 +2617,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the path for property.
-		String path = p.name;
+		String path = shortcut_rename.is_empty() ? p.name : shortcut_rename;
 
 		// First check if we have an array that fits the prefix.
 		String array_prefix = "";
@@ -3426,6 +3435,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 
 		if (editor_property_map.has(p_path)) {
 			for (EditorProperty *E : editor_property_map[p_path]) {
+				E->set_checked(p_checked);
 				E->update_property();
 				E->update_revert_and_pin_status();
 				E->update_cache();
