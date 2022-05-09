@@ -523,7 +523,7 @@ void CurveEditor::set_hover_point_index(int index) {
 }
 
 void CurveEditor::update_view_transform() {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 
 	const real_t margin = font->get_height(font_size) + 2 * EDSCALE;
@@ -669,7 +669,7 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float font_height = font->get_height(font_size);
 	Color text_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));

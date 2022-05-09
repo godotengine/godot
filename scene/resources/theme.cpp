@@ -40,7 +40,7 @@ Ref<Theme> Theme::project_default_theme;
 float Theme::fallback_base_scale = 1.0;
 Ref<Texture2D> Theme::fallback_icon;
 Ref<StyleBox> Theme::fallback_style;
-Ref<Font> Theme::fallback_font;
+Ref<FontConfig> Theme::fallback_font;
 int Theme::fallback_font_size = 16;
 
 // Dynamic properties.
@@ -98,7 +98,7 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 		} else if (type == "fonts") {
 			if (!has_font(name, theme_type)) {
-				r_ret = Ref<Font>();
+				r_ret = Ref<FontConfig>();
 			} else {
 				r_ret = get_font(name, theme_type);
 			}
@@ -144,8 +144,8 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Fonts.
 	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
-		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		for (const KeyValue<StringName, Ref<FontConfig>> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "FontConfig", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
@@ -215,7 +215,7 @@ void Theme::set_fallback_style(const Ref<StyleBox> &p_style) {
 	fallback_style = p_style;
 }
 
-void Theme::set_fallback_font(const Ref<Font> &p_font) {
+void Theme::set_fallback_font(const Ref<FontConfig> &p_font) {
 	fallback_font = p_font;
 }
 
@@ -235,7 +235,7 @@ Ref<StyleBox> Theme::get_fallback_style() {
 	return fallback_style;
 }
 
-Ref<Font> Theme::get_fallback_font() {
+Ref<FontConfig> Theme::get_fallback_font() {
 	return fallback_font;
 }
 
@@ -283,7 +283,7 @@ bool Theme::has_default_base_scale() const {
 	return default_base_scale > 0.0;
 }
 
-void Theme::set_default_font(const Ref<Font> &p_default_font) {
+void Theme::set_default_font(const Ref<FontConfig> &p_default_font) {
 	if (default_font == p_default_font) {
 		return;
 	}
@@ -301,7 +301,7 @@ void Theme::set_default_font(const Ref<Font> &p_default_font) {
 	_emit_theme_changed();
 }
 
-Ref<Font> Theme::get_default_font() const {
+Ref<FontConfig> Theme::get_default_font() const {
 	return default_font;
 }
 
@@ -548,7 +548,7 @@ void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
 }
 
 // Fonts.
-void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font) {
+void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<FontConfig> &p_font) {
 	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 
@@ -567,7 +567,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, c
 	_emit_theme_changed(!existing);
 }
 
-Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
+Ref<FontConfig> Theme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) {
 		return font_map[p_theme_type][p_name];
 	} else if (has_default_font()) {
@@ -618,7 +618,7 @@ void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) con
 		return;
 	}
 
-	for (const KeyValue<StringName, Ref<Font>> &E : font_map[p_theme_type]) {
+	for (const KeyValue<StringName, Ref<FontConfig>> &E : font_map[p_theme_type]) {
 		p_list->push_back(E.key);
 	}
 }
@@ -639,8 +639,8 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 
 	_freeze_change_propagation();
 
-	for (const KeyValue<StringName, Ref<Font>> &E : font_map[p_theme_type]) {
-		Ref<Font> font = E.value;
+	for (const KeyValue<StringName, Ref<FontConfig>> &E : font_map[p_theme_type]) {
+		Ref<FontConfig> font = E.value;
 		if (font.is_valid()) {
 			font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 		}
@@ -937,7 +937,7 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 		case DATA_TYPE_FONT: {
 			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
 
-			Ref<Font> font_value = Object::cast_to<Font>(p_value.get_validated_object());
+			Ref<FontConfig> font_value = Object::cast_to<FontConfig>(p_value.get_validated_object());
 			set_font(p_name, p_theme_type, font_value);
 		} break;
 		case DATA_TYPE_FONT_SIZE: {
@@ -1639,7 +1639,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 	// Fonts.
 	{
 		for (const KeyValue<StringName, ThemeFontMap> &E : p_other->font_map) {
-			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
+			for (const KeyValue<StringName, Ref<FontConfig>> &F : E.value) {
 				set_font(F.key, E.key, F.value);
 			}
 		}
@@ -1708,9 +1708,9 @@ void Theme::clear() {
 
 	{
 		for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
-			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
+			for (const KeyValue<StringName, Ref<FontConfig>> &F : E.value) {
 				if (F.value.is_valid()) {
-					Ref<Font> font = F.value;
+					Ref<FontConfig> font = F.value;
 					font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
@@ -1817,7 +1817,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "FontConfig"), "set_default_font", "get_default_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);

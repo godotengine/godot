@@ -498,12 +498,11 @@ private:
 	String xl_text;
 
 	int font_size = 16;
-	Ref<Font> font_override;
+	Ref<FontConfig> font_override;
 	float width = 500.0;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	bool uppercase = false;
-	Dictionary opentype_features;
 	String language;
 	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -526,10 +525,6 @@ protected:
 
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 public:
 	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
 
@@ -542,19 +537,15 @@ public:
 	void set_text(const String &p_string);
 	String get_text() const;
 
-	void set_font(const Ref<Font> &p_font);
-	Ref<Font> get_font() const;
-	Ref<Font> _get_font_or_default() const;
+	void set_font(const Ref<FontConfig> &p_font);
+	Ref<FontConfig> get_font() const;
+	Ref<FontConfig> _get_font_or_default() const;
 
 	void set_font_size(int p_size);
 	int get_font_size() const;
 
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;

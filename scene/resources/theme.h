@@ -49,7 +49,7 @@ class Theme : public Resource {
 public:
 	using ThemeIconMap = HashMap<StringName, Ref<Texture2D>>;
 	using ThemeStyleMap = HashMap<StringName, Ref<StyleBox>>;
-	using ThemeFontMap = HashMap<StringName, Ref<Font>>;
+	using ThemeFontMap = HashMap<StringName, Ref<FontConfig>>;
 	using ThemeFontSizeMap = HashMap<StringName, int>;
 	using ThemeColorMap = HashMap<StringName, Color>;
 	using ThemeConstantMap = HashMap<StringName, int>;
@@ -110,12 +110,12 @@ protected:
 	static float fallback_base_scale;
 	static Ref<Texture2D> fallback_icon;
 	static Ref<StyleBox> fallback_style;
-	static Ref<Font> fallback_font;
+	static Ref<FontConfig> fallback_font;
 	static int fallback_font_size;
 
 	// Default values configurable for each individual theme.
 	float default_base_scale = 0.0;
-	Ref<Font> default_font;
+	Ref<FontConfig> default_font;
 	int default_font_size = -1;
 
 	static void _bind_methods();
@@ -135,13 +135,13 @@ public:
 	static void set_fallback_base_scale(float p_base_scale);
 	static void set_fallback_icon(const Ref<Texture2D> &p_icon);
 	static void set_fallback_style(const Ref<StyleBox> &p_style);
-	static void set_fallback_font(const Ref<Font> &p_font);
+	static void set_fallback_font(const Ref<FontConfig> &p_font);
 	static void set_fallback_font_size(int p_font_size);
 
 	static float get_fallback_base_scale();
 	static Ref<Texture2D> get_fallback_icon();
 	static Ref<StyleBox> get_fallback_style();
-	static Ref<Font> get_fallback_font();
+	static Ref<FontConfig> get_fallback_font();
 	static int get_fallback_font_size();
 
 	static bool is_valid_type_name(const String &p_name);
@@ -151,8 +151,8 @@ public:
 	float get_default_base_scale() const;
 	bool has_default_base_scale() const;
 
-	void set_default_font(const Ref<Font> &p_default_font);
-	Ref<Font> get_default_font() const;
+	void set_default_font(const Ref<FontConfig> &p_default_font);
+	Ref<FontConfig> get_default_font() const;
 	bool has_default_font() const;
 
 	void set_default_font_size(int p_font_size);
@@ -181,8 +181,8 @@ public:
 	void remove_stylebox_type(const StringName &p_theme_type);
 	void get_stylebox_type_list(List<StringName> *p_list) const;
 
-	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font);
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const;
+	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<FontConfig> &p_font);
+	Ref<FontConfig> get_font(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);

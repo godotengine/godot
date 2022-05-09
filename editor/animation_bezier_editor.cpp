@@ -247,7 +247,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
 			}
 
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));

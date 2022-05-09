@@ -3903,7 +3903,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	// Draw the IDs for debug.
-	/*Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	/*Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
 			p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));

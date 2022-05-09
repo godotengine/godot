@@ -35,7 +35,7 @@
 Size2 ProgressBar::get_minimum_size() const {
 	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 	Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	Size2 minimum_size = bg->get_minimum_size();
@@ -57,7 +57,7 @@ void ProgressBar::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 			Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
-			Ref<Font> font = get_theme_font(SNAME("font"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"));
 			int font_size = get_theme_font_size(SNAME("font_size"));
 			Color font_color = get_theme_color(SNAME("font_color"));
 

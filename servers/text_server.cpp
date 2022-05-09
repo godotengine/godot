@@ -280,9 +280,6 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_scale", "font_rid", "size", "scale"), &TextServer::font_set_scale);
 	ClassDB::bind_method(D_METHOD("font_get_scale", "font_rid", "size"), &TextServer::font_get_scale);
 
-	ClassDB::bind_method(D_METHOD("font_set_spacing", "font_rid", "size", "spacing", "value"), &TextServer::font_set_spacing);
-	ClassDB::bind_method(D_METHOD("font_get_spacing", "font_rid", "size", "spacing"), &TextServer::font_get_spacing);
-
 	ClassDB::bind_method(D_METHOD("font_get_texture_count", "font_rid", "size"), &TextServer::font_get_texture_count);
 	ClassDB::bind_method(D_METHOD("font_clear_textures", "font_rid", "size"), &TextServer::font_clear_textures);
 	ClassDB::bind_method(D_METHOD("font_remove_texture", "font_rid", "size", "texture_index"), &TextServer::font_remove_texture);
@@ -382,6 +379,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_preserve_control", "shaped", "enabled"), &TextServer::shaped_text_set_preserve_control);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_set_spacing", "shaped", "spacing", "value"), &TextServer::shaped_text_set_spacing);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_spacing", "shaped", "spacing"), &TextServer::shaped_text_get_spacing);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language", "meta"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));

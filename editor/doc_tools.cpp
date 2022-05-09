@@ -608,7 +608,7 @@ void DocTools::generate(bool p_basic_types) {
 			for (const StringName &E : l) {
 				DocData::ThemeItemDoc tid;
 				tid.name = E;
-				tid.type = "Font";
+				tid.type = "FontConfig";
 				tid.data_type = "font";
 				c.theme_properties.push_back(tid);
 			}

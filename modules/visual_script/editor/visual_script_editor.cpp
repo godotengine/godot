@@ -650,7 +650,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	// Visual script specific theme for MSDF font.
 	Ref<Theme> vstheme;
 	vstheme.instantiate();
-	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", "EditorFonts");
+	Ref<FontConfig> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", "EditorFonts");
 	vstheme->set_font("font", "Label", label_font);
 	vstheme->set_font("font", "LineEdit", label_font);
 	vstheme->set_font("font", "Button", label_font);

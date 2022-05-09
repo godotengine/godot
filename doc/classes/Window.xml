@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="get_theme_default_font" qualifiers="const">
-			<return type="Font" />
+			<return type="FontConfig" />
 			<description>
 			</description>
 		</method>
@@ -75,11 +75,11 @@
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
-			<return type="Font" />
+			<return type="FontConfig" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/code].
+				Returns the [FontConfig] at [code]name[/code] if the theme has [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -135,7 +135,7 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]true[/code] if [FontConfig] with [code]name[/code] is in [code]theme_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]theme_type[/code].
 			</description>
 		</method>
@@ -480,7 +480,7 @@
 		<theme_item name="title_outline_size" data_type="constant" type="int" default="0">
 			The size of the title outline.
 		</theme_item>
-		<theme_item name="title_font" data_type="font" type="Font">
+		<theme_item name="title_font" data_type="font" type="FontConfig">
 		</theme_item>
 		<theme_item name="title_font_size" data_type="font_size" type="int">
 			The size of the title font.

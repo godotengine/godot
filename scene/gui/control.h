@@ -479,7 +479,7 @@ public:
 
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_font_override(const StringName &p_name, const Ref<FontConfig> &p_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
@@ -493,7 +493,7 @@ public:
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
-	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<FontConfig> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -513,11 +513,11 @@ public:
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
 	static float fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_theme_owner_window);
-	static Ref<Font> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
+	static Ref<FontConfig> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
 	static int fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window);
 
 	float get_theme_default_base_scale() const;
-	Ref<Font> get_theme_default_font() const;
+	Ref<FontConfig> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
 	/* TOOLTIP */

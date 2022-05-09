@@ -60,7 +60,7 @@ static bool _property_path_matches(const String &p_property_path, const String &
 
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 	ms.height = font->get_height(font_size) + 4 * EDSCALE;
 
@@ -130,7 +130,7 @@ void EditorProperty::_notification(int p_what) {
 
 			{
 				int child_room = size.width * (1.0 - split_ratio);
-				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+				Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 				int height = font->get_height(font_size) + 4 * EDSCALE;
 				bool no_children = true;
@@ -234,7 +234,7 @@ void EditorProperty::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 			bool rtl = is_layout_rtl();
 
@@ -322,7 +322,7 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
+				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -1073,12 +1073,12 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
-			int w = font->get_string_size(label, font_size).width;
+			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
 				w += hs + icon->get_width();
 			}
@@ -1102,7 +1102,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 
 	Size2 ms;
@@ -1149,7 +1149,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				return;
 			}
 			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
 			// Get the right direction arrow texture, if the section is foldable.
@@ -1200,7 +1200,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+			Ref<FontConfig> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
 			// Get the right direction arrow texture, if the section is foldable.
@@ -1351,7 +1351,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 		ms.height = MAX(ms.height, minsize.height);
 	}
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 	ms.width += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
@@ -1401,7 +1401,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+		Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside
 			return;
@@ -3420,6 +3420,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 
 		if (editor_property_map.has(p_path)) {
 			for (EditorProperty *E : editor_property_map[p_path]) {
+				E->set_checked(p_checked);
 				E->update_property();
 				E->update_revert_and_pin_status();
 				E->update_cache();

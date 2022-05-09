@@ -135,10 +135,10 @@ class EditorHelp : public VBoxContainer {
 	Color qualifier_color;
 	Color type_color;
 
-	Ref<Font> doc_font;
-	Ref<Font> doc_bold_font;
-	Ref<Font> doc_title_font;
-	Ref<Font> doc_code_font;
+	Ref<FontConfig> doc_font;
+	Ref<FontConfig> doc_bold_font;
+	Ref<FontConfig> doc_title_font;
+	Ref<FontConfig> doc_code_font;
 
 	int scroll_to = -1;
 

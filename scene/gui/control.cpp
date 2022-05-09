@@ -402,7 +402,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "theme_override_fonts/" + E, PROPERTY_HINT_RESOURCE_TYPE, "FontConfig", usage));
 		}
 	}
 	{
@@ -1103,17 +1103,17 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 	return get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+Ref<FontConfig> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font && (*font)->get_data_count() > 0) {
+		const Ref<FontConfig> *font = data.font_override.getptr(p_name);
+		if (font) {
 			return *font;
 		}
 	}
 
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	return get_theme_item_in_types<Ref<FontConfig>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1166,7 +1166,7 @@ bool Control::has_theme_stylebox_override(const StringName &p_name) const {
 }
 
 bool Control::has_theme_font_override(const StringName &p_name) const {
-	const Ref<Font> *font = data.font_override.getptr(p_name);
+	const Ref<FontConfig> *font = data.font_override.getptr(p_name);
 	return font != nullptr;
 }
 
@@ -1308,7 +1308,7 @@ float Control::get_theme_default_base_scale() const {
 	return fetch_theme_default_base_scale(data.theme_owner, data.theme_owner_window);
 }
 
-Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window) {
+Ref<FontConfig> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window) {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
@@ -1355,7 +1355,7 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	return Theme::get_fallback_font();
 }
 
-Ref<Font> Control::get_theme_default_font() const {
+Ref<FontConfig> Control::get_theme_default_font() const {
 	return fetch_theme_default_font(data.theme_owner, data.theme_owner_window);
 }
 
@@ -2254,7 +2254,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	_notify_theme_changed();
 }
 
-void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+void Control::add_theme_font_override(const StringName &p_name, const Ref<FontConfig> &p_font) {
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (data.font_override.has(p_name)) {

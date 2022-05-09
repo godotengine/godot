@@ -219,7 +219,7 @@
 			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
 			The margin is ignored with [code]ALIGNMENT_RIGHT[/code] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [code]ALIGNMENT_CENTER[/code].
 		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
+		<theme_item name="font" data_type="font" type="FontConfig">
 			The font used to draw tab names.
 		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">

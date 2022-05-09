@@ -252,7 +252,7 @@
 		<method name="push_dropcap">
 			<return type="void" />
 			<argument index="0" name="string" type="String" />
-			<argument index="1" name="font" type="Font" />
+			<argument index="1" name="font" type="FontConfig" />
 			<argument index="2" name="size" type="int" />
 			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
@@ -271,23 +271,15 @@
 		</method>
 		<method name="push_font">
 			<return type="void" />
-			<argument index="0" name="font" type="Font" />
+			<argument index="0" name="font" type="FontConfig" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
-			</description>
-		</method>
-		<method name="push_font_features">
-			<return type="void" />
-			<argument index="0" name="opentype_features" type="Dictionary" />
-			<description>
-				Adds a [code][ot_feature][/code] tag to the tag stack. Overrides default OpenType font feature for its duration.
 			</description>
 		</method>
 		<method name="push_font_size">
 			<return type="void" />
 			<argument index="0" name="font_size" type="int" />
 			<description>
-				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
 		<method name="push_hint">
@@ -700,19 +692,19 @@
 		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
 		</theme_item>
-		<theme_item name="bold_font" data_type="font" type="Font">
+		<theme_item name="bold_font" data_type="font" type="FontConfig">
 			The font used for bold text.
 		</theme_item>
-		<theme_item name="bold_italics_font" data_type="font" type="Font">
+		<theme_item name="bold_italics_font" data_type="font" type="FontConfig">
 			The font used for bold italics text.
 		</theme_item>
-		<theme_item name="italics_font" data_type="font" type="Font">
+		<theme_item name="italics_font" data_type="font" type="FontConfig">
 			The font used for italics text.
 		</theme_item>
-		<theme_item name="mono_font" data_type="font" type="Font">
+		<theme_item name="mono_font" data_type="font" type="FontConfig">
 			The font used for monospace text.
 		</theme_item>
-		<theme_item name="normal_font" data_type="font" type="Font">
+		<theme_item name="normal_font" data_type="font" type="FontConfig">
 			The default text font.
 		</theme_item>
 		<theme_item name="bold_font_size" data_type="font_size" type="int">

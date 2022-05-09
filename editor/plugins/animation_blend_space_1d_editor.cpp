@@ -203,7 +203,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Ref<Texture2D> icon = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
 	Ref<Texture2D> icon_selected = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));

@@ -250,9 +250,9 @@
 		<method name="add_theme_font_override">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="font" type="Font" />
+			<argument index="1" name="font" type="FontConfig" />
 			<description>
-				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
+				Creates a local override for a theme [FontConfig] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
 				See also [method get_theme_font].
 			</description>
 		</method>
@@ -474,7 +474,7 @@
 			</description>
 		</method>
 		<method name="get_theme_default_font" qualifiers="const">
-			<return type="Font" />
+			<return type="FontConfig" />
 			<description>
 				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
 				See [method get_theme_color] for details.
@@ -488,11 +488,11 @@
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
-			<return type="Font" />
+			<return type="FontConfig" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
-				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns a [FontConfig] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [code]name[/code] and [code]theme_type[/code].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
@@ -607,7 +607,7 @@
 			<return type="bool" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [FontConfig] with the specified [code]name[/code] in this [Control] node.
 				See [method add_theme_font_override].
 			</description>
 		</method>
@@ -699,7 +699,7 @@
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme [Font] with the specified [code]name[/code] previously added by [method add_theme_font_override] or via the Inspector dock.
+				Removes a local override for a theme [FontConfig] with the specified [code]name[/code] previously added by [method add_theme_font_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_size_override">

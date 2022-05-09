@@ -234,7 +234,7 @@ private:
 	/* Visual */
 	Ref<StyleBox> style_normal;
 
-	Ref<Font> font;
+	Ref<FontConfig> font;
 	int font_size = 16;
 
 	int line_spacing = 1;

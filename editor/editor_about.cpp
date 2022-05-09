@@ -39,7 +39,7 @@
 static const String META_TEXT_TO_COPY = "text_to_copy";
 
 void EditorAbout::_theme_changed() {
-	const Ref<Font> font = get_theme_font(SNAME("source"), SNAME("EditorFonts"));
+	const Ref<FontConfig> font = get_theme_font(SNAME("source"), SNAME("EditorFonts"));
 	const int font_size = get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts"));
 	_tpl_text->add_theme_font_override("normal_font", font);
 	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);

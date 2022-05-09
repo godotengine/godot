@@ -1493,7 +1493,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				return;
 			}
 
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
@@ -1577,10 +1577,10 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			int decimals = 2;
 			bool step_found = false;
 
-			const float period_width = font->get_char_size('.', 0, font_size).width;
-			float max_digit_width = font->get_char_size('0', 0, font_size).width;
+			const float period_width = font->get_char_size('.', font_size).width;
+			float max_digit_width = font->get_char_size('0', font_size).width;
 			for (int i = 1; i <= 9; i++) {
-				const float digit_width = font->get_char_size('0' + i, 0, font_size).width;
+				const float digit_width = font->get_char_size('0' + i, font_size).width;
 				max_digit_width = MAX(digit_width, max_digit_width);
 			}
 			const int max_sc = int(Math::ceil(zoomw / scale));
@@ -1628,7 +1628,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
 							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-							prev_frame_ofs = i + font->get_string_size(itos(frame), font_size).x + 5 * EDSCALE;
+							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 5 * EDSCALE;
 						}
 					}
 				}
@@ -1672,7 +1672,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = add_track->get_minimum_size();
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	ms.height = MAX(ms.height, font->get_height(font_size));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"))->get_width() + 2;
@@ -1974,7 +1974,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				draw_style_box(get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles")), Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
@@ -2333,7 +2333,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, int(get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		color.a = 0.5;
@@ -2456,7 +2456,7 @@ NodePath AnimationTrackEdit::get_path() const {
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
@@ -3265,7 +3265,7 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			int separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
@@ -3311,7 +3311,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 }
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 

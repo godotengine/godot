@@ -753,7 +753,7 @@ void ThemeItemImportTree::_import_selected() {
 						break;
 
 					case Theme::DATA_TYPE_FONT:
-						item_value = Ref<Font>();
+						item_value = Ref<FontConfig>();
 						break;
 
 					case Theme::DATA_TYPE_FONT_SIZE:
@@ -1531,7 +1531,7 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 			}
 			break;
 		case Theme::DATA_TYPE_FONT:
-			ur->add_do_method(*edited_theme, "set_font", p_item_name, p_item_type, Ref<Font>());
+			ur->add_do_method(*edited_theme, "set_font", p_item_name, p_item_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", p_item_name, p_item_type);
 			break;
 		case Theme::DATA_TYPE_FONT_SIZE:
@@ -2533,7 +2533,7 @@ void ThemeTypeEditor::_update_type_items() {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-			item_editor->set_base_type("Font");
+			item_editor->set_base_type("FontConfig");
 			item_control->add_child(item_editor);
 
 			if (E.value) {
@@ -2840,7 +2840,7 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 			ur->add_undo_method(*edited_theme, "clear_constant", item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
-			ur->add_do_method(*edited_theme, "set_font", item_name, edited_type, Ref<Font>());
+			ur->add_do_method(*edited_theme, "set_font", item_name, edited_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT_SIZE: {
@@ -2885,7 +2885,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
-			ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
+			ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT_SIZE: {
@@ -2928,12 +2928,8 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 			if (edited_theme->has_font(p_item_name, edited_type)) {
 				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, edited_theme->get_font(p_item_name, edited_type));
 			} else {
-				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
+				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<FontConfig>());
 			}
-		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
-			ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
 		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "clear_icon", p_item_name, edited_type);
@@ -3072,15 +3068,15 @@ void ThemeTypeEditor::_edit_resource_item(Ref<Resource> p_resource, bool p_edit)
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
-void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) {
+void ThemeTypeEditor::_font_item_changed(Ref<FontConfig> p_value, String p_item_name) {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Set Font Item in Theme"));
 
-	ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<Font>());
+	ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<FontConfig>());
 	if (edited_theme->has_font(p_item_name, edited_type)) {
 		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, edited_theme->get_font(p_item_name, edited_type));
 	} else {
-		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
+		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<FontConfig>());
 	}
 
 	ur->add_do_method(this, "call_deferred", "_update_type_items");
@@ -3679,7 +3675,7 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<Theme>(p_node)) {
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
-	} else if (Object::cast_to<Font>(p_node) || Object::cast_to<StyleBox>(p_node) || Object::cast_to<Texture2D>(p_node)) {
+	} else if (Object::cast_to<FontConfig>(p_node) || Object::cast_to<StyleBox>(p_node) || Object::cast_to<Texture2D>(p_node)) {
 		// Do nothing, keep editing the existing theme.
 	} else {
 		theme_editor->edit(Ref<Theme>());
@@ -3698,11 +3694,11 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 
 	// If we are editing a theme already and this particular resource happens to belong to it,
 	// then we just keep editing it, despite not being able to directly handle it.
-	// This only goes one layer deep, but if required this can be extended to support, say, FontData inside of Font.
+	// This only goes one layer deep, but if required this can be extended to support, say, Font inside of FontConfig.
 	bool belongs_to_theme = false;
 
-	if (Object::cast_to<Font>(p_node)) {
-		Ref<Font> font_item = Object::cast_to<Font>(p_node);
+	if (Object::cast_to<FontConfig>(p_node)) {
+		Ref<FontConfig> font_item = Object::cast_to<FontConfig>(p_node);
 		List<StringName> types;
 		List<StringName> names;
 

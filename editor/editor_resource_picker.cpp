@@ -534,8 +534,8 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 				p_vector->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
 				p_vector->insert("Shader");
-			} else if (base == "Font") {
-				p_vector->insert("FontData");
+			} else if (base == "FontConfig") {
+				p_vector->insert("Font");
 			} else if (base == "Texture2D") {
 				p_vector->insert("Image");
 			}
@@ -675,12 +675,12 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "Font" && Ref<FontData>(dropped_resource).is_valid()) {
-					Ref<Font> font = edited_resource;
+				if (at == "FontConfig" && Ref<Font>(dropped_resource).is_valid()) {
+					Ref<FontConfig> font = edited_resource;
 					if (!font.is_valid()) {
 						font.instantiate();
 					}
-					font->add_data(dropped_resource);
+					font->set_font(dropped_resource);
 					dropped_resource = font;
 					break;
 				}
@@ -905,6 +905,45 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
+}
+
+// EditorFontPicker
+
+void EditorFontPicker::set_create_options(Object *p_menu_node) {
+	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
+	if (!menu_node) {
+		return;
+	}
+
+	const Vector<Pair<String, String>> &fonts = EditorNode::get_singleton()->get_project_fonts();
+
+	for (int i = 0; i < fonts.size(); i++) {
+		menu_node->add_icon_item(get_theme_icon(SNAME("Font"), SNAME("EditorIcons")), fonts[i].first, OBJ_MENU_USER_FONT + i);
+	}
+	if (fonts.size() > 0) {
+		menu_node->add_separator();
+	}
+}
+
+bool EditorFontPicker::handle_menu_selected(int p_which) {
+	if (p_which >= OBJ_MENU_USER_FONT) {
+		const Vector<Pair<String, String>> &fonts = EditorNode::get_singleton()->get_project_fonts();
+		int idx = p_which - OBJ_MENU_USER_FONT;
+		if (idx >= 0 && idx < fonts.size()) {
+			Ref<Font> fd = ResourceLoader::load(fonts[idx].second);
+			set_edited_resource(fd);
+			emit_signal(SNAME("resource_changed"), get_edited_resource());
+		}
+		return true;
+	}
+
+	return false;
+}
+
+void EditorFontPicker::_bind_methods() {
+}
+
+EditorFontPicker::EditorFontPicker() {
 }
 
 // EditorScriptPicker

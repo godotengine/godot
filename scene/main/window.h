@@ -34,7 +34,7 @@
 #include "scene/main/viewport.h"
 
 class Control;
-class Font;
+class FontConfig;
 class StyleBox;
 class Theme;
 
@@ -275,7 +275,7 @@ public:
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
-	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<FontConfig> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -288,7 +288,7 @@ public:
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
 	float get_theme_default_base_scale() const;
-	Ref<Font> get_theme_default_font() const;
+	Ref<FontConfig> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
 	virtual Transform2D get_screen_transform() const override;

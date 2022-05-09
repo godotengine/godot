@@ -1419,7 +1419,7 @@ void CustomPropertyEditor::_draw_easing() {
 	float exp = v;
 	bool flip = hint_text == "attenuation";
 
-	Ref<Font> f = easing_draw->get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<FontConfig> f = easing_draw->get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = easing_draw->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Color color = easing_draw->get_theme_color(SNAME("font_color"), SNAME("Label"));
 

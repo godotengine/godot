@@ -1316,10 +1316,10 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 	return Control::get_theme_item_in_types<Ref<StyleBox>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
-Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
+Ref<FontConfig> Window::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return Control::get_theme_item_in_types<Ref<Font>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	return Control::get_theme_item_in_types<Ref<FontConfig>>(theme_owner, theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 int Window::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1380,7 +1380,7 @@ float Window::get_theme_default_base_scale() const {
 	return Control::fetch_theme_default_base_scale(theme_owner, theme_owner_window);
 }
 
-Ref<Font> Window::get_theme_default_font() const {
+Ref<FontConfig> Window::get_theme_default_font() const {
 	return Control::fetch_theme_default_font(theme_owner, theme_owner_window);
 }
 

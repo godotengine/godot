@@ -145,7 +145,7 @@
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
-#include "editor/plugins/font_editor_plugin.h"
+#include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -164,7 +164,6 @@
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
-#include "editor/plugins/ot_features_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
@@ -186,7 +185,6 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
-#include "editor/plugins/text_control_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -906,6 +904,31 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	}
 }
 
+const Vector<Pair<String, String>> &EditorNode::get_project_fonts() const {
+	return fonts;
+}
+
+void EditorNode::_find_font_resources(EditorFileSystemDirectory *p_dir) {
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		_find_font_resources(p_dir->get_subdir(i));
+	}
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_type(i) == "Font") {
+			Ref<Font> fd = ResourceLoader::load(p_dir->get_file_path(i));
+			if (fd.is_valid()) {
+				String name = fd->get_font_name();
+				String sty = fd->get_font_style_name();
+				if (sty.is_empty()) {
+					fonts.push_back(Pair<String, String>(vformat("%s", name), p_dir->get_file_path(i)));
+				} else {
+					fonts.push_back(Pair<String, String>(vformat("%s (%s)", name, sty), p_dir->get_file_path(i)));
+				}
+			}
+		}
+	}
+}
+
 void EditorNode::_fs_changed() {
 	for (FileDialog *E : file_dialogs) {
 		E->invalidate();
@@ -914,6 +937,9 @@ void EditorNode::_fs_changed() {
 	for (EditorFileDialog *E : editor_file_dialogs) {
 		E->invalidate();
 	}
+
+	fonts.clear();
+	_find_font_resources(EditorFileSystem::get_singleton()->get_filesystem());
 
 	_mark_unsaved_scenes();
 
@@ -3926,6 +3952,7 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(ScriptCreateDialog);
 	GDREGISTER_CLASS(EditorFeatureProfile);
 	GDREGISTER_CLASS(EditorSpinSlider);
+	GDREGISTER_CLASS(EditorFontPicker);
 	GDREGISTER_CLASS(EditorResourcePicker);
 	GDREGISTER_CLASS(EditorScriptPicker);
 
@@ -7073,8 +7100,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GradientEditorPlugin));
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
 	add_editor_plugin(memnew(CurveEditorPlugin));
-	add_editor_plugin(memnew(FontEditorPlugin));
-	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin));
+	add_editor_plugin(memnew(FontConfigEditorPlugin));
 	add_editor_plugin(memnew(TextureEditorPlugin));
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
 	add_editor_plugin(memnew(Texture3DEditorPlugin));
@@ -7089,7 +7115,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
 	add_editor_plugin(memnew(InputEventEditorPlugin));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
-	add_editor_plugin(memnew(TextControlEditorPlugin));
 	add_editor_plugin(memnew(ControlEditorPlugin));
 	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));
