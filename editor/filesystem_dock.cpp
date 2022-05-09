@@ -2637,7 +2637,7 @@ void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 }
 
-void FileSystemDock::_file_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
@@ -2665,7 +2665,11 @@ void FileSystemDock::_file_list_rmb_clicked(int p_item, const Vector2 &p_pos, Mo
 	}
 }
 
-void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
+void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	// Right click on empty space for file list.
 	if (searched_string.length() > 0) {
 		return;
@@ -3132,10 +3136,10 @@ FileSystemDock::FileSystemDock() {
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
-	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_clicked));
+	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
-	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));
+	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
