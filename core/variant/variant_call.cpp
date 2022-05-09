@@ -919,7 +919,7 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		HashMap<StringName, int> value;
+		HashMap<StringName, int64_t> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
@@ -931,7 +931,7 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int p_constant_value) {
+	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
@@ -1245,7 +1245,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (const KeyValue<StringName, int> &E : cd.value) {
+	for (const KeyValue<StringName, int64_t> &E : cd.value) {
 		p_constants->push_back(E.key);
 #endif
 	}
@@ -1281,7 +1281,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	HashMap<StringName, int>::Iterator E = cd.value.find(p_value);
+	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
 	if (!E) {
 		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {

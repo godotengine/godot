@@ -954,7 +954,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			}
 		}
 
-		p_output.append(MEMBER_BEGIN "public const int ");
+		p_output.append(MEMBER_BEGIN "public const long ");
 		p_output.append(iconstant.proxy_name);
 		p_output.append(" = ");
 		p_output.append(itos(iconstant.value));
@@ -992,6 +992,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 		p_output.append("\n" INDENT1 "public enum ");
 		p_output.append(enum_proxy_name);
+		p_output.append(" : long");
 		p_output.append("\n" INDENT1 OPEN_BLOCK);
 
 		const ConstantInterface &last = ienum.constants.back()->get();
@@ -1417,7 +1418,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 		}
 
-		output.append(MEMBER_BEGIN "public const int ");
+		output.append(MEMBER_BEGIN "public const long ");
 		output.append(iconstant.proxy_name);
 		output.append(" = ");
 		output.append(itos(iconstant.value));
@@ -1435,6 +1436,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output.append(MEMBER_BEGIN "public enum ");
 		output.append(ienum.cname.operator String());
+		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
 		const ConstantInterface &last = ienum.constants.back()->get();
@@ -3088,7 +3090,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			const List<StringName> &enum_constants = E.value;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
-				int *value = class_info->constant_map.getptr(constant_cname);
+				int64_t *value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL_V(value, false);
 				constants.erase(constant_name);
 
@@ -3123,7 +3125,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			int *value = class_info->constant_map.getptr(StringName(constant_name));
+			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
@@ -3666,7 +3668,7 @@ void BindingsGenerator::_populate_global_constants() {
 				}
 			}
 
-			int constant_value = CoreConstants::get_global_constant_value(i);
+			int64_t constant_value = CoreConstants::get_global_constant_value(i);
 			StringName enum_name = CoreConstants::get_global_constant_enum(i);
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
