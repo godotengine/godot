@@ -1124,15 +1124,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture> b = p_item->cells[i].buttons[j].texture;
 				Size2 s = b->get_size() + cache.button_pressed->get_minimum_size();
-				if (s.height < label_h) {
-					s.height = label_h;
-				}
 
 				Point2i o = Point2i(ofs + w - s.width, p_pos.y) - cache.offset + p_draw_ofs;
 
 				if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled) {
-					//being pressed
-					cache.button_pressed->draw(get_canvas_item(), Rect2(o, s));
+					// Being pressed.
+					cache.button_pressed->draw(get_canvas_item(), Rect2(o.x, o.y, s.width, MAX(s.height, label_h)));
 				}
 
 				o.y += (label_h - s.height) / 2;
