@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontData" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FontFile" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
+		FontFile source data and prerendered glyph cache, imported from dynamic or bitmap font.
+	</brief_description>
+	<description>
+		[FontFile] contains a set of glyphs to represent Unicode characters imported from a font file, as well as a cache of rasterized glyphs, and a set of fallback [Font]s to use.
+		Use [FontVariation] to access specific OpenType variation of the font, create simulated bold / slanted version, and draw lines of text.
+		For more complex text processing, use [FontVariation] in conjunction with [TextLine] or [TextParagraph].
 		Supported font formats:
 		- Dynamic font importer: TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
-	</brief_description>
-	<description>
+		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
+		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+
+		[codeblocks]
+		[gdscript]
+		var f = load("res://BarlowCondensed-Bold.ttf")
+		$"Label".set("custom_fonts/font", f)
+		$"Label".set("custom_fonts/font_size", 64)
+		[/gdscript]
+		[csharp]
+		var f = ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Bold.ttf");
+		GetNode("Label").Set("custom_fonts/font", f);
+		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,14 +70,7 @@
 				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
 			</description>
 		</method>
-		<method name="find_cache" qualifiers="const">
-			<return type="RID" />
-			<argument index="0" name="variation_coordinates" type="Dictionary" />
-			<description>
-				Returns existing or creates a new font cache entry for the specified variation coordinates.
-			</description>
-		</method>
-		<method name="get_ascent" qualifiers="const">
+		<method name="get_cache_ascent" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
@@ -72,25 +84,46 @@
 				Returns number of the font cache entries.
 			</description>
 		</method>
-		<method name="get_cache_rid" qualifiers="const">
-			<return type="RID" />
-			<argument index="0" name="cache_index" type="int" />
-			<description>
-				Returns text server font cache entry resource id.
-			</description>
-		</method>
-		<method name="get_descent" qualifiers="const">
+		<method name="get_cache_descent" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
 			<description>
-				Returns font descent (number of pixels below the baseline).
 			</description>
 		</method>
-		<method name="get_face_count" qualifiers="const">
-			<return type="int" />
+		<method name="get_cache_scale" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
 			<description>
-				Returns number of faces in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="get_cache_underline_position" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_cache_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_embolden" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="get_face_index" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="cache_index" type="int" />
+			<description>
+				Recturns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
@@ -186,14 +219,6 @@
 				Returns list of language support overrides.
 			</description>
 		</method>
-		<method name="get_scale" qualifiers="const">
-			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<description>
-				Returns scaling factor of the color bitmap font.
-			</description>
-		</method>
 		<method name="get_script_support_override" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="script" type="String" />
@@ -212,34 +237,6 @@
 			<argument index="0" name="cache_index" type="int" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
-			</description>
-		</method>
-		<method name="get_spacing" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="spacing_type" type="int" enum="TextServer.SpacingType" />
-			<description>
-				Returns extra spacing added between glyphs in pixels.
-			</description>
-		</method>
-		<method name="get_supported_chars" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns a string containing all the characters available in the font.
-			</description>
-		</method>
-		<method name="get_supported_feature_list" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				Returns list of OpenType features supported by font.
-			</description>
-		</method>
-		<method name="get_supported_variation_list" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
-				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
@@ -268,48 +265,18 @@
 				Returns a copy of the array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
 			</description>
 		</method>
-		<method name="get_underline_position" qualifiers="const">
-			<return type="float" />
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform2D" />
 			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
 			<description>
-				Returns pixel offset of the underline below the baseline.
-			</description>
-		</method>
-		<method name="get_underline_thickness" qualifiers="const">
-			<return type="float" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<description>
-				Returns thickness of the underline in pixels.
+				Returns 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
 			</description>
 		</method>
 		<method name="get_variation_coordinates" qualifiers="const">
 			<return type="Dictionary" />
 			<argument index="0" name="cache_index" type="int" />
 			<description>
-				Returns variation coordinates for the specified font cache entry. See [method get_supported_variation_list] for more info.
-			</description>
-		</method>
-		<method name="has_char" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="char" type="int" />
-			<description>
-				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
-			</description>
-		</method>
-		<method name="is_language_supported" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="language" type="String" />
-			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
-			</description>
-		</method>
-		<method name="is_script_supported" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="script" type="String" />
-			<description>
-				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+				Returns variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
 			</description>
 		</method>
 		<method name="load_bitmap_font">
@@ -324,8 +291,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Loads a TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
-				[b]Note:[/b] Use [member face_index] to select specific face from the collection file.
+				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
 			</description>
 		</method>
@@ -383,8 +349,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="texture_index" type="int" />
 			<description>
-				Removes specified texture from font cache entry.
-				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method remove_glyph].
+				Removes specified texture from the cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture. Remove them manually using [method remove_glyph].
 			</description>
 		</method>
 		<method name="render_glyph">
@@ -393,7 +359,7 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="index" type="int" />
 			<description>
-				Renders specified glyph the the font cache texture.
+				Renders specified glyph to the font cache texture.
 			</description>
 		</method>
 		<method name="render_range">
@@ -406,22 +372,60 @@
 				Renders the range of characters to the font cache texture.
 			</description>
 		</method>
-		<method name="set_ascent">
+		<method name="set_cache_ascent">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
 			<argument index="2" name="ascent" type="float" />
 			<description>
-				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
-		<method name="set_descent">
+		<method name="set_cache_descent">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
 			<argument index="2" name="descent" type="float" />
 			<description>
-				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="set_cache_scale">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="scale" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_cache_underline_position">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="underline_position" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_cache_underline_thickness">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="underline_thickness" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_embolden">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="strength" type="float" />
+			<description>
+				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="set_face_index">
+			<return type="void" />
+			<argument index="0" name="cache_index" type="int" />
+			<argument index="1" name="face_index" type="int" />
+			<description>
+				Sets an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="set_glyph_advance">
@@ -490,16 +494,7 @@
 			<argument index="0" name="language" type="String" />
 			<argument index="1" name="supported" type="bool" />
 			<description>
-				Adds override for [method is_language_supported].
-			</description>
-		</method>
-		<method name="set_scale">
-			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="scale" type="float" />
-			<description>
-				Sets scaling factor of the color bitmap font.
+				Adds override for [method Font.is_language_supported].
 			</description>
 		</method>
 		<method name="set_script_support_override">
@@ -507,17 +502,7 @@
 			<argument index="0" name="script" type="String" />
 			<argument index="1" name="supported" type="bool" />
 			<description>
-				Adds override for [method is_script_supported].
-			</description>
-		</method>
-		<method name="set_spacing">
-			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="spacing_type" type="int" enum="TextServer.SpacingType" />
-			<argument index="3" name="value" type="int" />
-			<description>
-				Sets extra spacing added between glyphs in pixels.
+				Adds override for [method Font.is_script_supported].
 			</description>
 		</method>
 		<method name="set_texture_image">
@@ -540,22 +525,12 @@
 				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty (for the fonts without dynamic glyph generation support).
 			</description>
 		</method>
-		<method name="set_underline_position">
+		<method name="set_transform">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="underline_position" type="float" />
+			<argument index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets pixel offset of the underline below the baseline.
-			</description>
-		</method>
-		<method name="set_underline_thickness">
-			<return type="void" />
-			<argument index="0" name="cache_index" type="int" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="underline_thickness" type="float" />
-			<description>
-				Sets thickness of the underline in pixels.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
 			</description>
 		</method>
 		<method name="set_variation_coordinates">
@@ -563,7 +538,7 @@
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="variation_coordinates" type="Dictionary" />
 			<description>
-				Sets variation coordinates for the specified font cache entry. See [method get_supported_variation_list] for more info.
+				Sets variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
 			</description>
 		</method>
 	</methods>
@@ -574,11 +549,8 @@
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
 		</member>
-		<member name="embolden" type="float" setter="set_embolden" getter="get_embolden" default="0.0">
-			If is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
-		</member>
-		<member name="face_index" type="int" setter="set_face_index" getter="get_face_index" default="0">
-			Active face index in the TrueType / OpenType collection file.
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s.
 		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
@@ -618,10 +590,6 @@
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
 			Font glyph sub-pixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
-		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
-			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
-			For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 		</member>
 	</members>
 </class>

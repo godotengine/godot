@@ -22,11 +22,10 @@
 		<method name="add_string">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
-			<argument index="1" name="fonts" type="Font" />
-			<argument index="2" name="size" type="int" />
-			<argument index="3" name="opentype_features" type="Dictionary" default="{}" />
-			<argument index="4" name="language" type="String" default="&quot;&quot;" />
-			<argument index="5" name="meta" type="Variant" default="null" />
+			<argument index="1" name="font" type="Font" />
+			<argument index="2" name="font_size" type="int" />
+			<argument index="3" name="language" type="String" default="&quot;&quot;" />
+			<argument index="4" name="meta" type="Variant" default="null" />
 			<description>
 				Adds text span and font to draw it.
 			</description>
@@ -217,18 +216,6 @@
 				Returns the size of the bounding box of the paragraph.
 			</description>
 		</method>
-		<method name="get_spacing_bottom" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns extra spacing at the bottom of the line. See [member Font.spacing_bottom].
-			</description>
-		</method>
-		<method name="get_spacing_top" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns extra spacing at the top of the line. See [member Font.spacing_top].
-			</description>
-		</method>
 		<method name="hit_test" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="coords" type="Vector2" />
@@ -256,11 +243,10 @@
 		<method name="set_dropcap">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
-			<argument index="1" name="fonts" type="Font" />
-			<argument index="2" name="size" type="int" />
+			<argument index="1" name="font" type="Font" />
+			<argument index="2" name="font_size" type="int" />
 			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<argument index="4" name="opentype_features" type="Dictionary" default="{}" />
-			<argument index="5" name="language" type="String" default="&quot;&quot;" />
+			<argument index="4" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Sets drop cap, overrides previously set drop cap. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
 			</description>

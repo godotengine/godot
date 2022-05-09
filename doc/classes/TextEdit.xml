@@ -85,12 +85,6 @@
 				Performs a full reset of [TextEdit], including undo history.
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="clear_undo_history">
 			<return type="void" />
 			<description>
@@ -353,13 +347,6 @@
 			<argument index="1" name="visible_amount" type="int" />
 			<description>
 				Returns the count to the next visible line from [code]line[/code] to [code]line + visible_amount[/code]. Can also count backwards. For example if a [TextEdit] has 5 lines with lines 2 and 3 hidden, calling this with [code]line = 1, visible_amount = 1[/code] would return 3.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_pos_at_line_column" qualifiers="const">
@@ -857,14 +844,6 @@
 			<argument index="2" name="text" type="String" />
 			<description>
 				Sets the text for [code]gutter[/code] on [code]line[/code].
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">

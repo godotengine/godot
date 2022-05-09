@@ -334,8 +334,8 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="theme_type" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the font size property defined by [code]name[/code] and [code]theme_type[/code] exists, or if the default theme font size is set up (see [method has_default_font_size]).
-				Returns [code]false[/code] if neither exist. Use [method set_font_size] to define the property.
+				Returns [code]true[/code] if [member default_font_size] has a valid value.
+				Returns [code]false[/code] if it doesn't. The value must be greater than [code]0[/code] to be considered valid.
 			</description>
 		</method>
 		<method name="has_icon" qualifiers="const">
@@ -426,8 +426,8 @@
 			<argument index="1" name="name" type="StringName" />
 			<argument index="2" name="theme_type" type="StringName" />
 			<description>
-				Renames the font size property defined by [code]old_name[/code] and [code]theme_type[/code] to [code]name[/code], if it exists.
-				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font_size] to check for existence, and [method clear_font_size] to remove the existing property.
+				Returns [code]true[/code] if the font size property defined by [code]name[/code] and [code]theme_type[/code] exists, or if the default theme font size is set up (see [method has_default_font_size]).
+				Returns [code]false[/code] if neither exist. Use [method set_font_size] to define the property.
 			</description>
 		</method>
 		<method name="rename_icon">
@@ -495,7 +495,8 @@
 			<argument index="1" name="theme_type" type="StringName" />
 			<argument index="2" name="font_size" type="int" />
 			<description>
-				Creates or changes the value of the font size property defined by [code]name[/code] and [code]theme_type[/code]. Use [method clear_font_size] to remove the property.
+				Renames the font size property defined by [code]old_name[/code] and [code]theme_type[/code] to [code]name[/code], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font_size] to check for existence, and [method clear_font_size] to remove the existing property.
 			</description>
 		</method>
 		<method name="set_icon">

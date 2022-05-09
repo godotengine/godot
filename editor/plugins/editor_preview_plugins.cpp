@@ -812,19 +812,12 @@ void EditorFontPreviewPlugin::_preview_done() {
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "FontData") || ClassDB::is_parent_class(p_type, "Font");
+	return ClassDB::is_parent_class(p_type, "Font");
 }
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
-	Ref<Resource> res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V(res.is_null(), Ref<Texture2D>());
-	Ref<Font> sampled_font;
-	if (res->is_class("Font")) {
-		sampled_font = res->duplicate();
-	} else if (res->is_class("FontData")) {
-		sampled_font.instantiate();
-		sampled_font->add_data(res->duplicate());
-	}
+	Ref<Font> sampled_font = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(sampled_font.is_null(), Ref<Texture2D>());
 
 	String sample;
 	static const String sample_base = U"12漢字ԱբΑαАбΑαאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐAb😀";
@@ -836,18 +829,16 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	if (sample.is_empty()) {
 		sample = sampled_font->get_supported_chars().substr(0, 6);
 	}
-	Vector2 size = sampled_font->get_string_size(sample, 50);
+	Vector2 size = sampled_font->get_string_size(sample, HORIZONTAL_ALIGNMENT_LEFT, -1, 50);
 
 	Vector2 pos;
 
 	pos.x = 64 - size.x / 2;
 	pos.y = 80;
 
-	Ref<Font> font = sampled_font;
-
 	const Color c = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
-	font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
+	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
 	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 

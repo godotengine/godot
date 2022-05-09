@@ -355,15 +355,6 @@
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
-		<method name="font_get_spacing" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="font_rid" type="RID" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
-			<description>
-				Returns extra spacing added between glyphs in pixels.
-			</description>
-		</method>
 		<method name="font_get_style" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -542,7 +533,7 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="texture_index" type="int" />
 			<description>
-				Removes specified texture from font cache entry.
+				Removes specified texture from the cache entry.
 				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
 			</description>
 		</method>
@@ -790,16 +781,6 @@
 			<argument index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_script_supported].
-			</description>
-		</method>
-		<method name="font_set_spacing">
-			<return type="void" />
-			<argument index="0" name="font_rid" type="RID" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
-			<argument index="3" name="value" type="int" />
-			<description>
-				Sets extra spacing added between glyphs in pixels.
 			</description>
 		</method>
 		<method name="font_set_style">
@@ -1286,6 +1267,14 @@
 				Returns size of the text.
 			</description>
 		</method>
+		<method name="shaped_text_get_spacing" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns extra spacing added between glyphs or lines in pixels.
+			</description>
+		</method>
 		<method name="shaped_text_get_trim_pos" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="shaped" type="RID" />
@@ -1429,6 +1418,15 @@
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If set to [code]true[/code] text buffer will display invalid characters as hexadecimal codes, otherwise nothing is displayed.
+			</description>
+		</method>
+		<method name="shaped_text_set_spacing">
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<argument index="2" name="value" type="int" />
+			<description>
+				Sets extra spacing added between glyphs or lines in pixels.
 			</description>
 		</method>
 		<method name="shaped_text_shape">

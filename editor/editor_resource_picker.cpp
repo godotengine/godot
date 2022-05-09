@@ -534,8 +534,6 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 				p_vector->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
 				p_vector->insert("Shader");
-			} else if (base == "Font") {
-				p_vector->insert("FontData");
 			} else if (base == "Texture2D") {
 				p_vector->insert("Image");
 			}
@@ -672,16 +670,6 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					}
 					mat->set_shader(dropped_resource);
 					dropped_resource = mat;
-					break;
-				}
-
-				if (at == "Font" && Ref<FontData>(dropped_resource).is_valid()) {
-					Ref<Font> font = edited_resource;
-					if (!font.is_valid()) {
-						font.instantiate();
-					}
-					font->add_data(dropped_resource);
-					dropped_resource = font;
 					break;
 				}
 
