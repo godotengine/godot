@@ -574,7 +574,7 @@ public:
 };
 
 inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(GLES_OVER_GL)
 	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
 		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
 	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
