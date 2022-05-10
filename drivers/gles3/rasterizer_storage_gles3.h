@@ -302,7 +302,7 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 }
 
 inline String RasterizerStorageGLES3::get_framebuffer_error(GLenum p_status) {
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(GLES_OVER_GL)
 	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
 		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
 	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {

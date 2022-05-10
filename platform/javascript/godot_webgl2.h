@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  godot_webgl2.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <alloca.h>
+#ifndef GODOT_WEBGL2_H
+#define GODOT_WEBGL2_H
 
-#define OPENGL_INCLUDE_H "platform/javascript/godot_webgl2.h"
+#include "GLES3/gl3.h"
+#include "webgl/webgl2.h"
+
+#endif
