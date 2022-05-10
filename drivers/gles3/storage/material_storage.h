@@ -279,14 +279,6 @@ struct SceneShaderData : public ShaderData {
 		CULL_BACK
 	};
 
-	enum CullVariant {
-		CULL_VARIANT_NORMAL,
-		CULL_VARIANT_REVERSED,
-		CULL_VARIANT_DOUBLE_SIDED,
-		CULL_VARIANT_MAX
-
-	};
-
 	enum AlphaAntiAliasing {
 		ALPHA_ANTIALIASING_OFF,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
@@ -335,6 +327,18 @@ struct SceneShaderData : public ShaderData {
 	bool uses_time;
 	bool writes_modelview_or_projection;
 	bool uses_world_coordinates;
+	bool uses_tangent;
+	bool uses_color;
+	bool uses_uv;
+	bool uses_uv2;
+	bool uses_custom0;
+	bool uses_custom1;
+	bool uses_custom2;
+	bool uses_custom3;
+	bool uses_bones;
+	bool uses_weights;
+
+	uint32_t vertex_input_mask = 0;
 
 	uint64_t last_pass = 0;
 	uint32_t index = 0;

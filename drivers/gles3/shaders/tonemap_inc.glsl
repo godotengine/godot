@@ -10,10 +10,12 @@ uniform sampler3D source_color_correction; //texunit:-1
 #endif
 #endif
 
-// These could be grouped into some form of SceneData UBO along with time, will have to test performance though
-uniform int tonemapper;
-uniform float exposure;
-uniform float white;
+layout(std140) uniform TonemapData { //ubo:0
+	float exposure;
+	float white;
+	int tonemapper;
+	int pad;
+};
 
 vec3 apply_bcs(vec3 color, vec3 bcs) {
 	color = mix(vec3(0.0), color, bcs.x);

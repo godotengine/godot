@@ -50,4 +50,34 @@ struct ReflectionData {
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
 };
 
-uv_scale1
+struct DirectionalLightData {
+	mediump vec3 direction;
+	mediump float energy;
+	mediump vec3 color;
+	mediump float size;
+	mediump float specular;
+	uint mask;
+	highp float softshadow_angle;
+	highp float soft_shadow_scale;
+	bool blend_splits;
+	bool shadow_enabled;
+	highp float fade_from;
+	highp float fade_to;
+	uvec2 pad;
+	uint bake_mode;
+	mediump float shadow_volumetric_fog_fade;
+	highp vec4 shadow_bias;
+	highp vec4 shadow_normal_bias;
+	highp vec4 shadow_transmittance_bias;
+	highp vec4 shadow_z_range;
+	highp vec4 shadow_range_begin;
+	highp vec4 shadow_split_offsets;
+	highp mat4 shadow_matrix1;
+	highp mat4 shadow_matrix2;
+	highp mat4 shadow_matrix3;
+	highp mat4 shadow_matrix4;
+	highp vec2 uv_scale1;
+	highp vec2 uv_scale2;
+	highp vec2 uv_scale3;
+	highp vec2 uv_scale4;
+};

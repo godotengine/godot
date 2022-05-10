@@ -218,6 +218,7 @@ protected:
 		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_COND_V(!version, -1);
+		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
 		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
 	}
 

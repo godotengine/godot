@@ -62,8 +62,9 @@ TextureStorage::TextureStorage() {
 
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1, 1, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_WHITE] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_WHITE], image);
@@ -92,8 +93,9 @@ TextureStorage::TextureStorage() {
 		{ // black
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_BLACK] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
@@ -117,8 +119,9 @@ TextureStorage::TextureStorage() {
 		{
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0.5, 0.5, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_NORMAL] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_NORMAL], image);
@@ -127,8 +130,9 @@ TextureStorage::TextureStorage() {
 		{
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1.0, 0.5, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_ANISO] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_ANISO], image);
@@ -189,18 +193,7 @@ TextureStorage::~TextureStorage() {
 	}
 }
 
-void TextureStorage::set_main_thread_id(Thread::ID p_id) {
-	_main_thread_id = p_id;
-}
-
-bool TextureStorage::_is_main_thread() {
-	//#if defined DEBUG_ENABLED && defined TOOLS_ENABLED
-	// must be called from main thread in OpenGL
-	bool is_main_thread = _main_thread_id == Thread::get_caller_id();
-	//#endif
-	return is_main_thread;
-}
-
+//TODO, move back to storage
 bool TextureStorage::can_create_resources_async() const {
 	return false;
 }
@@ -644,10 +637,14 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	Texture texture;
 	texture.width = p_image->get_width();
 	texture.height = p_image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = p_image->get_mipmap_count();
 	texture.format = p_image->get_format();
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
-	texture.image_cache_2d = p_image; //TODO, remove this once texture_2d_get is implemented
+	_get_gl_image_and_format(Ref<Image>(), texture.format, 0, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	//texture.total_data_size = p_image->get_image_data_size(); // verify that this returns size in bytes
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	texture_owner.initialize_rid(p_texture, texture);
@@ -740,49 +737,66 @@ void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 }
 
 Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Ref<Image>());
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture, Ref<Image>());
 
 #ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
-		return tex->image_cache_2d;
+	if (texture->image_cache_2d.is_valid() && !texture->is_render_target) {
+		return texture->image_cache_2d;
 	}
 #endif
 
-	/*
-#ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid()) {
-		return tex->image_cache_2d;
+#ifdef GLES_OVER_GL
+	// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
+	Vector<uint8_t> data;
+
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
+
+	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+	uint8_t *w = data.ptrw();
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glBindTexture(texture->target, texture->tex_id);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+	for (int i = 0; i < texture->mipmaps; i++) {
+		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
+
+		if (texture->compressed) {
+			glPixelStorei(GL_PACK_ALIGNMENT, 4);
+			glGetCompressedTexImage(texture->target, i, &w[ofs]);
+
+		} else {
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &w[ofs]);
+		}
 	}
-#endif
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+
+	data.resize(data_size);
+
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
 	Ref<Image> image;
-	image.instance();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	ERR_FAIL_COND_V(image->empty(), Ref<Image>());
-	if (tex->format != tex->validated_format) {
-		image->convert(tex->format);
+	image.instantiate();
+	image->create(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (texture->format != texture->real_format) {
+		image->convert(texture->format);
 	}
+#else
+	// Support for Web and Mobile will come later.
+	Ref<Image> image;
+#endif
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		tex->image_cache_2d = image;
+	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
+		texture->image_cache_2d = image;
 	}
 #endif
-*/
 
-	/*
-	#ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
-			tex->image_cache_2d = image;
-		}
-	#endif
-	*/
-
-	//	return image;
-
-	return Ref<Image>();
+	return image;
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
@@ -1357,6 +1371,9 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		}
 
 		texture->format = rt->image_format;
+		texture->real_format = rt->image_format;
+		texture->type = Texture::TYPE_2D;
+		texture->target = GL_TEXTURE_2D;
 		texture->gl_format_cache = rt->color_format;
 		texture->gl_type_cache = GL_UNSIGNED_BYTE;
 		texture->gl_internal_format_cache = rt->color_internal_format;

@@ -268,10 +268,6 @@ RasterizerGLES3::RasterizerGLES3() {
 	storage = memnew(RasterizerStorageGLES3);
 	canvas = memnew(RasterizerCanvasGLES3(storage));
 	scene = memnew(RasterizerSceneGLES3(storage));
-
-	texture_storage->set_main_thread_id(Thread::get_caller_id());
-	// make sure the OS knows to only access the renderer from the main thread
-	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
 }
 
 RasterizerGLES3::~RasterizerGLES3() {

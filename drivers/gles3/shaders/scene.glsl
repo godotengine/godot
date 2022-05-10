@@ -20,13 +20,19 @@ USE_LIGHT_POSITIONAL = false
 
 #include "stdlib_inc.glsl"
 
+#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
+#ifndef NORMAL_USED
+#define NORMAL_USED
+#endif
+#endif
+
 /*
 from RenderingServer:
 ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
+ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored.
+ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal.
 ARRAY_COLOR = 3, // RGBA8
 ARRAY_TEX_UV = 4, // RG32F
-ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal.
-ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored.
 ARRAY_TEX_UV2 = 5, // RG32F
 ARRAY_CUSTOM0 = 6, // Depends on ArrayCustomFormat.
 ARRAY_CUSTOM1 = 7,
@@ -40,7 +46,7 @@ ARRAY_MAX = 13
 
 /* INPUT ATTRIBS */
 
-layout(location = 0) in vec3 vertex_attrib;
+layout(location = 0) in highp vec3 vertex_attrib;
 /* clang-format on */
 
 #ifdef NORMAL_USED
@@ -79,19 +85,23 @@ layout(location = 8) in vec4 custom2_attrib;
 layout(location = 9) in vec4 custom3_attrib;
 #endif
 
-#if defined(BONES_USED) || defined(USE_PARTICLE_TRAILS)
+#if defined(BONES_USED)
 layout(location = 10) in uvec4 bone_attrib;
 #endif
 
-#if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
+#if defined(WEIGHTS_USED)
 layout(location = 11) in vec4 weight_attrib;
 #endif
 
-layout(std140) uniform SceneData { // ubo:3
-	mat4 projection_matrix;
-	mat4 inv_projection_matrix;
-	mat4 inv_view_matrix;
-	mat4 view_matrix;
+layout(std140) uniform GlobalVariableData { //ubo:1
+	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+};
+
+layout(std140) uniform SceneData { // ubo:2
+	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
+	highp mat4 inv_view_matrix;
+	highp mat4 view_matrix;
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
@@ -143,15 +153,15 @@ out highp vec3 vertex_interp;
 out vec3 normal_interp;
 #endif
 
-#if defined(ENABLE_COLOR_INTERP)
+#if defined(COLOR_USED)
 out vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(UV_USED)
 out vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP)
+#if defined(UV2_USED)
 out vec2 uv2_interp;
 #else
 #ifdef USE_LIGHTMAP
@@ -159,15 +169,15 @@ out vec2 uv2_interp;
 #endif
 #endif
 
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#if defined(TANGENT_USED) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
 
-#if defined(USE_MATERIAL)
+#if defined(MATERIAL_UNIFORMS_USED)
 
 /* clang-format off */
-layout(std140) uniform UniformData { // ubo:1
+layout(std140) uniform MaterialUniforms { // ubo:3
 
 #MATERIAL_UNIFORMS
 
@@ -194,31 +204,31 @@ void main() {
 #ifdef NORMAL_USED
 	vec3 normal = normal_attrib * 2.0 - 1.0;
 #endif
-	mat3 model_normal_matrix = mat3(model_matrix);
+	highp mat3 model_normal_matrix = mat3(model_matrix);
 
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#if defined(TANGENT_USED) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	vec3 tangent;
 	float binormalf;
 	tangent = normal_tangent_attrib.xyz;
 	binormalf = normal_tangent_attrib.a;
 #endif
 
-#if defined(ENABLE_COLOR_INTERP)
+#if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#if defined(TANGENT_USED) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(UV_USED)
 	uv_interp = uv_attrib;
 #endif
 
 #ifdef USE_LIGHTMAP
 	uv2_interp = lightmap_uv_rect.zw * uv2_attrib + lightmap_uv_rect.xy;
 #else
-#if defined(ENABLE_UV2_INTERP)
+#if defined(UV2_USED)
 	uv2_interp = uv2_attrib;
 #endif
 #endif
@@ -226,8 +236,8 @@ void main() {
 #if defined(OVERRIDE_POSITION)
 	highp vec4 position;
 #endif
-	mat4 projection_matrix = scene_data.projection_matrix;
-	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+	highp mat4 projection_matrix = scene_data.projection_matrix;
+	highp mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
 
 	vec4 instance_custom = vec4(0.0);
 
@@ -250,8 +260,8 @@ void main() {
 
 	float roughness = 1.0;
 
-	mat4 modelview = scene_data.view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
+	highp mat4 modelview = scene_data.view_matrix * model_matrix;
+	highp mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
 
 	float point_size = 1.0;
 
@@ -296,7 +306,7 @@ void main() {
 	normal_interp = normal;
 #endif
 
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#if defined(TANGENT_USED) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	tangent_interp = tangent;
 	binormal_interp = binormal;
 #endif
@@ -327,7 +337,7 @@ void main() {
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -351,19 +361,19 @@ uniform highp mat4 world_transform;
 /* clang-format on */
 
 #define M_PI 3.14159265359
-#define SHADER_IS_SRGB false
+#define SHADER_IS_SRGB true
 
 /* Varyings */
 
-#if defined(ENABLE_COLOR_INTERP)
+#if defined(COLOR_USED)
 in vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(UV_USED)
 in vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP)
+#if defined(UV2_USED)
 in vec2 uv2_interp;
 #else
 #ifdef USE_LIGHTMAP
@@ -371,19 +381,22 @@ in vec2 uv2_interp;
 #endif
 #endif
 
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#if defined(TANGENT_USED) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 in vec3 tangent_interp;
 in vec3 binormal_interp;
 #endif
 
-in highp vec3 vertex_interp;
+#ifdef NORMAL_USED
 in vec3 normal_interp;
+#endif
+
+in highp vec3 vertex_interp;
 
 /* PBR CHANNELS */
 
 #ifdef USE_RADIANCE_MAP
 
-layout(std140) uniform Radiance { // ubo:2
+layout(std140) uniform Radiance { // ubo:4
 
 	mat4 radiance_inverse_xform;
 	float radiance_ambient_contribution;
@@ -405,12 +418,16 @@ vec3 textureDualParaboloid(sampler2D p_tex, vec3 p_vec, float p_roughness) {
 
 #endif
 
-/* Material Uniforms */
+layout(std140) uniform GlobalVariableData { //ubo:1
+	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+};
 
-#if defined(USE_MATERIAL)
+	/* Material Uniforms */
+
+#if defined(MATERIAL_UNIFORMS_USED)
 
 /* clang-format off */
-layout(std140) uniform UniformData {
+layout(std140) uniform MaterialUniforms { // ubo:3
 
 #MATERIAL_UNIFORMS
 
@@ -419,11 +436,11 @@ layout(std140) uniform UniformData {
 
 #endif
 
-layout(std140) uniform SceneData { // ubo:3
-	mat4 projection_matrix;
-	mat4 inv_projection_matrix;
-	mat4 inv_view_matrix;
-	mat4 view_matrix;
+layout(std140) uniform SceneData { // ubo:2
+	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
+	highp mat4 inv_view_matrix;
+	highp mat4 view_matrix;
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
@@ -501,12 +518,12 @@ struct LightData { //this structure needs to be as packed as possible
 	bool shadow_enabled;
 };
 
-layout(std140) uniform OmniLightData { // ubo:4
+layout(std140) uniform OmniLightData { // ubo:5
 
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 
-layout(std140) uniform SpotLightData { // ubo:5
+layout(std140) uniform SpotLightData { // ubo:6
 
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };

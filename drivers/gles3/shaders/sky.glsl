@@ -12,43 +12,20 @@ mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PA
 
 #[vertex]
 
-#ifdef USE_GLES_OVER_GL
-#define lowp
-#define mediump
-#define highp
-#else
-precision highp float;
-precision highp int;
-#endif
-
 out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
 	// One big triangle to cover the whole screen
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(3.0, -1.0), vec2(-1.0, 3.0));
 	uv_interp = base_arr[gl_VertexID];
-	gl_Position = vec4(uv_interp, 0.0, 1.0);
+	gl_Position = vec4(uv_interp, 1.0, 1.0);
 }
 
 /* clang-format off */
 #[fragment]
 
 #define M_PI 3.14159265359
-
-#ifdef USE_GLES_OVER_GL
-#define lowp
-#define mediump
-#define highp
-#else
-#if defined(USE_HIGHP_PRECISION)
-precision highp float;
-precision highp int;
-#else
-precision mediump float;
-precision mediump int;
-#endif
-#endif
 
 #include "tonemap_inc.glsl"
 
@@ -65,13 +42,13 @@ uniform sampler2D half_res; //texunit:-2
 uniform sampler2D quarter_res; //texunit:-3
 #endif
 
-layout(std140) uniform SceneData { //ubo:0
-	float pad1;
-	float pad2;
-};
-
 layout(std140) uniform GlobalVariableData { //ubo:1
 	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+};
+
+layout(std140) uniform SceneData { //ubo:2
+	float pad1;
+	float pad2;
 };
 
 struct DirectionalLightData {
@@ -80,7 +57,7 @@ struct DirectionalLightData {
 	bool enabled;
 };
 
-layout(std140) uniform DirectionalLights { //ubo:2
+layout(std140) uniform DirectionalLights { //ubo:3
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -88,7 +65,7 @@ directional_lights;
 /* clang-format off */
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:3
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 

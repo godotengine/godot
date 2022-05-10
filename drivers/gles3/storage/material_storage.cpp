@@ -43,7 +43,7 @@ using namespace GLES3;
 ///////////////////////////////////////////////////////////////////////////
 // UBI helper functions
 
-_FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_array_size, const Variant &value, uint8_t *data, bool p_linear_color) {
+_FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_array_size, const Variant &value, uint8_t *data) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
@@ -399,9 +399,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
 						if (i < s) {
 							Color color = a[i];
-							if (p_linear_color) {
-								color = color.srgb_to_linear();
-							}
 							gui[j] = color.r;
 							gui[j + 1] = color.g;
 							gui[j + 2] = color.b;
@@ -433,10 +430,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				if (value.get_type() == Variant::COLOR) {
 					Color v = value;
 
-					if (p_linear_color) {
-						v = v.srgb_to_linear();
-					}
-
 					gui[0] = v.r;
 					gui[1] = v.g;
 					gui[2] = v.b;
@@ -459,9 +452,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					for (int i = 0, j = 0; i < p_array_size; i++, j += 4) {
 						if (i < s) {
 							Color color = a[i];
-							if (p_linear_color) {
-								color = color.srgb_to_linear();
-							}
 							gui[j] = color.r;
 							gui[j + 1] = color.g;
 							gui[j + 2] = color.b;
@@ -495,10 +485,6 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			} else {
 				if (value.get_type() == Variant::COLOR) {
 					Color v = value;
-
-					if (p_linear_color) {
-						v = v.srgb_to_linear();
-					}
 
 					gui[0] = v.r;
 					gui[1] = v.g;
@@ -987,7 +973,7 @@ void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::S
 
 		if (V) {
 			//user provided
-			_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->get(), data, p_use_linear_color);
+			_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->get(), data);
 
 		} else if (E.value.default_value.size()) {
 			//default value
@@ -997,7 +983,7 @@ void MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::S
 			//zero because it was not provided
 			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 				//colors must be set as black, with alpha as 1.0
-				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data);
 			} else {
 				//else just zero it out
 				_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
@@ -1883,7 +1869,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.a;
 
 			GlobalVariables::Value &bv_linear = global_variables.buffer_values[p_index + 1];
-			v = v.srgb_to_linear();
+			//v = v.srgb_to_linear();
 			bv_linear.x = v.r;
 			bv_linear.y = v.g;
 			bv_linear.z = v.b;
@@ -2322,7 +2308,7 @@ void MaterialStorage::global_variables_instance_update(RID p_instance, int p_ind
 
 	pos += p_index;
 
-	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_variables.buffer_values[pos], true); //instances always use linear color in this renderer
+	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_variables.buffer_values[pos]);
 	_global_variable_mark_buffer_dirty(pos, 1);
 }
 
@@ -2929,7 +2915,7 @@ void CanvasMaterialData::update_parameters(const Map<StringName, Variant> &p_par
 
 void CanvasMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
-	glBindBufferBase(GL_UNIFORM_BUFFER, RasterizerCanvasGLES3::MATERIAL_UNIFORM_BUFFER_OBJECT, uniform_buffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, RasterizerCanvasGLES3::MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
@@ -3162,7 +3148,7 @@ GLES3::MaterialData *GLES3::_create_sky_material_func(ShaderData *p_shader) {
 
 void SkyMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
-	glBindBufferBase(GL_UNIFORM_BUFFER, 3, uniform_buffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
@@ -3278,6 +3264,18 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
 	actions.write_flag_pointers["POSITION"] = &uses_position;
 
+	actions.usage_flag_pointers["TANGENT"] = &uses_tangent;
+	actions.usage_flag_pointers["BINORMAL"] = &uses_tangent;
+	actions.usage_flag_pointers["COLOR"] = &uses_color;
+	actions.usage_flag_pointers["UV"] = &uses_uv;
+	actions.usage_flag_pointers["UV2"] = &uses_uv2;
+	actions.usage_flag_pointers["CUSTOM0"] = &uses_custom0;
+	actions.usage_flag_pointers["CUSTOM1"] = &uses_custom1;
+	actions.usage_flag_pointers["CUSTOM2"] = &uses_custom2;
+	actions.usage_flag_pointers["CUSTOM3"] = &uses_custom3;
+	actions.usage_flag_pointers["BONE_INDICES"] = &uses_bones;
+	actions.usage_flag_pointers["BONE_WEIGHTS"] = &uses_weights;
+
 	actions.uniforms = &uniforms;
 
 	Error err = MaterialStorage::get_singleton()->shaders.compiler_scene.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
@@ -3292,6 +3290,17 @@ void SceneShaderData::set_code(const String &p_code) {
 	cull_mode = Cull(cull_modei);
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
+	vertex_input_mask = uint32_t(uses_normal);
+	vertex_input_mask |= uses_tangent << 1;
+	vertex_input_mask |= uses_color << 2;
+	vertex_input_mask |= uses_uv << 3;
+	vertex_input_mask |= uses_uv2 << 4;
+	vertex_input_mask |= uses_custom0 << 5;
+	vertex_input_mask |= uses_custom1 << 6;
+	vertex_input_mask |= uses_custom2 << 7;
+	vertex_input_mask |= uses_custom3 << 8;
+	vertex_input_mask |= uses_bones << 9;
+	vertex_input_mask |= uses_weights << 10;
 
 #if 0
 	print_line("**compiling shader:");
@@ -3455,7 +3464,7 @@ GLES3::MaterialData *GLES3::_create_scene_material_func(ShaderData *p_shader) {
 
 void SceneMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
-	glBindBufferBase(GL_UNIFORM_BUFFER, 3, uniform_buffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
 	RID *textures = texture_cache.ptrw();
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();

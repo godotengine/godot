@@ -4112,13 +4112,13 @@ void DisplayServerX11::process_events() {
 
 void DisplayServerX11::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-//	gl_manager->release_current();
+	gl_manager->release_current();
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-//	gl_manager->make_current();
+	gl_manager->make_current();
 #endif
 }
 

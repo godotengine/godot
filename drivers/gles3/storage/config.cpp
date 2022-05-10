@@ -120,16 +120,6 @@ Config::Config() {
 	support_write_depth = extensions.has("GL_EXT_frag_depth");
 #endif
 
-	support_half_float_vertices = true;
-//every platform should support this except web, iOS has issues with their support, so add option to disable
-#ifdef JAVASCRIPT_ENABLED
-	support_half_float_vertices = false;
-#endif
-	bool disable_half_float = false; //GLOBAL_GET("rendering/opengl/compatibility/disable_half_float");
-	if (disable_half_float) {
-		support_half_float_vertices = false;
-	}
-
 	//picky requirements for these
 	support_shadow_cubemaps = support_write_depth && support_depth_cubemaps;
 	// the use skeleton software path should be used if either float texture is not supported,
@@ -149,6 +139,27 @@ Config::Config() {
 
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
+
+	use_depth_prepass = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
+	if (use_depth_prepass) {
+		String vendors = GLOBAL_GET("rendering/driver/depth_prepass/disable_for_vendors");
+		Vector<String> vendor_match = vendors.split(",");
+		String renderer = (const char *)glGetString(GL_RENDERER);
+		for (int i = 0; i < vendor_match.size(); i++) {
+			String v = vendor_match[i].strip_edges();
+			if (v == String()) {
+				continue;
+			}
+
+			if (renderer.findn(v) != -1) {
+				use_depth_prepass = false;
+			}
+		}
+	}
+
+	max_renderable_elements = GLOBAL_GET("rendering/limits/opengl/max_renderable_elements");
+	max_renderable_lights = GLOBAL_GET("rendering/limits/opengl/max_renderable_lights");
+	max_lights_per_object = GLOBAL_GET("rendering/limits/opengl/max_lights_per_object");
 }
 
 Config::~Config() {

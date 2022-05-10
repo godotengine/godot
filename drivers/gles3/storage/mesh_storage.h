@@ -54,7 +54,6 @@ struct Mesh {
 		struct Attrib {
 			bool enabled;
 			bool integer;
-			GLuint index;
 			GLint size;
 			GLenum type;
 			GLboolean normalized;
@@ -69,6 +68,7 @@ struct Mesh {
 		GLuint skin_buffer = 0;
 		uint32_t vertex_count = 0;
 		uint32_t vertex_buffer_size = 0;
+		uint32_t attribute_buffer_size = 0;
 		uint32_t skin_buffer_size = 0;
 
 		// Cache vertex arrays so they can be created
@@ -84,8 +84,8 @@ struct Mesh {
 		uint32_t version_count = 0;
 
 		GLuint index_buffer = 0;
-		GLuint index_array = 0;
 		uint32_t index_count = 0;
+		uint32_t index_buffer_size = 0;
 
 		struct LOD {
 			float edge_length = 0.0;
@@ -355,6 +355,12 @@ public:
 		} else {
 			return s->lods[p_lod - 1].index_buffer;
 		}
+	}
+
+	_FORCE_INLINE_ GLenum mesh_surface_get_index_type(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		return s->vertex_count <= 65536 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
 	}
 
 	// Use this to cache Vertex Array Objects so they are only generated once

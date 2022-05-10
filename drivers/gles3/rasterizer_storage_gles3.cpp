@@ -344,9 +344,10 @@ void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder,
 RS::InstanceType RasterizerStorageGLES3::get_base_type(RID p_rid) const {
 	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
 		return RS::INSTANCE_MESH;
-	}
-	if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
+	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
 		return RS::INSTANCE_MULTIMESH;
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
+		return RS::INSTANCE_LIGHT;
 	}
 	return RS::INSTANCE_NONE;
 }
@@ -376,19 +377,14 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 	} else if (GLES3::MeshStorage::get_singleton()->owns_mesh_instance(p_rid)) {
 		GLES3::MeshStorage::get_singleton()->mesh_instance_free(p_rid);
 		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
+		GLES3::LightStorage::get_singleton()->light_free(p_rid);
+		return true;
 	} else {
 		return false;
 	}
 	/*
-	} else if (light_owner.owns(p_rid)) {
-		Light *light = light_owner.get_or_null(p_rid);
-		light->instance_remove_deps();
-
-		light_owner.free(p_rid);
-		memdelete(light);
-
-		return true;
-	} else if (reflection_probe_owner.owns(p_rid)) {
+	  else if (reflection_probe_owner.owns(p_rid)) {
 		// delete the texture
 		ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
 		reflection_probe->instance_remove_deps();

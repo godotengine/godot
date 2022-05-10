@@ -518,8 +518,8 @@ void main() {
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
 		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
 
-		if (outline_thickness > 0) {
-			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
+		if (outline_thickness > 0.0) {
+			float cr = clamp(outline_thickness, 0.0, px_range / 2.0) / px_range;
 			float a = clamp((d + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
@@ -710,8 +710,8 @@ void main() {
 			vec2 pos_rot = pos_norm * mat2(vec2(0.7071067811865476, -0.7071067811865476), vec2(0.7071067811865476, 0.7071067811865476)); //is there a faster way to 45 degrees rot?
 			float tex_ofs;
 			float distance;
-			if (pos_rot.y > 0) {
-				if (pos_rot.x > 0) {
+			if (pos_rot.y > 0.0) {
+				if (pos_rot.x > 0.0) {
 					tex_ofs = pos_box.y * 0.125 + 0.125;
 					distance = shadow_pos.x;
 				} else {
@@ -719,7 +719,7 @@ void main() {
 					distance = shadow_pos.y;
 				}
 			} else {
-				if (pos_rot.x < 0) {
+				if (pos_rot.x < 0.0) {
 					tex_ofs = pos_box.y * -0.125 + (0.5 + 0.125);
 					distance = -shadow_pos.x;
 				} else {
