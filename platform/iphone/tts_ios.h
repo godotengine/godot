@@ -31,7 +31,11 @@
 #ifndef TTS_IOS_H
 #define TTS_IOS_H
 
-#include <AVFAudio/AVSpeechSynthesis.h>
+#if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
+#import <AVFAudio/AVSpeechSynthesis.h>
+#else
+#import <AVFoundation/AVFoundation.h>
+#endif
 
 #include "core/string/ustring.h"
 #include "core/templates/list.h"

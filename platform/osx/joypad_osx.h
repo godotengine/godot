@@ -32,13 +32,13 @@
 #define JOYPADOSX_H
 
 #ifdef MACOS_10_0_4
-#include <IOKit/hidsystem/IOHIDUsageTables.h>
+#import <IOKit/hidsystem/IOHIDUsageTables.h>
 #else
-#include <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
+#import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
 #endif
-#include <ForceFeedback/ForceFeedback.h>
-#include <ForceFeedback/ForceFeedbackConstants.h>
-#include <IOKit/hid/IOHIDLib.h>
+#import <ForceFeedback/ForceFeedback.h>
+#import <ForceFeedback/ForceFeedbackConstants.h>
+#import <IOKit/hid/IOHIDLib.h>
 
 #include "core/input/input.h"
 
