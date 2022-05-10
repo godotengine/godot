@@ -122,7 +122,7 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 
 void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zipFile p_zip) {
 	Ref<DirAccess> dir = DirAccess::open(p_path);
-	if (!dir) {
+	if (dir.is_null()) {
 		WARN_PRINT("Unable to open directory for zipping: " + p_path);
 		return;
 	}
