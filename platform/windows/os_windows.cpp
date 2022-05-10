@@ -2312,6 +2312,10 @@ void OS_Windows::_update_window_style(bool p_repaint, bool p_maximized) {
 		}
 	}
 
+	if (icon.is_valid()) {
+		set_icon(icon);
+	}
+
 	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
 	if (p_repaint) {
@@ -3040,9 +3044,12 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 
 void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 	ERR_FAIL_COND(!p_icon.is_valid());
-	Ref<Image> icon = p_icon->duplicate();
-	if (icon->get_format() != Image::FORMAT_RGBA8)
-		icon->convert(Image::FORMAT_RGBA8);
+	if (icon != p_icon) {
+		icon = p_icon->duplicate();
+		if (icon->get_format() != Image::FORMAT_RGBA8) {
+			icon->convert(Image::FORMAT_RGBA8);
+		}
+	}
 	int w = icon->get_width();
 	int h = icon->get_height();
 
