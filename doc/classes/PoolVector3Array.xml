@@ -29,6 +29,13 @@
 				Appends a [PoolVector3Array] at the end of this array.
 			</description>
 		</method>
+		<method name="count">
+			<return type="int" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
 		<method name="empty">
 			<return type="bool" />
 			<description>
@@ -39,6 +46,22 @@
 			<argument index="0" name="vector3" type="Vector3" />
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find">
+			<return type="int" />
+			<argument index="0" name="value" type="Vector3" />
+			<argument index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed. Returns [code]-1[/code] if [code]from[/code] is out of bounds.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Returns [code]true[/code] if the array contains the given value.
+				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator.
 			</description>
 		</method>
 		<method name="insert">
@@ -70,6 +93,14 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+			</description>
+		</method>
+		<method name="rfind">
+			<return type="int" />
+			<argument index="0" name="value" type="Vector3" />
+			<argument index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array. If the adjusted start index is out of bounds, this method searches from the end of the array.
 			</description>
 		</method>
 		<method name="set">

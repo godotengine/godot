@@ -373,6 +373,57 @@ public:
 		resize(s - 1);
 	}
 
+	int find(const T &p_val, int p_from = 0) const {
+		const int s = size();
+		const Read r = read();
+
+		if (p_from < 0) {
+			return -1;
+		}
+
+		for (int i = p_from; i < s; i++) {
+			if (r[i] == p_val) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	int rfind(const T &p_val, int p_from = -1) const {
+		const int s = size();
+		const Read r = read();
+
+		if (p_from < 0) {
+			p_from = s + p_from;
+		}
+		if (p_from < 0 || p_from >= s) {
+			p_from = s - 1;
+		}
+
+		for (int i = p_from; i >= 0; i--) {
+			if (r[i] == p_val) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	int count(const T &p_val) const {
+		const int s = size();
+		const Read r = read();
+		int amount = 0;
+		for (int i = 0; i < s; i++) {
+			if (r[i] == p_val) {
+				amount++;
+			}
+		}
+		return amount;
+	}
+
+	bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
+
 	inline int size() const;
 	inline bool empty() const;
 	T get(int p_index) const;
