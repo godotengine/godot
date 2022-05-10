@@ -94,7 +94,7 @@ void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_strin
 		ERR_FAIL_MSG("ImageLoaderSVG can't create image.");
 	}
 
-	res = sw_canvas->push(move(picture));
+	res = sw_canvas->push(std::move(picture));
 	if (res != tvg::Result::Success) {
 		memfree(buffer);
 		ERR_FAIL_MSG("ImageLoaderSVG can't create image.");
