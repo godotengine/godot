@@ -5,6 +5,12 @@
 	</brief_description>
 	<description>
 		An array specifically designed to hold [String]s. Packs data tightly, so it saves memory for large array sizes.
+		If you want to join the strings in the array, use [method String.join].
+		[codeblock]
+		var string_array = PackedStringArray(["hello", "world"])
+		var string = " ".join(string_array)
+		print(string) # "hello world"
+		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
