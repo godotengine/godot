@@ -512,16 +512,20 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	}
 }
 
-String FileSystemDock::get_selected_path() const {
+Vector<String> FileSystemDock::get_selected_paths() const {
+	return _tree_get_selected(false);
+}
+
+String FileSystemDock::get_current_path() const {
+	return path;
+}
+
+String FileSystemDock::get_current_directory() const {
 	if (path.ends_with("/")) {
 		return path;
 	} else {
 		return path.get_base_dir();
 	}
-}
-
-String FileSystemDock::get_current_path() const {
-	return path;
 }
 
 void FileSystemDock::_set_current_path_text(const String &p_path) {
@@ -1727,7 +1731,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 	}
 }
 
-Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) {
+Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) const {
 	// Build a list of selected items with the active one at the first position.
 	Vector<String> selected_strings;
 

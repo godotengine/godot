@@ -48,6 +48,12 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_current_directory" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current directory being viewed in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+			</description>
+		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -131,10 +137,10 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_selected_path" qualifiers="const">
-			<return type="String" />
+		<method name="get_selected_paths" qualifiers="const">
+			<return type="PackedStringArray" />
 			<description>
-				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+				Returns an array containing the paths of the currently selected files (and directories) in the [FileSystemDock].
 			</description>
 		</method>
 		<method name="get_selection">
