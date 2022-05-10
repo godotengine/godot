@@ -3750,10 +3750,6 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			float distance_adv = _get_normal_advance(light_axis);
 
-			int success_count = 0;
-
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 			for (int i = 0; i < p_leaf_count; i++) {
 				uint32_t idx = leaves[i];
 
@@ -3802,18 +3798,11 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[0] += int32_t(light_r * att * ((cell->albedo >> 16) & 0xFF) / 255.0);
 					light->energy[1] += int32_t(light_g * att * ((cell->albedo >> 8) & 0xFF) / 255.0);
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
-					success_count++;
 				}
 			}
-
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-			// print_line("valid cells: " + itos(success_count));
-
 		} break;
 		case VS::LIGHT_OMNI:
 		case VS::LIGHT_SPOT: {
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 			Vector3 light_pos = light_cache.transform.origin;
 			Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
 
@@ -3911,7 +3900,6 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }

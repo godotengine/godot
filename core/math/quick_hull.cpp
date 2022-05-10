@@ -394,7 +394,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
 				int ois = O->get().indices.size();
-				int merged = 0;
 
 				for (int j = 0; j < ois; j++) {
 					//search a
@@ -409,7 +408,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 							if (idx != a) {
 								f.indices.insert(i + 1, idx);
 								i++;
-								merged++;
 							}
 							Edge e2(idx, idxn);
 

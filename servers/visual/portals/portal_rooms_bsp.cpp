@@ -526,7 +526,6 @@ int PortalRoomsBSP::evaluate_room_split_plane(int p_room_a_id, int p_room_b_id, 
 int PortalRoomsBSP::evaluate_plane(const VSPortal *p_portal, const Plane &p_plane, const LocalVector<int32_t, int32_t> &p_room_ids, LocalVector<int32_t, int32_t> *r_room_ids_back, LocalVector<int32_t, int32_t> *r_room_ids_front) {
 	int rooms_front = 0;
 	int rooms_back = 0;
-	int rooms_split = 0;
 
 	if (r_room_ids_back) {
 		DEV_ASSERT(!r_room_ids_back->size());
@@ -622,8 +621,6 @@ int PortalRoomsBSP::evaluate_plane(const VSPortal *p_portal, const Plane &p_plan
 		if (r_room_ids_back) {
 			r_room_ids_back->push_back(rid);
 		}
-
-		rooms_split++;
 	}
 
 #undef GODOT_BSP_PUSH_BACK
