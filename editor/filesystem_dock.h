@@ -297,12 +297,12 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true) const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
-	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 private:
 	static FileSystemDock *singleton;
@@ -315,9 +315,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 
 	String get_current_path() const;
+	String get_current_directory() const;
+
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
 
