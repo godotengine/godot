@@ -199,7 +199,8 @@ void Button::_notification(int p_what) {
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_constant("hseparation") + icon_ofs_region;
+					int icon_text_separation = text.empty() ? 0 : get_constant("h_separation");
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align != ALIGN_CENTER) {
 						_size.width -= get_font("font")->get_string_size(xl_text).width;
 					}
