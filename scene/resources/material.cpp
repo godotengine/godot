@@ -84,7 +84,7 @@ void Material::inspect_native_shader_code() {
 	SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 	RID shader = get_shader_rid();
 	if (st && shader.is_valid()) {
-		st->call_group("_native_shader_source_visualizer", "_inspect_shader", shader);
+		st->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_native_shader_source_visualizer", "_inspect_shader", shader);
 	}
 }
 

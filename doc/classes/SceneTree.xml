@@ -18,9 +18,9 @@
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. This method is equivalent of calling [method call_group_flags] with [constant GROUP_CALL_DEFAULT] flag.
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
 				[b]Note:[/b] Due to design limitations, [method call_group] will fail silently if one of the arguments is [code]null[/code].
-				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
+				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
@@ -30,11 +30,12 @@
 			<argument index="2" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
-				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
 				[codeblock]
-				# Call the method immediately and in reverse order.
-				get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy")
+				# Call the method in a deferred manner and in reverse order.
+				get_tree().call_group_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
 				[/codeblock]
+				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
+				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
 			</description>
 		</method>
 		<method name="change_scene">
@@ -139,6 +140,7 @@
 			<argument index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code].
+				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method notify_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="notify_group_flags">
@@ -148,6 +150,7 @@
 			<argument index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
+				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -189,6 +192,7 @@
 			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group.
+				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method set_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
 		<method name="set_group_flags">
@@ -199,6 +203,7 @@
 			<argument index="3" name="value" type="Variant" />
 			<description>
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
+				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="set_multiplayer">
@@ -297,8 +302,8 @@
 		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
 			Call a group in reverse scene order.
 		</constant>
-		<constant name="GROUP_CALL_REALTIME" value="2" enum="GroupCallFlags">
-			Call a group immediately (calls are normally made on idle).
+		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags">
+			Call a group with a one-frame delay (idle frame, not physics).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.
