@@ -45,12 +45,12 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
-#include <Carbon/Carbon.h>
-#include <Cocoa/Cocoa.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/IOKitLib.h>
-#include <IOKit/hid/IOHIDKeys.h>
-#include <IOKit/hid/IOHIDLib.h>
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#import <IOKit/IOCFPlugIn.h>
+#import <IOKit/IOKitLib.h>
+#import <IOKit/hid/IOHIDKeys.h>
+#import <IOKit/hid/IOHIDLib.h>
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -146,7 +146,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
 		}
 
-		CALayer *layer = [wd.window_view layer];
+		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			layer.contentsScale = scale;
 		}
@@ -174,7 +174,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 	wd.size.width = contentRect.size.width * scale;
 	wd.size.height = contentRect.size.height * scale;
 
-	CALayer *layer = [wd.window_view layer];
+	CALayer *layer = [(NSView *)wd.window_view layer];
 	if (layer) {
 		layer.contentsScale = scale;
 	}
@@ -209,16 +209,16 @@ void DisplayServerOSX::_update_window_style(WindowData p_wd) {
 
 	if (borderless_full) {
 		// If the window covers up the screen set the level to above the main menu and hide on deactivate.
-		[p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
-		[p_wd.window_object setHidesOnDeactivate:YES];
+		[(NSWindow *)p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
+		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
 		if (p_wd.on_top && !p_wd.fullscreen) {
-			[p_wd.window_object setLevel:NSFloatingWindowLevel];
+			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
-			[p_wd.window_object setLevel:NSNormalWindowLevel];
+			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
-		[p_wd.window_object setHidesOnDeactivate:NO];
+		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:NO];
 	}
 }
 
@@ -234,7 +234,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			[wd.window_object setBackgroundColor:[NSColor clearColor]];
 			[wd.window_object setOpaque:NO];
 			[wd.window_object setHasShadow:NO];
-			CALayer *layer = [wd.window_view layer];
+			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
 				[layer setBackgroundColor:[NSColor clearColor].CGColor];
 				[layer setOpaque:NO];
@@ -249,7 +249,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
 			[wd.window_object setOpaque:YES];
 			[wd.window_object setHasShadow:YES];
-			CALayer *layer = [wd.window_view layer];
+			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
 				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
 				[layer setOpaque:YES];
@@ -2256,7 +2256,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			[wd.window_object setLevel:NSNormalWindowLevel];
+			[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
 			_set_window_per_pixel_transparency_enabled(true, p_window);
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
@@ -2380,9 +2380,9 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 				return;
 			}
 			if (p_enabled) {
-				[wd.window_object setLevel:NSFloatingWindowLevel];
+				[(NSWindow *)wd.window_object setLevel:NSFloatingWindowLevel];
 			} else {
-				[wd.window_object setLevel:NSNormalWindowLevel];
+				[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
 			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
@@ -2423,7 +2423,7 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			if (wd.fullscreen) {
 				return wd.on_top;
 			} else {
-				return [wd.window_object level] == NSFloatingWindowLevel;
+				return [(NSWindow *)wd.window_object level] == NSFloatingWindowLevel;
 			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {

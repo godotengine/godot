@@ -37,8 +37,13 @@
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
-#include <AVFAudio/AVSpeechSynthesis.h>
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
+
+#if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
+#import <AVFAudio/AVSpeechSynthesis.h>
+#else
+#import <AVFoundation/AVFoundation.h>
+#endif
 
 @interface TTS_OSX : NSObject <AVSpeechSynthesizerDelegate> {
 	// AVSpeechSynthesizer
