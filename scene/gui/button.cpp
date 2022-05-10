@@ -258,7 +258,8 @@ void Button::_notification(int p_what) {
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant(SNAME("h_separation")) + icon_ofs_region;
+					int icon_text_separation = text.is_empty() ? 0 : get_theme_constant(SNAME("h_separation"));
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
