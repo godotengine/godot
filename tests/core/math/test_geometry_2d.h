@@ -135,7 +135,7 @@ TEST_CASE("[Geometry2D] Line intersection") {
 			"Parallel lines should not intersect.");
 }
 
-TEST_CASE("[Geometry2D] Segment intersection.") {
+TEST_CASE("[Geometry2D] Segment intersection") {
 	Vector2 r;
 
 	CHECK(Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, -1), &r));
@@ -148,6 +148,10 @@ TEST_CASE("[Geometry2D] Segment intersection.") {
 			Geometry2D::segment_intersects_segment(Vector2(-1, 1), Vector2(1, -1), Vector2(0, 1), Vector2(2, -1), &r),
 			"Parallel segments should not intersect.");
 
+	CHECK_FALSE_MESSAGE(
+			Geometry2D::segment_intersects_segment(Vector2(1, 2), Vector2(3, 2), Vector2(0, 2), Vector2(-2, 2), &r),
+			"Non-overlapping collinear segments should not intersect.");
+
 	CHECK_MESSAGE(
 			Geometry2D::segment_intersects_segment(Vector2(0, 0), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), &r),
 			"Touching segments should intersect.");
@@ -159,11 +163,114 @@ TEST_CASE("[Geometry2D] Segment intersection.") {
 	CHECK(r.is_equal_approx(Vector2(0, 0)));
 }
 
+TEST_CASE("[Geometry2D] Segment intersection with circle") {
+	real_t minus_one = -1.0;
+	real_t zero = 0.0;
+	real_t one_quarter = 0.25;
+	real_t three_quarters = 0.75;
+	real_t one = 1.0;
+
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(4, 0), Vector2(0, 0), 1.0), one_quarter),
+			"Segment from inside to outside of circle should intersect it.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(4, 0), Vector2(0, 0), Vector2(0, 0), 1.0), three_quarters),
+			"Segment from outside to inside of circle should intersect it.");
+
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(-2, 0), Vector2(2, 0), Vector2(0, 0), 1.0), one_quarter),
+			"Segment running through circle should intersect it.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(-2, 0), Vector2(0, 0), 1.0), one_quarter),
+			"Segment running through circle should intersect it.");
+
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(0, 0), Vector2(1, 0), Vector2(0, 0), 1.0), one),
+			"Segment starting inside the circle and ending on the circle should intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(0, 0), Vector2(0, 0), 1.0), zero),
+			"Segment starting on the circle and going inwards should intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(2, 0), Vector2(0, 0), 1.0), zero),
+			"Segment starting on the circle and going outwards should intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(1, 0), Vector2(0, 0), 1.0), one),
+			"Segment starting outside the circle and ending on the circle intersect it");
+
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(-1, 0), Vector2(1, 0), Vector2(0, 0), 2.0), minus_one),
+			"Segment completely within the circle should not intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(1, 0), Vector2(-1, 0), Vector2(0, 0), 2.0), minus_one),
+			"Segment completely within the circle should not intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(2, 0), Vector2(3, 0), Vector2(0, 0), 1.0), minus_one),
+			"Segment completely outside the circle should not intersect it");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Geometry2D::segment_intersects_circle(Vector2(3, 0), Vector2(2, 0), Vector2(0, 0), 1.0), minus_one),
+			"Segment completely outside the circle should not intersect it");
+}
+
+TEST_CASE("[Geometry2D] Segment intersection with polygon") {
+	Vector<Point2> a;
+
+	a.push_back(Point2(-2, 2));
+	a.push_back(Point2(3, 4));
+	a.push_back(Point2(1, 1));
+	a.push_back(Point2(2, -2));
+	a.push_back(Point2(-1, -1));
+
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(0, 2), Vector2(2, 2), a),
+			"Segment from inside to outside of polygon should intersect it.");
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(2, 2), Vector2(0, 2), a),
+			"Segment from outside to inside of polygon should intersect it.");
+
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(2, 4), Vector2(3, 3), a),
+			"Segment running through polygon should intersect it.");
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(3, 3), Vector2(2, 4), a),
+			"Segment running through polygon should intersect it.");
+
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(0, 0), Vector2(1, 1), a),
+			"Segment starting inside the polygon and ending on the polygon should intersect it");
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(1, 1), Vector2(0, 0), a),
+			"Segment starting on the polygon and going inwards should intersect it");
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(-2, 2), Vector2(-2, -1), a),
+			"Segment starting on the polygon and going outwards should intersect it");
+	CHECK_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(-2, 1), Vector2(-2, 2), a),
+			"Segment starting outside the polygon and ending on the polygon intersect it");
+
+	CHECK_FALSE_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(-1, 2), Vector2(1, -1), a),
+			"Segment completely within the polygon should not intersect it");
+	CHECK_FALSE_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(1, -1), Vector2(-1, 2), a),
+			"Segment completely within the polygon should not intersect it");
+	CHECK_FALSE_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(2, 2), Vector2(2, -1), a),
+			"Segment completely outside the polygon should not intersect it");
+	CHECK_FALSE_MESSAGE(
+			Geometry2D::is_segment_intersecting_polygon(Vector2(2, -1), Vector2(2, 2), a),
+			"Segment completely outside the polygon should not intersect it");
+}
+
 TEST_CASE("[Geometry2D] Closest point to segment") {
 	Vector2 s[] = { Vector2(-4, -4), Vector2(4, 4) };
 	CHECK(Geometry2D::get_closest_point_to_segment(Vector2(4.1, 4.1), s).is_equal_approx(Vector2(4, 4)));
 	CHECK(Geometry2D::get_closest_point_to_segment(Vector2(-4.1, -4.1), s).is_equal_approx(Vector2(-4, -4)));
 	CHECK(Geometry2D::get_closest_point_to_segment(Vector2(-1, 1), s).is_equal_approx(Vector2(0, 0)));
+
+	Vector2 t[] = { Vector2(1, -2), Vector2(1, -2) };
+	CHECK_MESSAGE(
+			Geometry2D::get_closest_point_to_segment(Vector2(-3, 4), t).is_equal_approx(Vector2(1, -2)),
+			"Line segment is only a single point. This point should be the closest.");
 }
 
 TEST_CASE("[Geometry2D] Closest point to uncapped segment") {
@@ -186,6 +293,30 @@ TEST_CASE("[Geometry2D] Closest points between segments") {
 	Geometry2D::get_closest_points_between_segments(Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, -1), c1, c2);
 	CHECK(c1.is_equal_approx(Vector2(0, 0)));
 	CHECK(c2.is_equal_approx(Vector2(0, 0)));
+
+	Geometry2D::get_closest_points_between_segments(Vector2(-3, 4), Vector2(-3, 4), Vector2(-4, 3), Vector2(-2, 3), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(-3, 4)),
+			"1st line segment is only a point, this point should be the closest point to the 2nd line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-3, 3)),
+			"1st line segment is only a point, this should not matter when determining the closest point on the 2nd line segment.");
+
+	Geometry2D::get_closest_points_between_segments(Vector2(-4, 3), Vector2(-2, 3), Vector2(-3, 4), Vector2(-3, 4), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(-3, 3)),
+			"2nd line segment is only a point, this should not matter when determining the closest point on the 1st line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-3, 4)),
+			"2nd line segment is only a point, this point should be the closest point to the 1st line segment.");
+
+	Geometry2D::get_closest_points_between_segments(Vector2(5, -4), Vector2(5, -4), Vector2(-2, 1), Vector2(-2, 1), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(5, -4)),
+			"Both line segments are only a point. On the 1st line segment, that point should be the closest point to the 2nd line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-2, 1)),
+			"Both line segments are only a point. On the 2nd line segment, that point should be the closest point to the 1st line segment.");
 }
 
 TEST_CASE("[Geometry2D] Make atlas") {
@@ -560,6 +691,174 @@ TEST_CASE("[Geometry2D] Clip polyline with polygon") {
 		REQUIRE_MESSAGE(r[1].size() == 2, "The resulting clipped line should have 2 vertices.");
 		CHECK(r[1][0].is_equal_approx(Vector2(53.07737, 116.143021)));
 		CHECK(r[1][1].is_equal_approx(Vector2(55, 70)));
+	}
+}
+
+TEST_CASE("[Geometry2D] Convex hull") {
+	Vector<Point2> a;
+	Vector<Point2> r;
+
+	a.push_back(Point2(-4, -8));
+	a.push_back(Point2(-10, -4));
+	a.push_back(Point2(8, 2));
+	a.push_back(Point2(-6, 10));
+	a.push_back(Point2(-12, 4));
+	a.push_back(Point2(10, -8));
+	a.push_back(Point2(4, 8));
+
+	SUBCASE("[Geometry2D] No points") {
+		r = Geometry2D::convex_hull(Vector<Vector2>());
+
+		CHECK_MESSAGE(r.is_empty(), "The convex hull should be empty if there are no input points.");
+	}
+
+	SUBCASE("[Geometry2D] Single point") {
+		Vector<Point2> b;
+		b.push_back(Point2(4, -3));
+
+		r = Geometry2D::convex_hull(b);
+		REQUIRE_MESSAGE(r.size() == 1, "Convex hull should contain 1 point.");
+		CHECK(r[0].is_equal_approx(b[0]));
+	}
+
+	SUBCASE("[Geometry2D] All points form the convex hull") {
+		r = Geometry2D::convex_hull(a);
+		REQUIRE_MESSAGE(r.size() == 8, "Convex hull should contain 8 points.");
+		CHECK(r[0].is_equal_approx(Point2(-12, 4)));
+		CHECK(r[1].is_equal_approx(Point2(-10, -4)));
+		CHECK(r[2].is_equal_approx(Point2(-4, -8)));
+		CHECK(r[3].is_equal_approx(Point2(10, -8)));
+		CHECK(r[4].is_equal_approx(Point2(8, 2)));
+		CHECK(r[5].is_equal_approx(Point2(4, 8)));
+		CHECK(r[6].is_equal_approx(Point2(-6, 10)));
+		CHECK(r[7].is_equal_approx(Point2(-12, 4)));
+	}
+
+	SUBCASE("[Geometry2D] Add extra points inside original convex hull") {
+		a.push_back(Point2(-4, -8));
+		a.push_back(Point2(0, 0));
+		a.push_back(Point2(0, 8));
+		a.push_back(Point2(-10, -3));
+		a.push_back(Point2(9, -4));
+		a.push_back(Point2(6, 4));
+
+		r = Geometry2D::convex_hull(a);
+		REQUIRE_MESSAGE(r.size() == 8, "Convex hull should contain 8 points.");
+		CHECK(r[0].is_equal_approx(Point2(-12, 4)));
+		CHECK(r[1].is_equal_approx(Point2(-10, -4)));
+		CHECK(r[2].is_equal_approx(Point2(-4, -8)));
+		CHECK(r[3].is_equal_approx(Point2(10, -8)));
+		CHECK(r[4].is_equal_approx(Point2(8, 2)));
+		CHECK(r[5].is_equal_approx(Point2(4, 8)));
+		CHECK(r[6].is_equal_approx(Point2(-6, 10)));
+		CHECK(r[7].is_equal_approx(Point2(-12, 4)));
+	}
+
+	SUBCASE("[Geometry2D] Add extra points on border of original convex hull") {
+		a.push_back(Point2(9, -3));
+		a.push_back(Point2(-2, -8));
+
+		r = Geometry2D::convex_hull(a);
+		REQUIRE_MESSAGE(r.size() == 8, "Convex hull should contain 8 points.");
+		CHECK(r[0].is_equal_approx(Point2(-12, 4)));
+		CHECK(r[1].is_equal_approx(Point2(-10, -4)));
+		CHECK(r[2].is_equal_approx(Point2(-4, -8)));
+		CHECK(r[3].is_equal_approx(Point2(10, -8)));
+		CHECK(r[4].is_equal_approx(Point2(8, 2)));
+		CHECK(r[5].is_equal_approx(Point2(4, 8)));
+		CHECK(r[6].is_equal_approx(Point2(-6, 10)));
+		CHECK(r[7].is_equal_approx(Point2(-12, 4)));
+	}
+
+	SUBCASE("[Geometry2D] Add extra points outside border of original convex hull") {
+		a.push_back(Point2(-11, -1));
+		a.push_back(Point2(7, 6));
+
+		r = Geometry2D::convex_hull(a);
+		REQUIRE_MESSAGE(r.size() == 10, "Convex hull should contain 10 points.");
+		CHECK(r[0].is_equal_approx(Point2(-12, 4)));
+		CHECK(r[1].is_equal_approx(Point2(-11, -1)));
+		CHECK(r[2].is_equal_approx(Point2(-10, -4)));
+		CHECK(r[3].is_equal_approx(Point2(-4, -8)));
+		CHECK(r[4].is_equal_approx(Point2(10, -8)));
+		CHECK(r[5].is_equal_approx(Point2(8, 2)));
+		CHECK(r[6].is_equal_approx(Point2(7, 6)));
+		CHECK(r[7].is_equal_approx(Point2(4, 8)));
+		CHECK(r[8].is_equal_approx(Point2(-6, 10)));
+		CHECK(r[9].is_equal_approx(Point2(-12, 4)));
+	}
+}
+
+TEST_CASE("[Geometry2D] Bresenham line") {
+	Vector<Vector2i> r;
+
+	SUBCASE("[Geometry2D] Single point") {
+		r = Geometry2D::bresenham_line(Point2i(0, 0), Point2i(0, 0));
+
+		REQUIRE_MESSAGE(r.size() == 1, "The Bresenham line should contain exactly one point.");
+		CHECK(r[0] == Vector2i(0, 0));
+	}
+
+	SUBCASE("[Geometry2D] Line parallel to x-axis") {
+		r = Geometry2D::bresenham_line(Point2i(1, 2), Point2i(5, 2));
+
+		REQUIRE_MESSAGE(r.size() == 5, "The Bresenham line should contain exactly five points.");
+		CHECK(r[0] == Vector2i(1, 2));
+		CHECK(r[1] == Vector2i(2, 2));
+		CHECK(r[2] == Vector2i(3, 2));
+		CHECK(r[3] == Vector2i(4, 2));
+		CHECK(r[4] == Vector2i(5, 2));
+	}
+
+	SUBCASE("[Geometry2D] 45 degree line from the origin") {
+		r = Geometry2D::bresenham_line(Point2i(0, 0), Point2i(4, 4));
+
+		REQUIRE_MESSAGE(r.size() == 5, "The Bresenham line should contain exactly five points.");
+		CHECK(r[0] == Vector2i(0, 0));
+		CHECK(r[1] == Vector2i(1, 1));
+		CHECK(r[2] == Vector2i(2, 2));
+		CHECK(r[3] == Vector2i(3, 3));
+		CHECK(r[4] == Vector2i(4, 4));
+	}
+
+	SUBCASE("[Geometry2D] Sloped line going up one unit") {
+		r = Geometry2D::bresenham_line(Point2i(0, 0), Point2i(4, 1));
+
+		REQUIRE_MESSAGE(r.size() == 5, "The Bresenham line should contain exactly five points.");
+		CHECK(r[0] == Vector2i(0, 0));
+		CHECK(r[1] == Vector2i(1, 0));
+		CHECK(r[2] == Vector2i(2, 0));
+		CHECK(r[3] == Vector2i(3, 1));
+		CHECK(r[4] == Vector2i(4, 1));
+	}
+
+	SUBCASE("[Geometry2D] Sloped line going up two units") {
+		r = Geometry2D::bresenham_line(Point2i(0, 0), Point2i(4, 2));
+
+		REQUIRE_MESSAGE(r.size() == 5, "The Bresenham line should contain exactly five points.");
+		CHECK(r[0] == Vector2i(0, 0));
+		CHECK(r[1] == Vector2i(1, 0));
+		CHECK(r[2] == Vector2i(2, 1));
+		CHECK(r[3] == Vector2i(3, 1));
+		CHECK(r[4] == Vector2i(4, 2));
+	}
+
+	SUBCASE("[Geometry2D] Long sloped line") {
+		r = Geometry2D::bresenham_line(Point2i(0, 0), Point2i(11, 5));
+
+		REQUIRE_MESSAGE(r.size() == 12, "The Bresenham line should contain exactly twelve points.");
+		CHECK(r[0] == Vector2i(0, 0));
+		CHECK(r[1] == Vector2i(1, 0));
+		CHECK(r[2] == Vector2i(2, 1));
+		CHECK(r[3] == Vector2i(3, 1));
+		CHECK(r[4] == Vector2i(4, 2));
+		CHECK(r[5] == Vector2i(5, 2));
+		CHECK(r[6] == Vector2i(6, 3));
+		CHECK(r[7] == Vector2i(7, 3));
+		CHECK(r[8] == Vector2i(8, 4));
+		CHECK(r[9] == Vector2i(9, 4));
+		CHECK(r[10] == Vector2i(10, 5));
+		CHECK(r[11] == Vector2i(11, 5));
 	}
 }
 } // namespace TestGeometry2D
