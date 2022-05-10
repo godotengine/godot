@@ -271,7 +271,7 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 		const Face3 &f = p_faces[indices[i]];
 		Plane p = f.get_plane();
 
-		int num_over = 0, num_under = 0, num_spanning = 0;
+		int num_over = 0, num_under = 0; //num_spanning = 0;
 
 		for (int j = 0; j < ic; j++) {
 			if (i == j) {
@@ -294,7 +294,7 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 			}
 
 			if (over && under) {
-				num_spanning++;
+				//num_spanning++;
 			} else if (over) {
 				num_over++;
 			} else {
