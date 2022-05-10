@@ -887,9 +887,6 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 
 	instance->transform_curr = p_transform;
 
-	// decide on the interpolation method .. slerp if possible
-	instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
-
 	// keep checksums up to date
 	instance->transform_checksum_curr = new_checksum;
 
@@ -899,6 +896,17 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	} else {
 		DEV_ASSERT(_interpolation_data.instance_transform_update_list_curr->size());
 	}
+
+	// If the instance is invisible, then we are simply updating the data flow, there is no need to calculate the interpolated
+	// transform or anything else.
+	// Ideally we would not even call the VisualServer::set_transform() when invisible but that would entail having logic
+	// to keep track of the previous transform on the SceneTree side. The "early out" below is less efficient but a lot cleaner codewise.
+	if (!instance->visible) {
+		return;
+	}
+
+	// decide on the interpolation method .. slerp if possible
+	instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
 
 	if (!instance->on_interpolate_list) {
 		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
