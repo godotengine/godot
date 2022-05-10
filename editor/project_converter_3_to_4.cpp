@@ -366,6 +366,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_scancode", "get_keycode" }, // InputEventKey
 	{ "get_scancode_string", "get_keycode_string" }, // OS
 	{ "get_scancode_with_modifiers", "get_keycode_with_modifiers" }, // InputEventKey
+	{ "get_selected_path", "get_current_directory" }, // EditorInterface
 	{ "get_shift", "is_shift_pressed" }, // InputEventWithModifiers
 	{ "get_size_override", "get_size_2d_override" }, // SubViewport
 	{ "get_slide_count", "get_slide_collision_count" }, // CharacterBody2D, CharacterBody3D
