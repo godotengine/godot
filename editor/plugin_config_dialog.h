@@ -61,6 +61,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	void _on_cancelled();
 	void _on_language_changed(const int p_language);
 	void _on_required_text_changed(const String &p_text);
+	String _get_subfolder();
 
 	static String _to_absolute_plugin_path(const String &p_plugin_name);
 
