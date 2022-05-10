@@ -31,6 +31,7 @@
 /**
 	@author AndreaCatania
 */
+#include "modules/register_module_types.h"
 
-void register_network_synchronizer_types();
-void unregister_network_synchronizer_types();
+void initialize_network_synchronizer_module(ModuleInitializationLevel p_level);
+void uninitialize_network_synchronizer_module(ModuleInitializationLevel p_level);

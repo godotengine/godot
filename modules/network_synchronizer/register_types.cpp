@@ -40,7 +40,11 @@
 #include "scene_diff.h"
 #include "scene_synchronizer.h"
 
-void register_network_synchronizer_types() {
+void initialize_network_synchronizer_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		return;
+	}
+
 	GDREGISTER_CLASS(DataBuffer);
 	GDREGISTER_CLASS(SceneDiff);
 	GDREGISTER_CLASS(Interpolator);
@@ -51,5 +55,5 @@ void register_network_synchronizer_types() {
 	GLOBAL_DEF("NetworkSynchronizer/debug_doll_speedup", false);
 }
 
-void unregister_network_synchronizer_types() {
+void uninitialize_network_synchronizer_module(ModuleInitializationLevel p_level) {
 }

@@ -81,6 +81,15 @@ public:
 		CONTROLLER_TYPE_DOLL
 	};
 
+	GDVIRTUAL2(_collect_inputs, real_t, DataBuffer*);
+	GDVIRTUAL2(_controller_process, real_t, const DataBuffer*);
+	GDVIRTUAL2R(bool, _are_inputs_different, const DataBuffer*, const DataBuffer*);
+	GDVIRTUAL1RC(int, _count_input_size, const DataBuffer*);
+	GDVIRTUAL1(_collect_epoch_data, DataBuffer*);
+	GDVIRTUAL1(_setup_interpolator, Interpolator*);
+	GDVIRTUAL2(_parse_epoch_data, Interpolator*, const DataBuffer*);
+	GDVIRTUAL2(_apply_epoch, real_t, Array);
+
 private:
 	/// The input storage size is used to cap the amount of inputs collected by
 	/// the `PlayerController`.

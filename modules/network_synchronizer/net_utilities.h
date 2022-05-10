@@ -39,6 +39,8 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
+class Node;
+
 #ifdef DEBUG_ENABLED
 #define NET_DEBUG_PRINT(msg) \
 	print_line(String("[Net] ") + msg)

@@ -343,8 +343,8 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 		// TODO improve this by performing first the shifting then the resizing.
 		// Remove the old elements, but leave the one used to interpolate.
 		for (uint32_t i = 0; i < position - 1; i += 1) {
-			epochs.remove(0);
-			buffer.remove(0);
+			epochs.remove_at(0);
+			buffer.remove_at(0);
 		}
 	}
 

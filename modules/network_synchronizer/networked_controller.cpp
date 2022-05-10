@@ -117,14 +117,23 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("__on_sync_paused"), &NetworkedController::__on_sync_paused);
 
-	BIND_VMETHOD(MethodInfo("_collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo("_controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo("_collect_epoch_data", PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo("_setup_interpolator", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator")));
-	BIND_VMETHOD(MethodInfo("_parse_epoch_data", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo("_apply_epoch", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
+	GDVIRTUAL_BIND(_collect_inputs, "delta", "buffer");
+	GDVIRTUAL_BIND(_controller_process, "delta", "buffer");
+	GDVIRTUAL_BIND(_are_inputs_different, "inputs_A", "inputs_B");
+	GDVIRTUAL_BIND( _count_input_size, "inputs");
+	GDVIRTUAL_BIND(_collect_epoch_data, "buffer");
+	GDVIRTUAL_BIND(_setup_interpolator, "interpolator");
+	GDVIRTUAL_BIND(_parse_epoch_data, "interpolator", "buffer");
+	GDVIRTUAL_BIND(_apply_epoch, "delta", "interpolated_data");
+
+	// BIND_VMETHOD(MethodInfo("_collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo("_controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo(Variant::BOOL, "_are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo(Variant::INT, "_count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo("_collect_epoch_data", PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo("_setup_interpolator", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator")));
+	// BIND_VMETHOD(MethodInfo("_parse_epoch_data", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	// BIND_VMETHOD(MethodInfo("_apply_epoch", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "5,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -148,10 +157,10 @@ void NetworkedController::_bind_methods() {
 }
 
 NetworkedController::NetworkedController() {
-	rpc_config(SNAME("_rpc_server_send_inputs"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
-	rpc_config(SNAME("_rpc_send_tick_additional_speed"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
-	rpc_config(SNAME("_rpc_doll_notify_sync_pause"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	rpc_config(SNAME("_rpc_doll_send_epoch_batch"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
+	rpc_config(SNAME("_rpc_server_send_inputs"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	rpc_config(SNAME("_rpc_send_tick_additional_speed"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	rpc_config(SNAME("_rpc_doll_notify_sync_pause"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_doll_send_epoch_batch"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
 }
 
 void NetworkedController::set_player_input_storage_size(int p_size) {
@@ -496,14 +505,14 @@ void NetworkedController::_notification(int p_what) {
 				return;
 			}
 
-			ERR_FAIL_COND_MSG(has_method("_collect_inputs") == false, "In your script you must inherit the virtual method `_collect_inputs` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_controller_process") == false, "In your script you must inherit the virtual method `_controller_process` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_are_inputs_different") == false, "In your script you must inherit the virtual method `_are_inputs_different` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_count_input_size") == false, "In your script you must inherit the virtual method `_count_input_size` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_collect_epoch_data") == false, "In your script you must inherit the virtual method `_collect_epoch_data` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_setup_interpolator") == false, "In your script you must inherit the virtual method `_setup_interpolator` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_parse_epoch_data") == false, "In your script you must inherit the virtual method `_parse_epoch_data` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("_apply_epoch") == false, "In your script you must inherit the virtual method `_apply_epoch` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_collect_inputs) == false, "In your script you must inherit the virtual method `_collect_inputs` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_controller_process) == false, "In your script you must inherit the virtual method `_controller_process` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_are_inputs_different) == false, "In your script you must inherit the virtual method `_are_inputs_different` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_count_input_size) == false, "In your script you must inherit the virtual method `_count_input_size` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_collect_epoch_data) == false, "In your script you must inherit the virtual method `_collect_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_setup_interpolator) == false, "In your script you must inherit the virtual method `_setup_interpolator` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_parse_epoch_data) == false, "In your script you must inherit the virtual method `_parse_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_apply_epoch) == false, "In your script you must inherit the virtual method `_apply_epoch` to correctly use the `NetworkedController`.");
 
 		} break;
 #endif
@@ -532,8 +541,8 @@ void ServerController::process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->get_inputs_buffer_mut().seek(METADATA_SIZE);
-	node->call(
-			SNAME("_controller_process"),
+	node->GDVIRTUAL_CALL(
+			_controller_process,
 			p_delta,
 			&node->get_inputs_buffer_mut());
 
@@ -659,7 +668,15 @@ void ServerController::receive_inputs(const Vector<uint8_t> &p_data) {
 		// Read metadata
 		const bool has_data = pir.read_bool();
 
-		const int input_size_in_bits = (has_data ? int(node->call(SNAME("_count_input_size"), &pir)) : 0) + METADATA_SIZE;
+		int input_size = 0;
+		if (has_data){
+			if (!node->GDVIRTUAL_CALL(_count_input_size, const_cast<const DataBuffer*>(&pir), input_size)) {
+				ERR_PRINT("The function `_count_input_size` was not executed.");
+			}
+		}
+
+		const int input_size_in_bits = input_size + METADATA_SIZE;
+
 		// Pad to 8 bits.
 		const int input_size_padded =
 				Math::ceil((static_cast<float>(input_size_in_bits)) / 8.0);
@@ -842,7 +859,12 @@ bool ServerController::fetch_next_input() {
 						pir_B.begin_read();
 						pir_B.seek(METADATA_SIZE);
 
-						const bool is_meaningful = node->call(SNAME("_are_inputs_different"), &pir_A, &pir_B);
+						bool is_meaningful = true;
+						const bool executed = node->GDVIRTUAL_CALL(_are_inputs_different, const_cast<const DataBuffer*>(&pir_A), const_cast<const DataBuffer*>(&pir_B), is_meaningful);
+						if(executed == false) {
+							ERR_PRINT("The function _are_inputs_different was not executed!");
+						}
+
 						if (is_meaningful) {
 							break;
 						}
@@ -910,7 +932,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			if (epoch_state_collected == false) {
 				epoch_state_data_cache.begin_write(0);
 				epoch_state_data_cache.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
-				node->call(SNAME("_collect_epoch_data"), &epoch_state_data_cache);
+				node->GDVIRTUAL_CALL(_collect_epoch_data, &epoch_state_data_cache);
 				epoch_state_data_cache.dry();
 				epoch_state_collected = true;
 			}
@@ -1074,7 +1096,7 @@ void PlayerController::process(real_t p_delta) {
 		node->get_inputs_buffer_mut().begin_write(METADATA_SIZE);
 
 		node->get_inputs_buffer_mut().seek(1);
-		node->call(SNAME("_collect_inputs"), p_delta, &node->get_inputs_buffer_mut());
+		node->GDVIRTUAL_CALL(_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 
 		// Set metadata data.
 		node->get_inputs_buffer_mut().seek(0);
@@ -1094,7 +1116,7 @@ void PlayerController::process(real_t p_delta) {
 
 	// The physics process is always emitted, because we still need to simulate
 	// the character motion even if we don't store the player inputs.
-	node->call(SNAME("_controller_process"), p_delta, &node->get_inputs_buffer());
+	node->GDVIRTUAL_CALL(_controller_process, p_delta, &node->get_inputs_buffer());
 
 	node->player_set_has_new_input(false);
 	if (accept_new_inputs) {
@@ -1179,7 +1201,8 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 		ib.shrink_to(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		ib.begin_read();
 		ib.seek(METADATA_SIZE);
-		node->call(SNAME("_controller_process"), p_delta, &ib);
+		node->GDVIRTUAL_CALL(_controller_process, p_delta, &ib);
+
 		return (i + 1) < frames_snapshot.size();
 	} else {
 		return false;
@@ -1254,7 +1277,12 @@ void PlayerController::send_frame_input_buffer_to_server() {
 					pir_B.begin_read();
 					pir_B.seek(METADATA_SIZE);
 
-					const bool are_different = node->call(SNAME("_are_inputs_different"), &pir_A, &pir_B);
+					bool are_different = true;
+					const bool executed = node->GDVIRTUAL_CALL(_are_inputs_different, const_cast<const DataBuffer*>(&pir_A), const_cast<const DataBuffer*>(&pir_B), are_different);
+					if(executed == false) {
+						ERR_PRINT("The function _are_inputs_different was not executed!");
+					}
+
 					is_similar = are_different == false;
 
 				} else if (frames_snapshot[i].similarity == previous_input_similarity) {
@@ -1345,8 +1373,8 @@ DollController::DollController(NetworkedController *p_node) :
 
 void DollController::ready() {
 	interpolator.reset();
-	node->call(
-			SNAME("_setup_interpolator"),
+	node->GDVIRTUAL_CALL(
+			_setup_interpolator,
 			&interpolator);
 	interpolator.terminate_init();
 }
@@ -1360,10 +1388,10 @@ void DollController::process(real_t p_delta) {
 	}
 
 	const real_t fractional_part = advancing_epoch;
-	node->call(
-			SNAME("_apply_epoch"),
+	node->GDVIRTUAL_CALL(
+			_apply_epoch,
 			p_delta,
-			interpolator.pop_epoch(frame_epoch, fractional_part));
+			Array(interpolator.pop_epoch(frame_epoch, fractional_part)));
 }
 
 uint32_t DollController::get_current_input_id() const {
@@ -1466,7 +1494,7 @@ uint32_t DollController::receive_epoch(const Vector<uint8_t> &p_data) {
 	}
 
 	interpolator.begin_write(epoch);
-	node->call(SNAME("_parse_epoch_data"), &interpolator, &buffer);
+	node->GDVIRTUAL_CALL(_parse_epoch_data, &interpolator, &buffer);
 	interpolator.end_write();
 
 	return epoch;
@@ -1559,10 +1587,10 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 
 void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_write(0); // No need of meta in this case.
-	node->call(SNAME("_collect_inputs"), p_delta, &node->get_inputs_buffer_mut());
+	node->GDVIRTUAL_CALL(_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
-	node->call(SNAME("_controller_process"), p_delta, &node->get_inputs_buffer_mut());
+	node->GDVIRTUAL_CALL(_controller_process, p_delta, &node->get_inputs_buffer_mut());
 	frame_id += 1;
 }
 
