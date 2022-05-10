@@ -318,12 +318,11 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
 	int over = 0;
 	int under = 0;
-	int coplanar = 0;
 	const BSPSimplex &s = p_simplices[p_simplex];
 	for (int i = 0; i < 4; i++) {
 		const Vector3 v = p_points[s.vertices[i]];
-		if (p_plane.has_point(v)) { //coplanar
-			coplanar++;
+		if (p_plane.has_point(v)) {
+			// Coplanar.
 		} else if (p_plane.is_point_over(v)) {
 			over++;
 		} else {
