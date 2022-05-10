@@ -591,7 +591,7 @@ protected:
 			RID material_overlay;
 			AABB aabb;
 
-			bool use_baked_light = false;
+			bool use_baked_light = true;
 			bool cast_double_sided_shadows = false;
 			// bool mirror = false; // !BAS! Does not seem used, we already have this in the main struct
 

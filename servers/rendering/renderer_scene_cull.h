@@ -526,7 +526,7 @@ public:
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;
-			baked_light = false;
+			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
 			lightmap_slice_index = 0;

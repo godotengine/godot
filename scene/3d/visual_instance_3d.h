@@ -126,7 +126,7 @@ private:
 
 	float extra_cull_margin = 0.0;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
-	GIMode gi_mode = GI_MODE_DISABLED;
+	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
 	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
