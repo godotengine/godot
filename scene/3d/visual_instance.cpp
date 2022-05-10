@@ -109,7 +109,7 @@ void VisualInstance::_notification(int p_what) {
 				VisualServer::get_singleton()->instance_reset_physics_interpolation(instance);
 			}
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-			else if (GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+			else if (GLOBAL_GET_FAST(bool, "debug/settings/physics_interpolation/enable_warnings")) {
 				String node_name = is_inside_tree() ? String(get_path()) : String(get_name());
 				if (!_is_vi_visible()) {
 					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with unhidden nodes: \"" + node_name + "\".");

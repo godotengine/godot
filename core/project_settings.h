@@ -64,6 +64,9 @@ class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
+	// starting version from 1 ensures that all callers can reset their tested version to 0,
+	// and will always detect the initial project settings as a "change"
+	uint32_t _version = 1;
 	int _dirty_this_frame = 2;
 
 public:
@@ -202,6 +205,7 @@ public:
 	// for two frames avoids this, at the cost of a frame delay.
 	bool has_changes() const { return _dirty_this_frame == 1; }
 	void update();
+	uint32_t get_version() const { return _version; }
 
 	ProjectSettings();
 	~ProjectSettings();
@@ -216,6 +220,22 @@ Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const V
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
 #define GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value) _GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value)
 #define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+
+// Uncached, slow, but has no static variables.
+#define GLOBAL_GET_UNCACHED(m_var) ProjectSettings::get_singleton()->get(m_var)
+
+// Cached but uses a typed variable for storage, this can be more efficient.
+#define GLOBAL_GET_FAST(VAR_TYPE, SETTING_NAME) ([](const StringName &p_name) -> const VAR_TYPE & {\
+	static VAR_TYPE local_var;                                                   \
+		static uint32_t local_version = 0;                                      \
+		uint32_t new_version = ProjectSettings::get_singleton()->get_version(); \
+		if (local_version != new_version) {                                     \
+			local_version = new_version;                                        \
+			local_var = ProjectSettings::get_singleton()->get(p_name);     \
+		}					                                                   \
+		return local_var; })(SETTING_NAME)
+
+// Standard easy to use function, caches but uses a Variant for storage
+#define GLOBAL_GET(SETTING_NAME) GLOBAL_GET_FAST(Variant, SETTING_NAME)
 
 #endif
