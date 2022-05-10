@@ -439,16 +439,18 @@
 			</description>
 		</method>
 		<method name="lerp">
-			<return type="float" />
-			<argument index="0" name="from" type="float" />
-			<argument index="1" name="to" type="float" />
-			<argument index="2" name="weight" type="float" />
+			<return type="Variant" />
+			<argument index="0" name="from" type="Variant" />
+			<argument index="1" name="to" type="Variant" />
+			<argument index="2" name="weight" type="Variant" />
 			<description>
 				Linearly interpolates between two values by the factor defined in [code]weight[/code]. To perform interpolation, [code]weight[/code] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. Use [method clamp] on the result of [method lerp] if this is not desired.
+				Both [code]from[/code] and [code]to[/code] must have matching types. Supported types: [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method range_lerp] to map a continuous series of values to another.
+				[b]Note:[/b] For better type safety, you can use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp] instead.
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -469,6 +471,19 @@
 				    elapsed += delta
 				[/codeblock]
 				[b]Note:[/b] This method lerps through the shortest path between [code]from[/code] and [code]to[/code]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
+			</description>
+		</method>
+		<method name="lerpf">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="weight" type="float" />
+			<description>
+				Linearly interpolates between two values by the factor defined in [code]weight[/code]. To perform interpolation, [code]weight[/code] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i].
+				[codeblock]
+				lerp(0, 4, 0.75) # Returns 3.0
+				[/codeblock]
+				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
 		</method>
 		<method name="linear2db">
