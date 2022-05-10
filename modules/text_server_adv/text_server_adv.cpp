@@ -2172,6 +2172,11 @@ void TextServerAdvanced::font_set_scale(const RID &p_font_rid, int64_t p_size, d
 	Vector2i size = _get_size(fd, p_size);
 
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->face) {
+		return; // Do not override scale for dynamic fonts, it's calculated automatically.
+	}
+#endif
 	fd->cache[size]->scale = p_scale;
 }
 
