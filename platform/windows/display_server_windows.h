@@ -399,6 +399,7 @@ class DisplayServerWindows : public DisplayServer {
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
+	Ref<Image> icon;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;

@@ -1106,6 +1106,10 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
+	if (icon.is_valid()) {
+		set_icon(icon);
+	}
+
 	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
@@ -1895,9 +1899,11 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!p_icon.is_valid());
-	Ref<Image> icon = p_icon->duplicate();
-	if (icon->get_format() != Image::FORMAT_RGBA8) {
-		icon->convert(Image::FORMAT_RGBA8);
+	if (icon != p_icon) {
+		icon = p_icon->duplicate();
+		if (icon->get_format() != Image::FORMAT_RGBA8) {
+			icon->convert(Image::FORMAT_RGBA8);
+		}
 	}
 	int w = icon->get_width();
 	int h = icon->get_height();
