@@ -1863,7 +1863,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		if (pattern == nullptr) {
 			continue;
 		}
-		if (pattern->pattern_type == PatternNode::PT_BIND) {
+		if (pattern->binds.size() > 0) {
 			has_bind = true;
 		}
 		if (branch->patterns.size() > 0 && has_bind) {
@@ -1899,6 +1899,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 		for (const StringName &E : binds) {
 			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
+			local.type = SuiteNode::Local::PATTERN_BIND;
 			suite->add_local(local);
 		}
 	}
