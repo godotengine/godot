@@ -301,7 +301,8 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	AppxPackager packager;
 	packager.init(fa_pack);
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step("Creating package...", 0)) {
 		return ERR_SKIP;

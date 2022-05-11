@@ -374,7 +374,8 @@ void ExportTemplateManager::_install_file() {
 }
 
 bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_skip_progress) {
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	if (!pkg) {
@@ -676,7 +677,8 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	// Uncompress source template.
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");

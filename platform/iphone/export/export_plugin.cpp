@@ -1488,7 +1488,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(tmp_app_path.is_null(), ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
 		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
