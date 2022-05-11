@@ -38,9 +38,9 @@
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
 
-#include <AppKit/AppKit.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreVideo/CoreVideo.h>
+#import <AppKit/AppKit.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreVideo/CoreVideo.h>
 
 class GLManager_OSX {
 public:

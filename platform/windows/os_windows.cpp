@@ -387,6 +387,31 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
+static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_pipe_mutex) {
+	// Try to convert from default ANSI code page to Unicode.
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, nullptr, 0);
+	if (total_wchars > 0) {
+		wchars.resize(total_wchars);
+		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptr(), total_wchars) == 0) {
+			wchars.clear();
+		}
+	}
+
+	if (p_pipe_mutex) {
+		p_pipe_mutex->lock();
+	}
+	if (wchars.is_empty()) {
+		// Let's hope it's compatible with UTF-8.
+		(*r_pipe) += String::utf8(p_bytes, p_size);
+	} else {
+		(*r_pipe) += String(wchars.ptr(), total_wchars);
+	}
+	if (p_pipe_mutex) {
+		p_pipe_mutex->unlock();
+	}
+}
+
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
@@ -435,21 +460,44 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	if (r_pipe) {
 		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
-		char buf[4096];
+
+		LocalVector<char> bytes;
+		int bytes_in_buffer = 0;
+
+		const int CHUNK_SIZE = 4096;
 		DWORD read = 0;
 		for (;;) { // Read StdOut and StdErr from pipe.
-			bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+			bytes.resize(bytes_in_buffer + CHUNK_SIZE);
+			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, NULL);
 			if (!success || read == 0) {
 				break;
 			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
+
+			// Assume that all possible encodings are ASCII-compatible.
+			// Break at newline to allow receiving long output in portions.
+			int newline_index = -1;
+			for (int i = read - 1; i >= 0; i--) {
+				if (bytes[bytes_in_buffer + i] == '\n') {
+					newline_index = i;
+					break;
+				}
 			}
-			(*r_pipe) += String::utf8(buf, read);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
+			if (newline_index == -1) {
+				bytes_in_buffer += read;
+				continue;
 			}
+
+			const int bytes_to_convert = bytes_in_buffer + (newline_index + 1);
+			_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
+
+			bytes_in_buffer = read - (newline_index + 1);
+			memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
 		}
+
+		if (bytes_in_buffer > 0) {
+			_append_to_pipe(bytes.ptr(), bytes_in_buffer, r_pipe, p_pipe_mutex);
+		}
+
 		CloseHandle(pipe[0]); // Close pipe read handle.
 	} else {
 		WaitForSingleObject(pi.pi.hProcess, INFINITE);

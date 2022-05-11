@@ -186,7 +186,8 @@ private:
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
 			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
 				if (valid_path.ends_with(".zip")) {
-					zlib_filefunc_def io = zipio_create_io();
+					Ref<FileAccess> io_fa;
+					zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
@@ -499,7 +500,8 @@ private:
 						zip_path = project_path->get_text();
 					}
 
-					zlib_filefunc_def io = zipio_create_io();
+					Ref<FileAccess> io_fa;
+					zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
 					if (!pkg) {
@@ -1401,7 +1403,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		title->set_clip_text(true);
 		title_hb->add_child(title);
 
-		String unsupported_features_str = Variant(item.unsupported_features).operator String().trim_prefix("[").trim_suffix("]");
+		String unsupported_features_str = String(", ").join(item.unsupported_features);
 		int length = unsupported_features_str.length();
 		if (length > 0) {
 			Label *unsupported_label = memnew(Label(unsupported_features_str));
@@ -2207,7 +2209,7 @@ void ProjectManager::_open_selected_projects_ask() {
 			}
 		}
 		if (!unsupported_features.is_empty()) {
-			String unsupported_features_str = Variant(unsupported_features).operator String().trim_prefix("[").trim_suffix("]");
+			String unsupported_features_str = String(", ").join(unsupported_features);
 			warning_message += vformat(TTR("Warning: This project uses the following features not supported by this build of Godot:\n\n%s\n\n"), unsupported_features_str);
 		}
 		warning_message += TTR("Open anyway? Project will be modified.");

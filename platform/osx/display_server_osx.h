@@ -45,10 +45,11 @@
 #include "platform/osx/vulkan_context_osx.h"
 #endif // VULKAN_ENABLED
 
-#include <AppKit/AppKit.h>
-#include <AppKit/NSCursor.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreVideo/CoreVideo.h>
+#import <AppKit/AppKit.h>
+#import <AppKit/NSCursor.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreVideo/CoreVideo.h>
+#import <Foundation/Foundation.h>
 
 #undef BitMap
 #undef CursorShape

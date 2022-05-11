@@ -40,11 +40,99 @@
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 
+#include "platform_config.h"
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
+#else
+#include OPENGL_INCLUDE_H
+#endif
+
 namespace GLES3 {
+
+/* LIGHT */
+
+struct Light {
+	RS::LightType type;
+	float param[RS::LIGHT_PARAM_MAX];
+	Color color = Color(1, 1, 1, 1);
+	RID projector;
+	bool shadow = false;
+	bool negative = false;
+	bool reverse_cull = false;
+	RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
+	uint32_t max_sdfgi_cascade = 2;
+	uint32_t cull_mask = 0xFFFFFFFF;
+	bool distance_fade = false;
+	real_t distance_fade_begin = 40.0;
+	real_t distance_fade_shadow = 50.0;
+	real_t distance_fade_length = 10.0;
+	RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+	RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+	bool directional_blend_splits = false;
+	RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
+	uint64_t version = 0;
+
+	RendererStorage::Dependency dependency;
+};
+
+/* REFLECTION PROBE */
+
+struct ReflectionProbe {
+	RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
+	int resolution = 256;
+	float intensity = 1.0;
+	RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
+	Color ambient_color;
+	float ambient_color_energy = 1.0;
+	float max_distance = 0;
+	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 origin_offset;
+	bool interior = false;
+	bool box_projection = false;
+	bool enable_shadows = false;
+	uint32_t cull_mask = (1 << 20) - 1;
+	float mesh_lod_threshold = 0.01;
+
+	RendererStorage::Dependency dependency;
+};
+
+/* LIGHTMAP */
+
+struct Lightmap {
+	RID light_texture;
+	bool uses_spherical_harmonics = false;
+	bool interior = false;
+	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
+	int32_t array_index = -1; //unassigned
+	PackedVector3Array points;
+	PackedColorArray point_sh;
+	PackedInt32Array tetrahedra;
+	PackedInt32Array bsp_tree;
+
+	struct BSP {
+		static const int32_t EMPTY_LEAF = INT32_MIN;
+		float plane[4];
+		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
+	};
+
+	RendererStorage::Dependency dependency;
+};
 
 class LightStorage : public RendererLightStorage {
 private:
 	static LightStorage *singleton;
+
+	/* LIGHT */
+	mutable RID_Owner<Light, true> light_owner;
+
+	/* REFLECTION PROBE */
+	mutable RID_Owner<ReflectionProbe, true> reflection_probe_owner;
+
+	/* LIGHTMAP */
+
+	Vector<RID> lightmap_textures;
+
+	mutable RID_Owner<Lightmap, true> lightmap_owner;
 
 public:
 	static LightStorage *get_singleton();
@@ -53,6 +141,11 @@ public:
 	virtual ~LightStorage();
 
 	/* Light API */
+
+	Light *get_light(RID p_rid) { return light_owner.get_or_null(p_rid); };
+	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+
+	void _light_initialize(RID p_rid, RS::LightType p_type);
 
 	virtual RID directional_light_allocate() override;
 	virtual void directional_light_initialize(RID p_rid) override;
@@ -72,7 +165,7 @@ public:
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override;
-	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
+	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) override;
 
@@ -84,16 +177,99 @@ public:
 
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override;
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override;
+	virtual RS::LightType light_get_type(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
-	virtual bool light_has_shadow(RID p_light) const override;
-	virtual bool light_has_projector(RID p_light) const override;
-
-	virtual RS::LightType light_get_type(RID p_light) const override;
+		return light->type;
+	}
 	virtual AABB light_get_aabb(RID p_light) const override;
-	virtual float light_get_param(RID p_light, RS::LightParam p_param) override;
-	virtual Color light_get_color(RID p_light) override;
+
+	virtual float light_get_param(RID p_light, RS::LightParam p_param) override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, 0);
+
+		return light->param[p_param];
+	}
+
+	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RID());
+
+		return light->projector;
+	}
+
+	virtual Color light_get_color(RID p_light) override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, Color());
+
+		return light->color;
+	}
+
+	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, 0);
+
+		return light->cull_mask;
+	}
+
+	_FORCE_INLINE_ bool light_is_distance_fade_enabled(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_begin(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_begin;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_shadow(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_shadow;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_length(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_length;
+	}
+
+	virtual bool light_has_shadow(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+
+		return light->shadow;
+	}
+
+	virtual bool light_has_projector(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+
+		return light_owner.owns(light->projector);
+	}
+
+	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+
+		return light->negative;
+	}
+
+	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, 0.0);
+
+		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
+	_FORCE_INLINE_ float light_get_shadow_volumetric_fog_fade(RID p_light) const {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, 0.0);
+
+		return light->param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE];
+	}
+
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;
-	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override;
+	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override;
 
 	/* PROBE API */

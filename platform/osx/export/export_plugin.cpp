@@ -722,7 +722,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_BAD_PATH;
 	}
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating app bundle"), 0)) {
 		return ERR_SKIP;
@@ -1327,7 +1328,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					OS::get_singleton()->move_to_trash(p_path);
 				}
 
-				zlib_filefunc_def io_dst = zipio_create_io();
+				Ref<FileAccess> io_fa_dst;
+				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
 				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);

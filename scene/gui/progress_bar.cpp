@@ -62,15 +62,42 @@ void ProgressBar::_notification(int p_what) {
 			Color font_color = get_theme_color(SNAME("font_color"));
 
 			draw_style_box(bg, Rect2(Point2(), get_size()));
+
 			float r = get_as_ratio();
-			int mp = fg->get_minimum_size().width;
-			int p = r * (get_size().width - mp);
-			if (p > 0) {
-				if (is_layout_rtl()) {
-					draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_size().height)));
-				} else {
-					draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
-				}
+
+			switch (mode) {
+				case FILL_BEGIN_TO_END:
+				case FILL_END_TO_BEGIN: {
+					int mp = fg->get_minimum_size().width;
+					int p = round(r * (get_size().width - mp));
+					// We want FILL_BEGIN_TO_END to map to right to left when UI layout is RTL,
+					// and left to right otherwise. And likewise for FILL_END_TO_BEGIN.
+					bool right_to_left = is_layout_rtl() ? (mode == FILL_BEGIN_TO_END) : (mode == FILL_END_TO_BEGIN);
+					if (p > 0) {
+						if (right_to_left) {
+							int p_remaining = round((1.0 - r) * (get_size().width - mp));
+							draw_style_box(fg, Rect2(Point2(p_remaining, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+						} else {
+							draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+						}
+					}
+				} break;
+				case FILL_TOP_TO_BOTTOM:
+				case FILL_BOTTOM_TO_TOP: {
+					int mp = fg->get_minimum_size().height;
+					int p = round(r * (get_size().height - mp));
+
+					if (p > 0) {
+						if (mode == FILL_TOP_TO_BOTTOM) {
+							draw_style_box(fg, Rect2(Point2(0, 0), Size2(get_size().width, p + fg->get_minimum_size().height)));
+						} else {
+							int p_remaining = round((1.0 - r) * (get_size().height - mp));
+							draw_style_box(fg, Rect2(Point2(0, p_remaining), Size2(get_size().width, p + fg->get_minimum_size().height)));
+						}
+					}
+				} break;
+				case FILL_MODE_MAX:
+					break;
 			}
 
 			if (percent_visible) {
@@ -88,6 +115,16 @@ void ProgressBar::_notification(int p_what) {
 	}
 }
 
+void ProgressBar::set_fill_mode(int p_fill) {
+	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
+	mode = (FillMode)p_fill;
+	update();
+}
+
+int ProgressBar::get_fill_mode() {
+	return mode;
+}
+
 void ProgressBar::set_percent_visible(bool p_visible) {
 	percent_visible = p_visible;
 	update();
@@ -98,10 +135,18 @@ bool ProgressBar::is_percent_visible() const {
 }
 
 void ProgressBar::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
+	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "visible"), &ProgressBar::set_percent_visible);
 	ClassDB::bind_method(D_METHOD("is_percent_visible"), &ProgressBar::is_percent_visible);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "percent_visible"), "set_percent_visible", "is_percent_visible");
+
+	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
+	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
+	BIND_ENUM_CONSTANT(FILL_TOP_TO_BOTTOM);
+	BIND_ENUM_CONSTANT(FILL_BOTTOM_TO_TOP);
 }
 
 ProgressBar::ProgressBar() {

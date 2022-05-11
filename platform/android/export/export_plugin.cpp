@@ -2775,7 +2775,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return ERR_FILE_BAD_PATH;
 	}
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating APK..."), 0)) {
 		return ERR_SKIP;
@@ -2789,7 +2790,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	int ret = unzGoToFirstFile(pkg);
 
-	zlib_filefunc_def io2 = zipio_create_io();
+	Ref<FileAccess> io2_fa;
+	zlib_filefunc_def io2 = zipio_create_io(&io2_fa);
 
 	String tmp_unaligned_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
@@ -2985,7 +2987,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	ret = unzGoToFirstFile(tmp_unaligned);
 
-	io2 = zipio_create_io();
+	io2 = zipio_create_io(&io2_fa);
 	zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 	// Take files from the unaligned APK and write them out to the aligned one

@@ -921,12 +921,6 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
-	if ((node_sprite_2d && !node_sprite_2d->is_region_enabled()) || (node_sprite_3d && !node_sprite_3d->is_region_enabled())) {
-		set_process(true);
-	}
-	if (!p_obj) {
-		set_process(false);
-	}
 }
 
 void TextureRegionEditor::_texture_changed() {

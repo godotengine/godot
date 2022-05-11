@@ -2608,8 +2608,6 @@ String VisualShaderNodeVectorFunc::generate_code(Shader::Mode p_mode, VisualShad
 		"", // FUNC_SATURATE
 		"-($)",
 		"1.0 / ($)",
-		"", // FUNC_RGB2HSV
-		"", // FUNC_HSV2RGB
 		"abs($)",
 		"acos($)",
 		"acosh($)",
@@ -2667,43 +2665,7 @@ String VisualShaderNodeVectorFunc::generate_code(Shader::Mode p_mode, VisualShad
 		return "	" + p_output_vars[0] + " = " + code.replace("$", p_input_vars[0]) + ";\n";
 	}
 
-	String code;
-
-	if (func == FUNC_RGB2HSV) {
-		if (op_type == OP_TYPE_VECTOR_2D) { // Not supported.
-			return "	" + p_output_vars[0] + " = vec2(0.0);\n";
-		}
-		if (op_type == OP_TYPE_VECTOR_4D) { // Not supported.
-			return "	" + p_output_vars[0] + " = vec4(0.0);\n";
-		}
-		code += "	{\n";
-		code += "		vec3 c = " + p_input_vars[0] + ";\n";
-		code += "		vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n";
-		code += "		vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));\n";
-		code += "		vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));\n";
-		code += "		float d = q.x - min(q.w, q.y);\n";
-		code += "		float e = 1.0e-10;\n";
-		code += "		" + p_output_vars[0] + " = vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n";
-		code += "	}\n";
-	} else if (func == FUNC_HSV2RGB) {
-		if (op_type == OP_TYPE_VECTOR_2D) { // Not supported.
-			return "	" + p_output_vars[0] + " = vec2(0.0);\n";
-		}
-		if (op_type == OP_TYPE_VECTOR_4D) { // Not supported.
-			return "	" + p_output_vars[0] + " = vec4(0.0);\n";
-		}
-		code += "	{\n";
-		code += "		vec3 c = " + p_input_vars[0] + ";\n";
-		code += "		vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n";
-		code += "		vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n";
-		code += "		" + p_output_vars[0] + " = c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n";
-		code += "	}\n";
-
-	} else {
-		code += "	" + p_output_vars[0] + " = " + String(funcs[func]).replace("$", p_input_vars[0]) + ";\n";
-	}
-
-	return code;
+	return "	" + p_output_vars[0] + " = " + String(funcs[func]).replace("$", p_input_vars[0]) + ";\n";
 }
 
 void VisualShaderNodeVectorFunc::set_op_type(OpType p_op_type) {
@@ -2733,13 +2695,6 @@ void VisualShaderNodeVectorFunc::set_function(Function p_func) {
 	if (func == p_func) {
 		return;
 	}
-	if (p_func == FUNC_RGB2HSV) {
-		simple_decl = false;
-	} else if (p_func == FUNC_HSV2RGB) {
-		simple_decl = false;
-	} else {
-		simple_decl = true;
-	}
 	func = p_func;
 	emit_changed();
 }
@@ -2754,34 +2709,16 @@ Vector<StringName> VisualShaderNodeVectorFunc::get_editable_properties() const {
 	return props;
 }
 
-String VisualShaderNodeVectorFunc::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
-	bool invalid_type = false;
-
-	if (op_type == OP_TYPE_VECTOR_2D || op_type == OP_TYPE_VECTOR_4D) {
-		if (func == FUNC_RGB2HSV || func == FUNC_HSV2RGB) {
-			invalid_type = true;
-		}
-	}
-
-	if (invalid_type) {
-		return RTR("Invalid function for that type.");
-	}
-
-	return String();
-}
-
 void VisualShaderNodeVectorFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeVectorFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeVectorFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Normalize,Saturate,Negate,Reciprocal,RGB2HSV,HSV2RGB,Abs,ACos,ACosH,ASin,ASinH,ATan,ATanH,Ceil,Cos,CosH,Degrees,Exp,Exp2,Floor,Frac,InverseSqrt,Log,Log2,Radians,Round,RoundEven,Sign,Sin,SinH,Sqrt,Tan,TanH,Trunc,OneMinus"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Normalize,Saturate,Negate,Reciprocal,Abs,ACos,ACosH,ASin,ASinH,ATan,ATanH,Ceil,Cos,CosH,Degrees,Exp,Exp2,Floor,Frac,InverseSqrt,Log,Log2,Radians,Round,RoundEven,Sign,Sin,SinH,Sqrt,Tan,TanH,Trunc,OneMinus"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_NORMALIZE);
 	BIND_ENUM_CONSTANT(FUNC_SATURATE);
 	BIND_ENUM_CONSTANT(FUNC_NEGATE);
 	BIND_ENUM_CONSTANT(FUNC_RECIPROCAL);
-	BIND_ENUM_CONSTANT(FUNC_RGB2HSV);
-	BIND_ENUM_CONSTANT(FUNC_HSV2RGB);
 	BIND_ENUM_CONSTANT(FUNC_ABS);
 	BIND_ENUM_CONSTANT(FUNC_ACOS);
 	BIND_ENUM_CONSTANT(FUNC_ACOSH);
@@ -2872,6 +2809,25 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 			code += "		" + p_output_vars[0] + " = vec3(max2, max2, max2);\n";
 			code += "	}\n";
 			break;
+		case FUNC_HSV2RGB:
+			code += "	{\n";
+			code += "		vec3 c = " + p_input_vars[0] + ";\n";
+			code += "		vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n";
+			code += "		vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n";
+			code += "		" + p_output_vars[0] + " = c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n";
+			code += "	}\n";
+			break;
+		case FUNC_RGB2HSV:
+			code += "	{\n";
+			code += "		vec3 c = " + p_input_vars[0] + ";\n";
+			code += "		vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n";
+			code += "		vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));\n";
+			code += "		vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));\n";
+			code += "		float d = q.x - min(q.w, q.y);\n";
+			code += "		float e = 1.0e-10;\n";
+			code += "		" + p_output_vars[0] + " = vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n";
+			code += "	}\n";
+			break;
 		case FUNC_SEPIA:
 			code += "	{\n";
 			code += "		vec3 c = " + p_input_vars[0] + ";\n";
@@ -2911,9 +2867,11 @@ void VisualShaderNodeColorFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeColorFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeColorFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Grayscale,Sepia"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Grayscale,HSV2RGB,RGB2HSV,Sepia"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_GRAYSCALE);
+	BIND_ENUM_CONSTANT(FUNC_HSV2RGB);
+	BIND_ENUM_CONSTANT(FUNC_RGB2HSV);
 	BIND_ENUM_CONSTANT(FUNC_SEPIA);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
@@ -5104,7 +5062,7 @@ int VisualShaderNodeColorUniform::get_input_port_count() const {
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR_3D;
+	return PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
@@ -5112,15 +5070,22 @@ String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
 }
 
 int VisualShaderNodeColorUniform::get_output_port_count() const {
-	return 2;
+	return 1;
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_4D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorUniform::get_output_port_name(int p_port) const {
-	return p_port == 0 ? "color" : "alpha"; //no output port means the editor will be used as port
+	return "color";
+}
+
+bool VisualShaderNodeColorUniform::is_output_port_expandable(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
 }
 
 void VisualShaderNodeColorUniform::set_default_value_enabled(bool p_enabled) {
@@ -5157,9 +5122,7 @@ String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, Visual
 }
 
 String VisualShaderNodeColorUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	String code = "	" + p_output_vars[0] + " = " + get_uniform_name() + ".rgb;\n";
-	code += "	" + p_output_vars[1] + " = " + get_uniform_name() + ".a;\n";
-	return code;
+	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 }
 
 bool VisualShaderNodeColorUniform::is_show_prop_names() const {

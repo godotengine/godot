@@ -57,7 +57,7 @@ void Camera2D::_update_scroll() {
 		Size2 screen_size = _get_camera_screen_size();
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_camera_moved", xform, screen_offset);
+		get_tree()->call_group(group_name, "_camera_moved", xform, screen_offset);
 	};
 }
 
@@ -421,7 +421,7 @@ bool Camera2D::is_current() const {
 
 void Camera2D::make_current() {
 	if (is_inside_tree()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", this);
+		get_tree()->call_group(group_name, "_make_current", this);
 	} else {
 		current = true;
 	}
@@ -430,7 +430,7 @@ void Camera2D::make_current() {
 
 void Camera2D::clear_current() {
 	if (is_inside_tree()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", (Object *)nullptr);
+		get_tree()->call_group(group_name, "_make_current", (Object *)nullptr);
 	} else {
 		current = false;
 	}

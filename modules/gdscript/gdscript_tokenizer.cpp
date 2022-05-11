@@ -67,6 +67,7 @@ static const char *token_names[] = {
 	"+", // PLUS,
 	"-", // MINUS,
 	"*", // STAR,
+	"**", // STAR_STAR,
 	"/", // SLASH,
 	"%", // PERCENT,
 	// Assignment
@@ -74,6 +75,7 @@ static const char *token_names[] = {
 	"+=", // PLUS_EQUAL,
 	"-=", // MINUS_EQUAL,
 	"*=", // STAR_EQUAL,
+	"**=", // STAR_STAR_EQUAL,
 	"/=", // SLASH_EQUAL,
 	"%=", // PERCENT_EQUAL,
 	"<<=", // LESS_LESS_EQUAL,
@@ -1403,6 +1405,14 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::STAR_EQUAL);
+			} else if (_peek() == '*') {
+				if (_peek(1) == '=') {
+					_advance();
+					_advance(); // Advance both '*' and '='
+					return make_token(Token::STAR_STAR_EQUAL);
+				}
+				_advance();
+				return make_token(Token::STAR_STAR);
 			} else {
 				return make_token(Token::STAR);
 			}

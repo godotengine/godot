@@ -165,7 +165,7 @@ private:
 
 	void _item_selected(int p_item);
 	void _multi_selected(int p_item, bool p_selected);
-	void _items_clear_selection(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _items_clear_selection(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _item_dc_selected(int p_item);
 
 	void _item_list_item_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);

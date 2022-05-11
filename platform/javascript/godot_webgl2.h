@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  midi_driver_coremidi.h                                               */
+/*  godot_webgl2.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef COREMIDI_ENABLED
+#ifndef GODOT_WEBGL2_H
+#define GODOT_WEBGL2_H
 
-#ifndef MIDI_DRIVER_COREMIDI_H
-#define MIDI_DRIVER_COREMIDI_H
+#include "GLES3/gl3.h"
+#include "webgl/webgl2.h"
 
-#include "core/os/midi_driver.h"
-#include "core/templates/vector.h"
-
-#import <CoreMIDI/CoreMIDI.h>
-#include <stdio.h>
-
-class MIDIDriverCoreMidi : public MIDIDriver {
-	MIDIClientRef client = 0;
-	MIDIPortRef port_in;
-
-	Vector<MIDIEndpointRef> connected_sources;
-
-	static void read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con);
-
-public:
-	virtual Error open();
-	virtual void close();
-
-	PackedStringArray get_connected_inputs();
-
-	MIDIDriverCoreMidi();
-	virtual ~MIDIDriverCoreMidi();
-};
-
-#endif // MIDI_DRIVER_COREMIDI_H
-#endif // COREMIDI_ENABLED
+#endif
