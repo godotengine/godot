@@ -33,11 +33,6 @@
 
 #include "core/math/camera_matrix.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/blur_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/bokeh_dof.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/bokeh_dof_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/copy.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/copy_to_fb.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cube_to_dp.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_downsampler.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_downsampler_raster.glsl.gen.h"
@@ -94,140 +89,6 @@ private:
 		RID shader_version;
 		RID pipeline;
 	} FSR_upscale;
-
-	enum BlurRasterMode {
-		BLUR_MIPMAP,
-
-		BLUR_MODE_GAUSSIAN_BLUR,
-		BLUR_MODE_GAUSSIAN_GLOW,
-		BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
-		BLUR_MODE_COPY,
-
-		BLUR_MODE_MAX
-	};
-
-	enum {
-		BLUR_FLAG_HORIZONTAL = (1 << 0),
-		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 1),
-		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 2),
-	};
-
-	struct BlurRasterPushConstant {
-		float pixel_size[2];
-		uint32_t flags;
-		uint32_t pad;
-
-		//glow
-		float glow_strength;
-		float glow_bloom;
-		float glow_hdr_threshold;
-		float glow_hdr_scale;
-
-		float glow_exposure;
-		float glow_white;
-		float glow_luminance_cap;
-		float glow_auto_exposure_grey;
-	};
-
-	struct BlurRaster {
-		BlurRasterPushConstant push_constant;
-		BlurRasterShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[BLUR_MODE_MAX];
-	} blur_raster;
-
-	enum CopyMode {
-		COPY_MODE_GAUSSIAN_COPY,
-		COPY_MODE_GAUSSIAN_COPY_8BIT,
-		COPY_MODE_GAUSSIAN_GLOW,
-		COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
-		COPY_MODE_SIMPLY_COPY,
-		COPY_MODE_SIMPLY_COPY_8BIT,
-		COPY_MODE_SIMPLY_COPY_DEPTH,
-		COPY_MODE_SET_COLOR,
-		COPY_MODE_SET_COLOR_8BIT,
-		COPY_MODE_MIPMAP,
-		COPY_MODE_LINEARIZE_DEPTH,
-		COPY_MODE_CUBE_TO_PANORAMA,
-		COPY_MODE_CUBE_ARRAY_TO_PANORAMA,
-		COPY_MODE_MAX,
-
-	};
-
-	enum {
-		COPY_FLAG_HORIZONTAL = (1 << 0),
-		COPY_FLAG_USE_COPY_SECTION = (1 << 1),
-		COPY_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 2),
-		COPY_FLAG_DOF_NEAR_FIRST_TAP = (1 << 3),
-		COPY_FLAG_GLOW_FIRST_PASS = (1 << 4),
-		COPY_FLAG_FLIP_Y = (1 << 5),
-		COPY_FLAG_FORCE_LUMINANCE = (1 << 6),
-		COPY_FLAG_ALL_SOURCE = (1 << 7),
-		COPY_FLAG_HIGH_QUALITY_GLOW = (1 << 8),
-		COPY_FLAG_ALPHA_TO_ONE = (1 << 9),
-	};
-
-	struct CopyPushConstant {
-		int32_t section[4];
-		int32_t target[2];
-		uint32_t flags;
-		uint32_t pad;
-		// Glow.
-		float glow_strength;
-		float glow_bloom;
-		float glow_hdr_threshold;
-		float glow_hdr_scale;
-
-		float glow_exposure;
-		float glow_white;
-		float glow_luminance_cap;
-		float glow_auto_exposure_grey;
-		// DOF.
-		float camera_z_far;
-		float camera_z_near;
-		uint32_t pad2[2];
-		//SET color
-		float set_color[4];
-	};
-
-	struct Copy {
-		CopyPushConstant push_constant;
-		CopyShaderRD shader;
-		RID shader_version;
-		RID pipelines[COPY_MODE_MAX];
-
-	} copy;
-
-	enum CopyToFBMode {
-		COPY_TO_FB_COPY,
-		COPY_TO_FB_COPY_PANORAMA_TO_DP,
-		COPY_TO_FB_COPY2,
-
-		COPY_TO_FB_MULTIVIEW,
-		COPY_TO_FB_MULTIVIEW_WITH_DEPTH,
-		COPY_TO_FB_MAX,
-
-	};
-
-	struct CopyToFbPushConstant {
-		float section[4];
-		float pixel_size[2];
-		uint32_t flip_y;
-		uint32_t use_section;
-
-		uint32_t force_luminance;
-		uint32_t alpha_to_zero;
-		uint32_t srgb;
-		uint32_t pad;
-	};
-
-	struct CopyToFb {
-		CopyToFbPushConstant push_constant;
-		CopyToFbShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
-
-	} copy_to_fb;
 
 	struct CubemapRoughnessPushConstant {
 		uint32_t face_id;
@@ -304,51 +165,6 @@ private:
 		RID shader_version;
 		PipelineCacheRD pipeline;
 	} cube_to_dp;
-
-	struct BokehPushConstant {
-		uint32_t size[2];
-		float z_far;
-		float z_near;
-
-		uint32_t orthogonal;
-		float blur_size;
-		float blur_scale;
-		uint32_t steps;
-
-		uint32_t blur_near_active;
-		float blur_near_begin;
-		float blur_near_end;
-		uint32_t blur_far_active;
-
-		float blur_far_begin;
-		float blur_far_end;
-		uint32_t second_pass;
-		uint32_t half_size;
-
-		uint32_t use_jitter;
-		float jitter_seed;
-		uint32_t pad[2];
-	};
-
-	enum BokehMode {
-		BOKEH_GEN_BLUR_SIZE,
-		BOKEH_GEN_BOKEH_BOX,
-		BOKEH_GEN_BOKEH_BOX_NOWEIGHT,
-		BOKEH_GEN_BOKEH_HEXAGONAL,
-		BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT,
-		BOKEH_GEN_BOKEH_CIRCULAR,
-		BOKEH_COMPOSITE,
-		BOKEH_MAX
-	};
-
-	struct Bokeh {
-		BokehPushConstant push_constant;
-		BokehDofShaderRD compute_shader;
-		BokehDofRasterShaderRD raster_shader;
-		RID shader_version;
-		RID compute_pipelines[BOKEH_MAX];
-		PipelineCacheRD raster_pipelines[BOKEH_MAX];
-	} bokeh;
 
 	struct SSEffectsDownsamplePushConstant {
 		float pixel_size[2];
@@ -838,45 +654,12 @@ public:
 	bool get_prefer_raster_effects();
 
 	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
-	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false);
-	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
-	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
-	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
-	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
-	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
-	void gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst = false);
-	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
-	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
-	void gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
-	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
-	void make_mipmap_raster(RID p_source_rd_texture, RID p_dest_framebuffer, const Size2i &p_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
-
-	struct BokehBuffers {
-		// bokeh buffers
-
-		// textures
-		Size2i base_texture_size;
-		RID base_texture;
-		RID depth_texture;
-		RID secondary_texture;
-		RID half_texture[2];
-
-		// raster only
-		RID base_fb;
-		RID secondary_fb; // with weights
-		RID half_fb[2]; // with weights
-		RID base_weight_fb;
-		RID weight_texture[4];
-	};
-
-	void bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
-	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
 	struct SSAOSettings {
 		float radius = 1.0;

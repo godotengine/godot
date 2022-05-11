@@ -53,7 +53,9 @@ void main() {
 
 #ifdef MODE_GAUSSIAN_BLUR
 
-	//Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
+	// Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
+
+	// note, for blur blur.luminance_multiplier is irrelavant, we would be multiplying and then dividing by this amount.
 
 	if (bool(blur.flags & FLAG_HORIZONTAL)) {
 		vec2 pix_size = blur.pixel_size;
@@ -94,6 +96,7 @@ void main() {
 	if (bool(blur.flags & FLAG_HORIZONTAL)) {
 		vec2 pix_size = blur.pixel_size;
 		pix_size *= 0.5; //reading from larger buffer, so use more samples
+
 		vec4 color = texture(source_color, uv_interp + vec2(0.0, 0.0) * pix_size) * 0.174938;
 		GLOW_ADD(vec2(1.0, 0.0), 0.165569);
 		GLOW_ADD(vec2(2.0, 0.0), 0.140367);
@@ -101,7 +104,10 @@ void main() {
 		GLOW_ADD(vec2(-1.0, 0.0), 0.165569);
 		GLOW_ADD(vec2(-2.0, 0.0), 0.140367);
 		GLOW_ADD(vec2(-3.0, 0.0), 0.106595);
+
+		// only do this in the horizontal pass, if we also do this in the vertical pass we're doubling up.
 		color *= blur.glow_strength;
+
 		frag_color = color;
 	} else {
 		vec2 pix_size = blur.pixel_size;
@@ -110,13 +116,17 @@ void main() {
 		GLOW_ADD(vec2(0.0, 2.0), 0.122581);
 		GLOW_ADD(vec2(0.0, -1.0), 0.233062);
 		GLOW_ADD(vec2(0.0, -2.0), 0.122581);
-		color *= blur.glow_strength;
+
 		frag_color = color;
 	}
 
 #undef GLOW_ADD
 
 	if (bool(blur.flags & FLAG_GLOW_FIRST_PASS)) {
+		// In the first pass bring back to correct color range else we're applying the wrong threshold
+		// in subsequent passes we can use it as is as we'd just be undoing it right after.
+		frag_color *= blur.luminance_multiplier;
+
 #ifdef GLOW_USE_AUTO_EXPOSURE
 
 		frag_color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / blur.glow_auto_exposure_grey;
@@ -126,10 +136,10 @@ void main() {
 		float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
 		float feedback = max(smoothstep(blur.glow_hdr_threshold, blur.glow_hdr_threshold + blur.glow_hdr_scale, luminance), blur.glow_bloom);
 
-		frag_color = min(frag_color * feedback, vec4(blur.glow_luminance_cap));
+		frag_color = min(frag_color * feedback, vec4(blur.glow_luminance_cap)) / blur.luminance_multiplier;
 	}
 
-#endif
+#endif // MODE_GAUSSIAN_GLOW
 
 #ifdef MODE_COPY
 	vec4 color = textureLod(source_color, uv_interp, 0.0);

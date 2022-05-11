@@ -200,6 +200,11 @@ private:
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 
+	/* Buffers */
+
+	RID quad_index_buffer;
+	RID quad_index_array;
+
 	/* GLOBAL VARIABLE API */
 
 	GlobalVariables global_variables;
@@ -239,6 +244,10 @@ public:
 	void sampler_rd_configure_custom(float mipmap_bias);
 
 	// void sampler_rd_set_default(float p_mipmap_bias);
+
+	/* Buffers */
+
+	RID get_quad_index_array() { return quad_index_array; }
 
 	/* GLOBAL VARIABLE API */
 

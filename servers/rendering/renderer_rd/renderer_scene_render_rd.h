@@ -35,6 +35,8 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
@@ -94,6 +96,8 @@ class RendererSceneRenderRD : public RendererSceneRender {
 
 protected:
 	RendererStorageRD *storage = nullptr;
+	RendererRD::BokehDOF *bokeh_dof = nullptr;
+	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	double time = 0.0;
 	double time_step = 0.0;
@@ -482,6 +486,14 @@ private:
 		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
 		RID upscale_texture; //used when upscaling internal_texture (This uses the same resource as internal_texture if there is no upscaling)
 
+		// Access to the layers for each of our views (specifically needed for applying post effects on stereoscopic images)
+		struct View {
+			RID view_texture; // texture slice for this view/layer
+			RID view_depth; // depth slice for this view/layer
+			RID view_fb; // framebuffer for this view/layer, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
+		};
+		Vector<View> views;
+
 		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
 		RendererSceneGIRD::RenderBuffersGI gi;
@@ -503,19 +515,22 @@ private:
 				RID half_fb;
 			};
 
-			Vector<Mipmap> mipmaps;
+			struct Layer {
+				Vector<Mipmap> mipmaps;
+			};
+
+			Vector<Layer> layers;
 		};
 
 		Blur blur[2]; //the second one starts from the first mipmap
 
 		struct WeightBuffers {
 			RID weight;
-			RID fb; // FB with both texture and weight
+			RID fb; // FB with both texture and weight writing into one level lower
 		};
 
 		// 2 full size, 2 half size
 		WeightBuffers weight_buffers[4]; // Only used in raster
-		RID base_weight_fb; // base buffer for weight
 
 		RID depth_back_texture;
 		RID depth_back_fb; // only used on mobile
