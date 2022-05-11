@@ -47,9 +47,6 @@
 
 #include <psapi.h>
 
-#pragma comment(lib, "psapi.lib")
-#pragma comment(lib, "dbghelp.lib")
-
 // Some versions of imagehlp.dll lack the proper packing directives themselves
 // so we need to do it.
 #pragma pack(push, before_imagehlp, 8)
@@ -117,7 +114,12 @@ public:
 	}
 };
 
-DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
+#ifdef MSVC
+extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
+#else
+extern void CrashHandlerException(int signal) {
+#endif
+
 	HANDLE process = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
 	DWORD offset_from_symbol = 0;
@@ -127,7 +129,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	std::vector<HMODULE> module_handles(1);
 
 	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
+#ifdef MSVC
 		return EXCEPTION_CONTINUE_SEARCH;
+#else
+		return;
+#endif
 	}
 
 	String msg;
@@ -142,7 +148,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	print_error("\n================================================================");
+#ifdef MSVC
 	print_error(vformat("%s: Program crashed", __FUNCTION__));
+#else
+	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, signal));
+#endif
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).is_empty()) {
@@ -154,7 +164,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	// Load the symbols:
 	if (!SymInitialize(process, nullptr, false)) {
+#ifdef MSVC
 		return EXCEPTION_CONTINUE_SEARCH;
+#else
+		return;
+#endif
 	}
 
 	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
@@ -165,7 +179,15 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	void *base = modules[0].base_address;
 
 	// Setup stuff:
+#ifdef MSVC
 	CONTEXT *context = ep->ContextRecord;
+#else
+	CONTEXT *context = reinterpret_cast<CONTEXT *>(memalloc(sizeof(CONTEXT)));
+	memset(context, 0, sizeof(CONTEXT));
+	context->ContextFlags = CONTEXT_FULL;
+	RtlCaptureContext(context);
+#endif
+
 	STACKFRAME64 frame;
 	bool skip_first = false;
 
@@ -220,8 +242,12 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	SymCleanup(process);
 
+#ifndef MSVC
+	memfree(context);
+#else
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
+#endif
 }
 #endif
 
@@ -236,9 +262,19 @@ void CrashHandler::disable() {
 	if (disabled) {
 		return;
 	}
+#if defined(CRASH_HANDLER_EXCEPTION) && !defined(MSVC)
+	signal(SIGSEGV, nullptr);
+	signal(SIGFPE, nullptr);
+	signal(SIGILL, nullptr);
+#endif
 
 	disabled = true;
 }
 
 void CrashHandler::initialize() {
+#if defined(CRASH_HANDLER_EXCEPTION) && !defined(MSVC)
+	signal(SIGSEGV, CrashHandlerException);
+	signal(SIGFPE, CrashHandlerException);
+	signal(SIGILL, CrashHandlerException);
+#endif
 }

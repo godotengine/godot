@@ -268,6 +268,8 @@ def configure_msvc(env, manual_msvc_config):
         "Avrt",
         "dwmapi",
     ]
+    if env["target"] == "debug" or env["target"] == "release_debug":
+        LIBS += ["psapi", "dbghelp"]
 
     env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["use_volk"]:
@@ -438,6 +440,8 @@ def configure_mingw(env):
             "dwmapi",
         ]
     )
+    if env["target"] == "debug" or env["target"] == "release_debug":
+        env.Append(LIBS=["psapi", "dbghelp"])
 
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["use_volk"]:

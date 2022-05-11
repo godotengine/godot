@@ -32,13 +32,19 @@
 #define CRASH_HANDLER_WINDOWS_H
 
 #define WIN32_LEAN_AND_MEAN
+#include <excpt.h>
 #include <windows.h>
 
 // Crash handler exception only enabled with MSVC
-#if defined(DEBUG_ENABLED) && defined(MSVC)
+#if defined(DEBUG_ENABLED)
 #define CRASH_HANDLER_EXCEPTION 1
 
+#ifdef MSVC
 extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
+#else
+extern void CrashHandlerException(int signal);
+#endif
+
 #endif
 
 class CrashHandler {
