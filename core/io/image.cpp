@@ -436,7 +436,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 			const uint8_t *rofs = &p_src[((y * p_width) + x) * (read_bytes + (read_alpha ? 1 : 0))];
 			uint8_t *wofs = &p_dst[((y * p_width) + x) * (write_bytes + (write_alpha ? 1 : 0))];
 
-			uint8_t rgba[4];
+			uint8_t rgba[4] = { 0, 0, 0, 255 };
 
 			if (read_gray) {
 				rgba[0] = rofs[0];
@@ -454,7 +454,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 
 			if (write_gray) {
 				//TODO: not correct grayscale, should use fixed point version of actual weights
-				wofs[0] = uint8_t((uint16_t(rofs[0]) + uint16_t(rofs[1]) + uint16_t(rofs[2])) / 3);
+				wofs[0] = uint8_t((uint16_t(rgba[0]) + uint16_t(rgba[1]) + uint16_t(rgba[2])) / 3);
 			} else {
 				for (uint32_t i = 0; i < write_bytes; i++) {
 					wofs[i] = rgba[i];
