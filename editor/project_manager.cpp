@@ -186,7 +186,8 @@ private:
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
 			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
 				if (valid_path.ends_with(".zip")) {
-					zlib_filefunc_def io = zipio_create_io();
+					Ref<FileAccess> io_fa;
+					zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
@@ -499,7 +500,8 @@ private:
 						zip_path = project_path->get_text();
 					}
 
-					zlib_filefunc_def io = zipio_create_io();
+					Ref<FileAccess> io_fa;
+					zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
 					if (!pkg) {
