@@ -63,6 +63,7 @@ namespace GodotTools.Build
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
+            startInfo.CreateNoWindow = true;
 
             if (UsingMonoMsBuildOnWindows)
             {
