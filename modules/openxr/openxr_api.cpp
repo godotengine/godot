@@ -1001,7 +1001,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		ERR_FAIL_V(false);
 #endif
 	} else if (p_rendering_driver == "opengl3") {
-#ifdef OPENGL3_ENABLED
+#ifdef GLES3_ENABLED
 		// graphics_extension = memnew(OpenXROpenGLExtension(this));
 		// register_extension_wrapper(graphics_extension);
 		ERR_FAIL_V_MSG(false, "OpenXR: OpenGL is not supported at this time.");
