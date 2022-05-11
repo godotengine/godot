@@ -2286,7 +2286,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
 
-				if(tile_set->get_source_count() > 0){
+				if (tile_set->get_source_count() > 0) {
 					// Update everything.
 					_update_source_inspector();
 
