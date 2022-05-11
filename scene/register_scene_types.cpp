@@ -141,7 +141,7 @@
 #include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/multiplayer/scene_rpc_interface.h"
 #include "scene/resources/animation_library.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/camera_effects.h"
@@ -878,7 +878,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
 #endif
 	GDREGISTER_ABSTRACT_CLASS(VideoStream);
-	GDREGISTER_CLASS(AudioStreamSample);
+	GDREGISTER_CLASS(AudioStreamWAV);
 
 	OS::get_singleton()->yield(); // may take time to init
 

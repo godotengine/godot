@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStreamWAV" inherits="AudioStream" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Stores audio data loaded from WAV files.
 	</brief_description>
 	<description>
-		AudioStreamSample stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
+		AudioStreamWAV stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
 		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
 	</description>
 	<tutorials>
@@ -14,7 +14,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Saves the AudioStreamSample as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
+				Saves the AudioStreamWAV as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [code]path[/code] if it is missing.
 			</description>
 		</method>
@@ -24,7 +24,7 @@
 			Contains the audio data in bytes.
 			[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.
 		</member>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="0">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
 			Audio format. See [enum Format] constants for values.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
@@ -33,7 +33,7 @@
 		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
 			The loop end point (in number of samples, relative to the beginning of the sample). This information will be imported automatically from the WAV file if present.
 		</member>
-		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamSample.LoopMode" default="0">
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
 			The loop mode. This information will be imported automatically from the WAV file if present. See [enum LoopMode] constants for values.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">

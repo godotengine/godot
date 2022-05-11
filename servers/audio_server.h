@@ -43,7 +43,7 @@
 
 class AudioDriverDummy;
 class AudioStream;
-class AudioStreamSample;
+class AudioStreamWAV;
 class AudioStreamPlayback;
 
 class AudioDriver {
