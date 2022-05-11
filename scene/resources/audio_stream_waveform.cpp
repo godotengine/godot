@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_sample.cpp                                              */
+/*  audio_stream_waveform.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "audio_stream_sample.h"
+#include "audio_stream_waveform.h"
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
-	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+	if (base->format == AudioStreamWaveform::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
 			ima_adpcm[i].step_index = 0;
@@ -72,7 +72,7 @@ float AudioStreamPlaybackSample::get_playback_position() const {
 }
 
 void AudioStreamPlaybackSample::seek(float p_time) {
-	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+	if (base->format == AudioStreamWaveform::FORMAT_IMA_ADPCM) {
 		return; //no seeking in ima-adpcm
 	}
 
@@ -124,7 +124,7 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 
 					ima_adpcm[i].last_nibble++;
 					const uint8_t *src_ptr = (const uint8_t *)base->data;
-					src_ptr += AudioStreamSample::DATA_PAD;
+					src_ptr += AudioStreamWaveform::DATA_PAD;
 
 					uint8_t nbb = src_ptr[(ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
 					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
@@ -231,13 +231,13 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 	int len = base->data_bytes;
 	switch (base->format) {
-		case AudioStreamSample::FORMAT_8_BITS:
+		case AudioStreamWaveform::FORMAT_8_BITS:
 			len /= 1;
 			break;
-		case AudioStreamSample::FORMAT_16_BITS:
+		case AudioStreamWaveform::FORMAT_16_BITS:
 			len /= 2;
 			break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM:
+		case AudioStreamWaveform::FORMAT_IMA_ADPCM:
 			len *= 2;
 			break;
 	}
@@ -251,13 +251,13 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
 	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
-	int64_t begin_limit = (base->loop_mode != AudioStreamSample::LOOP_DISABLED) ? loop_begin_fp : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamSample::LOOP_DISABLED) ? loop_end_fp : length_fp;
+	int64_t begin_limit = (base->loop_mode != AudioStreamWaveform::LOOP_DISABLED) ? loop_begin_fp : 0;
+	int64_t end_limit = (base->loop_mode != AudioStreamWaveform::LOOP_DISABLED) ? loop_end_fp : length_fp;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
 
-	if (base->loop_mode == AudioStreamSample::LOOP_BACKWARD) {
+	if (base->loop_mode == AudioStreamWaveform::LOOP_BACKWARD) {
 		sign = -1;
 	}
 
@@ -271,20 +271,20 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 	//looping
 
-	AudioStreamSample::LoopMode loop_format = base->loop_mode;
-	AudioStreamSample::Format format = base->format;
+	AudioStreamWaveform::LoopMode loop_format = base->loop_mode;
+	AudioStreamWaveform::Format format = base->format;
 
 	/* audio data */
 
 	uint8_t *dataptr = (uint8_t *)base->data;
-	const void *data = dataptr + AudioStreamSample::DATA_PAD;
+	const void *data = dataptr + AudioStreamWaveform::DATA_PAD;
 	AudioFrame *dst_buff = p_buffer;
 
-	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		if (loop_format != AudioStreamSample::LOOP_DISABLED) {
+	if (format == AudioStreamWaveform::FORMAT_IMA_ADPCM) {
+		if (loop_format != AudioStreamWaveform::LOOP_DISABLED) {
 			ima_adpcm[0].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
 			ima_adpcm[1].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
-			loop_format = AudioStreamSample::LOOP_FORWARD;
+			loop_format = AudioStreamWaveform::LOOP_FORWARD;
 		}
 	}
 
@@ -297,9 +297,9 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 		if (increment < 0) {
 			/* going backwards */
 
-			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset < loop_begin_fp) {
+			if (loop_format != AudioStreamWaveform::LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
+				if (loop_format == AudioStreamWaveform::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -317,10 +317,10 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 			}
 		} else {
 			/* going forward */
-			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset >= loop_end_fp) {
+			if (loop_format != AudioStreamWaveform::LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
+				if (loop_format == AudioStreamWaveform::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -328,7 +328,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 				} else {
 					/* go to loop-begin */
 
-					if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+					if (format == AudioStreamWaveform::FORMAT_IMA_ADPCM) {
 						for (int i = 0; i < 2; i++) {
 							ima_adpcm[i].step_index = ima_adpcm[i].loop_step_index;
 							ima_adpcm[i].predictor = ima_adpcm[i].loop_predictor;
@@ -366,14 +366,14 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 		todo -= target;
 
 		switch (base->format) {
-			case AudioStreamSample::FORMAT_8_BITS: {
+			case AudioStreamWaveform::FORMAT_8_BITS: {
 				if (is_stereo) {
 					do_resample<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
 					do_resample<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				}
 			} break;
-			case AudioStreamSample::FORMAT_16_BITS: {
+			case AudioStreamWaveform::FORMAT_16_BITS: {
 				if (is_stereo) {
 					do_resample<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
@@ -381,7 +381,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 				}
 
 			} break;
-			case AudioStreamSample::FORMAT_IMA_ADPCM: {
+			case AudioStreamWaveform::FORMAT_IMA_ADPCM: {
 				if (is_stereo) {
 					do_resample<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
@@ -410,65 +410,65 @@ AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
 
 /////////////////////
 
-void AudioStreamSample::set_format(Format p_format) {
+void AudioStreamWaveform::set_format(Format p_format) {
 	format = p_format;
 }
 
-AudioStreamSample::Format AudioStreamSample::get_format() const {
+AudioStreamWaveform::Format AudioStreamWaveform::get_format() const {
 	return format;
 }
 
-void AudioStreamSample::set_loop_mode(LoopMode p_loop_mode) {
+void AudioStreamWaveform::set_loop_mode(LoopMode p_loop_mode) {
 	loop_mode = p_loop_mode;
 }
 
-AudioStreamSample::LoopMode AudioStreamSample::get_loop_mode() const {
+AudioStreamWaveform::LoopMode AudioStreamWaveform::get_loop_mode() const {
 	return loop_mode;
 }
 
-void AudioStreamSample::set_loop_begin(int p_frame) {
+void AudioStreamWaveform::set_loop_begin(int p_frame) {
 	loop_begin = p_frame;
 }
 
-int AudioStreamSample::get_loop_begin() const {
+int AudioStreamWaveform::get_loop_begin() const {
 	return loop_begin;
 }
 
-void AudioStreamSample::set_loop_end(int p_frame) {
+void AudioStreamWaveform::set_loop_end(int p_frame) {
 	loop_end = p_frame;
 }
 
-int AudioStreamSample::get_loop_end() const {
+int AudioStreamWaveform::get_loop_end() const {
 	return loop_end;
 }
 
-void AudioStreamSample::set_mix_rate(int p_hz) {
+void AudioStreamWaveform::set_mix_rate(int p_hz) {
 	ERR_FAIL_COND(p_hz == 0);
 	mix_rate = p_hz;
 }
 
-int AudioStreamSample::get_mix_rate() const {
+int AudioStreamWaveform::get_mix_rate() const {
 	return mix_rate;
 }
 
-void AudioStreamSample::set_stereo(bool p_enable) {
+void AudioStreamWaveform::set_stereo(bool p_enable) {
 	stereo = p_enable;
 }
 
-bool AudioStreamSample::is_stereo() const {
+bool AudioStreamWaveform::is_stereo() const {
 	return stereo;
 }
 
-float AudioStreamSample::get_length() const {
+float AudioStreamWaveform::get_length() const {
 	int len = data_bytes;
 	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS:
+		case AudioStreamWaveform::FORMAT_8_BITS:
 			len /= 1;
 			break;
-		case AudioStreamSample::FORMAT_16_BITS:
+		case AudioStreamWaveform::FORMAT_16_BITS:
 			len /= 2;
 			break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM:
+		case AudioStreamWaveform::FORMAT_IMA_ADPCM:
 			len *= 2;
 			break;
 	}
@@ -480,11 +480,11 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
-bool AudioStreamSample::is_monophonic() const {
+bool AudioStreamWaveform::is_monophonic() const {
 	return false;
 }
 
-void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
+void AudioStreamWaveform::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 	if (data) {
 		memfree(data);
@@ -506,7 +506,7 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->unlock();
 }
 
-Vector<uint8_t> AudioStreamSample::get_data() const {
+Vector<uint8_t> AudioStreamWaveform::get_data() const {
 	Vector<uint8_t> pv;
 
 	if (data) {
@@ -521,8 +521,8 @@ Vector<uint8_t> AudioStreamSample::get_data() const {
 	return pv;
 }
 
-Error AudioStreamSample::save_to_wav(const String &p_path) {
-	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+Error AudioStreamWaveform::save_to_wav(const String &p_path) {
+	if (format == AudioStreamWaveform::FORMAT_IMA_ADPCM) {
 		WARN_PRINT("Saving IMA_ADPC samples are not supported yet");
 		return ERR_UNAVAILABLE;
 	}
@@ -540,13 +540,13 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 	int byte_pr_sample = 0;
 	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS:
+		case AudioStreamWaveform::FORMAT_8_BITS:
 			byte_pr_sample = 1;
 			break;
-		case AudioStreamSample::FORMAT_16_BITS:
+		case AudioStreamWaveform::FORMAT_16_BITS:
 			byte_pr_sample = 2;
 			break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM:
+		case AudioStreamWaveform::FORMAT_IMA_ADPCM:
 			byte_pr_sample = 4;
 			break;
 	}
@@ -579,19 +579,19 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	Vector<uint8_t> data = get_data();
 	const uint8_t *read_data = data.ptr();
 	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS:
+		case AudioStreamWaveform::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
 				uint8_t data_point = (read_data[i] + 128);
 				file->store_8(data_point);
 			}
 			break;
-		case AudioStreamSample::FORMAT_16_BITS:
+		case AudioStreamWaveform::FORMAT_16_BITS:
 			for (unsigned int i = 0; i < data_bytes / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
 				file->store_16(data_point);
 			}
 			break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM:
+		case AudioStreamWaveform::FORMAT_IMA_ADPCM:
 			//Unimplemented
 			break;
 	}
@@ -599,40 +599,40 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	return OK;
 }
 
-Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
+Ref<AudioStreamPlayback> AudioStreamWaveform::instance_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
 	sample.instantiate();
-	sample->base = Ref<AudioStreamSample>(this);
+	sample->base = Ref<AudioStreamWaveform>(this);
 	return sample;
 }
 
-String AudioStreamSample::get_stream_name() const {
+String AudioStreamWaveform::get_stream_name() const {
 	return "";
 }
 
-void AudioStreamSample::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamSample::set_data);
-	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamSample::get_data);
+void AudioStreamWaveform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamWaveform::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamWaveform::get_data);
 
-	ClassDB::bind_method(D_METHOD("set_format", "format"), &AudioStreamSample::set_format);
-	ClassDB::bind_method(D_METHOD("get_format"), &AudioStreamSample::get_format);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &AudioStreamWaveform::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &AudioStreamWaveform::get_format);
 
-	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamSample::set_loop_mode);
-	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamSample::get_loop_mode);
+	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamWaveform::set_loop_mode);
+	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamWaveform::get_loop_mode);
 
-	ClassDB::bind_method(D_METHOD("set_loop_begin", "loop_begin"), &AudioStreamSample::set_loop_begin);
-	ClassDB::bind_method(D_METHOD("get_loop_begin"), &AudioStreamSample::get_loop_begin);
+	ClassDB::bind_method(D_METHOD("set_loop_begin", "loop_begin"), &AudioStreamWaveform::set_loop_begin);
+	ClassDB::bind_method(D_METHOD("get_loop_begin"), &AudioStreamWaveform::get_loop_begin);
 
-	ClassDB::bind_method(D_METHOD("set_loop_end", "loop_end"), &AudioStreamSample::set_loop_end);
-	ClassDB::bind_method(D_METHOD("get_loop_end"), &AudioStreamSample::get_loop_end);
+	ClassDB::bind_method(D_METHOD("set_loop_end", "loop_end"), &AudioStreamWaveform::set_loop_end);
+	ClassDB::bind_method(D_METHOD("get_loop_end"), &AudioStreamWaveform::get_loop_end);
 
-	ClassDB::bind_method(D_METHOD("set_mix_rate", "mix_rate"), &AudioStreamSample::set_mix_rate);
-	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioStreamSample::get_mix_rate);
+	ClassDB::bind_method(D_METHOD("set_mix_rate", "mix_rate"), &AudioStreamWaveform::set_mix_rate);
+	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioStreamWaveform::get_mix_rate);
 
-	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamSample::set_stereo);
-	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamSample::is_stereo);
+	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamWaveform::set_stereo);
+	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamWaveform::is_stereo);
 
-	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
+	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWaveform::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
@@ -652,9 +652,9 @@ void AudioStreamSample::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 
-AudioStreamSample::AudioStreamSample() {}
+AudioStreamWaveform::AudioStreamWaveform() {}
 
-AudioStreamSample::~AudioStreamSample() {
+AudioStreamWaveform::~AudioStreamWaveform() {
 	if (data) {
 		memfree(data);
 		data = nullptr;

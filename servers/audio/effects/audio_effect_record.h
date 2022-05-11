@@ -35,7 +35,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/audio_stream_waveform.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"
 
@@ -86,7 +86,7 @@ class AudioEffectRecord : public AudioEffect {
 	bool recording_active;
 	Ref<AudioEffectRecordInstance> current_instance;
 
-	AudioStreamSample::Format format;
+	AudioStreamWaveform::Format format;
 
 	void ensure_thread_stopped();
 
@@ -97,9 +97,9 @@ public:
 	Ref<AudioEffectInstance> instantiate() override;
 	void set_recording_active(bool p_record);
 	bool is_recording_active() const;
-	void set_format(AudioStreamSample::Format p_format);
-	AudioStreamSample::Format get_format() const;
-	Ref<AudioStreamSample> get_recording() const;
+	void set_format(AudioStreamWaveform::Format p_format);
+	AudioStreamWaveform::Format get_format() const;
+	Ref<AudioStreamWaveform> get_recording() const;
 
 	AudioEffectRecord();
 };
