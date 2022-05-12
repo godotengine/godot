@@ -34,6 +34,7 @@
 
 #include "register_types.h"
 
+#include "core/config/project_settings.h"
 #include "data_buffer.h"
 #include "interpolator.h"
 #include "networked_controller.h"

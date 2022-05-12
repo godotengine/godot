@@ -34,6 +34,7 @@
 
 #include "scene_synchronizer.h"
 
+#include "core/multiplayer/multiplayer_api.h"
 #include "networked_controller.h"
 #include "scene/main/window.h"
 #include "scene_diff.h"
@@ -129,7 +130,7 @@ void SceneSynchronizer::_notification(int p_what) {
 				return;
 
 			// TODO add a signal that allows to not check this each frame.
-			if (unlikely(peer_ptr != get_multiplayer()->get_network_peer().ptr())) {
+			if (unlikely(peer_ptr != get_multiplayer()->get_multiplayer_peer().ptr())) {
 				reset_synchronizer_mode();
 			}
 
@@ -145,8 +146,8 @@ void SceneSynchronizer::_notification(int p_what) {
 			clear();
 			reset_synchronizer_mode();
 
-			get_multiplayer()->connect(SNAME("network_peer_connected"), Callable(this, SNAME("_on_peer_connected")));
-			get_multiplayer()->connect(SNAME("network_peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
+			get_multiplayer()->connect(SNAME("peer_connected"), Callable(this, SNAME("_on_peer_connected")));
+			get_multiplayer()->connect(SNAME("peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
 
 			get_tree()->connect(SNAME("node_removed"), Callable(this, SNAME("_on_node_removed")));
 
@@ -154,11 +155,10 @@ void SceneSynchronizer::_notification(int p_what) {
 			reset_controllers();
 
 			// Init the peers already connected.
-			if (get_tree()->get_multiplayer()->get_network_peer().is_valid()) {
-				const Vector<int> peer_ids = get_tree()->get_multiplayer()->get_network_connected_peers();
-				const int *peer_ids_ptr = peer_ids.ptr();
-				for (int i = 0; i < peer_ids.size(); i += 1) {
-					_on_peer_connected(peer_ids_ptr[i]);
+			if (get_tree()->get_multiplayer()->get_multiplayer_peer().is_valid()) {
+				const Set<int> peer_ids = get_tree()->get_multiplayer()->get_connected_peers();
+				for (Set<int>::ConstIterator it = peer_ids.begin(); it != peer_ids.end(); ++it) {
+					_on_peer_connected(*it);
 				}
 			}
 
@@ -169,8 +169,8 @@ void SceneSynchronizer::_notification(int p_what) {
 
 			clear_peers();
 
-			get_multiplayer()->disconnect(SNAME("network_peer_connected"), Callable(this, SNAME("_on_peer_connected")));
-			get_multiplayer()->disconnect(SNAME("network_peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
+			get_multiplayer()->disconnect(SNAME("peer_connected"), Callable(this, SNAME("_on_peer_connected")));
+			get_multiplayer()->disconnect(SNAME("peer_disconnected"), Callable(this, SNAME("_on_peer_disconnected")));
 
 			get_tree()->disconnect(SNAME("node_removed"), Callable(this, SNAME("_on_node_removed")));
 
@@ -191,10 +191,11 @@ void SceneSynchronizer::_notification(int p_what) {
 }
 
 SceneSynchronizer::SceneSynchronizer() {
-	rpc_config(SNAME("_rpc_send_state"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	rpc_config(SNAME("_rpc_notify_need_full_snapshot"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	rpc_config(SNAME("_rpc_set_network_enabled"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-	rpc_config(SNAME("_rpc_notify_peer_status"), MultiplayerAPI::RPC_MODE_REMOTE, MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	constexpr bool call_local = false;
+	rpc_config(SNAME("_rpc_send_state"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_notify_need_full_snapshot"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_set_network_enabled"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_notify_peer_status"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_RELIABLE);
 
 	// Avoid too much useless re-allocations.
 	event_listener.reserve(100);
@@ -638,7 +639,7 @@ void SceneSynchronizer::unregister_process(Node *p_node, const StringName &p_fun
 }
 
 void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) const {
-	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_network_server() == false, "This function is supposed to be called only on server.");
+	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_server() == false, "This function is supposed to be called only on server.");
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
@@ -646,7 +647,7 @@ void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) cons
 }
 
 void SceneSynchronizer::stop_tracking_scene_changes(Object *p_diff_handle) const {
-	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_network_server() == false, "This function is supposed to be called only on server.");
+	ERR_FAIL_COND_MSG(get_tree()->get_multiplayer()->is_server() == false, "This function is supposed to be called only on server.");
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
@@ -744,7 +745,7 @@ void SceneSynchronizer::apply_scene_changes(const Variant &p_sync_data) {
 
 	if (success == false) {
 		NET_DEBUG_ERR("Scene changes:");
-		NET_DEBUG_ERR(p_sync_data);
+		NET_DEBUG_ERR(p_sync_data.stringify());
 	}
 
 	change_events_flush();
@@ -839,7 +840,7 @@ bool SceneSynchronizer::is_peer_networking_enable(int p_peer) const {
 			return true;
 		}
 
-		NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
+		const NetUtility::PeerData *pd = peer_data.lookup_ptr(p_peer);
 		ERR_FAIL_COND_V_MSG(pd == nullptr, false, "The peer: " + itos(p_peer) + " is not know. [bug]");
 		return pd->enabled;
 	} else {
@@ -878,14 +879,14 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 		synchronizer_type = SYNCHRONIZER_TYPE_NULL;
 	}
 
-	peer_ptr = get_multiplayer() == nullptr ? nullptr : get_multiplayer()->get_network_peer().ptr();
+	peer_ptr = get_multiplayer() == nullptr ? nullptr : get_multiplayer()->get_multiplayer_peer().ptr();
 
-	if (get_tree() == nullptr || get_tree()->get_multiplayer()->get_network_peer().is_null()) {
+	if (get_tree() == nullptr || get_tree()->get_multiplayer()->get_multiplayer_peer().is_null()) {
 		synchronizer_type = SYNCHRONIZER_TYPE_NONETWORK;
 		synchronizer = memnew(NoNetSynchronizer(this));
 		generate_id = true;
 
-	} else if (get_tree()->get_multiplayer()->is_network_server()) {
+	} else if (get_tree()->get_multiplayer()->is_server()) {
 		synchronizer_type = SYNCHRONIZER_TYPE_SERVER;
 		synchronizer = memnew(ServerSynchronizer(this));
 		generate_id = true;
@@ -967,7 +968,7 @@ void SceneSynchronizer::_rpc_send_state(const Variant &p_snapshot) {
 void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 	ERR_FAIL_COND_MSG(is_server() == false, "Only the server can receive the request to send a full snapshot.");
 
-	const int sender_peer = get_tree()->get_multiplayer()->get_rpc_sender_id();
+	const int sender_peer = get_tree()->get_multiplayer()->get_remote_sender_id();
 	NetUtility::PeerData *pd = peer_data.lookup_ptr(sender_peer);
 	ERR_FAIL_COND(pd == nullptr);
 	pd->need_full_snapshot = true;
@@ -976,7 +977,7 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 void SceneSynchronizer::_rpc_set_network_enabled(bool p_enabled) {
 	ERR_FAIL_COND_MSG(is_server() == false, "The peer status is supposed to be received by the server.");
 	set_peer_networking_enable(
-			get_multiplayer()->get_rpc_sender_id(),
+			get_multiplayer()->get_remote_sender_id(),
 			p_enabled);
 }
 
@@ -1005,7 +1006,7 @@ void SceneSynchronizer::update_peers() {
 			NetUtility::NodeData *nd = get_node_data(it.value->controller_id);
 			if (nd == nullptr ||
 					nd->is_controller == false ||
-					nd->node->get_network_master() != (*it.key)) {
+					nd->node->get_multiplayer_authority() != (*it.key)) {
 				// Invalidate the controller id
 				it.value->controller_id = UINT32_MAX;
 			}
@@ -1014,7 +1015,7 @@ void SceneSynchronizer::update_peers() {
 		if (it.value->controller_id == UINT32_MAX) {
 			// The controller_id is not assigned, search it.
 			for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
-				if (node_data_controllers[i]->node->get_network_master() == (*it.key)) {
+				if (node_data_controllers[i]->node->get_multiplayer_authority() == (*it.key)) {
 					// Controller found.
 					it.value->controller_id = node_data_controllers[i]->id;
 					break;
@@ -1146,7 +1147,7 @@ void SceneSynchronizer::change_events_flush() {
 		}
 
 		Callable::CallError e;
-		obj->call(listener.method, vars_ptr.ptr(), vars_ptr.size(), e);
+		obj->callp(listener.method, vars_ptr.ptr(), vars_ptr.size(), e);
 	}
 
 	recover_in_progress = false;
@@ -1235,8 +1236,8 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
 		const int64_t index = node_data_controllers[i]->dependency_nodes.find(p_node_data);
 		if (index != -1) {
-			node_data_controllers[i]->dependency_nodes.remove_unordered(index);
-			node_data_controllers[i]->dependency_nodes_end.remove_unordered(index);
+			node_data_controllers[i]->dependency_nodes.remove_at_unordered(index);
+			node_data_controllers[i]->dependency_nodes_end.remove_at_unordered(index);
 		}
 	}
 
@@ -1257,7 +1258,7 @@ void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
 				// Nothing more to do.
 				break;
 			} else {
-				event_listener[i].watching_vars.remove_unordered(index_to_remove);
+				event_listener[i].watching_vars.remove_at_unordered(index_to_remove);
 			}
 		}
 	}
@@ -1291,13 +1292,13 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second)
 
 bool SceneSynchronizer::compare(const Vector2 &p_first, const Vector2 &p_second, real_t p_tolerance) {
 	return Math::is_equal_approx(p_first.x, p_second.x, p_tolerance) &&
-		   Math::is_equal_approx(p_first.y, p_second.y, p_tolerance);
+			Math::is_equal_approx(p_first.y, p_second.y, p_tolerance);
 }
 
 bool SceneSynchronizer::compare(const Vector3 &p_first, const Vector3 &p_second, real_t p_tolerance) {
 	return Math::is_equal_approx(p_first.x, p_second.x, p_tolerance) &&
-		   Math::is_equal_approx(p_first.y, p_second.y, p_tolerance) &&
-		   Math::is_equal_approx(p_first.z, p_second.z, p_tolerance);
+			Math::is_equal_approx(p_first.y, p_second.y, p_tolerance) &&
+			Math::is_equal_approx(p_first.z, p_second.z, p_tolerance);
 }
 
 bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second, real_t p_tolerance) {
@@ -1326,9 +1327,9 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second,
 		case Variant::TRANSFORM2D: {
 			const Transform2D a(p_first);
 			const Transform2D b(p_second);
-			if (compare(a.elements[0], b.elements[0], p_tolerance)) {
-				if (compare(a.elements[1], b.elements[1], p_tolerance)) {
-					if (compare(a.elements[2], b.elements[2], p_tolerance)) {
+			if (compare(a.columns[0], b.columns[0], p_tolerance)) {
+				if (compare(a.columns[1], b.columns[1], p_tolerance)) {
+					if (compare(a.columns[2], b.columns[2], p_tolerance)) {
 						return true;
 					}
 				}
@@ -1367,9 +1368,9 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second,
 		case Variant::BASIS: {
 			const Basis a = p_first;
 			const Basis b = p_second;
-			if (compare(a.elements[0], b.elements[0], p_tolerance)) {
-				if (compare(a.elements[1], b.elements[1], p_tolerance)) {
-					if (compare(a.elements[2], b.elements[2], p_tolerance)) {
+			if (compare(a.rows[0], b.rows[0], p_tolerance)) {
+				if (compare(a.rows[1], b.rows[1], p_tolerance)) {
+					if (compare(a.rows[2], b.rows[2], p_tolerance)) {
 						return true;
 					}
 				}
@@ -1380,9 +1381,9 @@ bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second,
 			const Transform3D a = p_first;
 			const Transform3D b = p_second;
 			if (compare(a.origin, b.origin, p_tolerance)) {
-				if (compare(a.basis.elements[0], b.basis.elements[0], p_tolerance)) {
-					if (compare(a.basis.elements[1], b.basis.elements[1], p_tolerance)) {
-						if (compare(a.basis.elements[2], b.basis.elements[2], p_tolerance)) {
+				if (compare(a.basis.rows[0], b.basis.rows[0], p_tolerance)) {
+					if (compare(a.basis.rows[1], b.basis.rows[1], p_tolerance)) {
+						if (compare(a.basis.rows[2], b.basis.rows[2], p_tolerance)) {
 							return true;
 						}
 					}
@@ -1488,8 +1489,8 @@ void SceneSynchronizer::purge_node_dependencies() {
 			if (node_data_controllers[i]->dependency_nodes_end[d] < client_sync->last_checked_input) {
 				// This controller dependency can be cleared because the server
 				// snapshot check has
-				node_data_controllers[i]->dependency_nodes.remove_unordered(d);
-				node_data_controllers[i]->dependency_nodes_end.remove_unordered(d);
+				node_data_controllers[i]->dependency_nodes.remove_at_unordered(d);
+				node_data_controllers[i]->dependency_nodes_end.remove_at_unordered(d);
 				d -= 1;
 			}
 		}
@@ -1572,13 +1573,13 @@ void SceneSynchronizer::reset_controller(NetUtility::NodeData *p_controller_nd) 
 		return;
 	}
 
-	if (get_tree()->get_multiplayer()->get_network_peer().is_null()) {
+	if (get_tree()->get_multiplayer()->get_multiplayer_peer().is_null()) {
 		controller->controller_type = NetworkedController::CONTROLLER_TYPE_NONETWORK;
 		controller->controller = memnew(NoNetController(controller));
-	} else if (get_tree()->get_multiplayer()->is_network_server()) {
+	} else if (get_tree()->get_multiplayer()->is_server()) {
 		controller->controller_type = NetworkedController::CONTROLLER_TYPE_SERVER;
 		controller->controller = memnew(ServerController(controller, controller->get_network_traced_frames()));
-	} else if (controller->is_network_master()) {
+	} else if (controller->is_multiplayer_authority()) {
 		controller->controller_type = NetworkedController::CONTROLLER_TYPE_PLAYER;
 		controller->controller = memnew(PlayerController(controller));
 	} else {
@@ -2425,7 +2426,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				nodes_to_recover[i]->vars[v].var.value = s_vars_ptr[v].value.duplicate(true);
 				node->set(s_vars_ptr[v].name, s_vars_ptr[v].value);
 
-				NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[v].name + " New value: " + s_vars_ptr[v].value);
+				NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[v].name + " New value: " + s_vars_ptr[v].value.stringify());
 				scene_synchronizer->change_event_add(
 						nodes_to_recover[i],
 						v,
@@ -2534,7 +2535,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				rew_node_data->vars[rew_var_index].var.value = vars_ptr[v].value.duplicate(true);
 				node->set(vars_ptr[v].name, vars_ptr[v].value);
 
-				NET_DEBUG_PRINT(" |- Variable: " + vars_ptr[v].name + "; old value: " + old_val + " new value: " + vars_ptr[v].value);
+				NET_DEBUG_PRINT(" |- Variable: " + vars_ptr[v].name + "; old value: " + old_val.stringify() + " new value: " + vars_ptr[v].value.stringify());
 				scene_synchronizer->change_event_add(
 						rew_node_data,
 						rew_var_index,
@@ -2602,7 +2603,7 @@ void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
 				rew_node_data->vars[var_id].var.value = snap_vars_ptr[var_id].value;
 				node->set(snap_vars_ptr[var_id].name, snap_vars_ptr[var_id].value);
 				NET_DEBUG_PRINT("[Snapshot paused controller] Node: " + node->get_path());
-				NET_DEBUG_PRINT(" |- Variable: " + snap_vars_ptr[var_id].name + "; value: " + snap_vars_ptr[var_id].value);
+				NET_DEBUG_PRINT(" |- Variable: " + snap_vars_ptr[var_id].name + "; value: " + snap_vars_ptr[var_id].value.stringify());
 				scene_synchronizer->change_event_add(
 						rew_node_data,
 						var_id,
@@ -2950,7 +2951,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 	if (success == false) {
 		NET_DEBUG_ERR("Snapshot:");
-		NET_DEBUG_ERR(p_snapshot);
+		NET_DEBUG_ERR(p_snapshot.stringify());
 		return false;
 	}
 
@@ -2958,7 +2959,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 	// so make sure it's done so.
 	if (unlikely(last_received_snapshot.input_id == UINT32_MAX)) {
 		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + player_controller_node_data->node->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. NetUtility::Snapshot:");
-		NET_DEBUG_PRINT(p_snapshot);
+		NET_DEBUG_PRINT(p_snapshot.stringify());
 		return false;
 	} else {
 		// Success.
@@ -2984,13 +2985,13 @@ bool ClientSynchronizer::compare_vars(
 		NET_DEBUG_PRINT("Difference found: The server has a different variable count (" + itos(p_server_vars.size()) + ") compared to the client (" + itos(p_client_vars.size()) + ").");
 		NET_DEBUG_PRINT("Server variables:");
 		for (int i = 0; i < p_server_vars.size(); i += 1) {
-			NET_DEBUG_PRINT("  |- " + p_server_vars[i].name + ": " + p_server_vars[i].value);
+			NET_DEBUG_PRINT("  |- " + p_server_vars[i].name + ": " + p_server_vars[i].value.stringify());
 		}
 		NET_DEBUG_PRINT("  ------");
 
 		NET_DEBUG_PRINT("Client variables:");
 		for (int i = 0; i < p_client_vars.size(); i += 1) {
-			NET_DEBUG_PRINT("  |- " + p_client_vars[i].name + ": " + p_client_vars[i].value);
+			NET_DEBUG_PRINT("  |- " + p_client_vars[i].name + ": " + p_client_vars[i].value.stringify());
 		}
 		NET_DEBUG_PRINT("  ------");
 		return true;
@@ -3019,10 +3020,10 @@ bool ClientSynchronizer::compare_vars(
 			} else {
 				// The vars are different.
 				NET_DEBUG_PRINT("Difference found on var #" + itos(var_index) + " " + p_synchronizer_node_data->vars[var_index].var.name + " " +
-								"Server value: `" + s_vars[var_index].value + "` " +
-								"Client value: `" + c_vars[var_index].value + "`.    " +
-								"[Server name: `" + s_vars[var_index].name + "` " +
-								"Client name: `" + c_vars[var_index].name + "`].");
+						"Server value: `" + s_vars[var_index].value.stringify() + "` " +
+						"Client value: `" + c_vars[var_index].value.stringify() + "`.    " +
+						"[Server name: `" + s_vars[var_index].name + "` " +
+						"Client name: `" + c_vars[var_index].name + "`].");
 #ifdef DEBUG_ENABLED
 				diff = true;
 #else

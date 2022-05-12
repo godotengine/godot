@@ -35,7 +35,9 @@
 #include "networked_controller.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "scene_synchronizer.h"
 #include <algorithm>
 
@@ -120,20 +122,11 @@ void NetworkedController::_bind_methods() {
 	GDVIRTUAL_BIND(_collect_inputs, "delta", "buffer");
 	GDVIRTUAL_BIND(_controller_process, "delta", "buffer");
 	GDVIRTUAL_BIND(_are_inputs_different, "inputs_A", "inputs_B");
-	GDVIRTUAL_BIND( _count_input_size, "inputs");
+	GDVIRTUAL_BIND(_count_input_size, "inputs");
 	GDVIRTUAL_BIND(_collect_epoch_data, "buffer");
 	GDVIRTUAL_BIND(_setup_interpolator, "interpolator");
 	GDVIRTUAL_BIND(_parse_epoch_data, "interpolator", "buffer");
 	GDVIRTUAL_BIND(_apply_epoch, "delta", "interpolated_data");
-
-	// BIND_VMETHOD(MethodInfo("_collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo("_controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo(Variant::BOOL, "_are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo(Variant::INT, "_count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo("_collect_epoch_data", PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo("_setup_interpolator", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator")));
-	// BIND_VMETHOD(MethodInfo("_parse_epoch_data", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	// BIND_VMETHOD(MethodInfo("_apply_epoch", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "5,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -157,10 +150,11 @@ void NetworkedController::_bind_methods() {
 }
 
 NetworkedController::NetworkedController() {
-	rpc_config(SNAME("_rpc_server_send_inputs"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
-	rpc_config(SNAME("_rpc_send_tick_additional_speed"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
-	rpc_config(SNAME("_rpc_doll_notify_sync_pause"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_RELIABLE);
-	rpc_config(SNAME("_rpc_doll_send_epoch_batch"), Multiplayer::RPC_MODE_ANY_PEER, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	constexpr bool call_local = false;
+	rpc_config(SNAME("_rpc_server_send_inputs"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	rpc_config(SNAME("_rpc_send_tick_additional_speed"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	rpc_config(SNAME("_rpc_doll_notify_sync_pause"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_RELIABLE);
+	rpc_config(SNAME("_rpc_doll_send_epoch_batch"), Multiplayer::RPC_MODE_ANY_PEER, call_local, Multiplayer::TRANSFER_MODE_UNRELIABLE);
 }
 
 void NetworkedController::set_player_input_storage_size(int p_size) {
@@ -319,7 +313,7 @@ void NetworkedController::set_doll_collect_rate_factor(int p_peer, real_t p_fact
 
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(is_server_controller() == false, "You can set doll activation only on server");
-	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
+	ERR_FAIL_COND_MSG(p_peer_id == get_multiplayer_authority(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
 
 	ServerController *server_controller = static_cast<ServerController *>(controller);
 	const uint32_t pos = server_controller->find_peer(p_peer_id);
@@ -505,14 +499,14 @@ void NetworkedController::_notification(int p_what) {
 				return;
 			}
 
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_collect_inputs) == false, "In your script you must inherit the virtual method `_collect_inputs` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_controller_process) == false, "In your script you must inherit the virtual method `_controller_process` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_are_inputs_different) == false, "In your script you must inherit the virtual method `_are_inputs_different` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_count_input_size) == false, "In your script you must inherit the virtual method `_count_input_size` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_collect_epoch_data) == false, "In your script you must inherit the virtual method `_collect_epoch_data` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_setup_interpolator) == false, "In your script you must inherit the virtual method `_setup_interpolator` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_parse_epoch_data) == false, "In your script you must inherit the virtual method `_parse_epoch_data` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDEN(_apply_epoch) == false, "In your script you must inherit the virtual method `_apply_epoch` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_collect_inputs) == false, "In your script you must inherit the virtual method `_collect_inputs` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_controller_process) == false, "In your script you must inherit the virtual method `_controller_process` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_are_inputs_different) == false, "In your script you must inherit the virtual method `_are_inputs_different` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_count_input_size) == false, "In your script you must inherit the virtual method `_count_input_size` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_collect_epoch_data) == false, "In your script you must inherit the virtual method `_collect_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_setup_interpolator) == false, "In your script you must inherit the virtual method `_setup_interpolator` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_parse_epoch_data) == false, "In your script you must inherit the virtual method `_parse_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(GDVIRTUAL_IS_OVERRIDDEN(_apply_epoch) == false, "In your script you must inherit the virtual method `_apply_epoch` to correctly use the `NetworkedController`.");
 
 		} break;
 #endif
@@ -541,7 +535,8 @@ void ServerController::process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->get_inputs_buffer_mut().seek(METADATA_SIZE);
-	node->GDVIRTUAL_CALL(
+	GDVIRTUAL_CALL_PTR(
+			node,
 			_controller_process,
 			p_delta,
 			&node->get_inputs_buffer_mut());
@@ -602,9 +597,9 @@ void ServerController::activate_peer(int p_peer) {
 
 #ifdef DEBUG_ENABLED
 	// Unreachable because this is the server controller.
-	CRASH_COND(node->get_tree()->get_multiplayer()->is_network_server() == false);
+	CRASH_COND(node->get_tree()->get_multiplayer()->is_server() == false);
 #endif
-	if (p_peer == node->get_network_master()) {
+	if (p_peer == node->get_multiplayer_authority()) {
 		// This is self, so not a doll.
 		return;
 	}
@@ -618,7 +613,7 @@ void ServerController::activate_peer(int p_peer) {
 void ServerController::deactivate_peer(int p_peer) {
 	const uint32_t index = find_peer(p_peer);
 	if (index != UINT32_MAX) {
-		peers.remove_unordered(index);
+		peers.remove_at_unordered(index);
 	}
 }
 
@@ -669,8 +664,8 @@ void ServerController::receive_inputs(const Vector<uint8_t> &p_data) {
 		const bool has_data = pir.read_bool();
 
 		int input_size = 0;
-		if (has_data){
-			if (!node->GDVIRTUAL_CALL(_count_input_size, const_cast<const DataBuffer*>(&pir), input_size)) {
+		if (has_data) {
+			if (!GDVIRTUAL_CALL_PTR(node, _count_input_size, const_cast<const DataBuffer *>(&pir), input_size)) {
 				ERR_PRINT("The function `_count_input_size` was not executed.");
 			}
 		}
@@ -860,8 +855,8 @@ bool ServerController::fetch_next_input() {
 						pir_B.seek(METADATA_SIZE);
 
 						bool is_meaningful = true;
-						const bool executed = node->GDVIRTUAL_CALL(_are_inputs_different, const_cast<const DataBuffer*>(&pir_A), const_cast<const DataBuffer*>(&pir_B), is_meaningful);
-						if(executed == false) {
+						const bool executed = GDVIRTUAL_CALL_PTR(node, _are_inputs_different, const_cast<const DataBuffer *>(&pir_A), const_cast<const DataBuffer *>(&pir_B), is_meaningful);
+						if (executed == false) {
 							ERR_PRINT("The function _are_inputs_different was not executed!");
 						}
 
@@ -932,7 +927,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			if (epoch_state_collected == false) {
 				epoch_state_data_cache.begin_write(0);
 				epoch_state_data_cache.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
-				node->GDVIRTUAL_CALL(_collect_epoch_data, &epoch_state_data_cache);
+				GDVIRTUAL_CALL_PTR(node, _collect_epoch_data, &epoch_state_data_cache);
 				epoch_state_data_cache.dry();
 				epoch_state_collected = true;
 			}
@@ -1038,7 +1033,7 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	const real_t acc = distance_to_optimal_count * node->get_tick_acceleration() * p_delta;
 	// Used to avoid oscillations.
 	const real_t damp = -(client_tick_additional_speed * 0.95);
-	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
+	client_tick_additional_speed += acc + damp * ((SIGN(acc) * SIGN(damp) + 1) / 2.0);
 	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 
 #ifdef DEBUG_ENABLED
@@ -1060,7 +1055,7 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 		packet_data.push_back(new_speed);
 
 		node->rpc_id(
-				node->get_network_master(),
+				node->get_multiplayer_authority(),
 				SNAME("_rpc_send_tick_additional_speed"),
 				packet_data);
 	}
@@ -1096,7 +1091,7 @@ void PlayerController::process(real_t p_delta) {
 		node->get_inputs_buffer_mut().begin_write(METADATA_SIZE);
 
 		node->get_inputs_buffer_mut().seek(1);
-		node->GDVIRTUAL_CALL(_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
+		GDVIRTUAL_CALL_PTR(node, _collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 
 		// Set metadata data.
 		node->get_inputs_buffer_mut().seek(0);
@@ -1116,7 +1111,7 @@ void PlayerController::process(real_t p_delta) {
 
 	// The physics process is always emitted, because we still need to simulate
 	// the character motion even if we don't store the player inputs.
-	node->GDVIRTUAL_CALL(_controller_process, p_delta, &node->get_inputs_buffer());
+	GDVIRTUAL_CALL_PTR(node, _controller_process, p_delta, &node->get_inputs_buffer());
 
 	node->player_set_has_new_input(false);
 	if (accept_new_inputs) {
@@ -1201,7 +1196,7 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 		ib.shrink_to(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		ib.begin_read();
 		ib.seek(METADATA_SIZE);
-		node->GDVIRTUAL_CALL(_controller_process, p_delta, &ib);
+		GDVIRTUAL_CALL_PTR(node, _controller_process, p_delta, &ib);
 
 		return (i + 1) < frames_snapshot.size();
 	} else {
@@ -1278,8 +1273,8 @@ void PlayerController::send_frame_input_buffer_to_server() {
 					pir_B.seek(METADATA_SIZE);
 
 					bool are_different = true;
-					const bool executed = node->GDVIRTUAL_CALL(_are_inputs_different, const_cast<const DataBuffer*>(&pir_A), const_cast<const DataBuffer*>(&pir_B), are_different);
-					if(executed == false) {
+					const bool executed = GDVIRTUAL_CALL_PTR(node, _are_inputs_different, const_cast<const DataBuffer *>(&pir_A), const_cast<const DataBuffer *>(&pir_B), are_different);
+					if (executed == false) {
 						ERR_PRINT("The function _are_inputs_different was not executed!");
 					}
 
@@ -1373,7 +1368,8 @@ DollController::DollController(NetworkedController *p_node) :
 
 void DollController::ready() {
 	interpolator.reset();
-	node->GDVIRTUAL_CALL(
+	GDVIRTUAL_CALL_PTR(
+			node,
 			_setup_interpolator,
 			&interpolator);
 	interpolator.terminate_init();
@@ -1388,10 +1384,11 @@ void DollController::process(real_t p_delta) {
 	}
 
 	const real_t fractional_part = advancing_epoch;
-	node->GDVIRTUAL_CALL(
+	GDVIRTUAL_CALL_PTR(
+			node,
 			_apply_epoch,
 			p_delta,
-			Array(interpolator.pop_epoch(frame_epoch, fractional_part)));
+			interpolator.pop_epoch(frame_epoch, fractional_part));
 }
 
 uint32_t DollController::get_current_input_id() const {
@@ -1425,9 +1422,9 @@ void DollController::receive_batch(const Vector<uint8_t> &p_data) {
 
 	while (buffer_start_position < p_data.size()) {
 		const int buffer_size = p_data[buffer_start_position];
-		const Vector<uint8_t> buffer = p_data.subarray(
+		const Vector<uint8_t> buffer = p_data.slice(
 				buffer_start_position + 1,
-				buffer_start_position + 1 + buffer_size - 1);
+				buffer_start_position + 1 + buffer_size);
 
 		ERR_FAIL_COND(buffer.size() <= 0);
 
@@ -1494,7 +1491,7 @@ uint32_t DollController::receive_epoch(const Vector<uint8_t> &p_data) {
 	}
 
 	interpolator.begin_write(epoch);
-	node->GDVIRTUAL_CALL(_parse_epoch_data, &interpolator, &buffer);
+	GDVIRTUAL_CALL_PTR(node, _parse_epoch_data, &interpolator, &buffer);
 	interpolator.end_write();
 
 	return epoch;
@@ -1587,10 +1584,10 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 
 void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_write(0); // No need of meta in this case.
-	node->GDVIRTUAL_CALL(_collect_inputs, p_delta, &node->get_inputs_buffer_mut());
+	GDVIRTUAL_CALL_PTR(node, _collect_inputs, p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
-	node->GDVIRTUAL_CALL(_controller_process, p_delta, &node->get_inputs_buffer_mut());
+	GDVIRTUAL_CALL_PTR(node, _controller_process, p_delta, &node->get_inputs_buffer_mut());
 	frame_id += 1;
 }
 
