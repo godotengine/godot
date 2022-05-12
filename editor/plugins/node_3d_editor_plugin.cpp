@@ -8061,6 +8061,8 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
+	ClassDB::bind_method("update_all_gizmos", &Node3DEditor::update_all_gizmos);
+
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
