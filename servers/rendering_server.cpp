@@ -2934,7 +2934,7 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
-					PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR (Fast)"));
+					PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast)"));
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/scale",
 			PropertyInfo(Variant::FLOAT,
