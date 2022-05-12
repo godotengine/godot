@@ -123,37 +123,34 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			return;
 		}
 
-		if (link.contains(".")) {
-			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
-		} else {
-			if (table->has(link)) {
-				// Found in the current page
-				class_desc->scroll_to_paragraph((*table)[link]);
-			} else {
-				if (topic == "class_enum") {
-					// Try to find the enum in @GlobalScope
-					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+		// Case order is important here to correctly handle edge cases like Variant.Type in @GlobalScope.
+		if (table->has(link)) {
+			// Found in the current page.
+			class_desc->scroll_to_paragraph((*table)[link]);
+		} else if (topic == "class_enum") {
+			// Try to find the enum in @GlobalScope.
+			const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-					for (int i = 0; i < cd.constants.size(); i++) {
-						if (cd.constants[i].enumeration == link) {
-							// Found in @GlobalScope
-							emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
-							break;
-						}
-					}
-				} else if (topic == "class_constant") {
-					// Try to find the constant in @GlobalScope
-					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
-
-					for (int i = 0; i < cd.constants.size(); i++) {
-						if (cd.constants[i].name == link) {
-							// Found in @GlobalScope
-							emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
-							break;
-						}
-					}
+			for (int i = 0; i < cd.constants.size(); i++) {
+				if (cd.constants[i].enumeration == link) {
+					// Found in @GlobalScope.
+					emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
+					break;
 				}
 			}
+		} else if (topic == "class_constant") {
+			// Try to find the constant in @GlobalScope.
+			const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+
+			for (int i = 0; i < cd.constants.size(); i++) {
+				if (cd.constants[i].name == link) {
+					// Found in @GlobalScope.
+					emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
+					break;
+				}
+			}
+		} else if (link.contains(".")) {
+			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		}
 	} else if (p_select.begins_with("http")) {
 		OS::get_singleton()->shell_open(p_select);
@@ -339,7 +336,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	description_line = 0;
 
 	if (p_class == edited_class) {
-		return OK; //already there
+		return OK; // Already there.
 	}
 
 	edited_class = p_class;
@@ -885,7 +882,7 @@ void EditorHelp::_update_doc() {
 		data_type_names["style"] = TTR("Styles");
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 			if (theme_data_type != cd.theme_properties[i].data_type) {
 				theme_data_type = cd.theme_properties[i].data_type;
@@ -970,7 +967,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_indent(1);
 
 		for (int i = 0; i < cd.signals.size(); i++) {
-			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
 			class_desc->push_color(headline_color);
@@ -1100,7 +1097,7 @@ void EditorHelp::_update_doc() {
 						enumValuesContainer[enum_list[i].name] = enumStartingLine;
 					}
 
-					// Add the enum constant line to the constant_line map so we can locate it as a constant
+					// Add the enum constant line to the constant_line map so we can locate it as a constant.
 					constant_line[enum_list[i].name] = class_desc->get_line_count() - 2;
 
 					class_desc->push_font(doc_code_font);
@@ -1417,7 +1414,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		name = p_topic.get_slice(":", 2);
 	}
 
-	_request_help(clss); //first go to class
+	_request_help(clss); // First go to class.
 
 	int line = 0;
 
@@ -1486,7 +1483,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
-	// Select the correct code examples
+	// Select the correct code examples.
 	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {
 		case 0: // GDScript
 			bbcode = bbcode.replace("[gdscript]", "[codeblock]");
@@ -1531,13 +1528,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			break;
 	}
 
-	// Remove codeblocks (they would be printed otherwise)
+	// Remove codeblocks (they would be printed otherwise).
 	bbcode = bbcode.replace("[codeblocks]\n", "");
 	bbcode = bbcode.replace("\n[/codeblocks]", "");
 	bbcode = bbcode.replace("[codeblocks]", "");
 	bbcode = bbcode.replace("[/codeblocks]", "");
 
-	// remove extra new lines around code blocks
+	// Remove extra new lines around code blocks.
 	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
 	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
 
@@ -1561,7 +1558,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		}
 
 		if (brk_pos == bbcode.length()) {
-			break; //nothing else to add
+			break; // Nothing else to add.
 		}
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
@@ -1627,45 +1624,45 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			pos = brk_end + 1;
 
 		} else if (tag == "b") {
-			//use bold font
+			// Use bold font.
 			p_rt->push_font(doc_bold_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
-			//use italics font
+			// Use italics font.
 			p_rt->push_font(doc_italic_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag == "codeblock") {
-			//use monospace font
+			// Use monospace font.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_color(code_color);
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
-			//use keyboard font with custom color
+			// Use keyboard font with custom color.
 			p_rt->push_font(doc_kbd_font);
 			p_rt->push_color(kbd_color);
-			code_tag = true; // though not strictly a code tag, logic is similar
+			code_tag = true; // Though not strictly a code tag, logic is similar.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
-			//align to center
+			// Align to center.
 			p_rt->push_paragraph(HORIZONTAL_ALIGNMENT_CENTER, Control::TEXT_DIRECTION_AUTO, "");
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
-			//force a line break
+			// Force a line break.
 			p_rt->add_newline();
 			pos = brk_end + 1;
 		} else if (tag == "u") {
-			//use underline
+			// Use underline.
 			p_rt->push_underline();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
-			//use strikethrough
+			// Use strikethrough.
 			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -1741,7 +1738,7 @@ void EditorHelp::_wait_for_thread() {
 void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
-	doc->merge_from(compdoc); //ensure all is up to date
+	doc->merge_from(compdoc); // Ensure all is up to date.
 }
 
 static bool doc_gen_use_threads = true;
@@ -1935,7 +1932,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 		String m = p_select.substr(1, p_select.length());
 
 		if (m.contains(".")) {
-			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
+			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); // Must go somewhere else.
 		}
 	}
 }
