@@ -279,15 +279,26 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 			Array arr;
 			arr.push_back(num_connections);
 			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
-			msg_temp += " ";
+			if (num_groups >= 1) {
+				msg_temp += "\n";
+			}
 		}
 		if (num_groups >= 1) {
-			Array arr;
-			arr.push_back(num_groups);
-			msg_temp += TTRN("Node is in one group.", "Node is in {num} groups.", num_groups).format(arr, "{num}");
+			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+
+			List<GroupInfo> groups;
+			p_node->get_groups(&groups);
+			for (const GroupInfo &E : groups) {
+				if (E.persistent) {
+					msg_temp += String::utf8("•  ") + String(E.name) + "\n";
+				}
+			}
 		}
 		if (num_connections >= 1 || num_groups >= 1) {
-			msg_temp += "\n" + TTR("Click to show signals dock.");
+			if (num_groups < 1) {
+				msg_temp += "\n";
+			}
+			msg_temp += TTR("Click to show signals dock.");
 		}
 
 		Ref<Texture2D> icon_temp;
