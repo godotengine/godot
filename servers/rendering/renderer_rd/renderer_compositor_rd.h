@@ -131,6 +131,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
+		low_end = false;
 	}
 
 	static RendererCompositorRD *singleton;

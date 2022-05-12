@@ -73,10 +73,11 @@ private:
 	//versions
 	CharString general_defines;
 
-	// A version is a high-level construct which is a combination of built-in and user-defined shader code
-	// Variants use #idefs to toggle behaviour on and off to change behaviour of the shader
+	// A version is a high-level construct which is a combination of built-in and user-defined shader code, Each user-created Shader makes one version
+	// Variants use #ifdefs to toggle behaviour on and off to change behaviour of the shader
+	// All variants are compiled each time a new version is created
 	// Specializations use #ifdefs to toggle behaviour on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
-	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler)
+	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
 		Vector<StringName> texture_uniforms;
 		CharString uniforms;
@@ -217,6 +218,7 @@ protected:
 		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_COND_V(!version, -1);
+		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
 		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
 	}
 

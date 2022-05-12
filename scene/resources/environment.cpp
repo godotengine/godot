@@ -1096,7 +1096,6 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	static const char *high_end_prefixes[] = {
 		"auto_exposure_",
-		"tonemap_",
 		"ssr_",
 		"ssao_",
 		nullptr

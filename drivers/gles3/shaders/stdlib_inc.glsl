@@ -1,5 +1,6 @@
-//TODO: only needed by GLES_OVER_GL
 
+#ifdef USE_GLES_OVER_GL
+// Floating point pack/unpack functions are part of the GLSL ES 300 specification used by web and mobile.
 uint float2half(uint f) {
 	return ((f >> uint(16)) & uint(0x8000)) |
 			((((f & uint(0x7f800000)) - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
@@ -37,6 +38,7 @@ vec2 unpackSnorm2x16(uint p) {
 	vec2 v = vec2(float(p & uint(0xffff)), float(p >> uint(16)));
 	return clamp((v - 32767.0) * vec2(0.00003051851), vec2(-1.0), vec2(1.0));
 }
+#endif
 
 uint packUnorm4x8(vec4 v) {
 	uvec4 uv = uvec4(round(clamp(v, vec4(0.0), vec4(1.0)) * 255.0));

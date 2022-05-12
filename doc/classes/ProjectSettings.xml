@@ -1557,18 +1557,6 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
 		</member>
-		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
@@ -1594,32 +1582,6 @@
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
-		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
-		</member>
-		<member name="rendering/batching/lights/scissor_area_threshold" type="float" setter="" getter="" default="1.0">
-		</member>
-		<member name="rendering/batching/options/single_rect_fallback" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
-		</member>
-		<member name="rendering/batching/parameters/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
-		</member>
-		<member name="rendering/batching/parameters/item_reordering_lookahead" type="int" setter="" getter="" default="4">
-		</member>
-		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
-		</member>
-		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
-		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
@@ -1629,13 +1591,16 @@
 		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
+		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
+			Disables [member rendering/driver/depth_prepass/enable] conditionally for certain venders. By default, disables the depth prepass for mobile devices as mobile devices do not benefit from the depth prepass due to their unique architecture.
+		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
-			[b]Note:[/b] Only supported when using the Vulkan Clustered backend (not Vulkan Mobile or OpenGL). When using Vulkan Mobile or OpenGL, there is no depth prepass performed.
+			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			The video driver to use.
-			[b]Note:[/b] OpenGL support is currently incomplete. Only basic 2D rendering is supported, and single-window mode is required for correct operation.
+			[b]Note:[/b] OpenGL support is currently incomplete. Only basic rendering is supported.
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
@@ -1715,10 +1680,6 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
-		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
@@ -1760,6 +1721,15 @@
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
 		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
+		</member>
+		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">
+			Max number of lights renderable per object. This is further limited by hardware support. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
+		</member>
+		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
+			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+		</member>
+		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="256">
+			Max number of lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
 		</member>

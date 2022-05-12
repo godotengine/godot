@@ -12,21 +12,12 @@ mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PA
 
 #[vertex]
 
-#ifdef USE_GLES_OVER_GL
-#define lowp
-#define mediump
-#define highp
-#else
-precision highp float;
-precision highp int;
-#endif
-
 out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
 	// One big triangle to cover the whole screen
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -2.0), vec2(-1.0, 2.0), vec2(2.0, 2.0));
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(3.0, -1.0), vec2(-1.0, 3.0));
 	uv_interp = base_arr[gl_VertexID];
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
 }
@@ -36,19 +27,7 @@ void main() {
 
 #define M_PI 3.14159265359
 
-#ifdef USE_GLES_OVER_GL
-#define lowp
-#define mediump
-#define highp
-#else
-#if defined(USE_HIGHP_PRECISION)
-precision highp float;
-precision highp int;
-#else
-precision mediump float;
-precision mediump int;
-#endif
-#endif
+#include "tonemap_inc.glsl"
 
 in vec2 uv_interp;
 
@@ -63,18 +42,13 @@ uniform sampler2D half_res; //texunit:-2
 uniform sampler2D quarter_res; //texunit:-3
 #endif
 
-layout(std140) uniform CanvasData { //ubo:0
-	mat3 orientation;
-	vec4 projection;
-	vec4 position_multiplier;
-	float time;
-	float luminance_multiplier;
-	float pad1;
-	float pad2;
-};
-
 layout(std140) uniform GlobalVariableData { //ubo:1
 	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+};
+
+layout(std140) uniform SceneData { //ubo:2
+	float pad1;
+	float pad2;
 };
 
 struct DirectionalLightData {
@@ -83,20 +57,21 @@ struct DirectionalLightData {
 	bool enabled;
 };
 
-layout(std140) uniform DirectionalLights { //ubo:2
+layout(std140) uniform DirectionalLights { //ubo:3
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
 
+/* clang-format off */
+
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:3
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 
-} material;
+};
 #endif
-
+/* clang-format on */
 #GLOBALS
 
 #ifdef USE_CUBEMAP_PASS
@@ -117,6 +92,12 @@ layout(std140) uniform MaterialUniforms{
 #define AT_QUARTER_RES_PASS false
 #endif
 
+// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
+uniform mat4 orientation;
+uniform vec4 projection;
+uniform vec3 position;
+uniform float time;
+
 layout(location = 0) out vec4 frag_color;
 
 void main() {
@@ -128,7 +109,7 @@ void main() {
 	cube_normal.z = -cube_normal.z;
 	cube_normal = normalize(cube_normal);
 
-	vec2 uv = uv_interp * 0.5 + 0.5;
+	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
 
 	vec2 panorama_coords = vec2(atan(cube_normal.x, cube_normal.z), acos(cube_normal.y));
 
@@ -148,17 +129,17 @@ void main() {
 	vec3 inverted_cube_normal = cube_normal;
 	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * luminance_multiplier;
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * luminance_multiplier;
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * luminance_multiplier;
+	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * luminance_multiplier;
+	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
 #endif
 #endif
 
@@ -168,12 +149,19 @@ void main() {
 
 	}
 
-	frag_color.rgb = color * position_multiplier.w / luminance_multiplier;
-	frag_color.a = alpha;
+	// Tonemap before writing as we are writing to an sRGB framebuffer
+	color *= exposure;
+	color = apply_tonemapping(color, white);
+	color = linear_to_srgb(color);
 
-	// Blending is disabled for Sky, so alpha doesn't blend
-	// alpha is used for subsurface scattering so make sure it doesn't get applied to Sky
-	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
-		frag_color.a = 0.0;
-	}
+#ifdef USE_BCS
+	color = apply_bcs(color, bcs);
+#endif
+
+#ifdef USE_COLOR_CORRECTION
+	color = apply_color_correction(color, color_correction);
+#endif
+
+	frag_color.rgb = color;
+	frag_color.a = alpha;
 }

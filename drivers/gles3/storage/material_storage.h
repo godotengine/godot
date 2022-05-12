@@ -45,15 +45,17 @@
 #include "drivers/gles3/shaders/copy.glsl.gen.h"
 
 #include "../shaders/canvas.glsl.gen.h"
+#include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
 namespace GLES3 {
 
-/* SHADER Structs */
+/* Shader Structs */
 
 struct Shaders {
 	CanvasShaderGLES3 canvas_shader;
 	SkyShaderGLES3 sky_shader;
+	SceneShaderGLES3 scene_shader;
 
 	ShaderCompiler compiler_canvas;
 	ShaderCompiler compiler_scene;
@@ -141,7 +143,7 @@ struct Material {
 			update_element(this) {}
 };
 
-// CanvasItem Materials
+/* CanvasItem Materials */
 
 struct CanvasShaderData : public ShaderData {
 	enum BlendMode { //used internally
@@ -199,6 +201,179 @@ struct CanvasMaterialData : public MaterialData {
 };
 
 MaterialData *_create_canvas_material_func(ShaderData *p_shader);
+
+/* Sky Materials */
+
+struct SkyShaderData : public ShaderData {
+	bool valid;
+	RID version;
+
+	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size;
+
+	String path;
+	String code;
+	Map<StringName, Map<int, RID>> default_texture_params;
+
+	bool uses_time;
+	bool uses_position;
+	bool uses_half_res;
+	bool uses_quarter_res;
+	bool uses_light;
+
+	virtual void set_code(const String &p_Code);
+	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
+	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+	virtual bool is_param_texture(const StringName &p_param) const;
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	SkyShaderData();
+	virtual ~SkyShaderData();
+};
+
+ShaderData *_create_sky_shader_func();
+
+struct SkyMaterialData : public MaterialData {
+	SkyShaderData *shader_data = nullptr;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~SkyMaterialData();
+};
+
+MaterialData *_create_sky_material_func(ShaderData *p_shader);
+
+/* Scene Materials */
+
+struct SceneShaderData : public ShaderData {
+	enum BlendMode { //used internally
+		BLEND_MODE_MIX,
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MUL,
+		BLEND_MODE_ALPHA_TO_COVERAGE
+	};
+
+	enum DepthDraw {
+		DEPTH_DRAW_DISABLED,
+		DEPTH_DRAW_OPAQUE,
+		DEPTH_DRAW_ALWAYS
+	};
+
+	enum DepthTest {
+		DEPTH_TEST_DISABLED,
+		DEPTH_TEST_ENABLED
+	};
+
+	enum Cull {
+		CULL_DISABLED,
+		CULL_FRONT,
+		CULL_BACK
+	};
+
+	enum AlphaAntiAliasing {
+		ALPHA_ANTIALIASING_OFF,
+		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
+		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+	};
+
+	bool valid;
+	RID version;
+
+	String path;
+
+	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size;
+
+	String code;
+	Map<StringName, Map<int, RID>> default_texture_params;
+
+	BlendMode blend_mode;
+	AlphaAntiAliasing alpha_antialiasing_mode;
+	DepthDraw depth_draw;
+	DepthTest depth_test;
+	Cull cull_mode;
+
+	bool uses_point_size;
+	bool uses_alpha;
+	bool uses_blend_alpha;
+	bool uses_alpha_clip;
+	bool uses_depth_pre_pass;
+	bool uses_discard;
+	bool uses_roughness;
+	bool uses_normal;
+	bool uses_particle_trails;
+	bool wireframe;
+
+	bool unshaded;
+	bool uses_vertex;
+	bool uses_position;
+	bool uses_sss;
+	bool uses_transmittance;
+	bool uses_screen_texture;
+	bool uses_depth_texture;
+	bool uses_normal_texture;
+	bool uses_time;
+	bool writes_modelview_or_projection;
+	bool uses_world_coordinates;
+	bool uses_tangent;
+	bool uses_color;
+	bool uses_uv;
+	bool uses_uv2;
+	bool uses_custom0;
+	bool uses_custom1;
+	bool uses_custom2;
+	bool uses_custom3;
+	bool uses_bones;
+	bool uses_weights;
+
+	uint32_t vertex_input_mask = 0;
+
+	uint64_t last_pass = 0;
+	uint32_t index = 0;
+
+	virtual void set_code(const String &p_Code);
+	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
+	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+
+	virtual bool is_param_texture(const StringName &p_param) const;
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	SceneShaderData();
+	virtual ~SceneShaderData();
+};
+
+ShaderData *_create_scene_shader_func();
+
+struct SceneMaterialData : public MaterialData {
+	SceneShaderData *shader_data = nullptr;
+	uint64_t last_pass = 0;
+	uint32_t index = 0;
+	RID next_pass;
+	uint8_t priority = 0;
+	virtual void set_render_priority(int p_priority);
+	virtual void set_next_pass(RID p_pass);
+	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~SceneMaterialData();
+};
+
+MaterialData *_create_scene_material_func(ShaderData *p_shader);
 
 /* Global variable structs */
 struct GlobalVariables {

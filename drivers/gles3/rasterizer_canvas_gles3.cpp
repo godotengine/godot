@@ -179,12 +179,12 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 
 		//print_line("w: " + itos(ssize.width) + " s: " + rtos(canvas_scale));
 		state_buffer.tex_to_sdf = 1.0 / ((canvas_scale.x + canvas_scale.y) * 0.5);
-		glBindBufferBase(GL_UNIFORM_BUFFER, BASE_UNIFORM_BUFFER_OBJECT, state.canvas_state_buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, BASE_UNIFORM_LOCATION, state.canvas_state_buffer);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(StateBuffer), &state_buffer, GL_STREAM_DRAW);
 
 		GLuint global_buffer = material_storage->global_variables_get_uniform_buffer();
 
-		glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_UNIFORM_BUFFER_OBJECT, global_buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, GLOBAL_UNIFORM_LOCATION, global_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -522,7 +522,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 					}
 				}
 
-				glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_BUFFER_OBJECT, state.canvas_instance_data_buffers[state.current_buffer]);
+				glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
 #ifdef JAVASCRIPT_ENABLED
 				//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
 				glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData), &state.instance_data_array[0], GL_DYNAMIC_DRAW);
@@ -728,7 +728,7 @@ void RasterizerCanvasGLES3::_render_batch(uint32_t &r_index) {
 			}
 		}
 
-		glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_BUFFER_OBJECT, state.canvas_instance_data_buffers[state.current_buffer]);
+		glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
 #ifdef JAVASCRIPT_ENABLED
 		//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData) * r_index, state.instance_data_array, GL_DYNAMIC_DRAW);

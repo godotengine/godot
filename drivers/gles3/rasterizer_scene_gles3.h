@@ -34,6 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/math/camera_matrix.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "rasterizer_storage_gles3.h"
@@ -44,13 +45,47 @@
 #include "shader_gles3.h"
 #include "shaders/sky.glsl.gen.h"
 
-// Copied from renderer_scene_render_rd
+enum RenderListType {
+	RENDER_LIST_OPAQUE, //used for opaque objects
+	RENDER_LIST_ALPHA, //used for transparent objects
+	RENDER_LIST_SECONDARY, //used for shadows and other objects
+	RENDER_LIST_MAX
+};
+
+enum PassMode {
+	PASS_MODE_COLOR,
+	PASS_MODE_COLOR_TRANSPARENT,
+	PASS_MODE_COLOR_ADDITIVE,
+	PASS_MODE_SHADOW,
+	PASS_MODE_DEPTH,
+};
+
+// These should share as much as possible with SkyUniform Location
+enum SceneUniformLocation {
+	SCENE_TONEMAP_UNIFORM_LOCATION,
+	SCENE_GLOBALS_UNIFORM_LOCATION,
+	SCENE_DATA_UNIFORM_LOCATION,
+	SCENE_MATERIAL_UNIFORM_LOCATION,
+	SCENE_RADIANCE_UNIFORM_LOCATION,
+	SCENE_OMNILIGHT_UNIFORM_LOCATION,
+	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
+};
+
+enum SkyUniformLocation {
+	SKY_TONEMAP_UNIFORM_LOCATION,
+	SKY_GLOBALS_UNIFORM_LOCATION,
+	SKY_SCENE_DATA_UNIFORM_LOCATION,
+	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SKY_MATERIAL_UNIFORM_LOCATION,
+};
+
 struct RenderDataGLES3 {
 	RID render_buffers = RID();
+	bool transparent_bg = false;
 
 	Transform3D cam_transform = Transform3D();
 	CameraMatrix cam_projection = CameraMatrix();
-	bool cam_ortogonal = false;
+	bool cam_orthogonal = false;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -91,16 +126,323 @@ private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	uint64_t scene_pass = 0;
 
-	/* Sky */
 	struct SkyGlobals {
-		RID shader_current_version;
 		RID shader_default_version;
 		RID default_material;
 		RID default_shader;
+		RID fog_material;
+		RID fog_shader;
+		GLuint quad = 0;
+		GLuint quad_array = 0;
 		uint32_t max_directional_lights = 4;
 		uint32_t roughness_layers = 8;
 		uint32_t ggx_samples = 128;
 	} sky_globals;
+
+	struct SceneGlobals {
+		RID shader_default_version;
+		RID default_material;
+		RID default_shader;
+	} scene_globals;
+
+	struct SceneState {
+		struct UBO {
+			float projection_matrix[16];
+			float inv_projection_matrix[16];
+			float inv_view_matrix[16];
+			float view_matrix[16];
+
+			float viewport_size[2];
+			float screen_pixel_size[2];
+
+			float ambient_light_color_energy[4];
+
+			float ambient_color_sky_mix;
+			uint32_t ambient_flags;
+			uint32_t material_uv2_mode;
+			float opaque_prepass_threshold;
+			//bool use_ambient_light;
+			//bool use_ambient_cubemap;
+			//bool use_reflection_cubemap;
+
+			float radiance_inverse_xform[12];
+
+			uint32_t directional_light_count;
+			float z_far;
+			float z_near;
+			uint32_t pancake_shadows;
+
+			uint32_t fog_enabled;
+			float fog_density;
+			float fog_height;
+			float fog_height_density;
+
+			float fog_light_color[3];
+			float fog_sun_scatter;
+
+			float fog_aerial_perspective;
+			float time;
+			uint32_t pad[2];
+		};
+		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
+
+		struct TonemapUBO {
+			float exposure = 1.0;
+			float white = 1.0;
+			int32_t tonemapper = 0;
+			int32_t pad = 0;
+		};
+		static_assert(sizeof(TonemapUBO) % 16 == 0, "Tonemap UBO size must be a multiple of 16 bytes");
+
+		UBO ubo;
+		GLuint ubo_buffer = 0;
+		GLuint tonemap_buffer = 0;
+
+		bool used_depth_prepass = false;
+
+		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
+		GLES3::SceneShaderData::DepthDraw current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
+		GLES3::SceneShaderData::DepthTest current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_DISABLED;
+		GLES3::SceneShaderData::Cull cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
+		bool texscreen_copied = false;
+		bool used_screen_texture = false;
+		bool used_normal_texture = false;
+		bool used_depth_texture = false;
+	} scene_state;
+
+	struct GeometryInstanceGLES3;
+
+	// Cached data for drawing surfaces
+	struct GeometryInstanceSurface {
+		enum {
+			FLAG_PASS_DEPTH = 1,
+			FLAG_PASS_OPAQUE = 2,
+			FLAG_PASS_ALPHA = 4,
+			FLAG_PASS_SHADOW = 8,
+			FLAG_USES_SHARED_SHADOW_MATERIAL = 128,
+			FLAG_USES_SCREEN_TEXTURE = 2048,
+			FLAG_USES_DEPTH_TEXTURE = 4096,
+			FLAG_USES_NORMAL_TEXTURE = 8192,
+			FLAG_USES_DOUBLE_SIDED_SHADOWS = 16384,
+		};
+
+		union {
+			struct {
+				uint64_t lod_index : 8;
+				uint64_t surface_index : 8;
+				uint64_t geometry_id : 32;
+				uint64_t material_id_low : 16;
+
+				uint64_t material_id_hi : 16;
+				uint64_t shader_id : 32;
+				uint64_t uses_softshadow : 1;
+				uint64_t uses_projector : 1;
+				uint64_t uses_forward_gi : 1;
+				uint64_t uses_lightmap : 1;
+				uint64_t depth_layer : 4;
+				uint64_t priority : 8;
+			};
+			struct {
+				uint64_t sort_key1;
+				uint64_t sort_key2;
+			};
+		} sort;
+
+		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
+		uint32_t flags = 0;
+		uint32_t surface_index = 0;
+		uint32_t lod_index = 0;
+
+		void *surface = nullptr;
+		GLES3::SceneShaderData *shader = nullptr;
+		GLES3::SceneMaterialData *material = nullptr;
+
+		void *surface_shadow = nullptr;
+		GLES3::SceneShaderData *shader_shadow = nullptr;
+		GLES3::SceneMaterialData *material_shadow = nullptr;
+
+		GeometryInstanceSurface *next = nullptr;
+		GeometryInstanceGLES3 *owner = nullptr;
+	};
+
+	struct GeometryInstanceGLES3 : public GeometryInstance {
+		//used during rendering
+		bool mirror = false;
+		bool non_uniform_scale = false;
+		float lod_bias = 0.0;
+		float lod_model_scale = 1.0;
+		AABB transformed_aabb; //needed for LOD
+		float depth = 0;
+		uint32_t flags_cache = 0;
+		bool store_transform_cache = true;
+		int32_t shader_parameters_offset = -1;
+
+		uint32_t layer_mask = 1;
+		uint32_t instance_count = 0;
+
+		RID mesh_instance;
+		bool can_sdfgi = false;
+		bool using_projectors = false;
+		bool using_softshadows = false;
+		bool fade_near = false;
+		float fade_near_begin = 0;
+		float fade_near_end = 0;
+		bool fade_far = false;
+		float fade_far_begin = 0;
+		float fade_far_end = 0;
+		float force_alpha = 1.0;
+		float parent_fade_alpha = 1.0;
+
+		uint32_t omni_light_count = 0;
+		uint32_t omni_lights[8];
+		uint32_t spot_light_count = 0;
+		uint32_t spot_lights[8];
+
+		//used during setup
+		uint32_t base_flags = 0;
+		Transform3D transform;
+		GeometryInstanceSurface *surface_caches = nullptr;
+		SelfList<GeometryInstanceGLES3> dirty_list_element;
+
+		struct Data {
+			//data used less often goes into regular heap
+			RID base;
+			RS::InstanceType base_type;
+
+			RID skeleton;
+			Vector<RID> surface_materials;
+			RID material_override;
+			RID material_overlay;
+			AABB aabb;
+
+			bool use_dynamic_gi = false;
+			bool use_baked_light = false;
+			bool cast_double_sided_shadows = false;
+			bool mirror = false;
+			bool dirty_dependencies = false;
+
+			RendererStorage::DependencyTracker dependency_tracker;
+		};
+
+		Data *data = nullptr;
+
+		GeometryInstanceGLES3() :
+				dirty_list_element(this) {}
+	};
+
+	enum {
+		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 5,
+		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 6,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
+		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
+		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
+		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
+		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
+		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
+	};
+
+	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+
+	SelfList<GeometryInstanceGLES3>::List geometry_instance_dirty_list;
+
+	// Use PagedAllocator instead of RID to maximize performance
+	PagedAllocator<GeometryInstanceGLES3> geometry_instance_alloc;
+	PagedAllocator<GeometryInstanceSurface> geometry_instance_surface_alloc;
+
+	void _geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, RID p_mat_src, RID p_mesh);
+	void _geometry_instance_add_surface(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
+	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
+	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
+	void _update_dirty_geometry_instances();
+
+	struct RenderListParameters {
+		GeometryInstanceSurface **elements = nullptr;
+		int element_count = 0;
+		bool reverse_cull = false;
+		uint32_t spec_constant_base_flags = 0;
+		bool force_wireframe = false;
+		Plane lod_plane;
+		float lod_distance_multiplier = 0.0;
+		float screen_mesh_lod_threshold = 0.0;
+
+		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint32_t p_spec_constant_base_flags, bool p_force_wireframe = false, const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0) {
+			elements = p_elements;
+			element_count = p_element_count;
+			reverse_cull = p_reverse_cull;
+			spec_constant_base_flags = p_spec_constant_base_flags;
+			force_wireframe = p_force_wireframe;
+			lod_plane = p_lod_plane;
+			lod_distance_multiplier = p_lod_distance_multiplier;
+			screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
+		}
+	};
+
+	struct RenderList {
+		LocalVector<GeometryInstanceSurface *> elements;
+
+		void clear() {
+			elements.clear();
+		}
+
+		//should eventually be replaced by radix
+
+		struct SortByKey {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurface *A, const GeometryInstanceSurface *B) const {
+				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
+			}
+		};
+
+		void sort_by_key() {
+			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
+			sorter.sort(elements.ptr(), elements.size());
+		}
+
+		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
+			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
+			sorter.sort(elements.ptr() + p_from, p_size);
+		}
+
+		struct SortByDepth {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurface *A, const GeometryInstanceSurface *B) const {
+				return (A->owner->depth < B->owner->depth);
+			}
+		};
+
+		void sort_by_depth() { //used for shadows
+
+			SortArray<GeometryInstanceSurface *, SortByDepth> sorter;
+			sorter.sort(elements.ptr(), elements.size());
+		}
+
+		struct SortByReverseDepthAndPriority {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurface *A, const GeometryInstanceSurface *B) const {
+				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+			}
+		};
+
+		void sort_by_reverse_depth_and_priority() { //used for alpha
+
+			SortArray<GeometryInstanceSurface *, SortByReverseDepthAndPriority> sorter;
+			sorter.sort(elements.ptr(), elements.size());
+		}
+
+		_FORCE_INLINE_ void add_element(GeometryInstanceSurface *p_element) {
+			elements.push_back(p_element);
+		}
+	};
+
+	RenderList render_list[RENDER_LIST_MAX];
+
+	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows);
+	void _fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append = false);
+
+	template <PassMode p_pass_mode>
+	_FORCE_INLINE_ void _render_list_template(RenderListParameters *p_params, const RenderDataGLES3 *p_render_data, uint32_t p_from_element, uint32_t p_to_element, bool p_alpha_pass = false);
 
 protected:
 	double time;
@@ -116,6 +458,8 @@ protected:
 		//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		//bool use_debanding = false;
 		//uint32_t view_count = 1;
+
+		bool is_transparent = false;
 
 		RID render_target;
 		GLuint internal_texture = 0; // Used for rendering when post effects are enabled
@@ -319,7 +663,7 @@ protected:
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
-		//SkyMaterialData *prev_material;
+		GLES3::SkyMaterialData *prev_material;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
 
@@ -335,16 +679,11 @@ protected:
 
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
-	void _draw_sky(Sky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
+	void _draw_sky(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform);
 
 public:
 	RasterizerStorageGLES3 *storage;
 	RasterizerCanvasGLES3 *canvas;
-
-	// References to shaders are needed in public space so they can be accessed in RasterizerStorageGLES3
-	struct State {
-		SkyShaderGLES3 sky_shader;
-	} state;
 
 	GeometryInstance *geometry_instance_create(RID p_base) override;
 	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
@@ -388,9 +727,15 @@ public:
 	/* SDFGI UPDATE */
 
 	void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
-	int sdfgi_get_pending_region_count(RID p_render_buffers) const override { return 0; }
-	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override { return AABB(); }
-	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override { return 0; }
+	int sdfgi_get_pending_region_count(RID p_render_buffers) const override {
+		return 0;
+	}
+	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override {
+		return AABB();
+	}
+	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override {
+		return 0;
+	}
 
 	/* SKY API */
 

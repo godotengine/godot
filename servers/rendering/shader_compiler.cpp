@@ -48,8 +48,8 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 	String type = ShaderLanguage::get_datatype_name(p_type);
-	if (ShaderLanguage::is_sampler_type(p_type)) {
-		type = type.replace("sampler", "texture"); //we use textures instead of samplers
+	if (!RS::get_singleton()->is_low_end() && ShaderLanguage::is_sampler_type(p_type)) {
+		type = type.replace("sampler", "texture"); //we use textures instead of samplers in Vulkan GLSL
 	}
 	return type;
 }
@@ -538,7 +538,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					continue; // Instances are indexed directly, don't need index uniforms.
 				}
 				if (SL::is_sampler_type(uniform.type)) {
-					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") uniform ";
+					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
+					if (!RS::get_singleton()->is_low_end()) {
+						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") ";
+					}
+					ucode += "uniform ";
 				}
 
 				bool is_buffer_global = !SL::is_sampler_type(uniform.type) && uniform.scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -681,9 +685,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				vcode += ";\n";
-
-				r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
-				r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
+				// GLSL ES 3.0 does not allow layout qualifiers for varyings
+				if (!RS::get_singleton()->is_low_end()) {
+					r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
+					r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+				}
+				r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
+				r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
 
 				index += inc;
 			}
@@ -1125,8 +1133,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code += ", ";
 						}
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (is_texture_func && i == 1) {
-							//need to map from texture to sampler in order to sample
+						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
+							//need to map from texture to sampler in order to sample when using Vulkan GLSL
 							StringName texture_uniform;
 							bool correct_texture_uniform = false;
 

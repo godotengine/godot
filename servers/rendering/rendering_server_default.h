@@ -113,7 +113,9 @@ public:
 	_changes_changed();
 
 #else
-	_FORCE_INLINE_ static void redraw_request() { changes++; }
+	_FORCE_INLINE_ static void redraw_request() {
+		changes++;
+	}
 #endif
 
 #define WRITE_ACTION redraw_request();

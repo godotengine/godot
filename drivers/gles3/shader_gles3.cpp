@@ -171,6 +171,15 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	}
 	builder.append("\n"); //make sure defines begin at newline
 
+	// Default to highp precision unless specified otherwise.
+	builder.append("precision highp float;\n");
+	builder.append("precision highp int;\n");
+#ifndef GLES_OVER_GL
+	builder.append("precision highp sampler2D;\n");
+	builder.append("precision highp samplerCube;\n");
+	builder.append("precision highp sampler2DArray;\n");
+#endif
+
 	for (uint32_t i = 0; i < p_template.chunks.size(); i++) {
 		const StageTemplate::Chunk &chunk = p_template.chunks[i];
 		switch (chunk.type) {

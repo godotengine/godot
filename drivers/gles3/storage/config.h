@@ -58,6 +58,9 @@ public:
 	int max_texture_image_units = 0;
 	int max_texture_size = 0;
 	int max_uniform_buffer_size = 0;
+	int max_renderable_elements = 0;
+	int max_renderable_lights = 0;
+	int max_lights_per_object = 0;
 
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
@@ -82,7 +85,6 @@ public:
 
 	bool support_32_bits_indices = false;
 	bool support_write_depth = false;
-	bool support_half_float_vertices = false;
 	bool support_npot_repeat_mipmap = false;
 	bool support_depth_cubemaps = false;
 	bool support_shadow_cubemaps = false;
@@ -96,6 +98,8 @@ public:
 	// in some cases the legacy render didn't orphan. We will mark these
 	// so the user can switch orphaning off for them.
 	bool should_orphan = true;
+
+	bool use_depth_prepass = true;
 
 	static Config *get_singleton() { return singleton; };
 

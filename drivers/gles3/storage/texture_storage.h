@@ -141,6 +141,7 @@ struct Texture {
 	int alloc_width = 0;
 	int alloc_height = 0;
 	Image::Format format = Image::FORMAT_R8;
+	Image::Format real_format = Image::FORMAT_R8;
 
 	enum Type {
 		TYPE_2D,
@@ -370,9 +371,6 @@ private:
 
 	RID default_gl_textures[DEFAULT_GL_TEXTURE_MAX];
 
-	Thread::ID _main_thread_id = 0;
-	bool _is_main_thread();
-
 	/* Canvas Texture API */
 
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
@@ -439,8 +437,6 @@ public:
 		return texture;
 	};
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
-
-	void set_main_thread_id(Thread::ID p_id);
 
 	virtual bool can_create_resources_async() const override;
 

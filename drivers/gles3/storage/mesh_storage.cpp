@@ -194,6 +194,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
 		glBufferData(GL_ARRAY_BUFFER, p_surface.attribute_data.size(), p_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		s->attribute_buffer_size = p_surface.attribute_data.size();
 	}
 	if (p_surface.skin_data.size()) {
 		glGenBuffers(1, &s->skin_buffer);
@@ -216,6 +217,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 		s->index_count = p_surface.index_count;
+		s->index_buffer_size = p_surface.index_data.size();
 
 		if (p_surface.lods.size()) {
 			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
@@ -323,7 +325,97 @@ RID MeshStorage::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 }
 
 RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
-	return RS::SurfaceData();
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND_V(!mesh, RS::SurfaceData());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RS::SurfaceData());
+
+	Mesh::Surface &s = *mesh->surfaces[p_surface];
+
+	RS::SurfaceData sd;
+	sd.format = s.format;
+	{
+		Vector<uint8_t> ret;
+		ret.resize(s.vertex_buffer_size);
+		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffer);
+
+#if defined(__EMSCRIPTEN__)
+		{
+			uint8_t *w = ret.ptrw();
+			glGetBufferSubData(GL_ARRAY_BUFFER, 0, s.vertex_buffer_size, w);
+		}
+#else
+		void *data = glMapBufferRange(GL_ARRAY_BUFFER, 0, s.vertex_buffer_size, GL_MAP_READ_BIT);
+		ERR_FAIL_NULL_V(data, RS::SurfaceData());
+		{
+			uint8_t *w = ret.ptrw();
+			memcpy(w, data, s.vertex_buffer_size);
+		}
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
+		sd.vertex_data = ret;
+	}
+
+	if (s.attribute_buffer != 0) {
+		Vector<uint8_t> ret;
+		ret.resize(s.attribute_buffer_size);
+		glBindBuffer(GL_ARRAY_BUFFER, s.attribute_buffer);
+
+#if defined(__EMSCRIPTEN__)
+		{
+			uint8_t *w = ret.ptrw();
+			glGetBufferSubData(GL_ARRAY_BUFFER, 0, s.attribute_buffer_size, w);
+		}
+#else
+		void *data = glMapBufferRange(GL_ARRAY_BUFFER, 0, s.attribute_buffer_size, GL_MAP_READ_BIT);
+		ERR_FAIL_NULL_V(data, RS::SurfaceData());
+		{
+			uint8_t *w = ret.ptrw();
+			memcpy(w, data, s.attribute_buffer_size);
+		}
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
+		sd.attribute_data = ret;
+	}
+
+	sd.vertex_count = s.vertex_count;
+	sd.index_count = s.index_count;
+	sd.primitive = s.primitive;
+
+	if (sd.index_count) {
+		Vector<uint8_t> ret;
+		ret.resize(s.index_buffer_size);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s.index_buffer);
+
+#if defined(__EMSCRIPTEN__)
+		{
+			uint8_t *w = ret.ptrw();
+			glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, s.index_buffer_size, w);
+		}
+#else
+		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, s.index_buffer_size, GL_MAP_READ_BIT);
+		ERR_FAIL_NULL_V(data, RS::SurfaceData());
+		{
+			uint8_t *w = ret.ptrw();
+			memcpy(w, data, s.index_buffer_size);
+		}
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+#endif
+		sd.index_data = ret;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	sd.aabb = s.aabb;
+	for (uint32_t i = 0; i < s.lod_count; i++) {
+		RS::SurfaceData::LOD lod;
+		lod.edge_length = s.lods[i].edge_length;
+		//lod.index_data = RD::get_singleton()->buffer_get_data(s.lods[i].index_buffer);
+		sd.lods.push_back(lod);
+	}
+
+	sd.bone_aabbs = s.bone_aabbs;
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	return sd;
 }
 
 int MeshStorage::mesh_get_surface_count(RID p_mesh) const {
@@ -496,7 +588,6 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 
 		if (s.index_buffer != 0) {
 			glDeleteBuffers(1, &s.index_buffer);
-			glDeleteVertexArrays(1, &s.index_array);
 		}
 		memdelete(mesh->surfaces[i]);
 	}
@@ -553,14 +644,14 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			case RS::ARRAY_NORMAL: {
 				attribs[i].offset = vertex_stride;
 				// Will need to change to accommodate octahedral compression
-				attribs[i].size = 1;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
 				vertex_stride += sizeof(float);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_TANGENT: {
 				attribs[i].offset = vertex_stride;
-				attribs[i].size = 1;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
 				vertex_stride += sizeof(float);
 				attribs[i].normalized = GL_TRUE;
@@ -629,14 +720,17 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			continue;
 		}
 		if (i <= RS::ARRAY_TANGENT) {
+			attribs[i].stride = vertex_stride;
 			if (mis) {
 				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffer);
 			} else {
 				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
 			}
 		} else if (i <= RS::ARRAY_CUSTOM3) {
+			attribs[i].stride = attributes_stride;
 			glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
 		} else {
+			attribs[i].stride = skin_stride;
 			glBindBuffer(GL_ARRAY_BUFFER, s->skin_buffer);
 		}
 
@@ -645,7 +739,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		} else {
 			glVertexAttribPointer(i, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 		}
-		glEnableVertexAttribArray(attribs[i].index);
+		glEnableVertexAttribArray(i);
 	}
 
 	// Do not bind index here as we want to switch between index buffers for LOD
