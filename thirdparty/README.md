@@ -115,7 +115,7 @@ will limit its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (7c3cb6fe708d4ae330b0ab2af1ad472bae2a37a2, 2021)
+- Version: git (10fc4ce627f9a17ed49bf97fcc3796a712033ba1, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
