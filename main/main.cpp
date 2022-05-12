@@ -1082,19 +1082,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Assigning here, to be sure that it appears in docs
 	GLOBAL_DEF("rendering/2d/options/use_nvidia_rect_flicker_workaround", false);
 
-	GLOBAL_DEF("display/window/size/width", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/height", 600);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/height", PropertyInfo(Variant::INT, "display/window/size/height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/resizable", true);
-	GLOBAL_DEF("display/window/size/borderless", false);
-	GLOBAL_DEF("display/window/size/fullscreen", false);
-	GLOBAL_DEF("display/window/size/always_on_top", false);
-	GLOBAL_DEF("display/window/size/test_width", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_width", PropertyInfo(Variant::INT, "display/window/size/test_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/test_height", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_height", PropertyInfo(Variant::INT, "display/window/size/test_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater")); // 8K resolution
-
 	if (use_custom_res) {
 		if (!force_res) {
 			video_mode.width = GLOBAL_GET("display/window/size/width");
