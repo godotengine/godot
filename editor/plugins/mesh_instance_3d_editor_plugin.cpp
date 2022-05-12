@@ -77,12 +77,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				StaticBody3D *body = memnew(StaticBody3D);
 				body->add_child(cshape, true);
 
-				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->create_action(TTR("Create Static Trimesh Body"));
 				ur->add_do_method(node, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(node, "remove_child", body);
 				ur->commit_action();
@@ -112,11 +114,13 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				StaticBody3D *body = memnew(StaticBody3D);
 				body->add_child(cshape, true);
 
-				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(instance, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", body);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(body);
 				ur->add_undo_method(instance, "remove_child", body);
 			}
@@ -141,7 +145,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -150,6 +154,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
@@ -184,11 +189,12 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
-			Node *owner = node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 
@@ -217,14 +223,17 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			for (int i = 0; i < shapes.size(); i++) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
+				cshape->set_name("CollisionShape3D");
+
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
 
-				Node *owner = node->get_owner();
+				Node *owner = get_tree()->get_edited_scene_root();
 
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			}
@@ -243,13 +252,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 			nmi->set_navigation_mesh(nmesh);
 
-			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = get_tree()->get_edited_scene_root();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", nmi);
 
 			ur->add_do_reference(nmi);
 			ur->add_undo_method(node, "remove_child", nmi);
@@ -267,12 +277,51 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Error err = mesh2->lightmap_unwrap(node->get_global_transform());
+			String path = mesh2->get_path();
+			int srpos = path.find("::");
+			if (srpos != -1) {
+				String base = path.substr(0, srpos);
+				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
+						err_dialog->popup_centered();
+						return;
+					}
+				} else {
+					if (FileAccess::exists(path + ".import")) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
+						err_dialog->popup_centered();
+						return;
+					}
+				}
+			} else {
+				if (FileAccess::exists(path + ".import")) {
+					err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
+					err_dialog->popup_centered();
+					return;
+				}
+			}
+
+			Ref<ArrayMesh> unwrapped_mesh = mesh2->duplicate(false);
+
+			Error err = unwrapped_mesh->lightmap_unwrap(node->get_global_transform());
 			if (err != OK) {
 				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
 				err_dialog->popup_centered();
 				return;
 			}
+
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Unwrap UV2"));
+
+			ur->add_do_method(node, "set_mesh", unwrapped_mesh);
+			ur->add_do_reference(node);
+			ur->add_do_reference(mesh2.ptr());
+
+			ur->add_undo_method(node, "set_mesh", mesh2);
+			ur->add_undo_reference(unwrapped_mesh.ptr());
+
+			ur->commit_action();
 
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
@@ -418,10 +467,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	MeshInstance3D *mi = memnew(MeshInstance3D);
 	mi->set_mesh(mesho);
-	Node *owner = node->get_owner();
-	if (get_tree()->get_edited_scene_root() == node) {
-		owner = node;
-	}
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -429,6 +475,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
+	ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", mi);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);
