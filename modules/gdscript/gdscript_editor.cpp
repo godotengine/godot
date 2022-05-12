@@ -1057,6 +1057,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						r_result.insert(option.display, option);
 					}
 
+					List<MethodInfo> signals;
+					ClassDB::get_signal_list(type, &signals);
+					for (const MethodInfo &E : signals) {
+						int location = p_recursion_depth + _get_signal_location(type, StringName(E.name));
+						ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
+						r_result.insert(option.display, option);
+					}
+
 					if (!_static || Engine::get_singleton()->has_singleton(type)) {
 						List<PropertyInfo> pinfo;
 						ClassDB::get_property_list(type, &pinfo);
@@ -3056,6 +3064,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						r_result.class_member = p_symbol;
 						return OK;
 					}
+				}
+
+				if (ClassDB::has_signal(class_name, p_symbol, true)) {
+					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL;
+					r_result.class_name = base_type.native_type;
+					r_result.class_member = p_symbol;
+					return OK;
 				}
 
 				StringName enum_name = ClassDB::get_integer_constant_enum(class_name, p_symbol, true);
