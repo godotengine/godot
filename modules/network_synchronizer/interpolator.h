@@ -64,7 +64,7 @@ private:
 	/// Epoch ids, sorted from youngest to oldest.
 	LocalVector<uint32_t> epochs;
 	/// Epoch data.
-	LocalVector<Vector<Variant>> buffer;
+	LocalVector<Array> buffer;
 
 	bool init_phase = true;
 	uint32_t write_position = UINT32_MAX;
@@ -89,7 +89,7 @@ public:
 	void epoch_insert(int p_var_id, const Variant &p_value);
 	void end_write();
 
-	Vector<Variant> pop_epoch(uint32_t p_epoch, real_t p_fraction);
+	Array pop_epoch(uint32_t p_epoch, real_t p_fraction);
 	uint32_t get_last_pop_epoch() const; // TODO do I need this? Remove if not.
 	uint32_t get_youngest_epoch() const;
 	uint32_t get_oldest_epoch() const;

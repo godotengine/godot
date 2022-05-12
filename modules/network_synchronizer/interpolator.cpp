@@ -125,7 +125,7 @@ void Interpolator::begin_write(uint32_t p_epoch) {
 		} else {
 			// Make room.
 			epochs.push_back(UINT32_MAX);
-			buffer.push_back(Vector<Variant>());
+			buffer.push_back(Array());
 			// Sort the epochs.
 			for (int i = epochs.size() - 2; i >= int(write_position); i -= 1) {
 				epochs[uint32_t(i) + 1] = epochs[uint32_t(i)];
@@ -140,12 +140,12 @@ void Interpolator::begin_write(uint32_t p_epoch) {
 		// No sort needed.
 		write_position = epochs.size();
 		epochs.push_back(p_epoch);
-		buffer.push_back(Vector<Variant>());
+		buffer.push_back(Array());
 		buffer[write_position].resize(variables.size());
 	}
 
 	// Set defaults.
-	Variant *ptr = buffer[write_position].ptrw();
+	Variant *ptr = &buffer[write_position][0];
 	for (uint32_t i = 0; i < variables.size(); i += 1) {
 		ptr[i] = variables[i].default_value;
 	}
@@ -156,7 +156,7 @@ void Interpolator::epoch_insert(int p_var_id, const Variant &p_value) {
 	ERR_FAIL_INDEX_MSG(p_var_id, int(variables.size()), "The variable_id passed is unknown.");
 	const uint32_t var_id(p_var_id);
 	ERR_FAIL_COND_MSG(variables[var_id].default_value.get_type() != p_value.get_type(), "The variable: " + itos(p_var_id) + " expects the variable type: " + Variant::get_type_name(variables[var_id].default_value.get_type()) + ", and not: " + Variant::get_type_name(p_value.get_type()));
-	buffer[write_position].write[var_id] = p_value;
+	buffer[write_position][var_id] = p_value;
 }
 
 void Interpolator::end_write() {
@@ -164,9 +164,9 @@ void Interpolator::end_write() {
 	write_position = UINT32_MAX;
 }
 
-Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
-	ERR_FAIL_COND_V_MSG(init_phase, Vector<Variant>(), "You can't pop data if the interpolator is not fully initialized.");
-	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Vector<Variant>(), "You can't pop data while writing the epoch");
+Array Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
+	ERR_FAIL_COND_V_MSG(init_phase, Array(), "You can't pop data if the interpolator is not fully initialized.");
+	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Array(), "You can't pop data while writing the epoch");
 
 	double epoch = double(p_epoch) + double(p_fraction);
 
@@ -182,10 +182,10 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	ObjectID cache_object_id;
 	Object *cache_object = nullptr;
 
-	Vector<Variant> data;
+	Array data;
 	if (unlikely(position == UINT32_MAX)) {
 		data.resize(variables.size());
-		Variant *ptr = data.ptrw();
+		Variant *ptr = &data[0];
 		if (buffer.size() == 0) {
 			// No data found, set all to default.
 			for (uint32_t i = 0; i < variables.size(); i += 1) {
@@ -238,7 +238,7 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	} else if (unlikely(position == 0)) {
 		// No old data.
 		data.resize(variables.size());
-		Variant *ptr = data.ptrw();
+		Variant *ptr = &data[0];
 		for (uint32_t i = 0; i < variables.size(); i += 1) {
 			switch (variables[i].fallback) {
 				case FALLBACK_DEFAULT:
@@ -279,7 +279,7 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	} else {
 		// Enought data to do anything needed.
 		data.resize(variables.size());
-		Variant *ptr = data.ptrw();
+		Variant *ptr = &data[0];
 		for (uint32_t i = 0; i < variables.size(); i += 1) {
 			switch (variables[i].fallback) {
 				case FALLBACK_DEFAULT:
