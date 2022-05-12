@@ -2593,7 +2593,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	if (can_use_effects && can_use_storage && (rb->internal_width != rb->width || rb->internal_height != rb->height)) {
-		RD::get_singleton()->draw_command_begin_label("FSR Upscale");
+		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
 
 		storage->get_effects()->fsr_upscale(rb->internal_texture, rb->upscale_texture, rb->texture, Size2i(rb->internal_width, rb->internal_height), Size2i(rb->width, rb->height), rb->fsr_sharpness);
 
