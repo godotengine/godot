@@ -207,6 +207,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ssh"] = "SSH";
 	capitalize_string_remaps["ssil"] = "SSIL";
 	capitalize_string_remaps["ssl"] = "SSL";
+	capitalize_string_remaps["sss"] = "SSS";
 	capitalize_string_remaps["stderr"] = "stderr";
 	capitalize_string_remaps["stdout"] = "stdout";
 	capitalize_string_remaps["sv"] = "SV";
