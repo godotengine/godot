@@ -233,6 +233,38 @@ RID GodotNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 
 	return map->get_closest_point_owner(p_point);
 }
 
+Array GodotNavigationServer::map_get_regions(RID p_map) const {
+	Array regions_rids;
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND_V(map == nullptr, regions_rids);
+	for (NavRegion *region : map->get_regions()) {
+		regions_rids.push_back(region->get_self());
+	}
+	return regions_rids;
+}
+
+Array GodotNavigationServer::map_get_agents(RID p_map) const {
+	Array agents_rids;
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND_V(map == nullptr, agents_rids);
+	for (RvoAgent *agent : map->get_agents()) {
+		agents_rids.push_back(agent->get_self());
+	}
+	return agents_rids;
+}
+
+RID GodotNavigationServer::region_get_map(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, RID());
+	return region->get_map()->get_self();
+}
+
+RID GodotNavigationServer::agent_get_map(RID p_agent) const {
+	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_COND_V(agent == nullptr, RID());
+	return agent->get_map()->get_self();
+}
+
 RID GodotNavigationServer::region_create() const {
 	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
