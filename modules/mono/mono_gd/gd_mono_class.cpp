@@ -247,7 +247,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 				if (existing_method) {
 					memdelete(*existing_method); // Must delete old one
 				}
-				methods.set(key, method);
+				methods.insert(key, method);
 
 				break;
 			}
@@ -266,11 +266,9 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p_name) {
 	ERR_FAIL_COND_V(!methods_fetched, nullptr);
 
-	const MethodKey *k = nullptr;
-
-	while ((k = methods.next(k))) {
-		if (k->name == p_name) {
-			return methods.get(*k);
+	for (const KeyValue<MethodKey, GDMonoMethod *> &E : methods) {
+		if (E.key.name == p_name) {
+			return E.value;
 		}
 	}
 
@@ -307,7 +305,7 @@ GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, uint16_t p_param
 
 	if (raw_method) {
 		GDMonoMethod *method = memnew(GDMonoMethod(p_name, raw_method));
-		methods.set(key, method);
+		methods.insert(key, method);
 
 		return method;
 	}
@@ -342,7 +340,7 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 	}
 
 	GDMonoMethod *method = memnew(GDMonoMethod(p_name, p_raw_method));
-	methods.set(key, method);
+	methods.insert(key, method);
 
 	return method;
 }
@@ -549,9 +547,8 @@ GDMonoClass::~GDMonoClass() {
 		Vector<GDMonoMethod *> deleted_methods;
 		deleted_methods.resize(methods.size());
 
-		const MethodKey *k = nullptr;
-		while ((k = methods.next(k))) {
-			GDMonoMethod *method = methods.get(*k);
+		for (const KeyValue<MethodKey, GDMonoMethod *> &E : methods) {
+			GDMonoMethod *method = E.value;
 
 			if (method) {
 				for (int i = 0; i < offset; i++) {

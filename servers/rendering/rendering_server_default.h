@@ -33,7 +33,7 @@
 
 #include "core/math/octree.h"
 #include "core/templates/command_queue_mt.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
@@ -69,7 +69,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	//for printing
 	bool print_gpu_profile = false;
-	OrderedHashMap<String, float> print_gpu_profile_task_time;
+	HashMap<String, float> print_gpu_profile_task_time;
 	uint64_t print_frame_profile_ticks_from = 0;
 	uint32_t print_frame_profile_frame_count = 0;
 

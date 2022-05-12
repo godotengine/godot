@@ -119,8 +119,8 @@ List<StringName> InputMap::get_actions() const {
 		return actions;
 	}
 
-	for (OrderedHashMap<StringName, Action>::Element E = input_map.front(); E; E = E.next()) {
-		actions.push_back(E.key());
+	for (const KeyValue<StringName, Action> &E : input_map) {
+		actions.push_back(E.key);
 	}
 
 	return actions;
@@ -203,12 +203,12 @@ Array InputMap::_action_get_events(const StringName &p_action) {
 }
 
 const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_action) {
-	const OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
+	HashMap<StringName, Action>::Iterator E = input_map.find(p_action);
 	if (!E) {
 		return nullptr;
 	}
 
-	return &E.get().inputs;
+	return &E->value.inputs;
 }
 
 bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
@@ -216,7 +216,7 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
-	OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
+	HashMap<StringName, Action>::Iterator E = input_map.find(p_action);
 	ERR_FAIL_COND_V_MSG(!E, false, suggest_actions(p_action));
 
 	Ref<InputEventAction> input_event_action = p_event;
@@ -235,11 +235,11 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 		return input_event_action->get_action() == p_action;
 	}
 
-	List<Ref<InputEvent>>::Element *event = _find_event(E.get(), p_event, p_exact_match, r_pressed, r_strength, r_raw_strength);
+	List<Ref<InputEvent>>::Element *event = _find_event(E->value, p_event, p_exact_match, r_pressed, r_strength, r_raw_strength);
 	return event != nullptr;
 }
 
-const OrderedHashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {
+const HashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {
 	return input_map;
 }
 
@@ -360,7 +360,7 @@ String InputMap::get_builtin_display_name(const String &p_name) const {
 	return p_name;
 }
 
-const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
+const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	// Return cache if it has already been built.
 	if (default_builtin_cache.size()) {
 		return default_builtin_cache;
@@ -686,19 +686,19 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	return default_builtin_cache;
 }
 
-const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
+const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
 	if (default_builtin_with_overrides_cache.size() > 0) {
 		return default_builtin_with_overrides_cache;
 	}
 
-	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
+	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
 	// Get a list of all built in inputs which are valid overrides for the OS
 	// Key = builtin name (e.g. ui_accept)
 	// Value = override/feature names (e.g. macos, if it was defined as "ui_accept.macos" and the platform supports that feature)
 	Map<String, Vector<String>> builtins_with_overrides;
-	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		String fullname = E.key();
+	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
+		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
 		String name = split[0];
@@ -709,8 +709,8 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with
 		}
 	}
 
-	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		String fullname = E.key();
+	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
+		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
 		String name = split[0];
@@ -726,22 +726,22 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with
 			continue;
 		}
 
-		default_builtin_with_overrides_cache.insert(name, E.value());
+		default_builtin_with_overrides_cache.insert(name, E.value);
 	}
 
 	return default_builtin_with_overrides_cache;
 }
 
 void InputMap::load_default() {
-	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
 
-	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		String name = E.key();
+	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
+		String name = E.key;
 
 		add_action(name);
 
-		List<Ref<InputEvent>> inputs = E.get();
-		for (List<Ref<InputEvent>>::Element *I = inputs.front(); I; I = I->next()) {
+		const List<Ref<InputEvent>> &inputs = E.value;
+		for (const List<Ref<InputEvent>>::Element *I = inputs.front(); I; I = I->next()) {
 			Ref<InputEventKey> iek = I->get();
 
 			// For the editor, only add keyboard actions.

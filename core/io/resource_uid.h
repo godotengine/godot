@@ -33,7 +33,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
@@ -53,7 +53,7 @@ private:
 		bool saved_to_cache = false;
 	};
 
-	OrderedHashMap<ID, Cache> unique_ids; //unique IDs and utf8 paths (less memory used)
+	HashMap<ID, Cache> unique_ids; //unique IDs and utf8 paths (less memory used)
 	static ResourceUID *singleton;
 
 	uint32_t cache_entries = 0;

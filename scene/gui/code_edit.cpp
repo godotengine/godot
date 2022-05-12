@@ -3036,7 +3036,9 @@ void CodeEdit::_text_changed() {
 
 	lc = get_line_count();
 	List<int> breakpoints;
-	breakpointed_lines.get_key_list(&breakpoints);
+	for (const KeyValue<int, bool> &E : breakpointed_lines) {
+		breakpoints.push_back(E.key);
+	}
 	for (const int &line : breakpoints) {
 		if (line < lines_edited_from || (line < lc && is_line_breakpointed(line))) {
 			continue;

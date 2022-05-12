@@ -179,10 +179,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
 
 			float print_threshold = 0.01;
-			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
-				double time = E.value() / double(print_frame_profile_frame_count);
+			for (const KeyValue<String, float> &E : print_gpu_profile_task_time) {
+				double time = E.value / double(print_frame_profile_frame_count);
 				if (time > print_threshold) {
-					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
+					print_line("\t-" + E.key + ": " + rtos(time) + "ms");
 				}
 			}
 			print_gpu_profile_task_time.clear();

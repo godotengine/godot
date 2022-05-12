@@ -89,16 +89,16 @@ void ExtendGDScriptParser::update_symbols() {
 
 		for (int i = 0; i < class_symbol.children.size(); i++) {
 			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
-			members.set(symbol.name, &symbol);
+			members.insert(symbol.name, &symbol);
 
 			// cache level one inner classes
 			if (symbol.kind == lsp::SymbolKind::Class) {
 				ClassMembers inner_class;
 				for (int j = 0; j < symbol.children.size(); j++) {
 					const lsp::DocumentSymbol &s = symbol.children[j];
-					inner_class.set(s.name, &s);
+					inner_class.insert(s.name, &s);
 				}
-				inner_classes.set(symbol.name, inner_class);
+				inner_classes.insert(symbol.name, inner_class);
 			}
 		}
 	}
@@ -661,30 +661,22 @@ const List<lsp::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 
 const Array &ExtendGDScriptParser::get_member_completions() {
 	if (member_completions.is_empty()) {
-		const String *name = members.next(nullptr);
-		while (name) {
-			const lsp::DocumentSymbol *symbol = members.get(*name);
+		for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
+			const lsp::DocumentSymbol *symbol = E.value;
 			lsp::CompletionItem item = symbol->make_completion_item();
-			item.data = JOIN_SYMBOLS(path, *name);
+			item.data = JOIN_SYMBOLS(path, E.key);
 			member_completions.push_back(item.to_json());
-
-			name = members.next(name);
 		}
 
-		const String *_class = inner_classes.next(nullptr);
-		while (_class) {
-			const ClassMembers *inner_class = inner_classes.getptr(*_class);
-			const String *member_name = inner_class->next(nullptr);
-			while (member_name) {
-				const lsp::DocumentSymbol *symbol = inner_class->get(*member_name);
+		for (const KeyValue<String, ClassMembers> &E : inner_classes) {
+			const ClassMembers *inner_class = &E.value;
+
+			for (const KeyValue<String, const lsp::DocumentSymbol *> &F : *inner_class) {
+				const lsp::DocumentSymbol *symbol = F.value;
 				lsp::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(*_class, *member_name));
+				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(E.key, F.key));
 				member_completions.push_back(item.to_json());
-
-				member_name = inner_class->next(member_name);
 			}
-
-			_class = inner_classes.next(_class);
 		}
 	}
 

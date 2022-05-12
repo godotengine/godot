@@ -1737,7 +1737,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	p_player->get_animation_list(&anims);
 	Node *parent = p_player->get_parent();
 	ERR_FAIL_COND(parent == nullptr);
-	OrderedHashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
+	HashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
 	bool tracks_to_add = false;
 	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D, Animation::TYPE_BLEND_SHAPE };
 	for (const StringName &I : anims) {
@@ -1790,12 +1790,12 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 				used_tracks[j][path] = pass;
 			}
 
-			for (OrderedHashMap<NodePath, uint32_t>::Element J = used_tracks[j].front(); J; J = J.next()) {
-				if (J.get() == pass) {
+			for (const KeyValue<NodePath, uint32_t> &J : used_tracks[j]) {
+				if (J.value == pass) {
 					continue;
 				}
 
-				NodePath path = J.key();
+				NodePath path = J.key;
 				Node *n = parent->get_node(path);
 
 				if (j == TRACK_CHANNEL_BLEND_SHAPE) {

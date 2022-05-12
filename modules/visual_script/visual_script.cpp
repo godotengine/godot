@@ -209,8 +209,9 @@ Vector2 VisualScript::get_scroll() const {
 }
 
 void VisualScript::get_function_list(List<StringName> *r_functions) const {
-	functions.get_key_list(r_functions);
-	// r_functions->sort_custom<StringName::AlphCompare>(); // Don't force sorting.
+	for (const KeyValue<StringName, Function> &E : functions) {
+		r_functions->push_back(E.key);
+	}
 }
 
 int VisualScript::get_function_node_id(const StringName &p_name) const {
@@ -346,7 +347,9 @@ Point2 VisualScript::get_node_position(int p_id) const {
 }
 
 void VisualScript::get_node_list(List<int> *r_nodes) const {
-	nodes.get_key_list(r_nodes);
+	for (const KeyValue<int, NodeData> &E : nodes) {
+		r_nodes->push_back(E.key);
+	}
 }
 
 void VisualScript::sequence_connect(int p_from_node, int p_from_output, int p_to_node) {
@@ -563,8 +566,9 @@ Dictionary VisualScript::_get_variable_info(const StringName &p_name) const {
 }
 
 void VisualScript::get_variable_list(List<StringName> *r_variables) const {
-	variables.get_key_list(r_variables);
-	// r_variables->sort_custom<StringName::AlphCompare>(); // Don't force it.
+	for (const KeyValue<StringName, Variable> &E : variables) {
+		r_variables->push_back(E.key);
+	}
 }
 
 void VisualScript::set_instance_base_type(const StringName &p_type) {
@@ -713,12 +717,11 @@ int VisualScript::get_available_id() const {
 	// This is infinitely increasing,
 	// so one might want to implement a better solution,
 	// if the there is a case for huge number of nodes to be added to visual script.
-	List<int> nds;
-	nodes.get_key_list(&nds);
+
 	int max = -1;
-	for (const int &E : nds) {
-		if (E > max) {
-			max = E;
+	for (const KeyValue<int, NodeData> &E : nodes) {
+		if (E.key > max) {
+			max = E.key;
 		}
 	}
 	return (max + 1);
@@ -750,18 +753,15 @@ void VisualScript::_update_placeholders() {
 	List<PropertyInfo> pinfo;
 	Map<StringName, Variant> values;
 
-	List<StringName> keys;
-	variables.get_key_list(&keys);
-
-	for (const StringName &E : keys) {
-		if (!variables[E]._export) {
+	for (const KeyValue<StringName, Variable> &E : variables) {
+		if (!variables[E.key]._export) {
 			continue;
 		}
 
-		PropertyInfo p = variables[E].info;
-		p.name = String(E);
+		PropertyInfo p = variables[E.key].info;
+		p.name = String(E.key);
 		pinfo.push_back(p);
-		values[p.name] = variables[E].default_value;
+		values[p.name] = variables[E.key].default_value;
 	}
 
 	for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
@@ -781,18 +781,15 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 		List<PropertyInfo> pinfo;
 		Map<StringName, Variant> values;
 
-		List<StringName> keys;
-		variables.get_key_list(&keys);
-
-		for (const StringName &E : keys) {
-			if (!variables[E]._export) {
+		for (const KeyValue<StringName, Variable> &E : variables) {
+			if (!variables[E.key]._export) {
 				continue;
 			}
 
-			PropertyInfo p = variables[E].info;
-			p.name = String(E);
+			PropertyInfo p = variables[E.key].info;
+			p.name = String(E.key);
 			pinfo.push_back(p);
-			values[p.name] = variables[E].default_value;
+			values[p.name] = variables[E.key].default_value;
 		}
 		sins->update(pinfo, values);
 
@@ -872,14 +869,11 @@ bool VisualScript::get_property_default_value(const StringName &p_property, Vari
 }
 
 void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
-	List<StringName> funcs;
-	functions.get_key_list(&funcs);
-
-	for (const StringName &E : funcs) {
+	for (const KeyValue<StringName, Function> &E : functions) {
 		MethodInfo mi;
-		mi.name = E;
-		if (functions[E].func_id >= 0) {
-			Ref<VisualScriptFunction> func = nodes[functions[E].func_id].node;
+		mi.name = E.key;
+		if (functions[E.key].func_id >= 0) {
+			Ref<VisualScriptFunction> func = nodes[functions[E.key].func_id].node;
 			if (func.is_valid()) {
 				for (int i = 0; i < func->get_argument_count(); i++) {
 					PropertyInfo arg;
@@ -945,10 +939,8 @@ int VisualScript::get_member_line(const StringName &p_member) const {
 
 #ifdef TOOLS_ENABLED
 bool VisualScript::are_subnodes_edited() const {
-	List<int> keys;
-	nodes.get_key_list(&keys);
-	for (const int &F : keys) {
-		if (nodes[F].node->is_edited()) {
+	for (const KeyValue<int, NodeData> &F : nodes) {
+		if (F.value.node->is_edited()) {
 			return true;
 		}
 	}
@@ -1017,15 +1009,13 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 
 	// Takes all the rpc methods.
 	rpc_functions.clear();
-	List<StringName> fns;
-	functions.get_key_list(&fns);
-	for (const StringName &E : fns) {
-		if (functions[E].func_id >= 0 && nodes.has(functions[E].func_id)) {
-			Ref<VisualScriptFunction> vsf = nodes[functions[E].func_id].node;
+	for (const KeyValue<StringName, Function> &E : functions) {
+		if (E.value.func_id >= 0 && nodes.has(E.value.func_id)) {
+			Ref<VisualScriptFunction> vsf = nodes[E.value.func_id].node;
 			if (vsf.is_valid()) {
 				if (vsf->get_rpc_mode() != Multiplayer::RPC_MODE_DISABLED) {
 					Multiplayer::RPCConfig nd;
-					nd.name = E;
+					nd.name = E.key;
 					nd.rpc_mode = vsf->get_rpc_mode();
 					nd.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE; // TODO
 					if (rpc_functions.find(nd) == -1) {
@@ -1045,13 +1035,11 @@ Dictionary VisualScript::_get_data() const {
 	d["base_type"] = base_type;
 
 	Array vars;
-	List<StringName> var_names;
-	variables.get_key_list(&var_names);
-	for (const StringName &E : var_names) {
-		Dictionary var = _get_variable_info(E);
-		var["name"] = E; // Make sure it's the right one.
-		var["default_value"] = variables[E].default_value;
-		var["export"] = variables[E]._export;
+	for (const KeyValue<StringName, Variable> &E : variables) {
+		Dictionary var = _get_variable_info(E.key);
+		var["name"] = E.key; // Make sure it's the right one.
+		var["default_value"] = E.value.default_value;
+		var["export"] = E.value._export;
 		vars.push_back(var);
 	}
 	d["variables"] = vars;
@@ -1073,23 +1061,19 @@ Dictionary VisualScript::_get_data() const {
 	d["signals"] = sigs;
 
 	Array funcs;
-	List<StringName> func_names;
-	functions.get_key_list(&func_names);
-	for (const StringName &E : func_names) {
+	for (const KeyValue<StringName, Function> &E : functions) {
 		Dictionary func;
-		func["name"] = E;
-		func["function_id"] = functions[E].func_id;
+		func["name"] = E.key;
+		func["function_id"] = E.value.func_id;
 		funcs.push_back(func);
 	}
 	d["functions"] = funcs;
 
 	Array nds;
-	List<int> node_ids;
-	nodes.get_key_list(&node_ids);
-	for (const int &F : node_ids) {
-		nds.push_back(F);
-		nds.push_back(nodes[F].pos);
-		nds.push_back(nodes[F].node);
+	for (const KeyValue<int, NodeData> &F : nodes) {
+		nds.push_back(F.key);
+		nds.push_back(F.value.pos);
+		nds.push_back(F.value.node);
 	}
 	d["nodes"] = nds;
 
@@ -1199,10 +1183,8 @@ Set<int> VisualScript::get_output_sequence_ports_connected(int from_node) {
 
 VisualScript::~VisualScript() {
 	// Remove all nodes and stuff that hold data refs.
-	List<int> nds;
-	nodes.get_key_list(&nds);
-	for (const int &E : nds) {
-		remove_node(E);
+	for (const KeyValue<int, NodeData> &E : nodes) {
+		remove_node(E.key);
 	}
 }
 
@@ -1230,14 +1212,12 @@ bool VisualScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	List<StringName> vars;
-	script->variables.get_key_list(&vars);
-	for (const StringName &E : vars) {
-		if (!script->variables[E]._export) {
+	for (const KeyValue<StringName, VisualScript::Variable> &E : script->variables) {
+		if (!E.value._export) {
 			continue;
 		}
-		PropertyInfo p = script->variables[E].info;
-		p.name = String(E);
+		PropertyInfo p = E.value.info;
+		p.name = String(E.key);
 		p.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_properties->push_back(p);
 	}
@@ -1259,13 +1239,11 @@ Variant::Type VisualScriptInstance::get_property_type(const StringName &p_name, 
 }
 
 void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
-	List<StringName> fns;
-	script->functions.get_key_list(&fns);
-	for (const StringName &E : fns) {
+	for (const KeyValue<StringName, VisualScript::Function> &E : script->functions) {
 		MethodInfo mi;
-		mi.name = E;
-		if (script->functions[E].func_id >= 0 && script->nodes.has(script->functions[E].func_id)) {
-			Ref<VisualScriptFunction> vsf = script->nodes[script->functions[E].func_id].node;
+		mi.name = E.key;
+		if (E.value.func_id >= 0 && script->nodes.has(E.value.func_id)) {
+			Ref<VisualScriptFunction> vsf = script->nodes[E.value.func_id].node;
 			if (vsf.is_valid()) {
 				for (int i = 0; i < vsf->get_argument_count(); i++) {
 					PropertyInfo arg;
@@ -1845,19 +1823,15 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 	// Setup variables.
 	{
-		List<StringName> keys;
-		script->variables.get_key_list(&keys);
-		for (const StringName &E : keys) {
-			variables[E] = script->variables[E].default_value;
+		for (const KeyValue<StringName, VisualScript::Variable> &E : script->variables) {
+			variables[E.key] = E.value.default_value;
 		}
 	}
 
 	// Setup functions from sequence trees.
 	{
-		List<StringName> keys;
-		script->functions.get_key_list(&keys);
-		for (const StringName &E : keys) {
-			const VisualScript::Function vsfn = p_script->functions[E];
+		for (const KeyValue<StringName, VisualScript::Function> &E : script->functions) {
+			const VisualScript::Function &vsfn = E.value;
 			Function function;
 			function.node = vsfn.func_id;
 			function.max_stack = 0;
@@ -1868,7 +1842,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			Map<StringName, int> local_var_indices;
 
 			if (function.node < 0) {
-				VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No start node in function: " + String(E));
+				VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No start node in function: " + String(E.key));
 				ERR_CONTINUE(function.node < 0);
 			}
 
@@ -1876,7 +1850,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				Ref<VisualScriptFunction> func_node = script->get_node(vsfn.func_id);
 
 				if (func_node.is_null()) {
-					VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No VisualScriptFunction typed start node in function: " + String(E));
+					VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No VisualScriptFunction typed start node in function: " + String(E.key));
 				}
 
 				ERR_CONTINUE(!func_node.is_valid());
@@ -1916,13 +1890,12 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				List<int> dc_keys;
 				while (!nd_queue.is_empty()) {
 					int ky = nd_queue.front()->get();
-					dc_lut[ky].get_key_list(&dc_keys);
-					for (const int &F : dc_keys) {
+					for (const KeyValue<int, Pair<int, int>> &F : dc_lut[ky]) {
 						VisualScript::DataConnection dc;
-						dc.from_node = dc_lut[ky][F].first;
-						dc.from_port = dc_lut[ky][F].second;
+						dc.from_node = F.value.first;
+						dc.from_port = F.value.second;
 						dc.to_node = ky;
-						dc.to_port = F;
+						dc.to_port = F.key;
 						dataconns.insert(dc);
 						nd_queue.push_back(dc.from_node);
 						node_ids.insert(dc.from_node);
@@ -2072,7 +2045,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				}
 			}
 
-			functions[E] = function;
+			functions[E.key] = function;
 		}
 	}
 }

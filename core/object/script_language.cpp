@@ -253,10 +253,9 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 }
 
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
-	const StringName *K = nullptr;
 	List<StringName> classes;
-	while ((K = global_classes.next(K))) {
-		classes.push_back(*K);
+	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
+		classes.push_back(E.key);
 	}
 	classes.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : classes) {

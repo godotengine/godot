@@ -141,7 +141,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "shortcuts") {
 		Array save_array;
-		const OrderedHashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
+		const HashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
 		for (const KeyValue<String, Ref<Shortcut>> &shortcut_definition : shortcuts) {
 			Ref<Shortcut> sc = shortcut_definition.value;
 
@@ -244,18 +244,17 @@ struct _EVCSort {
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	const String *k = nullptr;
 	Set<_EVCSort> vclist;
 
-	while ((k = props.next(k))) {
-		const VariantContainer *v = props.getptr(*k);
+	for (const KeyValue<String, VariantContainer> &E : props) {
+		const VariantContainer *v = &E.value;
 
 		if (v->hide_from_editor) {
 			continue;
 		}
 
 		_EVCSort vc;
-		vc.name = *k;
+		vc.name = E.key;
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
 		vc.save = v->save;
@@ -789,7 +788,11 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	Ref<ConfigFile> cf = memnew(ConfigFile); // hex is better?
 
 	List<String> keys;
-	props.get_key_list(&keys);
+
+	for (const KeyValue<String, VariantContainer> &E : props) {
+		keys.push_back(E.key);
+	}
+
 	keys.sort();
 
 	for (const String &key : keys) {
@@ -1421,10 +1424,10 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+		const HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
-			sc->set_events_list(&builtin_default.get());
+			sc->set_events_list(&builtin_default->value);
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1562,9 +1565,9 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	// Check if the provided event array is same as built-in. If it is, it does not need to be added to the overrides.
 	// Note that event order must also be the same.
 	bool same_as_builtin = true;
-	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 	if (builtin_default) {
-		List<Ref<InputEvent>> builtin_events = builtin_default.get();
+		const List<Ref<InputEvent>> &builtin_events = builtin_default->value;
 
 		// In the editor we only care about key events.
 		List<Ref<InputEventKey>> builtin_key_events;

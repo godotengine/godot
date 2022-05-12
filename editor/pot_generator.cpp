@@ -39,7 +39,7 @@ POTGenerator *POTGenerator::singleton = nullptr;
 
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
-	for (OrderedHashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
+	for (HashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
 		Vector<MsgidData> v_md = all_translation_strings[E.key()];
 		for (int i = 0; i < v_md.size(); i++) {
 			print_line("++++++");
@@ -121,9 +121,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 	file->store_string(header);
 
-	for (OrderedHashMap<String, Vector<MsgidData>>::Element E_pair = all_translation_strings.front(); E_pair; E_pair = E_pair.next()) {
-		String msgid = E_pair.key();
-		Vector<MsgidData> v_msgid_data = E_pair.value();
+	for (const KeyValue<String, Vector<MsgidData>> &E_pair : all_translation_strings) {
+		String msgid = E_pair.key;
+		const Vector<MsgidData> &v_msgid_data = E_pair.value;
 		for (int i = 0; i < v_msgid_data.size(); i++) {
 			String context = v_msgid_data[i].ctx;
 			String plural = v_msgid_data[i].plural;

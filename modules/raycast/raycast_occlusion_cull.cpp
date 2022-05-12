@@ -454,10 +454,9 @@ bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
 	next_scene = rtcNewScene(raycast_singleton->ebr_device);
 	rtcSetSceneBuildQuality(next_scene, RTCBuildQuality(raycast_singleton->build_quality));
 
-	const RID *inst_rid = nullptr;
-	while ((inst_rid = instances.next(inst_rid))) {
-		OccluderInstance *occ_inst = instances.getptr(*inst_rid);
-		Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
+	for (const KeyValue<RID, OccluderInstance> &E : instances) {
+		const OccluderInstance *occ_inst = &E.value;
+		const Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
 
 		if (!occ || !occ_inst->enabled) {
 			continue;
@@ -573,9 +572,8 @@ void RaycastOcclusionCull::set_build_quality(RS::ViewportOcclusionCullingBuildQu
 
 	build_quality = p_quality;
 
-	const RID *scenario_rid = nullptr;
-	while ((scenario_rid = scenarios.next(scenario_rid))) {
-		scenarios[*scenario_rid].dirty = true;
+	for (KeyValue<RID, Scenario> &K : scenarios) {
+		K.value.dirty = true;
 	}
 }
 
@@ -596,9 +594,8 @@ RaycastOcclusionCull::RaycastOcclusionCull() {
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {
-	const RID *scenario_rid = nullptr;
-	while ((scenario_rid = scenarios.next(scenario_rid))) {
-		Scenario &scenario = scenarios[*scenario_rid];
+	for (KeyValue<RID, Scenario> &K : scenarios) {
+		Scenario &scenario = K.value;
 		if (scenario.commit_thread) {
 			scenario.commit_thread->wait_to_finish();
 			memdelete(scenario.commit_thread);

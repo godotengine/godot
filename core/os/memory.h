@@ -197,4 +197,12 @@ struct _GlobalNilClass {
 	static _GlobalNil _nil;
 };
 
+template <class T>
+class DefaultTypedAllocator {
+public:
+	template <class... Args>
+	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
+	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
+};
+
 #endif // MEMORY_H

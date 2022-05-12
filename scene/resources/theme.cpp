@@ -123,76 +123,50 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> list;
 
-	const StringName *key = nullptr;
-
 	// Type variations.
-	while ((key = variation_map.next(key))) {
-		list.push_back(PropertyInfo(Variant::STRING_NAME, String() + *key + "/base_type"));
+	for (const KeyValue<StringName, StringName> &E : variation_map) {
+		list.push_back(PropertyInfo(Variant::STRING_NAME, String() + E.key + "/base_type"));
 	}
-
-	key = nullptr;
 
 	// Icons.
-	while ((key = icon_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = icon_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+		for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
-
-	key = nullptr;
 
 	// Styles.
-	while ((key = style_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = style_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/styles/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+	for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+		for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
-
-	key = nullptr;
 
 	// Fonts.
-	while ((key = font_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = font_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/fonts/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
-
-	key = nullptr;
 
 	// Font sizes.
-	while ((key = font_size_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = font_size_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/font_sizes/" + *key2, PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : font_size_map) {
+		for (const KeyValue<StringName, int> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
 		}
 	}
-
-	key = nullptr;
 
 	// Colors.
-	while ((key = color_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = color_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::COLOR, String() + *key + "/colors/" + *key2));
+	for (const KeyValue<StringName, HashMap<StringName, Color>> &E : color_map) {
+		for (const KeyValue<StringName, Color> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/colors/" + F.key));
 		}
 	}
 
-	key = nullptr;
-
 	// Constants.
-	while ((key = constant_map.next(key))) {
-		const StringName *key2 = nullptr;
-
-		while ((key2 = constant_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/constants/" + *key2));
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : constant_map) {
+		for (const KeyValue<StringName, int> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
 		}
 	}
 
@@ -414,10 +388,8 @@ void Theme::get_icon_list(StringName p_theme_type, List<StringName> *p_list) con
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = icon_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, Ref<Texture2D>> &E : icon_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -437,9 +409,8 @@ void Theme::remove_icon_type(const StringName &p_theme_type) {
 
 	_freeze_change_propagation();
 
-	const StringName *L = nullptr;
-	while ((L = icon_map[p_theme_type].next(L))) {
-		Ref<Texture2D> icon = icon_map[p_theme_type][*L];
+	for (const KeyValue<StringName, Ref<Texture2D>> &E : icon_map[p_theme_type]) {
+		Ref<Texture2D> icon = E.value;
 		if (icon.is_valid()) {
 			icon->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 		}
@@ -453,9 +424,8 @@ void Theme::remove_icon_type(const StringName &p_theme_type) {
 void Theme::get_icon_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = icon_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -528,10 +498,8 @@ void Theme::get_stylebox_list(StringName p_theme_type, List<StringName> *p_list)
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = style_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, Ref<StyleBox>> &E : style_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -551,9 +519,8 @@ void Theme::remove_stylebox_type(const StringName &p_theme_type) {
 
 	_freeze_change_propagation();
 
-	const StringName *L = nullptr;
-	while ((L = style_map[p_theme_type].next(L))) {
-		Ref<StyleBox> style = style_map[p_theme_type][*L];
+	for (const KeyValue<StringName, Ref<StyleBox>> &E : style_map[p_theme_type]) {
+		Ref<StyleBox> style = E.value;
 		if (style.is_valid()) {
 			style->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 		}
@@ -567,9 +534,8 @@ void Theme::remove_stylebox_type(const StringName &p_theme_type) {
 void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = style_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -644,10 +610,8 @@ void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) con
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = font_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, Ref<Font>> &E : font_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -667,9 +631,8 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 
 	_freeze_change_propagation();
 
-	const StringName *L = nullptr;
-	while ((L = font_map[p_theme_type].next(L))) {
-		Ref<Font> font = font_map[p_theme_type][*L];
+	for (const KeyValue<StringName, Ref<Font>> &E : font_map[p_theme_type]) {
+		Ref<Font> font = E.value;
 		if (font.is_valid()) {
 			font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 		}
@@ -683,9 +646,8 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 void Theme::get_font_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = font_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -747,10 +709,8 @@ void Theme::get_font_size_list(StringName p_theme_type, List<StringName> *p_list
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = font_size_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, int> &E : font_size_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -774,9 +734,8 @@ void Theme::remove_font_size_type(const StringName &p_theme_type) {
 void Theme::get_font_size_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = font_size_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : font_size_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -836,10 +795,8 @@ void Theme::get_color_list(StringName p_theme_type, List<StringName> *p_list) co
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = color_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, Color> &E : color_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -863,9 +820,8 @@ void Theme::remove_color_type(const StringName &p_theme_type) {
 void Theme::get_color_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = color_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, Color>> &E : color_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -925,10 +881,8 @@ void Theme::get_constant_list(StringName p_theme_type, List<StringName> *p_list)
 		return;
 	}
 
-	const StringName *key = nullptr;
-
-	while ((key = constant_map[p_theme_type].next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, int> &E : constant_map[p_theme_type]) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -952,9 +906,8 @@ void Theme::remove_constant_type(const StringName &p_theme_type) {
 void Theme::get_constant_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = nullptr;
-	while ((key = constant_map.next(key))) {
-		p_list->push_back(*key);
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : constant_map) {
+		p_list->push_back(E.key);
 	}
 }
 
@@ -1311,52 +1264,12 @@ void Theme::remove_type(const StringName &p_theme_type) {
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	Set<StringName> types;
-	const StringName *key = nullptr;
-
-	// Icons.
-	while ((key = icon_map.next(key))) {
-		types.insert(*key);
-	}
-
-	key = nullptr;
-
-	// StyleBoxes.
-	while ((key = style_map.next(key))) {
-		types.insert(*key);
-	}
-
-	key = nullptr;
-
-	// Fonts.
-	while ((key = font_map.next(key))) {
-		types.insert(*key);
-	}
-
-	key = nullptr;
-
-	// Font sizes.
-	while ((key = font_size_map.next(key))) {
-		types.insert(*key);
-	}
-
-	key = nullptr;
-
-	// Colors.
-	while ((key = color_map.next(key))) {
-		types.insert(*key);
-	}
-
-	key = nullptr;
-
-	// Constants.
-	while ((key = constant_map.next(key))) {
-		types.insert(*key);
-	}
-
-	for (Set<StringName>::Element *E = types.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
-	}
+	get_icon_type_list(p_list);
+	get_stylebox_type_list(p_list);
+	get_font_type_list(p_list);
+	get_font_size_type_list(p_list);
+	get_color_type_list(p_list);
+	get_constant_type_list(p_list);
 }
 
 void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
@@ -1667,75 +1580,62 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Colors.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->color_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->color_map[*K].next(L))) {
-				set_color(*L, *K, p_other->color_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, Color>> &E : p_other->color_map) {
+			for (const KeyValue<StringName, Color> &F : E.value) {
+				set_color(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Constants.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->constant_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->constant_map[*K].next(L))) {
-				set_constant(*L, *K, p_other->constant_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, int>> &E : p_other->constant_map) {
+			for (const KeyValue<StringName, int> &F : E.value) {
+				set_constant(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Fonts.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->font_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->font_map[*K].next(L))) {
-				set_font(*L, *K, p_other->font_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : p_other->font_map) {
+			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
+				set_font(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Font sizes.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->font_size_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->font_size_map[*K].next(L))) {
-				set_font_size(*L, *K, p_other->font_size_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, int>> &E : p_other->font_size_map) {
+			for (const KeyValue<StringName, int> &F : E.value) {
+				set_font_size(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Icons.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->icon_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->icon_map[*K].next(L))) {
-				set_icon(*L, *K, p_other->icon_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : p_other->icon_map) {
+			for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
+				set_icon(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Styleboxes.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->style_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = p_other->style_map[*K].next(L))) {
-				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
+		for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : p_other->style_map) {
+			for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
+				set_stylebox(F.key, E.key, F.value);
 			}
 		}
 	}
 
 	// Type variations.
 	{
-		const StringName *K = nullptr;
-		while ((K = p_other->variation_map.next(K))) {
-			set_type_variation(*K, p_other->variation_map[*K]);
+		for (const KeyValue<StringName, StringName> &E : p_other->variation_map) {
+			set_type_variation(E.key, E.value);
 		}
 	}
 
@@ -1745,12 +1645,10 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 void Theme::clear() {
 	// These items need disconnecting.
 	{
-		const StringName *K = nullptr;
-		while ((K = icon_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = icon_map[*K].next(L))) {
-				Ref<Texture2D> icon = icon_map[*K][*L];
-				if (icon.is_valid()) {
+		for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+			for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
+				if (F.value.is_valid()) {
+					Ref<Texture2D> icon = F.value;
 					icon->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
@@ -1758,12 +1656,10 @@ void Theme::clear() {
 	}
 
 	{
-		const StringName *K = nullptr;
-		while ((K = style_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = style_map[*K].next(L))) {
-				Ref<StyleBox> style = style_map[*K][*L];
-				if (style.is_valid()) {
+		for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+			for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
+				if (F.value.is_valid()) {
+					Ref<StyleBox> style = F.value;
 					style->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}
@@ -1771,12 +1667,10 @@ void Theme::clear() {
 	}
 
 	{
-		const StringName *K = nullptr;
-		while ((K = font_map.next(K))) {
-			const StringName *L = nullptr;
-			while ((L = font_map[*K].next(L))) {
-				Ref<Font> font = font_map[*K][*L];
-				if (font.is_valid()) {
+		for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
+				if (F.value.is_valid()) {
+					Ref<Font> font = F.value;
 					font->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 				}
 			}

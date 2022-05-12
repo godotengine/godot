@@ -50,10 +50,8 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 		path_get_cache.erase(p_id);
 		// Cleanup sent cache.
 		// Some refactoring is needed to make this faster and do paths GC.
-		List<NodePath> keys;
-		path_send_cache.get_key_list(&keys);
-		for (const NodePath &E : keys) {
-			PathSentCache *psc = path_send_cache.getptr(E);
+		for (const KeyValue<NodePath, PathSentCache> &E : path_send_cache) {
+			PathSentCache *psc = path_send_cache.getptr(E.key);
 			psc->confirmed_peers.erase(p_id);
 		}
 	}

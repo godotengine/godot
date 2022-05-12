@@ -100,10 +100,8 @@ void GDScriptParser::cleanup() {
 }
 
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
-	List<StringName> keys;
-	valid_annotations.get_key_list(&keys);
-	for (const StringName &E : keys) {
-		r_annotations->push_back(valid_annotations[E].info);
+	for (const KeyValue<StringName, AnnotationInfo> &E : valid_annotations) {
+		r_annotations->push_back(E.value.info);
 	}
 }
 
@@ -1894,11 +1892,8 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (branch->patterns.size() > 0) {
-		List<StringName> binds;
-		branch->patterns[0]->binds.get_key_list(&binds);
-
-		for (const StringName &E : binds) {
-			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
+		for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
+			SuiteNode::Local local(E.value, current_function);
 			local.type = SuiteNode::Local::PATTERN_BIND;
 			suite->add_local(local);
 		}
@@ -3566,14 +3561,15 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint = PROPERTY_HINT_ENUM;
 
 				String enum_hint_string;
-				for (OrderedHashMap<StringName, int>::Element E = export_type.enum_values.front(); E; E = E.next()) {
-					enum_hint_string += E.key().operator String().capitalize().xml_escape();
-					enum_hint_string += ":";
-					enum_hint_string += String::num_int64(E.value()).xml_escape();
-
-					if (E.next()) {
+				bool first = true;
+				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
+					if (!first) {
 						enum_hint_string += ",";
+						first = false;
 					}
+					enum_hint_string += E.key.operator String().capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E.value).xml_escape();
 				}
 
 				variable->export_info.hint_string = enum_hint_string;

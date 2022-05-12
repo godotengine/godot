@@ -945,13 +945,10 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_icon_paths() {
-	List<StringName> keys;
-	_script_class_icon_paths.get_key_list(&keys);
-
 	Dictionary d;
-	for (const StringName &E : keys) {
-		if (ScriptServer::is_global_class(E)) {
-			d[E] = _script_class_icon_paths[E];
+	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
+		if (ScriptServer::is_global_class(E.key)) {
+			d[E.key] = E.value;
 		}
 	}
 

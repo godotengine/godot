@@ -109,23 +109,15 @@ void GDScriptTextDocument::notify_client_show_symbol(const lsp::DocumentSymbol *
 
 void GDScriptTextDocument::initialize() {
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members;
+		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
+			const ClassMembers &members = E.value;
 
-		const StringName *class_ptr = native_members.next(nullptr);
-		while (class_ptr) {
-			const ClassMembers &members = native_members.get(*class_ptr);
-
-			const String *name = members.next(nullptr);
-			while (name) {
-				const lsp::DocumentSymbol *symbol = members.get(*name);
+			for (const KeyValue<String, const lsp::DocumentSymbol *> &F : members) {
+				const lsp::DocumentSymbol *symbol = members.get(F.key);
 				lsp::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(String(*class_ptr), *name);
+				item.data = JOIN_SYMBOLS(String(E.key), F.key);
 				native_member_completions.push_back(item.to_json());
-
-				name = members.next(name);
 			}
-
-			class_ptr = native_members.next(class_ptr);
 		}
 	}
 }

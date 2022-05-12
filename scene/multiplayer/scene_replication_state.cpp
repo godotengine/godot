@@ -55,9 +55,8 @@ void SceneReplicationState::_untrack(const ObjectID &p_id) {
 		}
 		// If we spawned or synced it, we need to remove it from any peer it was sent to.
 		if (net_id || peer == 0) {
-			const int *k = nullptr;
-			while ((k = peers_info.next(k))) {
-				peers_info.get(*k).known_nodes.erase(p_id);
+			for (KeyValue<int, PeerInfo> &E : peers_info) {
+				E.value.known_nodes.erase(p_id);
 			}
 		}
 	}
@@ -134,9 +133,8 @@ void SceneReplicationState::reset() {
 	peers_info.clear();
 	known_peers.clear();
 	// Tracked nodes are cleared on deletion, here we only reset the ids so they can be later re-assigned.
-	const ObjectID *oid = nullptr;
-	while ((oid = tracked_nodes.next(oid))) {
-		TrackedNode &tobj = tracked_nodes[*oid];
+	for (KeyValue<ObjectID, TrackedNode> &E : tracked_nodes) {
+		TrackedNode &tobj = E.value;
 		tobj.net_id = 0;
 		tobj.remote_peer = 0;
 		tobj.last_sync = 0;
@@ -195,9 +193,8 @@ Error SceneReplicationState::peer_add_node(int p_peer, const ObjectID &p_id) {
 		ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
 		peers_info[p_peer].known_nodes.insert(p_id);
 	} else {
-		const int *pid = nullptr;
-		while ((pid = peers_info.next(pid))) {
-			peers_info.get(*pid).known_nodes.insert(p_id);
+		for (KeyValue<int, PeerInfo> &E : peers_info) {
+			E.value.known_nodes.insert(p_id);
 		}
 	}
 	return OK;
@@ -208,9 +205,8 @@ Error SceneReplicationState::peer_del_node(int p_peer, const ObjectID &p_id) {
 		ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
 		peers_info[p_peer].known_nodes.erase(p_id);
 	} else {
-		const int *pid = nullptr;
-		while ((pid = peers_info.next(pid))) {
-			peers_info.get(*pid).known_nodes.erase(p_id);
+		for (KeyValue<int, PeerInfo> &E : peers_info) {
+			E.value.known_nodes.erase(p_id);
 		}
 	}
 	return OK;

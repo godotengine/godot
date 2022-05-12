@@ -1831,13 +1831,13 @@ void TextureStorage::update_decal_atlas() {
 		Vector<DecalAtlas::SortItem> itemsv;
 		itemsv.resize(decal_atlas.textures.size());
 		int base_size = 8;
-		const RID *K = nullptr;
 
 		int idx = 0;
-		while ((K = decal_atlas.textures.next(K))) {
+
+		for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 			DecalAtlas::SortItem &si = itemsv.write[idx];
 
-			Texture *src_tex = get_texture(*K);
+			Texture *src_tex = get_texture(E.key);
 
 			si.size.width = (src_tex->width / border) + 1;
 			si.size.height = (src_tex->height / border) + 1;
@@ -1847,7 +1847,7 @@ void TextureStorage::update_decal_atlas() {
 				base_size = nearest_power_of_2_templated(si.size.width);
 			}
 
-			si.texture = *K;
+			si.texture = E.key;
 			idx++;
 		}
 
@@ -1983,10 +1983,9 @@ void TextureStorage::update_decal_atlas() {
 
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, cc);
 
-				const RID *K = nullptr;
-				while ((K = decal_atlas.textures.next(K))) {
-					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
-					Texture *src_tex = get_texture(*K);
+				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
+					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+					Texture *src_tex = get_texture(E.key);
 					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 				}
 

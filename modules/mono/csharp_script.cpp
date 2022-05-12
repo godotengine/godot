@@ -1798,8 +1798,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
-	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = script->member_info.front(); E; E = E.next()) {
-		props.push_front(E.value());
+	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
+		props.push_front(E.value);
 	}
 
 	// Call _get_property_list
@@ -3491,8 +3491,8 @@ Ref<Script> CSharpScript::get_base_script() const {
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 	List<PropertyInfo> props;
 
-	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {
-		props.push_front(E.value());
+	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
+		props.push_front(E.value);
 	}
 
 	for (const PropertyInfo &prop : props) {

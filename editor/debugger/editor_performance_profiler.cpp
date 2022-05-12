@@ -97,9 +97,9 @@ void EditorPerformanceProfiler::_monitor_select() {
 
 void EditorPerformanceProfiler::_monitor_draw() {
 	Vector<StringName> active;
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-		if (i.value().item->is_checked(0)) {
-			active.push_back(i.key());
+	for (const KeyValue<StringName, Monitor> &E : monitors) {
+		if (E.value.item->is_checked(0)) {
+			active.push_back(E.key);
 		}
 	}
 
@@ -204,22 +204,22 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 void EditorPerformanceProfiler::_build_monitor_tree() {
 	Set<StringName> monitor_checked;
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-		if (i.value().item && i.value().item->is_checked(0)) {
-			monitor_checked.insert(i.key());
+	for (KeyValue<StringName, Monitor> &E : monitors) {
+		if (E.value.item && E.value.item->is_checked(0)) {
+			monitor_checked.insert(E.key);
 		}
 	}
 
 	base_map.clear();
 	monitor_tree->get_root()->clear_children();
 
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-		TreeItem *base = _get_monitor_base(i.value().base);
-		TreeItem *item = _create_monitor_item(i.value().name, base);
-		item->set_checked(0, monitor_checked.has(i.key()));
-		i.value().item = item;
-		if (!i.value().history.is_empty()) {
-			i.value().update_value(i.value().history.front()->get());
+	for (KeyValue<StringName, Monitor> &E : monitors) {
+		TreeItem *base = _get_monitor_base(E.value.base);
+		TreeItem *item = _create_monitor_item(E.value.name, base);
+		item->set_checked(0, monitor_checked.has(E.key));
+		E.value.item = item;
+		if (!E.value.history.is_empty()) {
+			E.value.update_value(E.value.history.front()->get());
 		}
 	}
 }
@@ -252,9 +252,9 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector<StringName> active;
-		for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-			if (i.value().item->is_checked(0)) {
-				active.push_back(i.key());
+		for (KeyValue<StringName, Monitor> &E : monitors) {
+			if (E.value.item->is_checked(0)) {
+				active.push_back(E.key);
 			}
 		}
 		if (active.size() > 0) {
@@ -293,12 +293,16 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorPerformanceProfiler::reset() {
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-		if (String(i.key()).begins_with("custom:")) {
-			monitors.erase(i);
+	HashMap<StringName, Monitor>::Iterator E = monitors.begin();
+	while (E != monitors.end()) {
+		HashMap<StringName, Monitor>::Iterator N = E;
+		++N;
+		if (String(E->key).begins_with("custom:")) {
+			monitors.remove(E);
 		} else {
-			i.value().reset();
+			E->value.reset();
 		}
+		E = N;
 	}
 
 	_build_monitor_tree();
@@ -308,43 +312,49 @@ void EditorPerformanceProfiler::reset() {
 }
 
 void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
-	OrderedHashMap<StringName, int> names;
+	HashMap<StringName, int> names;
 	for (int i = 0; i < p_names.size(); i++) {
 		names.insert("custom:" + p_names[i], Performance::MONITOR_MAX + i);
 	}
 
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
-		if (String(i.key()).begins_with("custom:")) {
-			if (!names.has(i.key())) {
-				monitors.erase(i);
-			} else {
-				i.value().frame_index = names[i.key()];
-				names.erase(i.key());
+	{
+		HashMap<StringName, Monitor>::Iterator E = monitors.begin();
+		while (E != monitors.end()) {
+			HashMap<StringName, Monitor>::Iterator N = E;
+			++N;
+			if (String(E->key).begins_with("custom:")) {
+				if (!names.has(E->key)) {
+					monitors.remove(E);
+				} else {
+					E->value.frame_index = names[E->key];
+					names.erase(E->key);
+				}
 			}
+			E = N;
 		}
 	}
 
-	for (OrderedHashMap<StringName, int>::Element i = names.front(); i; i = i.next()) {
-		String name = String(i.key()).replace_first("custom:", "");
+	for (const KeyValue<StringName, int> &E : names) {
+		String name = String(E.key).replace_first("custom:", "");
 		String base = "Custom";
 		if (name.get_slice_count("/") == 2) {
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		monitors.insert(i.key(), Monitor(name, base, i.value(), Performance::MONITOR_TYPE_QUANTITY, nullptr));
+		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, nullptr));
 	}
 
 	_build_monitor_tree();
 }
 
 void EditorPerformanceProfiler::add_profile_frame(const Vector<float> &p_values) {
-	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
+	for (KeyValue<StringName, Monitor> &E : monitors) {
 		float data = 0.0f;
-		if (i.value().frame_index >= 0 && i.value().frame_index < p_values.size()) {
-			data = p_values[i.value().frame_index];
+		if (E.value.frame_index >= 0 && E.value.frame_index < p_values.size()) {
+			data = p_values[E.value.frame_index];
 		}
-		i.value().history.push_front(data);
-		i.value().update_value(data);
+		E.value.history.push_front(data);
+		E.value.update_value(data);
 	}
 	marker_frame++;
 	monitor_draw->update();

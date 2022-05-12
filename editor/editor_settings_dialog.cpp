@@ -248,11 +248,11 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	undo_redo->commit_action();
 }
 
-Array EditorSettingsDialog::_event_list_to_array_helper(List<Ref<InputEvent>> &p_events) {
+Array EditorSettingsDialog::_event_list_to_array_helper(const List<Ref<InputEvent>> &p_events) {
 	Array events;
 
 	// Convert the list to an array, and only keep key events as this is for the editor.
-	for (List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
+	for (const List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
 		Ref<InputEventKey> k = E->get();
 		if (k.is_valid()) {
 			events.append(E->get());
@@ -374,10 +374,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
-	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
-	for (OrderedHashMap<StringName, InputMap::Action>::Element E = action_map.front(); E; E = E.next()) {
-		String action_name = E.key();
-		InputMap::Action action = E.get();
+	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
+		const String &action_name = E.key;
+		const InputMap::Action &action = E.value;
 
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
@@ -387,10 +386,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 			continue;
 		}
 
-		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
+		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		List<Ref<InputEventKey>> key_default_events;
 		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
-		for (List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
+		for (const List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
 			Ref<InputEventKey> k = I->get();
 			if (k.is_valid()) {
 				key_default_events.push_back(k);

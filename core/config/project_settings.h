@@ -33,7 +33,7 @@
 
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/set.h"
 
 class ProjectSettings : public Object {
@@ -94,7 +94,7 @@ protected:
 	Set<String> custom_features;
 	Map<StringName, StringName> feature_overrides;
 
-	OrderedHashMap<StringName, AutoloadInfo> autoloads;
+	HashMap<StringName, AutoloadInfo> autoloads;
 
 	String project_data_dir_name;
 
@@ -181,7 +181,7 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
-	OrderedHashMap<StringName, AutoloadInfo> get_autoload_list() const;
+	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
 	void add_autoload(const AutoloadInfo &p_autoload);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;

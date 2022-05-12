@@ -196,10 +196,8 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_constant_count = constant_map.size();
 		function->constants.resize(constant_map.size());
 		function->_constants_ptr = function->constants.ptrw();
-		const Variant *K = nullptr;
-		while ((K = constant_map.next(K))) {
-			int idx = constant_map[*K];
-			function->constants.write[idx] = *K;
+		for (const KeyValue<Variant, int> &K : constant_map) {
+			function->constants.write[K.value] = K.key;
 		}
 	} else {
 		function->_constants_ptr = nullptr;

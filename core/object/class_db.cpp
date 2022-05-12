@@ -90,10 +90,8 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 void ClassDB::get_class_list(List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		p_classes->push_back(E.key);
 	}
 
 	p_classes->sort();
@@ -102,11 +100,9 @@ void ClassDB::get_class_list(List<StringName> *p_classes) {
 void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		if (*k != p_class && _is_parent_class(*k, p_class)) {
-			p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.key != p_class && _is_parent_class(E.key, p_class)) {
+			p_classes->push_back(E.key);
 		}
 	}
 }
@@ -114,11 +110,9 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		if (*k != p_class && _get_parent_class(*k) == p_class) {
-			p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.key != p_class && _get_parent_class(E.key) == p_class) {
+			p_classes->push_back(E.key);
 		}
 	}
 }
@@ -172,17 +166,12 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 	uint64_t hash = hash_djb2_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
-	List<StringName> names;
+	List<StringName> class_list;
+	ClassDB::get_class_list(&class_list);
+	// Must be alphabetically sorted for hash to compute.
+	class_list.sort_custom<StringName::AlphCompare>();
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		names.push_back(*k);
-	}
-	//must be alphabetically sorted for hash to compute
-	names.sort_custom<StringName::AlphCompare>();
-
-	for (const StringName &E : names) {
+	for (const StringName &E : class_list) {
 		ClassInfo *t = classes.getptr(E);
 		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E) + "'.");
 		if (t->api != p_api || !t->exposed) {
@@ -195,10 +184,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->method_map.next(k))) {
-				String name = k->operator String();
+			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+				String name = F.key.operator String();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -206,7 +193,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 					continue; // Ignore non-virtual methods that start with an underscore
 				}
 
-				snames.push_back(*k);
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -241,10 +228,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->constant_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, int> &F : t->constant_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -259,10 +244,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->signal_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -280,10 +263,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->property_setget.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, PropertySetGet> &F : t->property_setget) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -474,10 +455,8 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 #else
 
-		const StringName *K = nullptr;
-
-		while ((K = type->method_map.next(K))) {
-			MethodBind *m = type->method_map[*K];
+		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
+			MethodBind *m = E.value;
 			MethodInfo minfo = info_from_bind(m);
 			p_methods->push_back(minfo);
 		}
@@ -603,10 +582,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 			p_constants->push_back(E);
 		}
 #else
-		const StringName *K = nullptr;
 
-		while ((K = type->constant_map.next(K))) {
-			p_constants->push_back(*K);
+		for (const KeyValue<StringName, int> &E : type->constant_map) {
+			p_constants->push_back(E.key);
 		}
 
 #endif
@@ -667,12 +645,11 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const StringName *k = nullptr;
-		while ((k = type->enum_map.next(k))) {
-			List<StringName> &constants_list = type->enum_map.get(*k);
+		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
+			List<StringName> &constants_list = E.value;
 			const List<StringName>::Element *found = constants_list.find(p_name);
 			if (found) {
-				return *k;
+				return E.key;
 			}
 		}
 
@@ -692,9 +669,8 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const StringName *k = nullptr;
-		while ((k = type->enum_map.next(k))) {
-			p_enums->push_back(*k);
+		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
+			p_enums->push_back(E.key);
 		}
 
 		if (p_no_inheritance) {
@@ -800,9 +776,8 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *check = type;
 
 	while (check) {
-		const StringName *S = nullptr;
-		while ((S = check->signal_map.next(S))) {
-			p_signals->push_back(check->signal_map[*S]);
+		for (KeyValue<StringName, MethodInfo> &E : check->signal_map) {
+			p_signals->push_back(E.value);
 		}
 
 		if (p_no_inheritance) {
@@ -1397,10 +1372,8 @@ void ClassDB::add_resource_base_extension(const StringName &p_extension, const S
 }
 
 void ClassDB::get_resource_base_extensions(List<String> *p_extensions) {
-	const StringName *K = nullptr;
-
-	while ((K = resource_base_extensions.next(K))) {
-		p_extensions->push_back(*K);
+	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
+		p_extensions->push_back(E.key);
 	}
 }
 
@@ -1409,12 +1382,9 @@ bool ClassDB::is_resource_extension(const StringName &p_extension) {
 }
 
 void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
-	const StringName *K = nullptr;
-
-	while ((K = resource_base_extensions.next(K))) {
-		StringName cmp = resource_base_extensions[*K];
-		if (is_parent_class(p_class, cmp) || is_parent_class(cmp, p_class)) {
-			p_extensions->push_back(*K);
+	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
+		if (is_parent_class(p_class, E.value) || is_parent_class(E.value, p_class)) {
+			p_extensions->push_back(E.key);
 		}
 	}
 }
@@ -1556,14 +1526,11 @@ void ClassDB::cleanup_defaults() {
 void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
-	const StringName *k = nullptr;
+	for (KeyValue<StringName, ClassInfo> &E : classes) {
+		ClassInfo &ti = E.value;
 
-	while ((k = classes.next(k))) {
-		ClassInfo &ti = classes[*k];
-
-		const StringName *m = nullptr;
-		while ((m = ti.method_map.next(m))) {
-			memdelete(ti.method_map[*m]);
+		for (KeyValue<StringName, MethodBind *> &F : ti.method_map) {
+			memdelete(F.value);
 		}
 	}
 	classes.clear();

@@ -33,13 +33,13 @@
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 #include "core/variant/variant_parser.h"
 
 class ConfigFile : public RefCounted {
 	GDCLASS(ConfigFile, RefCounted);
 
-	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
+	HashMap<String, HashMap<String, Variant>> values;
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;
