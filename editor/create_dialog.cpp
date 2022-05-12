@@ -125,7 +125,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 		return true; // Do not show editor nodes.
 	}
 
-	if (p_type == base_type) {
+	if (p_type == base_type && !EditorNode::get_editor_data().get_custom_types().has(p_type)) {
 		return true; // Root is already added.
 	}
 
