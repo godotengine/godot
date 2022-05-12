@@ -667,6 +667,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
 
+	group_settings = memnew(GroupSettingsEditor);
+	group_settings->set_name(TTR("Groups"));
+	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+	tab_container->add_child(group_settings);
+
 	shaders_global_variables_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_variables_editor->set_name(TTR("Shader Globals"));
 	shaders_global_variables_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));

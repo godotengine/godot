@@ -32,7 +32,9 @@
 #define GROUPS_EDITOR_H
 
 #include "core/object/undo_redo.h"
+#include "core/templates/set.h"
 #include "editor/scene_tree_editor.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -40,57 +42,74 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class GroupDialog : public AcceptDialog {
-	GDCLASS(GroupDialog, AcceptDialog);
+class GroupsEditor : public VBoxContainer {
+	GDCLASS(GroupsEditor, VBoxContainer);
 
-	ConfirmationDialog *error = nullptr;
+	bool updating_tree = false;
+	bool updating_groups = false;
 
+	Node *node = nullptr;
+	Node *scene_root_node = nullptr;
 	SceneTree *scene_tree = nullptr;
-	TreeItem *groups_root = nullptr;
 
-	LineEdit *add_group_text = nullptr;
-	Button *add_group_button = nullptr;
+	ConfirmationDialog *add_group_dialog = nullptr;
+	ConfirmationDialog *rename_group_dialog = nullptr;
+	ConfirmationDialog *remove_group_dialog = nullptr;
 
-	Tree *groups = nullptr;
+	LineEdit *rename_group = nullptr;
+	Label *rename_error = nullptr;
 
-	Tree *nodes_to_add = nullptr;
-	TreeItem *add_node_root = nullptr;
-	LineEdit *add_filter = nullptr;
+	LineEdit *add_group_name = nullptr;
+	LineEdit *add_group_description = nullptr;
+	Label *add_error = nullptr;
+	CheckButton *global_group_button = nullptr;
 
-	Tree *nodes_to_remove = nullptr;
-	TreeItem *remove_node_root = nullptr;
-	LineEdit *remove_filter = nullptr;
+	PopupMenu *menu = nullptr;
 
-	Label *group_empty = nullptr;
-
-	Button *add_button = nullptr;
-	Button *remove_button = nullptr;
-
-	String selected_group;
+	LineEdit *filter = nullptr;
+	Button *add = nullptr;
+	Tree *tree = nullptr;
 
 	UndoRedo *undo_redo = nullptr;
 
-	void _group_selected();
+	Map<Node *, Set<StringName>> local_groups;
+	HashMap<StringName, String> global_groups;
 
-	void _remove_filter_changed(const String &p_filter);
-	void _add_filter_changed(const String &p_filter);
+	void _show_add_group_dialog();
+	void _show_rename_group_dialog();
+	void _show_remove_group_dialog();
 
-	void _add_pressed();
-	void _removed_pressed();
-	void _add_group_pressed(const String &p_name);
-	void _add_group_text_changed(const String &p_new_text);
+	void _check_add(const String &p_new_text);
+	void _check_rename(const String &p_new_text);
 
-	void _group_renamed();
-	void _rename_group_item(const String &p_old_name, const String &p_new_name);
+	void _update_tree();
 
-	void _add_group(String p_name);
-	void _modify_group_pressed(Object *p_item, int p_column, int p_id);
-	void _delete_group_item(const String &p_name);
+	void _update_groups();
+	void _load_local_groups(Node *p_current);
 
-	bool _can_edit(Node *p_node, String p_group);
+	String _check_new_group_name(const String &p_name);
 
-	void _load_groups(Node *p_current);
-	void _load_nodes(Node *p_current);
+	void _add_group(const String &p_name, const String &p_description, bool p_global = false);
+	bool _has_group(const String &p_name);
+	void _remove_group(const String &p_name);
+	void _rename_group(const String &p_old_name, const String &p_new_name);
+
+	void _remove_node_references(Node *p_node, const String &p_name);
+	void _rename_node_references(Node *p_node, const String &p_old_name, const String &p_new_name);
+
+	void _confirm_add();
+	void _confirm_rename();
+	void _confirm_delete();
+
+	void _item_edited();
+	void _item_rmb_selected(const Vector2 &p_pos);
+	void _modify_group(Object *p_item, int p_column, int p_id);
+	void _menu_id_pressed(int p_id);
+
+	void _filter_changed(const String &p_new_text);
+	void _global_group_changed();
+
+	void _groups_gui_input(Ref<InputEvent> p_event);
 
 protected:
 	void _notification(int p_what);
@@ -100,41 +119,8 @@ public:
 	enum ModifyButton {
 		DELETE_GROUP,
 		COPY_GROUP,
-	};
-
-	void edit();
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
-
-	GroupDialog();
-};
-
-class GroupsEditor : public VBoxContainer {
-	GDCLASS(GroupsEditor, VBoxContainer);
-
-	Node *node = nullptr;
-
-	GroupDialog *group_dialog = nullptr;
-
-	LineEdit *group_name = nullptr;
-	Button *add = nullptr;
-	Tree *tree = nullptr;
-
-	UndoRedo *undo_redo = nullptr;
-
-	void update_tree();
-	void _add_group(const String &p_group = "");
-	void _modify_group(Object *p_item, int p_column, int p_id);
-	void _group_name_changed(const String &p_new_text);
-
-	void _show_group_dialog();
-
-protected:
-	static void _bind_methods();
-
-public:
-	enum ModifyButton {
-		DELETE_GROUP,
-		COPY_GROUP,
+		RENAME_GROUP,
+		CONVERT_GROUP,
 	};
 
 	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
