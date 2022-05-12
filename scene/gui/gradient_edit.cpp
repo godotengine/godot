@@ -52,6 +52,11 @@ GradientEdit::GradientEdit() {
 
 	add_child(popup);
 
+	gradient_cache.instance();
+	preview_texture.instance();
+
+	preview_texture->set_width(1024);
+
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(checker_bg_png));
 	checker->create_from_image(img, ImageTexture::FLAG_REPEAT);
@@ -315,46 +320,10 @@ void GradientEdit::_notification(int p_what) {
 		_draw_checker(0, 0, total_w, h);
 
 		//Draw color ramp
-		Gradient::Point prev;
-		prev.offset = 0;
-		if (points.size() == 0) {
-			prev.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-		} else {
-			prev.color = points[0].color; //Extend color of first point to the beginning.
-		}
-
-		for (int i = -1; i < points.size(); i++) {
-			Gradient::Point next;
-			//If there is no next point
-			if (i + 1 == points.size()) {
-				if (points.size() == 0) {
-					next.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-				} else {
-					next.color = points[i].color; //Extend color of last point to the end.
-				}
-				next.offset = 1;
-			} else {
-				next = points[i + 1];
-			}
-
-			if (prev.offset == next.offset) {
-				prev = next;
-				continue;
-			}
-
-			Vector<Vector2> points;
-			Vector<Color> colors;
-			points.push_back(Vector2(prev.offset * total_w, h));
-			points.push_back(Vector2(prev.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, h));
-			colors.push_back(prev.color);
-			colors.push_back(prev.color);
-			colors.push_back(next.color);
-			colors.push_back(next.color);
-			draw_primitive(points, colors, Vector<Point2>());
-			prev = next;
-		}
+		gradient_cache->set_points(points);
+		gradient_cache->set_interpolation_mode(interpolation_mode);
+		preview_texture->set_gradient(gradient_cache);
+		draw_texture_rect(preview_texture, Rect2(0, 0, total_w, h));
 
 		//Draw point markers
 		for (int i = 0; i < points.size(); i++) {
@@ -480,6 +449,14 @@ void GradientEdit::set_points(Vector<Gradient::Point> &p_points) {
 
 Vector<Gradient::Point> &GradientEdit::get_points() {
 	return points;
+}
+
+void GradientEdit::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	interpolation_mode = p_interp_mode;
+}
+
+Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
+	return interpolation_mode;
 }
 
 void GradientEdit::_bind_methods() {

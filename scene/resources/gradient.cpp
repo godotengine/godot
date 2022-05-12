@@ -71,8 +71,18 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_COLORS, "colors"), &Gradient::set_colors);
 	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_COLORS), &Gradient::get_colors);
 
+	ClassDB::bind_method(D_METHOD("set_interpolation_mode", "interpolation_mode"), &Gradient::set_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_interpolation_mode"), &Gradient::get_interpolation_mode);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_mode", PROPERTY_HINT_ENUM, "Linear,Constant,Cubic"), "set_interpolation_mode", "get_interpolation_mode");
+
+	ADD_GROUP("Raw Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "offsets"), COLOR_RAMP_SET_OFFSETS, COLOR_RAMP_GET_OFFSETS);
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "colors"), COLOR_RAMP_SET_COLORS, COLOR_RAMP_GET_COLORS);
+
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_LINEAR);
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CONSTANT);
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CUBIC);
 }
 
 Vector<float> Gradient::get_offsets() const {
@@ -91,6 +101,15 @@ Vector<Color> Gradient::get_colors() const {
 		colors.write[i] = points[i].color;
 	}
 	return colors;
+}
+
+void Gradient::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	interpolation_mode = p_interp_mode;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Gradient::InterpolationMode Gradient::get_interpolation_mode() {
+	return interpolation_mode;
 }
 
 void Gradient::set_offsets(const Vector<float> &p_offsets) {

@@ -72,10 +72,22 @@
 		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors" default="PoolColorArray( 0, 0, 0, 1, 1, 1, 1, 1 )">
 			Gradient's colors returned as a [PoolColorArray].
 		</member>
+		<member name="interpolation_mode" type="int" setter="set_interpolation_mode" getter="get_interpolation_mode" enum="Gradient.InterpolationMode" default="0">
+			Defines how the colors between points of the gradient are interpolated. See [enum InterpolationMode] for available modes.
+		</member>
 		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets" default="PoolRealArray( 0, 1 )">
 			Gradient's offsets returned as a [PoolRealArray].
 		</member>
 	</members>
 	<constants>
+		<constant name="GRADIENT_INTERPOLATE_LINEAR" value="0" enum="InterpolationMode">
+			Linear interpolation.
+		</constant>
+		<constant name="GRADIENT_INTERPOLATE_CONSTANT" value="1" enum="InterpolationMode">
+			Constant interpolation, color changes abruptly at each point and stays uniform between. This might cause visible aliasing when used for a gradient texture in some cases.
+		</constant>
+		<constant name="GRADIENT_INTERPOLATE_CUBIC" value="2" enum="InterpolationMode">
+			Cubic interpolation.
+		</constant>
 	</constants>
 </class>
