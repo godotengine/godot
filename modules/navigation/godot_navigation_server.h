@@ -108,14 +108,19 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const;
 
+	virtual Array map_get_regions(RID p_map) const;
+	virtual Array map_get_agents(RID p_map) const;
+
 	virtual RID region_create() const;
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
+	virtual RID region_get_map(RID p_region) const;
 	COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform);
 	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
 	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const;
 
 	virtual RID agent_create() const;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
+	virtual RID agent_get_map(RID p_agent) const;
 	COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time);

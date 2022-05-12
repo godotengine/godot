@@ -142,13 +142,18 @@ void Navigation2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &Navigation2DServer::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &Navigation2DServer::map_get_closest_point_owner);
 
+	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &Navigation2DServer::map_get_regions);
+	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &Navigation2DServer::map_get_agents);
+
 	ClassDB::bind_method(D_METHOD("region_create"), &Navigation2DServer::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &Navigation2DServer::region_set_map);
+	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &Navigation2DServer::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &Navigation2DServer::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navpoly", "region", "nav_poly"), &Navigation2DServer::region_set_navpoly);
 
 	ClassDB::bind_method(D_METHOD("agent_create"), &Navigation2DServer::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &Navigation2DServer::agent_set_map);
+	ClassDB::bind_method(D_METHOD("agent_get_map", "agent"), &Navigation2DServer::agent_get_map);
 	ClassDB::bind_method(D_METHOD("agent_set_neighbor_dist", "agent", "dist"), &Navigation2DServer::agent_set_neighbor_dist);
 	ClassDB::bind_method(D_METHOD("agent_set_max_neighbors", "agent", "count"), &Navigation2DServer::agent_set_max_neighbors);
 	ClassDB::bind_method(D_METHOD("agent_set_time_horizon", "agent", "time"), &Navigation2DServer::agent_set_time_horizon);
@@ -170,6 +175,14 @@ Navigation2DServer::Navigation2DServer() {
 Navigation2DServer::~Navigation2DServer() {
 	singleton = nullptr;
 }
+
+Array FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
+
+Array FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
+
+RID FORWARD_1_C(region_get_map, RID, p_region, rid_to_rid);
+
+RID FORWARD_1_C(agent_get_map, RID, p_agent, rid_to_rid);
 
 RID FORWARD_0_C(map_create);
 

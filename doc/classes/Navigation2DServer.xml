@@ -20,6 +20,13 @@
 				Creates the agent.
 			</description>
 		</method>
+		<method name="agent_get_map" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="agent" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [code]agent[/code] is currently assigned to.
+			</description>
+		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="agent" type="RID" />
@@ -122,6 +129,13 @@
 				Create a new map.
 			</description>
 		</method>
+		<method name="map_get_agents" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [code]map[/code].
+			</description>
+		</method>
 		<method name="map_get_cell_size" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="map" type="RID" />
@@ -162,6 +176,13 @@
 				Returns the navigation path to reach the destination from the origin.
 			</description>
 		</method>
+		<method name="map_get_regions" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [code]map[/code].
+			</description>
+		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="nap" type="RID" />
@@ -197,6 +218,13 @@
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_map" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [code]region[/code] is currently assigned to.
 			</description>
 		</method>
 		<method name="region_set_map" qualifiers="const">

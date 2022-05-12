@@ -101,11 +101,15 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const = 0;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const = 0;
 
+	virtual Array map_get_regions(RID p_map) const = 0;
+	virtual Array map_get_agents(RID p_map) const = 0;
+
 	/// Creates a new region.
 	virtual RID region_create() const = 0;
 
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const = 0;
+	virtual RID region_get_map(RID p_region) const = 0;
 
 	/// Set the global transformation of this region.
 	virtual void region_set_transform(RID p_region, Transform p_transform) const = 0;
@@ -121,6 +125,7 @@ public:
 
 	/// Put the agent in the map.
 	virtual void agent_set_map(RID p_agent, RID p_map) const = 0;
+	virtual RID agent_get_map(RID p_agent) const = 0;
 
 	/// The maximum distance (center point to
 	/// center point) to other agents this agent
