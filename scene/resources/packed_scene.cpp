@@ -1849,6 +1849,44 @@ void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
 }
 
+bool SceneState::remove_group_references(const StringName &p_name) {
+	bool edited = false;
+	for (NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			if (names[group] == p_name) {
+				node.groups.erase(group);
+				edited = true;
+				break;
+			}
+		}
+	}
+	return edited;
+}
+
+bool SceneState::rename_group_references(const StringName &p_old_name, const StringName &p_new_name) {
+	bool edited = false;
+	for (const NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			if (names[group] == p_old_name) {
+				names.write[group] = p_new_name;
+				edited = true;
+				break;
+			}
+		}
+	}
+	return edited;
+}
+
+HashSet<StringName> SceneState::get_all_groups() {
+	HashSet<StringName> ret;
+	for (const NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			ret.insert(names[group]);
+		}
+	}
+	return ret;
+}
+
 Vector<String> SceneState::_get_node_groups(int p_idx) const {
 	Vector<StringName> groups = get_node_groups(p_idx);
 	Vector<String> ret;

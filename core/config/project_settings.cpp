@@ -281,6 +281,11 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
+		} else if (p_name.operator String().begins_with("global_group/")) {
+			String group_name = p_name.operator String().get_slice("/", 1);
+			if (global_groups.has(group_name)) {
+				remove_global_group(group_name);
+			}
 		}
 	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
@@ -327,6 +332,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				autoload.path = path;
 			}
 			add_autoload(autoload);
+		} else if (p_name.operator String().begins_with("global_group/")) {
+			String group_name = p_name.operator String().get_slice("/", 1);
+			add_global_group(group_name, p_value);
 		}
 	}
 
@@ -673,6 +681,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	Compression::zlib_level = GLOBAL_GET("compression/formats/zlib/compression_level");
 
 	Compression::gzip_level = GLOBAL_GET("compression/formats/gzip/compression_level");
+
+	load_scene_groups_cache();
 
 	project_loaded = err == OK;
 	return err;
@@ -1239,6 +1249,73 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];
+}
+
+const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
+	return global_groups;
+}
+
+void ProjectSettings::add_global_group(const StringName &p_name, const String &p_description) {
+	ERR_FAIL_COND_MSG(p_name == StringName(), "Trying to add global group with no name.");
+	global_groups[p_name] = p_description;
+}
+
+void ProjectSettings::remove_global_group(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(!global_groups.has(p_name), "Trying to remove non-existent global group.");
+	global_groups.erase(p_name);
+}
+
+bool ProjectSettings::has_global_group(const StringName &p_name) const {
+	return global_groups.has(p_name);
+}
+
+void ProjectSettings::remove_scene_groups_cache(const StringName &p_path) {
+	scene_groups_cache.erase(p_path);
+}
+
+void ProjectSettings::add_scene_groups_cache(const StringName &p_path, const HashSet<StringName> &p_cache) {
+	scene_groups_cache[p_path] = p_cache;
+}
+
+void ProjectSettings::save_scene_groups_cache() {
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	for (const KeyValue<StringName, HashSet<StringName>> &E : scene_groups_cache) {
+		if (E.value.is_empty()) {
+			continue;
+		}
+		Array list;
+		for (const StringName &group : E.value) {
+			list.push_back(group);
+		}
+		cf->set_value(E.key, "groups", list);
+	}
+	cf->save(get_scene_groups_cache_path());
+}
+
+String ProjectSettings::get_scene_groups_cache_path() const {
+	return get_project_data_path().path_join("scene_groups_cache.cfg");
+}
+
+void ProjectSettings::load_scene_groups_cache() {
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	if (cf->load(get_scene_groups_cache_path()) == OK) {
+		List<String> scene_paths;
+		cf->get_sections(&scene_paths);
+		for (const String &E : scene_paths) {
+			Array scene_groups = cf->get_value(E, "groups", Array());
+			HashSet<StringName> cache;
+			for (int i = 0; i < scene_groups.size(); ++i) {
+				cache.insert(scene_groups[i]);
+			}
+			add_scene_groups_cache(E, cache);
+		}
+	}
+}
+
+const HashMap<StringName, HashSet<StringName>> &ProjectSettings::get_scene_groups_cache() const {
+	return scene_groups_cache;
 }
 
 void ProjectSettings::_bind_methods() {
