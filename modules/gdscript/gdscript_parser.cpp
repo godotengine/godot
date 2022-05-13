@@ -3565,6 +3565,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
 					if (!first) {
 						enum_hint_string += ",";
+					} else {
 						first = false;
 					}
 					enum_hint_string += E.key.operator String().capitalize().xml_escape();
