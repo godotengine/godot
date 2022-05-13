@@ -3070,7 +3070,7 @@ static etcpak_force_inline uint64_t ProcessRGB_ETC2( const uint8_t* src, bool us
 #else
     if( useHeuristics )
     {
-#ifdef defined __ARM_NEON && defined __aarch64__
+#if defined __ARM_NEON && defined __aarch64__
         Channels ch = GetChannels( src );
         CalculateLuma( ch, luma );
 #else
