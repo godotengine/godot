@@ -9,9 +9,7 @@
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
 		</member>
-		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_mode" getter="is_follow_camera_mode_enabled" default="false">
-		</member>
-		<member name="follow_camera_push_ratio" type="float" setter="set_follow_camera_push_ratio" getter="get_follow_camera_push_ratio" default="0.1">
+		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_enabled" getter="is_follow_camera_enabled" default="false">
 		</member>
 		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField3D.Resolution" default="2">
 		</member>
