@@ -1972,7 +1972,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 	if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && (last_completion_char == next_char || last_completion_char_display == next_char)) {
 		remove_text(caret_line, get_caret_column(), caret_line, get_caret_column() + 1);
-	} else if (auto_brace_completion_enabled && pre_brace_pair != -1 && post_brace_pair == -1) {
+	} else if (auto_brace_completion_enabled && pre_brace_pair != -1) {
 		insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
 		set_caret_column(get_caret_column() - auto_brace_completion_pairs[pre_brace_pair].close_key.length());
 	}
