@@ -224,7 +224,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
 					Ref<Resource> r = v;
-					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
+					EditorFileSystemDock *file_system_dock = EditorFileSystemDock::get_singleton();
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();

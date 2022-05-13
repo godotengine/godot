@@ -49,8 +49,8 @@
 
 class ShaderCreateDialog;
 
-class FileSystemDock : public VBoxContainer {
-	GDCLASS(FileSystemDock, VBoxContainer);
+class EditorFileSystemDock : public VBoxContainer {
+	GDCLASS(EditorFileSystemDock, VBoxContainer);
 
 public:
 	enum FileListDisplayMode {
@@ -280,7 +280,7 @@ private:
 	struct FileInfoTypeComparator;
 	struct FileInfoModifiedTimeComparator;
 
-	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
+	void _sort_file_info_list(List<EditorFileSystemDock::FileInfo> &r_file_list);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
@@ -305,10 +305,10 @@ private:
 	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 private:
-	static FileSystemDock *singleton;
+	static EditorFileSystemDock *singleton;
 
 public:
-	static FileSystemDock *get_singleton() { return singleton; }
+	static EditorFileSystemDock *get_singleton() { return singleton; }
 
 protected:
 	void _notification(int p_what);
@@ -338,8 +338,8 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
-	FileSystemDock();
-	~FileSystemDock();
+	EditorFileSystemDock();
+	~EditorFileSystemDock();
 };
 
 #endif // SCENES_DOCK_H

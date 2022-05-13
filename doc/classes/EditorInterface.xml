@@ -51,7 +51,7 @@
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the current path being viewed in the [FileSystemDock].
+				Returns the current path being viewed in the [EditorFileSystemDock].
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
@@ -87,9 +87,9 @@
 			</description>
 		</method>
 		<method name="get_file_system_dock">
-			<return type="FileSystemDock" />
+			<return type="EditorFileSystemDock" />
 			<description>
-				Returns the editor's [FileSystemDock] instance.
+				Returns the editor's [EditorFileSystemDock] instance.
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
@@ -134,7 +134,7 @@
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+				Returns the path of the directory currently selected in the [EditorFileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
 			</description>
 		</method>
 		<method name="get_selection">

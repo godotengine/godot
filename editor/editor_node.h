@@ -73,7 +73,7 @@ class EditorSettingsDialog;
 class EditorToaster;
 class ExportTemplateManager;
 class FileDialog;
-class FileSystemDock;
+class EditorFileSystemDock;
 class HSplitContainer;
 class ImportDock;
 class LinkButton;
@@ -674,7 +674,7 @@ private:
 	void _bottom_panel_raise_toggled(bool);
 
 protected:
-	friend class FileSystemDock;
+	friend class EditorFileSystemDock;
 
 	static void _bind_methods();
 

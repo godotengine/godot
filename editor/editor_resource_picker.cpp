@@ -340,7 +340,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
+			EditorFileSystemDock *file_system_dock = EditorFileSystemDock::get_singleton();
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.

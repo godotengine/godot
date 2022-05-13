@@ -235,15 +235,15 @@ ScriptEditor *EditorInterface::get_script_editor() {
 }
 
 void EditorInterface::select_file(const String &p_file) {
-	FileSystemDock::get_singleton()->select_file(p_file);
+	EditorFileSystemDock::get_singleton()->select_file(p_file);
 }
 
 String EditorInterface::get_selected_path() const {
-	return FileSystemDock::get_singleton()->get_selected_path();
+	return EditorFileSystemDock::get_singleton()->get_selected_path();
 }
 
 String EditorInterface::get_current_path() const {
-	return FileSystemDock::get_singleton()->get_current_path();
+	return EditorFileSystemDock::get_singleton()->get_current_path();
 }
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
@@ -254,8 +254,8 @@ EditorFileSystem *EditorInterface::get_resource_file_system() {
 	return EditorFileSystem::get_singleton();
 }
 
-FileSystemDock *EditorInterface::get_file_system_dock() {
-	return FileSystemDock::get_singleton();
+EditorFileSystemDock *EditorInterface::get_file_system_dock() {
+	return EditorFileSystemDock::get_singleton();
 }
 
 EditorSelection *EditorInterface::get_selection() {

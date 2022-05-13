@@ -66,7 +66,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			FileSystemDock *dock = FileSystemDock::get_singleton();
+			EditorFileSystemDock *dock = EditorFileSystemDock::get_singleton();
 
 			if (dock != nullptr) {
 				ScriptCreateDialog *dialog = dock->get_script_create_dialog();
@@ -158,7 +158,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 void EditorAutoloadSettings::_autoload_add() {
 	if (autoload_add_path->get_text().is_empty()) {
-		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
+		ScriptCreateDialog *dialog = EditorFileSystemDock::get_singleton()->get_script_create_dialog();
 		String fpath = path;
 		if (!fpath.ends_with("/")) {
 			fpath = fpath.get_base_dir();
@@ -573,7 +573,7 @@ void EditorAutoloadSettings::update_autoload() {
 }
 
 void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
-	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
+	EditorFileSystemDock::get_singleton()->get_script_create_dialog()->hide();
 	path = p_script->get_path().get_base_dir();
 	autoload_add_path->set_text(p_script->get_path());
 	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().capitalize().replace(" ", ""));
