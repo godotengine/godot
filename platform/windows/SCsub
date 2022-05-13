@@ -10,7 +10,6 @@ sources = []
 
 common_win = [
     "godot_windows.cpp",
-    "crash_handler_windows.cpp",
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
@@ -24,6 +23,11 @@ common_win = [
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
 ]
+
+if env.msvc:
+    common_win += ["crash_handler_windows_seh.cpp"]
+else:
+    common_win += ["crash_handler_windows_signal.cpp"]
 
 common_win_wrap = [
     "console_wrapper_windows.cpp",

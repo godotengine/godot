@@ -557,6 +557,9 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["dxgi", "d3d9", "d3d11"]
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
+    if env["target"] in ["editor", "template_debug"]:
+        LIBS += ["psapi", "dbghelp"]
+
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if vcvars_msvc_config:

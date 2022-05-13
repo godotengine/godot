@@ -215,7 +215,7 @@ int main(int argc, char **argv) {
 
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-#ifdef CRASH_HANDLER_EXCEPTION
+#if defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
 	__try {
 		return _main();
 	} __except (CrashHandlerException(GetExceptionInformation())) {

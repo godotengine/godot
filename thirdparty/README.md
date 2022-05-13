@@ -428,6 +428,18 @@ Files extracted from upstream source:
 - `jpge*.{c,h}`
 
 
+## libbacktrace
+
+- Upstream: https://github.com/ianlancetaylor/libbacktrace
+- Version: git (4d2dd0b172f2c9192f83ba93425f868f2a13c553, 2022)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `*.{c,h}` files for Windows platform
+- `LICENSE`
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
