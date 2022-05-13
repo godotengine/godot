@@ -608,10 +608,10 @@ private:
 	RID index_buffer;
 	RID index_array;
 
-	Map<RID, RID> texture_to_uniform_set_cache;
-	Map<RID, RID> input_to_uniform_set_cache;
+	HashMap<RID, RID> texture_to_uniform_set_cache;
+	HashMap<RID, RID> input_to_uniform_set_cache;
 
-	Map<RID, RID> image_to_uniform_set_cache;
+	HashMap<RID, RID> image_to_uniform_set_cache;
 
 	struct TexturePair {
 		RID texture1;
@@ -637,11 +637,11 @@ private:
 		}
 	};
 
-	Map<TexturePair, RID> texture_pair_to_uniform_set_cache;
-	Map<RID, RID> texture_to_compute_uniform_set_cache;
-	Map<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
-	Map<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
-	Map<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
+	RBMap<TexturePair, RID> texture_pair_to_uniform_set_cache;
+	RBMap<RID, RID> texture_to_compute_uniform_set_cache;
+	RBMap<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
+	RBMap<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
+	RBMap<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);

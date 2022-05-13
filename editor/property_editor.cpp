@@ -137,13 +137,13 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",", i), &extensions);
 					}
 
-					Set<String> valid_extensions;
+					RBSet<String> valid_extensions;
 					for (const String &E : extensions) {
 						valid_extensions.insert(E);
 					}
 
 					file->clear_filters();
-					for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
+					for (RBSet<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
 						file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
 					}
 
@@ -875,7 +875,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 					String base = hint_text.get_slice(",", i);
 
-					Set<String> valid_inheritors;
+					RBSet<String> valid_inheritors;
 					valid_inheritors.insert(base);
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
@@ -890,7 +890,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						E = E->next();
 					}
 
-					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
+					for (RBSet<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
 						const String &t = j->get();
 
 						bool is_custom_resource = false;

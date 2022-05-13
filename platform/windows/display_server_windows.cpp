@@ -1501,7 +1501,7 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		RBMap<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
@@ -2006,7 +2006,7 @@ void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float
 }
 
 void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, int idx) {
-	Map<int, Vector2>::Element *curr = touch_state.find(idx);
+	RBMap<int, Vector2>::Element *curr = touch_state.find(idx);
 	if (!curr) {
 		return;
 	}

@@ -726,7 +726,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 			combined_docs.insert(class_doc.name, class_doc);
 		}
 	}
-	iterator_doc = combined_docs.front();
+	iterator_doc = combined_docs.begin();
 	return true;
 }
 
@@ -787,7 +787,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
-	DocData::ClassDoc &class_doc = iterator_doc->value();
+	DocData::ClassDoc &class_doc = iterator_doc->value;
 	if (
 			(!_is_class_disabled_by_feature_profile(class_doc.name) && !_is_class_disabled_by_scope(class_doc.name)) ||
 			_match_visual_script(class_doc)) {
@@ -909,13 +909,13 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		}
 	}
 
-	iterator_doc = iterator_doc->next();
+	++iterator_doc;
 	return !iterator_doc;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 	results_tree->clear();
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	root_item = results_tree->create_item();
 	class_items.clear();
@@ -928,7 +928,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 		return true;
 	}
 
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
@@ -940,12 +940,12 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 		}
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_member_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	return true;
 }
@@ -955,7 +955,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
 		return true;
 	}
 
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
@@ -986,7 +986,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
 		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 

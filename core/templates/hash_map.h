@@ -373,42 +373,6 @@ public:
 
 	/** Iterator API **/
 
-	struct Iterator {
-		_FORCE_INLINE_ KeyValue<TKey, TValue> &operator*() const {
-			return E->data;
-		}
-		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const { return &E->data; }
-		_FORCE_INLINE_ Iterator &operator++() {
-			if (E) {
-				E = E->next;
-			}
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			if (E) {
-				E = E->prev;
-			}
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
-
-		_FORCE_INLINE_ operator bool() const {
-			return E != nullptr;
-		}
-
-		_FORCE_INLINE_ Iterator(HashMapElement<TKey, TValue> *p_E) { E = p_E; }
-		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
-		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
-			E = p_it.E;
-		}
-
-	private:
-		HashMapElement<TKey, TValue> *E = nullptr;
-	};
-
 	struct ConstIterator {
 		_FORCE_INLINE_ const KeyValue<TKey, TValue> &operator*() const {
 			return E->data;
@@ -430,7 +394,7 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
 
-		_FORCE_INLINE_ operator bool() const {
+		_FORCE_INLINE_ explicit operator bool() const {
 			return E != nullptr;
 		}
 
@@ -443,6 +407,46 @@ public:
 
 	private:
 		const HashMapElement<TKey, TValue> *E = nullptr;
+	};
+
+	struct Iterator {
+		_FORCE_INLINE_ KeyValue<TKey, TValue> &operator*() const {
+			return E->data;
+		}
+		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const { return &E->data; }
+		_FORCE_INLINE_ Iterator &operator++() {
+			if (E) {
+				E = E->next;
+			}
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			if (E) {
+				E = E->prev;
+			}
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		_FORCE_INLINE_ explicit operator bool() const {
+			return E != nullptr;
+		}
+
+		_FORCE_INLINE_ Iterator(HashMapElement<TKey, TValue> *p_E) { E = p_E; }
+		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
+			E = p_it.E;
+		}
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
+
+	private:
+		HashMapElement<TKey, TValue> *E = nullptr;
 	};
 
 	_FORCE_INLINE_ Iterator begin() {

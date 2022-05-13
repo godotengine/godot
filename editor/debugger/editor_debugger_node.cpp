@@ -118,7 +118,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	}
 
 	if (!debugger_plugins.is_empty()) {
-		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
+		for (RBSet<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
 			node->add_debugger_plugin(i->get());
 		}
 	}

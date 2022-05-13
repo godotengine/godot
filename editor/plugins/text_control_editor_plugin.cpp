@@ -92,8 +92,8 @@ void TextControlEditor::_update_fonts_menu() {
 	}
 
 	int id = FONT_INFO_ID;
-	for (Map<String, Map<String, String>>::Element *E = fonts.front(); E; E = E->next()) {
-		font_list->add_item(E->key(), id++);
+	for (const KeyValue<String, HashMap<String, String>> &E : fonts) {
+		font_list->add_item(E.key, id++);
 	}
 
 	if (font_list->get_item_count() > 1) {
@@ -107,8 +107,8 @@ void TextControlEditor::_update_styles_menu() {
 	font_style_list->clear();
 	if ((font_list->get_selected_id() >= FONT_INFO_ID)) {
 		const String &name = font_list->get_item_text(font_list->get_selected());
-		for (Map<String, String>::Element *E = fonts[name].front(); E; E = E->next()) {
-			font_style_list->add_item(E->key());
+		for (KeyValue<String, String> &E : fonts[name]) {
+			font_style_list->add_item(E.key);
 		}
 	} else if (font_list->get_selected() >= 0) {
 		font_style_list->add_item("Default");

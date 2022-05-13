@@ -71,14 +71,14 @@ private:
 
 	int total_subshapes = 0;
 
-	Map<uint32_t, ShapeData> shapes;
+	RBMap<uint32_t, ShapeData> shapes;
 
 	bool only_update_transform_changes = false; // This is used for sync to physics.
 
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
-	Set<uint32_t> debug_shapes_to_update;
+	RBSet<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
 	Transform3D debug_shape_old_transform;
 

@@ -49,7 +49,13 @@ class NavigationMesh : public Resource {
 		Vector3 from;
 		Vector3 to;
 
-		bool operator<(const _EdgeKey &p_with) const { return from == p_with.from ? to < p_with.to : from < p_with.from; }
+		static uint32_t hash(const _EdgeKey &p_key) {
+			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
+		}
+
+		bool operator==(const _EdgeKey &p_with) const {
+			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
+		}
 	};
 
 protected:

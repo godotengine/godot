@@ -360,10 +360,10 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 }
 
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
-	Map<StringName, GDMonoField *>::Element *result = fields.find(p_name);
+	HashMap<StringName, GDMonoField *>::Iterator result = fields.find(p_name);
 
 	if (result) {
-		return result->value();
+		return result->value;
 	}
 
 	if (fields_fetched) {
@@ -392,10 +392,10 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 	while ((raw_field = mono_class_get_fields(mono_class, &iter)) != nullptr) {
 		StringName name = String::utf8(mono_field_get_name(raw_field));
 
-		Map<StringName, GDMonoField *>::Element *match = fields.find(name);
+		HashMap<StringName, GDMonoField *>::Iterator match = fields.find(name);
 
 		if (match) {
-			fields_list.push_back(match->get());
+			fields_list.push_back(match->value);
 		} else {
 			GDMonoField *field = memnew(GDMonoField(raw_field, this));
 			fields.insert(name, field);
@@ -409,10 +409,10 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 }
 
 GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
-	Map<StringName, GDMonoProperty *>::Element *result = properties.find(p_name);
+	HashMap<StringName, GDMonoProperty *>::Iterator result = properties.find(p_name);
 
 	if (result) {
-		return result->value();
+		return result->value;
 	}
 
 	if (properties_fetched) {
@@ -441,10 +441,10 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 	while ((raw_property = mono_class_get_properties(mono_class, &iter)) != nullptr) {
 		StringName name = String::utf8(mono_property_get_name(raw_property));
 
-		Map<StringName, GDMonoProperty *>::Element *match = properties.find(name);
+		HashMap<StringName, GDMonoProperty *>::Iterator match = properties.find(name);
 
 		if (match) {
-			properties_list.push_back(match->get());
+			properties_list.push_back(match->value);
 		} else {
 			GDMonoProperty *property = memnew(GDMonoProperty(raw_property, this));
 			properties.insert(name, property);
@@ -477,10 +477,10 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 		if (mono_class_is_delegate(raw_class)) {
 			StringName name = String::utf8(mono_class_get_name(raw_class));
 
-			Map<StringName, GDMonoClass *>::Element *match = delegates.find(name);
+			HashMap<StringName, GDMonoClass *>::Iterator match = delegates.find(name);
 
 			if (match) {
-				delegates_list.push_back(match->get());
+				delegates_list.push_back(match->value);
 			} else {
 				GDMonoClass *delegate = memnew(GDMonoClass(String::utf8(mono_class_get_namespace(raw_class)), String::utf8(mono_class_get_name(raw_class)), raw_class, assembly));
 				delegates.insert(name, delegate);

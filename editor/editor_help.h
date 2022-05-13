@@ -105,13 +105,13 @@ class EditorHelp : public VBoxContainer {
 	String edited_class;
 
 	Vector<Pair<String, int>> section_line;
-	Map<String, int> method_line;
-	Map<String, int> signal_line;
-	Map<String, int> property_line;
-	Map<String, int> theme_property_line;
-	Map<String, int> constant_line;
-	Map<String, int> enum_line;
-	Map<String, Map<String, int>> enum_values_line;
+	HashMap<String, int> method_line;
+	HashMap<String, int> signal_line;
+	HashMap<String, int> property_line;
+	HashMap<String, int> theme_property_line;
+	HashMap<String, int> constant_line;
+	HashMap<String, int> enum_line;
+	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;

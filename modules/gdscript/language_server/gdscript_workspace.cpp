@@ -116,22 +116,22 @@ void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
 }
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
-	Map<String, ExtendGDScriptParser *>::Element *parser = parse_results.find(p_path);
-	Map<String, ExtendGDScriptParser *>::Element *script = scripts.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator parser = parse_results.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator script = scripts.find(p_path);
 	if (parser && script) {
-		if (script->get() && script->get() == parser->get()) {
-			memdelete(script->get());
+		if (script->value && script->value == parser->value) {
+			memdelete(script->value);
 		} else {
-			memdelete(script->get());
-			memdelete(parser->get());
+			memdelete(script->value);
+			memdelete(parser->value);
 		}
 		parse_results.erase(p_path);
 		scripts.erase(p_path);
 	} else if (parser) {
-		memdelete(parser->get());
+		memdelete(parser->value);
 		parse_results.erase(p_path);
 	} else if (script) {
-		memdelete(script->get());
+		memdelete(script->value);
 		scripts.erase(p_path);
 	}
 }
@@ -141,8 +141,8 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 	StringName empty;
 
 	while (class_name != empty) {
-		if (const Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.find(class_name)) {
-			const lsp::DocumentSymbol &class_symbol = E->value();
+		if (HashMap<StringName, lsp::DocumentSymbol>::ConstIterator E = native_symbols.find(class_name)) {
+			const lsp::DocumentSymbol &class_symbol = E->value;
 
 			if (p_member.is_empty()) {
 				return &class_symbol;
@@ -162,9 +162,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 }
 
 const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_path) const {
-	const Map<String, ExtendGDScriptParser *>::Element *S = scripts.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::ConstIterator S = scripts.find(p_path);
 	if (S) {
-		return &(S->get()->get_symbols());
+		return &(S->value->get_symbols());
 	}
 	return nullptr;
 }
@@ -209,10 +209,10 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 		err = parse_script(path, content);
 
 		if (err != OK) {
-			Map<String, ExtendGDScriptParser *>::Element *S = parse_results.find(path);
+			HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(path);
 			String err_msg = "Failed parse script " + path;
 			if (S) {
-				err_msg += "\n" + S->get()->get_errors()[0].message;
+				err_msg += "\n" + S->value->get_errors()[0].message;
 			}
 			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}
@@ -238,25 +238,25 @@ void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String>
 }
 
 ExtendGDScriptParser *GDScriptWorkspace::get_parse_successed_script(const String &p_path) {
-	const Map<String, ExtendGDScriptParser *>::Element *S = scripts.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator S = scripts.find(p_path);
 	if (!S) {
 		parse_local_script(p_path);
 		S = scripts.find(p_path);
 	}
 	if (S) {
-		return S->get();
+		return S->value;
 	}
 	return nullptr;
 }
 
 ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) {
-	const Map<String, ExtendGDScriptParser *>::Element *S = parse_results.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(p_path);
 	if (!S) {
 		parse_local_script(p_path);
 		S = parse_results.find(p_path);
 	}
 	if (S) {
-		return S->get();
+		return S->value;
 	}
 	return nullptr;
 }
@@ -424,8 +424,8 @@ Error GDScriptWorkspace::initialize() {
 Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_content) {
 	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
 	Error err = parser->parse(p_content, p_path);
-	Map<String, ExtendGDScriptParser *>::Element *last_parser = parse_results.find(p_path);
-	Map<String, ExtendGDScriptParser *>::Element *last_script = scripts.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator last_parser = parse_results.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::Iterator last_script = scripts.find(p_path);
 
 	if (err == OK) {
 		remove_cache_parser(p_path);
@@ -433,8 +433,8 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 		scripts[p_path] = parser;
 
 	} else {
-		if (last_parser && last_script && last_parser->get() != last_script->get()) {
-			memdelete(last_parser->get());
+		if (last_parser && last_script && last_parser->value != last_script->value) {
+			memdelete(last_parser->value);
 		}
 		parse_results[p_path] = parser;
 	}
@@ -513,9 +513,9 @@ String GDScriptWorkspace::get_file_uri(const String &p_path) const {
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	Dictionary params;
 	Array errors;
-	const Map<String, ExtendGDScriptParser *>::Element *ele = parse_results.find(p_path);
+	HashMap<String, ExtendGDScriptParser *>::ConstIterator ele = parse_results.find(p_path);
 	if (ele) {
-		const Vector<lsp::Diagnostic> &list = ele->get()->get_diagnostics();
+		const Vector<lsp::Diagnostic> &list = ele->value->get_diagnostics();
 		errors.resize(list.size());
 		for (int i = 0; i < list.size(); ++i) {
 			errors[i] = list[i].to_json();
@@ -707,8 +707,8 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 }
 
 const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params) {
-	if (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.find(p_params.native_class)) {
-		const lsp::DocumentSymbol &symbol = E->get();
+	if (HashMap<StringName, lsp::DocumentSymbol>::Iterator E = native_symbols.find(p_params.native_class)) {
+		const lsp::DocumentSymbol &symbol = E->value;
 		if (p_params.symbol_name.is_empty() || p_params.symbol_name == symbol.name) {
 			return &symbol;
 		}
@@ -784,7 +784,7 @@ GDScriptWorkspace::GDScriptWorkspace() {
 }
 
 GDScriptWorkspace::~GDScriptWorkspace() {
-	Set<String> cached_parsers;
+	RBSet<String> cached_parsers;
 
 	for (const KeyValue<String, ExtendGDScriptParser *> &E : parse_results) {
 		cached_parsers.insert(E.key);
@@ -794,7 +794,7 @@ GDScriptWorkspace::~GDScriptWorkspace() {
 		cached_parsers.insert(E.key);
 	}
 
-	for (Set<String>::Element *E = cached_parsers.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = cached_parsers.front(); E; E = E->next()) {
 		remove_cache_parser(E->get());
 	}
 }

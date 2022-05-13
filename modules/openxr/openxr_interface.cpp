@@ -113,7 +113,7 @@ void OpenXRInterface::_load_action_map() {
 
 	// process our action map
 	if (action_map.is_valid()) {
-		Map<Ref<OpenXRAction>, Action *> xr_actions;
+		HashMap<Ref<OpenXRAction>, Action *> xr_actions;
 
 		Array action_sets = action_map->get_action_sets();
 		for (int i = 0; i < action_sets.size(); i++) {

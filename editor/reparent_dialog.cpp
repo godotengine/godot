@@ -57,7 +57,7 @@ void ReparentDialog::_reparent() {
 	}
 }
 
-void ReparentDialog::set_current(const Set<Node *> &p_selection) {
+void ReparentDialog::set_current(const RBSet<Node *> &p_selection) {
 	tree->set_marked(p_selection, false, false);
 	//tree->set_selected(p_node->get_parent());
 }

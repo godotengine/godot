@@ -382,7 +382,7 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	}
 
 	String extension = p.get_extension();
-	Set<String> extensions;
+	RBSet<String> extensions;
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		for (const String &ext : language_data[i].extensions) {

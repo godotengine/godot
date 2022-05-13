@@ -2149,8 +2149,8 @@ bool Main::start() {
 		doc.generate(doc_base);
 
 		DocTools docsrc;
-		Map<String, String> doc_data_classes;
-		Set<String> checked_paths;
+		HashMap<String, String> doc_data_classes;
+		RBSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -2189,7 +2189,7 @@ bool Main::start() {
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 
-		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
+		for (RBSet<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
 			err = DocTools::erase_classes(E->get());
 			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));

@@ -867,7 +867,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 	}
 }
 
-Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const Map<String, String> &p_map) {
+Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map) {
 	open(p_f, true);
 	ERR_FAIL_COND_V(error != OK, error);
 	ignore_resource_parsing = true;
@@ -1232,7 +1232,7 @@ Error ResourceLoaderText::save_as_binary(Ref<FileAccess> p_f, const String &p_pa
 				}
 
 				if (!assign.is_empty()) {
-					Map<StringName, int> empty_string_map; //unused
+					HashMap<StringName, int> empty_string_map; //unused
 					bs_save_unicode_string(wf2, assign, true);
 					ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
 					prop_count++;
@@ -1293,7 +1293,7 @@ Error ResourceLoaderText::save_as_binary(Ref<FileAccess> p_f, const String &p_pa
 				String name = E.name;
 				Variant value = packed_scene->get(name);
 
-				Map<StringName, int> empty_string_map; //unused
+				HashMap<StringName, int> empty_string_map; //unused
 				bs_save_unicode_string(wf2, name, true);
 				ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
 				prop_count++;
@@ -1507,7 +1507,7 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
-Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Error err = OK;
 	{
 		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -1737,7 +1737,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 #ifdef TOOLS_ENABLED
 	// Keep order from cached ids.
-	Set<String> cached_ids_found;
+	RBSet<String> cached_ids_found;
 	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		String cached_id = E.key->get_id_for_path(local_path);
 		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
@@ -1809,7 +1809,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		f->store_line(String()); // Separate.
 	}
 
-	Set<String> used_unique_ids;
+	RBSet<String> used_unique_ids;
 
 	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();

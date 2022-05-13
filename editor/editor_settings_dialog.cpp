@@ -327,7 +327,7 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 
 void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
-	Map<String, bool> collapsed;
+	HashMap<String, bool> collapsed;
 
 	if (shortcuts->get_root() && shortcuts->get_root()->get_first_child()) {
 		TreeItem *ti = shortcuts->get_root()->get_first_child();
@@ -359,7 +359,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	shortcuts->clear();
 
 	TreeItem *root = shortcuts->create_item();
-	Map<String, TreeItem *> sections;
+	HashMap<String, TreeItem *> sections;
 
 	// Set up section for Common/Built-in actions
 	TreeItem *common_section = shortcuts->create_item(root);

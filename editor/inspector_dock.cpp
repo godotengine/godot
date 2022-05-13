@@ -149,7 +149,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (current) {
 					List<PropertyInfo> props;
 					current->get_property_list(&props);
-					Map<Ref<Resource>, Ref<Resource>> duplicates;
+					HashMap<Ref<Resource>, Ref<Resource>> duplicates;
 					for (const PropertyInfo &prop_info : props) {
 						if (!(prop_info.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
@@ -307,7 +307,7 @@ void InspectorDock::_prepare_history() {
 	history_menu->get_popup()->clear();
 
 	Ref<Texture2D> base_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	Set<ObjectID> already;
+	RBSet<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 		ObjectID id = editor_history->get_history_obj(i);
 		Object *obj = ObjectDB::get_instance(id);

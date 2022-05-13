@@ -219,8 +219,11 @@ struct StackFrame {
 	int line;
 	int column;
 
-	bool operator<(const StackFrame &p_other) const {
-		return id < p_other.id;
+	static uint32_t hash(const StackFrame &p_frame) {
+		return hash_djb2_one_32(p_frame.id);
+	}
+	bool operator==(const StackFrame &p_other) const {
+		return id == p_other.id;
 	}
 
 	_FORCE_INLINE_ void from_json(const Dictionary &p_params) {

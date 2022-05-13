@@ -177,7 +177,7 @@ Vector<RID> PhysicsRayQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
+	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
 		ret.write[idx++] = E->get();
 	}
 	return ret;
@@ -231,7 +231,7 @@ Vector<RID> PhysicsPointQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
+	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
 		ret.write[idx++] = E->get();
 	}
 	return ret;
@@ -286,7 +286,7 @@ Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
+	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
 		ret.write[idx++] = E->get();
 	}
 	return ret;

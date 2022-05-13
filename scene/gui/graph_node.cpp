@@ -193,7 +193,7 @@ void GraphNode::_resort() {
 	int stretch_min = 0;
 	int stretch_avail = 0;
 	float stretch_ratio_total = 0;
-	Map<Control *, _MinSizeCache> min_size_cache;
+	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));

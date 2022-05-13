@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
@@ -84,7 +84,7 @@ void EditorTranslationParserPlugin::_bind_methods() {
 /////////////////////////
 
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
-	Set<String> extensions;
+	RBSet<String> extensions;
 	List<String> temp;
 	for (int i = 0; i < standard_parsers.size(); i++) {
 		standard_parsers[i]->get_recognized_extensions(&temp);
@@ -96,7 +96,7 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = extensions.front(); E; E = E->next()) {
 		r_extensions->push_back(E->get());
 	}
 }

@@ -39,7 +39,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 #include "gdscript_cache.h"
@@ -802,7 +802,7 @@ public:
 		FunctionNode *function = nullptr;
 		FunctionNode *parent_function = nullptr;
 		Vector<IdentifierNode *> captures;
-		Map<StringName, int> captures_indices;
+		HashMap<StringName, int> captures_indices;
 		bool use_self = false;
 
 		bool has_name() const {
@@ -1205,9 +1205,9 @@ private:
 	List<ParserError> errors;
 #ifdef DEBUG_ENABLED
 	List<GDScriptWarning> warnings;
-	Set<String> ignored_warnings;
-	Set<uint32_t> ignored_warning_codes;
-	Set<int> unsafe_lines;
+	RBSet<String> ignored_warnings;
+	RBSet<uint32_t> ignored_warning_codes;
+	RBSet<int> unsafe_lines;
 #endif
 
 	GDScriptTokenizer tokenizer;
@@ -1419,7 +1419,7 @@ public:
 	}
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const Set<int> &get_unsafe_lines() const { return unsafe_lines; }
+	const RBSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
 #endif
 

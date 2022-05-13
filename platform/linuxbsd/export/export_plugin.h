@@ -38,7 +38,7 @@
 #include "scene/resources/texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
-	Map<String, String> extensions;
+	HashMap<String, String> extensions;
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 public:

@@ -163,7 +163,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		for (int i = 0; i < keys.size(); i++) {
 			array.push_back(keys[i].from);
 			array.push_back(keys[i].to);
-			array.push_back(blend_times[keys[i]]);
+			array.push_back(blend_times.get(keys[i]));
 		}
 
 		r_ret = array;
@@ -588,10 +588,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				//StringName property=a->track_get_path(i).get_property();
 
-				Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.find(a->track_get_path(i).get_concatenated_subnames());
+				HashMap<StringName, TrackNodeCache::PropertyAnim>::Iterator E = nc->property_anim.find(a->track_get_path(i).get_concatenated_subnames());
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
 
-				TrackNodeCache::PropertyAnim *pa = &E->get();
+				TrackNodeCache::PropertyAnim *pa = &E->value;
 
 				Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
@@ -738,10 +738,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
-				Map<StringName, TrackNodeCache::BezierAnim>::Element *E = nc->bezier_anim.find(a->track_get_path(i).get_concatenated_subnames());
+				HashMap<StringName, TrackNodeCache::BezierAnim>::Iterator E = nc->bezier_anim.find(a->track_get_path(i).get_concatenated_subnames());
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
 
-				TrackNodeCache::BezierAnim *ba = &E->get();
+				TrackNodeCache::BezierAnim *ba = &E->value;
 
 				real_t bezier = a->bezier_track_interpolate(i, p_time);
 				if (ba->accum_pass != accum_pass) {
@@ -1272,7 +1272,7 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
 	// Rename autoplay or blends if needed.
 	List<BlendKey> to_erase;
-	Map<BlendKey, float> to_insert;
+	HashMap<BlendKey, float, BlendKey> to_insert;
 	for (const KeyValue<BlendKey, float> &E : blend_times) {
 		BlendKey bk = E.key;
 		BlendKey new_bk = bk;
@@ -1298,8 +1298,8 @@ void AnimationPlayer::_rename_animation(const StringName &p_from_name, const Str
 	}
 
 	while (to_insert.size()) {
-		blend_times[to_insert.front()->key()] = to_insert.front()->get();
-		to_insert.erase(to_insert.front());
+		blend_times[to_insert.begin()->key] = to_insert.begin()->value;
+		to_insert.remove(to_insert.begin());
 	}
 
 	if (autoplay == p_from_name) {
@@ -1766,7 +1766,7 @@ void AnimationPlayer::_animation_changed() {
 }
 
 void AnimationPlayer::_stop_playing_caches() {
-	for (Set<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
+	for (RBSet<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
 		if (E->get()->node && E->get()->audio_playing) {
 			E->get()->node->call(SNAME("stop"));
 		}

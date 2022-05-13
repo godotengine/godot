@@ -105,9 +105,9 @@ int test_main(int argc, char *argv[]) {
 
 	// Run custom test tools.
 	if (test_commands) {
-		for (Map<String, TestFunc>::Element *E = test_commands->front(); E; E = E->next()) {
-			if (args.find(E->key())) {
-				const TestFunc &test_func = E->get();
+		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {
+			if (args.find(E.key)) {
+				const TestFunc &test_func = E.value;
 				test_func();
 				run_tests = false;
 				break;

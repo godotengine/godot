@@ -1684,10 +1684,10 @@ void GraphEdit::set_warped_panning(bool p_warped) {
 	warped_panning = p_warped;
 }
 
-int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u, const Set<StringName> &r_v) {
+int GraphEdit::_set_operations(SET_OPERATIONS p_operation, RBSet<StringName> &r_u, const RBSet<StringName> &r_v) {
 	switch (p_operation) {
 		case GraphEdit::IS_EQUAL: {
-			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+			for (RBSet<StringName>::Element *E = r_u.front(); E; E = E->next()) {
 				if (!r_v.has(E->get())) {
 					return 0;
 				}
@@ -1698,7 +1698,7 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 			if (r_u.size() == r_v.size() && !r_u.size()) {
 				return 1;
 			}
-			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+			for (RBSet<StringName>::Element *E = r_u.front(); E; E = E->next()) {
 				if (!r_v.has(E->get())) {
 					return 0;
 				}
@@ -1706,7 +1706,7 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 			return 1;
 		} break;
 		case GraphEdit::DIFFERENCE: {
-			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+			for (RBSet<StringName>::Element *E = r_u.front(); E; E = E->next()) {
 				if (r_v.has(E->get())) {
 					r_u.erase(E->get());
 				}
@@ -1714,7 +1714,7 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 			return r_u.size();
 		} break;
 		case GraphEdit::UNION: {
-			for (Set<StringName>::Element *E = r_v.front(); E; E = E->next()) {
+			for (RBSet<StringName>::Element *E = r_v.front(); E; E = E->next()) {
 				if (!r_u.has(E->get())) {
 					r_u.insert(E->get());
 				}
@@ -1727,17 +1727,17 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 	return -1;
 }
 
-HashMap<int, Vector<StringName>> GraphEdit::_layering(const Set<StringName> &r_selected_nodes, const HashMap<StringName, Set<StringName>> &r_upper_neighbours) {
+HashMap<int, Vector<StringName>> GraphEdit::_layering(const RBSet<StringName> &r_selected_nodes, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours) {
 	HashMap<int, Vector<StringName>> l;
 
-	Set<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
+	RBSet<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
 	int current_layer = 0;
 	bool selected = false;
 
 	while (!_set_operations(GraphEdit::IS_EQUAL, q, u)) {
 		_set_operations(GraphEdit::DIFFERENCE, p, u);
-		for (const Set<StringName>::Element *E = p.front(); E; E = E->next()) {
-			Set<StringName> n = r_upper_neighbours[E->get()];
+		for (const RBSet<StringName>::Element *E = p.front(); E; E = E->next()) {
+			RBSet<StringName> n = r_upper_neighbours[E->get()];
 			if (_set_operations(GraphEdit::IS_SUBSET, n, z)) {
 				Vector<StringName> t;
 				t.push_back(E->get());
@@ -1747,7 +1747,7 @@ HashMap<int, Vector<StringName>> GraphEdit::_layering(const Set<StringName> &r_s
 				selected = true;
 				t.append_array(l[current_layer]);
 				l.insert(current_layer, t);
-				Set<StringName> V;
+				RBSet<StringName> V;
 				V.insert(E->get());
 				_set_operations(GraphEdit::UNION, u, V);
 			}
@@ -1789,8 +1789,8 @@ Vector<StringName> GraphEdit::_split(const Vector<StringName> &r_layer, const Ha
 	return left;
 }
 
-void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours, const Set<StringName> &r_selected_nodes) {
-	for (const Set<StringName>::Element *E = r_selected_nodes.front(); E; E = E->next()) {
+void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours, const RBSet<StringName> &r_selected_nodes) {
+	for (const RBSet<StringName>::Element *E = r_selected_nodes.front(); E; E = E->next()) {
 		r_root[E->get()] = E->get();
 		r_align[E->get()] = E->get();
 	}
@@ -1829,7 +1829,7 @@ void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, c
 	}
 }
 
-void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours) {
+void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours) {
 	if (r_layers.size() == 1) {
 		return;
 	}
@@ -1867,8 +1867,8 @@ void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layer
 	}
 }
 
-void GraphEdit::_calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const Set<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info) {
-	for (const Set<StringName>::Element *E = r_block_heads.front(); E; E = E->next()) {
+void GraphEdit::_calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const RBSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info) {
+	for (const RBSet<StringName>::Element *E = r_block_heads.front(); E; E = E->next()) {
 		real_t left = 0;
 		StringName u = E->get();
 		StringName v = r_align[u];
@@ -2040,7 +2040,7 @@ void GraphEdit::arrange_nodes() {
 	}
 
 	Dictionary node_names;
-	Set<StringName> selected_nodes;
+	RBSet<StringName> selected_nodes;
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -2051,7 +2051,7 @@ void GraphEdit::arrange_nodes() {
 		node_names[gn->get_name()] = gn;
 	}
 
-	HashMap<StringName, Set<StringName>> upper_neighbours;
+	HashMap<StringName, RBSet<StringName>> upper_neighbours;
 	HashMap<StringName, Pair<int, int>> port_info;
 	Vector2 origin(FLT_MAX, FLT_MAX);
 
@@ -2066,7 +2066,7 @@ void GraphEdit::arrange_nodes() {
 
 		if (gn->is_selected()) {
 			selected_nodes.insert(gn->get_name());
-			Set<StringName> s;
+			RBSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
 				if (E->get().to == gn->get_name() && p_from->is_selected()) {
@@ -2103,9 +2103,9 @@ void GraphEdit::arrange_nodes() {
 	HashMap<StringName, Vector2> new_positions;
 	Vector2 default_position(FLT_MAX, FLT_MAX);
 	Dictionary inner_shift;
-	Set<StringName> block_heads;
+	RBSet<StringName> block_heads;
 
-	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
+	for (const RBSet<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
 		inner_shift[E->get()] = 0.0f;
 		sink[E->get()] = E->get();
 		shift[E->get()] = FLT_MAX;
@@ -2117,13 +2117,13 @@ void GraphEdit::arrange_nodes() {
 
 	_calculate_inner_shifts(inner_shift, root, node_names, align, block_heads, port_info);
 
-	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
+	for (const RBSet<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
 		_place_block(E->get(), gap_v, layers, root, align, node_names, inner_shift, sink, shift, new_positions);
 	}
 	origin.y = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().y - (new_positions[layers[0][0]].y + (float)inner_shift[layers[0][0]]);
 	origin.x = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().x;
 
-	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
+	for (const RBSet<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
 		StringName u = E->get();
 		float start_from = origin.y + new_positions[E->get()].y;
 		do {
@@ -2169,7 +2169,7 @@ void GraphEdit::arrange_nodes() {
 	}
 
 	emit_signal(SNAME("begin_node_move"));
-	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
+	for (const RBSet<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
 		GraphNode *gn = Object::cast_to<GraphNode>(node_names[E->get()]);
 		gn->set_drag(true);
 		Vector2 pos = (new_positions[E->get()]);

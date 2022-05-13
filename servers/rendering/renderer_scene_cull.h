@@ -324,7 +324,7 @@ public:
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
-		Map<RID, uint64_t> viewport_visibility_masks;
+		HashMap<RID, uint64_t> viewport_visibility_masks;
 
 		SelfList<Instance>::List instances;
 
@@ -426,7 +426,7 @@ public:
 			PropertyInfo info;
 		};
 
-		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		HashMap<StringName, InstanceShaderParameter> instance_shader_parameters;
 		bool instance_allocated_shader_parameters = false;
 		int32_t instance_allocated_shader_parameters_offset = -1;
 
@@ -443,7 +443,7 @@ public:
 		float visibility_range_end_margin = 0.0f;
 		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
-		Set<Instance *> visibility_dependencies;
+		RBSet<Instance *> visibility_dependencies;
 		uint32_t visibility_dependencies_depth = 0;
 		float transparency = 0.0f;
 		Scenario *scenario = nullptr;
@@ -579,16 +579,16 @@ public:
 
 	struct InstanceGeometryData : public InstanceBaseData {
 		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
-		Set<Instance *> lights;
+		RBSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
 		uint32_t projector_count = 0;
 		uint32_t softshadow_count = 0;
 
-		Set<Instance *> decals;
-		Set<Instance *> reflection_probes;
-		Set<Instance *> voxel_gi_instances;
-		Set<Instance *> lightmap_captures;
+		RBSet<Instance *> decals;
+		RBSet<Instance *> reflection_probes;
+		RBSet<Instance *> voxel_gi_instances;
+		RBSet<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -599,7 +599,7 @@ public:
 	struct InstanceReflectionProbeData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
+		RBSet<Instance *> geometries;
 
 		RID instance;
 		SelfList<InstanceReflectionProbeData> update_list;
@@ -616,7 +616,7 @@ public:
 		Instance *owner = nullptr;
 		RID instance;
 
-		Set<Instance *> geometries;
+		RBSet<Instance *> geometries;
 
 		InstanceDecalData() {
 		}
@@ -654,7 +654,7 @@ public:
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
-		Set<Instance *> geometries;
+		RBSet<Instance *> geometries;
 
 		Instance *baked_light = nullptr;
 
@@ -673,10 +673,10 @@ public:
 	struct InstanceVoxelGIData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
-		Set<Instance *> dynamic_geometries;
+		RBSet<Instance *> geometries;
+		RBSet<Instance *> dynamic_geometries;
 
-		Set<Instance *> lights;
+		RBSet<Instance *> lights;
 
 		struct LightCache {
 			RS::LightType type;
@@ -713,8 +713,8 @@ public:
 
 	struct InstanceLightmapData : public InstanceBaseData {
 		RID instance;
-		Set<Instance *> geometries;
-		Set<Instance *> users;
+		RBSet<Instance *> geometries;
+		RBSet<Instance *> users;
 
 		InstanceLightmapData() {
 		}
@@ -779,7 +779,7 @@ public:
 		}
 	};
 
-	Set<Instance *> heightfield_particle_colliders_update_list;
+	RBSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
 	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
@@ -964,7 +964,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_parameters_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;

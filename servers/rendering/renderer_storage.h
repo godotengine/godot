@@ -62,7 +62,7 @@ public:
 
 	private:
 		friend struct DependencyTracker;
-		Map<DependencyTracker *, uint32_t> instances;
+		HashMap<DependencyTracker *, uint32_t> instances;
 	};
 
 	struct DependencyTracker {
@@ -83,15 +83,16 @@ public:
 		}
 
 		void update_end() { //call after updating dependencies
-			List<Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *>> to_clean_up;
-			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+			List<Pair<Dependency *, DependencyTracker *>> to_clean_up;
+
+			for (RBSet<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
 				Dependency *dep = E->get();
-				Map<DependencyTracker *, uint32_t>::Element *F = dep->instances.find(this);
+				HashMap<DependencyTracker *, uint32_t>::Iterator F = dep->instances.find(this);
 				ERR_CONTINUE(!F);
-				if (F->get() != instance_version) {
-					Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *> p;
+				if (F->value != instance_version) {
+					Pair<Dependency *, DependencyTracker *> p;
 					p.first = dep;
-					p.second = F;
+					p.second = F->key;
 					to_clean_up.push_back(p);
 				}
 			}
@@ -104,7 +105,7 @@ public:
 		}
 
 		void clear() { // clear all dependencies
-			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+			for (RBSet<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
 				Dependency *dep = E->get();
 				dep->instances.erase(this);
 			}
@@ -116,7 +117,7 @@ public:
 	private:
 		friend struct Dependency;
 		uint32_t instance_version = 0;
-		Set<Dependency *> dependencies;
+		RBSet<Dependency *> dependencies;
 	};
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;

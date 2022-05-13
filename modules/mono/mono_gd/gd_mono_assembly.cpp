@@ -412,10 +412,10 @@ GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const Stri
 GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 	ERR_FAIL_NULL_V(image, nullptr);
 
-	Map<MonoClass *, GDMonoClass *>::Element *match = cached_raw.find(p_mono_class);
+	HashMap<MonoClass *, GDMonoClass *>::Iterator match = cached_raw.find(p_mono_class);
 
 	if (match) {
-		return match->value();
+		return match->value;
 	}
 
 	StringName namespace_name = String::utf8(mono_class_get_namespace(p_mono_class));

@@ -45,7 +45,7 @@ class Range : public Control {
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
-		Set<Range *> owners;
+		RBSet<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
 	};

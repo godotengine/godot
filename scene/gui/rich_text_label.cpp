@@ -3177,7 +3177,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		// Find optional parameters.
 		String bbcode_name;
-		typedef Map<String, String> OptionMap;
+		typedef HashMap<String, String> OptionMap;
 		OptionMap bbcode_options;
 		if (!split_tag_block.is_empty()) {
 			bbcode_name = split_tag_block[0];
@@ -3620,9 +3620,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
 			if (texture.is_valid()) {
 				Color color = Color(1.0, 1.0, 1.0);
-				OptionMap::Element *color_option = bbcode_options.find("color");
+				OptionMap::Iterator color_option = bbcode_options.find("color");
 				if (color_option) {
-					color = Color::from_string(color_option->value(), color);
+					color = Color::from_string(color_option->value, color);
 				}
 
 				int width = 0;
@@ -3636,14 +3636,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {
-					OptionMap::Element *width_option = bbcode_options.find("width");
+					OptionMap::Iterator width_option = bbcode_options.find("width");
 					if (width_option) {
-						width = width_option->value().to_int();
+						width = width_option->value.to_int();
 					}
 
-					OptionMap::Element *height_option = bbcode_options.find("height");
+					OptionMap::Iterator height_option = bbcode_options.find("height");
 					if (height_option) {
-						height = height_option->value().to_int();
+						height = height_option->value.to_int();
 					}
 				}
 
@@ -3729,15 +3729,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else if (bbcode_name == "fade") {
 			int start_index = 0;
-			OptionMap::Element *start_option = bbcode_options.find("start");
+			OptionMap::Iterator start_option = bbcode_options.find("start");
 			if (start_option) {
-				start_index = start_option->value().to_int();
+				start_index = start_option->value.to_int();
 			}
 
 			int length = 10;
-			OptionMap::Element *length_option = bbcode_options.find("length");
+			OptionMap::Iterator length_option = bbcode_options.find("length");
 			if (length_option) {
-				length = length_option->value().to_int();
+				length = length_option->value.to_int();
 			}
 
 			push_fade(start_index, length);
@@ -3745,15 +3745,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("fade");
 		} else if (bbcode_name == "shake") {
 			int strength = 5;
-			OptionMap::Element *strength_option = bbcode_options.find("level");
+			OptionMap::Iterator strength_option = bbcode_options.find("level");
 			if (strength_option) {
-				strength = strength_option->value().to_int();
+				strength = strength_option->value.to_int();
 			}
 
 			float rate = 20.0f;
-			OptionMap::Element *rate_option = bbcode_options.find("rate");
+			OptionMap::Iterator rate_option = bbcode_options.find("rate");
 			if (rate_option) {
-				rate = rate_option->value().to_float();
+				rate = rate_option->value.to_float();
 			}
 
 			push_shake(strength, rate);
@@ -3762,15 +3762,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			set_process_internal(true);
 		} else if (bbcode_name == "wave") {
 			float amplitude = 20.0f;
-			OptionMap::Element *amplitude_option = bbcode_options.find("amp");
+			OptionMap::Iterator amplitude_option = bbcode_options.find("amp");
 			if (amplitude_option) {
-				amplitude = amplitude_option->value().to_float();
+				amplitude = amplitude_option->value.to_float();
 			}
 
 			float period = 5.0f;
-			OptionMap::Element *period_option = bbcode_options.find("freq");
+			OptionMap::Iterator period_option = bbcode_options.find("freq");
 			if (period_option) {
-				period = period_option->value().to_float();
+				period = period_option->value.to_float();
 			}
 
 			push_wave(period, amplitude);
@@ -3779,15 +3779,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			set_process_internal(true);
 		} else if (bbcode_name == "tornado") {
 			float radius = 10.0f;
-			OptionMap::Element *radius_option = bbcode_options.find("radius");
+			OptionMap::Iterator radius_option = bbcode_options.find("radius");
 			if (radius_option) {
-				radius = radius_option->value().to_float();
+				radius = radius_option->value.to_float();
 			}
 
 			float frequency = 1.0f;
-			OptionMap::Element *frequency_option = bbcode_options.find("freq");
+			OptionMap::Iterator frequency_option = bbcode_options.find("freq");
 			if (frequency_option) {
-				frequency = frequency_option->value().to_float();
+				frequency = frequency_option->value.to_float();
 			}
 
 			push_tornado(frequency, radius);
@@ -3796,21 +3796,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			set_process_internal(true);
 		} else if (bbcode_name == "rainbow") {
 			float saturation = 0.8f;
-			OptionMap::Element *saturation_option = bbcode_options.find("sat");
+			OptionMap::Iterator saturation_option = bbcode_options.find("sat");
 			if (saturation_option) {
-				saturation = saturation_option->value().to_float();
+				saturation = saturation_option->value.to_float();
 			}
 
 			float value = 0.8f;
-			OptionMap::Element *value_option = bbcode_options.find("val");
+			OptionMap::Iterator value_option = bbcode_options.find("val");
 			if (value_option) {
-				value = value_option->value().to_float();
+				value = value_option->value.to_float();
 			}
 
 			float frequency = 1.0f;
-			OptionMap::Element *frequency_option = bbcode_options.find("freq");
+			OptionMap::Iterator frequency_option = bbcode_options.find("freq");
 			if (frequency_option) {
-				frequency = frequency_option->value().to_float();
+				frequency = frequency_option->value.to_float();
 			}
 
 			push_rainbow(saturation, value, frequency);

@@ -2175,7 +2175,7 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Map<StringName, String> get_editable_properties_names() const override;
+	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	virtual bool is_show_prop_names() const override;
 
 	Vector<StringName> get_editable_properties() const override;

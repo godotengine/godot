@@ -338,7 +338,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		}
 	}
 
-	Map<_EdgeKey, bool> edge_map;
+	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
 	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
@@ -356,10 +356,10 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 					SWAP(ek.from, ek.to);
 				}
 
-				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
+				HashMap<_EdgeKey, bool, _EdgeKey>::Iterator F = edge_map.find(ek);
 
 				if (F) {
-					F->get() = false;
+					F->value = false;
 
 				} else {
 					edge_map[ek] = true;

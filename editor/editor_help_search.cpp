@@ -313,7 +313,7 @@ bool EditorHelpSearch::Runner::_slice() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+	iterator_doc = EditorHelp::get_doc_data()->class_list.begin();
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -322,7 +322,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes() {
-	DocData::ClassDoc &class_doc = iterator_doc->value();
+	DocData::ClassDoc &class_doc = iterator_doc->value;
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
@@ -404,12 +404,12 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 		matches[class_doc.name] = match;
 	}
 
-	iterator_doc = iterator_doc->next();
+	++iterator_doc;
 	return !iterator_doc;
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	results_tree->clear();
 	root_item = results_tree->create_item();
@@ -419,7 +419,7 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
@@ -431,18 +431,18 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 		}
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items() {
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
@@ -473,7 +473,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 

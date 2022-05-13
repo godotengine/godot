@@ -70,6 +70,14 @@ private:
 		String source;
 		int line = 0;
 
+		static uint32_t hash(const Breakpoint &p_val) {
+			uint32_t h = HashMapHasherDefault::hash(p_val.source);
+			return hash_djb2_one_32(p_val.line, h);
+		}
+		bool operator==(const Breakpoint &p_b) const {
+			return (line == p_b.line && source == p_b.source);
+		}
+
 		bool operator<(const Breakpoint &p_b) const {
 			if (line == p_b.line) {
 				return source < p_b.source;
@@ -102,9 +110,9 @@ private:
 	bool debug_with_external_editor = false;
 	bool hide_on_stop = true;
 	CameraOverride camera_override = OVERRIDE_NONE;
-	Map<Breakpoint, bool> breakpoints;
+	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
-	Set<Ref<Script>> debugger_plugins;
+	RBSet<Ref<Script>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();

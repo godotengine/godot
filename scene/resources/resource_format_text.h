@@ -58,8 +58,8 @@ class ResourceLoaderText {
 
 	bool ignore_resource_parsing = false;
 
-	Map<String, ExtResource> ext_resources;
-	Map<String, Ref<Resource>> int_resources;
+	HashMap<String, ExtResource> ext_resources;
+	HashMap<String, Ref<Resource>> int_resources;
 
 	int resources_total = 0;
 	int resource_current = 0;
@@ -76,7 +76,7 @@ class ResourceLoaderText {
 
 	ResourceUID::ID res_uid = ResourceUID::INVALID_ID;
 
-	Map<String, String> remaps;
+	HashMap<String, String> remaps;
 
 	static Error _parse_sub_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_sub_resource(p_stream, r_res, line, r_err_str); }
 	static Error _parse_ext_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_ext_resource(p_stream, r_res, line, r_err_str); }
@@ -90,10 +90,10 @@ class ResourceLoaderText {
 	};
 
 	struct DummyReadData {
-		Map<Ref<Resource>, int> external_resources;
-		Map<String, Ref<Resource>> rev_external_resources;
-		Map<Ref<Resource>, int> resource_index_map;
-		Map<String, Ref<Resource>> resource_map;
+		HashMap<Ref<Resource>, int> external_resources;
+		HashMap<String, Ref<Resource>> rev_external_resources;
+		HashMap<Ref<Resource>, int> resource_index_map;
+		HashMap<String, Ref<Resource>> resource_map;
 	};
 
 	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
@@ -124,7 +124,7 @@ public:
 	String recognize(Ref<FileAccess> p_f);
 	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
-	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const Map<String, String> &p_map);
+	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
 
 	Error save_as_binary(Ref<FileAccess> p_f, const String &p_path);
 	ResourceLoaderText();
@@ -140,7 +140,7 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
-	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
+	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 
 	static Error convert_file_to_binary(const String &p_src_path, const String &p_dst_path);
 
@@ -163,12 +163,12 @@ class ResourceFormatSaverTextInstance {
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
 	};
 
-	Map<NonPersistentKey, Ref<Resource>> non_persistent_map;
+	RBMap<NonPersistentKey, Ref<Resource>> non_persistent_map;
 
-	Set<Ref<Resource>> resource_set;
+	RBSet<Ref<Resource>> resource_set;
 	List<Ref<Resource>> saved_resources;
-	Map<Ref<Resource>, String> external_resources;
-	Map<Ref<Resource>, String> internal_resources;
+	HashMap<Ref<Resource>, String> external_resources;
+	HashMap<Ref<Resource>, String> internal_resources;
 
 	struct ResourceSort {
 		Ref<Resource> resource;

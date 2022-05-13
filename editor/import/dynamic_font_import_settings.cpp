@@ -45,8 +45,8 @@ class DynamicFontImportSettingsData : public RefCounted {
 	GDCLASS(DynamicFontImportSettingsData, RefCounted)
 	friend class DynamicFontImportSettings;
 
-	Map<StringName, Variant> settings;
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> settings;
+	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	DynamicFontImportSettings *owner = nullptr;
 
@@ -581,10 +581,10 @@ void DynamicFontImportSettings::_variations_validate() {
 		for (TreeItem *vars_item_b = vars_list_root->get_first_child(); vars_item_b; vars_item_b = vars_item_b->get_next()) {
 			if (vars_item_b != vars_item_a) {
 				bool match = true;
-				for (Map<StringName, Variant>::Element *E = import_variation_data_a->settings.front(); E; E = E->next()) {
+				for (const KeyValue<StringName, Variant> &E : import_variation_data_a->settings) {
 					Ref<DynamicFontImportSettingsData> import_variation_data_b = vars_item_b->get_metadata(0);
 					ERR_FAIL_NULL(import_variation_data_b);
-					match = match && (import_variation_data_b->settings[E->key()] == E->get());
+					match = match && (import_variation_data_b->settings[E.key] == E.value);
 				}
 				if (match) {
 					warn = TTR("Warning: Multiple configurations have identical settings. Duplicates will be ignored.");
@@ -927,7 +927,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 }
 
 void DynamicFontImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	HashMap<StringName, Variant> main_settings;
 
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
@@ -950,11 +950,11 @@ void DynamicFontImportSettings::_re_import() {
 
 		String name = vars_item->get_text(0);
 		variation += ("name=" + name);
-		for (Map<StringName, Variant>::Element *E = import_variation_data->settings.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
 			if (!variation.is_empty()) {
 				variation += ",";
 			}
-			variation += (String(E->key()) + "=" + String(E->get()));
+			variation += (String(E.key) + "=" + String(E.value));
 		}
 		variations.push_back(variation);
 	}
@@ -991,7 +991,7 @@ void DynamicFontImportSettings::_re_import() {
 	if (!selected_chars.is_empty()) {
 		Vector<String> ranges;
 		char32_t start = selected_chars.front()->get();
-		for (Set<char32_t>::Element *E = selected_chars.front()->next(); E; E = E->next()) {
+		for (RBSet<char32_t>::Element *E = selected_chars.front()->next(); E; E = E->next()) {
 			if (E->prev() && ((E->prev()->get() + 1) != E->get())) {
 				ranges.push_back(String("0x") + String::num_int64(start, 16) + String("-0x") + String::num_int64(E->prev()->get(), 16));
 				start = E->get();
@@ -1004,7 +1004,7 @@ void DynamicFontImportSettings::_re_import() {
 	if (!selected_glyphs.is_empty()) {
 		Vector<String> ranges;
 		int32_t start = selected_glyphs.front()->get();
-		for (Set<int32_t>::Element *E = selected_glyphs.front()->next(); E; E = E->next()) {
+		for (RBSet<int32_t>::Element *E = selected_glyphs.front()->next(); E; E = E->next()) {
 			if (E->prev() && ((E->prev()->get() + 1) != E->get())) {
 				ranges.push_back(String("0x") + String::num_int64(start, 16) + String("-0x") + String::num_int64(E->prev()->get(), 16));
 				start = E->get();
@@ -1024,8 +1024,8 @@ void DynamicFontImportSettings::_re_import() {
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("Import settings:");
-		for (Map<StringName, Variant>::Element *E = main_settings.front(); E; E = E->next()) {
-			print_line(String("    ") + String(E->key()).utf8().get_data() + " == " + String(E->get()).utf8().get_data());
+		for (const KeyValue<StringName, Variant> &E : main_settings) {
+			print_line(String("    ") + String(E.key).utf8().get_data() + " == " + String(E.value).utf8().get_data());
 		}
 	}
 

@@ -69,6 +69,11 @@ union TileMapCell {
 	};
 
 	uint64_t _u64t;
+
+	static uint32_t hash(const TileMapCell &p_hash) {
+		return hash_one_uint64(p_hash._u64t);
+	}
+
 	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = Vector2i(-1, -1), int p_alternative_tile = -1) { // default are INVALID_SOURCE, INVALID_ATLAS_COORDS, INVALID_TILE_ALTERNATIVE
 		source_id = p_source_id;
 		set_atlas_coords(p_atlas_coords);
@@ -103,13 +108,16 @@ union TileMapCell {
 	bool operator!=(const TileMapCell &p_other) const {
 		return !(source_id == p_other.source_id && coord_x == p_other.coord_x && coord_y == p_other.coord_y && alternative_tile == p_other.alternative_tile);
 	}
+	bool operator==(const TileMapCell &p_other) const {
+		return source_id == p_other.source_id && coord_x == p_other.coord_x && coord_y == p_other.coord_y && alternative_tile == p_other.alternative_tile;
+	}
 };
 
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
 
 	Vector2i size;
-	Map<Vector2i, TileMapCell> pattern;
+	HashMap<Vector2i, TileMapCell> pattern;
 
 	void _set_tile_data(const Vector<int> &p_data);
 	Vector<int> _get_tile_data() const;
@@ -166,11 +174,11 @@ private:
 		Size2i autotile_tile_size = Size2i(16, 16);
 
 		int autotile_spacing = 0;
-		Map<Vector2i, int> autotile_bitmask_flags;
-		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
-		Map<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
-		Map<Vector2i, int> autotile_priority_map;
-		Map<Vector2i, int> autotile_z_index_map;
+		HashMap<Vector2i, int> autotile_bitmask_flags;
+		HashMap<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
+		HashMap<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
+		HashMap<Vector2i, int> autotile_priority_map;
+		HashMap<Vector2i, int> autotile_z_index_map;
 
 		Vector<CompatibilityShapeData> shapes;
 		Ref<OccluderPolygon2D> occluder;
@@ -186,9 +194,9 @@ private:
 		COMPATIBILITY_TILE_MODE_ATLAS_TILE,
 	};
 
-	Map<int, CompatibilityTileData *> compatibility_data;
-	Map<int, int> compatibility_tilemap_mapping_tile_modes;
-	Map<int, Map<Array, Array>> compatibility_tilemap_mapping;
+	HashMap<int, CompatibilityTileData *> compatibility_data;
+	HashMap<int, int> compatibility_tilemap_mapping_tile_modes;
+	HashMap<int, RBMap<Array, Array>> compatibility_tilemap_mapping;
 
 	void _compatibility_conversion();
 
@@ -324,10 +332,10 @@ private:
 	};
 	Vector<TerrainSet> terrain_sets;
 
-	Map<TerrainMode, Map<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
+	HashMap<TerrainMode, HashMap<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
 	bool terrain_bits_meshes_dirty = true;
 
-	LocalVector<Map<TileSet::TerrainsPattern, Set<TileMapCell>>> per_terrain_pattern_tiles; // Cached data.
+	LocalVector<RBMap<TileSet::TerrainsPattern, RBSet<TileMapCell>>> per_terrain_pattern_tiles; // Cached data.
 	bool terrains_cache_dirty = true;
 	void _update_terrains_cache();
 
@@ -343,10 +351,10 @@ private:
 		Variant::Type type = Variant::NIL;
 	};
 	Vector<CustomDataLayer> custom_data_layers;
-	Map<String, int> custom_data_layers_by_name;
+	HashMap<String, int> custom_data_layers_by_name;
 
 	// Per Atlas source data.
-	Map<int, Ref<TileSetSource>> sources;
+	HashMap<int, Ref<TileSetSource>> sources;
 	Vector<int> source_ids;
 	int next_source_id = 0;
 	// ---------------------
@@ -357,9 +365,9 @@ private:
 	void _source_changed();
 
 	// Tile proxies
-	Map<int, int> source_level_proxies;
-	Map<Array, Array> coords_level_proxies;
-	Map<Array, Array> alternative_level_proxies;
+	RBMap<int, int> source_level_proxies;
+	RBMap<Array, Array> coords_level_proxies;
+	RBMap<Array, Array> alternative_level_proxies;
 
 	// Helpers
 	Vector<Point2> _get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
@@ -499,8 +507,8 @@ public:
 	int get_patterns_count();
 
 	// Terrains.
-	Set<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);
-	Set<TileMapCell> get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
+	RBSet<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);
+	RBSet<TileMapCell> get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
 	TileMapCell get_random_tile_from_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
 
 	// Helpers
@@ -579,7 +587,7 @@ private:
 		LocalVector<real_t> animation_frames_durations;
 
 		// Alternatives
-		Map<int, TileData *> alternatives;
+		HashMap<int, TileData *> alternatives;
 		Vector<int> alternatives_ids;
 		int next_alternative_id = 1;
 	};
@@ -589,9 +597,9 @@ private:
 	Vector2i separation;
 	Size2i texture_region_size = Size2i(16, 16);
 
-	Map<Vector2i, TileAlternativesData> tiles;
+	HashMap<Vector2i, TileAlternativesData> tiles;
 	Vector<Vector2i> tiles_ids;
-	Map<Vector2i, Vector2i> _coords_mapping_cache; // Maps any coordinate to the including tile
+	HashMap<Vector2i, Vector2i> _coords_mapping_cache; // Maps any coordinate to the including tile
 
 	TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile);
 	const TileData *_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const;
@@ -716,7 +724,7 @@ private:
 		bool display_placeholder = false;
 	};
 	Vector<int> scenes_ids;
-	Map<int, SceneData> scenes;
+	HashMap<int, SceneData> scenes;
 	int next_scene_id = 1;
 
 	void _compute_next_alternative_id();

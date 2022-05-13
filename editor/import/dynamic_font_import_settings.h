@@ -161,8 +161,8 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	Ref<Font> font_preview;
 	Ref<Font> font_main;
 
-	Set<char32_t> selected_chars;
-	Set<int32_t> selected_glyphs;
+	RBSet<char32_t> selected_chars;
+	RBSet<int32_t> selected_glyphs;
 
 	void _re_import();
 

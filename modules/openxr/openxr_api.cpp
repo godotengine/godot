@@ -170,9 +170,9 @@ bool OpenXRAPI::load_supported_extensions() {
 	return true;
 }
 
-bool OpenXRAPI::is_extension_supported(const char *p_extension) const {
+bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
-		if (strcmp(supported_extensions[i].extensionName, p_extension) == 0) {
+		if ((supported_extensions[i].extensionName == p_extension) == 0) {
 #ifdef DEBUG
 			print_line("OpenXR: requested extension", p_extension, "is supported");
 #endif
@@ -204,9 +204,9 @@ bool OpenXRAPI::create_instance() {
 	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
 
 	// Append the extensions requested by the registered extension wrappers.
-	Map<const char *, bool *> requested_extensions;
+	HashMap<String, bool *> requested_extensions;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		Map<const char *, bool *> wrapper_request_extensions = wrapper->get_request_extensions();
+		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_request_extensions();
 
 		// requested_extensions.insert(wrapper_request_extensions.begin(), wrapper_request_extensions.end());
 		for (auto &requested_extension : wrapper_request_extensions) {
@@ -224,6 +224,7 @@ bool OpenXRAPI::create_instance() {
 
 	// Check which extensions are supported
 	enabled_extensions.clear();
+
 	for (auto &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
@@ -238,11 +239,16 @@ bool OpenXRAPI::create_instance() {
 			*requested_extension.value = true;
 
 			// and record that we want to enable it
-			enabled_extensions.push_back(requested_extension.key);
+			enabled_extensions.push_back(requested_extension.key.ascii());
 		} else {
 			// record that we want to enable this
-			enabled_extensions.push_back(requested_extension.key);
+			enabled_extensions.push_back(requested_extension.key.ascii());
 		}
+	}
+
+	Vector<const char *> extension_ptrs;
+	for (int i = 0; i < enabled_extensions.size(); i++) {
+		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
 	// Get our project name
@@ -264,8 +270,8 @@ bool OpenXRAPI::create_instance() {
 		application_info, // applicationInfo
 		0, // enabledApiLayerCount, need to find out if we need support for this?
 		nullptr, // enabledApiLayerNames
-		uint32_t(enabled_extensions.size()), // enabledExtensionCount
-		enabled_extensions.ptr() // enabledExtensionNames
+		uint32_t(extension_ptrs.size()), // enabledExtensionCount
+		extension_ptrs.ptr() // enabledExtensionNames
 	};
 
 	copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);

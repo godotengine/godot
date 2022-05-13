@@ -742,9 +742,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		bool parsed = false;
 		const String cap = p_msg.substr(0, colon_index);
-		Map<StringName, Callable>::Element *element = captures.find(cap);
+		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
 		if (element) {
-			Callable &c = element->value();
+			Callable &c = element->value;
 			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
 			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
 			const Variant *args[2] = { &cmd, &data };
@@ -1050,10 +1050,10 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 }
 
 int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
-	Map<String, int>::Element *E = res_path_cache.find(p_path);
+	HashMap<String, int>::Iterator E = res_path_cache.find(p_path);
 
 	if (E) {
-		return E->get();
+		return E->value;
 	}
 
 	last_path_id++;

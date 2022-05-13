@@ -1130,7 +1130,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
-Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
@@ -1384,7 +1384,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, Map<Ref<Resource>, int> &resource_map, Map<Ref<Resource>, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
 			f->store_32(VARIANT_NIL);
@@ -2022,7 +2022,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
-	Set<String> used_unique_ids;
+	RBSet<String> used_unique_ids;
 
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {
@@ -2036,7 +2036,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	Map<Ref<Resource>, int> resource_map;
+	HashMap<Ref<Resource>, int> resource_map;
 	int res_index = 0;
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {

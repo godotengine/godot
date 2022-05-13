@@ -216,8 +216,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
 						if (symbol.documentation.is_empty()) {
-							if (Map<String, ExtendGDScriptParser *>::Element *S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
-								symbol.documentation = S->get()->class_symbol.documentation;
+							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
+								symbol.documentation = S->value->class_symbol.documentation;
 							}
 						}
 					} else {

@@ -297,7 +297,7 @@ private:
 		RID depth;
 		RID fb; //for copying
 
-		Map<RID, uint32_t> shadow_owners;
+		HashMap<RID, uint32_t> shadow_owners;
 	};
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
@@ -345,7 +345,7 @@ private:
 		RID side_fb[6];
 	};
 
-	Map<int, ShadowCubemap> shadow_cubemaps;
+	HashMap<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
 
 	void _create_shadow_cubemaps();
@@ -387,7 +387,7 @@ private:
 
 		Rect2 directional_rect;
 
-		Set<RID> shadow_atlases; //shadow atlases where this light is registered
+		RBSet<RID> shadow_atlases; //shadow atlases where this light is registered
 
 		ForwardID forward_id = -1;
 
@@ -921,7 +921,7 @@ private:
 		RID version;
 
 		RID pipeline;
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
@@ -929,7 +929,7 @@ private:
 
 		String path;
 		String code;
-		Map<StringName, Map<int, RID>> default_texture_params;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		bool uses_time = false;
 
@@ -954,7 +954,7 @@ private:
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~FogMaterialData();
 	};
 

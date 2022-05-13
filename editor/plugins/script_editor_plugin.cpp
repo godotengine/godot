@@ -235,21 +235,21 @@ class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 		Ref<Resource> cache;
 	};
 
-	Map<String, Cache> cached;
+	HashMap<String, Cache> cached;
 
 public:
 	uint64_t max_time_cache = 5 * 60 * 1000; //minutes, five
-	int max_cache_size = 128;
+	uint32_t max_cache_size = 128;
 
 	void cleanup() {
-		List<Map<String, Cache>::Element *> to_clean;
+		List<String> to_clean;
 
-		Map<String, Cache>::Element *I = cached.front();
+		HashMap<String, Cache>::Iterator I = cached.begin();
 		while (I) {
-			if ((OS::get_singleton()->get_ticks_msec() - I->get().time_loaded) > max_time_cache) {
-				to_clean.push_back(I);
+			if ((OS::get_singleton()->get_ticks_msec() - I->value.time_loaded) > max_time_cache) {
+				to_clean.push_back(I->key);
 			}
-			I = I->next();
+			++I;
 		}
 
 		while (to_clean.front()) {
@@ -259,34 +259,34 @@ public:
 	}
 
 	virtual Ref<Resource> get_cached_resource(const String &p_path) {
-		Map<String, Cache>::Element *E = cached.find(p_path);
+		HashMap<String, Cache>::Iterator E = cached.find(p_path);
 		if (!E) {
 			Cache c;
 			c.cache = ResourceLoader::load(p_path);
 			E = cached.insert(p_path, c);
 		}
 
-		E->get().time_loaded = OS::get_singleton()->get_ticks_msec();
+		E->value.time_loaded = OS::get_singleton()->get_ticks_msec();
 
 		if (cached.size() > max_cache_size) {
 			uint64_t older;
-			Map<String, Cache>::Element *O = cached.front();
-			older = O->get().time_loaded;
-			Map<String, Cache>::Element *I = O;
+			HashMap<String, Cache>::Iterator O = cached.begin();
+			older = O->value.time_loaded;
+			HashMap<String, Cache>::Iterator I = O;
 			while (I) {
-				if (I->get().time_loaded < older) {
-					older = I->get().time_loaded;
+				if (I->value.time_loaded < older) {
+					older = I->value.time_loaded;
 					O = I;
 				}
-				I = I->next();
+				++I;
 			}
 
 			if (O != E) { //should never happen..
-				cached.erase(O);
+				cached.remove(O);
 			}
 		}
 
-		return E->get().cache;
+		return E->value.cache;
 	}
 
 	virtual ~EditorScriptCodeCompletionCache() {}
@@ -1707,7 +1707,7 @@ void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
 }
 
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
-	Set<String> loaded_scripts;
+	RBSet<String> loaded_scripts;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -1792,7 +1792,7 @@ void ScriptEditor::ensure_select_current() {
 	_update_selected_editor_menu();
 }
 
-void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used) {
+void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, RBSet<Ref<Script>> &used) {
 	if (p_current != p_base && p_current->get_owner() != p_base) {
 		return;
 	}
@@ -1972,7 +1972,7 @@ void ScriptEditor::_update_script_names() {
 		return;
 	}
 
-	Set<Ref<Script>> used;
+	RBSet<Ref<Script>> used;
 	Node *edited = EditorNode::get_singleton()->get_edited_scene();
 	if (edited) {
 		_find_scripts(edited, edited, used);
@@ -3135,7 +3135,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	restoring_layout = true;
 
-	Set<String> loaded_scripts;
+	RBSet<String> loaded_scripts;
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 

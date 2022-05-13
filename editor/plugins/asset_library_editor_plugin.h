@@ -252,7 +252,7 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	int last_queue_id;
-	Map<int, ImageQueue> image_queue;
+	HashMap<int, ImageQueue> image_queue;
 
 	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);

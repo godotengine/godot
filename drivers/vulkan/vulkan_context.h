@@ -34,7 +34,7 @@
 #include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -161,7 +161,7 @@ private:
 
 	RID_Owner<LocalDevice, true> local_device_owner;
 
-	Map<DisplayServer::WindowID, Window> windows;
+	HashMap<DisplayServer::WindowID, Window> windows;
 	uint32_t swapchainImageCount = 0;
 
 	// Commands.

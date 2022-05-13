@@ -1382,8 +1382,6 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	Callable target = p_callable;
 
 	return s->slot_map.has(*target.get_base_comparator());
-	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
-	//return (E!=nullptr );
 }
 
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {

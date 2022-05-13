@@ -101,8 +101,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VkDevice device = VK_NULL_HANDLE;
 
-	Map<RID, Set<RID>> dependency_map; //IDs to IDs that depend on it
-	Map<RID, Set<RID>> reverse_dependency_map; //same as above, but in reverse
+	HashMap<RID, RBSet<RID>> dependency_map; //IDs to IDs that depend on it
+	HashMap<RID, RBSet<RID>> reverse_dependency_map; //same as above, but in reverse
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
@@ -349,15 +349,15 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
-	Map<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
+	RBMap<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
 	struct FramebufferFormat {
-		const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E;
+		const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E;
 		VkRenderPass render_pass = VK_NULL_HANDLE; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
 		Vector<TextureSamples> pass_samples;
 		uint32_t view_count = 1; // number of views
 	};
 
-	Map<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
+	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
 
 	struct Framebuffer {
 		FramebufferFormatID format_id = 0;
@@ -398,7 +398,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t subpass_count = 1;
 		};
 
-		Map<VersionKey, Version> framebuffers;
+		RBMap<VersionKey, Version> framebuffers;
 		Size2 size;
 		uint32_t view_count;
 	};
@@ -488,7 +488,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineVertexInputStateCreateInfo create_info;
 	};
 
-	Map<VertexFormatID, VertexDescriptionCache> vertex_formats;
+	HashMap<VertexFormatID, VertexDescriptionCache> vertex_formats;
 
 	struct VertexArray {
 		RID buffer;
@@ -592,7 +592,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// Always grows, never shrinks, ensuring unique IDs, but we assume
 	// the amount of formats will never be a problem, as the amount of shaders
 	// in a game is limited.
-	Map<UniformSetFormat, uint32_t> uniform_set_format_cache;
+	RBMap<UniformSetFormat, uint32_t> uniform_set_format_cache;
 
 	// Shaders in Vulkan are just pretty much
 	// precompiled blocks of SPIR-V bytecode. They
@@ -702,7 +702,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage;
 	};
 
-	Map<DescriptorPoolKey, Set<DescriptorPool *>> descriptor_pools;
+	RBMap<DescriptorPoolKey, RBSet<DescriptorPool *>> descriptor_pools;
 	uint32_t max_descriptors_per_pool = 0;
 
 	DescriptorPool *_descriptor_pool_allocate(const DescriptorPoolKey &p_key);
@@ -923,7 +923,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		};
 
 		struct State {
-			Set<Texture *> textures_to_sampled_layout;
+			RBSet<Texture *> textures_to_sampled_layout;
 			SetState sets[MAX_UNIFORM_SETS];
 			uint32_t set_count = 0;
 			RID pipeline;
@@ -1016,7 +1016,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator = nullptr;
-	Map<uint32_t, VmaPool> small_allocs_pools;
+	HashMap<uint32_t, VmaPool> small_allocs_pools;
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
 	VulkanContext *context = nullptr;

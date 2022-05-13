@@ -33,8 +33,8 @@
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/vector.h"
 
 class ScriptDebugger {
@@ -44,7 +44,7 @@ class ScriptDebugger {
 	int depth = -1;
 	bool skip_breakpoints = false;
 
-	Map<int, Set<StringName>> breakpoints;
+	HashMap<int, RBSet<StringName>> breakpoints;
 
 	ScriptLanguage *break_lang = nullptr;
 	Vector<StackInfo> error_stack_info;
@@ -66,7 +66,7 @@ public:
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
-	const Map<int, Set<StringName>> &get_breakpoints() const { return breakpoints; }
+	const HashMap<int, RBSet<StringName>> &get_breakpoints() const { return breakpoints; }
 
 	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	ScriptLanguage *get_break_language() const;

@@ -127,7 +127,7 @@ public:
 	struct RayParameters {
 		Vector2 from;
 		Vector2 to;
-		Set<RID> exclude;
+		RBSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -157,7 +157,7 @@ public:
 	struct PointParameters {
 		Vector2 position;
 		ObjectID canvas_instance_id;
-		Set<RID> exclude;
+		RBSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -173,7 +173,7 @@ public:
 		Transform2D transform;
 		Vector2 motion;
 		real_t margin = 0.0;
-		Set<RID> exclude;
+		RBSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -483,8 +483,8 @@ public:
 		Vector2 motion;
 		real_t margin = 0.08;
 		bool collide_separation_ray = false;
-		Set<RID> exclude_bodies;
-		Set<ObjectID> exclude_objects;
+		RBSet<RID> exclude_bodies;
+		RBSet<ObjectID> exclude_objects;
 
 		MotionParameters() {}
 

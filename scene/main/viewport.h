@@ -203,7 +203,7 @@ private:
 
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
-	Set<CanvasLayer *> canvas_layers;
+	RBSet<CanvasLayer *> canvas_layers;
 
 	RID viewport;
 	RID current_canvas;
@@ -258,9 +258,9 @@ private:
 	bool local_input_handled = false;
 
 	// Collider to frame
-	Map<ObjectID, uint64_t> physics_2d_mouseover;
+	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>> physics_2d_shape_mouseover;
+	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 
@@ -301,7 +301,7 @@ private:
 	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
-	Set<ViewportTexture *> viewport_textures;
+	RBSet<ViewportTexture *> viewport_textures;
 
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
@@ -615,7 +615,7 @@ public:
 	bool use_xr = false;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
-	Set<AudioListener3D *> audio_listener_3d_set;
+	RBSet<AudioListener3D *> audio_listener_3d_set;
 	bool is_audio_listener_3d_enabled = false;
 	RID internal_audio_listener_3d;
 	AudioListener3D *get_audio_listener_3d() const;
@@ -650,7 +650,7 @@ public:
 
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
-	Set<Camera3D *> camera_3d_set;
+	RBSet<Camera3D *> camera_3d_set;
 	Camera3D *get_camera_3d() const;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);

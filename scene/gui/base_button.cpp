@@ -43,7 +43,7 @@ void BaseButton::_unpress_group() {
 		status.pressed = true;
 	}
 
-	for (Set<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
+	for (RBSet<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
 		if (E->get() == this) {
 			continue;
 		}
@@ -485,14 +485,14 @@ BaseButton::~BaseButton() {
 }
 
 void ButtonGroup::get_buttons(List<BaseButton *> *r_buttons) {
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+	for (RBSet<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 		r_buttons->push_back(E->get());
 	}
 }
 
 Array ButtonGroup::_get_buttons() {
 	Array btns;
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+	for (RBSet<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 		btns.push_back(E->get());
 	}
 
@@ -500,7 +500,7 @@ Array ButtonGroup::_get_buttons() {
 }
 
 BaseButton *ButtonGroup::get_pressed_button() {
-	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+	for (RBSet<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 		if (E->get()->is_pressed()) {
 			return E->get();
 		}

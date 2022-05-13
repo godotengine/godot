@@ -62,7 +62,7 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 	int right_limit = get_size().width;
 
 	//selection may have altered the order of keys
-	Map<float, int> key_order;
+	RBMap<float, int> key_order;
 
 	for (int i = 0; i < animation->track_get_key_count(p_track); i++) {
 		float ofs = animation->track_get_key_time(p_track, i);
@@ -73,7 +73,7 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 		key_order[ofs] = i;
 	}
 
-	for (Map<float, int>::Element *E = key_order.front(); E; E = E->next()) {
+	for (RBMap<float, int>::Element *E = key_order.front(); E; E = E->next()) {
 		int i = E->get();
 
 		if (!E->next()) {
@@ -262,12 +262,12 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			int vofs = vsep;
 			int margin = 0;
 
-			Map<int, Color> subtrack_colors;
+			RBMap<int, Color> subtrack_colors;
 			Color selected_track_color;
 			subtracks.clear();
 			subtrack_icons.clear();
 
-			Map<String, Vector<int>> track_indices;
+			RBMap<String, Vector<int>> track_indices;
 			int track_count = animation->get_track_count();
 			for (int i = 0; i < track_count; ++i) {
 				if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER) {
@@ -432,7 +432,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					Rect2 solo_rect = Rect2(solo_hpos, icon_start_height - solo->get_height() / 2, solo->get_width(), solo->get_height());
 					draw_texture(solo, solo_rect.position);
 
-					Map<int, Rect2> track_icons;
+					RBMap<int, Rect2> track_icons;
 					track_icons[REMOVE_ICON] = remove_rect;
 					track_icons[LOCK_ICON] = lock_rect;
 					track_icons[VISIBILITY_ICON] = visible_rect;
@@ -747,7 +747,7 @@ void AnimationBezierTrackEdit::_update_locked_tracks_after(int p_track) {
 	}
 
 	Vector<int> updated_locked_tracks;
-	for (Set<int>::Element *E = locked_tracks.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = locked_tracks.front(); E; E = E->next()) {
 		updated_locked_tracks.push_back(E->get());
 	}
 	locked_tracks.clear();
@@ -766,7 +766,7 @@ void AnimationBezierTrackEdit::_update_hidden_tracks_after(int p_track) {
 	}
 
 	Vector<int> updated_hidden_tracks;
-	for (Set<int>::Element *E = hidden_tracks.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = hidden_tracks.front(); E; E = E->next()) {
 		updated_hidden_tracks.push_back(E->get());
 	}
 	hidden_tracks.clear();
@@ -963,9 +963,9 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		for (const KeyValue<int, Map<int, Rect2>> &E : subtrack_icons) {
+		for (const KeyValue<int, RBMap<int, Rect2>> &E : subtrack_icons) {
 			int track = E.key;
-			Map<int, Rect2> track_icons = E.value;
+			RBMap<int, Rect2> track_icons = E.value;
 			for (const KeyValue<int, Rect2> &I : track_icons) {
 				if (I.value.has_point(mb->get_position())) {
 					if (I.key == REMOVE_ICON) {

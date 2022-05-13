@@ -67,7 +67,7 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
@@ -176,7 +176,7 @@ void ResourceImporterDynamicFont::show_advanced_options(const String &p_path) {
 	DynamicFontImportSettings::get_singleton()->open_settings(p_path);
 }
 
-Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing dynamic font from: " + p_source_file);
 
 	bool antialiased = p_options["antialiased"];

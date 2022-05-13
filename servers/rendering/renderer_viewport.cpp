@@ -226,7 +226,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 
 	if (!p_viewport->disable_2d) {
-		Map<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
+		RBMap<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
 
 		Rect2 clip_rect(0, 0, p_viewport->size.x, p_viewport->size.y);
 		RendererCanvasRender::Light *lights = nullptr;
@@ -247,7 +247,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-				for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
+				for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 					if (!F->get()->enabled) {
 						continue;
 					}
@@ -281,7 +281,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			// Find lights in canvas.
 
-			for (Set<RendererCanvasRender::Light *>::Element *F = canvas->lights.front(); F; F = F->next()) {
+			for (RBSet<RendererCanvasRender::Light *>::Element *F = canvas->lights.front(); F; F = F->next()) {
 				RendererCanvasRender::Light *cl = F->get();
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
@@ -313,7 +313,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				}
 			}
 
-			for (Set<RendererCanvasRender::Light *>::Element *F = canvas->directional_lights.front(); F; F = F->next()) {
+			for (RBSet<RendererCanvasRender::Light *>::Element *F = canvas->directional_lights.front(); F; F = F->next()) {
 				RendererCanvasRender::Light *cl = F->get();
 				if (cl->enabled) {
 					cl->filter_next_ptr = directional_lights;
@@ -349,7 +349,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-				for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
+				for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 					if (!F->get()->enabled) {
 						continue;
 					}
@@ -429,7 +429,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 					Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-					for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
+					for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 						if (!F->get()->enabled) {
 							continue;
 						}
@@ -454,7 +454,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			RENDER_TIMESTAMP("< Render DirectionalLight2D Shadows");
 		}
 
-		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().get_layer() > scenario_canvas_max_layer) {
+		if (scenario_draw_canvas_bg && canvas_map.begin() && canvas_map.begin()->key.get_layer() > scenario_canvas_max_layer) {
 			if (!can_draw_3d) {
 				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 			} else {
@@ -547,7 +547,7 @@ void RendererViewport::draw_viewports() {
 	//sort viewports
 	active_viewports.sort_custom<ViewportSort>();
 
-	Map<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
+	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
@@ -1176,8 +1176,8 @@ bool RendererViewport::free(RID p_rid) {
 			RSG::scene->free(viewport->render_buffers);
 		}
 
-		while (viewport->canvas_map.front()) {
-			viewport_remove_canvas(p_rid, viewport->canvas_map.front()->key());
+		while (viewport->canvas_map.begin()) {
+			viewport_remove_canvas(p_rid, viewport->canvas_map.begin()->key);
 		}
 
 		viewport_set_scenario(p_rid, RID());

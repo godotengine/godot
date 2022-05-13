@@ -223,10 +223,10 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->full_gdscript_cache[p_owner] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
-	Set<String> depends = singleton->dependencies[p_owner];
+	RBSet<String> depends = singleton->dependencies[p_owner];
 
 	Error err = OK;
-	for (const Set<String>::Element *E = depends.front(); E != nullptr; E = E->next()) {
+	for (const RBSet<String>::Element *E = depends.front(); E != nullptr; E = E->next()) {
 		Error this_err = OK;
 		// No need to save the script. We assume it's already referenced in the owner.
 		get_full_script(E->get(), this_err);

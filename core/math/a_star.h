@@ -112,7 +112,7 @@ class AStar3D : public RefCounted {
 	uint64_t pass = 1;
 
 	OAHashMap<int, Point *> points;
-	Set<Segment> segments;
+	RBSet<Segment> segments;
 
 	bool _solve(Point *begin_point, Point *end_point);
 

@@ -326,8 +326,8 @@ void DisplayServerJavaScript::tts_resume() {
 }
 
 void DisplayServerJavaScript::tts_stop() {
-	for (Map<int, CharString>::Element *E = utterance_ids.front(); E; E = E->next()) {
-		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E->key());
+	for (const KeyValue<int, CharString> &E : utterance_ids) {
+		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	utterance_ids.clear();
 	godot_js_tts_stop();

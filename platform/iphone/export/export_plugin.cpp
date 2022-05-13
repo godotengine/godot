@@ -102,7 +102,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
 
-	Set<String> plist_keys;
+	RBSet<String> plist_keys;
 
 	for (int i = 0; i < found_plugins.size(); i++) {
 		// Editable plugin plist values
@@ -1178,7 +1178,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Vector<String> added_embedded_dependenciy_names;
 	HashMap<String, String> plist_values;
 
-	Set<String> plugin_linker_flags;
+	RBSet<String> plugin_linker_flags;
 
 	Error err;
 
@@ -1350,7 +1350,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	// Update Linker Flag Values
 	{
 		String result_linker_flags = " ";
-		for (Set<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
+		for (RBSet<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
 			const String &flag = E->get();
 
 			if (flag.length() == 0) {
@@ -1453,7 +1453,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	bool found_library = false;
 
 	const String project_file = "godot_ios.xcodeproj/project.pbxproj";
-	Set<String> files_to_parse;
+	RBSet<String> files_to_parse;
 	files_to_parse.insert("godot_ios/godot_ios-Info.plist");
 	files_to_parse.insert(project_file);
 	files_to_parse.insert("godot_ios/export_options.plist");

@@ -197,7 +197,7 @@ class ConnectionsDock : public VBoxContainer {
 	UndoRedo *undo_redo = nullptr;
 	LineEdit *search_box = nullptr;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
+	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 
 	void _filter_changed(const String &p_text);
 

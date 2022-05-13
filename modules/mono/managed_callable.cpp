@@ -36,7 +36,7 @@
 
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
-Map<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
+RBMap<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
 Mutex ManagedCallable::instances_mutex;
 #endif
 

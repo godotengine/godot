@@ -4085,7 +4085,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
-	const Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4396,7 +4396,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_COPY_POSE: {
 			pose_clipboard.clear();
 
-			const Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4442,7 +4442,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case ANIM_CLEAR_POSE: {
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4511,7 +4511,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
@@ -4559,7 +4559,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	Rect2 rect;
 	int count = 0;
 
-	const Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item) {

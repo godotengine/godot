@@ -31,7 +31,7 @@
 #include "shader_types.h"
 #include "core/math/math_defs.h"
 
-const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
+const HashMap<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
 	return shader_modes[p_mode].functions;
 }
 
@@ -39,7 +39,7 @@ const Vector<ShaderLanguage::ModeInfo> &ShaderTypes::get_modes(RS::ShaderMode p_
 	return shader_modes[p_mode].modes;
 }
 
-const Set<String> &ShaderTypes::get_types() const {
+const RBSet<String> &ShaderTypes::get_types() const {
 	return shader_types;
 }
 

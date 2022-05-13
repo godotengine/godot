@@ -41,7 +41,7 @@ class Translation : public Resource {
 	RES_BASE_EXTENSION("translation");
 
 	String locale = "en";
-	Map<StringName, StringName> translation_map;
+	HashMap<StringName, StringName> translation_map;
 
 	virtual Vector<String> _get_message_list() const;
 	virtual Dictionary _get_messages() const;
@@ -74,7 +74,7 @@ class TranslationServer : public Object {
 	String locale = "en";
 	String fallback;
 
-	Set<Ref<Translation>> translations;
+	RBSet<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
 	Ref<Translation> doc_translation;
 
@@ -111,16 +111,16 @@ class TranslationServer : public Object {
 		String name;
 		String script;
 		String default_country;
-		Set<String> supported_countries;
+		RBSet<String> supported_countries;
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
 
-	static Map<String, String> language_map;
-	static Map<String, String> script_map;
-	static Map<String, String> locale_rename_map;
-	static Map<String, String> country_name_map;
-	static Map<String, String> country_rename_map;
-	static Map<String, String> variant_map;
+	static HashMap<String, String> language_map;
+	static HashMap<String, String> script_map;
+	static HashMap<String, String> locale_rename_map;
+	static HashMap<String, String> country_name_map;
+	static HashMap<String, String> country_rename_map;
+	static HashMap<String, String> variant_map;
 
 	void init_locale_info();
 

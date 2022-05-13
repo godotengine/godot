@@ -57,16 +57,16 @@ bool EditorPropertyNameProcessor::is_localization_available() {
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
-	const Map<String, String>::Element *cached = capitalize_string_cache.find(p_name);
+	HashMap<String, String>::ConstIterator cached = capitalize_string_cache.find(p_name);
 	if (cached) {
-		return cached->value();
+		return cached->value;
 	}
 
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
-		const Map<String, String>::Element *remap = capitalize_string_remaps.find(parts[i]);
+		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
 		if (remap) {
-			parts.write[i] = remap->get();
+			parts.write[i] = remap->value;
 		} else {
 			parts.write[i] = parts[i].capitalize();
 		}

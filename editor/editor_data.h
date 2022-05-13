@@ -129,17 +129,17 @@ private:
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType>> custom_types;
+	HashMap<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
 	Vector<Callable> undo_redo_callbacks;
-	Map<StringName, Callable> move_element_functions;
+	HashMap<StringName, Callable> move_element_functions;
 
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
 
-	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
+	bool _find_updated_instances(Node *p_root, Node *p_node, RBSet<String> &checked_paths);
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
@@ -181,7 +181,7 @@ public:
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Variant instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
+	const HashMap<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
 	void instantiate_object_properties(Object *p_object);
 
@@ -247,7 +247,7 @@ class EditorSelection : public Object {
 
 	// Contains the selected nodes and corresponding metadata.
 	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.
-	Map<Node *, Object *> selection;
+	HashMap<Node *, Object *> selection;
 
 	// Tracks whether the selection change signal has been emitted.
 	// Prevents multiple signals being called in one frame.
@@ -296,7 +296,7 @@ public:
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
 	// Returns the map of selected objects and their metadata.
-	Map<Node *, Object *> &get_selection() { return selection; }
+	HashMap<Node *, Object *> &get_selection() { return selection; }
 
 	EditorSelection();
 	~EditorSelection();

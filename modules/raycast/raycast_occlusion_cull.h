@@ -101,7 +101,7 @@ private:
 	struct Occluder {
 		PackedVector3Array vertices;
 		PackedInt32Array indices;
-		Set<InstanceID> users;
+		RBSet<InstanceID> users;
 	};
 
 	struct OccluderInstance {
@@ -136,7 +136,7 @@ private:
 		int current_scene_idx = 0;
 
 		HashMap<RID, OccluderInstance> instances;
-		Set<RID> dirty_instances; // To avoid duplicates
+		RBSet<RID> dirty_instances; // To avoid duplicates
 		LocalVector<RID> dirty_instances_array; // To iterate and split into threads
 		LocalVector<RID> removed_instances;
 

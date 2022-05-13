@@ -193,7 +193,7 @@ void Resource::reload_from_file() {
 	copy_from(s);
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -228,7 +228,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return r;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -317,7 +317,7 @@ void Resource::unregister_owner(Object *p_owner) {
 }
 
 void Resource::notify_change_to_owners() {
-	for (Set<ObjectID>::Element *E = owners.front(); E; E = E->next()) {
+	for (RBSet<ObjectID>::Element *E = owners.front(); E; E = E->next()) {
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); //wtf
 		//TODO store string
@@ -532,7 +532,7 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 #ifdef DEBUG_ENABLED
 	lock.read_lock();
 
-	Map<String, int> type_count;
+	HashMap<String, int> type_count;
 
 	Ref<FileAccess> f;
 	if (p_file) {

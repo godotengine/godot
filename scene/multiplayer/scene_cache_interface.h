@@ -41,7 +41,7 @@ private:
 
 	//path sent caches
 	struct PathSentCache {
-		Map<int, bool> confirmed_peers;
+		HashMap<int, bool> confirmed_peers;
 		int id;
 	};
 
@@ -52,11 +52,11 @@ private:
 			ObjectID instance;
 		};
 
-		Map<int, NodeInfo> nodes;
+		HashMap<int, NodeInfo> nodes;
 	};
 
 	HashMap<NodePath, PathSentCache> path_send_cache;
-	Map<int, PathGetCache> path_get_cache;
+	HashMap<int, PathGetCache> path_get_cache;
 	int last_send_cache_id = 1;
 
 protected:

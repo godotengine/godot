@@ -82,11 +82,11 @@ public:
 private:
 	MouseButton mouse_button_mask = MouseButton::NONE;
 
-	Set<Key> physical_keys_pressed;
-	Set<Key> keys_pressed;
-	Set<JoyButton> joy_buttons_pressed;
-	Map<JoyAxis, float> _joy_axis;
-	//Map<StringName,int> custom_action_press;
+	RBSet<Key> physical_keys_pressed;
+	RBSet<Key> keys_pressed;
+	RBSet<JoyButton> joy_buttons_pressed;
+	RBMap<JoyAxis, float> _joy_axis;
+	//RBMap<StringName,int> custom_action_press;
 	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
@@ -103,7 +103,7 @@ private:
 		float raw_strength;
 	};
 
-	Map<StringName, Action> action_state;
+	HashMap<StringName, Action> action_state;
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
@@ -137,8 +137,8 @@ private:
 	};
 
 	VelocityTrack mouse_velocity_track;
-	Map<int, VelocityTrack> touch_velocity_track;
-	Map<int, Joypad> joy_names;
+	HashMap<int, VelocityTrack> touch_velocity_track;
+	HashMap<int, Joypad> joy_names;
 	int fallback_mapping = -1;
 
 	CursorShape default_shape = CURSOR_ARROW;
@@ -231,7 +231,7 @@ protected:
 		uint64_t timestamp;
 	};
 
-	Map<int, VibrationInfo> joy_vibration;
+	HashMap<int, VibrationInfo> joy_vibration;
 
 	static void _bind_methods();
 

@@ -62,7 +62,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		int line_height = 0;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
 			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
-			merged_mapping.push_back(Map<Vector2i, Vector2i>());
+			merged_mapping.push_back(HashMap<Vector2i, Vector2i>());
 
 			// Layout the tiles.
 			Vector2i atlas_size;

@@ -283,7 +283,7 @@ private:
 		}
 	};
 
-	Map<BoneKey, BoneList> bone_list;
+	HashMap<BoneKey, BoneList> bone_list;
 
 	struct PoseClipboard {
 		Vector2 pos;

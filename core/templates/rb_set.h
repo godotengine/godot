@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  set.h                                                                */
+/*  rb_set.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SET_H
-#define SET_H
+#ifndef RB_SET_H
+#define RB_SET_H
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -38,7 +38,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <class T, class C = Comparator<T>, class A = DefaultAllocator>
-class Set {
+class RBSet {
 	enum Color {
 		RED,
 		BLACK
@@ -48,7 +48,7 @@ class Set {
 public:
 	class Element {
 	private:
-		friend class Set<T, C, A>;
+		friend class RBSet<T, C, A>;
 		int color = RED;
 		Element *right = nullptr;
 		Element *left = nullptr;
@@ -554,7 +554,7 @@ private:
 		memdelete_allocator<Element, A>(p_element);
 	}
 
-	void _copy_from(const Set &p_set) {
+	void _copy_from(const RBSet &p_set) {
 		clear();
 		// not the fastest way, but safeset to write.
 		for (Element *I = p_set.front(); I; I = I->next()) {
@@ -661,8 +661,12 @@ public:
 		return e;
 	}
 
-	inline bool is_empty() const { return _data.size_cache == 0; }
-	inline int size() const { return _data.size_cache; }
+	inline bool is_empty() const {
+		return _data.size_cache == 0;
+	}
+	inline int size() const {
+		return _data.size_cache;
+	}
 
 	int calculate_depth() const {
 		// used for debug mostly
@@ -686,17 +690,17 @@ public:
 		_data._free_root();
 	}
 
-	void operator=(const Set &p_set) {
+	void operator=(const RBSet &p_set) {
 		_copy_from(p_set);
 	}
 
-	Set(const Set &p_set) {
+	RBSet(const RBSet &p_set) {
 		_copy_from(p_set);
 	}
 
-	_FORCE_INLINE_ Set() {}
+	_FORCE_INLINE_ RBSet() {}
 
-	~Set() {
+	~RBSet() {
 		clear();
 	}
 };

@@ -1073,7 +1073,7 @@ void GodotSpace2D::remove_object(GodotCollisionObject2D *p_object) {
 	objects.erase(p_object);
 }
 
-const Set<GodotCollisionObject2D *> &GodotSpace2D::get_objects() const {
+const RBSet<GodotCollisionObject2D *> &GodotSpace2D::get_objects() const {
 	return objects;
 }
 

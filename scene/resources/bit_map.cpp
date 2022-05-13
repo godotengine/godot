@@ -170,8 +170,8 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 	int curx = startx;
 	int cury = starty;
 	unsigned int count = 0;
-	Set<Point2i> case9s;
-	Set<Point2i> case6s;
+	RBSet<Point2i> case9s;
+	RBSet<Point2i> case6s;
 	Vector<Vector2> _points;
 	do {
 		int sv = 0;

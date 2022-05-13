@@ -67,34 +67,34 @@ struct ColladaImport {
 	bool use_mesh_builtin_materials = false;
 	float bake_fps = 15;
 
-	Map<String, NodeMap> node_map; //map from collada node to engine node
-	Map<String, String> node_name_map; //map from collada node to engine node
-	Map<String, Ref<ImporterMesh>> mesh_cache;
-	Map<String, Ref<Curve3D>> curve_cache;
-	Map<String, Ref<Material>> material_cache;
-	Map<Collada::Node *, Skeleton3D *> skeleton_map;
+	HashMap<String, NodeMap> node_map; //map from collada node to engine node
+	HashMap<String, String> node_name_map; //map from collada node to engine node
+	HashMap<String, Ref<ImporterMesh>> mesh_cache;
+	HashMap<String, Ref<Curve3D>> curve_cache;
+	HashMap<String, Ref<Material>> material_cache;
+	HashMap<Collada::Node *, Skeleton3D *> skeleton_map;
 
-	Map<Skeleton3D *, Map<String, int>> skeleton_bone_map;
+	HashMap<Skeleton3D *, HashMap<String, int>> skeleton_bone_map;
 
-	Set<String> valid_animated_nodes;
+	RBSet<String> valid_animated_nodes;
 	Vector<int> valid_animated_properties;
-	Map<String, bool> bones_with_animation;
+	HashMap<String, bool> bones_with_animation;
 
-	Set<String> mesh_unique_names;
-	Set<String> material_unique_names;
+	RBSet<String> mesh_unique_names;
+	RBSet<String> material_unique_names;
 
 	Error _populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
 	Error _create_scene_skeletons(Collada::Node *p_node);
 	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_import_value_tracks);
 	void create_animations(bool p_import_value_tracks);
 
-	Set<String> tracks_in_clips;
+	RBSet<String> tracks_in_clips;
 	Vector<String> missing_textures;
 
 	void _pre_process_lights(Collada::Node *p_node);
@@ -467,7 +467,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	return OK;
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
 	if (p_morph_data) {
@@ -637,7 +637,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		/* ADD WEIGHTS IF EXIST */
 		/************************/
 
-		Map<int, Vector<Collada::Vertex::Weight>> pre_weights;
+		HashMap<int, Vector<Collada::Vertex::Weight>> pre_weights;
 
 		bool has_weights = false;
 
@@ -727,7 +727,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			has_weights = true;
 		}
 
-		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
+		RBSet<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
 
 		/**************************/
@@ -875,7 +875,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		Vector<Collada::Vertex> vertex_array; //there we go, vertex array
 
 		vertex_array.resize(vertex_set.size());
-		for (Set<Collada::Vertex>::Element *F = vertex_set.front(); F; F = F->next()) {
+		for (RBSet<Collada::Vertex>::Element *F = vertex_set.front(); F; F = F->next()) {
 			vertex_array.write[F->get().idx] = F->get();
 		}
 
@@ -1127,7 +1127,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(nmsk.node);
 					ERR_FAIL_COND_V(!sk, ERR_INVALID_DATA);
 					ERR_FAIL_COND_V(!skeleton_bone_map.has(sk), ERR_INVALID_DATA);
-					Map<String, int> &bone_remap_map = skeleton_bone_map[sk];
+					HashMap<String, int> &bone_remap_map = skeleton_bone_map[sk];
 
 					meshid = skin->base;
 
@@ -1452,7 +1452,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		//main anim
 	}
 
-	Set<int> track_filter;
+	RBSet<int> track_filter;
 
 	if (p_clip == -1) {
 		for (int i = 0; i < collada.state.animation_clips.size(); i++) {
@@ -1507,7 +1507,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 	bool tracks_found = false;
 
-	for (Set<String>::Element *E = valid_animated_nodes.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = valid_animated_nodes.front(); E; E = E->next()) {
 		// take snapshots
 
 		if (!collada.state.scene_map.has(E->get())) {
@@ -1754,7 +1754,7 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}

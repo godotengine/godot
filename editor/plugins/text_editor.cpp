@@ -43,11 +43,11 @@ void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlight
 void TextEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
 
-	Map<String, Ref<EditorSyntaxHighlighter>>::Element *el = highlighters.front();
-	while (el != nullptr) {
-		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key());
-		highlighter_menu->set_item_checked(highlighter_index, el->value() == p_highlighter);
-		el = el->next();
+	HashMap<String, Ref<EditorSyntaxHighlighter>>::Iterator el = highlighters.begin();
+	while (el) {
+		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key);
+		highlighter_menu->set_item_checked(highlighter_index, el->value == p_highlighter);
+		++el;
 	}
 
 	CodeEdit *te = code_editor->get_text_editor();

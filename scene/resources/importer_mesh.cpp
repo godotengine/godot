@@ -306,7 +306,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		float normal_split_threshold = Math::cos(Math::deg2rad(p_normal_split_angle));
 		const Vector3 *normals_ptr = normals.ptr();
 
-		Map<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
+		HashMap<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
 
 		LocalVector<int> vertex_remap;
 		LocalVector<int> vertex_inverse_remap;
@@ -320,10 +320,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			const Vector3 &v = vertices_ptr[j];
 			const Vector3 &n = normals_ptr[j];
 
-			Map<Vector3, LocalVector<Pair<int, int>>>::Element *E = unique_vertices.find(v);
+			HashMap<Vector3, LocalVector<Pair<int, int>>>::Iterator E = unique_vertices.find(v);
 
 			if (E) {
-				const LocalVector<Pair<int, int>> &close_verts = E->get();
+				const LocalVector<Pair<int, int>> &close_verts = E->value;
 
 				bool found = false;
 				for (unsigned int k = 0; k < close_verts.size(); k++) {
@@ -706,15 +706,15 @@ void ImporterMesh::create_shadow_mesh() {
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
 		int vertex_count = vertices.size();
 		{
-			Map<Vector3, int> unique_vertices;
+			HashMap<Vector3, int> unique_vertices;
 			const Vector3 *vptr = vertices.ptr();
 			for (int j = 0; j < vertex_count; j++) {
 				const Vector3 &v = vptr[j];
 
-				Map<Vector3, int>::Element *E = unique_vertices.find(v);
+				HashMap<Vector3, int>::Iterator E = unique_vertices.find(v);
 
 				if (E) {
-					vertex_remap.push_back(E->get());
+					vertex_remap.push_back(E->value);
 				} else {
 					int vcount = unique_vertices.size();
 					unique_vertices[v] = vcount;
@@ -898,16 +898,16 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 	Vector<uint32_t> indices;
 	indices.resize(face_count * 3);
 	{
-		Map<Vector3, uint32_t> vertex_map;
+		HashMap<Vector3, uint32_t> vertex_map;
 		Vector3 *vertex_w = vertices.ptrw();
 		uint32_t *index_w = indices.ptrw();
 		for (int i = 0; i < face_count; i++) {
 			for (int j = 0; j < 3; j++) {
 				const Vector3 &vertex = faces[i].vertex[j];
-				Map<Vector3, uint32_t>::Element *found_vertex = vertex_map.find(vertex);
+				HashMap<Vector3, uint32_t>::Iterator found_vertex = vertex_map.find(vertex);
 				uint32_t index;
 				if (found_vertex) {
-					index = found_vertex->get();
+					index = found_vertex->value;
 				} else {
 					index = ++vertex_count;
 					vertex_map[vertex] = index;
@@ -960,7 +960,7 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 		return Ref<NavigationMesh>();
 	}
 
-	Map<Vector3, int> unique_vertices;
+	HashMap<Vector3, int> unique_vertices;
 	LocalVector<int> face_indices;
 
 	for (int i = 0; i < faces.size(); i++) {

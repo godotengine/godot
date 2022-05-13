@@ -151,7 +151,7 @@ void AStar3D::connect_points(int p_id, int p_with_id, bool bidirectional) {
 		s.direction = Segment::BIDIRECTIONAL;
 	}
 
-	Set<Segment>::Element *element = segments.find(s);
+	RBSet<Segment>::Element *element = segments.find(s);
 	if (element != nullptr) {
 		s.direction |= element->get().direction;
 		if (s.direction == Segment::BIDIRECTIONAL) {
@@ -177,7 +177,7 @@ void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	Segment s(p_id, p_with_id);
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
 
-	Set<Segment>::Element *element = segments.find(s);
+	RBSet<Segment>::Element *element = segments.find(s);
 	if (element != nullptr) {
 		// s is the new segment
 		// Erase the directions to be removed
@@ -235,7 +235,7 @@ Vector<int> AStar3D::get_point_connections(int p_id) {
 
 bool AStar3D::are_points_connected(int p_id, int p_with_id, bool bidirectional) const {
 	Segment s(p_id, p_with_id);
-	const Set<Segment>::Element *element = segments.find(s);
+	const RBSet<Segment>::Element *element = segments.find(s);
 
 	return element != nullptr &&
 			(bidirectional || (element->get().direction & s.direction) == s.direction);
@@ -293,7 +293,7 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	real_t closest_dist = 1e20;
 	Vector3 closest_point;
 
-	for (const Set<Segment>::Element *E = segments.front(); E; E = E->next()) {
+	for (const RBSet<Segment>::Element *E = segments.front(); E; E = E->next()) {
 		Point *from_point = nullptr, *to_point = nullptr;
 		points.lookup(E->get().u, from_point);
 		points.lookup(E->get().v, to_point);

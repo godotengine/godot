@@ -148,7 +148,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 	Vector2 global_pos = get_global_position();
 
-	Set<Viewport *> viewports = world_2d->get_viewports();
+	RBSet<Viewport *> viewports = world_2d->get_viewports();
 	viewports.insert(get_viewport()); // TODO: This is a mediocre workaround for #50958. Remove when that bug is fixed!
 
 	volume_vector.resize(4);

@@ -34,7 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/string/ustring.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -65,7 +65,7 @@ public:
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
 
-	Set<String> extensions;
+	RBSet<String> extensions;
 
 	bool float_texture_supported = false;
 	bool s3tc_supported = false;

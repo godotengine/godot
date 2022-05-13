@@ -153,7 +153,7 @@ public:
 
 	GDVIRTUAL0RC(Dictionary, _get_constants)
 
-	virtual void get_constants(Map<StringName, Variant> *p_constants) override {
+	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_REQUIRED_CALL(_get_constants, constants);
 		List<Variant> keys;
@@ -163,7 +163,7 @@ public:
 		}
 	}
 	GDVIRTUAL0RC(TypedArray<StringName>, _get_members)
-	virtual void get_members(Set<StringName> *p_members) override {
+	virtual void get_members(RBSet<StringName> *p_members) override {
 		TypedArray<StringName> members;
 		GDVIRTUAL_REQUIRED_CALL(_get_members, members);
 		for (int i = 0; i < members.size(); i++) {
@@ -282,7 +282,7 @@ public:
 	EXBIND0R(bool, is_using_templates)
 
 	GDVIRTUAL6RC(Dictionary, _validate, const String &, const String &, bool, bool, bool, bool)
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override {
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override {
 		Dictionary ret;
 		GDVIRTUAL_REQUIRED_CALL(_validate, p_script, p_path, r_functions != nullptr, r_errors != nullptr, r_warnings != nullptr, r_safe_lines != nullptr, ret);
 		if (!ret.has("valid")) {

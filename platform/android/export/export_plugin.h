@@ -228,7 +228,7 @@ public:
 
 	virtual void get_platform_features(List<String> *r_features) override;
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) override;
 
 	EditorExportPlatformAndroid();
 
