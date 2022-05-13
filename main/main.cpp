@@ -641,6 +641,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool found_project = false;
 #endif
 
+	String default_renderer = "";
+	String renderer_hints = "";
+
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
 		packed_data = memnew(PackedData);
@@ -1306,14 +1309,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
-	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
 
 	// this list is hard coded, which makes it more difficult to add new backends.
 	// can potentially be changed to more of a plugin system at a later date.
+
+	// Start with Vulkan, which will be the default if enabled.
+#ifdef VULKAN_ENABLED
+	renderer_hints = "vulkan";
+#endif
+
+	// And OpenGL3 next, or first if Vulkan is disabled.
+#ifdef GLES3_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "opengl3";
+#endif
+	if (renderer_hints.is_empty()) {
+		ERR_PRINT("No rendering driver available.");
+	}
+
+	default_renderer = renderer_hints.get_slice(",", 0);
+	GLOBAL_DEF_RST("rendering/driver/driver_name", default_renderer);
+
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
+					PROPERTY_HINT_ENUM, renderer_hints));
 
 	// if not set on the command line
 	if (rendering_driver.is_empty()) {

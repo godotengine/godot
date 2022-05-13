@@ -129,8 +129,33 @@ void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
 
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	String err_str;
+	if (p_errorexp && p_errorexp[0]) {
+		err_str = String::utf8(p_errorexp);
+	} else {
+		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
+	}
+
+	if (p_editor_notify) {
+		err_str += " (User)\n";
+	} else {
+		err_str += "\n";
+	}
+
+	OutputDebugStringW((LPCWSTR)err_str.utf16().ptr());
+}
+#endif
+
 void OS_Windows::initialize() {
 	crash_handler.initialize();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	error_handlers.errfunc = _error_handler;
+	error_handlers.userdata = this;
+	add_error_handler(&error_handlers);
+#endif
 
 #ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();
@@ -194,6 +219,10 @@ void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	remove_error_handler(&error_handlers);
+#endif
 }
 
 Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {

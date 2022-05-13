@@ -52,10 +52,6 @@ public:
 private:
 	// any data specific to the window
 	struct GLWindow {
-		bool in_use = false;
-
-		// the external ID .. should match the GL window number .. unused I think
-		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 		int width = 0;
 		int height = 0;
 
@@ -71,7 +67,7 @@ private:
 		HGLRC hRC;
 	};
 
-	LocalVector<GLWindow> _windows;
+	Map<DisplayServer::WindowID, GLWindow> _windows;
 	LocalVector<GLDisplay> _displays;
 
 	GLWindow *_current_window = nullptr;

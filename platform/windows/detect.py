@@ -269,12 +269,14 @@ def configure_msvc(env, manual_msvc_config):
         "dwmapi",
     ]
 
-    env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["use_volk"]:
-        LIBS += ["vulkan"]
+    if env["vulkan"]:
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["use_volk"]:
+            LIBS += ["vulkan"]
 
-    env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-    LIBS += ["opengl32"]
+    if env["opengl3"]:
+        env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
+        LIBS += ["opengl32"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 

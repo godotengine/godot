@@ -210,6 +210,9 @@ RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+		// or we need to actually test for this situation before constructing this.
 		return;
 	}
 #endif
@@ -285,6 +288,9 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 
 	// TODO: do we need a keep 3d linear option?
 
+	// Make sure we are drawing to the right context.
+	DisplayServer::get_singleton()->gl_window_make_current(p_screen);
+
 	if (rt->external.fbo != 0) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
 	} else {
@@ -292,6 +298,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	// Flip content upside down to correct for coordinates.
 	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 

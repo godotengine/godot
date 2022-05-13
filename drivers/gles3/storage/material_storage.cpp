@@ -2542,7 +2542,7 @@ RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_
 
 /* MATERIAL API */
 
-void MaterialStorage::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+void MaterialStorage::_material_queue_update(GLES3::Material *material, bool p_uniform, bool p_texture) {
 	material->uniform_dirty = material->uniform_dirty || p_uniform;
 	material->texture_dirty = material->texture_dirty || p_texture;
 
