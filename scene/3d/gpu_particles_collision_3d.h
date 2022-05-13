@@ -211,7 +211,6 @@ private:
 	Vector3 extents = Vector3(1, 1, 1);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
-	float follow_camera_push_ratio = 0.1;
 
 	UpdateMode update_mode = UPDATE_MODE_WHEN_MOVED;
 
@@ -229,11 +228,8 @@ public:
 	void set_update_mode(UpdateMode p_update_mode);
 	UpdateMode get_update_mode() const;
 
-	void set_follow_camera_mode(bool p_enabled);
-	bool is_follow_camera_mode_enabled() const;
-
-	void set_follow_camera_push_ratio(float p_ratio);
-	float get_follow_camera_push_ratio() const;
+	void set_follow_camera_enabled(bool p_enabled);
+	bool is_follow_camera_enabled() const;
 
 	virtual AABB get_aabb() const override;
 
