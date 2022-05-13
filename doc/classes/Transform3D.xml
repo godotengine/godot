@@ -97,6 +97,7 @@
 			<argument index="1" name="angle" type="float" />
 			<description>
 				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
+				The axis of rotation goes through [code]Vector3(0, 0, 0)[/code] in local space, so the transform's origin will also rotate relative to its parent. If you want to change the transform's orientation while keeping it in place, consider calling [method rotated] on the [Transform3D]'s [member basis] instead.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
