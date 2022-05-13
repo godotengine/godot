@@ -42,6 +42,15 @@
 				Returns [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
+		<method name="reimport_files">
+			<return type="void" />
+			<argument index="0" name="files" type="PackedStringArray" />
+			<description>
+				Reimports a set of files. Call this if these files or their [code].import[/code] files were directly edited by script or an external program.
+				If the file type changed or the file was newly created, use [method update_file] or [method scan].
+				[b]Note:[/b] This function blocks until the import is finished. However, the main loop iteration, including timers and [method Node._process], will occur during the import process due to progress bar updates. Avoid calls to [method reimport_files] or [method scan] while an import is in progress.
+			</description>
+		</method>
 		<method name="scan">
 			<return type="void" />
 			<description>
@@ -58,7 +67,8 @@
 			<return type="void" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Update a file information. Call this if an external program (not Godot) modified the file.
+				Add a file in an existing directory, or schedule file information to be updated on editor restart. Can be used to update text files saved by an external program.
+				This will not import the file. To reimport, call [method reimport_files] or [method scan] methods.
 			</description>
 		</method>
 		<method name="update_script_classes">
