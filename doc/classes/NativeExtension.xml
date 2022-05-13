@@ -39,11 +39,13 @@
 	<constants>
 		<constant name="INITIALIZATION_LEVEL_CORE" value="0" enum="InitializationLevel">
 		</constant>
-		<constant name="INITIALIZATION_LEVEL_SERVERS" value="1" enum="InitializationLevel">
+		<constant name="INITIALIZATION_LEVEL_PRE_SERVERS" value="1" enum="InitializationLevel">
 		</constant>
-		<constant name="INITIALIZATION_LEVEL_SCENE" value="2" enum="InitializationLevel">
+		<constant name="INITIALIZATION_LEVEL_SERVERS" value="2" enum="InitializationLevel">
 		</constant>
-		<constant name="INITIALIZATION_LEVEL_EDITOR" value="3" enum="InitializationLevel">
+		<constant name="INITIALIZATION_LEVEL_SCENE" value="3" enum="InitializationLevel">
+		</constant>
+		<constant name="INITIALIZATION_LEVEL_EDITOR" value="4" enum="InitializationLevel">
 		</constant>
 	</constants>
 </class>

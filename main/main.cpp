@@ -412,6 +412,8 @@ Error Main::test_setup() {
 	register_core_extensions();
 
 	preregister_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_PRE_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PRE_SERVERS);
 
 	register_core_singletons();
 
@@ -503,6 +505,9 @@ void Main::test_cleanup() {
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PRE_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_PRE_SERVERS);
 
 	if (translation_server) {
 		memdelete(translation_server);
@@ -1577,6 +1582,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	preregister_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_PRE_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PRE_SERVERS);
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
@@ -2928,6 +2935,9 @@ void Main::cleanup(bool p_force) {
 	// Now should be safe to delete MessageQueue (famous last words).
 	message_queue->flush();
 	memdelete(message_queue);
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PRE_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_PRE_SERVERS);
 
 	unregister_core_driver_types();
 	unregister_core_extensions();

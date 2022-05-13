@@ -58,7 +58,7 @@ static OpenXRAPI *openxr_api = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_PRE_SERVERS) {
 		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
 		if (OpenXRAPI::openxr_is_enabled()) {
