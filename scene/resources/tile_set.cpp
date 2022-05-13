@@ -3264,16 +3264,10 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
 	ADD_ARRAY("occlusion_layers", "occlusion_layer_");
 
-	ADD_GROUP("Physics", "");
+	ADD_GROUP("", "");
 	ADD_ARRAY("physics_layers", "physics_layer_");
-
-	ADD_GROUP("Terrains", "");
 	ADD_ARRAY("terrain_sets", "terrain_set_");
-
-	ADD_GROUP("Navigation", "");
 	ADD_ARRAY("navigation_layers", "navigation_layer_");
-
-	ADD_GROUP("Custom Data", "");
 	ADD_ARRAY("custom_data_layers", "custom_data_layer_");
 
 	// -- Enum binding --
