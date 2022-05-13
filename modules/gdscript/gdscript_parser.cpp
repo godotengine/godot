@@ -51,6 +51,7 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	if (builtin_types.is_empty()) {
 		builtin_types["bool"] = Variant::BOOL;
 		builtin_types["int"] = Variant::INT;
+		builtin_types["byte"] = Variant::BYTE;
 		builtin_types["float"] = Variant::FLOAT;
 		builtin_types["String"] = Variant::STRING;
 		builtin_types["Vector2"] = Variant::VECTOR2;

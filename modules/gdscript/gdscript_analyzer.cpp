@@ -3319,6 +3319,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::CALLABLE:
 							case Variant::FLOAT:
 							case Variant::INT:
+							case Variant::BYTE:
 							case Variant::NIL:
 							case Variant::NODE_PATH:
 							case Variant::SIGNAL:
@@ -3355,6 +3356,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::CALLABLE:
 					case Variant::FLOAT:
 					case Variant::INT:
+					case Variant::BYTE:
 					case Variant::NIL:
 					case Variant::NODE_PATH:
 					case Variant::SIGNAL:

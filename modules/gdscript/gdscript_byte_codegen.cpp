@@ -75,6 +75,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 				case Variant::NIL:
 				case Variant::BOOL:
 				case Variant::INT:
+				case Variant::BYTE:
 				case Variant::FLOAT:
 				case Variant::STRING:
 				case Variant::VECTOR2:
@@ -425,6 +426,9 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::INT:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_INT, 1);
+			break;
+		case Variant::BYTE:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BYTE, 1);
 			break;
 		case Variant::FLOAT:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_FLOAT, 1);
@@ -1121,6 +1125,7 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 		switch (info.return_val.type) {
 			CASE_TYPE(BOOL);
 			CASE_TYPE(INT);
+			CASE_TYPE(BYTE);
 			CASE_TYPE(FLOAT);
 			CASE_TYPE(STRING);
 			CASE_TYPE(VECTOR2);
@@ -1372,6 +1377,10 @@ void GDScriptByteCodeGenerator::write_for() {
 				case Variant::INT:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_INT;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_INT;
+					break;
+				case Variant::BYTE:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_BYTE;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_BYTE;
 					break;
 				case Variant::FLOAT:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_FLOAT;

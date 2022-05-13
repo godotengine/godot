@@ -225,6 +225,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::NIL:
 		case Variant::BOOL:
 		case Variant::INT:
+		case Variant::BYTE:
 		case Variant::FLOAT:
 		case Variant::VECTOR2:
 		case Variant::RECT2:

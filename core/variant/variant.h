@@ -80,6 +80,7 @@ public:
 		// atomic types
 		BOOL,
 		INT,
+		BYTE,
 		FLOAT,
 		STRING,
 
@@ -205,6 +206,7 @@ private:
 	union {
 		bool _bool;
 		int64_t _int;
+		uint8_t _byte;
 		double _float;
 		Transform2D *_transform2d;
 		::AABB *_aabb;
@@ -225,6 +227,7 @@ private:
 			false, //NIL,
 			false, //BOOL,
 			false, //INT,
+			false, //BYTE,
 			false, //FLOAT,
 			true, //STRING,
 			false, //VECTOR2,
@@ -300,7 +303,7 @@ public:
 
 	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
-		return type == INT || type == FLOAT;
+		return type == INT || type == FLOAT || type == BYTE;
 	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;

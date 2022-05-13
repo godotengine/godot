@@ -132,6 +132,7 @@ struct NamesCache {
 	StringName node_path_type = StaticCString::create("NodePath");
 	StringName bool_type = StaticCString::create("bool");
 	StringName int_type = StaticCString::create("int");
+	StringName byte_type = StaticCString::create("byte");
 	StringName float_type = StaticCString::create("float");
 	StringName void_type = StaticCString::create("void");
 	StringName vararg_stub_type = StaticCString::create("@VarArg@");
@@ -226,6 +227,8 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 			return p_arg_type.name == p_context.names_cache.int_type ||
 					p_arg_type.name == p_context.names_cache.float_type ||
 					p_arg_type.is_enum;
+		case Variant::BYTE:
+			return p_arg_type.name == p_context.names_cache.byte_type;
 		case Variant::FLOAT:
 			return p_arg_type.name == p_context.names_cache.float_type;
 		case Variant::STRING:

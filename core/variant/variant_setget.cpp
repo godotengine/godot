@@ -1209,6 +1209,10 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return _data._int > 0;
 		} break;
+		case BYTE: {
+			r_iter = 0;
+			return _data._byte > 0;
+		} break;
 		case FLOAT: {
 			r_iter = 0;
 			return _data._float > 0.0;
@@ -1408,6 +1412,15 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			int64_t idx = r_iter;
 			idx++;
 			if (idx >= _data._int) {
+				return false;
+			}
+			r_iter = idx;
+			return true;
+		} break;
+		case BYTE: {
+			unsigned char idx = r_iter;
+			idx++;
+			if (idx >= _data._byte) {
 				return false;
 			}
 			r_iter = idx;
@@ -1656,6 +1669,9 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		case INT: {
 			return r_iter;
 		} break;
+		case BYTE: {
+			return r_iter;
+		} break;
 		case FLOAT: {
 			return r_iter;
 		} break;
@@ -1884,6 +1900,12 @@ void Variant::sub(const Variant &a, const Variant &b, Variant &r_dst) {
 			r_dst = int(va - vb);
 		}
 			return;
+		case BYTE: {
+			unsigned char va = a._data._byte;
+			unsigned char vb = b._data._byte;
+			r_dst = (unsigned char)(va - vb);
+		}
+			return;
 		case FLOAT: {
 			double ra = a._data._float;
 			double rb = b._data._float;
@@ -2110,6 +2132,12 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
 			r_dst = int(va + (vb - va) * c);
+		}
+			return;
+		case BYTE: {
+			unsigned char va = a._data._byte;
+			unsigned char vb = b._data._byte;
+			r_dst = (unsigned char)(va + (vb - va) * c);
 		}
 			return;
 		case FLOAT: {

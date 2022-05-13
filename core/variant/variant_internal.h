@@ -120,6 +120,8 @@ public:
 	_FORCE_INLINE_ static const bool *get_bool(const Variant *v) { return &v->_data._bool; }
 	_FORCE_INLINE_ static int64_t *get_int(Variant *v) { return &v->_data._int; }
 	_FORCE_INLINE_ static const int64_t *get_int(const Variant *v) { return &v->_data._int; }
+	_FORCE_INLINE_ static uint8_t *get_byte(Variant *v) { return &v->_data._byte; }
+	_FORCE_INLINE_ static const uint8_t *get_byte(const Variant *v) { return &v->_data._byte; }
 	_FORCE_INLINE_ static double *get_float(Variant *v) { return &v->_data._float; }
 	_FORCE_INLINE_ static const double *get_float(const Variant *v) { return &v->_data._float; }
 	_FORCE_INLINE_ static String *get_string(Variant *v) { return reinterpret_cast<String *>(v->_data._mem); }
@@ -312,6 +314,8 @@ public:
 				return get_bool(v);
 			case Variant::INT:
 				return get_int(v);
+			case Variant::BYTE:
+				return get_byte(v);
 			case Variant::FLOAT:
 				return get_float(v);
 			case Variant::STRING:
@@ -390,6 +394,8 @@ public:
 				return get_bool(v);
 			case Variant::INT:
 				return get_int(v);
+			case Variant::BYTE:
+				return get_byte(v);
 			case Variant::FLOAT:
 				return get_float(v);
 			case Variant::STRING:
@@ -471,6 +477,7 @@ struct VariantGetInternalPtr<bool> {
 	static const bool *get_ptr(const Variant *v) { return VariantInternal::get_bool(v); }
 };
 
+
 template <>
 struct VariantGetInternalPtr<int8_t> {
 	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
@@ -479,8 +486,8 @@ struct VariantGetInternalPtr<int8_t> {
 
 template <>
 struct VariantGetInternalPtr<uint8_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
+	static uint8_t *get_ptr(Variant *v) { return VariantInternal::get_byte(v); }
+	static const uint8_t *get_ptr(const Variant *v) { return VariantInternal::get_byte(v); }
 };
 
 template <>
@@ -1019,7 +1026,14 @@ struct VariantInitializer<bool> {
 		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<int64_t>(v); } \
 	};
 
-INITIALIZER_INT(uint8_t)
+#define INITIALIZER_BYTE(m_type)                                                                    \
+	template <>                                                                                    \
+	struct VariantInitializer<m_type> {                                                            \
+		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<uint8_t>(v); } \
+	};
+
+// INITIALIZER_INT(uint8_t)
+INITIALIZER_BYTE(uint8_t)
 INITIALIZER_INT(int8_t)
 INITIALIZER_INT(uint16_t)
 INITIALIZER_INT(int16_t)
@@ -1044,6 +1058,11 @@ template <>
 struct VariantInitializer<float> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<double>(v); }
 };
+
+// template <>
+// struct VariantInitializer<uint8_t> {
+// 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<uint8_t>(v); }
+// };
 
 template <>
 struct VariantInitializer<String> {
@@ -1212,6 +1231,11 @@ struct VariantZeroAssigner<bool> {
 template <>
 struct VariantZeroAssigner<int64_t> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int(v) = 0; }
+};
+
+template <>
+struct VariantZeroAssigner<uint8_t> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_byte(v) = 0; }
 };
 
 template <>

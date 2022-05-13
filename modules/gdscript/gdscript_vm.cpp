@@ -188,6 +188,7 @@ void (*type_init_function_table[])(Variant *) = {
 	nullptr, // NIL (shouldn't be called).
 	&VariantInitializer<bool>::init, // BOOL.
 	&VariantInitializer<int64_t>::init, // INT.
+	&VariantInitializer<uint8_t>::init, //BYTE.
 	&VariantInitializer<double>::init, // FLOAT.
 	&VariantInitializer<String>::init, // STRING.
 	&VariantInitializer<Vector2>::init, // VECTOR2.
@@ -271,6 +272,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_NO_RETURN,             \
 		&&OPCODE_CALL_PTRCALL_BOOL,                  \
 		&&OPCODE_CALL_PTRCALL_INT,                   \
+		&&OPCODE_CALL_PTRCALL_BYTE,                  \
 		&&OPCODE_CALL_PTRCALL_FLOAT,                 \
 		&&OPCODE_CALL_PTRCALL_STRING,                \
 		&&OPCODE_CALL_PTRCALL_VECTOR2,               \
@@ -318,6 +320,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_RETURN_TYPED_SCRIPT,                \
 		&&OPCODE_ITERATE_BEGIN,                      \
 		&&OPCODE_ITERATE_BEGIN_INT,                  \
+		&&OPCODE_ITERATE_BEGIN_BYTE,                 \
 		&&OPCODE_ITERATE_BEGIN_FLOAT,                \
 		&&OPCODE_ITERATE_BEGIN_VECTOR2,              \
 		&&OPCODE_ITERATE_BEGIN_VECTOR2I,             \
@@ -338,6 +341,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_BEGIN_OBJECT,               \
 		&&OPCODE_ITERATE,                            \
 		&&OPCODE_ITERATE_INT,                        \
+		&&OPCODE_ITERATE_BYTE,                       \
 		&&OPCODE_ITERATE_FLOAT,                      \
 		&&OPCODE_ITERATE_VECTOR2,                    \
 		&&OPCODE_ITERATE_VECTOR2I,                   \
@@ -360,6 +364,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_STORE_NAMED_GLOBAL,                 \
 		&&OPCODE_TYPE_ADJUST_BOOL,                   \
 		&&OPCODE_TYPE_ADJUST_INT,                    \
+		&&OPCODE_TYPE_ADJUST_BYTE,                   \
 		&&OPCODE_TYPE_ADJUST_FLOAT,                  \
 		&&OPCODE_TYPE_ADJUST_STRING,                 \
 		&&OPCODE_TYPE_ADJUST_VECTOR2,                \
@@ -426,6 +431,7 @@ void (*type_init_function_table[])(Variant *) = {
 // Helpers for VariantInternal methods in macros.
 #define OP_GET_BOOL get_bool
 #define OP_GET_INT get_int
+#define OP_GET_BYTE get_byte
 #define OP_GET_FLOAT get_float
 #define OP_GET_VECTOR2 get_vector2
 #define OP_GET_VECTOR2I get_vector2i
@@ -1820,6 +1826,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE_CALL_PTR(BOOL);
 			OPCODE_CALL_PTR(INT);
+			OPCODE_CALL_PTR(BYTE);
 			OPCODE_CALL_PTR(FLOAT);
 			OPCODE_CALL_PTR(STRING);
 			OPCODE_CALL_PTR(VECTOR2);
@@ -2608,6 +2615,33 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BEGIN_BYTE) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				unsigned char size = *VariantInternal::get_byte(container);
+
+				VariantInternal::initialize(counter, Variant::BYTE);
+				*VariantInternal::get_byte(counter) = 0;
+
+				if (size > 0) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::BYTE);
+					*VariantInternal::get_byte(iterator) = 0;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_BEGIN_FLOAT) {
 				CHECK_SPACE(8); // Check space for iterate instruction too.
 
@@ -2975,6 +3009,30 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BYTE) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				unsigned char size = *VariantInternal::get_byte(container);
+				unsigned char *count = VariantInternal::get_byte(counter);
+
+				(*count)++;
+
+				if (*count >= size) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_byte(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_FLOAT) {
 				CHECK_SPACE(4);
 
@@ -3286,6 +3344,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE_TYPE_ADJUST(BOOL, bool);
 			OPCODE_TYPE_ADJUST(INT, int64_t);
+			OPCODE_TYPE_ADJUST(BYTE, uint8_t);
 			OPCODE_TYPE_ADJUST(FLOAT, double);
 			OPCODE_TYPE_ADJUST(STRING, String);
 			OPCODE_TYPE_ADJUST(VECTOR2, Vector2);

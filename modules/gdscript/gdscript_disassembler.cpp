@@ -630,6 +630,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				DISASSEMBLE_PTRCALL(BOOL);
 				DISASSEMBLE_PTRCALL(INT);
+				DISASSEMBLE_PTRCALL(BYTE);
 				DISASSEMBLE_PTRCALL(FLOAT);
 				DISASSEMBLE_PTRCALL(STRING);
 				DISASSEMBLE_PTRCALL(VECTOR2);
@@ -911,6 +912,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 #define DISASSEMBLE_ITERATE_TYPES(m_macro) \
 	m_macro(INT);                          \
 	m_macro(FLOAT);                        \
+	m_macro(BYTE);                        \
 	m_macro(VECTOR2);                      \
 	m_macro(VECTOR2I);                     \
 	m_macro(VECTOR3);                      \
@@ -997,6 +999,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(BOOL);
 				DISASSEMBLE_TYPE_ADJUST(INT);
 				DISASSEMBLE_TYPE_ADJUST(FLOAT);
+				DISASSEMBLE_TYPE_ADJUST(BYTE);
 				DISASSEMBLE_TYPE_ADJUST(STRING);
 				DISASSEMBLE_TYPE_ADJUST(VECTOR2);
 				DISASSEMBLE_TYPE_ADJUST(VECTOR2I);

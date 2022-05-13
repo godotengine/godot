@@ -53,6 +53,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "int";
 
 		} break;
+		case BYTE: {
+			return "byte";
+		} break;
 		case FLOAT: {
 			return "float";
 
@@ -199,6 +202,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case BOOL: {
 			static const Type valid[] = {
 				INT,
+				BYTE,
 				FLOAT,
 				STRING,
 				NIL,
@@ -209,6 +213,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case INT: {
 			static const Type valid[] = {
 				BOOL,
+				BYTE,
 				FLOAT,
 				STRING,
 				NIL,
@@ -220,6 +225,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case FLOAT: {
 			static const Type valid[] = {
 				BOOL,
+				BYTE,
 				INT,
 				STRING,
 				NIL,
@@ -970,6 +976,9 @@ bool Variant::is_one() const {
 			return _data._int == 1;
 
 		} break;
+		case BYTE: {
+			return _data._byte == 1;
+		} break;
 		case FLOAT: {
 			return _data._float == 1;
 
@@ -1035,6 +1044,7 @@ void Variant::reference(const Variant &p_variant) {
 		case NIL:
 		case BOOL:
 		case INT:
+		case BYTE:
 		case FLOAT:
 			break;
 		default:
@@ -1054,6 +1064,9 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case INT: {
 			_data._int = p_variant._data._int;
+		} break;
+		case BYTE: {
+			_data._byte = p_variant._data._byte;
 		} break;
 		case FLOAT: {
 			_data._float = p_variant._data._float;
@@ -1229,6 +1242,9 @@ void Variant::zero() {
 		case INT:
 			this->_data._int = 0;
 			break;
+		case BYTE:
+			this->_data._byte = 0;
+			break;
 		case FLOAT:
 			this->_data._float = 0;
 			break;
@@ -1369,6 +1385,8 @@ Variant::operator signed int() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1387,6 +1405,8 @@ Variant::operator unsigned int() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1405,6 +1425,8 @@ Variant::operator int64_t() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1423,6 +1445,8 @@ Variant::operator uint64_t() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1493,6 +1517,8 @@ Variant::operator signed short() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1511,6 +1537,8 @@ Variant::operator unsigned short() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1529,6 +1557,8 @@ Variant::operator signed char() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1547,6 +1577,8 @@ Variant::operator unsigned char() const {
 			return _data._bool ? 1 : 0;
 		case INT:
 			return _data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1569,6 +1601,8 @@ Variant::operator float() const {
 			return _data._bool ? 1.0 : 0.0;
 		case INT:
 			return (float)_data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1587,6 +1621,8 @@ Variant::operator double() const {
 			return _data._bool ? 1.0 : 0.0;
 		case INT:
 			return (double)_data._int;
+		case BYTE:
+			return _data._byte;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -1663,6 +1699,8 @@ String Variant::stringify(int recursion_count) const {
 			return _data._bool ? "true" : "false";
 		case INT:
 			return itos(_data._int);
+		case BYTE:
+			return itos(_data._byte);
 		case FLOAT:
 			return rtos(_data._float);
 		case STRING:

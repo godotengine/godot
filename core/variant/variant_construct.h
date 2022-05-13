@@ -55,6 +55,7 @@ struct PtrConstruct {};
 
 MAKE_PTRCONSTRUCT(bool);
 MAKE_PTRCONSTRUCT(int64_t);
+MAKE_PTRCONSTRUCT(uint8_t); //Created for Byte type
 MAKE_PTRCONSTRUCT(double);
 MAKE_PTRCONSTRUCT(String);
 MAKE_PTRCONSTRUCT(Vector2);

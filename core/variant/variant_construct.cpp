@@ -64,6 +64,11 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<bool, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<bool, double>>(sarray("from"));
 
+	add_constructor<VariantConstructNoArgs<uint8_t>>(sarray());
+	add_constructor<VariantConstructor<uint8_t, uint8_t>>(sarray("from"));
+	add_constructor<VariantConstructor<uint8_t, int64_t>>(sarray("from"));
+	add_constructor<VariantConstructor<uint8_t, bool>>(sarray("from"));
+
 	add_constructor<VariantConstructNoArgs<int64_t>>(sarray());
 	add_constructor<VariantConstructor<int64_t, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, double>>(sarray("from"));

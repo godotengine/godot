@@ -70,6 +70,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::BOOL:
 			return p_var.operator bool() ? "true" : "false";
 		case Variant::INT:
+		case Variant::BYTE:
 			return itos(p_var);
 		case Variant::FLOAT: {
 			double num = p_var;

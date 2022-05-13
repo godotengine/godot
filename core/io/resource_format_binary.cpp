@@ -81,6 +81,7 @@ enum {
 	VARIANT_VECTOR3I = 47,
 	VARIANT_PACKED_INT64_ARRAY = 48,
 	VARIANT_PACKED_FLOAT64_ARRAY = 49,
+	VARIANT_BYTE = 50,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -1407,6 +1408,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
+		case Variant::BYTE: {
+			unsigned char val = p_property;
+			f->store_32(VARIANT_BYTE);
+		}
 		case Variant::FLOAT: {
 			double d = p_property;
 			float fl = d;

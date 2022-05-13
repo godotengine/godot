@@ -2591,6 +2591,15 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 					p_arg_type.name == name_cache.type_float ||
 					p_arg_type.name == name_cache.type_double ||
 					p_arg_type.is_enum;
+		case Variant::BYTE:
+			return p_arg_type.name == name_cache.type_sbyte ||
+					p_arg_type.name == name_cache.type_short ||
+					p_arg_type.name == name_cache.type_int ||
+					p_arg_type.name == name_cache.type_byte ||
+					p_arg_type.name == name_cache.type_ushort ||
+					p_arg_type.name == name_cache.type_uint ||
+					p_arg_type.name == name_cache.type_long ||
+					p_arg_type.name == name_cache.type_ulong;
 		case Variant::FLOAT:
 			return p_arg_type.name == name_cache.type_float ||
 					p_arg_type.name == name_cache.type_double;

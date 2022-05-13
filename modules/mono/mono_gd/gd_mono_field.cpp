@@ -291,6 +291,10 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					int32_t val = p_value.operator signed int();
 					mono_field_set_value(p_object, mono_field, &val);
 				} break;
+				case Variant::BYTE: {
+					uint8_t val = p_value.operator uint8_t();
+					mono_field_set_value(p_object, mono_field, &val);
+				} break;
 				case Variant::FLOAT: {
 #ifdef REAL_T_IS_DOUBLE
 					double val = p_value.operator double();
