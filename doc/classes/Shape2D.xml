@@ -26,7 +26,9 @@
 			<argument index="1" name="with_shape" type="Shape2D" />
 			<argument index="2" name="shape_xform" type="Transform2D" />
 			<description>
-				Returns a list of the points where this shape touches another. If there are no collisions the list is empty.
+				Returns a list of contact point pairs where this shape touches another.
+				If there are no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [code]with_shape[/code].
+				A collision pair A, B can be used to calculate the collision normal with [code](B - A).normalized()[/code], and the collision depth with [code](B - A).length()[/code]. This information is typically used to separate shapes, particularly in collision solvers.
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
 			</description>
 		</method>
@@ -50,7 +52,9 @@
 			<argument index="3" name="shape_xform" type="Transform2D" />
 			<argument index="4" name="shape_motion" type="Vector2" />
 			<description>
-				Returns a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions the list is empty.
+				Returns a list of contact point pairs where this shape would touch another, if a given movement was applied.
+				If there would be no collisions, the returned list is empty. Otherwise, the returned list contains contact points arranged in pairs, with entries alternating between points on the boundary of this shape and points on the boundary of [code]with_shape[/code].
+				A collision pair A, B can be used to calculate the collision normal with [code](B - A).normalized()[/code], and the collision depth with [code](B - A).length()[/code]. This information is typically used to separate shapes, particularly in collision solvers.
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
