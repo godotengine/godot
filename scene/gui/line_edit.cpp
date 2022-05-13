@@ -406,7 +406,43 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid()) {
 		if (!k->is_pressed()) {
+			if (alt_start && k->get_keycode() == Key::ALT) {
+				alt_start = false;
+				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					insert_text_at_caret(ucodestr);
+				}
+				accept_event();
+				return;
+			}
 			return;
+		}
+
+		// Alt+ Unicode input:
+		if (k->is_alt_pressed()) {
+			if (!alt_start) {
+				if (k->get_keycode() == Key::KP_ADD) {
+					alt_start = true;
+					alt_code = 0;
+					accept_event();
+					return;
+				}
+			} else {
+				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+				}
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+				}
+				accept_event();
+				return;
+			}
 		}
 
 		if (context_menu_enabled) {
