@@ -31,10 +31,13 @@
 #include "navigation_obstacle_2d.h"
 
 #include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/physics_body_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle2D::set_estimate_radius);
 	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle2D::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle2D::set_radius);
@@ -101,6 +104,11 @@ TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
 		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
+	}
+
+	if (Object::cast_to<StaticBody2D>(get_parent())) {
+		warnings.push_back(RTR("The NavigationObstacle2D is intended for constantly moving bodies like CharacterBody2D or RigidDynamicBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+							   "\nNot constantly moving or complete static objects should be captured with a refreshed NavigationPolygon so agents can not only avoid them but also move along those objects outline at high detail"));
 	}
 
 	return warnings;

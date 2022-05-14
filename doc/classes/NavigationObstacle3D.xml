@@ -8,6 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this obstacle on the [NavigationServer3D].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="estimate_radius" type="bool" setter="set_estimate_radius" getter="is_radius_estimated" default="true">
 			Enables radius estimation algorithm which uses parent's collision shapes to determine the obstacle radius.
