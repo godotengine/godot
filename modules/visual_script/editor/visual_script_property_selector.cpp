@@ -521,8 +521,17 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	vbox->add_child(results_tree);
 
+	ScrollContainer *scroller = memnew(ScrollContainer);
+	scroller->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	scroller->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scroller->set_custom_minimum_size(Size2(600, 400) * EDSCALE);
+	vbox->add_child(scroller);
+
 	help_bit = memnew(EditorHelpBit);
-	vbox->add_child(help_bit);
+	help_bit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	help_bit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scroller->add_child(help_bit);
+
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
 	get_ok_button()->set_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
