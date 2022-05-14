@@ -61,14 +61,16 @@
 			The material's base color.
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code] and a [member detail_albedo] texture is specified, [member albedo_color] will [i]not[/i] modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.
 		</member>
-		<member name="albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
-			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
-		</member>
-		<member name="albedo_tex_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
-			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
-		</member>
 		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
+			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
+		</member>
+		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
+			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
+		</member>
+		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
 			Threshold at which antialiasing will be applied on the alpha channel.
@@ -401,7 +403,8 @@
 			If [code]true[/code], triplanar mapping for [code]UV2[/code] is calculated in world space rather than object local space. See also [member uv2_triplanar].
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the model's vertex colors are processed as sRGB mode.
+			If [code]true[/code], vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. If [code]false[/code], vertex colors are considered to be stored in linear color space and are rendered as-is. See also [member albedo_texture_force_srgb].
+			[b]Note:[/b] Only effective when using the Vulkan Clustered or Vulkan Mobile backends.
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the vertex color is used as albedo color.
@@ -607,7 +610,8 @@
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
 		</constant>
 		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
-			Vertex color is in sRGB space and needs to be converted to linear. Only applies in the Vulkan renderer.
+			Vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. See also [member vertex_color_is_srgb].
+			[b]Note:[/b] Only effective when using the Vulkan Clustered or Vulkan Mobile backends.
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
 			Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].
@@ -637,7 +641,7 @@
 			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
-			Forces the shader to convert albedo from sRGB space to linear space.
+			Forces the shader to convert albedo from sRGB space to linear space. See also [member albedo_texture_force_srgb].
 		</constant>
 		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13" enum="Flags">
 			Disables receiving shadows from other objects.
