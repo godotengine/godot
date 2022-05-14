@@ -1487,7 +1487,7 @@ bool AnimationPlayer::has_animation(const StringName &p_name) const {
 }
 
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!animation_set.has(p_name), Ref<Animation>());
+	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: %s.", p_name));
 
 	const AnimationData &data = animation_set[p_name];
 
@@ -1509,8 +1509,8 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 }
 
 void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
-	ERR_FAIL_COND(!animation_set.has(p_animation1));
-	ERR_FAIL_COND(!animation_set.has(p_animation2));
+	ERR_FAIL_COND_MSG(!animation_set.has(p_animation1), vformat("Animation not found: %s.", p_animation1));
+	ERR_FAIL_COND_MSG(!animation_set.has(p_animation2), vformat("Animation not found: %s.", p_animation2));
 	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
 
 	BlendKey bk;
@@ -1567,7 +1567,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 		name = playback.assigned;
 	}
 
-	ERR_FAIL_COND_MSG(!animation_set.has(name), "Animation not found: " + name + ".");
+	ERR_FAIL_COND_MSG(!animation_set.has(name), vformat("Animation not found: %s.", name));
 
 	Playback &c = playback;
 
@@ -1670,7 +1670,7 @@ void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 	if (is_playing()) {
 		play(p_anim);
 	} else {
-		ERR_FAIL_COND(!animation_set.has(p_anim));
+		ERR_FAIL_COND_MSG(!animation_set.has(p_anim), vformat("Animation not found: %s.", p_anim));
 		playback.current.pos = 0;
 		playback.current.from = &animation_set[p_anim];
 		playback.assigned = p_anim;
@@ -1713,7 +1713,7 @@ float AnimationPlayer::get_playing_speed() const {
 void AnimationPlayer::seek(double p_time, bool p_update) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
-			ERR_FAIL_COND(!animation_set.has(playback.assigned));
+			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
 			playback.current.from = &animation_set[playback.assigned];
 		}
 		ERR_FAIL_COND(!playback.current.from);
@@ -1729,7 +1729,7 @@ void AnimationPlayer::seek(double p_time, bool p_update) {
 void AnimationPlayer::seek_delta(double p_time, float p_delta) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
-			ERR_FAIL_COND(!animation_set.has(playback.assigned));
+			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
 			playback.current.from = &animation_set[playback.assigned];
 		}
 		ERR_FAIL_COND(!playback.current.from);
@@ -1899,7 +1899,7 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 }
 
 void AnimationPlayer::animation_set_next(const StringName &p_animation, const StringName &p_next) {
-	ERR_FAIL_COND(!animation_set.has(p_animation));
+	ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation));
 	animation_set[p_animation].next = p_next;
 }
 
@@ -2012,7 +2012,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	al.instantiate();
 	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
 	aux_player->add_animation_library("default", al);
-	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
+	aux_player->set_assigned_animation("default/" + SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
