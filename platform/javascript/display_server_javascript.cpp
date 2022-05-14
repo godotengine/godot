@@ -244,9 +244,9 @@ const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape
 		case DisplayServer::CURSOR_CROSS:
 			return "crosshair";
 		case DisplayServer::CURSOR_WAIT:
-			return "progress";
-		case DisplayServer::CURSOR_BUSY:
 			return "wait";
+		case DisplayServer::CURSOR_BUSY:
+			return "progress";
 		case DisplayServer::CURSOR_DRAG:
 			return "grab";
 		case DisplayServer::CURSOR_CAN_DROP:
