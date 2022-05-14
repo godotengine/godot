@@ -975,10 +975,10 @@
 			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
+			Show the system's wait mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
+			Show the system's busy mouse cursor when the user hovers the node. Often an arrow with a small hourglass.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
