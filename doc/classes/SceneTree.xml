@@ -186,14 +186,6 @@
 				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
-		<method name="set_auto_accept_quit">
-			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
-			<description>
-				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
-				For mobile platforms, see [method set_quit_on_go_back].
-			</description>
-		</method>
 		<method name="set_group">
 			<return type="void" />
 			<argument index="0" name="group" type="String" />
@@ -219,14 +211,6 @@
 				Marks the most recent [InputEvent] as handled.
 			</description>
 		</method>
-		<method name="set_quit_on_go_back">
-			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
-			<description>
-				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
-				To handle 'Go Back' button when this option is disabled, use [constant MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST].
-			</description>
-		</method>
 		<method name="set_screen_stretch">
 			<return type="void" />
 			<argument index="0" name="mode" type="int" enum="SceneTree.StretchMode" />
@@ -239,6 +223,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
+			If [code]true[/code], the application automatically accepts quitting.
+			For mobile platforms, see [member quit_on_go_back].
+		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
 			The current scene.
 		</member>
@@ -268,6 +256,10 @@
 		</member>
 		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
 			Although physics interpolation would normally be globally turned on and off using [member ProjectSettings.physics/common/physics_interpolation], this property allows control over interpolation at runtime.
+		</member>
+		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
+			If [code]true[/code], the application quits automatically on going back (e.g. on Android).
+			To handle 'Go Back' button when this option is disabled, use [constant MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST].
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new incoming connections.
