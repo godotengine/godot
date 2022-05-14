@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshGenerator" inherits="Object" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		This class is responsible for creating and clearing navigation meshes.
+		Helper class for creating and clearing navigation meshes.
 	</brief_description>
 	<description>
-		This class is responsible for creating and clearing navigation meshes.
+		This class is responsible for creating and clearing 3D navigation meshes used as [NavigationMesh] resources inside [NavigationMeshInstance]. The [NavigationMeshGenerator] has very limited to no use for 2D as the navigation mesh baking process expects 3D node types and 3D source geometry to parse.
+		The entire navigation mesh baking is best done in a separate thread as the voxelization, collision tests and mesh optimization steps involved are very performance and time hungry operations.
+		Navigation mesh baking happens in multiple steps and the result depends on 3D source geometry and properties of the [NavigationMesh] resource. In the first step, starting from a root node and depending on [NavigationMesh] properties all valid 3D source geometry nodes are collected from the [SceneTree]. Second, all collected nodes are parsed for their relevant 3D geometry data and a combined 3D mesh is build. Due to the many different types of parsable objects, from normal [MeshInstance]s to [CSGShape]s or various [CollisionObject]s, some operations to collect geometry data can trigger [VisualServer] and [PhysicsServer] synchronizations. Server synchronization can have a negative effect on baking time or framerate as it often involves [Mutex] locking for thread security. Many parsable objects and the continuous synchronization with other threaded Servers can increase the baking time significantly. On the other hand only a few but very large and complex objects will take some time to prepare for the Servers which can noticeably stall the next frame render. As a general rule the total amount of parsable objects and their individual size and complexity should be balanced to avoid framerate issues or very long baking times. The combined mesh is then passed to the Recast Navigation Object to test the source geometry for walkable terrain suitable to [NavigationMesh] agent properties by creating a voxel world around the meshes bounding area.
+		The finalized navigation mesh is then returned and stored inside the [NavigationMesh] for use as a resource inside [NavigationMeshInstance] nodes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,14 +17,14 @@
 			<argument index="0" name="nav_mesh" type="NavigationMesh" />
 			<argument index="1" name="root_node" type="Node" />
 			<description>
-				Bakes the navigation mesh. This will allow you to use pathfinding with the navigation system.
+				Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child nodes under the provided [code]root_node[/code] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry/parsed_geometry_type] and [member NavigationMesh.geometry/source_geometry_mode] properties on the [NavigationMesh] resource.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<argument index="0" name="nav_mesh" type="NavigationMesh" />
 			<description>
-				Clears the navigation mesh.
+				Removes all polygons and vertices from the provided [code]nav_mesh[/code] resource.
 			</description>
 		</method>
 	</methods>
