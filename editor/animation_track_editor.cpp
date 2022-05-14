@@ -2999,8 +2999,6 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 
-				print_line(hovering_key_idx);
-
 				if (hovering_key_idx != previous_hovering_key_idx) {
 					// Required to draw keyframe hover feedback on the correct keyframe.
 					update();
