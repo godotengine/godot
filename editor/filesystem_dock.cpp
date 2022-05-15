@@ -1078,15 +1078,10 @@ void FileSystemDock::_preview_invalidated(const String &p_path) {
 	}
 }
 
-// NOTES: Double fires due to EditorFileSystem::reimport_files emitting file_changed, then EditorFileSystem::scan_filesystem
-//		  emitting file_changed. Both fail, which is weird because the second emission (from EditorFileSystem::scan_filesystem)
-//		  should make "EditorFileSystem::filesystem" up to date, meaning the files cache inside of the filesystem is also up
-//		  to date.
 void FileSystemDock::_fs_changed() {
 	if (EditorFileSystem::get_singleton()->is_update_script_classes_queued()) {
-		// Exit if we also updated script classes. We only want to refresh the
-		// FileSystemDock AFTER script classes are updated, as that will update
-		// the custom class icons we use for our tree and list items.
+		// We only want to refresh the FileSystemDock AFTER script classes are updated, as
+		// that will update the custom class icons we use for our tree and list items.
 		return;
 	}
 	button_hist_prev->set_disabled(history_pos == 0);
