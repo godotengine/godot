@@ -147,21 +147,6 @@ bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	return E->get().loop;
 }
 
-void SpriteFrames::_set_frames(const Array &p_frames) {
-	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
-	ERR_FAIL_COND(!E);
-
-	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++) {
-		E->get().frames.write[i] = p_frames[i];
-	}
-}
-
-Array SpriteFrames::_get_frames() const {
-	return Array();
-}
-
 Array SpriteFrames::_get_animations() const {
 	Array anims;
 	for (const KeyValue<StringName, Anim> &E : animations) {
@@ -224,11 +209,6 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_frame", "anim", "idx"), &SpriteFrames::remove_frame);
 	ClassDB::bind_method(D_METHOD("clear", "anim"), &SpriteFrames::clear);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SpriteFrames::clear_all);
-
-	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
-	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
-
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_frames", "_get_frames"); //compatibility
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
