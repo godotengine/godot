@@ -337,7 +337,10 @@ static unsigned char _parserColor(const char* value, char** end)
 
     r = svgUtilStrtof(value, end);
     *end = _skipSpace(*end, nullptr);
-    if (**end == '%') r = 255 * r / 100;
+    if (**end == '%') {
+        r = 255 * r / 100;
+        (*end)++;
+    }
     *end = _skipSpace(*end, nullptr);
 
     if (r < 0 || r > 255) {
@@ -1145,10 +1148,13 @@ static bool _attrParseSymbolNode(void* data, const char* key, const char* value)
     if (!strcmp(key, "viewBox")) {
         if (!_parseNumber(&value, &symbol->vx) || !_parseNumber(&value, &symbol->vy)) return false;
         if (!_parseNumber(&value, &symbol->vw) || !_parseNumber(&value, &symbol->vh)) return false;
+        symbol->hasViewBox = true;
     } else if (!strcmp(key, "width")) {
         symbol->w = _toFloat(loader->svgParse, value, SvgParserLengthType::Horizontal);
+        symbol->hasWidth = true;
     } else if (!strcmp(key, "height")) {
         symbol->h = _toFloat(loader->svgParse, value, SvgParserLengthType::Vertical);
+        symbol->hasHeight = true;
     } else if (!strcmp(key, "preserveAspectRatio")) {
         if (!strcmp(value, "none")) symbol->preserveAspect = false;
     } else if (!strcmp(key, "overflow")) {
@@ -1305,6 +1311,12 @@ static SvgNode* _createSymbolNode(SvgLoaderData* loader, SvgNode* parent, const 
     loader->svgParse->node->display = false;
     loader->svgParse->node->node.symbol.preserveAspect = true;
     loader->svgParse->node->node.symbol.overflowVisible = false;
+
+    loader->svgParse->node->node.symbol.hasViewBox = false;
+    loader->svgParse->node->node.symbol.hasWidth = false;
+    loader->svgParse->node->node.symbol.hasHeight = false;
+    loader->svgParse->node->node.symbol.vx = 0.0f;
+    loader->svgParse->node->node.symbol.vy = 0.0f;
 
     func(buf, bufLength, _attrParseSymbolNode, loader);
 
@@ -2722,6 +2734,7 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         }
         /* default value for opacity */
         loader->svgParse->gradStop = {0.0f, 0, 0, 0, 255};
+        loader->svgParse->flags = SvgStopStyleFlags::StopDefault;
         simpleXmlParseAttributes(attrs, attrsLength, _attrParseStops, loader);
         loader->latestGradient->stops.push(loader->svgParse->gradStop);
     } else if (!isIgnoreUnsupportedLogElements(tagName)) {
@@ -2865,7 +2878,7 @@ static SvgStyleGradient* _gradientDup(Array<SvgStyleGradient*>* gradients, const
     auto gradList = gradients->data;
 
     for (uint32_t i = 0; i < gradients->count; ++i) {
-        if (!strcmp((*gradList)->id, id)) {
+        if ((*gradList)->id && !strcmp((*gradList)->id, id)) {
             result = _cloneGradient(*gradList);
             break;
         }
@@ -2875,7 +2888,7 @@ static SvgStyleGradient* _gradientDup(Array<SvgStyleGradient*>* gradients, const
     if (result && result->ref) {
         gradList = gradients->data;
         for (uint32_t i = 0; i < gradients->count; ++i) {
-            if (!strcmp((*gradList)->id, result->ref)) {
+            if ((*gradList)->id && !strcmp((*gradList)->id, result->ref)) {
                 if (result->stops.count == 0) _cloneGradStops(result->stops, (*gradList)->stops);
                 //TODO: Properly inherit other property
                 break;

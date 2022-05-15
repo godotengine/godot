@@ -173,6 +173,9 @@ struct SvgSymbolNode
     float vx, vy, vw, vh;
     bool preserveAspect;
     bool overflowVisible;
+    bool hasViewBox;
+    bool hasWidth;
+    bool hasHeight;
 };
 
 struct SvgUseNode
