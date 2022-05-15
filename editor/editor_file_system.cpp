@@ -168,15 +168,10 @@ String EditorFileSystemDirectory::get_file_resource_script_class_name(int p_idx)
 	String script_file = script_path.get_file();
 
 	if (script_path_base_dir == get_path()) {
-		// If our resource script path happens to be in the same directory as our
-		// resource, then we can directly fetch the script's FileInfo.
 		int file_idx = find_file_index(script_file);
 		ERR_FAIL_COND_V(file_idx < 0, "");
 		return files[file_idx]->script_class_name;
 	} else {
-		// If our resource script path is not in the same directory as our resource,
-		// we must fetch it's EditorFileSystemDirectory first, and then fetch the script's
-		// FileInfo from the newly fetched directory.
 		EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem_path(script_path_base_dir);
 		int file_idx = dir->find_file_index(script_file);
 		ERR_FAIL_COND_V(file_idx < 0, "");
@@ -251,9 +246,6 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	}
 }
 
-// Helper method for scan()
-// Sets scanning = false when it's finished.
-// Can potentially scan new directorys, which accrues some ItemActions into scan_actions.
 void EditorFileSystem::_scan_filesystem() {
 	ERR_FAIL_COND(!scanning || new_filesystem);
 
@@ -607,7 +599,6 @@ void EditorFileSystem::_update_scan_actions() {
 	}
 }
 
-// Returns whether the file system changed or not.
 bool EditorFileSystem::_update_scan_actions_helper() {
 	sources_changed.clear();
 
@@ -746,17 +737,12 @@ bool EditorFileSystem::_try_emit_filesystem_changed() {
 	return false;
 }
 
-// Rescans the filesystem, using the existing cache, to build a new filesystem directory tree. This is a hard reset of the filesystem directory tree, as it mallocs an entirely new tree and reconstructs the necessary branches on it.
-//
-// Calls _scan_filesystem(), with the appropriate setup for either a threaded or multithreaded call.
 void EditorFileSystem::scan() {
 	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/) {
 		return;
 	}
 
 	if (scanning || scanning_changes || thread.is_started()) {
-		// Both scan() and scan_changes() cannot run at the same time.
-		// Note that scan() does not defer, and will just quit if this happens.
 		return;
 	}
 
@@ -773,11 +759,12 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
-		// Flush out the accrued ItemActions (if any) from _scan_filesystem(), and suppress any filesystem_changed signals.
+
 		suppress_filesystem_changed_signal = true;
 		_update_scan_actions();
 		scanning = false;
 		suppress_filesystem_changed_signal = false;
+
 		_try_emit_filesystem_changed();
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		_queue_update_script_classes();
@@ -1017,9 +1004,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 	}
 }
 
-// Helper method for scan_changes(). Used in both threaded an un-threaded versions.
-// Recurses through the filesystem and accrues all "ItemAction" file changes.
-// _update_scan_actions() is responsible for actually applying these changes.
 void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress) {
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
@@ -1234,14 +1218,9 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	efs->scanning_changes_done = true;
 }
 
-// This scans the file system, accrues all changes to the filesystem tree, and then applies those changes.
-//
-// Calls _scan_fs_changes(), with the appropriate setup for either a threaded or multithreaded call.
 void EditorFileSystem::scan_changes() {
 	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
 			scanning || scanning_changes || thread.is_started()) {
-		// Both scan_changes() and scan() cannot occur at the same time. However scan_changes
-		// will defer it's call if something is already happening.
 		scan_changes_pending = true;
 		set_process(true);
 		return;
@@ -1317,17 +1296,7 @@ void EditorFileSystem::_notification(int p_what) {
 			// Process loop is being shared by scan_changes() and scan().
 			if (use_threads) {
 				if (scanning_changes) {
-					// FOR: scan_changes()
-					// If we are currently scanning for ItemAction changes
 					if (scanning_changes_done) {
-						// LABEL: Single frame boolean state desync
-						// The reason why we have scanning_changes_done and scanning_changes, is because
-						// scanning_changes can only be set to false AFTER we finish applying the changes
-						// we scanned.
-						//
-						// Therefore if we just used scanning_changes to indicate the state of
-						// the thread, there could be a few frames before the next process call where
-						// scanning_changes = false, but the changes haven't been applied.
 						scanning_changes = false;
 						scanning_changes_done = false;
 
@@ -1340,18 +1309,6 @@ void EditorFileSystem::_notification(int p_what) {
 						first_scan = false;
 					}
 				} else if (!scanning && thread.is_started()) {
-					// FOR: scan()
-					// If scanning is done. thread.is_started() returns true while the thread has started and hasn't
-					// been merged back into the main thread.
-					//
-					// QUESTION: What is thread.is_started() used for? Woudld'nt process be turned on only when the thread
-					//			 is active and shut down when the thread ends, meaning thread.is_started() is always true?
-
-					// Note that we don't run into the "Single frame boolean state desync" mentioned above, because
-					// we are building the new file system in "new_filesystem", and only injecting it into "filesystem"
-					// once we've finished building the filesystem. This means "filesystem" will always be a valid directory
-					// tree that isn't half baked.
-
 					set_process(false);
 
 					if (filesystem) {
@@ -1366,23 +1323,14 @@ void EditorFileSystem::_notification(int p_what) {
 					// Flush out the accrued ItemActions (if any) from _scan_filesystem(), and suppress any filesystem_changed signals.
 					suppress_filesystem_changed_signal = true;
 					_update_scan_actions();
-					// filesystem should be up to date now, so this filesystem_changed call should invoke filesystem_dock.cpp's
-					// "filesystem_changed" listener and referesh the file dock.
-					// TODO: Figure out why the file dock is getting bad data -- despite the filesystem being new.
-					//		 I suspect it's likely due to the filesystem dock locking it's refresh to once per frame,
-					//		 and is getting refreshed before we emit "filesystem_changed", therefore the only refresh it
-					//		 ever gests is one with bad data.
 					suppress_filesystem_changed_signal = false;
+
 					_queue_update_script_classes();
 					_try_emit_filesystem_changed();
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
 				}
 
-				// For scan_changes()
-				// is_processing = false when we are done with the current scan.
-				// If we are finished with the current scan and we have another scan queued up (pending),
-				// we will then run the queued up scan.
 				if (!is_processing() && scan_changes_pending) {
 					scan_changes_pending = false;
 					scan_changes();
@@ -1630,8 +1578,6 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 	return String();
 }
 
-// Scans for all the script files recursively in a directory, and registers them to
-// the ScriptServer and to EditorNode (for class icon purposes).
 void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	int filecount = p_dir->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
@@ -1655,8 +1601,6 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	}
 }
 
-// QUESTION: Can this only execute by _queue_update_script_classes()? That method seems to be the only location where
-//           update_script_classes_queued is set, thereby letting us run update_script_classes.
 void EditorFileSystem::update_script_classes() {
 	if (!update_script_classes_queued.is_set()) {
 		return;
@@ -2325,8 +2269,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	_save_filesystem_cache();
 	importing = false;
-	// NOTE: This only fires if we aren't scanning, I guess to not interefere with the filesystem_changed that fires from scanning?
-	//	     It looks like this is causing filesystem_dock to refresh too early.
 	if (!is_scanning()) {
 		_try_emit_filesystem_changed();
 	}

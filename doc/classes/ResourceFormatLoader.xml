@@ -17,6 +17,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_attached_script_path" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				If implemented, gets the path of a script attached to a resource. Scripts are only attached to a resource for custom classes that inherits from Resource.
+			</description>
+		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<argument index="0" name="path" type="String" />

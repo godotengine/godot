@@ -96,6 +96,11 @@
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
+		<signal name="script_classes_loaded">
+			<description>
+				Emitted once all scripts have been loaded. This happens after filesystem_changed is emitted.
+			</description>
+		</signal>
 		<signal name="sources_changed">
 			<argument index="0" name="exist" type="bool" />
 			<description>
