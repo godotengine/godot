@@ -77,6 +77,8 @@ public:
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
+	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);
+	void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
@@ -109,6 +111,8 @@ public:
 
 	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
+	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
+	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
 	ResourceSaver() { singleton = this; }
 };
