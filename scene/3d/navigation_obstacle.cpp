@@ -92,7 +92,7 @@ void NavigationObstacle::_notification(int p_what) {
 			parent_spatial = nullptr;
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (parent_spatial) {
+			if (parent_spatial && parent_spatial->is_inside_tree()) {
 				NavigationServer::get_singleton()->agent_set_position(agent, parent_spatial->get_global_transform().origin);
 			}
 
@@ -162,13 +162,13 @@ void NavigationObstacle::reevaluate_agent_radius() {
 }
 
 real_t NavigationObstacle::estimate_agent_radius() const {
-	if (parent_spatial) {
+	if (parent_spatial && parent_spatial->is_inside_tree()) {
 		// Estimate the radius of this physics body
 		real_t radius = 0.0;
 		for (int i(0); i < parent_spatial->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape *cs = Object::cast_to<CollisionShape>(parent_spatial->get_child(i));
-			if (cs) {
+			if (cs && cs->is_inside_tree()) {
 				// Take the distance between the Body center to the shape center
 				real_t r = cs->get_transform().origin.length();
 				if (cs->get_shape().is_valid()) {
@@ -179,6 +179,9 @@ real_t NavigationObstacle::estimate_agent_radius() const {
 				r *= MAX(s.x, MAX(s.y, s.z));
 				// Takes the biggest radius
 				radius = MAX(radius, r);
+			} else if (cs && !cs->is_inside_tree()) {
+				WARN_PRINT("A CollisionShape of the NavigationObstacle parent node was not inside the SceneTree when estimating the obstacle radius."
+						   "\nMove the NavigationObstacle to a child position below any CollisionShape node of the parent node so the CollisionShape is already inside the SceneTree.");
 			}
 		}
 		Vector3 s = parent_spatial->get_global_transform().basis.get_scale();
