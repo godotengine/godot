@@ -1361,12 +1361,6 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				rotation_axis = 5;
 				rotation = 6;
 			}
-			String op;
-			if (shader_type == VisualShader::TYPE_START) {
-				op = "*=";
-			} else {
-				op = "=";
-			}
 
 			if (!p_input_vars[rotation].is_empty()) { // rotation_axis & angle_in_radians
 				String axis;
@@ -1375,10 +1369,58 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				} else {
 					axis = p_input_vars[rotation_axis];
 				}
-				code += tab + "TRANSFORM " + op + " __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+
+				code += tab + "mat4 __rt;\n";
+				if (shader_type == VisualShader::TYPE_PROCESS) {
+					code += tab + "if (USERDATA2.y >= 0.5) {\n";
+					code += tab + "__rt = __build_rotation_mat4(USERDATA1.xyz, USERDATA1.w);\n";
+					code += tab + "} else {\n";
+					code += tab + "__rt = mat4(1.0);\n";
+					code += tab + "}\n";
+				} else {
+					code += tab + "__rt = __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+				}
+				code += "\n";
+
+				if (shader_type == VisualShader::TYPE_PROCESS) {
+					code += tab + "__rt *= __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+				}
+
+				if (shader_type == VisualShader::TYPE_START) {
+					code += tab + "USERDATA1 = vec4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+					code += tab + "USERDATA2.y = 1.0;\n";
+				}
+			} else {
+				if (shader_type == VisualShader::TYPE_START) {
+					code += tab + "USERDATA1 = vec4(0, 1, 0, 0);\n";
+					code += tab + "USERDATA2.y = 0.0;\n";
+				}
 			}
+
 			if (!p_input_vars[scale].is_empty()) { // scale
-				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
+				if (shader_type == VisualShader::TYPE_START) {
+					code += tab + "TRANSFORM[0].x = " + p_input_vars[scale] + ";\n";
+					code += tab + "TRANSFORM[1].y = " + p_input_vars[scale] + ";\n";
+					code += tab + "TRANSFORM[2].z = " + p_input_vars[scale] + ";\n";
+
+					code += tab + "USERDATA2.x = " + p_input_vars[scale] + ";\n";
+				} else {
+					code += tab + "TRANSFORM[0].xyz = vec3(USERDATA2.x + " + p_input_vars[scale] + ", 0, 0);\n";
+					code += tab + "TRANSFORM[1].xyz = vec3(0, USERDATA2.x + " + p_input_vars[scale] + ", 0);\n";
+					code += tab + "TRANSFORM[2].xyz = vec3(0, 0, USERDATA2.x + " + p_input_vars[scale] + ");\n";
+				}
+			} else {
+				if (shader_type == VisualShader::TYPE_START) {
+					code += tab + "USERDATA2.x = 1.0;\n";
+				} else {
+					code += tab + "TRANSFORM[0].xyz = vec3(USERDATA2.x, 0, 0);\n";
+					code += tab + "TRANSFORM[1].xyz = vec3(0, USERDATA2.x, 0);\n";
+					code += tab + "TRANSFORM[2].xyz = vec3(0, 0, USERDATA2.x);\n";
+				}
+			}
+
+			if (!p_input_vars[rotation].is_empty()) {
+				code += tab + "TRANSFORM *= __rt;\n";
 			}
 		}
 		if (!p_input_vars[0].is_empty()) { // Active (end).
