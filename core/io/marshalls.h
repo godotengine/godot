@@ -172,6 +172,10 @@ static inline uint32_t decode_uint32(const uint8_t *p_arr) {
 	return u;
 }
 
+static inline int32_t decode_int32_t(const uint8_t *p_arr) {
+	return decode_uint32(p_arr);
+}
+
 static inline float decode_float(const uint8_t *p_arr) {
 	MarshallFloat mf;
 	mf.i = decode_uint32(p_arr);
