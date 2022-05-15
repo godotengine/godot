@@ -1615,9 +1615,6 @@ void EditorFileSystem::update_script_classes() {
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
 
-	// Custom loaders are written as scripta afterall, therefore we must reload them when we rescan all the scripts,
-	// in case new custom loader scripts have been added, or existing ones have been deleted.
-	//
 	// Rescan custom loaders and savers.
 	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
 	// So I thought it's better to do this when script classes really get updated
@@ -1630,7 +1627,6 @@ void EditorFileSystem::update_script_classes() {
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
-	// We can only queue a script-classes-update once.
 	if (update_script_classes_queued.is_set()) {
 		return;
 	}
