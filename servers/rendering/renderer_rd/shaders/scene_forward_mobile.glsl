@@ -924,7 +924,7 @@ void main() {
 #endif // !USE_LIGHTMAP
 
 #if defined(CUSTOM_IRRADIANCE_USED)
-	ambient_light = mix(specular_light, custom_irradiance.rgb, custom_irradiance.a);
+	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
 #endif // CUSTOM_IRRADIANCE_USED
 #ifdef LIGHT_CLEARCOAT_USED
 
