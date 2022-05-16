@@ -569,6 +569,17 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 			checked_paths.insert(path);
 		}
+
+		// look for changes in parent of parent inherited and so on
+		// check if matches any of the open edited scenes
+		for (int i = 0; i < edited_scene.size(); i++) {
+			if (path == edited_scene[i].path) {
+				bool found = check_and_update_scene(i);
+				if (found) {
+					return true;
+				}
+			}
+		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
