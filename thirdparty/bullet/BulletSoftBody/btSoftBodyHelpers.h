@@ -146,6 +146,11 @@ struct btSoftBodyHelpers
 
 	static void writeObj(const char* file, const btSoftBody* psb);
 
+	static void writeState(const char* file, const btSoftBody* psb);
+
+  //this code cannot be here, dependency on example code are not allowed
+	//static std::string loadDeformableState(btAlignedObjectArray<btVector3>& qs, btAlignedObjectArray<btVector3>& vs, const char* filename, CommonFileIOInterface* fileIO);
+
 	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary);
 
 	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary);

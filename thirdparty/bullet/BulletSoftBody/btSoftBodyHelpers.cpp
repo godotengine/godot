@@ -18,6 +18,7 @@ subject to the following restrictions:
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#include <iomanip> 
 #include <sstream>
 #include <string.h>
 #include <algorithm>
@@ -1483,6 +1484,37 @@ void btSoftBodyHelpers::writeObj(const char* filename, const btSoftBody* psb)
 			}
 			fs << "\n";
 		}
+	}
+	fs.close();
+}
+
+
+void btSoftBodyHelpers::writeState(const char* file, const btSoftBody* psb)
+{
+	std::ofstream fs;
+	fs.open(file);
+	btAssert(fs);
+	fs << std::scientific << std::setprecision(16);
+
+	// Only write out for trimesh, directly write out all the nodes and faces.xs
+	for (int i = 0; i < psb->m_nodes.size(); ++i)
+	{
+		fs << "q";
+		for (int d = 0; d < 3; d++)
+		{
+			fs << " " << psb->m_nodes[i].m_q[d];
+		}
+		fs << "\n";
+	}
+
+	for (int i = 0; i < psb->m_nodes.size(); ++i)
+	{
+		fs << "v";
+		for (int d = 0; d < 3; d++)
+		{
+			fs << " " << psb->m_nodes[i].m_v[d];
+		}
+		fs << "\n";
 	}
 	fs.close();
 }

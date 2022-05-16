@@ -25,6 +25,7 @@ subject to the following restrictions:
 ATTRIBUTE_ALIGNED16(class)
 btConvexHullShape : public btPolyhedralConvexAabbCachingShape
 {
+protected:
 	btAlignedObjectArray<btVector3> m_unscaledPoints;
 
 public:

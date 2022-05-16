@@ -231,6 +231,9 @@ void btSoftBody::initDefaults()
 	m_gravityFactor = 1;
 	m_cacheBarycenter = false;
 	m_fdbvnt = 0;
+
+	// reduced flag
+	m_reducedModel = false;
 }
 
 //
@@ -1481,6 +1484,21 @@ void btSoftBody::randomizeConstraints()
 		btSwap(m_faces[i], m_faces[NEXTRAND % ni]);
 	}
 #undef NEXTRAND
+}
+
+void btSoftBody::updateState(const btAlignedObjectArray<btVector3>& q, const btAlignedObjectArray<btVector3>& v)
+{
+	int node_count = m_nodes.size();
+	btAssert(node_count == q.size());
+	btAssert(node_count == v.size());
+	for (int i = 0; i < node_count; i++)
+	{
+		Node& n = m_nodes[i];
+		n.m_x = q[i];
+		n.m_q = q[i];
+		n.m_v = v[i];
+		n.m_vn = v[i];
+	}
 }
 
 //
@@ -2821,7 +2839,7 @@ bool btSoftBody::checkDeformableFaceContact(const btCollisionObjectWrapper* colO
 	btScalar dst;
 	btGjkEpaSolver2::sResults results;
 
-//	#define USE_QUADRATURE 1
+	//	#define USE_QUADRATURE 1
 
 	// use collision quadrature point
 #ifdef USE_QUADRATURE
@@ -3879,7 +3897,7 @@ void btSoftBody::PSolve_RContacts(btSoftBody* psb, btScalar kst, btScalar ti)
 			btVector3 va(0, 0, 0);
 			btRigidBody* rigidCol = 0;
 			btMultiBodyLinkCollider* multibodyLinkCol = 0;
-			btScalar* deltaV;
+			btScalar* deltaV = NULL;
 
 			if (cti.m_colObj->getInternalType() == btCollisionObject::CO_RIGID_BODY)
 			{

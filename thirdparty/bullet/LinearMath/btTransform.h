@@ -34,6 +34,7 @@ btTransform
 	btVector3 m_origin;
 
 public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
 	/**@brief No initialization constructor */
 	btTransform() {}
 	/**@brief Constructor from btQuaternion (optional btVector3 )

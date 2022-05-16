@@ -198,7 +198,6 @@ void btCollisionWorld::updateAabbs()
 {
 	BT_PROFILE("updateAabbs");
 
-	btTransform predictedTrans;
 	for (int i = 0; i < m_collisionObjects.size(); i++)
 	{
 		btCollisionObject* colObj = m_collisionObjects[i];

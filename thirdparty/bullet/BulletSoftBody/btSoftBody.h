@@ -223,12 +223,10 @@ public:
 	/* sCti is Softbody contact info	*/
 	struct sCti
 	{
-		const btCollisionObject* m_colObj; /* Rigid body			        */
-		btVector3 m_normal;                /* Outward normal		        */
-		mutable btVector3 m_impulse;	   /* Applied impulse        	    */
-		btScalar m_offset;                 /* Offset from origin	        */
+		const btCollisionObject* m_colObj; /* Rigid body			*/
+		btVector3 m_normal;                /* Outward normal		*/
+		btScalar m_offset;                 /* Offset from origin	*/
 		btVector3 m_bary;                  /* Barycentric weights for faces */
-		sCti() : m_impulse(0, 0, 0) {}
 	};
 
 	/* sMedium		*/
@@ -300,7 +298,7 @@ public:
 	};
 	struct RenderFace
 	{
-		RenderNode* m_n[3];          // Node pointers
+		RenderNode* m_n[3];  // Node pointers
 	};
 
 	/* Face			*/
@@ -409,6 +407,7 @@ public:
 		btScalar m_friction;  // Friction
 		btScalar m_imf;       // inverse mass of the face at contact point
 		btScalar m_c0;        // scale of the impulse matrix;
+		const btCollisionObject* m_colObj;  // Collision object to collide with.
 	};
 
 	/* SContact		*/
@@ -788,7 +787,7 @@ public:
 	typedef btAlignedObjectArray<Cluster*> tClusterArray;
 	typedef btAlignedObjectArray<Note> tNoteArray;
 	typedef btAlignedObjectArray<Node> tNodeArray;
-	typedef btAlignedObjectArray< RenderNode> tRenderNodeArray;
+	typedef btAlignedObjectArray<RenderNode> tRenderNodeArray;
 	typedef btAlignedObjectArray<btDbvtNode*> tLeafArray;
 	typedef btAlignedObjectArray<Link> tLinkArray;
 	typedef btAlignedObjectArray<Face> tFaceArray;
@@ -800,6 +799,7 @@ public:
 	typedef btAlignedObjectArray<Material*> tMaterialArray;
 	typedef btAlignedObjectArray<Joint*> tJointArray;
 	typedef btAlignedObjectArray<btSoftBody*> tSoftBodyArray;
+	typedef btAlignedObjectArray<btAlignedObjectArray<btScalar> > tDenseMatrix;
 
 	//
 	// Fields
@@ -815,7 +815,7 @@ public:
 	tRenderNodeArray m_renderNodes;    // Render Nodes
 	tLinkArray m_links;                // Links
 	tFaceArray m_faces;                // Faces
-	tRenderFaceArray m_renderFaces;          // Faces
+	tRenderFaceArray m_renderFaces;    // Faces
 	tTetraArray m_tetras;              // Tetras
 	btAlignedObjectArray<TetraScratch> m_tetraScratches;
 	btAlignedObjectArray<TetraScratch> m_tetraScratchesTn;
@@ -825,6 +825,7 @@ public:
 	btAlignedObjectArray<DeformableNodeRigidContact> m_nodeRigidContacts;
 	btAlignedObjectArray<DeformableFaceNodeContact> m_faceNodeContacts;
 	btAlignedObjectArray<DeformableFaceRigidContact> m_faceRigidContacts;
+	btAlignedObjectArray<DeformableFaceNodeContact> m_faceNodeContactsCCD;
 	tSContactArray m_scontacts;     // Soft contacts
 	tJointArray m_joints;           // Joints
 	tMaterialArray m_materials;     // Materials
@@ -857,6 +858,8 @@ public:
 
 	btScalar m_restLengthScale;
 
+	bool m_reducedModel;	// Reduced deformable model flag
+	
 	//
 	// Api
 	//
@@ -894,7 +897,7 @@ public:
 				   int node1) const;
 	bool checkLink(const Node* node0,
 				   const Node* node1) const;
-	/* Check for existing face												*/
+	/* Check for existring face												*/
 	bool checkFace(int node0,
 				   int node1,
 				   int node2) const;
@@ -1003,15 +1006,15 @@ public:
 	/* Get best fit rigid transform                                         */
 	btTransform getRigidTransform();
 	/* Transform to given pose                                              */
-	void transformTo(const btTransform& trs);
+	virtual void transformTo(const btTransform& trs);
 	/* Transform															*/
-	void transform(const btTransform& trs);
+	virtual void transform(const btTransform& trs);
 	/* Translate															*/
-	void translate(const btVector3& trs);
+	virtual void translate(const btVector3& trs);
 	/* Rotate															*/
-	void rotate(const btQuaternion& rot);
+	virtual void rotate(const btQuaternion& rot);
 	/* Scale																*/
-	void scale(const btVector3& scl);
+	virtual void scale(const btVector3& scl);
 	/* Get link resting lengths scale										*/
 	btScalar getRestLengthScale();
 	/* Scale resting length of all springs									*/
@@ -1053,6 +1056,9 @@ public:
 								   Material* mat = 0);
 	/* Randomize constraints to reduce solver bias							*/
 	void randomizeConstraints();
+
+	void updateState(const btAlignedObjectArray<btVector3>& qs, const btAlignedObjectArray<btVector3>& vs);
+
 	/* Release clusters														*/
 	void releaseCluster(int index);
 	void releaseClusters();
@@ -1097,6 +1103,13 @@ public:
 	void updateDeactivation(btScalar timeStep);
 	void setZeroVelocity();
 	bool wantsSleeping();
+
+	virtual btMatrix3x3 getImpulseFactor(int n_node)
+	{
+		btMatrix3x3 tmp;
+		tmp.setIdentity();
+		return tmp;
+	}
 
 	//
 	// Functionality to deal with new accelerated solvers.

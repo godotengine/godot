@@ -25,7 +25,7 @@ subject to the following restrictions:
 #include <float.h>
 
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
-#define BT_BULLET_VERSION 320
+#define BT_BULLET_VERSION 324
 
 inline int btGetVersion()
 {
@@ -107,7 +107,7 @@ inline int btIsDoublePrecision()
  			#define btFsel(a,b,c) __fsel((a),(b),(c))
 		#else
 
-#if defined (_M_ARM)
+#if defined (_M_ARM) || defined (_M_ARM64)
             //Do not turn SSE on for ARM (may want to turn on BT_USE_NEON however)
 #elif (defined (_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined (BT_USE_DOUBLE_PRECISION))
 

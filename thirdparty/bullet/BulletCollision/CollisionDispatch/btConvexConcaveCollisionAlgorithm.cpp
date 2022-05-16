@@ -103,6 +103,44 @@ void btConvexTriangleCallback::processTriangle(btVector3* triangle, int partId, 
 
 	if (m_convexBodyWrap->getCollisionShape()->isConvex())
 	{
+#ifndef BT_DISABLE_CONVEX_CONCAVE_EARLY_OUT		
+		//an early out optimisation if the object is separated from the triangle
+		//projected on the triangle normal)
+		{
+			const btVector3 v0 = m_triBodyWrap->getWorldTransform()*triangle[0];
+			const btVector3 v1 = m_triBodyWrap->getWorldTransform()*triangle[1];
+			const btVector3 v2 = m_triBodyWrap->getWorldTransform()*triangle[2];
+
+			btVector3 triangle_normal_world = ( v1 - v0).cross(v2 - v0);
+			triangle_normal_world.normalize();
+
+		    btConvexShape* convex = (btConvexShape*)m_convexBodyWrap->getCollisionShape();
+			
+			btVector3 localPt = convex->localGetSupportingVertex(m_convexBodyWrap->getWorldTransform().getBasis().inverse()*triangle_normal_world);
+			btVector3 worldPt = m_convexBodyWrap->getWorldTransform()*localPt;
+			//now check if this is fully on one side of the triangle
+			btScalar proj_distPt = triangle_normal_world.dot(worldPt);
+			btScalar proj_distTr = triangle_normal_world.dot(v0);
+			btScalar contact_threshold = m_manifoldPtr->getContactBreakingThreshold()+ m_resultOut->m_closestPointDistanceThreshold;
+			btScalar dist = proj_distTr - proj_distPt;
+			if (dist > contact_threshold)
+				return;
+
+			//also check the other side of the triangle
+			triangle_normal_world*=-1;
+
+			localPt = convex->localGetSupportingVertex(m_convexBodyWrap->getWorldTransform().getBasis().inverse()*triangle_normal_world);
+			worldPt = m_convexBodyWrap->getWorldTransform()*localPt;
+			//now check if this is fully on one side of the triangle
+			proj_distPt = triangle_normal_world.dot(worldPt);
+			proj_distTr = triangle_normal_world.dot(v0);
+			
+			dist = proj_distTr - proj_distPt;
+			if (dist > contact_threshold)
+				return;
+        }
+#endif //BT_DISABLE_CONVEX_CONCAVE_EARLY_OUT
+
 		btTriangleShape tm(triangle[0], triangle[1], triangle[2]);
 		tm.setMargin(m_collisionMarginTriangle);
 
@@ -132,7 +170,10 @@ void btConvexTriangleCallback::processTriangle(btVector3* triangle, int partId, 
 			m_resultOut->setShapeIdentifiersB(partId, triangleIndex);
 		}
 
-		colAlgo->processCollision(m_convexBodyWrap, &triObWrap, *m_dispatchInfoPtr, m_resultOut);
+		{
+			BT_PROFILE("processCollision (GJK?)");
+			colAlgo->processCollision(m_convexBodyWrap, &triObWrap, *m_dispatchInfoPtr, m_resultOut);
+		}
 
 		if (m_resultOut->getBody0Internal() == m_triBodyWrap->getCollisionObject())
 		{
