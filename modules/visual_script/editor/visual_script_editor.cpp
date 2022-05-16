@@ -647,6 +647,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 	};
 
+	// Visual script specific theme for MSDF font.
+	Ref<Theme> vstheme;
+	vstheme.instantiate();
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", "EditorFonts");
+	vstheme->set_font("font", "Label", label_font);
+	vstheme->set_font("font", "LineEdit", label_font);
+	vstheme->set_font("font", "Button", label_font);
+
 	Ref<Texture2D> seq_port = Control::get_theme_icon(SNAME("VisualShaderPort"), SNAME("EditorIcons"));
 	List<int> node_ids;
 	script->get_node_list(&node_ids);
@@ -960,9 +968,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			slot_idx++;
 		}
-
 		graph->add_child(gnode);
-
+		gnode->set_theme(vstheme);
 		if (gnode->is_comment()) {
 			graph->move_child(gnode, 0);
 		}
@@ -4575,6 +4582,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(graph);
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	graph->set_show_zoom_label(true);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
 	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
 	graph->connect("end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));

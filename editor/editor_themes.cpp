@@ -741,17 +741,28 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
 
 	// OptionButton
-	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
+	Ref<StyleBoxFlat> style_option_button_focus = style_widget_focus->duplicate();
+	Ref<StyleBoxFlat> style_option_button_normal = style_widget->duplicate();
+	Ref<StyleBoxFlat> style_option_button_hover = style_widget_hover->duplicate();
+	Ref<StyleBoxFlat> style_option_button_pressed = style_widget_pressed->duplicate();
+	Ref<StyleBoxFlat> style_option_button_disabled = style_widget_disabled->duplicate();
 
+	style_option_button_focus->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+	style_option_button_normal->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+	style_option_button_hover->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+	style_option_button_pressed->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+	style_option_button_disabled->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+
+	theme->set_stylebox("focus", "OptionButton", style_option_button_focus);
 	theme->set_stylebox("normal", "OptionButton", style_widget);
 	theme->set_stylebox("hover", "OptionButton", style_widget_hover);
 	theme->set_stylebox("pressed", "OptionButton", style_widget_pressed);
 	theme->set_stylebox("disabled", "OptionButton", style_widget_disabled);
 
-	theme->set_stylebox("normal_mirrored", "OptionButton", style_widget);
-	theme->set_stylebox("hover_mirrored", "OptionButton", style_widget_hover);
-	theme->set_stylebox("pressed_mirrored", "OptionButton", style_widget_pressed);
-	theme->set_stylebox("disabled_mirrored", "OptionButton", style_widget_disabled);
+	theme->set_stylebox("normal_mirrored", "OptionButton", style_option_button_normal);
+	theme->set_stylebox("hover_mirrored", "OptionButton", style_option_button_hover);
+	theme->set_stylebox("pressed_mirrored", "OptionButton", style_option_button_pressed);
+	theme->set_stylebox("disabled_mirrored", "OptionButton", style_option_button_disabled);
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_hover_color", "OptionButton", font_hover_color);
@@ -1435,7 +1446,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 	}
 	style_minimap_camera->set_border_width_all(1);
-	style_minimap_node->set_corner_radius_all(1);
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
 	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
 
@@ -1450,20 +1460,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 
 	// GraphNode
-	const int gn_margin_side = 28;
+	const int gn_margin_side = 2;
+	const int gn_margin_bottom = 2;
 
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	Color graphnode_bg = dark_color_3;
+	if (!dark_theme) {
+		graphnode_bg = prop_section_color;
+	}
+
+	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(graphnode_bg.lerp(style_tree_bg->get_bg_color(), 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color(dark_color_3);
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.9), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	graphsb->set_border_color(graphnode_bg);
+	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 1), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	graphsbselected->set_border_width_all(2 * EDSCALE + border_width);
-	graphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.3), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	graphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.6));
+	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color(dark_color_3);
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.4), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	graphsbcomment->set_border_color(graphnode_bg);
+	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.4), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	graphsbcommentselected->set_border_width_all(border_width);
-	graphsbcommentselected->set_border_color(dark_color_3);
+	graphsbcommentselected->set_border_color(graphnode_bg);
 	Ref<StyleBoxFlat> graphsbbreakpoint = graphsbselected->duplicate();
 	graphsbbreakpoint->set_draw_center(false);
 	graphsbbreakpoint->set_border_color(warning_color);
@@ -1472,10 +1488,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsbposition->set_draw_center(false);
 	graphsbposition->set_border_color(error_color);
 	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
-	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	Ref<StyleBoxEmpty> graphsbslot = make_empty_stylebox(12, 0, 12, 0);
+	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	smgraphsb->set_border_width_all(border_width);
-	smgraphsb->set_border_color(dark_color_3);
-	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.9), gn_margin_side, 24, gn_margin_side, 5, corner_width);
+	smgraphsb->set_border_color(graphnode_bg);
+	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
 	smgraphsbselected->set_border_width_all(2 * EDSCALE + border_width);
 	smgraphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
 	smgraphsbselected->set_shadow_size(8 * EDSCALE);
@@ -1492,25 +1509,28 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("comment_focus", "GraphNode", graphsbcommentselected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
+	theme->set_stylebox("slot", "GraphNode", graphsbslot);
 	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
 	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
 
-	Color default_node_color = dark_color_1.inverted();
-	theme->set_color("title_color", "GraphNode", default_node_color);
-	default_node_color.a = 0.7;
-	theme->set_color("close_color", "GraphNode", default_node_color);
-	theme->set_color("resizer_color", "GraphNode", default_node_color);
+	Color node_decoration_color = dark_color_1.inverted();
+	theme->set_color("title_color", "GraphNode", node_decoration_color);
+	node_decoration_color.a = 0.7;
+	theme->set_color("close_color", "GraphNode", node_decoration_color);
+	theme->set_color("resizer_color", "GraphNode", node_decoration_color);
 
-	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
-	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
-	theme->set_constant("title_offset", "GraphNode", 20 * EDSCALE);
-	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_constant("port_offset", "GraphNode", 0);
+	theme->set_constant("title_h_offset", "GraphNode", 12 * EDSCALE);
+	theme->set_constant("title_offset", "GraphNode", 21 * EDSCALE);
+	theme->set_constant("close_h_offset", "GraphNode", -2 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
 	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), SNAME("EditorIcons")));
 	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), SNAME("EditorIcons")));
 	theme->set_icon("port", "GraphNode", theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons")));
+
+	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), SNAME("EditorFonts")));
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));

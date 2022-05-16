@@ -148,6 +148,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			if (links[p_node_id].preview_pos != -1) {
 				links[p_node_id].graph_node->move_child(vbox, links[p_node_id].preview_pos);
 			}
+			links[p_node_id].graph_node->set_slot_draw_stylebox(vbox->get_index(), false);
 
 			Control *offset = memnew(Control);
 			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
@@ -386,6 +387,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		"alpha"
 	};
 
+	// Visual shader specific theme for MSDF font.
+	Ref<Theme> vstheme;
+	vstheme.instantiate();
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", "EditorFonts");
+	vstheme->set_font("font", "Label", label_font);
+	vstheme->set_font("font", "LineEdit", label_font);
+	vstheme->set_font("font", "Button", label_font);
+
 	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_id);
 
 	Ref<VisualShaderNodeResizableBase> resizable_node = Object::cast_to<VisualShaderNodeResizableBase>(vsnode.ptr());
@@ -406,8 +415,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		custom_node->_set_initialized(true);
 	}
 
+	// Create graph node.
 	GraphNode *node = memnew(GraphNode);
 	graph->add_child(node);
+	node->set_theme(vstheme);
 	editor->_update_created_node(node);
 	register_link(p_type, p_id, vsnode.ptr(), node);
 
@@ -942,11 +953,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	if (vsnode->get_output_port_for_preview() >= 0) {
 		show_port_preview(p_type, p_id, vsnode->get_output_port_for_preview());
+	} else {
+		offset = memnew(Control);
+		offset->set_custom_minimum_size(Size2(0, 4 * EDSCALE));
+		node->add_child(offset);
 	}
-
-	offset = memnew(Control);
-	offset->set_custom_minimum_size(Size2(0, 4 * EDSCALE));
-	node->add_child(offset);
 
 	String error = vsnode->get_warning(mode, p_type);
 	if (!error.is_empty()) {
@@ -4652,6 +4663,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_show_zoom_label(true);
 	add_child(graph);
 	graph->set_drag_forwarding(this);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
@@ -6252,7 +6264,8 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Visua
 }
 
 Size2 VisualShaderNodePortPreview::get_minimum_size() const {
-	return Size2(100, 100) * EDSCALE;
+	int port_preview_size = EditorSettings::get_singleton()->get("editors/visual_editors/visualshader/port_preview_size");
+	return Size2(port_preview_size, port_preview_size) * EDSCALE;
 }
 
 void VisualShaderNodePortPreview::_notification(int p_what) {
