@@ -264,20 +264,20 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	return glow;
 }
 
-vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
+vec4 apply_glow(vec4 color, vec3 glow) { // apply glow using the selected blending mode
 #ifdef USE_GLOW_REPLACE
-	color = glow;
+	color.rgb = glow;
 #endif
 
 #ifdef USE_GLOW_SCREEN
 	//need color clamping
-	color = clamp(color, vec3(0.0f), vec3(1.0f));
-	color = max((color + glow) - (color * glow), vec3(0.0));
+	color.rgb = clamp(color.rgb, vec3(0.0f), vec3(1.0f));
+	color.rgb = max((color.rgb + glow) - (color.rgb * glow), vec3(0.0));
 #endif
 
 #ifdef USE_GLOW_SOFTLIGHT
 	//need color clamping
-	color = clamp(color, vec3(0.0f), vec3(1.0));
+	color.rgb = clamp(color.rgb, vec3(0.0f), vec3(1.0));
 	glow = glow * vec3(0.5f) + vec3(0.5f);
 
 	color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
@@ -286,7 +286,18 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 #endif
 
 #if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE) // no other selected -> additive
-	color += glow;
+	color.rgb += glow;
+#endif
+
+#ifndef USE_GLOW_SOFTLIGHT // softlight has no effect on black color
+	// compute the alpha from glow
+	float a = max(max(glow.r, glow.g), glow.b);
+	color.a = a + color.a * (1 - a);
+	if (color.a == 0.0) {
+		color.rgb = vec3(0.0);
+	} else if (color.a < 1.0) {
+		color.rgb /= color.a;
+	}
 #endif
 
 	return color;
@@ -308,22 +319,22 @@ vec3 apply_color_correction(vec3 color, sampler2D correction_tex) {
 	return color;
 }
 
-vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
+vec4 apply_fxaa(vec4 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
 
-	vec3 rgbNW = textureLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0).xyz * exposure;
-	vec3 rgbNE = textureLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0).xyz * exposure;
-	vec3 rgbSW = textureLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0).xyz * exposure;
-	vec3 rgbSE = textureLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0).xyz * exposure;
-	vec3 rgbM = color;
+	vec4 rgbNW = textureLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0);
+	vec4 rgbNE = textureLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0);
+	vec4 rgbSW = textureLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0);
+	vec4 rgbSE = textureLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0);
+	vec3 rgbM = color.rgb;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
-	float lumaNW = dot(rgbNW, luma);
-	float lumaNE = dot(rgbNE, luma);
-	float lumaSW = dot(rgbSW, luma);
-	float lumaSE = dot(rgbSE, luma);
-	float lumaM = dot(rgbM, luma);
+	float lumaNW = dot(rgbNW.rgb * exposure, luma) - ((1 - rgbNW.a) / 8.0);
+	float lumaNE = dot(rgbNE.rgb * exposure, luma) - ((1 - rgbNE.a) / 8.0);
+	float lumaSW = dot(rgbSW.rgb * exposure, luma) - ((1 - rgbSW.a) / 8.0);
+	float lumaSE = dot(rgbSE.rgb * exposure, luma) - ((1 - rgbSE.a) / 8.0);
+	float lumaM = dot(rgbM * exposure, luma) - (color.a / 8.0);
 	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
 	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
 
@@ -341,15 +352,17 @@ vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 						  dir * rcpDirMin)) *
 			pixel_size;
 
-	vec3 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
-	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source, uv_interp + dir * 0.5, 0.0).xyz);
+	vec4 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0) + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0));
+	vec4 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0) + textureLod(source, uv_interp + dir * 0.5, 0.0));
 
-	float lumaB = dot(rgbB, luma);
-	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
-		return rgbA;
-	} else {
-		return rgbB;
+	float lumaB = dot(rgbB.rgb, luma) - ((1 - rgbB.a) / 8.0);
+	vec4 color_output = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
+	if (color_output.a == 0.0) {
+		color_output.rgb = vec3(0.0);
+	} else if (color_output.a < 1.0) {
+		color_output.rgb /= color_output.a;
 	}
+	return color_output;
 }
 
 // From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
@@ -413,7 +426,7 @@ vec3 apply_cas(vec3 color, float exposure, vec2 uv_interp, float sharpen_intensi
 }
 
 void main() {
-	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
+	vec4 color = textureLod(source, uv_interp, 0.0f);
 
 	// Exposure
 	float full_exposure = exposure;
@@ -422,7 +435,7 @@ void main() {
 	full_exposure /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
 #endif
 
-	color *= full_exposure;
+	color.rgb *= full_exposure;
 
 #ifdef USE_FXAA
 	// FXAA must be applied before tonemapping.
@@ -432,24 +445,24 @@ void main() {
 #ifdef USE_SHARPENING
 	// CAS gives best results when applied after tonemapping, but `source` isn't tonemapped.
 	// As a workaround, apply CAS before tonemapping so that the image still has a correct appearance when tonemapped.
-	color = apply_cas(color, full_exposure, uv_interp, sharpen_intensity);
+	color.rgb = apply_cas(color.rgb, full_exposure, uv_interp, sharpen_intensity);
 #endif
 
 #ifdef USE_DEBANDING
 	// For best results, debanding should be done before tonemapping.
 	// Otherwise, we're adding noise to an already-quantized image.
-	color += screen_space_dither(gl_FragCoord.xy);
+	color.rgb += screen_space_dither(gl_FragCoord.xy);
 #endif
 
 	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp
-	color = apply_tonemapping(color, white);
+	color.rgb = apply_tonemapping(color.rgb, white);
 
 #ifdef KEEP_3D_LINEAR
 	// leave color as is (-> don't convert to SRGB)
 #else
 	//need color clamping
-	color = clamp(color, vec3(0.0f), vec3(1.0f));
-	color = linear_to_srgb(color); // regular linear -> SRGB conversion (needs clamped values)
+	color.rgb = clamp(color.rgb, vec3(0.0f), vec3(1.0f));
+	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion (needs clamped values)
 #endif
 
 	// Glow
@@ -468,12 +481,12 @@ void main() {
 	// Additional effects
 
 #ifdef USE_BCS
-	color = apply_bcs(color, bcs);
+	color.rgb = apply_bcs(color.rgb, bcs);
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-	color = apply_color_correction(color, color_correction);
+	color.rgb = apply_color_correction(color.rgb, color_correction);
 #endif
 
-	frag_color = vec4(color, 1.0f);
+	frag_color = color;
 }
