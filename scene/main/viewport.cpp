@@ -1277,21 +1277,19 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->child_controls_changed();
 }
 
-void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
+bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
+	bool stopped = false;
 	Ref<InputEvent> ev = p_input;
 
-	// Mouse wheel events can't be stopped.
-	Ref<InputEventMouseButton> mb = p_input;
+	// Returns true if an event should be impacted by a control's mouse filter.
+	bool is_mouse_event = Ref<InputEventMouse>(p_input).is_valid();
 
-	bool cant_stop_me_now = (mb.is_valid() &&
+	Ref<InputEventMouseButton> mb = p_input;
+	bool is_scroll_event = mb.is_valid() &&
 			(mb->get_button_index() == MouseButton::WHEEL_DOWN ||
 					mb->get_button_index() == MouseButton::WHEEL_UP ||
 					mb->get_button_index() == MouseButton::WHEEL_LEFT ||
-					mb->get_button_index() == MouseButton::WHEEL_RIGHT));
-	Ref<InputEventPanGesture> pn = p_input;
-	cant_stop_me_now = pn.is_valid() || cant_stop_me_now;
-
-	bool ismouse = ev.is_valid() || Object::cast_to<InputEventMouseMotion>(*p_input) != nullptr;
+					mb->get_button_index() == MouseButton::WHEEL_RIGHT);
 
 	CanvasItem *ci = p_control;
 	while (ci) {
@@ -1305,9 +1303,12 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 				break;
 			}
 			if (gui.key_event_accepted) {
+				stopped = true;
 				break;
 			}
-			if (!cant_stop_me_now && control->data.mouse_filter == Control::MOUSE_FILTER_STOP && ismouse) {
+			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP && is_mouse_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
+				// Mouse events are stopped by default with MOUSE_FILTER_STOP, unless we have a scroll event and force_pass_scroll_events set to true
+				stopped = true;
 				break;
 			}
 		}
@@ -1319,6 +1320,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		ev = ev->xformed_by(ci->get_transform()); // Transform event upwards.
 		ci = ci->get_parent_item();
 	}
+	return stopped;
 }
 
 void Viewport::_gui_call_notification(Control *p_control, int p_what) {
@@ -1530,11 +1532,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
+			bool stopped = false;
 			if (gui.mouse_focus && gui.mouse_focus->can_process()) {
-				_gui_call_input(gui.mouse_focus, mb);
+				stopped = _gui_call_input(gui.mouse_focus, mb);
 			}
 
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
 				// Alternate drop use (when using force_drag(), as proposed by #5342).
@@ -1600,11 +1605,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.forced_mouse_focus = false;
 			}
 
+			bool stopped = false;
 			if (mouse_focus && mouse_focus->can_process()) {
-				_gui_call_input(mouse_focus, mb);
+				stopped = _gui_call_input(mouse_focus, mb);
 			}
 
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 		}
 	}
 
@@ -1767,11 +1775,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
 
+			bool stopped = false;
 			if (over && over->can_process()) {
-				_gui_call_input(over, mm);
+				stopped = _gui_call_input(over, mm);
 			}
 
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 		}
 
 		if (gui.drag_data.get_type() != Variant::NIL) {
@@ -1884,6 +1895,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (touch_event->is_pressed()) {
 			Control *over = gui_find_control(pos);
 			if (over) {
+				bool stopped = false;
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 					if (over == gui.mouse_focus) {
@@ -1892,19 +1904,24 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 					}
 					touch_event->set_position(pos);
-					_gui_call_input(over, touch_event);
+					stopped = _gui_call_input(over, touch_event);
 				}
-				set_input_as_handled();
+				if (stopped) {
+					set_input_as_handled();
+				}
 				return;
 			}
 		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
+			bool stopped = false;
 			if (gui.last_mouse_focus->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 				touch_event->set_position(gui.focus_inv_xform.xform(pos));
 
-				_gui_call_input(gui.last_mouse_focus, touch_event);
+				stopped = _gui_call_input(gui.last_mouse_focus, touch_event);
 			}
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 			return;
 		}
 	}
@@ -1919,6 +1936,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Control *over = gui_find_control(pos);
 		if (over) {
+			bool stopped = false;
 			if (over->can_process()) {
 				gesture_event = gesture_event->xformed_by(Transform2D()); // Make a copy.
 				if (over == gui.mouse_focus) {
@@ -1927,9 +1945,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				}
 				gesture_event->set_position(pos);
-				_gui_call_input(over, gesture_event);
+				stopped = _gui_call_input(over, gesture_event);
 			}
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 			return;
 		}
 	}
@@ -1941,6 +1961,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = gui_find_control(drag_event->get_position());
 		}
 		if (over) {
+			bool stopped = false;
 			if (over->can_process()) {
 				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
@@ -1953,10 +1974,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
 
-				_gui_call_input(over, drag_event);
+				stopped = _gui_call_input(over, drag_event);
 			}
 
-			set_input_as_handled();
+			if (stopped) {
+				set_input_as_handled();
+			}
 			return;
 		}
 	}
