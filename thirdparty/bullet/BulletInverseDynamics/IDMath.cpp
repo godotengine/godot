@@ -503,8 +503,8 @@ vec3 rpyFromMatrix(const mat33 &rot)
 {
 	vec3 rpy;
 	rpy(2) = BT_ID_ATAN2(-rot(1, 0), rot(0, 0));
-	rpy(1) = BT_ID_ATAN2(rot(2, 0), BT_ID_COS(rpy(2)) * rot(0, 0) - BT_ID_SIN(rpy(0)) * rot(1, 0));
 	rpy(0) = BT_ID_ATAN2(-rot(2, 0), rot(2, 2));
+	rpy(1) = BT_ID_ATAN2(rot(2, 0), BT_ID_COS(rpy(2)) * rot(0, 0) - BT_ID_SIN(rpy(0)) * rot(1, 0));
 	return rpy;
 }
 }  // namespace btInverseDynamics

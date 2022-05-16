@@ -94,7 +94,7 @@ void btDeformableMultiBodyDynamicsWorld::internalSingleStepSimulation(btScalar t
 
 	beforeSolverCallbacks(timeStep);
 
-	///solve contact constraints and then deformable bodies momemtum equation
+	// ///solve contact constraints and then deformable bodies momemtum equation
 	solveConstraints(timeStep);
 
 	afterSolverCallbacks(timeStep);
@@ -201,7 +201,7 @@ void btDeformableMultiBodyDynamicsWorld::performGeometricCollisions(btScalar tim
 			if (psb->isActive())
 			{
 				// clear contact points in the previous iteration
-				psb->m_faceNodeContacts.clear();
+				psb->m_faceNodeContactsCCD.clear();
 
 				// update m_q and normals for CCD calculation
 				for (int j = 0; j < psb->m_nodes.size(); ++j)
@@ -237,7 +237,8 @@ void btDeformableMultiBodyDynamicsWorld::performGeometricCollisions(btScalar tim
 			btSoftBody* psb = m_softBodies[i];
 			if (psb->isActive())
 			{
-				penetration_count += psb->m_faceNodeContacts.size();
+				penetration_count += psb->m_faceNodeContactsCCD.size();
+				;
 			}
 		}
 		if (penetration_count == 0)
@@ -297,83 +298,7 @@ void btDeformableMultiBodyDynamicsWorld::integrateTransforms(btScalar timeStep)
 	BT_PROFILE("integrateTransforms");
 	positionCorrection(timeStep);
 	btMultiBodyDynamicsWorld::integrateTransforms(timeStep);
-	for (int i = 0; i < m_softBodies.size(); ++i)
-	{
-		btSoftBody* psb = m_softBodies[i];
-		for (int j = 0; j < psb->m_nodes.size(); ++j)
-		{
-			btSoftBody::Node& node = psb->m_nodes[j];
-			btScalar maxDisplacement = psb->getWorldInfo()->m_maxDisplacement;
-			btScalar clampDeltaV = maxDisplacement / timeStep;
-			for (int c = 0; c < 3; c++)
-			{
-				if (node.m_v[c] > clampDeltaV)
-				{
-					node.m_v[c] = clampDeltaV;
-				}
-				if (node.m_v[c] < -clampDeltaV)
-				{
-					node.m_v[c] = -clampDeltaV;
-				}
-			}
-			node.m_x = node.m_x + timeStep * (node.m_v + node.m_splitv);
-			node.m_q = node.m_x;
-			node.m_vn = node.m_v;
-		}
-		// enforce anchor constraints
-		for (int j = 0; j < psb->m_deformableAnchors.size(); ++j)
-		{
-			btSoftBody::DeformableNodeRigidAnchor& a = psb->m_deformableAnchors[j];
-			btSoftBody::Node* n = a.m_node;
-			n->m_x = a.m_cti.m_colObj->getWorldTransform() * a.m_local;
-
-			// update multibody anchor info
-			if (a.m_cti.m_colObj->getInternalType() == btCollisionObject::CO_FEATHERSTONE_LINK)
-			{
-				btMultiBodyLinkCollider* multibodyLinkCol = (btMultiBodyLinkCollider*)btMultiBodyLinkCollider::upcast(a.m_cti.m_colObj);
-				if (multibodyLinkCol)
-				{
-					btVector3 nrm;
-					const btCollisionShape* shp = multibodyLinkCol->getCollisionShape();
-					const btTransform& wtr = multibodyLinkCol->getWorldTransform();
-					psb->m_worldInfo->m_sparsesdf.Evaluate(
-						wtr.invXform(n->m_x),
-						shp,
-						nrm,
-						0);
-					a.m_cti.m_normal = wtr.getBasis() * nrm;
-					btVector3 normal = a.m_cti.m_normal;
-					btVector3 t1 = generateUnitOrthogonalVector(normal);
-					btVector3 t2 = btCross(normal, t1);
-					btMultiBodyJacobianData jacobianData_normal, jacobianData_t1, jacobianData_t2;
-					findJacobian(multibodyLinkCol, jacobianData_normal, a.m_node->m_x, normal);
-					findJacobian(multibodyLinkCol, jacobianData_t1, a.m_node->m_x, t1);
-					findJacobian(multibodyLinkCol, jacobianData_t2, a.m_node->m_x, t2);
-
-					btScalar* J_n = &jacobianData_normal.m_jacobians[0];
-					btScalar* J_t1 = &jacobianData_t1.m_jacobians[0];
-					btScalar* J_t2 = &jacobianData_t2.m_jacobians[0];
-
-					btScalar* u_n = &jacobianData_normal.m_deltaVelocitiesUnitImpulse[0];
-					btScalar* u_t1 = &jacobianData_t1.m_deltaVelocitiesUnitImpulse[0];
-					btScalar* u_t2 = &jacobianData_t2.m_deltaVelocitiesUnitImpulse[0];
-
-					btMatrix3x3 rot(normal.getX(), normal.getY(), normal.getZ(),
-									t1.getX(), t1.getY(), t1.getZ(),
-									t2.getX(), t2.getY(), t2.getZ());  // world frame to local frame
-					const int ndof = multibodyLinkCol->m_multiBody->getNumDofs() + 6;
-					btMatrix3x3 local_impulse_matrix = (Diagonal(n->m_im) + OuterProduct(J_n, J_t1, J_t2, u_n, u_t1, u_t2, ndof)).inverse();
-					a.m_c0 = rot.transpose() * local_impulse_matrix * rot;
-					a.jacobianData_normal = jacobianData_normal;
-					a.jacobianData_t1 = jacobianData_t1;
-					a.jacobianData_t2 = jacobianData_t2;
-					a.t1 = t1;
-					a.t2 = t2;
-				}
-			}
-		}
-		psb->interpolateRenderMesh();
-	}
+	m_deformableBodySolver->applyTransforms(timeStep);
 }
 
 void btDeformableMultiBodyDynamicsWorld::solveConstraints(btScalar timeStep)
@@ -390,9 +315,9 @@ void btDeformableMultiBodyDynamicsWorld::solveConstraints(btScalar timeStep)
 
 	// set up the directions in which the velocity does not change in the momentum solve
 	if (m_useProjection)
-		m_deformableBodySolver->m_objective->m_projection.setProjection();
+		m_deformableBodySolver->setProjection();
 	else
-		m_deformableBodySolver->m_objective->m_projection.setLagrangeMultiplier();
+		m_deformableBodySolver->setLagrangeMultiplier();
 
 	// for explicit scheme, m_backupVelocity = v_{n+1}^*
 	// for implicit scheme, m_backupVelocity = v_n
@@ -518,6 +443,12 @@ void btDeformableMultiBodyDynamicsWorld::predictUnconstraintMotion(btScalar time
 	m_deformableBodySolver->predictMotion(timeStep);
 }
 
+void btDeformableMultiBodyDynamicsWorld::setGravity(const btVector3& gravity)
+{
+	btDiscreteDynamicsWorld::setGravity(gravity);
+	m_deformableBodySolver->setGravity(gravity);
+}
+
 void btDeformableMultiBodyDynamicsWorld::reinitialize(btScalar timeStep)
 {
 	m_internalTime += timeStep;
@@ -532,14 +463,14 @@ void btDeformableMultiBodyDynamicsWorld::reinitialize(btScalar timeStep)
 	if (m_useProjection)
 	{
 		m_deformableBodySolver->m_useProjection = true;
-		m_deformableBodySolver->m_objective->m_projection.m_useStrainLimiting = true;
-		m_deformableBodySolver->m_objective->m_preconditioner = m_deformableBodySolver->m_objective->m_massPreconditioner;
+		m_deformableBodySolver->setStrainLimiting(true);
+		m_deformableBodySolver->setPreconditioner(btDeformableBackwardEulerObjective::Mass_preconditioner);
 	}
 	else
 	{
 		m_deformableBodySolver->m_useProjection = false;
-		m_deformableBodySolver->m_objective->m_projection.m_useStrainLimiting = false;
-		m_deformableBodySolver->m_objective->m_preconditioner = m_deformableBodySolver->m_objective->m_KKTPreconditioner;
+		m_deformableBodySolver->setStrainLimiting(false);
+		m_deformableBodySolver->setPreconditioner(btDeformableBackwardEulerObjective::KKT_preconditioner);
 	}
 }
 
@@ -681,7 +612,7 @@ void btDeformableMultiBodyDynamicsWorld::afterSolverCallbacks(btScalar timeStep)
 
 void btDeformableMultiBodyDynamicsWorld::addForce(btSoftBody* psb, btDeformableLagrangianForce* force)
 {
-	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = m_deformableBodySolver->m_objective->m_lf;
+	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = *m_deformableBodySolver->getLagrangianForceArray();
 	bool added = false;
 	for (int i = 0; i < forces.size(); ++i)
 	{
@@ -695,14 +626,14 @@ void btDeformableMultiBodyDynamicsWorld::addForce(btSoftBody* psb, btDeformableL
 	if (!added)
 	{
 		force->addSoftBody(psb);
-		force->setIndices(m_deformableBodySolver->m_objective->getIndices());
+		force->setIndices(m_deformableBodySolver->getIndices());
 		forces.push_back(force);
 	}
 }
 
 void btDeformableMultiBodyDynamicsWorld::removeForce(btSoftBody* psb, btDeformableLagrangianForce* force)
 {
-	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = m_deformableBodySolver->m_objective->m_lf;
+	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = *m_deformableBodySolver->getLagrangianForceArray();
 	int removed_index = -1;
 	for (int i = 0; i < forces.size(); ++i)
 	{
@@ -720,7 +651,7 @@ void btDeformableMultiBodyDynamicsWorld::removeForce(btSoftBody* psb, btDeformab
 
 void btDeformableMultiBodyDynamicsWorld::removeSoftBodyForce(btSoftBody* psb)
 {
-	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = m_deformableBodySolver->m_objective->m_lf;
+	btAlignedObjectArray<btDeformableLagrangianForce*>& forces = *m_deformableBodySolver->getLagrangianForceArray();
 	for (int i = 0; i < forces.size(); ++i)
 	{
 		forces[i]->removeSoftBody(psb);
