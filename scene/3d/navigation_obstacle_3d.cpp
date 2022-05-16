@@ -35,6 +35,8 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle3D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle3D::set_estimate_radius);
 	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle3D::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle3D::set_radius);
@@ -107,7 +109,12 @@ TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object."));
+		warnings.push_back(RTR("The NavigationObstacle3D only serves to provide collision avoidance to a Node3D inheriting parent object."));
+	}
+
+	if (Object::cast_to<StaticBody3D>(get_parent())) {
+		warnings.push_back(RTR("The NavigationObstacle3D is intended for constantly moving bodies like CharacterBody3D or RigidDynamicBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+							   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail"));
 	}
 
 	return warnings;
