@@ -142,11 +142,44 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			// Finally, fit the nodes.
-			int col_expand = col_expanded.size() > 0 ? remaining_space.width / col_expanded.size() : 0;
-			int row_expand = row_expanded.size() > 0 ? remaining_space.height / row_expanded.size() : 0;
+			int col_remaining_pixel = 0;
+			int col_expand = 0;
+			if (col_expanded.size() > 0) {
+				col_expand = remaining_space.width / col_expanded.size();
+				col_remaining_pixel = remaining_space.width - col_expanded.size() * col_expand;
+			}
+
+			int row_remaining_pixel = 0;
+			int row_expand = 0;
+			if (row_expanded.size() > 0) {
+				row_expand = remaining_space.height / row_expanded.size();
+				row_remaining_pixel = remaining_space.height - row_expanded.size() * row_expand;
+			}
 
 			int col_ofs = 0;
 			int row_ofs = 0;
+
+			// Calculate the index of rows and columns that receive the remaining pixel.
+			int col_remaining_pixel_index = 0;
+			for (int i = 0; i < max_col; i++) {
+				if (col_remaining_pixel == 0) {
+					break;
+				}
+				if (col_expanded.has(i)) {
+					col_remaining_pixel_index = i + 1;
+					col_remaining_pixel--;
+				}
+			}
+			int row_remaining_pixel_index = 0;
+			for (int i = 0; i < max_row; i++) {
+				if (row_remaining_pixel == 0) {
+					break;
+				}
+				if (row_expanded.has(i)) {
+					row_remaining_pixel_index = i + 1;
+					row_remaining_pixel--;
+				}
+			}
 
 			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
@@ -162,14 +195,26 @@ void GridContainer::_notification(int p_what) {
 					col_ofs = 0;
 					if (row > 0) {
 						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + vsep;
+
+						if (row_expanded.has(row - 1) && row - 1 < row_remaining_pixel_index) {
+							// Apply the remaining pixel of the previous row.
+							row_ofs++;
+						}
 					}
 				}
 
-				Point2 p(col_ofs, row_ofs);
 				Size2 s(col_expanded.has(col) ? col_expand : col_minw[col], row_expanded.has(row) ? row_expand : row_minh[row]);
 
-				fit_child_in_rect(c, Rect2(p, s));
+				// Add the remaining pixel to the expanding columns and rows, starting from left and top.
+				if (col_expanded.has(col) && col < col_remaining_pixel_index) {
+					s.x++;
+				}
+				if (row_expanded.has(row) && row < row_remaining_pixel_index) {
+					s.y++;
+				}
 
+				Point2 p(col_ofs, row_ofs);
+				fit_child_in_rect(c, Rect2(p, s));
 				col_ofs += s.width + hsep;
 			}
 

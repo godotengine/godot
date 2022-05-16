@@ -32,6 +32,7 @@
 
 #include "collision_object_2d.h"
 #include "core/engine.h"
+#include "scene/2d/area_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -273,6 +274,9 @@ String CollisionPolygon2D::get_configuration_warning() const {
 			warning += TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode.");
 		}
 	}
+	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
+		warning += TTR("The One Way Collision property will be ignored when the parent is an Area2D.");
+	}
 
 	return warning;
 }
@@ -295,6 +299,7 @@ void CollisionPolygon2D::set_one_way_collision(bool p_enable) {
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
+	update_configuration_warning();
 }
 
 bool CollisionPolygon2D::is_one_way_collision_enabled() const {

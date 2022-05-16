@@ -15,6 +15,12 @@
 				Returns the [Navigation] node that the obstacle is using for its navigation system.
 			</description>
 		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this obstacle on the [NavigationServer].
+			</description>
+		</method>
 		<method name="set_navigation">
 			<return type="void" />
 			<argument index="0" name="navigation" type="Node" />

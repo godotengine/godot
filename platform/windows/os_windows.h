@@ -318,6 +318,8 @@ class OS_Windows : public OS {
 
 	uint32_t move_timer_id;
 
+	Ref<Image> icon;
+
 	HCURSOR hCursor;
 
 	Size2 min_size;

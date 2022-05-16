@@ -592,7 +592,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
-                    f.write(" --- " + rstize_text(value.text.strip(), state))
+                    # If value.text contains a bullet point list, each entry needs additional indentation
+                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), state)))
 
                 f.write("\n\n")
 
@@ -738,7 +739,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         pre_text = text[:pos]
         indent_level = 0
-        while text[pos + 1] == "\t":
+        while pos + 1 < len(text) and text[pos + 1] == "\t":
             pos += 1
             indent_level += 1
         post_text = text[pos + 1 :]
@@ -1188,6 +1189,25 @@ def make_link(url, title):  # type: (str, str) -> str
         if title != "":
             return "`" + title + " <" + url + ">`__"
         return "`" + url + " <" + url + ">`__"
+
+
+def indent_bullets(text):  # type: (str) -> str
+    # Take the text and check each line for a bullet point represented by "-".
+    # Where found, indent the given line by a further "\t".
+    # Used to properly indent bullet points contained in the description for enum values.
+    # Ignore the first line - text will be prepended to it so bullet points wouldn't work anyway.
+    bullet_points = "-"
+
+    lines = text.splitlines(keepends=True)
+    for line_index, line in enumerate(lines[1:], start=1):
+        pos = 0
+        while pos < len(line) and line[pos] == "\t":
+            pos += 1
+
+        if pos < len(line) and line[pos] in bullet_points:
+            lines[line_index] = line[:pos] + "\t" + line[pos:]
+
+    return "".join(lines)
 
 
 if __name__ == "__main__":

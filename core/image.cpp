@@ -370,7 +370,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 			const uint8_t *rofs = &p_src[((y * p_width) + x) * (read_bytes + (read_alpha ? 1 : 0))];
 			uint8_t *wofs = &p_dst[((y * p_width) + x) * (write_bytes + (write_alpha ? 1 : 0))];
 
-			uint8_t rgba[4];
+			uint8_t rgba[4] = { 0, 0, 0, 255 };
 
 			if (read_gray) {
 				rgba[0] = rofs[0];
@@ -388,7 +388,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 
 			if (write_gray) {
 				//TODO: not correct grayscale, should use fixed point version of actual weights
-				wofs[0] = uint8_t((uint16_t(rofs[0]) + uint16_t(rofs[1]) + uint16_t(rofs[2])) / 3);
+				wofs[0] = uint8_t((uint16_t(rgba[0]) + uint16_t(rgba[1]) + uint16_t(rgba[2])) / 3);
 			} else {
 				for (uint32_t i = 0; i < write_bytes; i++) {
 					wofs[i] = rgba[i];
@@ -1733,12 +1733,14 @@ PoolVector<uint8_t> Image::get_data() const {
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + "pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + "pixels.");
 	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot create image when it is locked.");
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1755,16 +1757,32 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t> &p_data) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + " pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + " pixels.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
-	ERR_FAIL_COND_MSG(p_data.size() != size, "Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
+	if (unlikely(p_data.size() != size)) {
+		String description_mipmaps;
+		if (p_use_mipmaps) {
+			const int num_mipmaps = get_image_required_mipmaps(p_width, p_height, p_format);
+			if (num_mipmaps != 1) {
+				description_mipmaps = vformat("with %d mipmaps", num_mipmaps);
+			} else {
+				description_mipmaps = "with 1 mipmap";
+			}
+		} else {
+			description_mipmaps = "without mipmaps";
+		}
+		const String description = vformat("%dx%dx%d (%s)", p_width, p_height, get_format_pixel_size(p_format), description_mipmaps);
+		ERR_FAIL_MSG(vformat("Expected Image data size of %s = %d bytes, got %d bytes instead.", description, size, p_data.size()));
+	}
 
 	height = p_height;
 	width = p_width;

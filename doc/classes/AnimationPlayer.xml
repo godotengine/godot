@@ -159,6 +159,7 @@
 			<argument index="1" name="update" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [code]seconds[/code] are skipped.
+				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
 			</description>
 		</method>
 		<method name="set_blend_time">

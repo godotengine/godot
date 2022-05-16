@@ -107,8 +107,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 	}
 
 	if (!p_viewport->hide_canvas) {
-		int i = 0;
-
 		Map<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
 
 		Rect2 clip_rect(0, 0, p_viewport->size.x, p_viewport->size.y);
@@ -116,8 +114,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		RasterizerCanvas::Light *lights_with_shadow = nullptr;
 		RasterizerCanvas::Light *lights_with_mask = nullptr;
 		Rect2 shadow_rect;
-
-		int light_count = 0;
 
 		for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas *>(E->get().canvas);
@@ -164,8 +160,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 							cl->mask_next_ptr = lights_with_mask;
 							lights_with_mask = cl;
 						}
-
-						light_count++;
 					}
 
 					VSG::canvas_render->light_internal_update(cl->light_internal, cl);
@@ -235,7 +229,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			}
 
 			VSG::canvas->render_canvas(canvas, xform, canvas_lights, lights_with_mask, clip_rect, canvas_layer_id);
-			i++;
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
 				if (!can_draw_3d) {
