@@ -8753,7 +8753,7 @@ void RenderingDeviceVulkan::_begin_frame() {
 	}
 
 	if (frames[frame].timestamp_count) {
-		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values.ptr(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 		vkCmdResetQueryPool(frames[frame].setup_command_buffer, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count);
 		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
 		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
@@ -9044,7 +9044,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
-	frames = memnew_arr(Frame, frame_count);
+	frames.resize(frame_count);
 	frame = 0;
 	//create setup and frame buffers
 	for (int i = 0; i < frame_count; i++) {
@@ -9090,12 +9090,12 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 
 			vkCreateQueryPool(device, &query_pool_create_info, nullptr, &frames[i].timestamp_pool);
 
-			frames[i].timestamp_names = memnew_arr(String, max_timestamp_query_elements);
-			frames[i].timestamp_cpu_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_names.resize(max_timestamp_query_elements);
+			frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements);
 			frames[i].timestamp_count = 0;
-			frames[i].timestamp_result_names = memnew_arr(String, max_timestamp_query_elements);
-			frames[i].timestamp_cpu_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
-			frames[i].timestamp_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_result_names.resize(max_timestamp_query_elements);
+			frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements);
+			frames[i].timestamp_result_values.resize(max_timestamp_query_elements);
 			frames[i].timestamp_result_count = 0;
 		}
 	}
@@ -9496,18 +9496,13 @@ void RenderingDeviceVulkan::finalize() {
 		_free_pending_resources(f);
 		vkDestroyCommandPool(device, frames[i].command_pool, nullptr);
 		vkDestroyQueryPool(device, frames[i].timestamp_pool, nullptr);
-		memdelete_arr(frames[i].timestamp_names);
-		memdelete_arr(frames[i].timestamp_cpu_values);
-		memdelete_arr(frames[i].timestamp_result_names);
-		memdelete_arr(frames[i].timestamp_result_values);
-		memdelete_arr(frames[i].timestamp_cpu_result_values);
 	}
 
 	for (int i = 0; i < split_draw_list_allocators.size(); i++) {
 		vkDestroyCommandPool(device, split_draw_list_allocators[i].command_pool, nullptr);
 	}
 
-	memdelete_arr(frames);
+	frames.clear();
 
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
