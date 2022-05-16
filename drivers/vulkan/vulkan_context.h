@@ -117,8 +117,8 @@ private:
 
 	// Present queue.
 	bool queues_initialized = false;
-	uint32_t graphics_queue_family_index = 0;
-	uint32_t present_queue_family_index = 0;
+	uint32_t graphics_queue_family_index = UINT32_MAX;
+	uint32_t present_queue_family_index = UINT32_MAX;
 	bool separate_present_queue = false;
 	VkQueue graphics_queue = VK_NULL_HANDLE;
 	VkQueue present_queue = VK_NULL_HANDLE;
@@ -289,8 +289,8 @@ public:
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;
 
-	void set_setup_buffer(const VkCommandBuffer &pCommandBuffer);
-	void append_command_buffer(const VkCommandBuffer &pCommandBuffer);
+	void set_setup_buffer(VkCommandBuffer p_command_buffer);
+	void append_command_buffer(VkCommandBuffer p_command_buffer);
 	void resize_notify();
 	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
 	Error prepare_buffers();

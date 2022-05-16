@@ -206,7 +206,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true, bool p_on_draw_command_buffer = false);
+	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
 	Error _insert_staging_block();
 
 	struct Buffer {
@@ -637,7 +637,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		};
 
 		bool is_compute = false;
-		int max_output = 0;
 		Vector<Set> sets;
 		Vector<uint32_t> set_formats;
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
@@ -870,11 +869,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t pipeline_dynamic_state = 0;
 			VertexFormatID pipeline_vertex_format = INVALID_ID;
 			RID pipeline_shader;
-			uint32_t invalid_set_from = 0;
 			bool pipeline_uses_restart_indices = false;
 			uint32_t pipeline_primitive_divisor = 0;
 			uint32_t pipeline_primitive_minimum = 0;
-			Vector<uint32_t> pipeline_set_formats;
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
@@ -948,7 +945,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			bool pipeline_active = false;
 			RID pipeline_shader;
 			uint32_t invalid_set_from = 0;
-			Vector<uint32_t> pipeline_set_formats;
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;

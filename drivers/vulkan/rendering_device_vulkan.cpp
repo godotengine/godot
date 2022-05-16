@@ -1400,7 +1400,7 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment, bool p_on_draw_command_buffer) {
+Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment) {
 	//determine a block to use
 
 	r_alloc_size = p_amount;
@@ -1542,7 +1542,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		uint32_t block_write_offset;
 		uint32_t block_write_amount;
 
-		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount, p_use_draw_command_buffer);
+		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount);
 		if (err) {
 			return err;
 		}
@@ -2474,7 +2474,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					to_allocate >>= get_compressed_image_format_pixel_rshift(texture->format);
 
 					uint32_t alloc_offset, alloc_size;
-					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false, !p_use_setup_queue);
+					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 					uint8_t *write_ptr;
@@ -2572,11 +2572,11 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		uint32_t access_flags = 0;
 		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
 		if (p_post_barrier & BARRIER_MASK_RASTER) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
 		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -2990,7 +2990,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 
 		{ //make dst readable
@@ -3015,6 +3015,13 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 	}
+
+	if (dst_tex->used_in_frame != frames_drawn) {
+		dst_tex->used_in_raster = false;
+		dst_tex->used_in_compute = false;
+		dst_tex->used_in_frame = frames_drawn;
+	}
+	dst_tex->used_in_transfer = true;
 
 	return OK;
 }
@@ -4771,6 +4778,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 								//just append stage mask and return
 								uniform_info.write[set].write[k].stages |= 1 << stage;
 								exists = true;
+								break;
 							}
 						}
 
@@ -7201,6 +7209,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(draw_list != nullptr, ERR_BUSY, "Only one draw list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, ERR_BUSY, "Only one draw/compute list can be active at the same time.");
 
 	ERR_FAIL_COND_V(p_splits < 1, ERR_INVALID_DECLARATION);
 
