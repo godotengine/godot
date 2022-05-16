@@ -34,6 +34,7 @@
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
 #include "core/string/print_string.h"
+#include "core/templates/unordered_hash_map.h"
 
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
