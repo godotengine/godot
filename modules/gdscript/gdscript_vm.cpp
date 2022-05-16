@@ -546,33 +546,32 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			memnew_placement(&stack[i], Variant);
 		}
 
-		memnew_placement(&stack[ADDR_STACK_NIL], Variant);
-
 		if (_instruction_args_size) {
 			instruction_args = (Variant **)&aptr[sizeof(Variant) * _stack_size];
 		} else {
 			instruction_args = nullptr;
 		}
 
-		if (p_instance) {
-			memnew_placement(&stack[ADDR_STACK_SELF], Variant(p_instance->owner));
-			script = p_instance->script.ptr();
-		} else {
-			memnew_placement(&stack[ADDR_STACK_SELF], Variant);
-			script = _script;
+		for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
+			type_init_function_table[E.value](&stack[E.key]);
 		}
 	}
+
 	if (_ptrcall_args_size) {
 		call_args_ptr = (const void **)alloca(_ptrcall_args_size * sizeof(void *));
 	} else {
 		call_args_ptr = nullptr;
 	}
 
-	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
-
-	for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
-		type_init_function_table[E.value](&stack[E.key]);
+	if (p_instance) {
+		memnew_placement(&stack[ADDR_STACK_SELF], Variant(p_instance->owner));
+		script = p_instance->script.ptr();
+	} else {
+		memnew_placement(&stack[ADDR_STACK_SELF], Variant);
+		script = _script;
 	}
+	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
+	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
 
@@ -2171,8 +2170,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						// Is this even possible to be null at this point?
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-								static StringName completed = _scs_create("completed");
-								result = Signal(obj, completed);
+								result = Signal(obj, "completed");
 							}
 						}
 					}
@@ -2193,8 +2191,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->function = this;
 
 					gdfs->state.stack.resize(alloca_size);
-					//copy variant stack
-					for (int i = 0; i < _stack_size; i++) {
+
+					// First 3 stack addresses are special, so we just skip them here.
+					for (int i = 3; i < _stack_size; i++) {
 						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
 					}
 					gdfs->state.stack_size = _stack_size;
@@ -3451,26 +3450,24 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	// Check if this is the last time the function is resuming from await
-	// Will be true if never awaited as well
-	// When it's the last resume it will postpone the exit from stack,
-	// so the debugger knows which function triggered the resume of the next function (if any)
-	if (!p_state || awaited) {
+	// Check if this function has been interrupted by `await`.
+	// If that is the case we want to keep it in the debugger until it actually exits.
+	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
+	if (!awaited) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
 		}
-#endif
-
-		if (_stack_size) {
-			//free stack
-			for (int i = 0; i < _stack_size; i++) {
-				stack[i].~Variant();
-			}
-		}
-
-#ifdef DEBUG_ENABLED
 	}
 #endif
+
+	// Clear the stack even if there was an `await`.
+	// The stack saved in the state is a copy, so this needs to be destructed to avoid leaks.
+	if (_stack_size) {
+		// Free stack.
+		for (int i = 0; i < _stack_size; i++) {
+			stack[i].~Variant();
+		}
+	}
 
 	return retvalue;
 }
