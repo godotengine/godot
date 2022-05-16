@@ -599,6 +599,7 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 		}
 	}
 
+	is_over = false;
 	set_playing(true);
 }
 
