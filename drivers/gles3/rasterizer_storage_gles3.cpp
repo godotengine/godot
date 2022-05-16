@@ -39,6 +39,19 @@
 #include "servers/rendering/shader_language.h"
 
 void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
+	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_base)) {
+		GLES3::Mesh *mesh = GLES3::MeshStorage::get_singleton()->get_mesh(p_base);
+		p_instance->update_dependency(&mesh->dependency);
+	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_base)) {
+		GLES3::MultiMesh *multimesh = GLES3::MeshStorage::get_singleton()->get_multimesh(p_base);
+		p_instance->update_dependency(&multimesh->dependency);
+		if (multimesh->mesh.is_valid()) {
+			base_update_dependency(multimesh->mesh, p_instance);
+		}
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_base)) {
+		GLES3::Light *l = GLES3::LightStorage::get_singleton()->get_light(p_base);
+		p_instance->update_dependency(&l->dependency);
+	}
 }
 
 /* VOXEL GI API */

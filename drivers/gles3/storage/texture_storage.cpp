@@ -554,7 +554,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 		} break;
 		*/
 		default: {
-			ERR_FAIL_V(Ref<Image>());
+			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
 		}
 	}
 
@@ -968,7 +968,7 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 
 	Image::Format real_format;
 	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), 0, real_format, format, internal_format, type, compressed, texture->resize_to_po2);
-
+	ERR_FAIL_COND(img.is_null());
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
 			ERR_PRINT("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
@@ -1325,6 +1325,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	rt->color_internal_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? GL_RGBA8 : GL_RGB10_A2;
 	rt->color_format = GL_RGBA;
+	rt->color_type = rt->flags[RENDER_TARGET_TRANSPARENT] ? GL_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
 	rt->image_format = Image::FORMAT_RGBA8;
 
 	glDisable(GL_SCISSOR_TEST);

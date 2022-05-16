@@ -249,7 +249,10 @@ struct Texture {
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
 				pmag = GL_NEAREST;
-				if (config->use_nearest_mip_filter) {
+				if (mipmaps <= 1) {
+					pmin = GL_NEAREST;
+					max_lod = 0;
+				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_NEAREST_MIPMAP_NEAREST;
 				} else {
 					pmin = GL_NEAREST_MIPMAP_LINEAR;
@@ -261,9 +264,11 @@ struct Texture {
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
 				pmag = GL_LINEAR;
-				if (config->use_nearest_mip_filter) {
+				if (mipmaps <= 1) {
+					pmin = GL_LINEAR;
+					max_lod = 0;
+				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_LINEAR_MIPMAP_NEAREST;
-
 				} else {
 					pmin = GL_LINEAR_MIPMAP_LINEAR;
 				}
