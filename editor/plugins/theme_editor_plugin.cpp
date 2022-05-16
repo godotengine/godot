@@ -2852,11 +2852,13 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->get_stylebox_list(edited_type, &names);
 	List<Ref<StyleBox>> styleboxes;
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		if (E->get() == leading_stylebox.item_name) {
+		Ref<StyleBox> sb = edited_theme->get_stylebox(E->get(), edited_type);
+
+		// Avoid itself, stylebox can be shared between items.
+		if (sb == leading_stylebox.stylebox) {
 			continue;
 		}
 
-		Ref<StyleBox> sb = edited_theme->get_stylebox(E->get(), edited_type);
 		if (sb->get_class() == leading_stylebox.stylebox->get_class()) {
 			styleboxes.push_back(sb);
 		}
