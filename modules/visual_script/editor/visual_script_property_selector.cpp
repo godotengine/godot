@@ -182,7 +182,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_base_script, bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from base type"));
 	base_type = p_base;
-	base_script = p_base_script.lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	base_script = p_base_script.trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	connecting = p_connecting;
 
@@ -217,7 +217,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	ERR_FAIL_COND(p_script.is_null());
 
 	base_type = p_script->get_instance_base_type();
-	base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	connecting = p_connecting;
@@ -312,7 +312,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
-		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+		base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 
 	type = Variant::NIL;
@@ -346,7 +346,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
-		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+		base_script = p_script->get_path().trim_prefix("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 	type = Variant::NIL;
 	connecting = false;
