@@ -345,8 +345,8 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
 
-Map<StringName, String> VisualShaderNode::get_editable_properties_names() const {
-	return Map<StringName, String>();
+HashMap<StringName, String> VisualShaderNode::get_editable_properties_names() const {
+	return HashMap<StringName, String>();
 }
 
 Array VisualShaderNode::get_default_input_values() const {
@@ -1178,16 +1178,16 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	StringBuilder global_code;
 	StringBuilder global_code_per_node;
-	Map<Type, StringBuilder> global_code_per_func;
+	HashMap<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
-	Set<StringName> classes;
+	RBSet<StringName> classes;
 
 	global_code += String() + "shader_type canvas_item;\n";
 
 	String global_expressions;
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
-		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-			Ref<VisualShaderNodeGlobalExpression> global_expression = Object::cast_to<VisualShaderNodeGlobalExpression>(E->get().node.ptr());
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
 			if (global_expression.is_valid()) {
 				String expr = "";
 				expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
@@ -1222,7 +1222,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	code += "\nvoid fragment() {\n";
 
-	Set<int> processed;
+	RBSet<int> processed;
 	Error err = _write_node(p_type, &global_code, &global_code_per_node, &global_code_per_func, code, default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
 	ERR_FAIL_COND_V(err != OK, String());
 
@@ -1550,8 +1550,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky,Fog"));
 	//render modes
 
-	Map<String, String> blend_mode_enums;
-	Set<String> toggles;
+	HashMap<String, String> blend_mode_enums;
+	RBSet<String> toggles;
 
 	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
 
@@ -1579,7 +1579,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E.key, PROPERTY_HINT_ENUM, E.value));
 	}
 
-	for (Set<String>::Element *E = toggles.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = toggles.front(); E; E = E->next()) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "flags/" + E->get()));
 	}
 
@@ -1611,7 +1611,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBuilder *global_code_per_node, Map<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const {
+Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, RBSet<int> &processed, bool for_preview, RBSet<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
 	if (vsnode->is_disabled()) {
@@ -1903,7 +1903,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 	int output_count = vsnode->get_output_port_count();
 	int initial_output_count = output_count;
 
-	Map<int, bool> expanded_output_ports;
+	HashMap<int, bool> expanded_output_ports;
 
 	for (int i = 0; i < initial_output_count; i++) {
 		bool expanded = false;
@@ -2133,11 +2133,11 @@ void VisualShader::_update_shader() const {
 
 	StringBuilder global_code;
 	StringBuilder global_code_per_node;
-	Map<Type, StringBuilder> global_code_per_func;
+	HashMap<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
-	Set<StringName> classes;
-	Map<int, int> insertion_pos;
+	RBSet<StringName> classes;
+	HashMap<int, int> insertion_pos;
 	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
 
 	global_code += String() + "shader_type " + shader_mode_str[shader_mode] + ";\n";
@@ -2181,18 +2181,18 @@ void VisualShader::_update_shader() const {
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
 
 	String global_expressions;
-	Set<String> used_uniform_names;
+	RBSet<String> used_uniform_names;
 	List<VisualShaderNodeUniform *> uniforms;
-	Map<int, List<int>> emitters;
-	Map<int, List<int>> varying_setters;
+	HashMap<int, List<int>> emitters;
+	HashMap<int, List<int>> varying_setters;
 
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
 		}
 
-		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-			Ref<VisualShaderNodeGlobalExpression> global_expression = Object::cast_to<VisualShaderNodeGlobalExpression>(E->get().node.ptr());
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
 			if (global_expression.is_valid()) {
 				String expr = "";
 				expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
@@ -2201,27 +2201,27 @@ void VisualShader::_update_shader() const {
 				expr += "\n";
 				global_expressions += expr;
 			}
-			Ref<VisualShaderNodeUniformRef> uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(E->get().node.ptr());
+			Ref<VisualShaderNodeUniformRef> uniform_ref = E.value.node;
 			if (uniform_ref.is_valid()) {
 				used_uniform_names.insert(uniform_ref->get_uniform_name());
 			}
-			Ref<VisualShaderNodeUniform> uniform = Object::cast_to<VisualShaderNodeUniform>(E->get().node.ptr());
+			Ref<VisualShaderNodeUniform> uniform = E.value.node;
 			if (uniform.is_valid()) {
 				uniforms.push_back(uniform.ptr());
 			}
-			Ref<VisualShaderNodeVaryingSetter> varying_setter = Object::cast_to<VisualShaderNodeVaryingSetter>(E->get().node.ptr());
+			Ref<VisualShaderNodeVaryingSetter> varying_setter = E.value.node;
 			if (varying_setter.is_valid() && varying_setter->is_input_port_connected(0)) {
 				if (!varying_setters.has(i)) {
 					varying_setters.insert(i, List<int>());
 				}
-				varying_setters[i].push_back(E->key());
+				varying_setters[i].push_back(E.key);
 			}
-			Ref<VisualShaderNodeParticleEmit> emit_particle = Object::cast_to<VisualShaderNodeParticleEmit>(E->get().node.ptr());
+			Ref<VisualShaderNodeParticleEmit> emit_particle = E.value.node;
 			if (emit_particle.is_valid()) {
 				if (!emitters.has(i)) {
 					emitters.insert(i, List<int>());
 				}
-				emitters[i].push_back(E->key());
+				emitters[i].push_back(E.key);
 			}
 		}
 	}
@@ -2269,8 +2269,8 @@ void VisualShader::_update_shader() const {
 		global_code += "\n";
 	}
 
-	Map<int, String> code_map;
-	Set<int> empty_funcs;
+	HashMap<int, String> code_map;
+	RBSet<int> empty_funcs;
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
@@ -2282,7 +2282,7 @@ void VisualShader::_update_shader() const {
 		VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
 		StringBuilder func_code;
-		Set<int> processed;
+		RBSet<int> processed;
 
 		bool is_empty_func = false;
 		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG) {

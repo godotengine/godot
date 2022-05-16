@@ -410,7 +410,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		float pos = 0;
 	};
 
-	Map<SelectedKey, KeyInfo> selection;
+	RBMap<SelectedKey, KeyInfo> selection;
 
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);

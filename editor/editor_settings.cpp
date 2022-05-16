@@ -244,7 +244,7 @@ struct _EVCSort {
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	Set<_EVCSort> vclist;
+	RBSet<_EVCSort> vclist;
 
 	for (const KeyValue<String, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -268,7 +268,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (RBSet<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
 		uint32_t pusage = PROPERTY_USAGE_NONE;
 		if (E->get().save || !optimize_save) {
 			pusage |= PROPERTY_USAGE_STORAGE;
@@ -1399,32 +1399,32 @@ void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_s
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
+	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
-	return E->get()->matches_event(p_event);
+	return E->value->matches_event(p_event);
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
-	const Map<String, Ref<Shortcut>>::Element *SC = shortcuts.find(p_name);
+	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_name);
 	if (SC) {
-		return SC->get();
+		return SC->value;
 	}
 
 	// If no shortcut with the provided name is found in the list, check the built-in shortcuts.
 	// Use the first item in the action list for the shortcut event, since a shortcut can only have 1 linked event.
 
 	Ref<Shortcut> sc;
-	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_events_list(&builtin_override->get());
+		sc->set_events_list(&builtin_override->value);
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		const HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
 			sc->set_events_list(&builtin_default->value);
@@ -1606,11 +1606,11 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 }
 
 const Array EditorSettings::get_builtin_action_overrides(const String &p_name) const {
-	const Map<String, List<Ref<InputEvent>>>::Element *AO = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator AO = builtin_action_overrides.find(p_name);
 	if (AO) {
 		Array event_array;
 
-		List<Ref<InputEvent>> events_list = AO->get();
+		List<Ref<InputEvent>> events_list = AO->value;
 		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}

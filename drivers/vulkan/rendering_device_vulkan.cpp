@@ -132,13 +132,13 @@ static void update_external_dependency_for_store(VkSubpassDependency &dependency
 
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 	if (!dependency_map.has(p_depends_on)) {
-		dependency_map[p_depends_on] = Set<RID>();
+		dependency_map[p_depends_on] = RBSet<RID>();
 	}
 
 	dependency_map[p_depends_on].insert(p_id);
 
 	if (!reverse_dependency_map.has(p_id)) {
-		reverse_dependency_map[p_id] = Set<RID>();
+		reverse_dependency_map[p_id] = RBSet<RID>();
 	}
 
 	reverse_dependency_map[p_id].insert(p_depends_on);
@@ -147,26 +147,26 @@ void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 	//direct dependencies must be freed
 
-	Map<RID, Set<RID>>::Element *E = dependency_map.find(p_id);
+	HashMap<RID, RBSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
-		while (E->get().size()) {
-			free(E->get().front()->get());
+		while (E->value.size()) {
+			free(E->value.front()->get());
 		}
-		dependency_map.erase(E);
+		dependency_map.remove(E);
 	}
 
 	//reverse dependencies must be unreferenced
 	E = reverse_dependency_map.find(p_id);
 
 	if (E) {
-		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
-			Map<RID, Set<RID>>::Element *G = dependency_map.find(F->get());
+		for (RBSet<RID>::Element *F = E->value.front(); F; F = F->next()) {
+			HashMap<RID, RBSet<RID>>::Iterator G = dependency_map.find(F->get());
 			ERR_CONTINUE(!G);
-			ERR_CONTINUE(!G->get().has(p_id));
-			G->get().erase(p_id);
+			ERR_CONTINUE(!G->value.has(p_id));
+			G->value.erase(p_id);
 		}
 
-		reverse_dependency_map.erase(E);
+		reverse_dependency_map.remove(E);
 	}
 }
 
@@ -3856,7 +3856,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	key.passes = p_passes;
 	key.view_count = p_view_count;
 
-	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
+	const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
 		//exists, return
 		return E->get();
@@ -3884,7 +3884,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	FramebufferFormatKey key;
 	key.passes.push_back(FramebufferPass());
 
-	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
+	const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
 		//exists, return
 		return E->get();
@@ -3935,11 +3935,11 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 }
 
 RenderingDevice::TextureSamples RenderingDeviceVulkan::framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass) {
-	Map<FramebufferFormatID, FramebufferFormat>::Element *E = framebuffer_formats.find(p_format);
+	HashMap<FramebufferFormatID, FramebufferFormat>::Iterator E = framebuffer_formats.find(p_format);
 	ERR_FAIL_COND_V(!E, TEXTURE_SAMPLES_1);
-	ERR_FAIL_COND_V(p_pass >= uint32_t(E->get().pass_samples.size()), TEXTURE_SAMPLES_1);
+	ERR_FAIL_COND_V(p_pass >= uint32_t(E->value.pass_samples.size()), TEXTURE_SAMPLES_1);
 
-	return E->get().pass_samples[p_pass];
+	return E->value.pass_samples[p_pass];
 }
 
 /***********************/
@@ -4138,7 +4138,7 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 	vdcache.bindings = memnew_arr(VkVertexInputBindingDescription, p_vertex_formats.size());
 	vdcache.attributes = memnew_arr(VkVertexInputAttributeDescription, p_vertex_formats.size());
 
-	Set<int> used_locations;
+	RBSet<int> used_locations;
 	for (int i = 0; i < p_vertex_formats.size(); i++) {
 		ERR_CONTINUE(p_vertex_formats[i].format >= DATA_FORMAT_MAX);
 		ERR_FAIL_COND_V(used_locations.has(p_vertex_formats[i].location), INVALID_ID);
@@ -5292,7 +5292,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 				//has data, needs an actual format;
 				UniformSetFormat usformat;
 				usformat.uniform_info = set.uniform_info;
-				Map<UniformSetFormat, uint32_t>::Element *E = uniform_set_format_cache.find(usformat);
+				RBMap<UniformSetFormat, uint32_t>::Element *E = uniform_set_format_cache.find(usformat);
 				if (E) {
 					format = E->get();
 				} else {
@@ -5468,12 +5468,12 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 
 RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_allocate(const DescriptorPoolKey &p_key) {
 	if (!descriptor_pools.has(p_key)) {
-		descriptor_pools[p_key] = Set<DescriptorPool *>();
+		descriptor_pools[p_key] = RBSet<DescriptorPool *>();
 	}
 
 	DescriptorPool *pool = nullptr;
 
-	for (Set<DescriptorPool *>::Element *E = descriptor_pools[p_key].front(); E; E = E->next()) {
+	for (RBSet<DescriptorPool *>::Element *E = descriptor_pools[p_key].front(); E; E = E->next()) {
 		if (E->get()->usage < max_descriptors_per_pool) {
 			pool = E->get();
 			break;
@@ -8349,7 +8349,7 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 
 	uint32_t barrier_idx = 0;
 
-	for (Set<Texture *>::Element *E = compute_list->state.textures_to_sampled_layout.front(); E; E = E->next()) {
+	for (RBSet<Texture *>::Element *E = compute_list->state.textures_to_sampled_layout.front(); E; E = E->next()) {
 		VkImageMemoryBarrier &image_memory_barrier = image_barriers[barrier_idx++];
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
@@ -9477,21 +9477,21 @@ void RenderingDeviceVulkan::finalize() {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
 	}
 	while (small_allocs_pools.size()) {
-		Map<uint32_t, VmaPool>::Element *E = small_allocs_pools.front();
-		vmaDestroyPool(allocator, E->get());
-		small_allocs_pools.erase(E);
+		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();
+		vmaDestroyPool(allocator, E->value);
+		small_allocs_pools.remove(E);
 	}
 	vmaDestroyAllocator(allocator);
 
 	while (vertex_formats.size()) {
-		Map<VertexFormatID, VertexDescriptionCache>::Element *temp = vertex_formats.front();
-		memdelete_arr(temp->get().bindings);
-		memdelete_arr(temp->get().attributes);
-		vertex_formats.erase(temp);
+		HashMap<VertexFormatID, VertexDescriptionCache>::Iterator temp = vertex_formats.begin();
+		memdelete_arr(temp->value.bindings);
+		memdelete_arr(temp->value.attributes);
+		vertex_formats.remove(temp);
 	}
 
-	for (int i = 0; i < framebuffer_formats.size(); i++) {
-		vkDestroyRenderPass(device, framebuffer_formats[i].render_pass, nullptr);
+	for (KeyValue<FramebufferFormatID, FramebufferFormat> &E : framebuffer_formats) {
+		vkDestroyRenderPass(device, E.value.render_pass, nullptr);
 	}
 	framebuffer_formats.clear();
 

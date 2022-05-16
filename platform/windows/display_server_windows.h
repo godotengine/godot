@@ -314,7 +314,7 @@ class DisplayServerWindows : public DisplayServer {
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
-	Map<int, Vector2> touch_state;
+	RBMap<int, Vector2> touch_state;
 
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
@@ -389,7 +389,7 @@ class DisplayServerWindows : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		Set<WindowID> transient_children;
+		RBSet<WindowID> transient_children;
 
 		bool is_popup = false;
 		Rect2i parent_safe_rect;
@@ -403,7 +403,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	Map<WindowID, WindowData> windows;
+	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
@@ -430,7 +430,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
-	Map<CursorShape, Vector<Variant>> cursors_cache;
+	RBMap<CursorShape, Vector<Variant>> cursors_cache;
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);

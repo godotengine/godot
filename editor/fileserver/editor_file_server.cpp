@@ -46,7 +46,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 		cd->efs->to_wait.insert(cd->thread);
 	}
 	while (cd->files.size()) {
-		cd->files.erase(cd->files.front());
+		cd->files.remove(cd->files.begin());
 	}
 	memdelete(cd);
 }

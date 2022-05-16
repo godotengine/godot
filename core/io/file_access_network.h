@@ -52,7 +52,7 @@ class FileAccessNetworkClient {
 	bool quit = false;
 	Mutex mutex;
 	Mutex blockrequest_mutex;
-	Map<int, FileAccessNetwork *> accesses;
+	HashMap<int, FileAccessNetwork *> accesses;
 	Ref<StreamPeerTCP> client;
 	int32_t last_id = 0;
 	int32_t lockcount = 0;

@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
-	Map<String, String> dep_rename;
+	HashMap<String, String> dep_rename;
 	dep_rename[replacing] = p_path;
 
 	ResourceLoader::rename_dependencies(editing, dep_rename);
@@ -64,7 +64,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->popup_file_dialog();
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates) {
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fix_and_find(efsd->get_subdir(i), candidates);
 	}
@@ -121,12 +121,12 @@ void DependencyEditor::_fix_all() {
 		return;
 	}
 
-	Map<String, Map<String, String>> candidates;
+	HashMap<String, HashMap<String, String>> candidates;
 
 	for (const String &E : missing) {
 		String base = E.get_file();
 		if (!candidates.has(base)) {
-			candidates[base] = Map<String, String>();
+			candidates[base] = HashMap<String, String>();
 		}
 
 		candidates[base][E] = "";
@@ -134,9 +134,9 @@ void DependencyEditor::_fix_all() {
 
 	_fix_and_find(EditorFileSystem::get_singleton()->get_filesystem(), candidates);
 
-	Map<String, String> remaps;
+	HashMap<String, String> remaps;
 
-	for (KeyValue<String, Map<String, String>> &E : candidates) {
+	for (KeyValue<String, HashMap<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
 			if (!F.value.is_empty()) {
 				remaps[F.key] = F.value;
@@ -414,7 +414,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	owners->clear();
 	owners->create_item(); // root
 
-	Map<String, TreeItem *> tree_items;
+	HashMap<String, TreeItem *> tree_items;
 	for (int i = 0; i < p_removed.size(); i++) {
 		RemovedDependency rd = p_removed[i];
 

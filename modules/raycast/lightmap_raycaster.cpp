@@ -152,8 +152,8 @@ void LightmapRaycasterEmbree::commit() {
 	rtcCommitScene(embree_scene);
 }
 
-void LightmapRaycasterEmbree::set_mesh_filter(const Set<int> &p_mesh_ids) {
-	for (Set<int>::Element *E = p_mesh_ids.front(); E; E = E->next()) {
+void LightmapRaycasterEmbree::set_mesh_filter(const RBSet<int> &p_mesh_ids) {
+	for (RBSet<int>::Element *E = p_mesh_ids.front(); E; E = E->next()) {
 		rtcDisableGeometry(rtcGetGeometry(embree_scene, E->get()));
 	}
 	rtcCommitScene(embree_scene);
@@ -161,7 +161,7 @@ void LightmapRaycasterEmbree::set_mesh_filter(const Set<int> &p_mesh_ids) {
 }
 
 void LightmapRaycasterEmbree::clear_mesh_filter() {
-	for (Set<int>::Element *E = filter_meshes.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = filter_meshes.front(); E; E = E->next()) {
 		rtcEnableGeometry(rtcGetGeometry(embree_scene, E->get()));
 	}
 	rtcCommitScene(embree_scene);

@@ -68,16 +68,15 @@ class GodotArea2D : public GodotCollisionObject2D {
 		uint32_t body_shape = 0;
 		uint32_t area_shape = 0;
 
-		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
-			if (rid == p_key.rid) {
-				if (body_shape == p_key.body_shape) {
-					return area_shape < p_key.area_shape;
-				} else {
-					return body_shape < p_key.body_shape;
-				}
-			} else {
-				return rid < p_key.rid;
-			}
+		static uint32_t hash(const BodyKey &p_key) {
+			uint32_t h = hash_one_uint64(p_key.rid.get_id());
+			h = hash_djb2_one_64(p_key.instance_id, h);
+			h = hash_djb2_one_32(p_key.area_shape, h);
+			return hash_djb2_one_32(p_key.body_shape, h);
+		}
+
+		_FORCE_INLINE_ bool operator==(const BodyKey &p_key) const {
+			return rid == p_key.rid && instance_id == p_key.instance_id && body_shape == p_key.body_shape && area_shape == p_key.area_shape;
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
@@ -91,10 +90,10 @@ class GodotArea2D : public GodotCollisionObject2D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
-	Map<BodyKey, BodyState> monitored_bodies;
-	Map<BodyKey, BodyState> monitored_areas;
+	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
+	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
-	Set<GodotConstraint2D *> constraints;
+	RBSet<GodotConstraint2D *> constraints;
 
 	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
@@ -143,7 +142,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint2D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint2D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<GodotConstraint2D *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ const RBSet<GodotConstraint2D *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);

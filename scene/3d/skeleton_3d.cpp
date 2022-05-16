@@ -263,7 +263,7 @@ void Skeleton3D::_notification(int p_what) {
 			force_update_all_bone_transforms();
 
 			// Update skins.
-			for (Set<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
+			for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
 				const Skin *skin = E->get()->skin.operator->();
 				RID skeleton = E->get()->skeleton;
 				uint32_t bind_count = skin->get_bind_count();
@@ -1000,7 +1000,7 @@ Ref<Skin> Skeleton3D::create_skin_from_rest_transforms() {
 Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	ERR_FAIL_COND_V(p_skin.is_null(), Ref<SkinReference>());
 
-	for (Set<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
+	for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
 		if (E->get()->skin == p_skin) {
 			return Ref<SkinReference>(E->get());
 		}
@@ -1303,7 +1303,7 @@ Skeleton3D::Skeleton3D() {
 
 Skeleton3D::~Skeleton3D() {
 	// Some skins may remain bound.
-	for (Set<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
+	for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
 		E->get()->skeleton_node = nullptr;
 	}
 }

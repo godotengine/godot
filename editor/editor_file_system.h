@@ -34,8 +34,8 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/set.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
 
@@ -180,7 +180,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
-	Set<String> late_update_files;
+	RBSet<String> late_update_files;
 
 	void _save_late_updated_files();
 
@@ -221,9 +221,9 @@ class EditorFileSystem : public Node {
 
 	void _delete_internal_files(String p_file);
 
-	Set<String> textfile_extensions;
-	Set<String> valid_extensions;
-	Set<String> import_extensions;
+	RBSet<String> textfile_extensions;
+	RBSet<String> valid_extensions;
+	RBSet<String> import_extensions;
 
 	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
@@ -240,7 +240,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	void _reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
+	void _reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -269,11 +269,11 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, RBSet<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
-	Set<String> group_file_cache;
+	RBSet<String> group_file_cache;
 
 	ThreadWorkPool import_threads;
 
@@ -306,7 +306,7 @@ public:
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
-	Set<String> get_valid_extensions() const;
+	RBSet<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
@@ -314,7 +314,7 @@ public:
 
 	void reimport_files(const Vector<String> &p_files);
 
-	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params);
+	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params);
 
 	void update_script_classes();
 

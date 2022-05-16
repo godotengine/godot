@@ -68,7 +68,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	void *data = CSharpLanguage::get_existing_instance_binding(p_ptr);
 
 	if (data) {
-		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited) {
 			MonoGCHandleData &gchandle = script_binding.gchandle;
 			if (!gchandle.is_released()) {
@@ -115,7 +115,7 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 		void *data = CSharpLanguage::get_existing_instance_binding(rc);
 
 		if (data) {
-			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
 				MonoGCHandleData &gchandle = script_binding.gchandle;
 				if (!gchandle.is_released()) {

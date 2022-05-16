@@ -77,15 +77,15 @@ private:
 
 	static Ref<EditorSettings> singleton;
 
-	Set<String> changed_settings;
+	RBSet<String> changed_settings;
 
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
 
 	Ref<Resource> clipboard;
-	mutable Map<String, Ref<Shortcut>> shortcuts;
-	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
+	mutable HashMap<String, Ref<Shortcut>> shortcuts;
+	HashMap<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	String config_file_path;
 

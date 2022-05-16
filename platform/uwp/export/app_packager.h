@@ -89,7 +89,7 @@ class AppxPackager {
 	String progress_task;
 	Ref<FileAccess> package;
 
-	Set<String> mime_types;
+	RBSet<String> mime_types;
 
 	Vector<FileMeta> file_metadata;
 

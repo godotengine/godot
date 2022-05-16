@@ -390,18 +390,18 @@ void RigidDynamicBody3D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!node);
 
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_tree);
+	ERR_FAIL_COND(E->value.in_tree);
 
-	E->get().in_tree = true;
+	E->value.in_tree = true;
 
 	contact_monitor->locked = true;
 
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -412,17 +412,17 @@ void RigidDynamicBody3D::_body_exit_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_tree);
-	E->get().in_tree = false;
+	ERR_FAIL_COND(!E->value.in_tree);
+	E->value.in_tree = false;
 
 	contact_monitor->locked = true;
 
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -436,43 +436,43 @@ void RigidDynamicBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p
 	Node *node = Object::cast_to<Node>(obj);
 
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(objid);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
 
 	if (body_in) {
 		if (!E) {
 			E = contact_monitor->body_map.insert(objid, BodyState());
-			E->get().rid = p_body;
-			//E->get().rc=0;
-			E->get().in_tree = node && node->is_inside_tree();
+			E->value.rid = p_body;
+			//E->value.rc=0;
+			E->value.in_tree = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree), make_binds(objid));
 				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree), make_binds(objid));
-				if (E->get().in_tree) {
+				if (E->value.in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
 			}
 		}
-		//E->get().rc++;
+		//E->value.rc++;
 		if (node) {
-			E->get().shapes.insert(ShapePair(p_body_shape, p_local_shape));
+			E->value.shapes.insert(ShapePair(p_body_shape, p_local_shape));
 		}
 
-		if (E->get().in_tree) {
+		if (E->value.in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
-		//E->get().rc--;
+		//E->value.rc--;
 
 		if (node) {
-			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
+			E->value.shapes.erase(ShapePair(p_body_shape, p_local_shape));
 		}
 
-		bool in_tree = E->get().in_tree;
+		bool in_tree = E->value.in_tree;
 
-		if (E->get().shapes.is_empty()) {
+		if (E->value.shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody3D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody3D::_body_exit_tree));
@@ -481,7 +481,7 @@ void RigidDynamicBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p
 				}
 			}
 
-			contact_monitor->body_map.erase(E);
+			contact_monitor->body_map.remove(E);
 		}
 		if (node && in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, obj, p_body_shape, p_local_shape);
@@ -547,7 +547,7 @@ void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) 
 
 			//bool found=false;
 
-			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
+			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(obj);
 			if (!E) {
 				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
@@ -558,7 +558,7 @@ void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) 
 			}
 
 			ShapePair sp(shape, local_shape);
-			int idx = E->get().shapes.find(sp);
+			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
 				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
@@ -568,7 +568,7 @@ void RigidDynamicBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) 
 				continue;
 			}
 
-			E->get().shapes[idx].tagged = true;
+			E->value.shapes[idx].tagged = true;
 		}
 
 		//put the ones to remove

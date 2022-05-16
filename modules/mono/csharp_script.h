@@ -110,7 +110,7 @@ private:
 
 	Ref<CSharpScript> base_cache; // TODO what's this for?
 
-	Set<Object *> instances;
+	RBSet<Object *> instances;
 
 #ifdef GD_MONO_HOT_RELOAD
 	struct StateBackup {
@@ -121,8 +121,8 @@ private:
 		List<Pair<StringName, Array>> event_signals;
 	};
 
-	Set<ObjectID> pending_reload_instances;
-	Map<ObjectID, StateBackup> pending_reload_state;
+	RBSet<ObjectID> pending_reload_instances;
+	RBMap<ObjectID, StateBackup> pending_reload_state;
 	StringName tied_class_name_for_reload;
 	StringName tied_class_namespace_for_reload;
 #endif
@@ -132,26 +132,26 @@ private:
 
 	SelfList<CSharpScript> script_list = this;
 
-	Map<StringName, Vector<SignalParameter>> _signals;
-	Map<StringName, EventSignal> event_signals;
+	HashMap<StringName, Vector<SignalParameter>> _signals;
+	HashMap<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
 	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
-	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
-	Set<PlaceHolderScriptInstance *> placeholders;
+	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
+	RBSet<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
 	bool exports_invalidated = true;
-	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	void _update_member_info_no_exports();
 	void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-	Set<StringName> exported_members_names;
+	RBSet<StringName> exported_members_names;
 #endif
 
 	HashMap<StringName, PropertyInfo> member_info;
@@ -218,7 +218,7 @@ public:
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
-	void get_members(Set<StringName> *p_members) override;
+	void get_members(RBSet<StringName> *p_members) override;
 
 	bool is_tool() const override { return tool; }
 	bool is_valid() const override { return valid; }
@@ -356,11 +356,11 @@ class CSharpLanguage : public ScriptLanguage {
 	Mutex script_gchandle_release_mutex;
 	Mutex language_bind_mutex;
 
-	Map<Object *, CSharpScriptBinding> script_bindings;
+	RBMap<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
 	// List of unsafe object references
-	Map<ObjectID, int> unsafe_object_references;
+	HashMap<ObjectID, int> unsafe_object_references;
 	Mutex unsafe_object_references_lock;
 #endif
 
@@ -467,7 +467,7 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
-			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override {
+			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override {
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
@@ -518,7 +518,7 @@ public:
 	void thread_enter() override;
 	void thread_exit() override;
 
-	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
+	RBMap<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
 #ifdef DEBUG_ENABLED

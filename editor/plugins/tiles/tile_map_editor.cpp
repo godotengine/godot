@@ -501,7 +501,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 		if (!tile_map_selection.is_empty()) {
 			tile_map_clipboard.instantiate();
 			TypedArray<Vector2i> coords_array;
-			for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+			for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 				coords_array.push_back(E->get());
 			}
 			tile_map_clipboard = tile_map->get_pattern(tile_map_layer, coords_array);
@@ -511,7 +511,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 			// Delete selected tiles.
 			if (!tile_map_selection.is_empty()) {
 				undo_redo->create_action(TTR("Delete tiles"));
-				for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+				for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 					undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 					undo_redo->add_undo_method(tile_map, "set_cell", tile_map_layer, E->get(), tile_map->get_cell_source_id(tile_map_layer, E->get()), tile_map->get_cell_atlas_coords(tile_map_layer, E->get()), tile_map->get_cell_alternative_tile(tile_map_layer, E->get()));
 				}
@@ -542,7 +542,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 		// Delete selected tiles.
 		if (!tile_map_selection.is_empty()) {
 			undo_redo->create_action(TTR("Delete tiles"));
-			for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+			for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 				undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 				undo_redo->add_undo_method(tile_map, "set_cell", tile_map_layer, E->get(), tile_map->get_cell_source_id(tile_map_layer, E->get()), tile_map->get_cell_atlas_coords(tile_map_layer, E->get()), tile_map->get_cell_alternative_tile(tile_map_layer, E->get()));
 			}
@@ -562,7 +562,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
-				Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing);
+				HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing);
 				for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 					if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 						continue;
@@ -579,7 +579,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 				Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
 				for (int i = 0; i < line.size(); i++) {
 					if (!drag_modified.has(line[i])) {
-						Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
+						HashMap<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
 						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 							if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 								continue;
@@ -628,7 +628,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 						_update_selection_pattern_from_tilemap_selection(); // Make sure the pattern is up to date before moving.
 						drag_type = DRAG_TYPE_MOVE;
 						drag_modified.clear();
-						for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+						for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 							Vector2i coords = E->get();
 							drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
 							tile_map->set_cell(tile_map_layer, coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
@@ -648,7 +648,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 							drag_type = DRAG_TYPE_PAINT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
-							Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos, drag_erasing);
+							HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos, drag_erasing);
 							for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 								if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 									continue;
@@ -675,7 +675,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 							Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
 							for (int i = 0; i < line.size(); i++) {
 								if (!drag_modified.has(line[i])) {
-									Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
+									HashMap<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
 									for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 										if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 											continue;
@@ -746,7 +746,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 	// Handle the preview of the tiles to be placed.
 	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
-		Map<Vector2i, TileMapCell> preview;
+		HashMap<Vector2i, TileMapCell> preview;
 		Rect2i drawn_grid_rect;
 
 		if (drag_type == DRAG_TYPE_PICK) {
@@ -768,7 +768,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			// Draw the area being selected.
 			Rect2i rect = Rect2i(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(drag_last_mouse_pos) - tile_map->world_to_map(drag_start_mouse_pos)).abs();
 			rect.size += Vector2i(1, 1);
-			Set<Vector2i> to_draw;
+			RBSet<Vector2i> to_draw;
 			for (int x = rect.position.x; x < rect.get_end().x; x++) {
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
@@ -785,7 +785,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				if (!tile_map_selection.is_empty()) {
 					top_left = tile_map_selection.front()->get();
 				}
-				for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+				for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 					top_left = top_left.min(E->get());
 				}
 				Vector2i offset = drag_start_mouse_pos - tile_map->map_to_world(top_left);
@@ -832,7 +832,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 			// Expand the grid if needed
 			if (expand_grid && !preview.is_empty()) {
-				drawn_grid_rect = Rect2i(preview.front()->key(), Vector2i(1, 1));
+				drawn_grid_rect = Rect2i(preview.begin()->key, Vector2i(1, 1));
 				for (const KeyValue<Vector2i, TileMapCell> &E : preview) {
 					drawn_grid_rect.expand_to(E.key);
 				}
@@ -986,15 +986,15 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 	return TileMapCell();
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	// Get or create the pattern.
@@ -1003,7 +1003,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_
 	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	Map<Vector2i, TileMapCell> output;
+	HashMap<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
 		// Paint the tiles on the tile map.
 		if (!p_erase && random_tile_toggle->is_pressed()) {
@@ -1035,15 +1035,15 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_
 	return output;
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	// Create the rect to draw.
@@ -1056,7 +1056,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start
 	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	Map<Vector2i, TileMapCell> err_output;
+	HashMap<Vector2i, TileMapCell> err_output;
 	ERR_FAIL_COND_V(pattern->is_empty(), err_output);
 
 	// Compute the offset to align things to the bottom or right.
@@ -1064,7 +1064,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start
 	bool valigned_bottom = p_end_cell.y < p_start_cell.y;
 	Vector2i offset = Vector2i(aligned_right ? -(pattern->get_size().x - (rect.get_size().x % pattern->get_size().x)) : 0, valigned_bottom ? -(pattern->get_size().y - (rect.get_size().y % pattern->get_size().y)) : 0);
 
-	Map<Vector2i, TileMapCell> output;
+	HashMap<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
 		if (!p_erase && random_tile_toggle->is_pressed()) {
 			// Paint a random tile.
@@ -1094,21 +1094,21 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_rect(Vector2i p_start
 	return output;
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	if (tile_map_layer < 0) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
-	Map<Vector2i, TileMapCell> output;
+	HashMap<Vector2i, TileMapCell> output;
 	ERR_FAIL_INDEX_V(tile_map_layer, tile_map->get_layers_count(), output);
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	// Get or create the pattern.
@@ -1128,7 +1128,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i 
 
 		if (p_contiguous) {
 			// Replace continuous tiles like the source.
-			Set<Vector2i> already_checked;
+			RBSet<Vector2i> already_checked;
 			List<Vector2i> to_check;
 			to_check.push_back(p_coords);
 			while (!to_check.is_empty()) {
@@ -1278,7 +1278,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				if (!tile_map_selection.is_empty()) {
 					top_left = tile_map_selection.front()->get();
 				}
-				for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+				for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 					top_left = top_left.min(E->get());
 				}
 
@@ -1290,7 +1290,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 
 				// Build the list of cells to undo.
 				Vector2i coords;
-				Map<Vector2i, TileMapCell> cells_undo;
+				HashMap<Vector2i, TileMapCell> cells_undo;
 				for (int i = 0; i < selection_used_cells.size(); i++) {
 					coords = tile_map->map_pattern(top_left, selection_used_cells[i], selection_pattern);
 					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
@@ -1299,7 +1299,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				}
 
 				// Build the list of cells to do.
-				Map<Vector2i, TileMapCell> cells_do;
+				HashMap<Vector2i, TileMapCell> cells_do;
 				for (int i = 0; i < selection_used_cells.size(); i++) {
 					coords = tile_map->map_pattern(top_left, selection_used_cells[i], selection_pattern);
 					cells_do[coords] = TileMapCell();
@@ -1311,11 +1311,11 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 
 				// Move the tiles.
 				undo_redo->create_action(TTR("Move tiles"));
-				for (Map<Vector2i, TileMapCell>::Element *E = cells_do.front(); E; E = E->next()) {
-					undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+				for (const KeyValue<Vector2i, TileMapCell> &E : cells_do) {
+					undo_redo->add_do_method(tile_map, "set_cell", tile_map_layer, E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 				}
-				for (Map<Vector2i, TileMapCell>::Element *E = cells_undo.front(); E; E = E->next()) {
-					undo_redo->add_undo_method(tile_map, "set_cell", tile_map_layer, E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+				for (const KeyValue<Vector2i, TileMapCell> &E : cells_undo) {
+					undo_redo->add_undo_method(tile_map, "set_cell", tile_map_layer, E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 				}
 
 				// Update the selection.
@@ -1378,7 +1378,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			undo_redo->commit_action(false);
 		} break;
 		case DRAG_TYPE_LINE: {
-			Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing);
+			HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing);
 			undo_redo->create_action(TTR("Paint tiles"));
 			for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 				if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
@@ -1390,7 +1390,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			undo_redo->commit_action();
 		} break;
 		case DRAG_TYPE_RECT: {
-			Map<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
+			HashMap<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
 			undo_redo->create_action(TTR("Paint tiles"));
 			for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 				if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
@@ -1476,7 +1476,7 @@ void TileMapEditorTilesPlugin::_update_fix_selected_and_hovered() {
 	}
 
 	// Selection if needed.
-	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
+	for (RBSet<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		const TileMapCell *selected = &(E->get());
 		if (!tile_set->has_source(selected->source_id) ||
 				!tile_set->get_source(selected->source_id)->has_tile(selected->get_atlas_coords()) ||
@@ -1500,7 +1500,7 @@ void TileMapEditorTilesPlugin::_fix_invalid_tiles_in_tile_map_selection() {
 		return;
 	}
 
-	Set<Vector2i> to_remove;
+	RBSet<Vector2i> to_remove;
 	for (Vector2i selected : tile_map_selection) {
 		TileMapCell cell = tile_map->get_cell(tile_map_layer, selected);
 		if (cell.source_id == TileSet::INVALID_SOURCE && cell.get_atlas_coords() == TileSetSource::INVALID_ATLAS_COORDS && cell.alternative_tile == TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
@@ -1534,7 +1534,7 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tilemap_selection(
 	selection_pattern.instantiate();
 
 	TypedArray<Vector2i> coords_array;
-	for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+	for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 		coords_array.push_back(E->get());
 	}
 	selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
@@ -1558,8 +1558,8 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles_sele
 	selection_pattern.instantiate();
 
 	// Group per source.
-	Map<int, List<const TileMapCell *>> per_source;
-	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
+	HashMap<int, List<const TileMapCell *>> per_source;
+	for (RBSet<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		per_source[E->get().source_id].push_back(&(E->get()));
 	}
 
@@ -1568,7 +1568,7 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles_sele
 		// Per source.
 		List<const TileMapCell *> unorganized;
 		Rect2i encompassing_rect_coords;
-		Map<Vector2i, const TileMapCell *> organized_pattern;
+		HashMap<Vector2i, const TileMapCell *> organized_pattern;
 
 		TileSetSource *source = *tile_set->get_source(E_source.key);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
@@ -1583,12 +1583,12 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles_sele
 			}
 
 			// Compute the encompassing rect for the organized pattern.
-			Map<Vector2i, const TileMapCell *>::Element *E_cell = organized_pattern.front();
+			HashMap<Vector2i, const TileMapCell *>::Iterator E_cell = organized_pattern.begin();
 			if (E_cell) {
-				encompassing_rect_coords = Rect2i(E_cell->key(), Vector2i(1, 1));
-				for (; E_cell; E_cell = E_cell->next()) {
-					encompassing_rect_coords.expand_to(E_cell->key() + Vector2i(1, 1));
-					encompassing_rect_coords.expand_to(E_cell->key());
+				encompassing_rect_coords = Rect2i(E_cell->key, Vector2i(1, 1));
+				for (; E_cell; ++E_cell) {
+					encompassing_rect_coords.expand_to(E_cell->key + Vector2i(1, 1));
+					encompassing_rect_coords.expand_to(E_cell->key);
 				}
 			}
 		} else {
@@ -1680,7 +1680,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	// Draw the selection.
 	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
-	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
+	for (RBSet<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		if (E->get().source_id == source_id && E->get().alternative_tile == 0) {
 			for (int frame = 0; frame < atlas->get_tile_animation_frames_count(E->get().get_atlas_coords()); frame++) {
 				Color color = selection_color;
@@ -1711,7 +1711,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 		Rect2i region = Rect2i(start_tile, end_tile - start_tile).abs();
 		region.size += Vector2i(1, 1);
 
-		Set<Vector2i> to_draw;
+		RBSet<Vector2i> to_draw;
 		for (int x = region.position.x; x < region.get_end().x; x++) {
 			for (int y = region.position.y; y < region.get_end().y; y++) {
 				Vector2i tile = atlas->get_tile_at_coords(Vector2i(x, y));
@@ -1721,7 +1721,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 			}
 		}
 		Color selection_rect_color = selection_color.lightened(0.2);
-		for (Set<Vector2i>::Element *E = to_draw.front(); E; E = E->next()) {
+		for (RBSet<Vector2i>::Element *E = to_draw.front(); E; E = E->next()) {
 			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get()), selection_rect_color, false);
 		}
 	}
@@ -1868,7 +1868,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 	}
 
 	// Draw the selection.
-	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
+	for (RBSet<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		if (E->get().source_id == source_id && E->get().get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && E->get().alternative_tile > 0) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E->get().get_atlas_coords(), E->get().alternative_tile);
 			if (rect != Rect2i()) {
@@ -1972,7 +1972,7 @@ void TileMapEditorTilesPlugin::_set_tile_map_selection(const TypedArray<Vector2i
 
 TypedArray<Vector2i> TileMapEditorTilesPlugin::_get_tile_map_selection() const {
 	TypedArray<Vector2i> output;
-	for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
+	for (RBSet<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 		output.push_back(E->get());
 	}
 	return output;
@@ -2321,33 +2321,33 @@ Vector<TileMapEditorPlugin::TabData> TileMapEditorTerrainsPlugin::get_tabs() con
 	return tabs;
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const {
+HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const HashMap<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
-	Map<Vector2i, TileMapCell> output;
+	HashMap<Vector2i, TileMapCell> output;
 
 	// Add the constraints from the added tiles.
-	Set<TileMap::TerrainConstraint> added_tiles_constraints_set;
+	RBSet<TileMap::TerrainConstraint> added_tiles_constraints_set;
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
 		Vector2i coords = E_to_paint.key;
 		TileSet::TerrainsPattern terrains_pattern = E_to_paint.value;
 
-		Set<TileMap::TerrainConstraint> cell_constraints = tile_map->get_terrain_constraints_from_added_tile(coords, p_terrain_set, terrains_pattern);
-		for (Set<TileMap::TerrainConstraint>::Element *E = cell_constraints.front(); E; E = E->next()) {
+		RBSet<TileMap::TerrainConstraint> cell_constraints = tile_map->get_terrain_constraints_from_added_tile(coords, p_terrain_set, terrains_pattern);
+		for (RBSet<TileMap::TerrainConstraint>::Element *E = cell_constraints.front(); E; E = E->next()) {
 			added_tiles_constraints_set.insert(E->get());
 		}
 	}
 
 	// Build the list of potential tiles to replace.
-	Set<Vector2i> potential_to_replace;
+	RBSet<Vector2i> potential_to_replace;
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
 		Vector2i coords = E_to_paint.key;
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -2361,7 +2361,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	}
 
 	// Set of tiles to replace
-	Set<Vector2i> to_replace;
+	RBSet<Vector2i> to_replace;
 
 	// Add the central tiles to the one to replace.
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
@@ -2369,16 +2369,16 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	}
 
 	// Add the constraints from the surroundings of the modified areas.
-	Set<TileMap::TerrainConstraint> removed_cells_constraints_set;
+	RBSet<TileMap::TerrainConstraint> removed_cells_constraints_set;
 	bool to_replace_modified = true;
 	while (to_replace_modified) {
 		// Get the constraints from the removed cells.
 		removed_cells_constraints_set = tile_map->get_terrain_constraints_from_removed_cells_list(tile_map_layer, to_replace, p_terrain_set, false);
 
 		// Filter the sources to make sure they are in the potential_to_replace.
-		Map<TileMap::TerrainConstraint, Set<Vector2i>> per_constraint_tiles;
-		for (Set<TileMap::TerrainConstraint>::Element *E = removed_cells_constraints_set.front(); E; E = E->next()) {
-			Map<Vector2i, TileSet::CellNeighbor> sources_of_constraint = E->get().get_overlapping_coords_and_peering_bits();
+		RBMap<TileMap::TerrainConstraint, RBSet<Vector2i>> per_constraint_tiles;
+		for (RBSet<TileMap::TerrainConstraint>::Element *E = removed_cells_constraints_set.front(); E; E = E->next()) {
+			HashMap<Vector2i, TileSet::CellNeighbor> sources_of_constraint = E->get().get_overlapping_coords_and_peering_bits();
 			for (const KeyValue<Vector2i, TileSet::CellNeighbor> &E_source_tile_of_constraint : sources_of_constraint) {
 				if (potential_to_replace.has(E_source_tile_of_constraint.key)) {
 					per_constraint_tiles[E->get()].insert(E_source_tile_of_constraint.key);
@@ -2387,7 +2387,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 		}
 
 		to_replace_modified = false;
-		for (Set<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
+		for (RBSet<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
 			TileMap::TerrainConstraint c = E->get();
 			// Check if we have a conflict in constraints.
 			if (removed_cells_constraints_set.has(c) && removed_cells_constraints_set.find(c)->get().get_terrain() != c.get_terrain()) {
@@ -2398,7 +2398,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 					potential_to_replace.erase(to_add_to_remove);
 					to_replace.insert(to_add_to_remove);
 					to_replace_modified = true;
-					for (KeyValue<TileMap::TerrainConstraint, Set<Vector2i>> &E_source_tiles_of_constraint : per_constraint_tiles) {
+					for (KeyValue<TileMap::TerrainConstraint, RBSet<Vector2i>> &E_source_tiles_of_constraint : per_constraint_tiles) {
 						E_source_tiles_of_constraint.value.erase(to_add_to_remove);
 					}
 					break;
@@ -2408,8 +2408,8 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	}
 
 	// Combine all constraints together.
-	Set<TileMap::TerrainConstraint> constraints = removed_cells_constraints_set;
-	for (Set<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
+	RBSet<TileMap::TerrainConstraint> constraints = removed_cells_constraints_set;
+	for (RBSet<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
 		constraints.insert(E->get());
 	}
 
@@ -2419,7 +2419,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	}
 
 	// Run WFC to fill the holes with the constraints.
-	Map<Vector2i, TileSet::TerrainsPattern> wfc_output = tile_map->terrain_wave_function_collapse(to_replace, p_terrain_set, constraints);
+	HashMap<Vector2i, TileSet::TerrainsPattern> wfc_output = tile_map->terrain_wave_function_collapse(to_replace, p_terrain_set, constraints);
 
 	// Actually paint the tiles.
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
@@ -2434,15 +2434,15 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	return output;
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	TileSet::TerrainsPattern terrains_pattern;
@@ -2453,22 +2453,22 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_line(Vector2i p_st
 	}
 
 	Vector<Vector2i> line = TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell);
-	Map<Vector2i, TileSet::TerrainsPattern> to_draw;
+	HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 	for (int i = 0; i < line.size(); i++) {
 		to_draw[line[i]] = terrains_pattern;
 	}
 	return _draw_terrains(to_draw, selected_terrain_set);
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	TileSet::TerrainsPattern terrains_pattern;
@@ -2483,7 +2483,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i p_st
 	rect.set_end(p_end_cell);
 	rect = rect.abs();
 
-	Map<Vector2i, TileSet::TerrainsPattern> to_draw;
+	HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 	for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 		for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 			to_draw[Vector2i(x, y)] = terrains_pattern;
@@ -2492,15 +2492,15 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i p_st
 	return _draw_terrains(to_draw, selected_terrain_set);
 }
 
-Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous) {
+RBSet<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Set<Vector2i>();
+		return RBSet<Vector2i>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Set<Vector2i>();
+		return RBSet<Vector2i>();
 	}
 
 	TileMapCell source_cell = tile_map->get_cell(tile_map_layer, p_coords);
@@ -2514,7 +2514,7 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 			tile_data = atlas_source->get_tile_data(source_cell.get_atlas_coords(), source_cell.alternative_tile);
 		}
 		if (!tile_data) {
-			return Set<Vector2i>();
+			return RBSet<Vector2i>();
 		}
 		source_pattern = tile_data->get_terrains_pattern();
 	}
@@ -2525,10 +2525,10 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 		boundaries = tile_map->get_used_rect();
 	}
 
-	Set<Vector2i> output;
+	RBSet<Vector2i> output;
 	if (p_contiguous) {
 		// Replace continuous tiles like the source.
-		Set<Vector2i> already_checked;
+		RBSet<Vector2i> already_checked;
 		List<Vector2i> to_check;
 		to_check.push_back(p_coords);
 		while (!to_check.is_empty()) {
@@ -2603,15 +2603,15 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 	return output;
 }
 
-Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapCell>();
+		return HashMap<Vector2i, TileMapCell>();
 	}
 
 	TileSet::TerrainsPattern terrains_pattern;
@@ -2621,8 +2621,8 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_bucket_fill(Vector
 		terrains_pattern = selected_terrains_pattern;
 	}
 
-	Set<Vector2i> cells_to_draw = _get_cells_for_bucket_fill(p_coords, p_contiguous);
-	Map<Vector2i, TileSet::TerrainsPattern> to_draw;
+	RBSet<Vector2i> cells_to_draw = _get_cells_for_bucket_fill(p_coords, p_contiguous);
+	HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 	for (const Vector2i &coords : cells_to_draw) {
 		to_draw[coords] = terrains_pattern;
 	}
@@ -2718,7 +2718,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 			undo_redo->commit_action(false);
 		} break;
 		case DRAG_TYPE_LINE: {
-			Map<Vector2i, TileMapCell> to_draw = _draw_line(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
+			HashMap<Vector2i, TileMapCell> to_draw = _draw_line(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
 			undo_redo->create_action(TTR("Paint terrain"));
 			for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 				if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
@@ -2730,7 +2730,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 			undo_redo->commit_action();
 		} break;
 		case DRAG_TYPE_RECT: {
-			Map<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
+			HashMap<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
 			undo_redo->create_action(TTR("Paint terrain"));
 			for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 				if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
@@ -2829,7 +2829,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
 				if (selected_terrain_set >= 0) {
-					Map<Vector2i, TileMapCell> to_draw = _draw_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
+					HashMap<Vector2i, TileMapCell> to_draw = _draw_line(tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos), drag_erasing);
 					for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 						if (!drag_modified.has(E.key)) {
 							drag_modified[E.key] = tile_map->get_cell(tile_map_layer, E.key);
@@ -2874,7 +2874,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 
 						drag_modified.clear();
 						Vector2i cell = tile_map->world_to_map(mpos);
-						Map<Vector2i, TileMapCell> to_draw = _draw_line(cell, cell, drag_erasing);
+						HashMap<Vector2i, TileMapCell> to_draw = _draw_line(cell, cell, drag_erasing);
 						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 							drag_modified[E.key] = tile_map->get_cell(tile_map_layer, E.key);
 							tile_map->set_cell(tile_map_layer, E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
@@ -2903,7 +2903,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 						Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
 						for (int i = 0; i < line.size(); i++) {
 							if (!drag_modified.has(line[i])) {
-								Map<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
+								HashMap<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
 								for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 									if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 										continue;
@@ -2959,7 +2959,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 
 	// Handle the preview of the tiles to be placed.
 	if (main_vbox_container->is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
-		Set<Vector2i> preview;
+		RBSet<Vector2i> preview;
 		Rect2i drawn_grid_rect;
 
 		if (drag_type == DRAG_TYPE_PICK) {
@@ -2996,7 +2996,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 				rect.set_end(tile_map->world_to_map(drag_last_mouse_pos));
 				rect = rect.abs();
 
-				Map<Vector2i, TileSet::TerrainsPattern> to_draw;
+				HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 				for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 					for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 						preview.insert(Vector2i(x, y));
@@ -3192,9 +3192,9 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 		ERR_FAIL_INDEX(selected_terrain_id, tile_set->get_terrains_count(selected_terrain_set));
 
 		// Sort the items in a map by the number of corresponding terrains.
-		Map<int, Set<TileSet::TerrainsPattern>> sorted;
+		RBMap<int, RBSet<TileSet::TerrainsPattern>> sorted;
 
-		for (Set<TileSet::TerrainsPattern>::Element *E = per_terrain_terrains_patterns[selected_terrain_set][selected_terrain_id].front(); E; E = E->next()) {
+		for (RBSet<TileSet::TerrainsPattern>::Element *E = per_terrain_terrains_patterns[selected_terrain_set][selected_terrain_id].front(); E; E = E->next()) {
 			// Count the number of matching sides/terrains.
 			int count = 0;
 
@@ -3207,8 +3207,8 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 			sorted[count].insert(E->get());
 		}
 
-		for (Map<int, Set<TileSet::TerrainsPattern>>::Element *E_set = sorted.back(); E_set; E_set = E_set->prev()) {
-			for (Set<TileSet::TerrainsPattern>::Element *E = E_set->get().front(); E; E = E->next()) {
+		for (RBMap<int, RBSet<TileSet::TerrainsPattern>>::Element *E_set = sorted.back(); E_set; E_set = E_set->prev()) {
+			for (RBSet<TileSet::TerrainsPattern>::Element *E = E_set->get().front(); E; E = E->next()) {
 				TileSet::TerrainsPattern terrains_pattern = E->get();
 
 				// Get the icon.

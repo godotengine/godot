@@ -129,32 +129,32 @@ void SceneTree::node_renamed(Node *p_node) {
 }
 
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		E = group_map.insert(p_group, Group());
 	}
 
-	ERR_FAIL_COND_V_MSG(E->get().nodes.has(p_node), &E->get(), "Already in group: " + p_group + ".");
-	E->get().nodes.push_back(p_node);
-	//E->get().last_tree_version=0;
-	E->get().changed = true;
-	return &E->get();
+	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
+	E->value.nodes.push_back(p_node);
+	//E->value.last_tree_version=0;
+	E->value.changed = true;
+	return &E->value;
 }
 
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
-	E->get().nodes.erase(p_node);
-	if (E->get().nodes.is_empty()) {
-		group_map.erase(E);
+	E->value.nodes.erase(p_node);
+	if (E->value.nodes.is_empty()) {
+		group_map.remove(E);
 	}
 }
 
 void SceneTree::make_group_changed(const StringName &p_group) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (E) {
-		E->get().changed = true;
+		E->value.changed = true;
 	}
 }
 
@@ -173,17 +173,17 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = true;
 
 	while (unique_group_calls.size()) {
-		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
+		HashMap<UGCall, Vector<Variant>, UGCall>::Iterator E = unique_group_calls.begin();
 
-		const Variant **argptrs = (const Variant **)alloca(E->get().size() * sizeof(Variant *));
+		const Variant **argptrs = (const Variant **)alloca(E->value.size() * sizeof(Variant *));
 
-		for (int i = 0; i < E->get().size(); i++) {
-			argptrs[i] = &E->get()[i];
+		for (int i = 0; i < E->value.size(); i++) {
+			argptrs[i] = &E->value[i];
 		}
 
-		call_group_flagsp(GROUP_CALL_DEFAULT, E->key().group, E->key().call, argptrs, E->get().size());
+		call_group_flagsp(GROUP_CALL_DEFAULT, E->key.group, E->key.call, argptrs, E->value.size());
 
-		unique_group_calls.erase(E);
+		unique_group_calls.remove(E);
 	}
 
 	ugc_locked = false;
@@ -211,11 +211,11 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 }
 
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -284,11 +284,11 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 }
 
 void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -335,11 +335,11 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 }
 
 void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -818,11 +818,11 @@ bool SceneTree::is_paused() const {
 }
 
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -862,11 +862,11 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 }
 
 void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -952,20 +952,20 @@ int64_t SceneTree::get_frame() const {
 
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	Array ret;
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return ret;
 	}
 
-	_update_group_order(E->get()); //update order just in case
-	int nc = E->get().nodes.size();
+	_update_group_order(E->value); //update order just in case
+	int nc = E->value.nodes.size();
 	if (nc == 0) {
 		return ret;
 	}
 
 	ret.resize(nc);
 
-	Node **ptr = E->get().nodes.ptrw();
+	Node **ptr = E->value.nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 		ret[i] = ptr[i];
 	}
@@ -978,32 +978,32 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 }
 
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return nullptr; // No group.
 	}
 
-	_update_group_order(E->get()); // Update order just in case.
+	_update_group_order(E->value); // Update order just in case.
 
-	if (E->get().nodes.is_empty()) {
+	if (E->value.nodes.is_empty()) {
 		return nullptr;
 	}
 
-	return E->get().nodes[0];
+	return E->value.nodes[0];
 }
 
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
 
-	_update_group_order(E->get()); //update order just in case
-	int nc = E->get().nodes.size();
+	_update_group_order(E->value); //update order just in case
+	int nc = E->value.nodes.size();
 	if (nc == 0) {
 		return;
 	}
-	Node **ptr = E->get().nodes.ptrw();
+	Node **ptr = E->value.nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 		p_list->push_back(ptr[i]);
 	}

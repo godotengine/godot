@@ -108,7 +108,7 @@ private:
 	VSplitContainer *split_box = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
-	Set<String> favorites;
+	RBSet<String> favorites;
 
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_reload = nullptr;
@@ -217,14 +217,14 @@ private:
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
-	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
-	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames);
+	void _find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const;
+	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
-	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
-	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
-	void _save_scenes_after_move(const Map<String, String> &p_renames) const;
-	void _update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const;
-	void _update_project_settings_after_move(const Map<String, String> &p_renames) const;
+	void _update_dependencies_after_move(const HashMap<String, String> &p_renames) const;
+	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames) const;
+	void _save_scenes_after_move(const HashMap<String, String> &p_renames) const;
+	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
+	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
 
 	void _file_removed(String p_file);
 	void _folder_removed(String p_folder);

@@ -50,7 +50,7 @@ class PackedDataContainer : public Resource {
 	Vector<uint8_t> data;
 	int datalen = 0;
 
-	uint32_t _pack(const Variant &p_data, Vector<uint8_t> &tmpdata, Map<String, uint32_t> &string_cache);
+	uint32_t _pack(const Variant &p_data, Vector<uint8_t> &tmpdata, HashMap<String, uint32_t> &string_cache);
 
 	Variant _iter_init_ofs(const Array &p_iter, uint32_t p_offset);
 	Variant _iter_next_ofs(const Array &p_iter, uint32_t p_offset);

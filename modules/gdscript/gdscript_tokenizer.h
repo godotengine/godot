@@ -31,9 +31,9 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
@@ -193,7 +193,7 @@ public:
 			new_line = p_new_line;
 		}
 	};
-	const Map<int, CommentData> &get_comments() const {
+	const HashMap<int, CommentData> &get_comments() const {
 		return comments;
 	}
 #endif // TOOLS_ENABLED
@@ -226,7 +226,7 @@ private:
 	int length = 0;
 
 #ifdef TOOLS_ENABLED
-	Map<int, CommentData> comments;
+	HashMap<int, CommentData> comments;
 #endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }

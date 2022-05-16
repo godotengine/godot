@@ -1645,12 +1645,12 @@ void Collada::_parse_animation(XMLParser &parser) {
 		return;
 	}
 
-	Map<String, Vector<float>> float_sources;
-	Map<String, Vector<String>> string_sources;
-	Map<String, int> source_strides;
-	Map<String, Map<String, String>> samplers;
-	Map<String, Vector<String>> source_param_names;
-	Map<String, Vector<String>> source_param_types;
+	HashMap<String, Vector<float>> float_sources;
+	HashMap<String, Vector<String>> string_sources;
+	HashMap<String, int> source_strides;
+	HashMap<String, HashMap<String, String>> samplers;
+	HashMap<String, Vector<String>> source_param_names;
+	HashMap<String, Vector<String>> source_param_types;
 
 	String id = "";
 	if (parser.has_attribute("id")) {
@@ -1685,7 +1685,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 			} else if (name == "sampler") {
 				current_sampler = parser.get_attribute_value("id");
-				samplers[current_sampler] = Map<String, String>();
+				samplers[current_sampler] = HashMap<String, String>();
 			} else if (name == "param") {
 				if (parser.has_attribute("name")) {
 					source_param_names[current_source].push_back(parser.get_attribute_value("name"));
@@ -1718,7 +1718,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 		String source = _uri_to_id(channel_sources[i]);
 		String target = channel_targets[i];
 		ERR_CONTINUE(!samplers.has(source));
-		Map<String, String> &sampler = samplers[source];
+		HashMap<String, String> &sampler = samplers[source];
 
 		ERR_CONTINUE(!sampler.has("INPUT")); //no input semantic? wtf?
 		String input_id = _uri_to_id(sampler["INPUT"]);
@@ -2029,7 +2029,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 		NodeGeometry *gnode = static_cast<NodeGeometry *>(p_node);
 		if (gnode->controller) {
 			// recount skeletons used
-			Set<NodeSkeleton *> skeletons;
+			RBSet<NodeSkeleton *> skeletons;
 
 			for (int i = 0; i < gnode->skeletons.size(); i++) {
 				String nodeid = gnode->skeletons[i];
@@ -2049,7 +2049,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 			if (skeletons.size() > 1) {
 				//do the merger!!
-				Set<NodeSkeleton *>::Element *E = skeletons.front();
+				RBSet<NodeSkeleton *>::Element *E = skeletons.front();
 				NodeSkeleton *base = E->get();
 
 				for (E = E->next(); E; E = E->next()) {

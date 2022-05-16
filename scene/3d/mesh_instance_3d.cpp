@@ -42,9 +42,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
+	HashMap<StringName, int>::Iterator E = blend_shape_properties.find(p_name);
 	if (E) {
-		set_blend_shape_value(E->get(), p_value);
+		set_blend_shape_value(E->value, p_value);
 		return true;
 	}
 
@@ -66,9 +66,9 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
-	const Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
 	if (E) {
-		r_ret = get_blend_shape_value(E->get());
+		r_ret = get_blend_shape_value(E->value);
 		return true;
 	}
 

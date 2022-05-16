@@ -95,12 +95,12 @@ StringName Translation::get_message(const StringName &p_src_text, const StringNa
 		WARN_PRINT("Translation class doesn't handle context. Using context in get_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
 	}
 
-	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
+	HashMap<StringName, StringName>::ConstIterator E = translation_map.find(p_src_text);
 	if (!E) {
 		return StringName();
 	}
 
-	return E->get();
+	return E->value;
 }
 
 StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
@@ -215,12 +215,12 @@ static _character_accent_pair _character_to_accented[] = {
 
 Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
 
-Map<String, String> TranslationServer::language_map;
-Map<String, String> TranslationServer::script_map;
-Map<String, String> TranslationServer::locale_rename_map;
-Map<String, String> TranslationServer::country_name_map;
-Map<String, String> TranslationServer::variant_map;
-Map<String, String> TranslationServer::country_rename_map;
+HashMap<String, String> TranslationServer::language_map;
+HashMap<String, String> TranslationServer::script_map;
+HashMap<String, String> TranslationServer::locale_rename_map;
+HashMap<String, String> TranslationServer::country_name_map;
+HashMap<String, String> TranslationServer::variant_map;
+HashMap<String, String> TranslationServer::country_rename_map;
 
 void TranslationServer::init_locale_info() {
 	// Init locale info.
@@ -452,8 +452,8 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 Vector<String> TranslationServer::get_all_languages() const {
 	Vector<String> languages;
 
-	for (const Map<String, String>::Element *E = language_map.front(); E; E = E->next()) {
-		languages.push_back(E->key());
+	for (const KeyValue<String, String> &E : language_map) {
+		languages.push_back(E.key);
 	}
 
 	return languages;
@@ -466,8 +466,8 @@ String TranslationServer::get_language_name(const String &p_language) const {
 Vector<String> TranslationServer::get_all_scripts() const {
 	Vector<String> scripts;
 
-	for (const Map<String, String>::Element *E = script_map.front(); E; E = E->next()) {
-		scripts.push_back(E->key());
+	for (const KeyValue<String, String> &E : script_map) {
+		scripts.push_back(E.key);
 	}
 
 	return scripts;
@@ -480,8 +480,8 @@ String TranslationServer::get_script_name(const String &p_script) const {
 Vector<String> TranslationServer::get_all_countries() const {
 	Vector<String> countries;
 
-	for (const Map<String, String>::Element *E = country_name_map.front(); E; E = E->next()) {
-		countries.push_back(E->key());
+	for (const KeyValue<String, String> &E : country_name_map) {
+		countries.push_back(E.key);
 	}
 
 	return countries;
@@ -507,7 +507,7 @@ String TranslationServer::get_locale() const {
 
 Array TranslationServer::get_loaded_locales() const {
 	Array locales;
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
@@ -530,7 +530,7 @@ Ref<Translation> TranslationServer::get_translation_object(const String &p_local
 	Ref<Translation> res;
 	int best_score = 0;
 
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), nullptr);
 		String l = t->get_locale();
@@ -599,7 +599,7 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 	StringName res;
 	int best_score = 0;
 
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();

@@ -70,8 +70,8 @@ private:
 
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 
-	Map<int, Ref<ENetConnection>> hosts;
-	Map<int, Ref<ENetPacketPeer>> peers;
+	HashMap<int, Ref<ENetConnection>> hosts;
+	HashMap<int, Ref<ENetPacketPeer>> peers;
 
 	struct Packet {
 		ENetPacket *packet = nullptr;

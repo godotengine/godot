@@ -131,7 +131,7 @@ private:
 		}
 	};
 
-	Set<SkinReference *> skin_bindings;
+	RBSet<SkinReference *> skin_bindings;
 
 	void _skin_changed();
 

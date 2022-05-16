@@ -469,8 +469,8 @@ void Label3D::_shape() {
 	aabb = AABB();
 
 	// Clear materials.
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 
@@ -599,20 +599,20 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM)) * pixel_size;
 	}
 
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E->get().mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E->get().mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E->get().mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E->get().mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E->get().mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E->get().indices;
+		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
 
 		RS::SurfaceData sd;
 		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
 
-		sd.material = E->get().material;
+		sd.material = E.value.material;
 
 		RS::get_singleton()->mesh_add_surface(mesh, sd);
 	}
@@ -1003,8 +1003,8 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	RenderingServer::get_singleton()->free(mesh);
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (KeyValue<uint64_t, SurfaceData> E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 }

@@ -178,7 +178,7 @@ void OS_Windows::initialize() {
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	timeBeginPeriod(1);
 
-	process_map = memnew((Map<ProcessID, ProcessInfo>));
+	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	// Add current Godot PID to the list of known PIDs
 	ProcessInfo current_pi = {};

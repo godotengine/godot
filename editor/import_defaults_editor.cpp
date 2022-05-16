@@ -44,8 +44,8 @@ class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> default_values;
+	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> default_values;
 
 	Ref<ResourceImporter> importer;
 

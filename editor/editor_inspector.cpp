@@ -839,7 +839,7 @@ void EditorProperty::_update_pin_flags() {
 		}
 		pin_hidden = false;
 		{
-			Set<StringName> storable_properties;
+			RBSet<StringName> storable_properties;
 			node->get_storable_properties(storable_properties);
 			if (storable_properties.has(node->get_property_store_alias(property))) {
 				can_pin = true;
@@ -2445,8 +2445,8 @@ void EditorInspector::update_tree() {
 	object->get_property_list(&plist, true);
 	_update_script_class_properties(*object, plist);
 
-	Map<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
-	Map<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
+	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
+	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
 
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
@@ -2563,9 +2563,9 @@ void EditorInspector::update_tree() {
 				if (!class_descr_cache.has(type2)) {
 					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type2);
+					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(type2);
 					if (E) {
-						descr = DTR(E->get().brief_description);
+						descr = DTR(E->value.brief_description);
 					}
 					class_descr_cache[type2] = descr;
 				}
@@ -2607,9 +2607,9 @@ void EditorInspector::update_tree() {
 		// First check if we have an array that fits the prefix.
 		String array_prefix = "";
 		int array_index = -1;
-		for (Map<String, EditorInspectorArray *>::Element *E = editor_inspector_array_per_prefix.front(); E; E = E->next()) {
-			if (p.name.begins_with(E->key()) && E->key().length() > array_prefix.length()) {
-				array_prefix = E->key();
+		for (KeyValue<String, EditorInspectorArray *> &E : editor_inspector_array_per_prefix) {
+			if (p.name.begins_with(E.key) && E.key.length() > array_prefix.length()) {
+				array_prefix = E.key;
 			}
 		}
 
@@ -2851,39 +2851,39 @@ void EditorInspector::update_tree() {
 			bool found = false;
 
 			// Search for the property description in the cache.
-			Map<StringName, Map<StringName, String>>::Element *E = descr_cache.find(classname);
+			HashMap<StringName, HashMap<StringName, String>>::Iterator E = descr_cache.find(classname);
 			if (E) {
-				Map<StringName, String>::Element *F = E->get().find(propname);
+				HashMap<StringName, String>::Iterator F = E->value.find(propname);
 				if (F) {
 					found = true;
-					descr = F->get();
+					descr = F->value;
 				}
 			}
 
 			if (!found) {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
-				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
+				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
 				while (F && descr.is_empty()) {
-					for (int i = 0; i < F->get().properties.size(); i++) {
-						if (F->get().properties[i].name == propname.operator String()) {
-							descr = DTR(F->get().properties[i].description);
+					for (int i = 0; i < F->value.properties.size(); i++) {
+						if (F->value.properties[i].name == propname.operator String()) {
+							descr = DTR(F->value.properties[i].description);
 							break;
 						}
 					}
 
 					Vector<String> slices = propname.operator String().split("/");
 					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
-						for (int i = 0; i < F->get().theme_properties.size(); i++) {
-							if (F->get().theme_properties[i].name == slices[1]) {
-								descr = DTR(F->get().theme_properties[i].description);
+						for (int i = 0; i < F->value.theme_properties.size(); i++) {
+							if (F->value.theme_properties[i].name == slices[1]) {
+								descr = DTR(F->value.theme_properties[i].description);
 								break;
 							}
 						}
 					}
 
-					if (!F->get().inherits.is_empty()) {
-						F = dd->class_list.find(F->get().inherits);
+					if (!F->value.inherits.is_empty()) {
+						F = dd->class_list.find(F->value.inherits);
 					} else {
 						break;
 					}
@@ -3638,7 +3638,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		break;
 	}
 
-	Set<StringName> added;
+	RBSet<StringName> added;
 	for (const Ref<Script> &s : classes) {
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);

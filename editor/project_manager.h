@@ -50,7 +50,7 @@ enum FilterOption {
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
-	Map<String, Ref<Texture2D>> icon_type_cache;
+	HashMap<String, Ref<Texture2D>> icon_type_cache;
 	void _build_icon_type_cache(Ref<Theme> p_theme);
 
 	static ProjectManager *singleton;

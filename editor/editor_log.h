@@ -115,7 +115,7 @@ private:
 
 	Vector<LogMessage> messages;
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
-	Map<MessageType, LogFilter *> type_filter_map;
+	HashMap<MessageType, LogFilter *> type_filter_map;
 
 	RichTextLabel *log = nullptr;
 

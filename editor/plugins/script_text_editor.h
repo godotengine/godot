@@ -64,7 +64,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Vector<String> functions;
 	List<ScriptLanguage::Warning> warnings;
 	List<ScriptLanguage::ScriptError> errors;
-	Set<int> safe_lines;
+	RBSet<int> safe_lines;
 
 	List<Connection> missing_connections;
 
@@ -175,7 +175,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
+	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
 
 	void _edit_option(int p_op);

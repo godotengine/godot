@@ -898,7 +898,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 			}
 
 #ifdef DEBUG_ENABLED
-			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -947,7 +947,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -1279,7 +1279,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		}
 
 #ifdef DEBUG_ENABLED
-		Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+		RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 		for (uint32_t ignored_warning : stmt->ignored_warnings) {
 			parser->ignored_warning_codes.insert(ignored_warning);
 		}
@@ -2174,7 +2174,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await, bool p_is_root) {
 	bool all_is_constant = true;
-	Map<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
+	HashMap<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
 	for (int i = 0; i < p_call->arguments.size(); i++) {
 		reduce_expression(p_call->arguments[i]);
 		if (p_call->arguments[i]->type == GDScriptParser::Node::ARRAY) {

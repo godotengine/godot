@@ -140,41 +140,41 @@ void WebRTCMultiplayerPeer::poll() {
 }
 
 void WebRTCMultiplayerPeer::_find_next_peer() {
-	Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(next_packet_peer);
+	HashMap<int, Ref<ConnectedPeer>>::Iterator E = peer_map.find(next_packet_peer);
 	if (E) {
-		E = E->next();
+		++E;
 	}
 	// After last.
 	while (E) {
-		if (!E->get()->connected) {
-			E = E->next();
+		if (!E->value->connected) {
+			++E;
 			continue;
 		}
-		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
+		for (const Ref<WebRTCDataChannel> &F : E->value->channels) {
 			if (F->get_available_packet_count()) {
-				next_packet_peer = E->key();
+				next_packet_peer = E->key;
 				return;
 			}
 		}
-		E = E->next();
+		++E;
 	}
-	E = peer_map.front();
+	E = peer_map.begin();
 	// Before last
 	while (E) {
-		if (!E->get()->connected) {
-			E = E->next();
+		if (!E->value->connected) {
+			++E;
 			continue;
 		}
-		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
+		for (const Ref<WebRTCDataChannel> &F : E->value->channels) {
 			if (F->get_available_packet_count()) {
-				next_packet_peer = E->key();
+				next_packet_peer = E->key;
 				return;
 			}
 		}
-		if (E->key() == (int)next_packet_peer) {
+		if (E->key == (int)next_packet_peer) {
 			break;
 		}
-		E = E->next();
+		++E;
 	}
 	// No packet found
 	next_packet_peer = 0;
@@ -354,12 +354,12 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 	}
 
 	if (target_peer > 0) {
-		Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(target_peer);
+		HashMap<int, Ref<ConnectedPeer>>::Iterator E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
-		ERR_FAIL_COND_V_MSG(E->value()->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value()->channels.size()));
-		ERR_FAIL_COND_V(E->value()->channels[ch].is_null(), ERR_BUG);
-		return E->value()->channels[ch]->put_packet(p_buffer, p_buffer_size);
+		ERR_FAIL_COND_V_MSG(E->value->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value->channels.size()));
+		ERR_FAIL_COND_V(E->value->channels[ch].is_null(), ERR_BUG);
+		return E->value->channels[ch]->put_packet(p_buffer, p_buffer_size);
 
 	} else {
 		int exclude = -target_peer;

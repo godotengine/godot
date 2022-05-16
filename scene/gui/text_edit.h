@@ -356,7 +356,7 @@ private:
 		Vector<int> last_visible_chars;
 	};
 
-	Map<int, LineDrawingCache> line_drawing_cache;
+	HashMap<int, LineDrawingCache> line_drawing_cache;
 
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
@@ -511,7 +511,6 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	Map<int, Dictionary> syntax_highlighting_cache;
 
 	Dictionary _get_line_syntax_highlighting(int p_line);
 

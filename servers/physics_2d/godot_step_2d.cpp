@@ -168,7 +168,7 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	const SelfList<GodotArea2D>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<GodotConstraint2D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
+		for (const RBSet<GodotConstraint2D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
 			GodotConstraint2D *constraint = E->get();
 			if (constraint->get_island_step() == _step) {
 				continue;

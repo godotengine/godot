@@ -43,9 +43,9 @@
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
 	friend class SceneImportSettings;
-	Map<StringName, Variant> *settings = nullptr;
-	Map<StringName, Variant> current;
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> *settings = nullptr;
+	HashMap<StringName, Variant> current;
+	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	bool hide_options = false;
 	String path;
@@ -501,7 +501,7 @@ void SceneImportSettings::_update_camera() {
 	camera->set_transform(xf);
 }
 
-void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
+void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
 	if (base_subresource_settings.has(p_type)) {
 		Dictionary d = base_subresource_settings[p_type];
 		if (d.has(p_import_id)) {
@@ -852,7 +852,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 }
 
 void SceneImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	HashMap<StringName, Variant> main_settings;
 
 	main_settings = defaults;
 	main_settings.erase("_subresources");

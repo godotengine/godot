@@ -331,7 +331,7 @@ void DocTools::generate(bool p_basic_types) {
 	bool skip_setter_getter_methods = true;
 
 	while (classes.size()) {
-		Set<StringName> setters_getters;
+		RBSet<StringName> setters_getters;
 
 		String name = classes.front()->get();
 		if (!ClassDB::is_class_exposed(name)) {
@@ -1337,7 +1337,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 

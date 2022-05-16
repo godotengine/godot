@@ -5575,7 +5575,7 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 	// Convert to UTF-16.
 	Char16String utf16 = p_string.utf16();
 
-	Set<int> breaks;
+	RBSet<int> breaks;
 	UErrorCode err = U_ZERO_ERROR;
 	UBreakIterator *bi = ubrk_open(UBRK_LINE, p_language.ascii().get_data(), (const UChar *)utf16.ptr(), utf16.length(), &err);
 	if (U_FAILURE(err)) {

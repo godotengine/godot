@@ -522,7 +522,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->valid = true;
 }
 
-void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
+void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
@@ -547,7 +547,7 @@ void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code
 	}
 }
 
-void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
+void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(!is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);

@@ -31,7 +31,7 @@
 #ifndef EDITOR_HELP_SEARCH_H
 #define EDITOR_HELP_SEARCH_H
 
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -122,11 +122,11 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
-	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	HashMap<String, ClassMatch> matches;
+	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
-	Map<String, TreeItem *> class_items;
+	HashMap<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 

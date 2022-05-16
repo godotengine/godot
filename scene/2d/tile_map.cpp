@@ -34,8 +34,8 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
-Map<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
-	Map<Vector2i, TileSet::CellNeighbor> output;
+HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
+	HashMap<Vector2i, TileSet::CellNeighbor> output;
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 	ERR_FAIL_COND_V(!tile_set.is_valid(), output);
 
@@ -742,7 +742,7 @@ Vector2i TileMap::_coords_to_quadrant_coords(int p_layer, const Vector2i &p_coor
 			p_coords.y > 0 ? p_coords.y / quadrant_size : (p_coords.y - (quadrant_size - 1)) / quadrant_size);
 }
 
-Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(int p_layer, const Vector2i &p_qk) {
+HashMap<Vector2i, TileMapQuadrant>::Iterator TileMap::_create_quadrant(int p_layer, const Vector2i &p_qk) {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), nullptr);
 
 	TileMapQuadrant q;
@@ -765,9 +765,9 @@ Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(int p_layer, 
 	return layers[p_layer].quadrant_map.insert(p_qk, q);
 }
 
-void TileMap::_make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q) {
+void TileMap::_make_quadrant_dirty(HashMap<Vector2i, TileMapQuadrant>::Iterator Q) {
 	// Make the given quadrant dirty, then trigger an update later.
-	TileMapQuadrant &q = Q->get();
+	TileMapQuadrant &q = Q->value;
 	if (!q.dirty_list_element.in_list()) {
 		layers[q.layer].dirty_quadrant_list.add(&q.dirty_list_element);
 	}
@@ -810,7 +810,7 @@ void TileMap::_update_dirty_quadrants() {
 		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 			q->self()->map_to_world.clear();
 			q->self()->world_to_map.clear();
-			for (Set<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
+			for (RBSet<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
 				Vector2i pk = E->get();
 				Vector2i pk_world_coords = map_to_world(pk);
 				q->self()->map_to_world[pk] = pk_world_coords;
@@ -871,18 +871,18 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 	_rendering_update_layer(p_layer);
 
 	// Recreate the quadrants.
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
 		Vector2i qk = _coords_to_quadrant_coords(p_layer, Vector2i(E.key.x, E.key.y));
 
-		Map<Vector2i, TileMapQuadrant>::Element *Q = layers[p_layer].quadrant_map.find(qk);
+		HashMap<Vector2i, TileMapQuadrant>::Iterator Q = layers[p_layer].quadrant_map.find(qk);
 		if (!Q) {
 			Q = _create_quadrant(p_layer, qk);
-			layers[p_layer].dirty_quadrant_list.add(&Q->get().dirty_list_element);
+			layers[p_layer].dirty_quadrant_list.add(&Q->value.dirty_list_element);
 		}
 
 		Vector2i pk = E.key;
-		Q->get().cells.insert(pk);
+		Q->value.cells.insert(pk);
 
 		_make_quadrant_dirty(Q);
 	}
@@ -896,9 +896,9 @@ void TileMap::_recreate_internals() {
 	}
 }
 
-void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
+void TileMap::_erase_quadrant(HashMap<Vector2i, TileMapQuadrant>::Iterator Q) {
 	// Remove a quadrant.
-	TileMapQuadrant *q = &(Q->get());
+	TileMapQuadrant *q = &(Q->value);
 
 	// Call the cleanup_quadrant method on plugins.
 	if (tile_set.is_valid()) {
@@ -917,7 +917,7 @@ void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->free(q->debug_canvas_item);
 
-	layers[q->layer].quadrant_map.erase(Q);
+	layers[q->layer].quadrant_map.remove(Q);
 	rect_cache_dirty = true;
 }
 
@@ -926,7 +926,7 @@ void TileMap::_clear_layer_internals(int p_layer) {
 
 	// Clear quadrants.
 	while (layers[p_layer].quadrant_map.size()) {
-		_erase_quadrant(layers[p_layer].quadrant_map.front());
+		_erase_quadrant(layers[p_layer].quadrant_map.begin());
 	}
 
 	// Clear the layers internals.
@@ -954,15 +954,17 @@ void TileMap::_recompute_rect_cache() {
 	}
 
 	Rect2 r_total;
+	bool first = true;
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
-		for (const Map<Vector2i, TileMapQuadrant>::Element *E = layers[layer].quadrant_map.front(); E; E = E->next()) {
+		for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
 			Rect2 r;
-			r.position = map_to_world(E->key() * get_effective_quadrant_size(layer));
-			r.expand_to(map_to_world((E->key() + Vector2i(1, 0)) * get_effective_quadrant_size(layer)));
-			r.expand_to(map_to_world((E->key() + Vector2i(1, 1)) * get_effective_quadrant_size(layer)));
-			r.expand_to(map_to_world((E->key() + Vector2i(0, 1)) * get_effective_quadrant_size(layer)));
-			if (E == layers[layer].quadrant_map.front()) {
+			r.position = map_to_world(E.key * get_effective_quadrant_size(layer));
+			r.expand_to(map_to_world((E.key + Vector2i(1, 0)) * get_effective_quadrant_size(layer)));
+			r.expand_to(map_to_world((E.key + Vector2i(1, 1)) * get_effective_quadrant_size(layer)));
+			r.expand_to(map_to_world((E.key + Vector2i(0, 1)) * get_effective_quadrant_size(layer)));
+			if (first) {
 				r_total = r;
+				first = false;
 			} else {
 				r_total = r_total.merge(r);
 			}
@@ -1201,7 +1203,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 
 		for (int layer = 0; layer < (int)layers.size(); layer++) {
 			// Sort the quadrants coords per world coordinates
-			Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> world_to_map;
+			RBMap<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> world_to_map;
 			for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
 				world_to_map[map_to_world(E.key)] = E.key;
 			}
@@ -1248,7 +1250,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
-	for (Set<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
+	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
 		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell->get(), true);
 
 		TileSetSource *source;
@@ -1462,7 +1464,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 		q.bodies.clear();
 
 		// Recreate bodies and shapes.
-		for (Set<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
+		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
 			TileMapCell c = get_cell(q.layer, E_cell->get(), true);
 
 			TileSetSource *source;
@@ -1659,7 +1661,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 		q.navigation_regions.clear();
 
 		// Get the navigation polygons and create regions.
-		for (Set<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
+		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
 			TileMapCell c = get_cell(q.layer, E_cell->get(), true);
 
 			TileSetSource *source;
@@ -1748,7 +1750,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 
-	for (Set<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
+	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
 		TileMapCell c = get_cell(p_quadrant->layer, E_cell->get(), true);
 
 		TileSetSource *source;
@@ -1823,7 +1825,7 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 		q.scenes.clear();
 
 		// Recreate the scenes.
-		for (Set<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
+		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
 			const TileMapCell &c = get_cell(q.layer, E_cell->get(), true);
 
 			TileSetSource *source;
@@ -1881,7 +1883,7 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
-	for (Set<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
+	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
 		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell->get(), true);
 
 		TileSetSource *source;
@@ -1923,9 +1925,9 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 
 	// Set the current cell tile (using integer position).
-	Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	Vector2i pk(p_coords);
-	Map<Vector2i, TileMapCell>::Element *E = tile_map.find(pk);
+	HashMap<Vector2i, TileMapCell>::Iterator E = tile_map.find(pk);
 
 	int source_id = p_source_id;
 	Vector2i atlas_coords = p_atlas_coords;
@@ -1946,7 +1948,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 	// Get the quadrant
 	Vector2i qk = _coords_to_quadrant_coords(p_layer, pk);
 
-	Map<Vector2i, TileMapQuadrant>::Element *Q = layers[p_layer].quadrant_map.find(qk);
+	HashMap<Vector2i, TileMapQuadrant>::Iterator Q = layers[p_layer].quadrant_map.find(qk);
 
 	if (source_id == TileSet::INVALID_SOURCE) {
 		// Erase existing cell in the tile map.
@@ -1954,7 +1956,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 
 		// Erase existing cell in the quadrant.
 		ERR_FAIL_COND(!Q);
-		TileMapQuadrant &q = Q->get();
+		TileMapQuadrant &q = Q->value;
 
 		q.cells.erase(pk);
 
@@ -1975,18 +1977,18 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 			if (!Q) {
 				Q = _create_quadrant(p_layer, qk);
 			}
-			TileMapQuadrant &q = Q->get();
+			TileMapQuadrant &q = Q->value;
 			q.cells.insert(pk);
 
 		} else {
 			ERR_FAIL_COND(!Q); // TileMapQuadrant should exist...
 
-			if (E->get().source_id == source_id && E->get().get_atlas_coords() == atlas_coords && E->get().alternative_tile == alternative_tile) {
+			if (E->value.source_id == source_id && E->value.get_atlas_coords() == atlas_coords && E->value.alternative_tile == alternative_tile) {
 				return; // Nothing changed.
 			}
 		}
 
-		TileMapCell &c = E->get();
+		TileMapCell &c = E->value;
 
 		c.source_id = source_id;
 		c.set_atlas_coords(atlas_coords);
@@ -2005,57 +2007,57 @@ int TileMap::get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_us
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSet::INVALID_SOURCE);
 
 	// Get a cell source id from position
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSet::INVALID_SOURCE;
 	}
 
 	if (p_use_proxies && tile_set.is_valid()) {
-		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		Array proxyed = tile_set->map_tile_proxy(E->value.source_id, E->value.get_atlas_coords(), E->value.alternative_tile);
 		return proxyed[0];
 	}
 
-	return E->get().source_id;
+	return E->value.source_id;
 }
 
 Vector2i TileMap::get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSetSource::INVALID_ATLAS_COORDS);
 
 	// Get a cell source id from position
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
 	if (p_use_proxies && tile_set.is_valid()) {
-		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		Array proxyed = tile_set->map_tile_proxy(E->value.source_id, E->value.get_atlas_coords(), E->value.alternative_tile);
 		return proxyed[1];
 	}
 
-	return E->get().get_atlas_coords();
+	return E->value.get_atlas_coords();
 }
 
 int TileMap::get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSetSource::INVALID_TILE_ALTERNATIVE);
 
 	// Get a cell source id from position
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSetSource::INVALID_TILE_ALTERNATIVE;
 	}
 
 	if (p_use_proxies && tile_set.is_valid()) {
-		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		Array proxyed = tile_set->map_tile_proxy(E->value.source_id, E->value.get_atlas_coords(), E->value.alternative_tile);
 		return proxyed[2];
 	}
 
-	return E->get().alternative_tile;
+	return E->value.alternative_tile;
 }
 
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
@@ -2147,13 +2149,13 @@ void TileMap::set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPat
 	}
 }
 
-Set<TileSet::TerrainsPattern> TileMap::_get_valid_terrains_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TerrainConstraint> p_constraints) {
+RBSet<TileSet::TerrainsPattern> TileMap::_get_valid_terrains_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, RBSet<TerrainConstraint> p_constraints) {
 	if (!tile_set.is_valid()) {
-		return Set<TileSet::TerrainsPattern>();
+		return RBSet<TileSet::TerrainsPattern>();
 	}
 
 	// Returns all tiles compatible with the given constraints.
-	Set<TileSet::TerrainsPattern> compatible_terrain_tile_patterns;
+	RBSet<TileSet::TerrainsPattern> compatible_terrain_tile_patterns;
 	for (TileSet::TerrainsPattern &terrain_pattern : tile_set->get_terrains_pattern_set(p_terrain_set)) {
 		int valid = true;
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -2161,7 +2163,7 @@ Set<TileSet::TerrainsPattern> TileMap::_get_valid_terrains_patterns_for_constrai
 			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
 				// Check if the bit is compatible with the constraints.
 				TerrainConstraint terrain_bit_constraint = TerrainConstraint(this, p_position, bit, terrain_pattern.get_terrain(bit));
-				Set<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_bit_constraint);
+				RBSet<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_bit_constraint);
 				if (in_set_constraint_element && in_set_constraint_element->get().get_terrain() != terrain_bit_constraint.get_terrain()) {
 					valid = false;
 					break;
@@ -2177,17 +2179,17 @@ Set<TileSet::TerrainsPattern> TileMap::_get_valid_terrains_patterns_for_constrai
 	return compatible_terrain_tile_patterns;
 }
 
-Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_cells_list(int p_layer, const Set<Vector2i> &p_to_replace, int p_terrain_set, bool p_ignore_empty_terrains) const {
+RBSet<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_cells_list(int p_layer, const RBSet<Vector2i> &p_to_replace, int p_terrain_set, bool p_ignore_empty_terrains) const {
 	if (!tile_set.is_valid()) {
-		return Set<TerrainConstraint>();
+		return RBSet<TerrainConstraint>();
 	}
 
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), Set<TerrainConstraint>());
-	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Set<TerrainConstraint>());
+	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), RBSet<TerrainConstraint>());
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), RBSet<TerrainConstraint>());
 
 	// Build a set of dummy constraints get the constrained points.
-	Set<TerrainConstraint> dummy_constraints;
-	for (Set<Vector2i>::Element *E = p_to_replace.front(); E; E = E->next()) {
+	RBSet<TerrainConstraint> dummy_constraints;
+	for (RBSet<Vector2i>::Element *E = p_to_replace.front(); E; E = E->next()) {
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) { // Iterates over sides.
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
@@ -2197,14 +2199,14 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_ce
 	}
 
 	// For each constrained point, we get all overlapping tiles, and select the most adequate terrain for it.
-	Set<TerrainConstraint> constraints;
-	for (Set<TerrainConstraint>::Element *E = dummy_constraints.front(); E; E = E->next()) {
+	RBSet<TerrainConstraint> constraints;
+	for (RBSet<TerrainConstraint>::Element *E = dummy_constraints.front(); E; E = E->next()) {
 		TerrainConstraint c = E->get();
 
-		Map<int, int> terrain_count;
+		HashMap<int, int> terrain_count;
 
 		// Count the number of occurrences per terrain.
-		Map<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
+		HashMap<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
 		for (const KeyValue<Vector2i, TileSet::CellNeighbor> &E_overlapping : overlapping_terrain_bits) {
 			if (!p_to_replace.has(E_overlapping.key)) {
 				TileData *neighbor_tile_data = nullptr;
@@ -2250,13 +2252,13 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_ce
 	return constraints;
 }
 
-Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
+RBSet<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
 	if (!tile_set.is_valid()) {
-		return Set<TerrainConstraint>();
+		return RBSet<TerrainConstraint>();
 	}
 
 	// Compute the constraints needed from the surrounding tiles.
-	Set<TerrainConstraint> output;
+	RBSet<TerrainConstraint> output;
 	for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
 		if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, side)) {
@@ -2268,35 +2270,35 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_added_tile
 	return output;
 }
 
-Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TerrainConstraint> p_constraints) {
+HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(const RBSet<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> p_constraints) {
 	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileSet::TerrainsPattern>();
+		return HashMap<Vector2i, TileSet::TerrainsPattern>();
 	}
 
 	// Copy the constraints set.
-	Set<TerrainConstraint> constraints = p_constraints;
+	RBSet<TerrainConstraint> constraints = p_constraints;
 
 	// Compute all acceptable patterns for each cell.
-	Map<Vector2i, Set<TileSet::TerrainsPattern>> per_cell_acceptable_tiles;
+	HashMap<Vector2i, RBSet<TileSet::TerrainsPattern>> per_cell_acceptable_tiles;
 	for (Vector2i cell : p_to_replace) {
 		per_cell_acceptable_tiles[cell] = _get_valid_terrains_patterns_for_constraints(p_terrain_set, cell, constraints);
 	}
 
 	// Output map.
-	Map<Vector2i, TileSet::TerrainsPattern> output;
+	HashMap<Vector2i, TileSet::TerrainsPattern> output;
 
 	// Add all positions to a set.
-	Set<Vector2i> to_replace = Set<Vector2i>(p_to_replace);
+	RBSet<Vector2i> to_replace = RBSet<Vector2i>(p_to_replace);
 	while (!to_replace.is_empty()) {
 		// Compute the minimum number of tile possibilities for each cell.
 		int min_nb_possibilities = 100000000;
-		for (const KeyValue<Vector2i, Set<TileSet::TerrainsPattern>> &E : per_cell_acceptable_tiles) {
+		for (const KeyValue<Vector2i, RBSet<TileSet::TerrainsPattern>> &E : per_cell_acceptable_tiles) {
 			min_nb_possibilities = MIN(min_nb_possibilities, E.value.size());
 		}
 
 		// Get the set of possible cells to fill, out of the most constrained ones.
 		LocalVector<Vector2i> to_choose_from;
-		for (const KeyValue<Vector2i, Set<TileSet::TerrainsPattern>> &E : per_cell_acceptable_tiles) {
+		for (const KeyValue<Vector2i, RBSet<TileSet::TerrainsPattern>> &E : per_cell_acceptable_tiles) {
 			if (E.value.size() == min_nb_possibilities) {
 				to_choose_from.push_back(E.key);
 			}
@@ -2306,7 +2308,7 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		Vector2i selected_cell_to_replace = to_choose_from[Math::random(0, to_choose_from.size() - 1)];
 
 		// Get the list of acceptable patterns for the given cell.
-		Set<TileSet::TerrainsPattern> valid_tiles = per_cell_acceptable_tiles[selected_cell_to_replace];
+		RBSet<TileSet::TerrainsPattern> valid_tiles = per_cell_acceptable_tiles[selected_cell_to_replace];
 		if (valid_tiles.is_empty()) {
 			break; // No possibilities :/
 		}
@@ -2317,7 +2319,7 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		LocalVector<int> terrains_counts;
 		int pattern_index = 0;
 		for (const TileSet::TerrainsPattern &pattern : valid_tiles) {
-			Set<int> terrains;
+			RBSet<int> terrains;
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
 				if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, side)) {
@@ -2345,8 +2347,8 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		per_cell_acceptable_tiles.erase(selected_cell_to_replace);
 
 		// Add the new constraints from the added tiles.
-		Set<TerrainConstraint> new_constraints = get_terrain_constraints_from_added_tile(selected_cell_to_replace, p_terrain_set, selected_terrain_tile_pattern);
-		for (Set<TerrainConstraint>::Element *E_constraint = new_constraints.front(); E_constraint; E_constraint = E_constraint->next()) {
+		RBSet<TerrainConstraint> new_constraints = get_terrain_constraints_from_added_tile(selected_cell_to_replace, p_terrain_set, selected_terrain_tile_pattern);
+		for (RBSet<TerrainConstraint>::Element *E_constraint = new_constraints.front(); E_constraint; E_constraint = E_constraint->next()) {
 			constraints.insert(E_constraint->get());
 		}
 
@@ -2369,14 +2371,14 @@ void TileMap::set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_INDEX(p_terrain_set, tile_set->get_terrain_sets_count());
 
-	Set<Vector2i> coords_set;
+	RBSet<Vector2i> coords_set;
 	for (int i = 0; i < p_coords_array.size(); i++) {
 		coords_set.insert(p_coords_array[i]);
 	}
 
-	Set<TileMap::TerrainConstraint> constraints = get_terrain_constraints_from_removed_cells_list(p_layer, coords_set, p_terrain_set, p_ignore_empty_terrains);
+	RBSet<TileMap::TerrainConstraint> constraints = get_terrain_constraints_from_removed_cells_list(p_layer, coords_set, p_terrain_set, p_ignore_empty_terrains);
 
-	Map<Vector2i, TileSet::TerrainsPattern> wfc_output = terrain_wave_function_collapse(coords_set, p_terrain_set, constraints);
+	HashMap<Vector2i, TileSet::TerrainsPattern> wfc_output = terrain_wave_function_collapse(coords_set, p_terrain_set, constraints);
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : wfc_output) {
 		TileMapCell cell = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		set_cell(p_layer, kv.key, cell.source_id, cell.get_atlas_coords(), cell.alternative_tile);
@@ -2385,11 +2387,11 @@ void TileMap::set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector
 
 TileMapCell TileMap::get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileMapCell());
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	if (!tile_map.has(p_coords)) {
 		return TileMapCell();
 	} else {
-		TileMapCell c = tile_map.find(p_coords)->get();
+		TileMapCell c = tile_map.find(p_coords)->value;
 		if (p_use_proxies && tile_set.is_valid()) {
 			Array proxyed = tile_set->map_tile_proxy(c.source_id, c.get_atlas_coords(), c.alternative_tile);
 			c.source_id = proxyed[0];
@@ -2400,7 +2402,7 @@ TileMapCell TileMap::get_cell(int p_layer, const Vector2i &p_coords, bool p_use_
 	}
 }
 
-Map<Vector2i, TileMapQuadrant> *TileMap::get_quadrant_map(int p_layer) {
+HashMap<Vector2i, TileMapQuadrant> *TileMap::get_quadrant_map(int p_layer) {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), nullptr);
 
 	return &layers[p_layer].quadrant_map;
@@ -2415,15 +2417,15 @@ void TileMap::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 
 	for (unsigned int i = 0; i < layers.size(); i++) {
-		const Map<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
-		Set<Vector2i> coords;
+		const HashMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
+		RBSet<Vector2i> coords;
 		for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
 			TileSetSource *source = *tile_set->get_source(E.value.source_id);
 			if (!source || !source->has_tile(E.value.get_atlas_coords()) || !source->has_alternative_tile(E.value.get_atlas_coords(), E.value.alternative_tile)) {
 				coords.insert(E.key);
 			}
 		}
-		for (Set<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
+		for (RBSet<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
 			set_cell(i, E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 		}
 	}
@@ -2546,7 +2548,7 @@ Vector<int> TileMap::_get_tile_data(int p_layer) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Vector<int>());
 
 	// Export tile data to raw format
-	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	Vector<int> data;
 	data.resize(tile_map.size() * 3);
 	int *w = data.ptrw();
@@ -3375,10 +3377,10 @@ Rect2 TileMap::get_used_rect() { // Not const because of cache
 		used_rect_cache = Rect2i();
 
 		for (unsigned int i = 0; i < layers.size(); i++) {
-			const Map<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
+			const HashMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
 			if (tile_map.size() > 0) {
 				if (first) {
-					used_rect_cache = Rect2i(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
+					used_rect_cache = Rect2i(tile_map.begin()->key.x, tile_map.begin()->key.y, 0, 0);
 					first = false;
 				}
 
@@ -3448,8 +3450,8 @@ void TileMap::set_texture_filter(TextureFilter p_texture_filter) {
 	// Set a default texture filter for the whole tilemap
 	CanvasItem::set_texture_filter(p_texture_filter);
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
-		for (Map<Vector2i, TileMapQuadrant>::Element *F = layers[layer].quadrant_map.front(); F; F = F->next()) {
-			TileMapQuadrant &q = F->get();
+		for (HashMap<Vector2i, TileMapQuadrant>::Iterator F = layers[layer].quadrant_map.begin(); F; ++F) {
+			TileMapQuadrant &q = F->value;
 			for (const RID &ci : q.canvas_items) {
 				RenderingServer::get_singleton()->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(p_texture_filter));
 				_make_quadrant_dirty(F);
@@ -3463,8 +3465,8 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 	// Set a default texture repeat for the whole tilemap
 	CanvasItem::set_texture_repeat(p_texture_repeat);
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
-		for (Map<Vector2i, TileMapQuadrant>::Element *F = layers[layer].quadrant_map.front(); F; F = F->next()) {
-			TileMapQuadrant &q = F->get();
+		for (HashMap<Vector2i, TileMapQuadrant>::Iterator F = layers[layer].quadrant_map.begin(); F; ++F) {
+			TileMapQuadrant &q = F->value;
 			for (const RID &ci : q.canvas_items) {
 				RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(p_texture_repeat));
 				_make_quadrant_dirty(F);
@@ -3512,7 +3514,7 @@ TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
 	return around;
 }
 
-void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Color p_color, Transform2D p_transform) {
+void TileMap::draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Color p_color, Transform2D p_transform) {
 	if (!tile_set.is_valid()) {
 		return;
 	}
@@ -3522,7 +3524,7 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 	Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
 	TileSet::TileShape shape = tile_set->get_tile_shape();
 
-	for (Set<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
+	for (RBSet<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
 		Vector2 center = map_to_world(E->get());
 
 #define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
@@ -3576,7 +3578,7 @@ TypedArray<String> TileMap::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
-	Set<int> y_sorted_z_index;
+	RBSet<int> y_sorted_z_index;
 	for (int layer = 0; layer < (int)layers.size(); layer++) {
 		if (layers[layer].y_sort_enabled) {
 			y_sorted_z_index.insert(layers[layer].z_index);

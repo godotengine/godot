@@ -51,7 +51,7 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates);
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button);
@@ -98,7 +98,7 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	Label *text = nullptr;
 	Tree *owners = nullptr;
 
-	Map<String, String> all_remove_files;
+	HashMap<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
 	Vector<String> files_to_delete;
 

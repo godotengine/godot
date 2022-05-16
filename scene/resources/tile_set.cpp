@@ -1345,19 +1345,19 @@ int TileSet::get_patterns_count() {
 	return patterns.size();
 }
 
-Set<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
-	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileSet::TerrainsPattern>());
+RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileSet::TerrainsPattern>());
 	_update_terrains_cache();
 
-	Set<TileSet::TerrainsPattern> output;
-	for (KeyValue<TileSet::TerrainsPattern, Set<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
+	RBSet<TileSet::TerrainsPattern> output;
+	for (KeyValue<TileSet::TerrainsPattern, RBSet<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
 		output.insert(kv.key);
 	}
 	return output;
 }
 
-Set<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
-	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileMapCell>());
+RBSet<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileMapCell>());
 	_update_terrains_cache();
 	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
 }
@@ -1368,8 +1368,8 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 
 	// Count the sum of probabilities.
 	double sum = 0.0;
-	Set<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
+	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
 		if (E->get().source_id >= 0) {
 			Ref<TileSetSource> source = sources[E->get().source_id];
 			Ref<TileSetAtlasSource> atlas_source = source;
@@ -1389,7 +1389,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	double picked = Math::random(0.0, sum);
 
 	// Pick the tile.
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
+	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
 		if (E->get().source_id >= 0) {
 			Ref<TileSetSource> source = sources[E->get().source_id];
 
@@ -2391,7 +2391,7 @@ void TileSet::_compatibility_conversion() {
 					value_array.push_back(alternative_tile);
 
 					if (!compatibility_tilemap_mapping.has(E.key)) {
-						compatibility_tilemap_mapping[E.key] = Map<Array, Array>();
+						compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
 					}
 					compatibility_tilemap_mapping[E.key][key_array] = value_array;
 					compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_SINGLE_TILE;
@@ -2483,7 +2483,7 @@ void TileSet::_compatibility_conversion() {
 							value_array.push_back(alternative_tile);
 
 							if (!compatibility_tilemap_mapping.has(E.key)) {
-								compatibility_tilemap_mapping[E.key] = Map<Array, Array>();
+								compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
 							}
 							compatibility_tilemap_mapping[E.key][key_array] = value_array;
 							compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
@@ -2571,7 +2571,7 @@ void TileSet::_compatibility_conversion() {
 	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
 		memdelete(E.value);
 	}
-	compatibility_data = Map<int, CompatibilityTileData *>();
+	compatibility_data = HashMap<int, CompatibilityTileData *>();
 }
 
 Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose) {
@@ -2622,12 +2622,12 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		// Get or create the compatibility object
 		CompatibilityTileData *ctd;
-		Map<int, CompatibilityTileData *>::Element *E = compatibility_data.find(id);
+		HashMap<int, CompatibilityTileData *>::Iterator E = compatibility_data.find(id);
 		if (!E) {
 			ctd = memnew(CompatibilityTileData);
 			compatibility_data.insert(id, ctd);
 		} else {
-			ctd = E->get();
+			ctd = E->value;
 		}
 
 		if (components.size() < 2) {

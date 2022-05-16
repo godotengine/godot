@@ -93,7 +93,7 @@ struct _GDFKCS {
 
 void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const {
 	int oc = 0;
-	Map<StringName, _GDFKC> sdmap;
+	HashMap<StringName, _GDFKC> sdmap;
 	for (const StackDebug &sd : stack_debug) {
 		if (sd.line >= p_line) {
 			break;

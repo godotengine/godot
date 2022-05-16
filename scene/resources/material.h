@@ -82,7 +82,7 @@ class ShaderMaterial : public Material {
 	GDCLASS(ShaderMaterial, Material);
 	Ref<Shader> shader;
 
-	Map<StringName, Variant> param_cache;
+	HashMap<StringName, Variant> param_cache;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -323,6 +323,9 @@ private:
 			memset(this, 0, sizeof(MaterialKey));
 		}
 
+		static uint32_t hash(const MaterialKey &p_key) {
+			return hash_djb2_buffer((const uint8_t *)&p_key, sizeof(MaterialKey));
+		}
 		bool operator==(const MaterialKey &p_key) const {
 			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
 		}
@@ -337,7 +340,7 @@ private:
 		int users = 0;
 	};
 
-	static Map<MaterialKey, ShaderData> shader_map;
+	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 
 	MaterialKey current_key;
 

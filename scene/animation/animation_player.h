@@ -132,7 +132,7 @@ private:
 			Variant capture;
 		};
 
-		Map<StringName, PropertyAnim> property_anim;
+		HashMap<StringName, PropertyAnim> property_anim;
 
 		struct BezierAnim {
 			Vector<StringName> bezier_property;
@@ -142,7 +142,7 @@ private:
 			uint64_t accum_pass = 0;
 		};
 
-		Map<StringName, BezierAnim> bezier_anim;
+		HashMap<StringName, BezierAnim> bezier_anim;
 
 		uint32_t last_setup_pass = 0;
 		TrackNodeCache() {}
@@ -152,6 +152,16 @@ private:
 		ObjectID id;
 		int bone_idx = -1;
 		int blend_shape_idx = -1;
+
+		static uint32_t hash(const TrackNodeCacheKey &p_key) {
+			uint32_t h = hash_one_uint64(p_key.id);
+			h = hash_djb2_one_32(p_key.bone_idx, h);
+			return hash_djb2_one_32(p_key.blend_shape_idx, h);
+		}
+
+		inline bool operator==(const TrackNodeCacheKey &p_right) const {
+			return id == p_right.id && bone_idx == p_right.bone_idx && blend_shape_idx == p_right.blend_shape_idx;
+		}
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
@@ -166,7 +176,7 @@ private:
 		}
 	};
 
-	Map<TrackNodeCacheKey, TrackNodeCache> node_cache_map;
+	HashMap<TrackNodeCacheKey, TrackNodeCache, TrackNodeCacheKey> node_cache_map;
 
 	TrackNodeCache *cache_update[NODE_CACHE_UPDATE_MAX];
 	int cache_update_size = 0;
@@ -174,7 +184,7 @@ private:
 	int cache_update_prop_size = 0;
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
 	int cache_update_bezier_size = 0;
-	Set<TrackNodeCache *> playing_caches;
+	RBSet<TrackNodeCache *> playing_caches;
 
 	uint64_t accum_pass = 1;
 	float speed_scale = 1.0;
@@ -189,7 +199,7 @@ private:
 		uint64_t last_update = 0;
 	};
 
-	Map<StringName, AnimationData> animation_set;
+	HashMap<StringName, AnimationData> animation_set;
 
 	struct AnimationLibraryData {
 		StringName name;
@@ -202,10 +212,22 @@ private:
 	struct BlendKey {
 		StringName from;
 		StringName to;
-		bool operator<(const BlendKey &bk) const { return from == bk.from ? String(to) < String(bk.to) : String(from) < String(bk.from); }
+		static uint32_t hash(const BlendKey &p_key) {
+			return hash_one_uint64((uint64_t(p_key.from.hash()) << 32) | uint32_t(p_key.to.hash()));
+		}
+		bool operator==(const BlendKey &bk) const {
+			return from == bk.from && to == bk.to;
+		}
+		bool operator<(const BlendKey &bk) const {
+			if (from == bk.from) {
+				return to < bk.to;
+			} else {
+				return from < bk.from;
+			}
+		}
 	};
 
-	Map<BlendKey, float> blend_times;
+	HashMap<BlendKey, float, BlendKey> blend_times;
 
 	struct PlaybackData {
 		AnimationData *from = nullptr;

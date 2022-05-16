@@ -33,7 +33,7 @@
 
 #include "core/io/file_access.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 //#define DEBUG_POT
 
@@ -43,7 +43,7 @@ class POTGenerator {
 	struct MsgidData {
 		String ctx;
 		String plural;
-		Set<String> locations;
+		RBSet<String> locations;
 	};
 	// Store msgid as key and the additional data around the msgid - if it's under a context, has plurals and its file locations.
 	HashMap<String, Vector<MsgidData>> all_translation_strings;

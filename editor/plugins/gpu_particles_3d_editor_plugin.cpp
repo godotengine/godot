@@ -42,7 +42,7 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 
 	if (emission_fill->get_selected() < 2) {
 		float area_accum = 0;
-		Map<float, int> triangle_area_map;
+		RBMap<float, int> triangle_area_map;
 
 		for (int i = 0; i < geometry.size(); i++) {
 			float area = geometry[i].get_area();
@@ -63,9 +63,9 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 		for (int i = 0; i < emissor_count; i++) {
 			float areapos = Math::random(0.0f, area_accum);
 
-			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
+			RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
 			ERR_FAIL_COND_V(!E, false);
-			int index = E->get();
+			int index = E->value;
 			ERR_FAIL_INDEX_V(index, geometry.size(), false);
 
 			// ok FINALLY get face

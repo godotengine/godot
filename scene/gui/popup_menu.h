@@ -117,7 +117,7 @@ class PopupMenu : public Popup {
 	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
-	Map<Ref<Shortcut>, int> shortcut_refcount;
+	HashMap<Ref<Shortcut>, int> shortcut_refcount;
 
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);

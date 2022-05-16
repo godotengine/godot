@@ -159,7 +159,7 @@ public:
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
-	Map<char32_t, char32_t> diacritics_map;
+	HashMap<char32_t, char32_t> diacritics_map;
 	void _diacritics_map_add(const String &p_from, char32_t p_to);
 	void _init_diacritics_map();
 

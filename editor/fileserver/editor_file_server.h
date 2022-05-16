@@ -49,13 +49,13 @@ class EditorFileServer : public Object {
 	struct ClientData {
 		Thread *thread = nullptr;
 		Ref<StreamPeerTCP> connection;
-		Map<int, Ref<FileAccess>> files;
+		HashMap<int, Ref<FileAccess>> files;
 		EditorFileServer *efs = nullptr;
 		bool quit = false;
 	};
 
 	Ref<TCPServer> server;
-	Set<Thread *> to_wait;
+	RBSet<Thread *> to_wait;
 
 	static void _close_client(ClientData *cd);
 	static void _subthread_start(void *s);

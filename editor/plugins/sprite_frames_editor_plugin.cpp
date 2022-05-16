@@ -125,7 +125,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	Color accent = get_theme_color("accent_color", "Editor");
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		const int idx = E->get();
 		const int x = idx % frame_count.x;
 		const int y = idx / frame_count.x;
@@ -248,7 +248,7 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		const Point2 frame_coords(idx % frame_count.x, idx / frame_count.x);
 

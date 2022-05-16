@@ -214,8 +214,8 @@ private:
 
 	HashMap<int, NodeData> nodes; // Can be a sparse map.
 
-	Set<SequenceConnection> sequence_connections;
-	Set<DataConnection> data_connections;
+	RBSet<SequenceConnection> sequence_connections;
+	RBSet<DataConnection> data_connections;
 
 	Vector2 scroll;
 
@@ -233,15 +233,15 @@ private:
 
 	HashMap<StringName, Function> functions;
 	HashMap<StringName, Variable> variables;
-	Map<StringName, Vector<Argument>> custom_signals;
+	HashMap<StringName, Vector<Argument>> custom_signals;
 	Vector<Multiplayer::RPCConfig> rpc_functions;
 
-	Map<Object *, VisualScriptInstance *> instances;
+	HashMap<Object *, VisualScriptInstance *> instances;
 
 	bool is_tool_script;
 
 #ifdef TOOLS_ENABLED
-	Set<PlaceHolderScriptInstance *> placeholders;
+	RBSet<PlaceHolderScriptInstance *> placeholders;
 	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_placeholders();
@@ -283,7 +283,7 @@ public:
 	void sequence_disconnect(int p_from_node, int p_from_output, int p_to_node);
 	bool has_sequence_connection(int p_from_node, int p_from_output, int p_to_node) const;
 	void get_sequence_connection_list(List<SequenceConnection> *r_connection) const;
-	Set<int> get_output_sequence_ports_connected(int from_node);
+	RBSet<int> get_output_sequence_ports_connected(int from_node);
 
 	void data_connect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void data_disconnect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
@@ -317,7 +317,7 @@ public:
 	void custom_signal_swap_argument(const StringName &p_func, int p_argidx, int p_with_argidx);
 	void remove_custom_signal(const StringName &p_name);
 	void rename_custom_signal(const StringName &p_name, const StringName &p_new_name);
-	Set<int> get_output_sequence_ports_connected(const String &edited_func, int from_node);
+	RBSet<int> get_output_sequence_ports_connected(const String &edited_func, int from_node);
 
 	void get_custom_signal_list(List<StringName> *r_custom_signals) const;
 
@@ -376,8 +376,8 @@ class VisualScriptInstance : public ScriptInstance {
 	Object *owner = nullptr;
 	Ref<VisualScript> script;
 
-	Map<StringName, Variant> variables; // Using variable path, not script.
-	Map<int, VisualScriptNodeInstance *> instances;
+	HashMap<StringName, Variant> variables; // Using variable path, not script.
+	HashMap<int, VisualScriptNodeInstance *> instances;
 
 	struct Function {
 		int node = 0;
@@ -389,7 +389,7 @@ class VisualScriptInstance : public ScriptInstance {
 		int argument_count = 0;
 	};
 
-	Map<StringName, Function> functions;
+	HashMap<StringName, Function> functions;
 
 	Vector<Variant> default_values;
 	int max_input_args = 0;
@@ -415,22 +415,22 @@ public:
 	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
-		Map<StringName, Variant>::Element *E = variables.find(p_variable);
+		HashMap<StringName, Variant>::Iterator E = variables.find(p_variable);
 		if (!E) {
 			return false;
 		}
 
-		E->get() = p_value;
+		E->value = p_value;
 		return true;
 	}
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
-		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
+		HashMap<StringName, Variant>::ConstIterator E = variables.find(p_variable);
 		if (!E) {
 			return false;
 		}
 
-		*r_variable = E->get();
+		*r_variable = E->value;
 		return true;
 	}
 
@@ -480,7 +480,7 @@ public:
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String &p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
-	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
+	HashMap<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -570,7 +570,7 @@ public:
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 	virtual bool has_named_classes() const override;
 	virtual bool supports_builtin_mode() const override;

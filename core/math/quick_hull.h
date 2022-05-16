@@ -34,7 +34,7 @@
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
 #include "core/templates/list.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 class QuickHull {
 public:
@@ -44,8 +44,15 @@ public:
 			uint64_t id = 0;
 		};
 
+		static uint32_t hash(const Edge &p_edge) {
+			return hash_one_uint64(p_edge.id);
+		}
+
 		bool operator<(const Edge &p_edge) const {
 			return id < p_edge.id;
+		}
+		bool operator==(const Edge &p_edge) const {
+			return id == p_edge.id;
 		}
 
 		Edge(int p_vtx_a = 0, int p_vtx_b = 0) {

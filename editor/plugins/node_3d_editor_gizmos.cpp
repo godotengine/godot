@@ -3789,7 +3789,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Set<Vector2i> lines_found;
+	RBSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
 	if (points.size() == 0) {
@@ -4755,7 +4755,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
-	Map<_EdgeKey, bool> edge_map;
+	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
 	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
@@ -4773,10 +4773,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					SWAP(ek.from, ek.to);
 				}
 
-				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
+				HashMap<_EdgeKey, bool, _EdgeKey>::Iterator F = edge_map.find(ek);
 
 				if (F) {
-					F->get() = false;
+					F->value = false;
 
 				} else {
 					edge_map[ek] = true;

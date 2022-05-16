@@ -412,7 +412,7 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 			if (audio_listener_3d_set.size() && !audio_listener_3d) {
 				AudioListener3D *first = nullptr;
-				for (Set<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
+				for (RBSet<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
 					if (first == nullptr || first->is_greater_than(E->get())) {
 						first = E->get();
 					}
@@ -426,7 +426,7 @@ void Viewport::_notification(int p_what) {
 			if (camera_3d_set.size() && !camera_3d) {
 				// There are cameras but no current camera, pick first in tree and make it current.
 				Camera3D *first = nullptr;
-				for (Set<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
+				for (RBSet<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
 					if (first == nullptr || first->is_greater_than(E->get())) {
 						first = E->get();
 					}
@@ -647,7 +647,7 @@ void Viewport::_process_picking() {
 			uint64_t frame = get_tree()->get_frame();
 
 			PhysicsDirectSpaceState2D::ShapeResult res[64];
-			for (Set<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
+			for (RBSet<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
 				Transform2D canvas_transform;
 				ObjectID canvas_layer_id;
 				if (E->get()) {
@@ -675,23 +675,23 @@ void Viewport::_process_picking() {
 						if (co && co->can_process()) {
 							bool send_event = true;
 							if (is_mouse) {
-								Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
+								HashMap<ObjectID, uint64_t>::Iterator F = physics_2d_mouseover.find(res[i].collider_id);
 								if (!F) {
 									physics_2d_mouseover.insert(res[i].collider_id, frame);
 									co->_mouse_enter();
 								} else {
-									F->get() = frame;
+									F->value = frame;
 									// It was already hovered, so don't send the event if it's faked.
 									if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
 										send_event = false;
 									}
 								}
-								Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
+								HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>>::Iterator SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
 								if (!SF) {
 									physics_2d_shape_mouseover.insert(Pair(res[i].collider_id, res[i].shape), frame);
 									co->_mouse_shape_enter(res[i].shape);
 								} else {
-									SF->get() = frame;
+									SF->value = frame;
 								}
 							}
 
@@ -2250,14 +2250,14 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 }
 
 void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
-	List<Map<ObjectID, uint64_t>::Element *> to_erase;
+	List<ObjectID> to_erase;
 
-	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
-		if (!p_clean_all_frames && E->get() == p_frame_reference) {
+	for (const KeyValue<ObjectID, uint64_t> &E : physics_2d_mouseover) {
+		if (!p_clean_all_frames && E.value == p_frame_reference) {
 			continue;
 		}
 
-		Object *o = ObjectDB::get_instance(E->key());
+		Object *o = ObjectDB::get_instance(E.key);
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
 			if (co && co->is_inside_tree()) {
@@ -2267,7 +2267,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 				co->_mouse_exit();
 			}
 		}
-		to_erase.push_back(E);
+		to_erase.push_back(E.key);
 	}
 
 	while (to_erase.size()) {
@@ -2276,24 +2276,24 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 	}
 
 	// Per-shape.
-	List<Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *> shapes_to_erase;
+	List<Pair<ObjectID, int>> shapes_to_erase;
 
-	for (Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>>::Element *E = physics_2d_shape_mouseover.front(); E; E = E->next()) {
-		if (!p_clean_all_frames && E->get() == p_frame_reference) {
+	for (KeyValue<Pair<ObjectID, int>, uint64_t> &E : physics_2d_shape_mouseover) {
+		if (!p_clean_all_frames && E.value == p_frame_reference) {
 			continue;
 		}
 
-		Object *o = ObjectDB::get_instance(E->key().first);
+		Object *o = ObjectDB::get_instance(E.key.first);
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
 			if (co && co->is_inside_tree()) {
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
-				co->_mouse_shape_exit(E->key().second);
+				co->_mouse_shape_exit(E.key.second);
 			}
 		}
-		shapes_to_erase.push_back(E);
+		shapes_to_erase.push_back(E.key);
 	}
 
 	while (shapes_to_erase.size()) {
@@ -3179,7 +3179,7 @@ void Viewport::_audio_listener_3d_remove(AudioListener3D *p_listener) {
 
 void Viewport::_audio_listener_3d_make_next_current(AudioListener3D *p_exclude) {
 	if (audio_listener_3d_set.size() > 0) {
-		for (Set<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
+		for (RBSet<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
 			if (p_exclude == E->get()) {
 				continue;
 			}
@@ -3267,7 +3267,7 @@ void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 }
 
 void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
-	for (Set<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
+	for (RBSet<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
 		if (p_exclude == E->get()) {
 			continue;
 		}
@@ -3913,7 +3913,7 @@ Viewport::Viewport() {
 
 Viewport::~Viewport() {
 	// Erase itself from viewport textures.
-	for (Set<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
+	for (RBSet<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
 		E->get()->vp = nullptr;
 	}
 	RenderingServer::get_singleton()->free(viewport);

@@ -103,9 +103,10 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		{
 			int *w = cells.ptrw();
 			int i = 0;
-			for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next(), i++) {
-				encode_uint64(E->key().key, (uint8_t *)&w[i * 3]);
-				encode_uint32(E->get().cell, (uint8_t *)&w[i * 3 + 2]);
+			for (const KeyValue<IndexKey, Cell> &E : cell_map) {
+				encode_uint64(E.key.key, (uint8_t *)&w[i * 3]);
+				encode_uint32(E.value.cell, (uint8_t *)&w[i * 3 + 2]);
+				i++;
 			}
 		}
 
@@ -480,9 +481,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
 
-	Map<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
+	HashMap<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
-	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
+	for (RBSet<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
 		const Cell &c = cell_map[E->get()];
 
@@ -770,7 +771,7 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
-	Map<IndexKey, Cell> cell_copy = cell_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_copy = cell_map;
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
@@ -998,7 +999,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 	}
 
 	//generate
-	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>> surface_map;
+	HashMap<OctantKey, HashMap<Ref<Material>, Ref<SurfaceTool>>, OctantKey> surface_map;
 
 	for (KeyValue<IndexKey, Cell> &E : cell_map) {
 		IndexKey key = E.key;
@@ -1028,10 +1029,10 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		ok.z = key.z / octant_size;
 
 		if (!surface_map.has(ok)) {
-			surface_map[ok] = Map<Ref<Material>, Ref<SurfaceTool>>();
+			surface_map[ok] = HashMap<Ref<Material>, Ref<SurfaceTool>>();
 		}
 
-		Map<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[ok];
+		HashMap<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[ok];
 
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
 			if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -1051,7 +1052,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		}
 	}
 
-	for (KeyValue<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>> &E : surface_map) {
+	for (KeyValue<OctantKey, HashMap<Ref<Material>, Ref<SurfaceTool>>> &E : surface_map) {
 		Ref<ArrayMesh> mesh;
 		mesh.instantiate();
 		for (KeyValue<Ref<Material>, Ref<SurfaceTool>> &F : E.value) {

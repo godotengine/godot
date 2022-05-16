@@ -316,7 +316,7 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 }
 
 void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
-	const Set<ObjectID> &known = rep_state->get_known_nodes(p_peer);
+	const RBSet<ObjectID> &known = rep_state->get_known_nodes(p_peer);
 	if (known.is_empty()) {
 		return;
 	}

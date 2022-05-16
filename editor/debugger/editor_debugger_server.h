@@ -39,7 +39,7 @@ public:
 	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
 
 private:
-	static Map<StringName, CreateServerFunc> protocols;
+	static HashMap<StringName, CreateServerFunc> protocols;
 
 public:
 	static void initialize();

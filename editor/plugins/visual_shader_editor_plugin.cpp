@@ -324,7 +324,7 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr, { nullptr, nullptr, nullptr } });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, HashMap<int, InputPort>(), HashMap<int, Port>(), nullptr, nullptr, nullptr, { nullptr, nullptr, nullptr } });
 }
 
 void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
@@ -1359,7 +1359,7 @@ void VisualShaderEditor::_update_options_menu() {
 
 	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "opengl3";
 
-	Map<String, TreeItem *> folders;
+	HashMap<String, TreeItem *> folders;
 
 	int current_func = -1;
 
@@ -1659,7 +1659,7 @@ void VisualShaderEditor::_update_uniforms(bool p_update_refs) {
 	}
 }
 
-void VisualShaderEditor::_update_uniform_refs(Set<String> &p_deleted_names) {
+void VisualShaderEditor::_update_uniform_refs(RBSet<String> &p_deleted_names) {
 	for (int i = 0; i < VisualShader::TYPE_MAX; i++) {
 		VisualShader::Type type = VisualShader::Type(i);
 
@@ -2277,7 +2277,7 @@ void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_
 	undo_redo->add_do_method(this, "_update_uniforms", true);
 	undo_redo->add_undo_method(this, "_update_uniforms", true);
 
-	Set<String> changed_names;
+	RBSet<String> changed_names;
 	changed_names.insert(node->get_uniform_name());
 	_update_uniform_refs(changed_names);
 
@@ -3097,7 +3097,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		}
 	}
 
-	Set<String> uniform_names;
+	RBSet<String> uniform_names;
 
 	for (const int &F : p_nodes) {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, F);
@@ -3201,10 +3201,10 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 		undo_redo->create_action(TTR("Convert Uniform Node(s) To Constant(s)"));
 	}
 
-	const Set<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
-	Set<String> deleted_names;
+	const RBSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
+	RBSet<String> deleted_names;
 
-	for (Set<int>::Element *E = current_set.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = current_set.front(); E; E = E->next()) {
 		int node_id = E->get();
 		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
 		bool caught = false;
@@ -3771,7 +3771,7 @@ void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, Li
 	selection_center.x = 0.0f;
 	selection_center.y = 0.0f;
 
-	Set<int> nodes;
+	RBSet<int> nodes;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
@@ -3850,9 +3850,9 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
-	Map<int, int> connection_remap;
-	Set<int> unsupported_set;
-	Set<int> added_set;
+	HashMap<int, int> connection_remap;
+	RBSet<int> unsupported_set;
+	RBSet<int> added_set;
 
 	for (CopyItem &item : r_items) {
 		if (item.disabled) {
@@ -5938,7 +5938,7 @@ public:
 		}
 	}
 
-	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const Map<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
+	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const HashMap<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
 		parent_resource = p_parent_resource;
 		updating = false;
 		node = p_node;

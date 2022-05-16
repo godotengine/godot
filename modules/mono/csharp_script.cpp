@@ -686,10 +686,10 @@ void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
 	MutexLock lock(unsafe_object_references_lock);
 	ObjectID id = p_obj->get_instance_id();
-	Map<ObjectID, int>::Element *elem = unsafe_object_references.find(id);
+	HashMap<ObjectID, int>::Iterator elem = unsafe_object_references.find(id);
 	ERR_FAIL_NULL(elem);
-	if (--elem->value() == 0) {
-		unsafe_object_references.erase(elem);
+	if (--elem->value == 0) {
+		unsafe_object_references.remove(elem);
 	}
 #endif
 }
@@ -897,7 +897,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 		// Save state and remove script from instances
-		Map<ObjectID, CSharpScript::StateBackup> &owners_map = script->pending_reload_state;
+		RBMap<ObjectID, CSharpScript::StateBackup> &owners_map = script->pending_reload_state;
 
 		for (Object *&obj : script->instances) {
 			ERR_CONTINUE(!obj->get_script_instance());
@@ -1099,14 +1099,14 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					const StringName &name = G.first;
 					const Array &serialized_data = G.second;
 
-					Map<StringName, CSharpScript::EventSignal>::Element *match = script->event_signals.find(name);
+					HashMap<StringName, CSharpScript::EventSignal>::Iterator match = script->event_signals.find(name);
 
 					if (!match) {
 						// The event or its signal attribute were removed
 						continue;
 					}
 
-					const CSharpScript::EventSignal &event_signal = match->value();
+					const CSharpScript::EventSignal &event_signal = match->value;
 
 					MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 					MonoDelegate *delegate = nullptr;
@@ -1428,7 +1428,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	return true;
 }
 
-Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding) {
+RBMap<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding) {
 	return script_bindings.insert(p_object, p_script_binding);
 }
 
@@ -1437,7 +1437,7 @@ void *CSharpLanguage::_instance_binding_create_callback(void *, void *p_instance
 
 	MutexLock lock(csharp_lang->language_bind_mutex);
 
-	Map<Object *, CSharpScriptBinding>::Element *match = csharp_lang->script_bindings.find((Object *)p_instance);
+	RBMap<Object *, CSharpScriptBinding>::Element *match = csharp_lang->script_bindings.find((Object *)p_instance);
 	if (match) {
 		return (void *)match;
 	}
@@ -1467,7 +1467,7 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 	{
 		MutexLock lock(csharp_lang->language_bind_mutex);
 
-		Map<Object *, CSharpScriptBinding>::Element *data = (Map<Object *, CSharpScriptBinding>::Element *)p_binding;
+		RBMap<Object *, CSharpScriptBinding>::Element *data = (RBMap<Object *, CSharpScriptBinding>::Element *)p_binding;
 
 		CSharpScriptBinding &script_binding = data->value();
 
@@ -1488,7 +1488,7 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference) {
 	CRASH_COND(!p_binding);
 
-	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
 
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(script_binding.owner);
 
@@ -1558,7 +1558,7 @@ void *CSharpLanguage::get_instance_binding(Object *p_object) {
 	// `setup_csharp_script_binding` may call `reference()`. It was moved here outside to fix that.
 
 	if (binding) {
-		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)binding)->value();
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)binding)->value();
 
 		if (!script_binding.inited) {
 			MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
@@ -2301,7 +2301,7 @@ CSharpInstance::~CSharpInstance() {
 
 		void *data = CSharpLanguage::get_instance_binding(owner);
 		CRASH_COND(data == nullptr);
-		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		CRASH_COND(!script_binding.inited);
 
 #ifdef DEBUG_ENABLED
@@ -2315,7 +2315,7 @@ CSharpInstance::~CSharpInstance() {
 
 #ifdef DEBUG_ENABLED
 		// CSharpInstance must not be created unless it's going to be added to the list for sure
-		Set<Object *>::Element *match = script->instances.find(owner);
+		RBSet<Object *>::Element *match = script->instances.find(owner);
 		CRASH_COND(!match);
 		script->instances.erase(match);
 #else
@@ -2331,7 +2331,7 @@ void CSharpScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 #endif
 
 #ifdef TOOLS_ENABLED
-void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames) {
+void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames) {
 	if (base_cache.is_valid()) {
 		base_cache->_update_exports_values(values, propnames);
 	}
@@ -2567,7 +2567,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 
 		if ((changed || p_instance_to_update) && placeholders.size()) {
 			// Update placeholders if any
-			Map<StringName, Variant> values;
+			HashMap<StringName, Variant> values;
 			List<PropertyInfo> propnames;
 			_update_exports_values(values, propnames);
 
@@ -3144,7 +3144,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		void *data = CSharpLanguage::get_existing_instance_binding(p_owner);
 		CRASH_COND(data == nullptr);
 
-		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited && !script_binding.gchandle.is_released()) {
 			MonoObject *mono_object = script_binding.gchandle.get_target();
 			if (mono_object) {
@@ -3401,9 +3401,9 @@ ScriptLanguage *CSharpScript::get_language() const {
 bool CSharpScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 #ifdef TOOLS_ENABLED
 
-	const Map<StringName, Variant>::Element *E = exported_members_defval_cache.find(p_property);
+	HashMap<StringName, Variant>::ConstIterator E = exported_members_defval_cache.find(p_property);
 	if (E) {
-		r_value = E->get();
+		r_value = E->value;
 		return true;
 	}
 
@@ -3574,7 +3574,7 @@ CSharpScript::~CSharpScript() {
 #endif
 }
 
-void CSharpScript::get_members(Set<StringName> *p_members) {
+void CSharpScript::get_members(RBSet<StringName> *p_members) {
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	if (p_members) {
 		for (const StringName &member_name : exported_members_names) {

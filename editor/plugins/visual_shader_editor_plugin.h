@@ -72,8 +72,8 @@ private:
 		GraphNode *graph_node = nullptr;
 		bool preview_visible = false;
 		int preview_pos = 0;
-		Map<int, InputPort> input_ports;
-		Map<int, Port> output_ports;
+		HashMap<int, InputPort> input_ports;
+		HashMap<int, Port> output_ports;
 		VBoxContainer *preview_box = nullptr;
 		LineEdit *uniform_name = nullptr;
 		CodeEdit *expression_edit = nullptr;
@@ -81,7 +81,7 @@ private:
 	};
 
 	Ref<VisualShader> visual_shader;
-	Map<int, Link> links;
+	HashMap<int, Link> links;
 	List<VisualShader::Connection> connections;
 	bool dirty = false;
 
@@ -358,8 +358,8 @@ class VisualShaderEditor : public VBoxContainer {
 	int from_node = -1;
 	int from_slot = -1;
 
-	Set<int> selected_constants;
-	Set<int> selected_uniforms;
+	RBSet<int> selected_constants;
+	RBSet<int> selected_uniforms;
 	int selected_comment = -1;
 	int selected_float_constant = -1;
 
@@ -468,7 +468,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool _is_available(int p_mode);
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
-	void _update_uniform_refs(Set<String> &p_names);
+	void _update_uniform_refs(RBSet<String> &p_names);
 	void _update_varyings();
 
 	void _visibility_changed();

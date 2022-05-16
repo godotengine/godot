@@ -36,9 +36,9 @@
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/set.h"
 
 #include <stdio.h>
 #include <typeinfo>

@@ -163,6 +163,9 @@ static inline uint64_t make_uint64_t(T p_in) {
 	return _u._u64;
 }
 
+template <class T>
+class Ref;
+
 struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
@@ -185,6 +188,12 @@ struct HashMapHasherDefault {
 
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
+
+	template <class T>
+	static _FORCE_INLINE_ uint32_t hash(const T *p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
+
+	template <class T>
+	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
 	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) {
 		uint32_t h = hash_djb2_one_32(p_vec.x);
@@ -237,13 +246,33 @@ struct HashMapComparatorDefault {
 	static bool compare(const T &p_lhs, const T &p_rhs) {
 		return p_lhs == p_rhs;
 	}
+};
 
-	bool compare(const float &p_lhs, const float &p_rhs) {
+template <>
+struct HashMapComparatorDefault<float> {
+	static bool compare(const float &p_lhs, const float &p_rhs) {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
 	}
+};
 
-	bool compare(const double &p_lhs, const double &p_rhs) {
+template <>
+struct HashMapComparatorDefault<double> {
+	static bool compare(const double &p_lhs, const double &p_rhs) {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Vector2> {
+	static bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
+		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y)));
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Vector3> {
+	static bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
+		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z)));
 	}
 };
 

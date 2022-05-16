@@ -104,7 +104,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	}
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
-	void _replace_strings(Map<String, String> p_replaces, Vector<uint8_t> &r_template);
+	void _replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template);
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
@@ -138,7 +138,7 @@ public:
 		r_features->push_back(get_os_name().to_lower());
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) override {
 	}
 
 	String get_debug_protocol() const override { return "ws://"; }

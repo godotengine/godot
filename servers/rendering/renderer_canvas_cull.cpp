@@ -1831,7 +1831,7 @@ void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 
 	RSG::canvas_render->occluder_polygon_set_shape(occluder_poly->occluder, p_shape, p_closed);
 
-	for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
+	for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
 		E->get()->aabb_cache = occluder_poly->aabb;
 	}
 }
@@ -1841,7 +1841,7 @@ void RendererCanvasCull::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 	ERR_FAIL_COND(!occluder_poly);
 	occluder_poly->cull_mode = p_mode;
 	RSG::canvas_render->occluder_polygon_set_cull_mode(occluder_poly->occluder, p_mode);
-	for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
+	for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
 		E->get()->cull_cache = p_mode;
 	}
 }
@@ -1931,7 +1931,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(canvas->viewports.front()->get());
 			ERR_FAIL_COND_V(!vp, true);
 
-			Map<RID, RendererViewport::Viewport::CanvasData>::Element *E = vp->canvas_map.find(p_rid);
+			HashMap<RID, RendererViewport::Viewport::CanvasData>::Iterator E = vp->canvas_map.find(p_rid);
 			ERR_FAIL_COND_V(!E, true);
 			vp->canvas_map.erase(p_rid);
 
@@ -1942,11 +1942,11 @@ bool RendererCanvasCull::free(RID p_rid) {
 			canvas->child_items[i].item->parent = RID();
 		}
 
-		for (Set<RendererCanvasRender::Light *>::Element *E = canvas->lights.front(); E; E = E->next()) {
+		for (RBSet<RendererCanvasRender::Light *>::Element *E = canvas->lights.front(); E; E = E->next()) {
 			E->get()->canvas = RID();
 		}
 
-		for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = canvas->occluders.front(); E; E = E->next()) {
+		for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = canvas->occluders.front(); E; E = E->next()) {
 			E->get()->canvas = RID();
 		}
 

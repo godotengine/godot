@@ -653,7 +653,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 					scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, instance->lightmap_sh.ptr());
 				}
 
-				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+				for (RBSet<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
 					Instance *dep_instance = E->get();
 					ERR_CONTINUE(dep_instance->array_index == -1);
 					ERR_CONTINUE(dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index != -1);
@@ -1292,14 +1292,14 @@ void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_par
 
 bool RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
 	bool cycle_detected = false;
-	Set<Instance *> traversed_nodes;
+	RBSet<Instance *> traversed_nodes;
 
 	{
 		Instance *instance = p_instance;
 		while (instance) {
 			if (!instance->visibility_dependencies.is_empty()) {
 				uint32_t depth = 0;
-				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+				for (RBSet<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
 					depth = MAX(depth, E->get()->visibility_dependencies_depth);
 				}
 				instance->visibility_dependencies_depth = depth + 1;
@@ -1429,7 +1429,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 
 	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
 
-	Map<StringName, Instance::InstanceShaderParameter>::Element *E = instance->instance_shader_parameters.find(p_parameter);
+	HashMap<StringName, Instance::InstanceShaderParameter>::Iterator E = instance->instance_shader_parameters.find(p_parameter);
 
 	if (!E) {
 		Instance::InstanceShaderParameter isp;
@@ -1438,10 +1438,10 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 		isp.value = p_value;
 		instance->instance_shader_parameters[p_parameter] = isp;
 	} else {
-		E->get().value = p_value;
-		if (E->get().index >= 0 && instance->instance_allocated_shader_parameters) {
+		E->value.value = p_value;
+		if (E->value.index >= 0 && instance->instance_allocated_shader_parameters) {
 			//update directly
-			RSG::material_storage->global_variables_instance_update(p_instance, E->get().index, p_value);
+			RSG::material_storage->global_variables_instance_update(p_instance, E->value.index, p_value);
 		}
 	}
 }
@@ -1559,7 +1559,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(p_instance->base_data);
 		//erase dependencies, since no longer a lightmap
 
-		for (Set<Instance *>::Element *E = lightmap_data->geometries.front(); E; E = E->next()) {
+		for (RBSet<Instance *>::Element *E = lightmap_data->geometries.front(); E; E = E->next()) {
 			Instance *geom = E->get();
 			_instance_queue_update(geom, true, false);
 		}
@@ -1574,7 +1574,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		//make sure lights are updated if it casts shadow
 
 		if (geom->can_cast_shadows) {
-			for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
+			for (RBSet<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 				light->shadow_dirty = true;
 			}
@@ -1632,7 +1632,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		idata.parent_array_index = p_instance->visibility_parent ? p_instance->visibility_parent->array_index : -1;
 		idata.visibility_index = p_instance->visibility_index;
 
-		for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+		for (RBSet<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
 			Instance *dep_instance = E->get();
 			if (dep_instance->array_index != -1) {
 				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
@@ -1800,7 +1800,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 			swapped_instance->scenario->instance_visibility[swapped_instance->visibility_index].array_index = swapped_instance->array_index;
 		}
 
-		for (Set<Instance *>::Element *E = swapped_instance->visibility_dependencies.front(); E; E = E->next()) {
+		for (RBSet<Instance *>::Element *E = swapped_instance->visibility_dependencies.front(); E; E = E->next()) {
 			Instance *dep_instance = E->get();
 			if (dep_instance != p_instance && dep_instance->array_index != -1) {
 				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
@@ -1824,7 +1824,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, nullptr, 0);
 	}
 
-	for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+	for (RBSet<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
 		Instance *dep_instance = E->get();
 		if (dep_instance->array_index != -1) {
 			dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
@@ -1923,7 +1923,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	float accum_blend = 0.0;
 
 	InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
-	for (Set<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
+	for (RBSet<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
 		Instance *lightmap = E->get();
 
 		bool interior = RSG::light_storage->lightmap_is_interior(lightmap->base);
@@ -2744,7 +2744,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
+						for (RBSet<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
 							InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 							instance_pair_buffer[idx++] = light->instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
@@ -2767,7 +2767,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->reflection_probes.front(); E; E = E->next()) {
+						for (RBSet<Instance *>::Element *E = geom->reflection_probes.front(); E; E = E->next()) {
 							InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(E->get()->base_data);
 
 							instance_pair_buffer[idx++] = reflection_probe->instance;
@@ -2784,7 +2784,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->decals.front(); E; E = E->next()) {
+						for (RBSet<Instance *>::Element *E = geom->decals.front(); E; E = E->next()) {
 							InstanceDecalData *decal = static_cast<InstanceDecalData *>(E->get()->base_data);
 
 							instance_pair_buffer[idx++] = decal->instance;
@@ -2799,7 +2799,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (idata.flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
-						for (Set<Instance *>::Element *E = geom->voxel_gi_instances.front(); E; E = E->next()) {
+						for (RBSet<Instance *>::Element *E = geom->voxel_gi_instances.front(); E; E = E->next()) {
 							InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(E->get()->base_data);
 
 							instance_pair_buffer[idx++] = voxel_gi->probe_instance;
@@ -3420,7 +3420,7 @@ void RendererSceneCull::render_probes() {
 			const RID *instance_caches = probe->light_instances.ptr();
 
 			int idx = 0; //must count visible lights
-			for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
+			for (RBSet<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
 				Instance *instance = E->get();
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 				if (!instance->visible) {
@@ -3502,7 +3502,7 @@ void RendererSceneCull::render_probes() {
 				RID *instance_caches = probe->light_instances.ptrw();
 
 				int idx = 0; //must count visible lights
-				for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
+				for (RBSet<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
 					Instance *instance = E->get();
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 					if (!instance->visible) {
@@ -3557,7 +3557,7 @@ void RendererSceneCull::render_probes() {
 
 		RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
-		for (Set<Instance *>::Element *E = probe->dynamic_geometries.front(); E; E = E->next()) {
+		for (RBSet<Instance *>::Element *E = probe->dynamic_geometries.front(); E; E = E->next()) {
 			Instance *ins = E->get();
 			if (!ins->visible) {
 				continue;
@@ -3566,7 +3566,7 @@ void RendererSceneCull::render_probes() {
 
 			if (ins->scenario && ins->array_index >= 0 && (ins->scenario->instance_data[ins->array_index].flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY)) {
 				uint32_t idx = 0;
-				for (Set<Instance *>::Element *F = geom->voxel_gi_instances.front(); F; F = F->next()) {
+				for (RBSet<Instance *>::Element *F = geom->voxel_gi_instances.front(); F; F = F->next()) {
 					InstanceVoxelGIData *voxel_gi2 = static_cast<InstanceVoxelGIData *>(F->get()->base_data);
 
 					instance_pair_buffer[idx++] = voxel_gi2->probe_instance;
@@ -3629,7 +3629,7 @@ void RendererSceneCull::render_particle_colliders() {
 	}
 }
 
-void RendererSceneCull::_update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
+void RendererSceneCull::_update_instance_shader_parameters_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
 	List<RendererMaterialStorage::InstanceShaderParam> plist;
 	RSG::material_storage->material_get_instance_shader_parameters(p_material, &plist);
 	for (const RendererMaterialStorage::InstanceShaderParam &E : plist) {
@@ -3700,7 +3700,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 			bool can_cast_shadows = true;
 			bool is_animated = false;
-			Map<StringName, Instance::InstanceShaderParameter> isparams;
+			HashMap<StringName, Instance::InstanceShaderParameter> isparams;
 
 			if (p_instance->cast_shadows == RS::SHADOW_CASTING_SETTING_OFF) {
 				can_cast_shadows = false;
@@ -3823,7 +3823,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
-				for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
+				for (RBSet<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
 					InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 					light->shadow_dirty = true;
 				}

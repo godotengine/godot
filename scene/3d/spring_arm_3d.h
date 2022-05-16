@@ -37,7 +37,7 @@ class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);
 
 	Ref<Shape3D> shape;
-	Set<RID> excluded_objects;
+	RBSet<RID> excluded_objects;
 	real_t spring_length = 1.0;
 	real_t current_spring_length = 0.0;
 	bool keep_child_basis = false;

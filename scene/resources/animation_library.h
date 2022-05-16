@@ -43,7 +43,7 @@ class AnimationLibrary : public Resource {
 	TypedArray<StringName> _get_animation_list() const;
 
 	friend class AnimationPlayer; //for faster access
-	Map<StringName, Ref<Animation>> animations;
+	HashMap<StringName, Ref<Animation>> animations;
 
 protected:
 	static void _bind_methods();

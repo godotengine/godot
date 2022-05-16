@@ -38,7 +38,7 @@
 #include "core/math/dynamic_bvh.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/vset.h"
 
 class GodotConstraint3D;
@@ -103,7 +103,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	SelfList<GodotSoftBody3D> active_list;
 
-	Set<GodotConstraint3D *> constraints;
+	RBSet<GodotConstraint3D *> constraints;
 
 	Vector<AreaCMP> areas;
 
@@ -123,7 +123,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<GodotConstraint3D *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ const RBSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }

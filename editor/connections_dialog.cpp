@@ -1029,27 +1029,27 @@ void ConnectionsDock::update_tree() {
 				String descr;
 				bool found = false;
 
-				Map<StringName, Map<StringName, String>>::Element *G = descr_cache.find(base);
+				HashMap<StringName, HashMap<StringName, String>>::Iterator G = descr_cache.find(base);
 				if (G) {
-					Map<StringName, String>::Element *F = G->get().find(signal_name);
+					HashMap<StringName, String>::Iterator F = G->value.find(signal_name);
 					if (F) {
 						found = true;
-						descr = F->get();
+						descr = F->value;
 					}
 				}
 
 				if (!found) {
 					DocTools *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
+					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
 					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->get().signals.size(); i++) {
-							if (F->get().signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->get().signals[i].description);
+						for (int i = 0; i < F->value.signals.size(); i++) {
+							if (F->value.signals[i].name == signal_name.operator String()) {
+								descr = DTR(F->value.signals[i].description);
 								break;
 							}
 						}
-						if (!F->get().inherits.is_empty()) {
-							F = dd->class_list.find(F->get().inherits);
+						if (!F->value.inherits.is_empty()) {
+							F = dd->class_list.find(F->value.inherits);
 						} else {
 							break;
 						}

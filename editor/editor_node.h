@@ -273,7 +273,7 @@ private:
 
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;
-	Map<String, EditorPlugin *> addon_name_to_plugin;
+	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 
 	PanelContainer *scene_root_parent = nullptr;
 	Control *theme_base = nullptr;
@@ -394,7 +394,7 @@ private:
 	BackgroundProgress *progress_hb = nullptr;
 
 	DependencyErrorDialog *dependency_error = nullptr;
-	Map<String, Set<String>> dependency_errors;
+	HashMap<String, RBSet<String>> dependency_errors;
 	DependencyEditor *dependency_fixer = nullptr;
 	OrphanResourcesDialog *orphan_resources = nullptr;
 	ConfirmationDialog *open_imported = nullptr;
@@ -470,15 +470,15 @@ private:
 
 	String import_reload_fn;
 
-	Set<String> textfile_extensions;
-	Set<FileDialog *> file_dialogs;
-	Set<EditorFileDialog *> editor_file_dialogs;
+	RBSet<String> textfile_extensions;
+	RBSet<FileDialog *> file_dialogs;
+	RBSet<EditorFileDialog *> editor_file_dialogs;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
 
-	Map<String, Ref<Texture2D>> icon_type_cache;
-	Map<Ref<Script>, Ref<Texture>> script_icon_cache;
+	HashMap<String, Ref<Texture2D>> icon_type_cache;
+	HashMap<Ref<Script>, Ref<Texture>> script_icon_cache;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -489,7 +489,7 @@ private:
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = static_cast<EditorNode *>(ud);
 		if (!en->dependency_errors.has(p_path)) {
-			en->dependency_errors[p_path] = Set<String>();
+			en->dependency_errors[p_path] = RBSet<String>();
 		}
 		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}
@@ -594,9 +594,9 @@ private:
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
-	bool _find_and_save_resource(Ref<Resource> p_res, Map<Ref<Resource>, bool> &processed, int32_t flags);
-	bool _find_and_save_edited_subresources(Object *obj, Map<Ref<Resource>, bool> &processed, int32_t flags);
-	void _save_edited_subresources(Node *scene, Map<Ref<Resource>, bool> &processed, int32_t flags);
+	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
+	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
+	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);

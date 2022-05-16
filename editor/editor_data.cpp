@@ -468,12 +468,12 @@ Variant EditorData::instance_custom_type(const String &p_type, const String &p_i
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
-	for (Map<String, Vector<CustomType>>::Element *E = custom_types.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().size(); i++) {
-			if (E->get()[i].name == p_type) {
-				E->get().remove_at(i);
-				if (E->get().is_empty()) {
-					custom_types.erase(E->key());
+	for (KeyValue<String, Vector<CustomType>> &E : custom_types) {
+		for (int i = 0; i < E.value.size(); i++) {
+			if (E.value[i].name == p_type) {
+				E.value.remove_at(i);
+				if (E.value.is_empty()) {
+					custom_types.erase(E.key);
 				}
 				return;
 			}
@@ -549,7 +549,7 @@ void EditorData::remove_scene(int p_idx) {
 	edited_scene.remove_at(p_idx);
 }
 
-bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths) {
+bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, RBSet<String> &checked_paths) {
 	Ref<SceneState> ss;
 
 	if (p_node == p_root) {
@@ -587,7 +587,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		return false;
 	}
 
-	Set<String> checked_scenes;
+	RBSet<String> checked_scenes;
 
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 
@@ -1154,7 +1154,7 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 
 void EditorSelection::clear() {
 	while (!selection.is_empty()) {
-		remove_node(selection.front()->key());
+		remove_node(selection.begin()->key);
 	}
 
 	changed = true;

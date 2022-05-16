@@ -101,7 +101,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 public:
 	virtual String get_name() const override { return "macOS"; }
@@ -127,7 +127,7 @@ public:
 		r_features->push_back("macos");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) override {
 	}
 
 	EditorExportPlatformOSX();

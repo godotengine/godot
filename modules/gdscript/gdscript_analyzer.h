@@ -33,7 +33,7 @@
 
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 

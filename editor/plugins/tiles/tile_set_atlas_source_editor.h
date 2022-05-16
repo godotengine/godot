@@ -88,7 +88,7 @@ public:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		Set<TileSelection> tiles = Set<TileSelection>();
+		RBSet<TileSelection> tiles = RBSet<TileSelection>();
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -99,10 +99,10 @@ public:
 
 	public:
 		TileSetAtlasSource *get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
-		Set<TileSelection> get_edited_tiles() const { return tiles; };
+		RBSet<TileSelection> get_edited_tiles() const { return tiles; };
 
 		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles = Set<TileSelection>());
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, RBSet<TileSelection> p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
 			tiles_set_atlas_source_editor = p_tiles_set_atlas_source_editor;
@@ -130,7 +130,7 @@ private:
 	// -- Tile data editors --
 	String current_property;
 	Control *current_tile_data_editor_toolbar = nullptr;
-	Map<String, TileDataEditor *> tile_data_editors;
+	HashMap<String, TileDataEditor *> tile_data_editors;
 	TileDataEditor *current_tile_data_editor = nullptr;
 	void _tile_data_editors_tree_selected();
 
@@ -182,10 +182,10 @@ private:
 	Vector2i drag_current_tile;
 
 	Rect2i drag_start_tile_shape;
-	Set<Vector2i> drag_modified_tiles;
+	RBSet<Vector2i> drag_modified_tiles;
 	void _end_dragging();
 
-	Map<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
+	HashMap<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
 
 	// Popup functions.
 	enum MenuOptions {
@@ -215,7 +215,7 @@ private:
 	MenuButton *tool_advanced_menu_buttom = nullptr;
 
 	// Selection.
-	Set<TileSelection> selection;
+	RBSet<TileSelection> selection;
 
 	void _set_selection_from_array(Array p_selection);
 	Array _get_selection_as_array();

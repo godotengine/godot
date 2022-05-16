@@ -41,7 +41,7 @@
 class EditorHTTPServer : public RefCounted {
 private:
 	Ref<TCPServer> server;
-	Map<String, String> mimes;
+	HashMap<String, String> mimes;
 	Ref<StreamPeerTCP> tcp;
 	Ref<StreamPeerSSL> ssl;
 	Ref<StreamPeer> peer;

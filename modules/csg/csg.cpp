@@ -211,7 +211,7 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	int ic = p_flip_faces.size();
 	const bool *ri = p_flip_faces.ptr();
 
-	Map<Ref<Material>, int> material_map;
+	HashMap<Ref<Material>, int> material_map;
 
 	faces.resize(p_vertices.size() / 3);
 
@@ -242,10 +242,10 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 		if (mc == vc / 3) {
 			Ref<Material> mat = rm[i];
 			if (mat.is_valid()) {
-				const Map<Ref<Material>, int>::Element *E = material_map.find(mat);
+				HashMap<Ref<Material>, int>::ConstIterator E = material_map.find(mat);
 
 				if (E) {
-					f.material = E->get();
+					f.material = E->value;
 				} else {
 					f.material = material_map.size();
 					material_map[mat] = f.material;

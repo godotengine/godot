@@ -35,8 +35,8 @@
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
@@ -72,23 +72,20 @@ private:
 	struct PackedDir {
 		PackedDir *parent = nullptr;
 		String name;
-		Map<String, PackedDir *> subdirs;
-		Set<String> files;
+		HashMap<String, PackedDir *> subdirs;
+		RBSet<String> files;
 	};
 
 	struct PathMD5 {
 		uint64_t a = 0;
 		uint64_t b = 0;
-		bool operator<(const PathMD5 &p_md5) const {
-			if (p_md5.a == a) {
-				return b < p_md5.b;
-			} else {
-				return a < p_md5.a;
-			}
-		}
 
-		bool operator==(const PathMD5 &p_md5) const {
-			return a == p_md5.a && b == p_md5.b;
+		bool operator==(const PathMD5 &p_val) const {
+			return (a == p_val.a) && (b == p_val.b);
+		}
+		static uint32_t hash(const PathMD5 &p_val) {
+			uint32_t h = hash_djb2_one_32(p_val.a);
+			return hash_djb2_one_32(p_val.b, h);
 		}
 
 		PathMD5() {}
@@ -99,7 +96,7 @@ private:
 		}
 	};
 
-	Map<PathMD5, PackedFile> files;
+	HashMap<PathMD5, PackedFile, PathMD5> files;
 
 	Vector<PackSource *> sources;
 
@@ -186,15 +183,15 @@ public:
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 	PathMD5 pmd5(p_path.md5_buffer());
-	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
 	if (!E) {
 		return nullptr; //not found
 	}
-	if (E->get().offset == 0) {
+	if (E->value.offset == 0) {
 		return nullptr; //was erased
 	}
 
-	return E->get().src->get_file(p_path, &E->get());
+	return E->value.src->get_file(p_path, &E->value);
 }
 
 bool PackedData::has_path(const String &p_path) {

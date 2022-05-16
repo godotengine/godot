@@ -122,7 +122,7 @@ DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
 // Example usage: `godot --test gdscript-parser`.
 
 typedef void (*TestFunc)();
-extern Map<String, TestFunc> *test_commands;
+extern HashMap<String, TestFunc> *test_commands;
 int register_test_command(String p_command, TestFunc p_function);
 
 #define REGISTER_TEST_COMMAND(m_command, m_function)                    \
@@ -233,8 +233,8 @@ class SignalWatcher : public Object {
 private:
 	inline static SignalWatcher *singleton;
 
-	/* Equal to: Map<String, Vector<Vector<Variant>>> */
-	Map<String, Array> _signals;
+	/* Equal to: RBMap<String, Vector<Vector<Variant>>> */
+	HashMap<String, Array> _signals;
 	void _add_signal_entry(const Array &p_args, const String &p_name) {
 		if (!_signals.has(p_name)) {
 			_signals[p_name] = Array();
