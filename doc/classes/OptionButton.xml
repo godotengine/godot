@@ -97,7 +97,7 @@
 		<method name="get_selected_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the ID of the selected item, or [code]0[/code] if no item is selected.
+				Returns the ID of the selected item, or [code]-1[/code] if no item is selected.
 			</description>
 		</method>
 		<method name="get_selected_metadata" qualifiers="const">
@@ -125,6 +125,7 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Selects an item by index and makes it the current item. This will work even if the item is disabled.
+				Passing [code]-1[/code] as the index deselects any currently selected item.
 			</description>
 		</method>
 		<method name="set_item_disabled">
