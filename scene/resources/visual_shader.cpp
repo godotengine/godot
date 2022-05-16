@@ -1562,7 +1562,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			const String begin = String(info.name);
 
 			for (int j = 0; j < info.options.size(); j++) {
-				const String option = String(info.options[j]);
+				const String option = String(info.options[j]).capitalize();
 
 				if (!blend_mode_enums.has(begin)) {
 					blend_mode_enums[begin] = option;
