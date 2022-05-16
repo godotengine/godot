@@ -1621,6 +1621,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Initialize Display Server */
 
+	// Make sure any pre-setup for our chosen rendering driver is done such as setting up our Vulkan Hooks.
+	DisplayServer::call_rendering_driver_setup_callbacks(rendering_driver);
+
 	{
 		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
 
@@ -2015,10 +2018,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Done");
 
 	return OK;
-}
-
-String Main::get_rendering_driver_name() {
-	return rendering_driver;
 }
 
 // everything the main loop needs to know about frame timings

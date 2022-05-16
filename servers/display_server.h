@@ -43,10 +43,28 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
+	static Vector<Callable> rendering_driver_setup_callbacks;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
 		return singleton;
+	}
+
+	// TODO move this somewhere so we can bind the method and make it callable from externals...
+	_FORCE_INLINE_ static void register_rendering_driver_setup_callback(const Callable &p_callback) {
+		rendering_driver_setup_callbacks.push_back(p_callback);
+	}
+
+	_FORCE_INLINE_ static void call_rendering_driver_setup_callbacks(const String &p_rendering_driver_name) {
+		for (int i = 0; i < rendering_driver_setup_callbacks.size(); i++) {
+			Variant rendering_driver_name = p_rendering_driver_name;
+			Variant ret;
+
+			const Variant *params[1] = { &rendering_driver_name };
+			Callable::CallError err;
+
+			rendering_driver_setup_callbacks[i].call(params, 1, ret, err);
+		}
 	}
 
 	enum WindowMode {

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "main/main.h"
+#include "servers/display_server.h"
 
 #include "openxr_interface.h"
 
@@ -57,20 +57,26 @@ static void _editor_init() {
 static OpenXRAPI *openxr_api = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
 
-void initialize_openxr_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
+void initialize_openxr_callback(const String &p_rendering_driver_name) {
+	if (OpenXRAPI::openxr_is_enabled()) {
+		openxr_api = memnew(OpenXRAPI);
+		ERR_FAIL_NULL(openxr_api);
 
-		if (OpenXRAPI::openxr_is_enabled()) {
-			openxr_api = memnew(OpenXRAPI);
-			ERR_FAIL_NULL(openxr_api);
-
-			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
-				memdelete(openxr_api);
-				openxr_api = nullptr;
-				return;
-			}
+		// Initializing the OpenXR driver will setup our OpenXR environment and depending on the graphics API, create hooks into the graphics drivers.
+		// This is especially important for the Vulkan driver where OpenXR takes over part of the Vulkan API.
+		// This code must be run before our DisplayDriver is created, but after we process our project settings.
+		if (!openxr_api->initialize(p_rendering_driver_name)) {
+			memdelete(openxr_api);
+			openxr_api = nullptr;
+			return;
 		}
+	}
+}
+
+void initialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		// If OpenXR is enabled, this callback will do the base setup of OpenXR and setup our Vulkan hooks so our Vulkan device is setup correctly.
+		DisplayServer::register_rendering_driver_setup_callback(callable_mp_static(initialize_openxr_callback));
 	}
 
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
