@@ -168,7 +168,7 @@ class Curve2D : public Resource {
 
 	real_t bake_interval = 5.0;
 
-	void _bake_segment2d(HashMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -233,7 +233,7 @@ class Curve3D : public Resource {
 	real_t bake_interval = 0.2;
 	bool up_vector_enabled = true;
 
-	void _bake_segment3d(HashMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
