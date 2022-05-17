@@ -256,13 +256,19 @@ Array GodotNavigationServer::map_get_agents(RID p_map) const {
 RID GodotNavigationServer::region_get_map(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, RID());
-	return region->get_map()->get_self();
+	if (region->get_map()) {
+		return region->get_map()->get_self();
+	}
+	return RID();
 }
 
 RID GodotNavigationServer::agent_get_map(RID p_agent) const {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND_V(agent == nullptr, RID());
-	return agent->get_map()->get_self();
+	if (agent->get_map()) {
+		return agent->get_map()->get_self();
+	}
+	return RID();
 }
 
 RID GodotNavigationServer::region_create() const {

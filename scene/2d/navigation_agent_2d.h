@@ -41,6 +41,7 @@ class NavigationAgent2D : public Node {
 	Node2D *agent_parent = nullptr;
 
 	RID agent;
+	RID map_before_pause;
 
 	uint32_t navigable_layers = 1;
 
