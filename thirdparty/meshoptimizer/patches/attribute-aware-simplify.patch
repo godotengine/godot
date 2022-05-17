@@ -1,8 +1,8 @@
 diff --git a/thirdparty/meshoptimizer/meshoptimizer.h b/thirdparty/meshoptimizer/meshoptimizer.h
-index fe8d349731..e44b99ce52 100644
+index be4b765d97..463fad29da 100644
 --- a/thirdparty/meshoptimizer/meshoptimizer.h
 +++ b/thirdparty/meshoptimizer/meshoptimizer.h
-@@ -298,6 +298,11 @@ MESHOPTIMIZER_EXPERIMENTAL void meshopt_decodeFilterExp(void* buffer, size_t ver
+@@ -328,6 +328,11 @@ MESHOPTIMIZER_EXPERIMENTAL void meshopt_encodeFilterExp(void* destination, size_
   */
  MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* result_error);
  
@@ -13,9 +13,9 @@ index fe8d349731..e44b99ce52 100644
 +
  /**
   * Experimental: Mesh simplifier (sloppy)
-  * Reduces the number of triangles in the mesh, sacrificing mesh apperance for simplification performance
+  * Reduces the number of triangles in the mesh, sacrificing mesh appearance for simplification performance
 diff --git a/thirdparty/meshoptimizer/simplifier.cpp b/thirdparty/meshoptimizer/simplifier.cpp
-index b2cb589462..059cabb055 100644
+index bf1431269d..e384046ffe 100644
 --- a/thirdparty/meshoptimizer/simplifier.cpp
 +++ b/thirdparty/meshoptimizer/simplifier.cpp
 @@ -20,6 +20,8 @@
@@ -27,7 +27,7 @@ index b2cb589462..059cabb055 100644
  // This work is based on:
  // Michael Garland and Paul S. Heckbert. Surface simplification using quadric error metrics. 1997
  // Michael Garland. Quadric-based polygonal surface simplification. 1999
-@@ -358,6 +360,10 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
+@@ -363,6 +365,10 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
  struct Vector3
  {
  	float x, y, z;
@@ -38,7 +38,7 @@ index b2cb589462..059cabb055 100644
  };
  
  static float rescalePositions(Vector3* result, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride)
-@@ -414,6 +420,13 @@ struct Quadric
+@@ -419,6 +425,13 @@ struct Quadric
  	float a10, a20, a21;
  	float b0, b1, b2, c;
  	float w;
@@ -52,7 +52,7 @@ index b2cb589462..059cabb055 100644
  };
  
  struct Collapse
-@@ -456,6 +469,16 @@ static void quadricAdd(Quadric& Q, const Quadric& R)
+@@ -461,6 +474,16 @@ static void quadricAdd(Quadric& Q, const Quadric& R)
  	Q.b2 += R.b2;
  	Q.c += R.c;
  	Q.w += R.w;
@@ -69,7 +69,7 @@ index b2cb589462..059cabb055 100644
  }
  
  static float quadricError(const Quadric& Q, const Vector3& v)
-@@ -481,6 +504,17 @@ static float quadricError(const Quadric& Q, const Vector3& v)
+@@ -486,6 +509,17 @@ static float quadricError(const Quadric& Q, const Vector3& v)
  	r += ry * v.y;
  	r += rz * v.z;
  
@@ -87,7 +87,7 @@ index b2cb589462..059cabb055 100644
  	float s = Q.w == 0.f ? 0.f : 1.f / Q.w;
  
  	return fabsf(r) * s;
-@@ -504,6 +538,13 @@ static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, flo
+@@ -509,6 +543,13 @@ static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, flo
  	Q.b2 = c * dw;
  	Q.c = d * dw;
  	Q.w = w;
@@ -101,7 +101,7 @@ index b2cb589462..059cabb055 100644
  }
  
  static void quadricFromPoint(Quadric& Q, float x, float y, float z, float w)
-@@ -556,6 +597,84 @@ static void quadricFromTriangleEdge(Quadric& Q, const Vector3& p0, const Vector3
+@@ -561,6 +602,84 @@ static void quadricFromTriangleEdge(Quadric& Q, const Vector3& p0, const Vector3
  	quadricFromPlane(Q, normal.x, normal.y, normal.z, -distance, length * weight);
  }
  
@@ -186,7 +186,7 @@ index b2cb589462..059cabb055 100644
  static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap)
  {
  	for (size_t i = 0; i < index_count; i += 3)
-@@ -567,6 +686,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
+@@ -572,6 +691,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
  		Quadric Q;
  		quadricFromTriangle(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], 1.f);
  
@@ -196,7 +196,7 @@ index b2cb589462..059cabb055 100644
  		quadricAdd(vertex_quadrics[remap[i0]], Q);
  		quadricAdd(vertex_quadrics[remap[i1]], Q);
  		quadricAdd(vertex_quadrics[remap[i2]], Q);
-@@ -1259,13 +1381,19 @@ unsigned int* meshopt_simplifyDebugLoopBack = 0;
+@@ -1265,13 +1387,19 @@ MESHOPTIMIZER_API unsigned int* meshopt_simplifyDebugLoopBack = 0;
  #endif
  
  size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* out_result_error)
@@ -218,7 +218,7 @@ index b2cb589462..059cabb055 100644
  
  	meshopt_Allocator allocator;
  
-@@ -1279,7 +1407,7 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
+@@ -1285,7 +1413,7 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
  	// build position remap that maps each vertex to the one with identical position
  	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
  	unsigned int* wedge = allocator.allocate<unsigned int>(vertex_count);
@@ -227,7 +227,7 @@ index b2cb589462..059cabb055 100644
  
  	// classify vertices; vertex kind determines collapse rules, see kCanCollapse
  	unsigned char* vertex_kind = allocator.allocate<unsigned char>(vertex_count);
-@@ -1303,7 +1431,21 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
+@@ -1309,7 +1437,21 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
  #endif
  
  	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
@@ -250,7 +250,7 @@ index b2cb589462..059cabb055 100644
  
  	Quadric* vertex_quadrics = allocator.allocate<Quadric>(vertex_count);
  	memset(vertex_quadrics, 0, vertex_count * sizeof(Quadric));
-@@ -1395,7 +1537,9 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
+@@ -1401,7 +1543,9 @@ size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices,
  
  	// result_error is quadratic; we need to remap it back to linear
  	if (out_result_error)
