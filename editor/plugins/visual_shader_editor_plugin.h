@@ -346,7 +346,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _delete_nodes(int p_type, const List<int> &p_nodes);
 	void _delete_node_request(int p_type, int p_node);
-	void _delete_nodes_request();
+	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	void _node_changed(int p_id);
 

@@ -1343,7 +1343,19 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			emit_signal(SNAME("paste_nodes_request"));
 			accept_event();
 		} else if (p_ev->is_action("ui_graph_delete")) {
-			emit_signal(SNAME("delete_nodes_request"));
+			TypedArray<StringName> nodes;
+
+			for (int i = 0; i < get_child_count(); i++) {
+				GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+				if (!gn) {
+					continue;
+				}
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					nodes.push_back(gn->get_name());
+				}
+			}
+
+			emit_signal(SNAME("delete_nodes_request"), nodes);
 			accept_event();
 		}
 	}
@@ -2290,7 +2302,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
+	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
