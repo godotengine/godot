@@ -154,7 +154,7 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.11.1 (3f83daeecb1a78d851b660eed025eeba362c0e4a, 2021)
+- Version: 2.12.1 (e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf, 2022)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -204,7 +204,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 4.2.0 (9d5730b958974bc9db95e46e6bad52e9e9cd6e1c, 2022)
+- Version: 4.2.1 (f7aee78e90bc53b3a95eb56d7550c9effe569ea2, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -216,7 +216,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 70.1 (a56dde820dc35665a66f2e9ee8ba58e75049b668, 2021)
+- Version: 71.1 (c205e7ee49a7086a28b9c275fcfdac9ca3dc815d, 2022)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -226,14 +226,14 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- the `icudt70l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt71l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
 - Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
 - Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt70l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt70l.dat`.
+- Step 4: Copy `source/data/out/icudt71l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt71l.dat`.
 
 
 ## jpeg-compressor

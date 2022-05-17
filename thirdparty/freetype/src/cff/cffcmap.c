@@ -4,7 +4,7 @@
  *
  *   CFF character mapping table (cmap) support (body).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -81,7 +81,7 @@
 
     if ( char_code < 255 )
     {
-      FT_UInt  code = (FT_UInt)(char_code + 1);
+      FT_UInt  code = (FT_UInt)( char_code + 1 );
 
 
       for (;;)

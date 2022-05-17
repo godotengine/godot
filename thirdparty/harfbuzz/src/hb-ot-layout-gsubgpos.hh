@@ -1415,11 +1415,6 @@ static inline void apply_lookup (hb_ot_apply_context_t *c,
     if (idx >= count)
       continue;
 
-    /* Don't recurse to ourself at same position.
-     * Note that this test is too naive, it doesn't catch longer loops. */
-    if (unlikely (idx == 0 && lookupRecord[i].lookupListIndex == c->lookup_index))
-      continue;
-
     unsigned int orig_len = buffer->backtrack_len () + buffer->lookahead_len ();
 
     /* This can happen if earlier recursed lookups deleted many entries. */
@@ -1457,11 +1452,10 @@ static inline void apply_lookup (hb_ot_apply_context_t *c,
      *     NOT the one after it.
      *
      *   - If buffer length was decreased by n, it does not necessarily
-     *     mean that n match positions where removed, as there might
-     *     have been marks and default-ignorables in the sequence.  We
-     *     should instead drop match positions between current-position
-     *     and current-position + n instead. Though, am not sure which
-     *     one is better. Both cases have valid uses. Sigh.
+     *     mean that n match positions where removed, as there recursed-to
+     *     lookup might had a different LookupFlag.  Here's a constructed
+     *     case of that:
+     *     https://github.com/harfbuzz/harfbuzz/discussions/3538
      *
      * It should be possible to construct tests for both of these cases.
      */
