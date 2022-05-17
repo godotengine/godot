@@ -1467,193 +1467,196 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 
 MethodInfo GDScriptFunctions::get_info(Function p_func) {
 #ifdef DEBUG_ENABLED
+#define ARGNAME(m_name) m_name
+#else
+#define ARGNAME(m_name) ""
+#endif
 	//using a switch, so the compiler generates a jumptable
-
 	switch (p_func) {
 		case MATH_SIN: {
-			MethodInfo mi("sin", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("sin", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 
 		} break;
 		case MATH_COS: {
-			MethodInfo mi("cos", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("cos", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_TAN: {
-			MethodInfo mi("tan", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("tan", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_SINH: {
-			MethodInfo mi("sinh", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("sinh", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_COSH: {
-			MethodInfo mi("cosh", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("cosh", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_TANH: {
-			MethodInfo mi("tanh", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("tanh", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ASIN: {
-			MethodInfo mi("asin", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("asin", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ACOS: {
-			MethodInfo mi("acos", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("acos", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ATAN: {
-			MethodInfo mi("atan", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("atan", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ATAN2: {
-			MethodInfo mi("atan2", PropertyInfo(Variant::REAL, "y"), PropertyInfo(Variant::REAL, "x"));
+			MethodInfo mi("atan2", PropertyInfo(Variant::REAL, ARGNAME("y")), PropertyInfo(Variant::REAL, ARGNAME("x")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_SQRT: {
-			MethodInfo mi("sqrt", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("sqrt", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_FMOD: {
-			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, ARGNAME("a")), PropertyInfo(Variant::REAL, ARGNAME("b")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_FPOSMOD: {
-			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, ARGNAME("a")), PropertyInfo(Variant::REAL, ARGNAME("b")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_POSMOD: {
-			MethodInfo mi("posmod", PropertyInfo(Variant::INT, "a"), PropertyInfo(Variant::INT, "b"));
+			MethodInfo mi("posmod", PropertyInfo(Variant::INT, ARGNAME("a")), PropertyInfo(Variant::INT, ARGNAME("b")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_FLOOR: {
-			MethodInfo mi("floor", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("floor", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_CEIL: {
-			MethodInfo mi("ceil", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("ceil", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ROUND: {
-			MethodInfo mi("round", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("round", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ABS: {
-			MethodInfo mi("abs", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("abs", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_SIGN: {
-			MethodInfo mi("sign", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("sign", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_POW: {
-			MethodInfo mi("pow", PropertyInfo(Variant::REAL, "base"), PropertyInfo(Variant::REAL, "exp"));
+			MethodInfo mi("pow", PropertyInfo(Variant::REAL, ARGNAME("base")), PropertyInfo(Variant::REAL, ARGNAME("exp")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_LOG: {
-			MethodInfo mi("log", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("log", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_EXP: {
-			MethodInfo mi("exp", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("exp", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ISNAN: {
-			MethodInfo mi("is_nan", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("is_nan", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_ISINF: {
-			MethodInfo mi("is_inf", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("is_inf", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_ISEQUALAPPROX: {
-			MethodInfo mi("is_equal_approx", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			MethodInfo mi("is_equal_approx", PropertyInfo(Variant::REAL, ARGNAME("a")), PropertyInfo(Variant::REAL, ARGNAME("b")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_ISZEROAPPROX: {
-			MethodInfo mi("is_zero_approx", PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("is_zero_approx", PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_EASE: {
-			MethodInfo mi("ease", PropertyInfo(Variant::REAL, "s"), PropertyInfo(Variant::REAL, "curve"));
+			MethodInfo mi("ease", PropertyInfo(Variant::REAL, ARGNAME("s")), PropertyInfo(Variant::REAL, ARGNAME("curve")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_DECIMALS: {
-			MethodInfo mi("decimals", PropertyInfo(Variant::REAL, "step"));
+			MethodInfo mi("decimals", PropertyInfo(Variant::REAL, ARGNAME("step")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_STEP_DECIMALS: {
-			MethodInfo mi("step_decimals", PropertyInfo(Variant::REAL, "step"));
+			MethodInfo mi("step_decimals", PropertyInfo(Variant::REAL, ARGNAME("step")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_STEPIFY: {
-			MethodInfo mi("stepify", PropertyInfo(Variant::REAL, "s"), PropertyInfo(Variant::REAL, "step"));
+			MethodInfo mi("stepify", PropertyInfo(Variant::REAL, ARGNAME("s")), PropertyInfo(Variant::REAL, ARGNAME("step")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_LERP: {
-			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, "from"), PropertyInfo(Variant::NIL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, ARGNAME("from")), PropertyInfo(Variant::NIL, ARGNAME("to")), PropertyInfo(Variant::REAL, ARGNAME("weight")));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case MATH_LERP_ANGLE: {
-			MethodInfo mi("lerp_angle", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("lerp_angle", PropertyInfo(Variant::REAL, ARGNAME("from")), PropertyInfo(Variant::REAL, ARGNAME("to")), PropertyInfo(Variant::REAL, ARGNAME("weight")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_INVERSE_LERP: {
-			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, ARGNAME("from")), PropertyInfo(Variant::REAL, ARGNAME("to")), PropertyInfo(Variant::REAL, ARGNAME("weight")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_RANGE_LERP: {
-			MethodInfo mi("range_lerp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "istart"), PropertyInfo(Variant::REAL, "istop"), PropertyInfo(Variant::REAL, "ostart"), PropertyInfo(Variant::REAL, "ostop"));
+			MethodInfo mi("range_lerp", PropertyInfo(Variant::REAL, ARGNAME("value")), PropertyInfo(Variant::REAL, ARGNAME("istart")), PropertyInfo(Variant::REAL, ARGNAME("istop")), PropertyInfo(Variant::REAL, ARGNAME("ostart")), PropertyInfo(Variant::REAL, ARGNAME("ostop")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_SMOOTHSTEP: {
-			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "s"));
+			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, ARGNAME("from")), PropertyInfo(Variant::REAL, ARGNAME("to")), PropertyInfo(Variant::REAL, ARGNAME("s")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_MOVE_TOWARD: {
-			MethodInfo mi("move_toward", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "delta"));
+			MethodInfo mi("move_toward", PropertyInfo(Variant::REAL, ARGNAME("from")), PropertyInfo(Variant::REAL, ARGNAME("to")), PropertyInfo(Variant::REAL, ARGNAME("delta")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_DECTIME: {
-			MethodInfo mi("dectime", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "amount"), PropertyInfo(Variant::REAL, "step"));
+			MethodInfo mi("dectime", PropertyInfo(Variant::REAL, ARGNAME("value")), PropertyInfo(Variant::REAL, ARGNAME("amount")), PropertyInfo(Variant::REAL, ARGNAME("step")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1673,83 +1676,83 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_RANDOM: {
-			MethodInfo mi("rand_range", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"));
+			MethodInfo mi("rand_range", PropertyInfo(Variant::REAL, ARGNAME("from")), PropertyInfo(Variant::REAL, ARGNAME("to")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_SEED: {
-			MethodInfo mi("seed", PropertyInfo(Variant::INT, "seed"));
+			MethodInfo mi("seed", PropertyInfo(Variant::INT, ARGNAME("seed")));
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
 		case MATH_RANDSEED: {
-			MethodInfo mi("rand_seed", PropertyInfo(Variant::INT, "seed"));
+			MethodInfo mi("rand_seed", PropertyInfo(Variant::INT, ARGNAME("seed")));
 			mi.return_val.type = Variant::ARRAY;
 			return mi;
 		} break;
 		case MATH_DEG2RAD: {
-			MethodInfo mi("deg2rad", PropertyInfo(Variant::REAL, "deg"));
+			MethodInfo mi("deg2rad", PropertyInfo(Variant::REAL, ARGNAME("deg")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_RAD2DEG: {
-			MethodInfo mi("rad2deg", PropertyInfo(Variant::REAL, "rad"));
+			MethodInfo mi("rad2deg", PropertyInfo(Variant::REAL, ARGNAME("rad")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_LINEAR2DB: {
-			MethodInfo mi("linear2db", PropertyInfo(Variant::REAL, "nrg"));
+			MethodInfo mi("linear2db", PropertyInfo(Variant::REAL, ARGNAME("nrg")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_DB2LINEAR: {
-			MethodInfo mi("db2linear", PropertyInfo(Variant::REAL, "db"));
+			MethodInfo mi("db2linear", PropertyInfo(Variant::REAL, ARGNAME("db")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_POLAR2CARTESIAN: {
-			MethodInfo mi("polar2cartesian", PropertyInfo(Variant::REAL, "r"), PropertyInfo(Variant::REAL, "th"));
+			MethodInfo mi("polar2cartesian", PropertyInfo(Variant::REAL, ARGNAME("r")), PropertyInfo(Variant::REAL, ARGNAME("th")));
 			mi.return_val.type = Variant::VECTOR2;
 			return mi;
 		} break;
 		case MATH_CARTESIAN2POLAR: {
-			MethodInfo mi("cartesian2polar", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("cartesian2polar", PropertyInfo(Variant::REAL, ARGNAME("x")), PropertyInfo(Variant::REAL, ARGNAME("y")));
 			mi.return_val.type = Variant::VECTOR2;
 			return mi;
 		} break;
 		case MATH_WRAP: {
-			MethodInfo mi("wrapi", PropertyInfo(Variant::INT, "value"), PropertyInfo(Variant::INT, "min"), PropertyInfo(Variant::INT, "max"));
+			MethodInfo mi("wrapi", PropertyInfo(Variant::INT, ARGNAME("value")), PropertyInfo(Variant::INT, ARGNAME("min")), PropertyInfo(Variant::INT, ARGNAME("max")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_WRAPF: {
-			MethodInfo mi("wrapf", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
+			MethodInfo mi("wrapf", PropertyInfo(Variant::REAL, ARGNAME("value")), PropertyInfo(Variant::REAL, ARGNAME("min")), PropertyInfo(Variant::REAL, ARGNAME("max")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case LOGIC_MAX: {
-			MethodInfo mi("max", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			MethodInfo mi("max", PropertyInfo(Variant::REAL, ARGNAME("a")), PropertyInfo(Variant::REAL, ARGNAME("b")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 
 		} break;
 		case LOGIC_MIN: {
-			MethodInfo mi("min", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			MethodInfo mi("min", PropertyInfo(Variant::REAL, ARGNAME("a")), PropertyInfo(Variant::REAL, ARGNAME("b")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case LOGIC_CLAMP: {
-			MethodInfo mi("clamp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
+			MethodInfo mi("clamp", PropertyInfo(Variant::REAL, ARGNAME("value")), PropertyInfo(Variant::REAL, ARGNAME("min")), PropertyInfo(Variant::REAL, ARGNAME("max")));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case LOGIC_NEAREST_PO2: {
-			MethodInfo mi("nearest_po2", PropertyInfo(Variant::INT, "value"));
+			MethodInfo mi("nearest_po2", PropertyInfo(Variant::INT, ARGNAME("value")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case OBJ_WEAKREF: {
-			MethodInfo mi("weakref", PropertyInfo(Variant::OBJECT, "obj"));
+			MethodInfo mi("weakref", PropertyInfo(Variant::OBJECT, ARGNAME("obj")));
 			mi.return_val.type = Variant::OBJECT;
 			mi.return_val.class_name = "WeakRef";
 
@@ -1757,38 +1760,38 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 		} break;
 		case FUNC_FUNCREF: {
-			MethodInfo mi("funcref", PropertyInfo(Variant::OBJECT, "instance"), PropertyInfo(Variant::STRING, "funcname"));
+			MethodInfo mi("funcref", PropertyInfo(Variant::OBJECT, ARGNAME("instance")), PropertyInfo(Variant::STRING, ARGNAME("funcname")));
 			mi.return_val.type = Variant::OBJECT;
 			mi.return_val.class_name = "FuncRef";
 			return mi;
 
 		} break;
 		case TYPE_CONVERT: {
-			MethodInfo mi("convert", PropertyInfo(Variant::NIL, "what", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::INT, "type"));
+			MethodInfo mi("convert", PropertyInfo(Variant::NIL, ARGNAME("what"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::INT, ARGNAME("type")));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case TYPE_OF: {
-			MethodInfo mi("typeof", PropertyInfo(Variant::NIL, "what", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			MethodInfo mi("typeof", PropertyInfo(Variant::NIL, ARGNAME("what"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 			mi.return_val.type = Variant::INT;
 			return mi;
 
 		} break;
 		case TYPE_EXISTS: {
-			MethodInfo mi("type_exists", PropertyInfo(Variant::STRING, "type"));
+			MethodInfo mi("type_exists", PropertyInfo(Variant::STRING, ARGNAME("type")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 
 		} break;
 		case TEXT_CHAR: {
-			MethodInfo mi("char", PropertyInfo(Variant::INT, "code"));
+			MethodInfo mi("char", PropertyInfo(Variant::INT, ARGNAME("code")));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 
 		} break;
 		case TEXT_ORD: {
-			MethodInfo mi("ord", PropertyInfo(Variant::STRING, "char"));
+			MethodInfo mi("ord", PropertyInfo(Variant::STRING, ARGNAME("char")));
 			mi.return_val.type = Variant::INT;
 			return mi;
 
@@ -1843,36 +1846,36 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 		} break;
 		case PUSH_ERROR: {
-			MethodInfo mi(Variant::NIL, "push_error", PropertyInfo(Variant::STRING, "message"));
+			MethodInfo mi(Variant::NIL, "push_error", PropertyInfo(Variant::STRING, ARGNAME("message")));
 			mi.return_val.type = Variant::NIL;
 			return mi;
 
 		} break;
 		case PUSH_WARNING: {
-			MethodInfo mi(Variant::NIL, "push_warning", PropertyInfo(Variant::STRING, "message"));
+			MethodInfo mi(Variant::NIL, "push_warning", PropertyInfo(Variant::STRING, ARGNAME("message")));
 			mi.return_val.type = Variant::NIL;
 			return mi;
 
 		} break;
 		case VAR_TO_STR: {
-			MethodInfo mi("var2str", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			MethodInfo mi("var2str", PropertyInfo(Variant::NIL, ARGNAME("var"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case STR_TO_VAR: {
-			MethodInfo mi(Variant::NIL, "str2var", PropertyInfo(Variant::STRING, "string"));
+			MethodInfo mi(Variant::NIL, "str2var", PropertyInfo(Variant::STRING, ARGNAME("string")));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case VAR_TO_BYTES: {
-			MethodInfo mi("var2bytes", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "full_objects"));
+			MethodInfo mi("var2bytes", PropertyInfo(Variant::NIL, ARGNAME("var"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, ARGNAME("full_objects")));
 			mi.default_arguments.push_back(false);
 			mi.return_val.type = Variant::POOL_BYTE_ARRAY;
 			return mi;
 		} break;
 		case BYTES_TO_VAR: {
-			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"), PropertyInfo(Variant::BOOL, "allow_objects"));
+			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::POOL_BYTE_ARRAY, ARGNAME("bytes")), PropertyInfo(Variant::BOOL, ARGNAME("allow_objects")));
 			mi.default_arguments.push_back(false);
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
@@ -1885,50 +1888,50 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case RESOURCE_LOAD: {
-			MethodInfo mi("load", PropertyInfo(Variant::STRING, "path"));
+			MethodInfo mi("load", PropertyInfo(Variant::STRING, ARGNAME("path")));
 			mi.return_val.type = Variant::OBJECT;
 			mi.return_val.class_name = "Resource";
 			return mi;
 		} break;
 		case INST2DICT: {
-			MethodInfo mi("inst2dict", PropertyInfo(Variant::OBJECT, "inst"));
+			MethodInfo mi("inst2dict", PropertyInfo(Variant::OBJECT, ARGNAME("inst")));
 			mi.return_val.type = Variant::DICTIONARY;
 			return mi;
 		} break;
 		case DICT2INST: {
-			MethodInfo mi("dict2inst", PropertyInfo(Variant::DICTIONARY, "dict"));
+			MethodInfo mi("dict2inst", PropertyInfo(Variant::DICTIONARY, ARGNAME("dict")));
 			mi.return_val.type = Variant::OBJECT;
 			return mi;
 		} break;
 		case VALIDATE_JSON: {
-			MethodInfo mi("validate_json", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi("validate_json", PropertyInfo(Variant::STRING, ARGNAME("json")));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case PARSE_JSON: {
-			MethodInfo mi(Variant::NIL, "parse_json", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi(Variant::NIL, "parse_json", PropertyInfo(Variant::STRING, ARGNAME("json")));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case TO_JSON: {
-			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, ARGNAME("var"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case HASH: {
-			MethodInfo mi("hash", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			MethodInfo mi("hash", PropertyInfo(Variant::NIL, ARGNAME("var"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case COLOR8: {
-			MethodInfo mi("Color8", PropertyInfo(Variant::INT, "r8"), PropertyInfo(Variant::INT, "g8"), PropertyInfo(Variant::INT, "b8"), PropertyInfo(Variant::INT, "a8"));
+			MethodInfo mi("Color8", PropertyInfo(Variant::INT, ARGNAME("r8")), PropertyInfo(Variant::INT, ARGNAME("g8")), PropertyInfo(Variant::INT, ARGNAME("b8")), PropertyInfo(Variant::INT, ARGNAME("a8")));
 			mi.default_arguments.push_back(255);
 			mi.return_val.type = Variant::COLOR;
 			return mi;
 		} break;
 		case COLORN: {
-			MethodInfo mi("ColorN", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::REAL, "alpha"));
+			MethodInfo mi("ColorN", PropertyInfo(Variant::STRING, ARGNAME("name")), PropertyInfo(Variant::REAL, ARGNAME("alpha")));
 			mi.default_arguments.push_back(1.0f);
 			mi.return_val.type = Variant::COLOR;
 			return mi;
@@ -1946,31 +1949,34 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 
 		case INSTANCE_FROM_ID: {
-			MethodInfo mi("instance_from_id", PropertyInfo(Variant::INT, "instance_id"));
+			MethodInfo mi("instance_from_id", PropertyInfo(Variant::INT, ARGNAME("instance_id")));
 			mi.return_val.type = Variant::OBJECT;
 			return mi;
 		} break;
 		case LEN: {
-			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			MethodInfo mi("len", PropertyInfo(Variant::NIL, ARGNAME("var"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case IS_INSTANCE_VALID: {
-			MethodInfo mi("is_instance_valid", PropertyInfo(Variant::OBJECT, "instance"));
+			MethodInfo mi("is_instance_valid", PropertyInfo(Variant::OBJECT, ARGNAME("instance")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case DEEP_EQUAL: {
-			MethodInfo mi("deep_equal", PropertyInfo(Variant::NIL, "a"), PropertyInfo(Variant::NIL, "b"));
+			MethodInfo mi("deep_equal", PropertyInfo(Variant::NIL, ARGNAME("a")), PropertyInfo(Variant::NIL, ARGNAME("b")));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
-		default: {
-			ERR_FAIL_V(MethodInfo());
-		} break;
+		case FUNC_MAX: {
+			// Unreachable.
+			break;
+		}
 	}
-#endif
+
+#undef ARGNAME
+
 	MethodInfo mi;
 	mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	return mi;
+	ERR_FAIL_V_MSG(mi, "Trying to get info of invalid builtin method.");
 }
