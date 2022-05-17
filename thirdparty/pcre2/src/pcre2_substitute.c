@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -259,6 +259,18 @@ PCRE2_UNSET, so as not to imply an offset in the replacement. */
 
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0)
   return PCRE2_ERROR_BADOPTION;
+  
+/* Validate length and find the end of the replacement. A NULL replacement of 
+zero length is interpreted as an empty string. */
+
+if (replacement == NULL) 
+  {
+  if (rlength != 0) return PCRE2_ERROR_NULL;
+  replacement = (PCRE2_SPTR)""; 
+  } 
+   
+if (rlength == PCRE2_ZERO_TERMINATED) rlength = PRIV(strlen)(replacement);
+repend = replacement + rlength;
 
 /* Check for using a match that has already happened. Note that the subject
 pointer in the match data may be NULL after a no-match. */
@@ -312,11 +324,18 @@ scb.input = subject;
 scb.output = (PCRE2_SPTR)buffer;
 scb.ovector = ovector;
 
-/* Find lengths of zero-terminated strings and the end of the replacement. */
+/* A NULL subject of zero length is treated as an empty string. */
 
-if (length == PCRE2_ZERO_TERMINATED) length = PRIV(strlen)(subject);
-if (rlength == PCRE2_ZERO_TERMINATED) rlength = PRIV(strlen)(replacement);
-repend = replacement + rlength;
+if (subject == NULL)
+  {
+  if (length != 0) return PCRE2_ERROR_NULL; 
+  subject = (PCRE2_SPTR)"";
+  } 
+
+/* Find length of zero-terminated subject */
+
+if (length == PCRE2_ZERO_TERMINATED)
+  length = subject? PRIV(strlen)(subject) : 0;
 
 /* Check UTF replacement string if necessary. */
 
