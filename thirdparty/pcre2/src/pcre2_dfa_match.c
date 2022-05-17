@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2021 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -1193,6 +1193,11 @@ for (;;)
           OK = prop->script == code[2];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[2] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[2]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1238,6 +1243,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[2];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[2]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1451,6 +1465,11 @@ for (;;)
           OK = prop->script == code[3];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[3] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[3]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1496,6 +1515,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[3];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[3]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1692,6 +1720,11 @@ for (;;)
           OK = prop->script == code[3];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[3] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[3]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1737,6 +1770,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[3];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[3]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1958,6 +2000,12 @@ for (;;)
           OK = prop->script == code[1 + IMM2_SIZE + 2];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[1 + IMM2_SIZE + 2] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop),
+                  code[1 + IMM2_SIZE + 2]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -2003,6 +2051,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[1 + IMM2_SIZE + 2];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[1 + IMM2_SIZE + 2]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -3285,8 +3342,15 @@ rws->next = NULL;
 rws->size = RWS_BASE_SIZE;
 rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
 
-/* A length equal to PCRE2_ZERO_TERMINATED implies a zero-terminated
-subject string. */
+/* Recognize NULL, length 0 as an empty string. */
+
+if (subject == NULL && length == 0) subject = (PCRE2_SPTR)"";
+
+/* Plausibility checks */
+
+if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
+if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
+  return PCRE2_ERROR_NULL;
 
 if (length == PCRE2_ZERO_TERMINATED)
   {
@@ -3294,11 +3358,6 @@ if (length == PCRE2_ZERO_TERMINATED)
   was_zero_terminated = 1;
   }
 
-/* Plausibility checks */
-
-if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
-if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
-  return PCRE2_ERROR_NULL;
 if (wscount < 20) return PCRE2_ERROR_DFA_WSSIZE;
 if (start_offset > length) return PCRE2_ERROR_BADOFFSET;
 
