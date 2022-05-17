@@ -535,6 +535,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
+	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 
 	// Register icons + font
 

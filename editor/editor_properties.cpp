@@ -2752,7 +2752,13 @@ void EditorPropertyColor::_picker_opening() {
 	last_color = picker->get_pick_color();
 }
 
-void EditorPropertyColor::_bind_methods() {
+void EditorPropertyColor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+		} break;
+	}
 }
 
 void EditorPropertyColor::update_property() {
