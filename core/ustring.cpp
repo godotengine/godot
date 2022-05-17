@@ -3377,6 +3377,31 @@ bool String::is_abs_path() const {
 	}
 }
 
+static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, CharType p_char) {
+	if (p_index == 0 && p_char >= '0' && p_char <= '9') {
+		return false; // No start with number plz.
+	}
+	return (p_char >= '0' && p_char <= '9') || (p_char >= 'a' && p_char <= 'z') || (p_char >= 'A' && p_char <= 'Z') || p_char == '_';
+}
+
+String String::validate_identifier() const {
+	if (empty()) {
+		return "_"; // Empty string is not a valid identifier.
+	}
+
+	String result = *this;
+	int len = result.length();
+	wchar_t *buffer = result.ptrw();
+
+	for (int i = 0; i < len; i++) {
+		if (!_is_valid_identifier_bit(i, buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+
+	return result;
+}
+
 bool String::is_valid_identifier() const {
 	int len = length();
 
@@ -3387,15 +3412,7 @@ bool String::is_valid_identifier() const {
 	const wchar_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (i == 0) {
-			if (str[0] >= '0' && str[0] <= '9') {
-				return false; // no start with number plz
-			}
-		}
-
-		bool valid_char = (str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '_';
-
-		if (!valid_char) {
+		if (!_is_valid_identifier_bit(i, str[i])) {
 			return false;
 		}
 	}
