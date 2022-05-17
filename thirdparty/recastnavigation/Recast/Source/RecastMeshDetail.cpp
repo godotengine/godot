@@ -653,8 +653,8 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 	for (int i = 0; i < nin; ++i)
 		rcVcopy(&verts[i*3], &in[i*3]);
 	
-	edges.resize(0);
-	tris.resize(0);
+	edges.clear();
+	tris.clear();
 	
 	const float cs = chf.cs;
 	const float ics = 1.0f/cs;
@@ -803,7 +803,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 		int x1 = (int)ceilf(bmax[0]/sampleDist);
 		int z0 = (int)floorf(bmin[2]/sampleDist);
 		int z1 = (int)ceilf(bmax[2]/sampleDist);
-		samples.resize(0);
+		samples.clear();
 		for (int z = z0; z < z1; ++z)
 		{
 			for (int x = x0; x < x1; ++x)
@@ -864,8 +864,8 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 			
 			// Create new triangulation.
 			// TODO: Incremental add instead of full rebuild.
-			edges.resize(0);
-			tris.resize(0);
+			edges.clear();
+			tris.clear();
 			delaunayHull(ctx, nverts, verts, nhull, hull, tris, edges);
 		}
 	}
@@ -935,7 +935,7 @@ static void seedArrayWithPolyCenter(rcContext* ctx, const rcCompactHeightfield& 
 	pcy /= npoly;
 	
 	// Use seeds array as a stack for DFS
-	array.resize(0);
+	array.clear();
 	array.push(startCellX);
 	array.push(startCellY);
 	array.push(startSpanIndex);
@@ -1001,7 +1001,7 @@ static void seedArrayWithPolyCenter(rcContext* ctx, const rcCompactHeightfield& 
 		rcSwap(dirs[directDir], dirs[3]);
 	}
 
-	array.resize(0);
+	array.clear();
 	// getHeightData seeds are given in coordinates with borders
 	array.push(cx+bs);
 	array.push(cy+bs);
@@ -1030,7 +1030,7 @@ static void getHeightData(rcContext* ctx, const rcCompactHeightfield& chf,
 	// Note: Reads to the compact heightfield are offset by border size (bs)
 	// since border size offset is already removed from the polymesh vertices.
 	
-	queue.resize(0);
+	queue.clear();
 	// Set all heights to RC_UNSET_HEIGHT.
 	memset(hp.data, 0xff, sizeof(unsigned short)*hp.width*hp.height);
 
