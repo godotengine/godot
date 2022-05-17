@@ -135,7 +135,11 @@ public:
 
 		int otherSize = otherArray.size();
 		resize(otherSize);
-		otherArray.copy(0, otherSize, m_data);
+		//don't use otherArray.copy, it can leak memory
+		for (int i = 0; i < otherSize; i++)
+		{
+			m_data[i] = otherArray[i];
+		}
 	}
 
 	/// return the number of elements in the array
@@ -506,7 +510,11 @@ public:
 	{
 		int otherSize = otherArray.size();
 		resize(otherSize);
-		otherArray.copy(0, otherSize, m_data);
+		//don't use otherArray.copy, it can leak memory
+		for (int i = 0; i < otherSize; i++)
+		{
+			m_data[i] = otherArray[i];
+		}
 	}
 
 	void removeAtIndex(int index)

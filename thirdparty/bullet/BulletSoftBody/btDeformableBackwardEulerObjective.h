@@ -25,12 +25,18 @@
 #include "btDeformableNeoHookeanForce.h"
 #include "btDeformableContactProjection.h"
 #include "btPreconditioner.h"
-#include "btDeformableMultiBodyDynamicsWorld.h"
+// #include "btDeformableMultiBodyDynamicsWorld.h"
 #include "LinearMath/btQuickprof.h"
 
 class btDeformableBackwardEulerObjective
 {
 public:
+	enum _
+	{
+		Mass_preconditioner,
+		KKT_preconditioner
+	};
+
 	typedef btAlignedObjectArray<btVector3> TVStack;
 	btScalar m_dt;
 	btAlignedObjectArray<btDeformableLagrangianForce*> m_lf;

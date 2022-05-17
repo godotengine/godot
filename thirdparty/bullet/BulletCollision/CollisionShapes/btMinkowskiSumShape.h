@@ -43,6 +43,9 @@ public:
 	void setTransformB(const btTransform& transB) { m_transB = transB; }
 
 	const btTransform& getTransformA() const { return m_transA; }
+	const btTransform& getTransformB() const { return m_transB; }
+
+	// keep this for backward compatibility
 	const btTransform& GetTransformB() const { return m_transB; }
 
 	virtual btScalar getMargin() const;

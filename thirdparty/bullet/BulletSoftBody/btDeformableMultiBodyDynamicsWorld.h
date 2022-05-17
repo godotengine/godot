@@ -19,7 +19,7 @@
 #include "btSoftMultiBodyDynamicsWorld.h"
 #include "btDeformableLagrangianForce.h"
 #include "btDeformableMassSpringForce.h"
-#include "btDeformableBodySolver.h"
+// #include "btDeformableBodySolver.h"
 #include "btDeformableMultiBodyConstraintSolver.h"
 #include "btSoftBodyHelpers.h"
 #include "BulletCollision/CollisionDispatch/btSimulationIslandManager.h"
@@ -120,6 +120,8 @@ public:
 	{
 		return m_sbi;
 	}
+
+	virtual void setGravity(const btVector3& gravity);
 
 	void reinitialize(btScalar timeStep);
 

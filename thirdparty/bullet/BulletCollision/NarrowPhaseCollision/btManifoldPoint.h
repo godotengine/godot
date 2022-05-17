@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it freely,
+Permission is granted to anyone to use this software for any purpose, 
+including commercial applications, and to alter it and redistribute it freely, 
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -71,8 +71,8 @@ public:
 					const btVector3& normal,
 					btScalar distance) : m_localPointA(pointA),
 										 m_localPointB(pointB),
-										 m_positionWorldOnB(0,0,0),
-										 m_positionWorldOnA(0,0,0),
+                     m_positionWorldOnB(0,0,0),
+                     m_positionWorldOnA(0,0,0),
 										 m_normalWorldOnB(normal),
 										 m_distance1(distance),
 										 m_combinedFriction(btScalar(0.)),
@@ -95,8 +95,8 @@ public:
 										 m_contactERP(0.f),
 										 m_frictionCFM(0.f),
 										 m_lifeTime(0),
-										 m_lateralFrictionDir1(0,0,0),
-										 m_lateralFrictionDir2(0,0,0)
+            m_lateralFrictionDir1(0,0,0),
+            m_lateralFrictionDir2(0,0,0)
 	{
 	}
 

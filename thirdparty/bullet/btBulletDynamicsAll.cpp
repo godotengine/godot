@@ -36,6 +36,7 @@
 #include "BulletDynamics/Featherstone/btMultiBodyJointLimitConstraint.cpp"
 #include "BulletDynamics/Featherstone/btMultiBodySliderConstraint.cpp"
 #include "BulletDynamics/Featherstone/btMultiBodySphericalJointMotor.cpp"
+#include "BulletDynamics/Featherstone/btMultiBodySphericalJointLimit.cpp"
 #include "BulletDynamics/Vehicle/btRaycastVehicle.cpp"
 #include "BulletDynamics/Vehicle/btWheelInfo.cpp"
 #include "BulletDynamics/Character/btKinematicCharacterController.cpp"
