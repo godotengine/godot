@@ -766,11 +766,20 @@ struct VariantIndexedSetGet_String {
 			PtrToArg<Variant>::encode(*ptr, member);                                                                                \
 		}                                                                                                                           \
 		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                               \
+			if (VariantGetInternalPtr<m_base_type>::get_ptr(base)->is_read_only()) {                                                \
+				*valid = false;                                                                                                     \
+				*oob = true;                                                                                                        \
+				return;                                                                                                             \
+			}                                                                                                                       \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
 			*oob = false;                                                                                                           \
 			*valid = true;                                                                                                          \
 		}                                                                                                                           \
 		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                  \
+			if (VariantGetInternalPtr<m_base_type>::get_ptr(base)->is_read_only()) {                                                \
+				*oob = true;                                                                                                        \
+				return;                                                                                                             \
+			}                                                                                                                       \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
 			*oob = false;                                                                                                           \
 		}                                                                                                                           \
@@ -946,6 +955,10 @@ struct VariantKeyedSetGetDictionary {
 		PtrToArg<Variant>::encode(*ptr, value);
 	}
 	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
+		if (VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only()) {
+			*r_valid = false;
+			return;
+		}
 		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
 		*r_valid = true;
 	}
