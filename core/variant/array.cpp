@@ -43,7 +43,7 @@ class ArrayPrivate {
 public:
 	SafeRefCount refcount;
 	Vector<Variant> array;
-
+	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 };
 
@@ -51,6 +51,16 @@ void Array::_ref(const Array &p_from) const {
 	ArrayPrivate *_fp = p_from._p;
 
 	ERR_FAIL_COND(!_fp); // should NOT happen.
+
+	if (unlikely(_fp->read_only != nullptr)) {
+		// If p_from is a read-only array, just copy the contents to avoid further modification.
+		_unref();
+		_p = memnew(ArrayPrivate);
+		_p->refcount.init();
+		_p->array = _fp->array;
+		_p->typed = _fp->typed;
+		return;
+	}
 
 	if (_fp == _p) {
 		return; // whatever it is, nothing to do here move along
@@ -71,16 +81,27 @@ void Array::_unref() const {
 	}
 
 	if (_p->refcount.unref()) {
+		if (_p->read_only) {
+			memdelete(_p->read_only);
+		}
 		memdelete(_p);
 	}
 	_p = nullptr;
 }
 
 Variant &Array::operator[](int p_idx) {
+	if (unlikely(_p->read_only)) {
+		*_p->read_only = _p->array[p_idx];
+		return *_p->read_only;
+	}
 	return _p->array.write[p_idx];
 }
 
 const Variant &Array::operator[](int p_idx) const {
+	if (unlikely(_p->read_only)) {
+		*_p->read_only = _p->array[p_idx];
+		return *_p->read_only;
+	}
 	return _p->array[p_idx];
 }
 
@@ -93,6 +114,7 @@ bool Array::is_empty() const {
 }
 
 void Array::clear() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.clear();
 }
 
@@ -224,34 +246,43 @@ bool Array::_assign(const Array &p_array) {
 }
 
 void Array::operator=(const Array &p_array) {
+	if (this == &p_array) {
+		return;
+	}
 	_ref(p_array);
 }
 
 void Array::push_back(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "push_back"));
 	_p->array.push_back(p_value);
 }
 
 void Array::append_array(const Array &p_array) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
 	_p->array.append_array(p_array._p->array);
 }
 
 Error Array::resize(int p_new_size) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	return _p->array.resize(p_new_size);
 }
 
 Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
 	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::fill(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "fill"));
 	_p->array.fill(p_value);
 }
 
 void Array::erase(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "erase"));
 	_p->array.erase(p_value);
 }
@@ -323,10 +354,12 @@ bool Array::has(const Variant &p_value) const {
 }
 
 void Array::remove_at(int p_pos) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "set"));
 
 	operator[](p_idx) = p_value;
@@ -481,14 +514,17 @@ struct _ArrayVariantSort {
 };
 
 void Array::sort() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
 void Array::sort_custom(const Callable &p_callable) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<CallableComparator, true>(p_callable);
 }
 
 void Array::shuffle() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	const int n = _p->array.size();
 	if (n < 2) {
 		return;
@@ -515,15 +551,18 @@ int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bo
 }
 
 void Array::reverse() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "push_front"));
 	_p->array.insert(0, p_value);
 }
 
 Variant Array::pop_back() {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (!_p->array.is_empty()) {
 		const int n = _p->array.size() - 1;
 		const Variant ret = _p->array.get(n);
@@ -534,6 +573,7 @@ Variant Array::pop_back() {
 }
 
 Variant Array::pop_front() {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (!_p->array.is_empty()) {
 		const Variant ret = _p->array.get(0);
 		_p->array.remove_at(0);
@@ -543,6 +583,7 @@ Variant Array::pop_front() {
 }
 
 Variant Array::pop_at(int p_pos) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (_p->array.is_empty()) {
 		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
 		return Variant();
@@ -627,6 +668,7 @@ bool Array::typed_assign(const Array &p_other) {
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
@@ -654,6 +696,22 @@ StringName Array::get_typed_class_name() const {
 
 Variant Array::get_typed_script() const {
 	return _p->typed.script;
+}
+
+void Array::set_read_only(bool p_enable) {
+	if (p_enable == bool(_p->read_only != nullptr)) {
+		return;
+	}
+	if (p_enable) {
+		_p->read_only = memnew(Variant);
+	} else {
+		memdelete(_p->read_only);
+		_p->read_only = nullptr;
+	}
+}
+
+bool Array::is_read_only() const {
+	return _p->read_only != nullptr;
 }
 
 Array::Array(const Array &p_from) {
