@@ -4753,13 +4753,10 @@ public:
 		Vector2 *v  = m_vertexBuffers[m_activeVertexBuffer];
 		v[m_numVertices] = v[0];
 		m_area = 0;
-		float centroidx = 0, centroidy = 0;
 		for (uint32_t k = 0; k < m_numVertices; k++) {
 			// http://local.wasp.uwa.edu.au/~pbourke/geometry/polyarea/
 			float f = v[k].x * v[k + 1].y - v[k + 1].x * v[k].y;
 			m_area += f;
-			centroidx += f * (v[k].x + v[k + 1].x);
-			centroidy += f * (v[k].y + v[k + 1].y);
 		}
 		m_area = 0.5f * fabsf(m_area);
 	}
@@ -9089,7 +9086,6 @@ AddMeshError AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t meshCountH
 	const uint32_t kMaxWarnings = 50;
 	uint32_t warningCount = 0;
 	internal::Array<uint32_t> triIndices;
-	uint32_t firstFaceIndex = 0;
 	internal::Triangulator triangulator;
 	for (uint32_t face = 0; face < faceCount; face++) {
 		// Decode face indices.
@@ -9199,7 +9195,6 @@ AddMeshError AddMesh(Atlas *atlas, const MeshDecl &meshDecl, uint32_t meshCountH
 			for (uint32_t i = 0; i < triIndices.size(); i++)
 				meshPolygonMapping->triangleToPolygonIndicesMap.push_back(triIndices[i]);
 		}
-		firstFaceIndex += faceVertexCount;
 	}
 	if (warningCount > kMaxWarnings)
 		XA_PRINT("   %u additional warnings truncated\n", warningCount - kMaxWarnings);
