@@ -190,6 +190,7 @@ private:
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
 
@@ -467,6 +468,9 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+
+	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
+	bool is_force_pass_scroll_events() const;
 
 	/* SKINNING */
 
