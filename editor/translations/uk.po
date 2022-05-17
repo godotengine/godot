@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-28 11:12+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2022-05-17 17:18+0000\n"
+"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -92,11 +92,12 @@ msgstr "Макс. розмір вікна"
 msgid "Screen Orientation"
 msgstr "Орієнтація екрана"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Вікно"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Без рамки"
 
@@ -104,7 +105,7 @@ msgstr "Без рамки"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Увімкнено прозорість за пікселями"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "На весь екран"
 
@@ -116,7 +117,7 @@ msgstr "Максимізовано"
 msgid "Minimized"
 msgstr "Мінімізовано"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Зі зміною розміру"
@@ -129,10 +130,11 @@ msgstr "Зі зміною розміру"
 msgid "Position"
 msgstr "Розташування"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -585,6 +587,39 @@ msgstr "Нетиповий каталог користувача"
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "Нетипова назва каталогу користувача"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr "Показ"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Ширина"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "Висота"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "Завжди згори"
+
+#: core/project_settings.cpp
+msgid "Test Width"
+msgstr "Перевірити ширину"
+
+#: core/project_settings.cpp
+msgid "Test Height"
+msgstr "Перевірити висоту"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1163,7 +1198,7 @@ msgstr "Увімкнути або вимкнути цю доріжку."
 msgid "Update Mode (How this property is set)"
 msgstr "Оновити режим (спосіб встановлення цієї властивості)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Режим інтерполяції"
 
@@ -5935,6 +5970,11 @@ msgstr ""
 msgid "Flat"
 msgstr "Плоска"
 
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Повзунок"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Виберіть вузол(вузли) для імпорту"
@@ -6880,7 +6920,7 @@ msgstr "Кліпи"
 #: scene/2d/particles_2d.cpp scene/3d/area.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/particles.cpp scene/resources/environment.cpp
 msgid "Amount"
-msgstr "Величина"
+msgstr "Кількість"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -15809,38 +15849,6 @@ msgstr "Резервний GLES2"
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr "Обхідний шлях для усування блимання прямокутників на Nvidia"
 
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr "Показ"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Ширина"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "Висота"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "Завжди згори"
-
-#: main/main.cpp
-msgid "Test Width"
-msgstr "Перевірити ширину"
-
-#: main/main.cpp
-msgid "Test Height"
-msgstr "Перевірити висоту"
-
 #: main/main.cpp
 msgid "DPI"
 msgstr "Роздільність"
@@ -19957,6 +19965,11 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Build Mode"
 msgstr "Режим вимірювання"
@@ -21435,7 +21448,7 @@ msgstr "Пласкість"
 
 #: scene/3d/cull_instance.cpp servers/visual_server.cpp
 msgid "Portals"
-msgstr "Віддзеркалити портали"
+msgstr "Портали"
 
 #: scene/3d/cull_instance.cpp
 msgid "Portal Mode"
@@ -21618,9 +21631,10 @@ msgid "NavMesh"
 msgstr "Запекти NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 "NavigationObstacle призначено лише для забезпечення засобів уникнення "
 "зіткнення для просторового об'єкта."
@@ -23659,6 +23673,11 @@ msgid "Pause Mode"
 msgstr "Режим панорамування"
 
 #: scene/main/node.cpp
+#, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Режим інтерполяції"
+
+#: scene/main/node.cpp
 msgid "Display Folded"
 msgstr "Перегляд без тіней"
 
@@ -23686,10 +23705,6 @@ msgstr "Нетипові параметри гри з багатьма грав�
 #: scene/main/node.cpp
 msgid "Process Priority"
 msgstr "Пріоритетність процесу"
-
-#: scene/main/node.cpp
-msgid "Physics Interpolated"
-msgstr "Інтерпольована фізика"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 msgid "Time Left"
@@ -24323,6 +24338,11 @@ msgstr "Іменований роздільник"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
+msgid "Font Separator"
+msgstr "Колір шрифту роздільника"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
 msgid "Font Color Accel"
 msgstr "Колір кісток 1"
 
@@ -24784,7 +24804,7 @@ msgstr "Ідентифікатор живлення камери"
 
 #: scene/resources/environment.cpp
 msgid "Ambient Light"
-msgstr "Збільшити відступ"
+msgstr "Навколишнє світло"
 
 #: scene/resources/environment.cpp
 msgid "Sky Contribution"
@@ -25025,6 +25045,11 @@ msgstr "Підйом"
 #: scene/resources/font.cpp
 msgid "Distance Field"
 msgstr "Поле відстані"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Дані карти"
 
 #: scene/resources/gradient.cpp
 msgid "Offsets"

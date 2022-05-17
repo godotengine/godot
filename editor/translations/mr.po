@@ -71,11 +71,12 @@ msgstr ""
 msgid "Screen Orientation"
 msgstr ""
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr ""
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr ""
 
@@ -83,7 +84,7 @@ msgstr ""
 msgid "Per Pixel Transparency Enabled"
 msgstr ""
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr ""
 
@@ -95,7 +96,7 @@ msgstr ""
 msgid "Minimized"
 msgstr ""
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr ""
@@ -109,10 +110,11 @@ msgstr ""
 msgid "Position"
 msgstr "अ‍ॅनिमेशन ट्री"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -571,6 +573,39 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
+msgstr ""
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr ""
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr ""
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Test Width"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Test Height"
 msgstr ""
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
@@ -1152,7 +1187,7 @@ msgstr ""
 msgid "Update Mode (How this property is set)"
 msgstr ""
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr ""
 
@@ -5724,6 +5759,10 @@ msgstr ""
 
 #: editor/editor_spin_slider.cpp scene/gui/button.cpp
 msgid "Flat"
+msgstr ""
+
+#: editor/editor_spin_slider.cpp
+msgid "Hide Slider"
 msgstr ""
 
 #: editor/editor_sub_scene.cpp
@@ -15228,38 +15267,6 @@ msgstr ""
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
 
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr ""
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr ""
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr ""
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr ""
-
-#: main/main.cpp
-msgid "Test Width"
-msgstr ""
-
-#: main/main.cpp
-msgid "Test Height"
-msgstr ""
-
 #: main/main.cpp
 msgid "DPI"
 msgstr ""
@@ -19269,6 +19276,11 @@ msgstr ""
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -20887,7 +20899,7 @@ msgstr ""
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 
 #: scene/3d/occluder.cpp
@@ -22879,6 +22891,10 @@ msgid "Pause Mode"
 msgstr "प्ले मोड:"
 
 #: scene/main/node.cpp
+msgid "Physics Interpolation Mode"
+msgstr ""
+
+#: scene/main/node.cpp
 msgid "Display Folded"
 msgstr ""
 
@@ -22905,10 +22921,6 @@ msgstr ""
 
 #: scene/main/node.cpp
 msgid "Process Priority"
-msgstr ""
-
-#: scene/main/node.cpp
-msgid "Physics Interpolated"
 msgstr ""
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
@@ -23524,6 +23536,11 @@ msgstr ""
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Labeled Separator Right"
 msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "संक्रमण: "
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Accel"
@@ -24235,6 +24252,10 @@ msgstr ""
 
 #: scene/resources/font.cpp
 msgid "Distance Field"
+msgstr ""
+
+#: scene/resources/gradient.cpp
+msgid "Raw Data"
 msgstr ""
 
 #: scene/resources/gradient.cpp

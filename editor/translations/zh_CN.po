@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-04-28 11:12+0000\n"
+"PO-Revision-Date: 2022-05-07 05:11+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -152,11 +152,12 @@ msgstr "窗口最大大小"
 msgid "Screen Orientation"
 msgstr "窗口朝向"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "窗口"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "无边框"
 
@@ -164,7 +165,7 @@ msgstr "无边框"
 msgid "Per Pixel Transparency Enabled"
 msgstr "启用像素级透明"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "全屏"
 
@@ -176,7 +177,7 @@ msgstr "最大化"
 msgid "Minimized"
 msgstr "最小化"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "可调整大小"
@@ -189,10 +190,11 @@ msgstr "可调整大小"
 msgid "Position"
 msgstr "位置"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -641,6 +643,39 @@ msgstr "使用自定义用户目录"
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "自定义用户目录名称"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr "显示"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "宽度"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "高度"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "置顶"
+
+#: core/project_settings.cpp
+msgid "Test Width"
+msgstr "测试宽度"
+
+#: core/project_settings.cpp
+msgid "Test Height"
+msgstr "测试高度"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1219,7 +1254,7 @@ msgstr "切换该轨道的开关。"
 msgid "Update Mode (How this property is set)"
 msgstr "更新模式（设置属性的方式）"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "插值模式"
 
@@ -5880,6 +5915,11 @@ msgstr "按住 %s 取整。 按住 Shift 获取更精确的变化。"
 msgid "Flat"
 msgstr "扁平"
 
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "滑动条"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "选择要导入的节点"
@@ -6563,7 +6603,6 @@ msgid "Delimiter"
 msgstr "分隔符"
 
 #: editor/import/resource_importer_layered_texture.cpp
-#, fuzzy
 msgid "ColorCorrect"
 msgstr "颜色校正"
 
@@ -6852,14 +6891,12 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D, Detect 3D"
-msgstr "检测 3D"
+msgstr "2D、检测 3D"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D Pixel"
-msgstr "实体像素"
+msgstr "2D 像素"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8171,7 +8208,7 @@ msgstr "测试"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "获取仓库配置失败。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9866,7 +9903,7 @@ msgstr "同步骨骼到多边形"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
 msgid "Set cast_to"
-msgstr ""
+msgstr "设置 cast_to"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -14683,17 +14720,15 @@ msgstr "转为本地"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Another node already uses this unique name in the scene."
-msgstr ""
+msgstr "该场景中已有使用该唯一名称的节点。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name"
-msgstr "唯一名称"
+msgstr "启用场景唯一名称"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name"
-msgstr "唯一名称"
+msgstr "禁用场景唯一名称"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -14767,7 +14802,7 @@ msgstr "子资源"
 
 #: editor/scene_tree_dock.cpp
 msgid "Access as Scene Unique Name"
-msgstr ""
+msgstr "作为场景唯一名称访问"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -14903,6 +14938,8 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
+"这个节点可以在场景中的任意位置通过在节点路径中为其加上“%s”前缀来访问。\n"
+"点击禁用。"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15556,38 +15593,6 @@ msgstr "回退至 GLES2"
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr "使用 Nvidia 矩形闪烁变通措施"
 
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr "显示"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "宽度"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "高度"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "置顶"
-
-#: main/main.cpp
-msgid "Test Width"
-msgstr "测试宽度"
-
-#: main/main.cpp
-msgid "Test Height"
-msgstr "测试高度"
-
 #: main/main.cpp
 msgid "DPI"
 msgstr "DPI"
@@ -15689,9 +15694,8 @@ msgid "Physics Interpolation"
 msgstr "物理插值"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Enable Warnings"
-msgstr "启用筛选"
+msgstr "启用警告"
 
 #: main/main.cpp
 msgid "Frame Delay Msec"
@@ -19184,9 +19188,8 @@ msgid "Digest Algorithm"
 msgstr "摘要算法"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Modify Resources"
-msgstr "复制资源"
+msgstr "修改资源"
 
 #: platform/windows/export/export.cpp
 msgid "File Version"
@@ -19592,6 +19595,11 @@ msgstr "多边形无效。“Solids”构建模式需要至少三个点。"
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr "多边形无效。“Segments”构建模式需要至少两个点。"
+
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Build Mode"
@@ -21208,14 +21216,14 @@ msgstr ""
 "提供导航数据。"
 
 #: scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "NavMesh"
-msgstr "烘焙导航网格"
+msgstr "导航网格"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr "NavigationObstacle 只能用于为 Spatial 对象避免碰撞。"
 
 #: scene/3d/occluder.cpp
@@ -23191,6 +23199,8 @@ msgid ""
 "Setting node name '%s' to be unique within scene for '%s', but it's already "
 "claimed by '%s'. This node is no longer set unique."
 msgstr ""
+"正在将场景中的唯一节点名称“%s”设给“%s”，但该名称已被“%s”占用。这个节点不再唯"
+"一。"
 
 #: scene/main/node.cpp
 msgid "Name Num Separator"
@@ -23213,13 +23223,17 @@ msgid "Pause Mode"
 msgstr "暂停模式"
 
 #: scene/main/node.cpp
+#, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "物理插值"
+
+#: scene/main/node.cpp
 msgid "Display Folded"
 msgstr "显示折叠"
 
 #: scene/main/node.cpp
-#, fuzzy
 msgid "Unique Name In Owner"
-msgstr "唯一名称"
+msgstr "所有者唯一名称"
 
 #: scene/main/node.cpp
 msgid "Filename"
@@ -23240,10 +23254,6 @@ msgstr "自定义多人"
 #: scene/main/node.cpp
 msgid "Process Priority"
 msgstr "处理优先级"
-
-#: scene/main/node.cpp
-msgid "Physics Interpolated"
-msgstr "物理插值"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 msgid "Time Left"
@@ -23850,6 +23860,11 @@ msgstr "带名称分隔线左侧"
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Labeled Separator Right"
 msgstr "带名称分隔线右侧"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "分隔线字体颜色"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Accel"
@@ -24532,6 +24547,11 @@ msgid "Distance Field"
 msgstr "距离场"
 
 #: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "地图数据"
+
+#: scene/resources/gradient.cpp
 msgid "Offsets"
 msgstr "偏移"
 
@@ -25133,7 +25153,7 @@ msgstr "扩展边距"
 
 #: scene/resources/style_box.cpp
 msgid "Skew"
-msgstr ""
+msgstr "偏斜"
 
 #: scene/resources/style_box.cpp
 msgid "Corner Radius"
