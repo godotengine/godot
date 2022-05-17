@@ -4,7 +4,7 @@
  *
  *   Auxiliary data for Signed Distance Field support (specification).
  *
- * Copyright (C) 2020-2021 by
+ * Copyright (C) 2020-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -48,6 +48,8 @@ FT_BEGIN_HEADER
 #define MIN_SPREAD      2
   /* maximum spread supported by the renderer */
 #define MAX_SPREAD      32
+  /* pixel size in 26.6 */
+#define ONE_PIXEL       ( 1 << 6 )
 
 
   /**************************************************************************
