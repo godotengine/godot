@@ -159,8 +159,9 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- the `src/` folder, minus the `.mk` files and the `dlg` and `tools` subfolders
-- the `include/` folder, minus the `dlg` subfolder
+- `src/` folder, minus the `dlg` and `tools` subfolders
+  * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
+- `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
 
