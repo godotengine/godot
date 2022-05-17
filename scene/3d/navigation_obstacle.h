@@ -43,6 +43,8 @@ class NavigationObstacle : public Node {
 	Navigation *navigation;
 
 	RID agent;
+	RID map_before_pause;
+
 	bool estimate_radius = true;
 	real_t radius = 1.0;
 
