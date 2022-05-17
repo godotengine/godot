@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -105,7 +105,7 @@ while (eptr < end_subject)
   /* Not breaking between Regional Indicators is allowed only if there
   are an even number of preceding RIs. */
 
-  if (lgb == ucp_gbRegionalIndicator && rgb == ucp_gbRegionalIndicator)
+  if (lgb == ucp_gbRegional_Indicator && rgb == ucp_gbRegional_Indicator)
     {
     int ricount = 0;
     PCRE2_SPTR bptr = eptr - 1;
@@ -123,7 +123,7 @@ while (eptr < end_subject)
         }
       else
       c = *bptr;
-      if (UCD_GRAPHBREAK(c) != ucp_gbRegionalIndicator) break;
+      if (UCD_GRAPHBREAK(c) != ucp_gbRegional_Indicator) break;
       ricount++;
       }
     if ((ricount & 1) != 0) break;  /* Grapheme break required */

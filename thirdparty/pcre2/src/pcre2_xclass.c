@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -135,6 +135,7 @@ while ((t = *data++) != XCL_END)
     {
     const ucd_record *prop = GET_UCD(c);
     BOOL isprop = t == XCL_PROP;
+    BOOL ok;
 
     switch(*data)
       {
@@ -158,6 +159,12 @@ while ((t = *data++) != XCL_END)
 
       case PT_SC:
       if ((data[1] == prop->script) == isprop) return !negated;
+      break;
+
+      case PT_SCX:
+      ok = (data[1] == prop->script ||
+            MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), data[1]) != 0);
+      if (ok == isprop) return !negated;
       break;
 
       case PT_ALNUM:
@@ -205,6 +212,17 @@ while ((t = *data++) != XCL_END)
         if ((c < 0xd800 || c > 0xdfff) == isprop)
           return !negated;
         }
+      break;
+
+      case PT_BIDICL:
+      if ((UCD_BIDICLASS_PROP(prop) == data[1]) == isprop)
+        return !negated;
+      break;
+
+      case PT_BOOL:
+      ok = MAPBIT(PRIV(ucd_boolprop_sets) +
+        UCD_BPROPS_PROP(prop), data[1]) != 0;
+      if (ok == isprop) return !negated;
       break;
 
       /* The following three properties can occur only in an XCLASS, as there

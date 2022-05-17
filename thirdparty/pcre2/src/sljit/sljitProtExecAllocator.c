@@ -66,7 +66,7 @@
 /* --------------------------------------------------------------------- */
 
 /* 64 KByte. */
-#define CHUNK_SIZE	0x10000
+#define CHUNK_SIZE	(sljit_uw)0x10000
 
 struct chunk_header {
 	void *executable;
@@ -194,7 +194,7 @@ static SLJIT_INLINE struct chunk_header* alloc_chunk(sljit_uw size)
 	if (fd == -1)
 		return NULL;
 
-	if (ftruncate(fd, size)) {
+	if (ftruncate(fd, (off_t)size)) {
 		close(fd);
 		return NULL;
 	}
@@ -281,7 +281,7 @@ struct free_block {
 #define AS_FREE_BLOCK(base, offset) \
 	((struct free_block*)(((sljit_u8*)base) + offset))
 #define MEM_START(base)		((void*)((base) + 1))
-#define ALIGN_SIZE(size)	(((size) + sizeof(struct block_header) + 7) & ~7)
+#define ALIGN_SIZE(size)	(((size) + sizeof(struct block_header) + 7u) & ~(sljit_uw)7)
 
 static struct free_block* free_blocks;
 static sljit_uw allocated_size;

@@ -456,7 +456,7 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.39 (35fee4193b852cb504892352bd0155de10809889, 2021)
+- Version: 10.40 (3103b8f20a3b9944b177e812fde29fbfb8b90558, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
