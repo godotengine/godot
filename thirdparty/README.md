@@ -62,10 +62,13 @@ Files extracted from upstream source:
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.4 (97d5a9447e66cd5e107b7a6c463be4a468a40496, 2020)
+- Version: 2.4.8 (7b9885133108ae301ddd16e2651320f54cafeba7, 2022)
 - License: MIT
 
-Extracted from .zip provided. Extracted license and header only.
+Files extracted from upstream source:
+
+- `doctest/doctest.h` as `doctest.h`
+- `LICENSE.txt`
 
 
 ## embree
