@@ -4,7 +4,7 @@
  *
  *   The FreeType basic cache interface (body).
  *
- * Copyright (C) 2003-2021 by
+ * Copyright (C) 2003-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -26,6 +26,7 @@
 #include "ftccback.h"
 #include "ftcerror.h"
 
+#undef  FT_COMPONENT
 #define FT_COMPONENT  cache
 
 
@@ -182,7 +183,8 @@
       if ( !error )
       {
         if ( face->glyph->format == FT_GLYPH_FORMAT_BITMAP  ||
-             face->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
+             face->glyph->format == FT_GLYPH_FORMAT_OUTLINE ||
+             face->glyph->format == FT_GLYPH_FORMAT_SVG     )
         {
           /* ok, copy it */
           FT_Glyph  glyph;

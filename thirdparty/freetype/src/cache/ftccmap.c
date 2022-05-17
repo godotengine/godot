@@ -4,7 +4,7 @@
  *
  *   FreeType CharMap cache (body)
  *
- * Copyright (C) 2000-2021 by
+ * Copyright (C) 2000-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -116,7 +116,7 @@
     FT_UInt        nn;
 
 
-    if ( !FT_NEW( node ) )
+    if ( !FT_QNEW( node ) )
     {
       node->face_id    = query->face_id;
       node->cmap_index = query->cmap_index;

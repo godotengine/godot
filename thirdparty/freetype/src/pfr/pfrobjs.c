@@ -4,7 +4,7 @@
  *
  *   FreeType PFR object methods (body).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -207,7 +207,7 @@
 
       pfrface->height = (FT_Short)( ( pfrface->units_per_EM * 12 ) / 10 );
       if ( pfrface->height < pfrface->ascender - pfrface->descender )
-        pfrface->height = (FT_Short)(pfrface->ascender - pfrface->descender);
+        pfrface->height = (FT_Short)( pfrface->ascender - pfrface->descender );
 
       if ( phy_font->num_strikes > 0 )
       {
