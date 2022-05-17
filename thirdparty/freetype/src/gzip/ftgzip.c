@@ -8,7 +8,7 @@
  * parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -69,10 +69,21 @@
   /*                                                                   */
   /* so that configuration with `FT_CONFIG_OPTION_SYSTEM_ZLIB' might   */
   /* include the wrong `zconf.h' file, leading to errors.              */
-#include "zlib.h"
 
-#undef  SLOW
-#define SLOW  1  /* we can't use asm-optimized sources here! */
+  /* `HAVE_HIDDEN` should be defined if                                 */
+  /*                                                                    */
+  /*   __attribute__((visibility("hidden")))                            */
+  /*                                                                    */
+  /* is supported by the compiler, which prevents internal symbols from */
+  /* being exported by the library.                                     */
+#if defined( __GNUC__ ) ||  defined( __clang__ )
+#define HAVE_HIDDEN  1
+#define ZEXPORT
+#define ZEXTERN      static
+#endif
+
+#define Z_SOLO      1
+#define Z_FREETYPE  1
 
 #if defined( _MSC_VER )      /* Visual C++ (and Intel C++)   */
   /* We disable the warning `conversion from XXX to YYY,     */
@@ -83,24 +94,23 @@
 #pragma warning( disable : 4244 )
 #endif /* _MSC_VER */
 
-  /* Urgh.  `inflate_mask' must not be declared twice -- C++ doesn't like
-     this.  We temporarily disable it and load all necessary header files. */
-#define NO_INFLATE_MASK
-#include "zutil.h"
-#include "inftrees.h"
-#include "infblock.h"
-#include "infcodes.h"
-#include "infutil.h"
-#undef  NO_INFLATE_MASK
+#if defined( __GNUC__ )
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#endif
 
-  /* infutil.c must be included before infcodes.c */
 #include "zutil.c"
-#include "inftrees.c"
-#include "infutil.c"
-#include "infcodes.c"
-#include "infblock.c"
+#include "inffast.c"
 #include "inflate.c"
+#include "inftrees.c"
 #include "adler32.c"
+#include "crc32.c"
+
+#if defined( __GNUC__ )
+#pragma GCC diagnostic pop
+#endif
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
@@ -150,7 +160,7 @@
 
 #if !defined( FT_CONFIG_OPTION_SYSTEM_ZLIB ) && !defined( USE_ZLIB_ZCALLOC )
 
-  local voidpf
+  voidpf ZLIB_INTERNAL
   zcalloc ( voidpf    opaque,
             unsigned  items,
             unsigned  size )
@@ -158,7 +168,8 @@
     return ft_gzip_alloc( opaque, items, size );
   }
 
-  local void
+
+  void ZLIB_INTERNAL
   zcfree( voidpf  opaque,
           voidpf  ptr )
   {
@@ -751,16 +762,7 @@
     stream.zfree  = ft_gzip_free;
     stream.opaque = memory;
 
-    /* This is a temporary fix and will be removed once the internal
-     * copy of zlib is updated to the newest version. The `|32' flag
-     * is only supported in the new versions of zlib to enable gzip
-     * encoded header.
-     */
-#ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
     err = inflateInit2( &stream, MAX_WBITS|32 );
-#else
-    err = inflateInit2( &stream, MAX_WBITS );
-#endif
 
     if ( err != Z_OK )
       return FT_THROW( Invalid_Argument );
