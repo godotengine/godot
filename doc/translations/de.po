@@ -46,12 +46,13 @@
 # Robin <robin.janzen@gmx.net>, 2022.
 # Andreas <self@andreasbresser.de>, 2022.
 # Christian Packenius <christian@packenius.com>, 2022.
+# Hannes Petersen <01zustrom.baklava@icloud.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-04-30 17:12+0000\n"
-"Last-Translator: Christian Packenius <christian@packenius.com>\n"
+"PO-Revision-Date: 2022-05-13 19:27+0000\n"
+"Last-Translator: Hannes Petersen <01zustrom.baklava@icloud.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -103,7 +104,7 @@ msgstr "Methoden-Beschreibung"
 
 #: doc/tools/make_rst.py
 msgid "Theme Property Descriptions"
-msgstr "Theme-Eigenschaften-Beschreibung"
+msgstr "Beschreibung der Theme-Eigenschaften"
 
 #: doc/tools/make_rst.py
 msgid "Inherits:"
@@ -123,7 +124,7 @@ msgstr "Standard"
 
 #: doc/tools/make_rst.py
 msgid "Setter"
-msgstr "Setter"
+msgstr "Wert-Zuweiser"
 
 #: doc/tools/make_rst.py
 msgid "value"
@@ -131,7 +132,7 @@ msgstr "Wert"
 
 #: doc/tools/make_rst.py
 msgid "Getter"
-msgstr "Getter"
+msgstr "Wert-Abrufer"
 
 #: doc/tools/make_rst.py
 msgid ""
@@ -143,7 +144,7 @@ msgid ""
 "This method has no side effects. It doesn't modify any of the instance's "
 "member variables."
 msgstr ""
-"Diese Methode verursacht keine Seiteneffekte. Variablen der betroffenen "
+"Diese Methode löst keine Seiteneffekte aus. Variablen der betroffenen "
 "Instanz bleiben unverändert."
 
 #: doc/tools/make_rst.py
@@ -151,11 +152,11 @@ msgid ""
 "This method accepts any number of arguments after the ones described here."
 msgstr ""
 "Diese Methode nimmt eine beliebige Anzahl an Argumenten nach Ende der hier "
-"beschriebenen auf."
+"beschriebenen Argumente auf."
 
 #: doc/tools/make_rst.py
 msgid "This method is used to construct a type."
-msgstr "Diese Methode wird dazu verwendet, einen Typ zu konstruieren."
+msgstr "Diese Methode wird dazu verwendet, einen Typen zu konstruieren."
 
 #: doc/tools/make_rst.py
 msgid ""
@@ -1533,12 +1534,14 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
-"Random range, any floating point value between [code]from[/code] and "
-"[code]to[/code].\n"
+"Returns a random floating point value between [code]from[/code] and "
+"[code]to[/code] (both endpoints inclusive).\n"
 "[codeblock]\n"
 "prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code]."
 msgstr ""
 "Gibt einen Zufallswert zwischen [code]from[/code] und [code]to[/code] "
 "zurück.\n"
@@ -1617,37 +1620,36 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Returns an array with the given range. Range can be 1 argument [code]N[/"
-"code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], "
-"[code]final - 1[/code]) or three arguments ([code]initial[/code], "
-"[code]final - 1[/code], [code]increment[/code]). Returns an empty array if "
-"the range isn't valid (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, "
-"5, 1)[/code]).\n"
-"Returns an array with the given range. [code]range()[/code] can have 1 "
-"argument N ([code]0[/code] to [code]N - 1[/code]), two arguments "
-"([code]initial[/code], [code]final - 1[/code]) or three arguments "
-"([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). "
-"[code]increment[/code] can be negative. If [code]increment[/code] is "
-"negative, [code]final - 1[/code] will become [code]final + 1[/code]. Also, "
-"the initial value must be greater than the final value for the loop to run.\n"
+"Returns an array with the given range. [method range] can be called in three "
+"ways:\n"
+"[code]range(n: int)[/code]: Starts from 0, increases by steps of 1, and "
+"stops [i]before[/i] [code]n[/code]. The argument [code]n[/code] is "
+"[b]exclusive[/b].\n"
+"[code]range(b: int, n: int)[/code]: Starts from [code]b[/code], increases by "
+"steps of 1, and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/"
+"code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], "
+"respectively.\n"
+"[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], "
+"increases/decreases by steps of [code]s[/code], and stops [i]before[/i] "
+"[code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are "
+"[b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/"
+"code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is "
+"[code]0[/code], an error message is printed.\n"
+"[method range] converts all arguments to [int] before processing.\n"
+"[b]Note:[/b] Returns an empty array if no value meets the value constraint "
+"(e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).\n"
+"Examples:\n"
 "[codeblock]\n"
-"print(range(4))\n"
-"print(range(2, 5))\n"
-"print(range(0, 6, 2))\n"
-"[/codeblock]\n"
-"Output:\n"
-"[codeblock]\n"
-"[0, 1, 2, 3]\n"
-"[2, 3, 4]\n"
-"[0, 2, 4]\n"
+"print(range(4))        # Prints [0, 1, 2, 3]\n"
+"print(range(2, 5))     # Prints [2, 3, 4]\n"
+"print(range(0, 6, 2))  # Prints [0, 2, 4]\n"
+"print(range(4, 1, -1)) # Prints [4, 3, 2]\n"
 "[/codeblock]\n"
 "To iterate over an [Array] backwards, use:\n"
 "[codeblock]\n"
 "var array = [3, 6, 9]\n"
-"var i := array.size() - 1\n"
-"while i >= 0:\n"
-"    print(array[i])\n"
-"    i -= 1\n"
+"for i in range(array.size(), 0, -1):\n"
+"    print(array[i - 1])\n"
 "[/codeblock]\n"
 "Output:\n"
 "[codeblock]\n"
@@ -1656,45 +1658,6 @@ msgid ""
 "3\n"
 "[/codeblock]"
 msgstr ""
-"Gibt zurück ein Array mit der angegebenen Reichweite. Range kann 1 Argument "
-"[code]N[/code] (0 bis [code]N[/code] - 1), zwei Argumente ([code]initial[/"
-"code], [code]final - 1[/code]) oder drei Argumente ([code]initial[/code], "
-"[code]final - 1[/code], [code]increment[/code]) aufnehmen. Gibt ein leeres "
-"Array zurück, falls die Reichweite ungültig ist (z.B. [code]range(2, 5, -1)[/"
-"code] oder [code]range(5, 5, 1)[/code]).\n"
-"Gibt zurück ein Array mit der angegebenen Reichweite. [code]range()[/code] "
-"kann 1 Argument N ([code]0[/code] bis [code]N - 1[/code]), zwei Argumente "
-"([code]initial[/code], [code]final - 1[/code]) oder drei Argumente "
-"([code]initial[/code], [code]final - 1[/code], [code]increment[/code]) "
-"aufnehmen. [code]increment[/code] darf negativ sein. Ist [code]increment[/"
-"code] negativ, wird [code]final - 1[/code] zu [code]final + 1[/code]. Ferner "
-"muss, damit die Schleife durchlaufen werden kann, der Initialwert größer "
-"sein als der Finalwert.\n"
-"[codeblock]\n"
-"print(range(4))\n"
-"print(range(2, 5))\n"
-"print(range(0, 6, 2))\n"
-"[/codeblock]\n"
-"Ausgabe:\n"
-"[codeblock]\n"
-"[0, 1, 2, 3]\n"
-"[2, 3, 4]\n"
-"[0, 2, 4]\n"
-"[/codeblock]\n"
-"Um rückwärts durch ein [Array] zu iterieren:\n"
-"[codeblock]\n"
-"var array = [3, 6, 9]\n"
-"var i := array.size() - 1\n"
-"while i >= 0:\n"
-"    print(array[i])\n"
-"    i -= 1\n"
-"[/codeblock]\n"
-"Ausgabe:\n"
-"[codeblock]\n"
-"9\n"
-"6\n"
-"3\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -3973,6 +3936,8 @@ msgid ""
 "MIDI note ON message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
 msgstr ""
+"MIDI Noten ON Mitteilung. Weitere Informationen, wie MIDI Eingaben verwendet "
+"werden, können der Dokumentation von [InputEventMIDI] entnommen werden."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3985,6 +3950,9 @@ msgid ""
 "MIDI control change message. This message is sent when a controller value "
 "changes. Controllers include devices such as pedals and levers."
 msgstr ""
+"Änderungsmitteilung für eine MIDI-Steuerungseinheit. Diese Mitteilung wird "
+"gesendet, sollte sich der Wert einer Steuerungseinheit ändern. "
+"Steuerungseinheiten sind zum Beispiel Pedale und Schalter."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4028,6 +3996,9 @@ msgid ""
 "MIDI song select message. Specifies which sequence or song is to be played. "
 "Getting this data is not implemented in Godot."
 msgstr ""
+"MIDI Mitteilung für Songauswahl. Legt fest, welche Musik-Sequenz oder "
+"welcher Song abgespielt werden soll. Das Abrufen dieser Daten ist nicht in "
+"Godot implementiert."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4040,20 +4011,26 @@ msgid ""
 "MIDI timing clock message. Sent 24 times per quarter note when "
 "synchronization is required."
 msgstr ""
+"MIDI Mitteilung zum Uhr-Timing. Diese Mitteilung wird 24 Mal pro Viertelnote "
+"gesendet, sollte eine Synchronisation erforderlich sein."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI start message. Start the current sequence playing. This message will be "
 "followed with Timing Clocks."
 msgstr ""
+"MIDI Start-Mitteilung. Startet die Wiedergabe der aktuellen Sequenz. Dieser "
+"Mitteilung folgen die Uhr-Timings."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI continue message. Continue at the point the sequence was stopped."
 msgstr ""
+"MIDI Wiederaufnahme-Mitteilung. Die Wiedergabe der Sequenz wird an dem Punkt "
+"fortgesetzt, an dem die Wiedergabe gestoppt wurde."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI stop message. Stop the current sequence."
-msgstr ""
+msgstr "MIDI Stop-Mitteilung. Stoppt die Wiedergabe der aktuellen Sequenz."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4066,6 +4043,9 @@ msgid ""
 "MIDI system reset message. Reset all receivers in the system to power-up "
 "status. It should not be sent on power-up itself."
 msgstr ""
+"MIDI System-Reset Mitteilung. Reset aller Empfänger im System in den "
+"Hochfahren-Status. Diese Mitteilung sollte nicht zum Starten der Empfänger "
+"selbst genutzt werden."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4843,7 +4823,7 @@ msgstr ""
 #: doc/classes/Transform.xml doc/classes/Transform2D.xml
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid "Math tutorial index"
-msgstr ""
+msgstr "Mathematik Anleitungsindex"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
@@ -4897,6 +4877,8 @@ msgid ""
 "Returns the center of the [AABB], which is equal to [member position] + "
 "([member size] / 2)."
 msgstr ""
+"Gibt den Mittelwert von [AABB] zurück, welcher gleich ist wie [member "
+"position] + ([member size] / 2)."
 
 #: doc/classes/AABB.xml
 msgid "Gets the position of the 8 endpoints of the [AABB] in space."
@@ -5300,22 +5282,30 @@ msgid "Maximum value for the mode enum."
 msgstr "Maximaler Wert für das Modus-Enum."
 
 #: doc/classes/AnimatedSprite.xml
-msgid "Sprite node that can use multiple textures for animation."
+#, fuzzy
+msgid ""
+"Sprite node that contains multiple textures as frames to play for animation."
 msgstr "Sprite-Knoten, der mehrere Texturen für die Animation verwenden kann."
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
-"Animations are created using a [SpriteFrames] resource, which can be "
-"configured in the editor via the SpriteFrames panel.\n"
-"[b]Note:[/b] You can associate a set of normal maps by creating additional "
-"[SpriteFrames] resources with a [code]_normal[/code] suffix. For example, "
-"having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/"
-"code] will make it so the [code]run[/code] animation uses the normal map."
+"[AnimatedSprite] is similar to the [Sprite] node, except it carries multiple "
+"textures as animation frames. Animations are created using a [SpriteFrames] "
+"resource, which allows you to import image files (or a folder containing "
+"said files) to provide the animation frames for the sprite. The "
+"[SpriteFrames] resource can be configured in the editor via the SpriteFrames "
+"bottom panel.\n"
+"[b]Note:[/b] You can associate a set of normal or specular maps by creating "
+"additional [SpriteFrames] resources with a [code]_normal[/code] or "
+"[code]_specular[/code] suffix. For example, having 3 [SpriteFrames] "
+"resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/"
+"code] will make it so the [code]run[/code] animation uses normal and "
+"specular maps."
 msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/AnimationPlayer.xml
 msgid "2D Sprite animation"
-msgstr ""
+msgstr "2D Sprite Animation"
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Area2D.xml
 #: doc/classes/AudioStreamPlayer.xml doc/classes/Button.xml
@@ -5325,7 +5315,7 @@ msgstr ""
 #: doc/classes/Particles2D.xml doc/classes/Timer.xml
 #: doc/classes/VisibilityNotifier2D.xml
 msgid "2D Dodge The Creeps Demo"
-msgstr ""
+msgstr "2D „Dodge The Creeps“ Demo"
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
@@ -5342,9 +5332,10 @@ msgstr ""
 msgid "Stops the current animation (does not reset the frame counter)."
 msgstr "Hält die aktuelle Animation an (setzt den Bildzähler nicht zurück)."
 
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
+#: doc/classes/AnimatedSprite.xml
+#, fuzzy
 msgid ""
-"The current animation from the [code]frames[/code] resource. If this value "
+"The current animation from the [member frames] resource. If this value "
 "changes, the [code]frame[/code] counter is reset."
 msgstr ""
 "Die aktuelle Animation aus der Ressource [code]frames[/code]. Wenn sich "
@@ -5370,9 +5361,12 @@ msgstr "Wenn [code]true[/code], wird die Textur vertikal gespiegelt."
 msgid "The displayed animation frame's index."
 msgstr "Der Index des angezeigten Animationsrahmens."
 
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
-msgid "The [SpriteFrames] resource containing the animation(s)."
-msgstr "Die [SpriteFrames]-Ressource, welche die Animation(en) enthält."
+#: doc/classes/AnimatedSprite.xml
+msgid ""
+"The [SpriteFrames] resource containing the animation(s). Allows you the "
+"option to load, edit, clear, make unique and save the states of the "
+"[SpriteFrames] resource."
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Sprite.xml
 #: doc/classes/SpriteBase3D.xml
@@ -5418,7 +5412,7 @@ msgstr ""
 
 #: doc/classes/AnimatedSprite3D.xml
 msgid "2D Sprite animation (also applies to 3D)"
-msgstr ""
+msgstr "2D Sprite Animation (gilt ebenfalls für 3D)"
 
 #: doc/classes/AnimatedSprite3D.xml
 msgid "Returns [code]true[/code] if an animation is currently being played."
@@ -5432,6 +5426,18 @@ msgid ""
 msgstr ""
 "Spielt die Animation mit dem Namen [code]anim[/code] ab. Wenn keine "
 "[code]anim[/code] angegeben ist, wird die aktuelle Animation abgespielt."
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid ""
+"The current animation from the [code]frames[/code] resource. If this value "
+"changes, the [code]frame[/code] counter is reset."
+msgstr ""
+"Die aktuelle Animation aus der Ressource [code]frames[/code]. Wenn sich "
+"dieser Wert ändert, wird der [code]frames[/code]-Zähler zurückgesetzt."
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid "The [SpriteFrames] resource containing the animation(s)."
+msgstr "Die [SpriteFrames]-Ressource, welche die Animation(en) enthält."
 
 #: doc/classes/AnimatedTexture.xml
 msgid "Proxy texture for simple frame-based animations."
@@ -6169,11 +6175,11 @@ msgstr ""
 msgid "No interpolation (nearest value)."
 msgstr "Keine Interpolation (nächstgelegener Wert)."
 
-#: doc/classes/Animation.xml
+#: doc/classes/Animation.xml doc/classes/Gradient.xml
 msgid "Linear interpolation."
 msgstr "lineare Interpolation."
 
-#: doc/classes/Animation.xml
+#: doc/classes/Animation.xml doc/classes/Gradient.xml
 msgid "Cubic interpolation."
 msgstr "Kubische Interpolation."
 
@@ -7109,7 +7115,7 @@ msgstr "Benennt das übergebene Node um."
 
 #: doc/classes/AnimationNodeStateMachine.xml
 msgid "Replaces the node and keeps its transitions unchanged."
-msgstr ""
+msgstr "Ersetzt den Knotenpunkt und erhält seine Übergänge unverändert."
 
 #: doc/classes/AnimationNodeStateMachine.xml
 msgid "Sets the given node as the graph end point."
@@ -7556,11 +7562,15 @@ msgstr ""
 "[code]newname[/code] um."
 
 #: doc/classes/AnimationPlayer.xml
+#, fuzzy
 msgid ""
 "Seeks the animation to the [code]seconds[/code] point in time (in seconds). "
 "If [code]update[/code] is [code]true[/code], the animation updates too, "
 "otherwise it updates at process time. Events between the current frame and "
-"[code]seconds[/code] are skipped."
+"[code]seconds[/code] are skipped.\n"
+"[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal "
+"animation_finished]. If you want to skip animation and emit the signal, use "
+"[method advance]."
 msgstr ""
 "Sucht die Animation bis zum Zeitpunkt [code]Sekunden[/code] (in Sekunden). "
 "Wenn [code]update[/code] ist [code]true[/code], wird auch die Animation "
@@ -7685,6 +7695,10 @@ msgid ""
 "[b]Note:[/b] The signal is not emitted when the animation is changed via "
 "[method play] or from [AnimationTree]."
 msgstr ""
+"Wird ausgelöst, wenn eine zurückgestellte Animation abgespielt wird nachdem "
+"eine vorherige Animation beendet wurde. Siehe auch [method queue].\n"
+"[b]Anmerkung:[/b] Das Signal wird nicht ausgelöst, wenn die Animation mit "
+"[method play] oder von [AnimationTree] geändert wird."
 
 #: doc/classes/AnimationPlayer.xml
 msgid "Notifies when an animation finished playing."
@@ -7857,6 +7871,9 @@ msgid ""
 "[i]Deprecated.[/i] Animation player that uses a node graph for blending "
 "animations. Superseded by [AnimationTree]."
 msgstr ""
+"[i]Veraltet.[/i] Animations-Wiedergabekomponente die einen Knoten-basierten "
+"Graphen zur Überblendung von Animationen nutzt. Wurde ersetzt durch "
+"[AnimationTree]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7868,6 +7885,15 @@ msgid ""
 "depending on the graph.\n"
 "See [AnimationTree] for a more full-featured replacement of this node."
 msgstr ""
+"[i]Veraltet.[/i] Ein knoten-basiertes Graphen-Tool zum Überblenden von "
+"mehreren Animationen die an einen [AnimationPlayer] gebunden sind. Das ist "
+"besonders hilfreich beim Animieren von Spieler-Charakteren oder anderen "
+"Objekten auf Skelett-Basis. Es kann mehrere Animationen nutzen um eine "
+"erwünschte Pose zu formen.\n"
+"Es nimmt [Animation]s von einem [AnimationPlayer] Knoten und vermischt sie "
+"wie benötigt auf dem Graphen.\n"
+"Siehe auch [AnimationTree] für einen vollumfänglichen Austausch dieses "
+"Knotenpunkts."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8999,7 +9025,10 @@ msgid ""
 "[code]0[/code]."
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid "Returns the number of times an element is in the array."
 msgstr ""
 
@@ -9044,10 +9073,14 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid ""
 "Searches the array for a value and returns its index or [code]-1[/code] if "
-"not found. Optionally, the initial search index can be passed."
+"not found. Optionally, the initial search index can be passed. Returns "
+"[code]-1[/code] if [code]from[/code] is out of bounds."
 msgstr ""
 
 #: doc/classes/Array.xml
@@ -9187,11 +9220,15 @@ msgid ""
 "[code]null[/code]."
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid ""
 "Searches the array in reverse order. Optionally, a start search index can be "
 "passed. If negative, the start index is considered relative to the end of "
-"the array."
+"the array. If the adjusted start index is out of bounds, this method "
+"searches from the end of the array."
 msgstr ""
 
 #: doc/classes/Array.xml
@@ -10331,7 +10368,7 @@ msgstr ""
 msgid ""
 "Adds a new point at the given position with the given identifier. The "
 "[code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must "
-"be 1 or larger.\n"
+"be 0.0 or greater.\n"
 "The [code]weight_scale[/code] is multiplied by the result of [method "
 "_compute_cost] when determining the overall cost of traveling across a "
 "segment from a neighboring point to this point. Thus, all else being equal, "
@@ -10553,7 +10590,7 @@ msgstr ""
 msgid ""
 "Adds a new point at the given position with the given identifier. The "
 "[code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must "
-"be 1 or larger.\n"
+"be 0.0 or greater.\n"
 "The [code]weight_scale[/code] is multiplied by the result of [method "
 "_compute_cost] when determining the overall cost of traveling across a "
 "segment from a neighboring point to this point. Thus, all else being equal, "
@@ -13695,17 +13732,17 @@ msgstr ""
 #: doc/classes/Camera.xml
 msgid ""
 "Returns a normal vector in world space, that is the result of projecting a "
-"point on the [Viewport] rectangle by the camera projection. This is useful "
-"for casting rays in the form of (origin, normal) for object intersection or "
-"picking."
+"point on the [Viewport] rectangle by the inverse camera projection. This is "
+"useful for casting rays in the form of (origin, normal) for object "
+"intersection or picking."
 msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
 "Returns a 3D position in world space, that is the result of projecting a "
-"point on the [Viewport] rectangle by the camera projection. This is useful "
-"for casting rays in the form of (origin, normal) for object intersection or "
-"picking."
+"point on the [Viewport] rectangle by the inverse camera projection. This is "
+"useful for casting rays in the form of (origin, normal) for object "
+"intersection or picking."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -16027,7 +16064,9 @@ msgstr ""
 #: doc/classes/CollisionPolygon2D.xml
 msgid ""
 "If [code]true[/code], only edges that face up, relative to "
-"[CollisionPolygon2D]'s rotation, will collide with other objects."
+"[CollisionPolygon2D]'s rotation, will collide with other objects.\n"
+"[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a "
+"child of an [Area2D] node."
 msgstr ""
 
 #: doc/classes/CollisionPolygon2D.xml
@@ -16124,7 +16163,9 @@ msgstr ""
 #: doc/classes/CollisionShape2D.xml
 msgid ""
 "Sets whether this collision shape should only detect collision on one side "
-"(top or bottom)."
+"(top or bottom).\n"
+"[b]Note:[/b] This property has no effect if this [CollisionShape2D] is a "
+"child of an [Area2D] node."
 msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
@@ -24666,6 +24707,11 @@ msgid ""
 "same behavior."
 msgstr ""
 
+#: doc/classes/EditorSpinSlider.xml
+#, fuzzy
+msgid "If [code]true[/code], the slider is hidden."
+msgstr "Falls [code]wahr[/code] wir Audio gerade abgespielt."
+
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
 "Version Control System (VCS) interface, which reads and writes to the local "
@@ -28284,7 +28330,20 @@ msgid "Gradient's colors returned as a [PoolColorArray]."
 msgstr ""
 
 #: doc/classes/Gradient.xml
+msgid ""
+"Defines how the colors between points of the gradient are interpolated. See "
+"[enum InterpolationMode] for available modes."
+msgstr ""
+
+#: doc/classes/Gradient.xml
 msgid "Gradient's offsets returned as a [PoolRealArray]."
+msgstr ""
+
+#: doc/classes/Gradient.xml
+msgid ""
+"Constant interpolation, color changes abruptly at each point and stays "
+"uniform between. This might cause visible aliasing when used for a gradient "
+"texture in some cases."
 msgstr ""
 
 #: doc/classes/GradientTexture.xml
@@ -36869,13 +36928,13 @@ msgid ""
 "interpolating. By default there's no delay."
 msgstr ""
 
-#: doc/classes/MethodTweener.xml
+#: doc/classes/MethodTweener.xml doc/classes/PropertyTweener.xml
 msgid ""
 "Sets the type of used easing from [enum Tween.EaseType]. If not set, the "
 "default easing is used from the [SceneTreeTween] that contains this Tweener."
 msgstr ""
 
-#: doc/classes/MethodTweener.xml
+#: doc/classes/MethodTweener.xml doc/classes/PropertyTweener.xml
 msgid ""
 "Sets the type of used transition from [enum Tween.TransitionType]. If not "
 "set, the default transition is used from the [SceneTreeTween] that contains "
@@ -37593,6 +37652,15 @@ msgstr "Benennt das übergebene Node um."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
+msgid ""
+"Returns the navigation map [RID] the requested [code]agent[/code] is "
+"currently assigned to."
+msgstr ""
+"Liefert die [Animation] mit dem Schlüssel [code]name[/code] oder [code]null[/"
+"code], wenn nicht gefunden."
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
 msgid "Returns [code]true[/code] if the map got changed the previous frame."
 msgstr ""
 "Gibt [code]true[/code] zurück, wenn der Graph das übergebene Node enthält."
@@ -37664,6 +37732,12 @@ msgid "Create a new map."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns all navigation agents [RID]s that are currently assigned to the "
+"requested navigation [code]map[/code]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns the map cell size."
 msgstr "Gibt das letzte Node des Graphen zurück."
@@ -37694,6 +37768,12 @@ msgid "Returns the navigation path to reach the destination from the origin."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns all navigation regions [RID]s that are currently assigned to the "
+"requested navigation [code]map[/code]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns [code]true[/code] if the map is active."
 msgstr "Gibt [code]true[/code] zurück falls das Array leer ist."
@@ -37714,6 +37794,12 @@ msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Creates a new region."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the navigation map [RID] the requested [code]region[/code] is "
+"currently assigned to."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
@@ -38211,19 +38297,59 @@ msgid "Represents the size of the [enum SourceGeometryMode] enum."
 msgstr "Steht für die Größe von [enum TextureRepeat] enum."
 
 #: doc/classes/NavigationMeshGenerator.xml
-msgid "This class is responsible for creating and clearing navigation meshes."
+msgid "Helper class for creating and clearing navigation meshes."
 msgstr ""
 
 #: doc/classes/NavigationMeshGenerator.xml
 msgid ""
-"Bakes the navigation mesh. This will allow you to use pathfinding with the "
-"navigation system."
+"This class is responsible for creating and clearing 3D navigation meshes "
+"used as [NavigationMesh] resources inside [NavigationMeshInstance]. The "
+"[NavigationMeshGenerator] has very limited to no use for 2D as the "
+"navigation mesh baking process expects 3D node types and 3D source geometry "
+"to parse.\n"
+"The entire navigation mesh baking is best done in a separate thread as the "
+"voxelization, collision tests and mesh optimization steps involved are very "
+"performance and time hungry operations.\n"
+"Navigation mesh baking happens in multiple steps and the result depends on "
+"3D source geometry and properties of the [NavigationMesh] resource. In the "
+"first step, starting from a root node and depending on [NavigationMesh] "
+"properties all valid 3D source geometry nodes are collected from the "
+"[SceneTree]. Second, all collected nodes are parsed for their relevant 3D "
+"geometry data and a combined 3D mesh is build. Due to the many different "
+"types of parsable objects, from normal [MeshInstance]s to [CSGShape]s or "
+"various [CollisionObject]s, some operations to collect geometry data can "
+"trigger [VisualServer] and [PhysicsServer] synchronizations. Server "
+"synchronization can have a negative effect on baking time or framerate as it "
+"often involves [Mutex] locking for thread security. Many parsable objects "
+"and the continuous synchronization with other threaded Servers can increase "
+"the baking time significantly. On the other hand only a few but very large "
+"and complex objects will take some time to prepare for the Servers which can "
+"noticeably stall the next frame render. As a general rule the total amount "
+"of parsable objects and their individual size and complexity should be "
+"balanced to avoid framerate issues or very long baking times. The combined "
+"mesh is then passed to the Recast Navigation Object to test the source "
+"geometry for walkable terrain suitable to [NavigationMesh] agent properties "
+"by creating a voxel world around the meshes bounding area.\n"
+"The finalized navigation mesh is then returned and stored inside the "
+"[NavigationMesh] for use as a resource inside [NavigationMeshInstance] nodes."
+msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+msgid ""
+"Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child "
+"nodes under the provided [code]root_node[/code] or a specific group of nodes "
+"for potential source geometry. The parse behavior can be controlled with the "
+"[member NavigationMesh.geometry/parsed_geometry_type] and [member "
+"NavigationMesh.geometry/source_geometry_mode] properties on the "
+"[NavigationMesh] resource."
 msgstr ""
 
 #: doc/classes/NavigationMeshGenerator.xml
 #, fuzzy
-msgid "Clears the navigation mesh."
-msgstr "Enthält die Audio Daten in Bytes."
+msgid ""
+"Removes all polygons and vertices from the provided [code]nav_mesh[/code] "
+"resource."
+msgstr "Entfernt die Animation mit dem key [code]name[/code]."
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid "An instance of a [NavigationMesh]."
@@ -38243,7 +38369,10 @@ msgid ""
 "thread is useful because navigation baking is not a cheap operation. When it "
 "is completed, it automatically sets the new [NavigationMesh]. Please note "
 "that baking on separate thread may be very slow if geometry is parsed from "
-"meshes as async access to each mesh involves heavy synchronization."
+"meshes as async access to each mesh involves heavy synchronization. Also, "
+"please note that baking on a separate thread is automatically disabled on "
+"operating systems that cannot use threads (such as HTML5 with threads "
+"disabled)."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
@@ -38293,6 +38422,11 @@ msgid ""
 msgstr "Gibt das AnimationNode mit dem gegebenen Namen zurück."
 
 #: doc/classes/NavigationObstacle.xml
+#, fuzzy
+msgid "Returns the [RID] of this obstacle on the [NavigationServer]."
+msgstr "Gibt die Anzahl der Spuren in der Animation zurück."
+
+#: doc/classes/NavigationObstacle.xml
 msgid ""
 "Sets the [Navigation] node used by the obstacle. Useful when you don't want "
 "to make the obstacle a child of a [Navigation] node."
@@ -38327,6 +38461,11 @@ msgid ""
 "Returns the [Navigation2D] node that the obstacle is using for its "
 "navigation system."
 msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+#, fuzzy
+msgid "Returns the [RID] of this obstacle on the [Navigation2DServer]."
+msgstr "Gibt die Anzahl der Spuren in der Animation zurück."
 
 #: doc/classes/NavigationObstacle2D.xml
 msgid ""
@@ -39522,7 +39661,7 @@ msgstr ""
 #: doc/classes/Node.xml
 msgid ""
 "Returns [code]true[/code] if the physics interpolated flag is set for this "
-"Node (see [method set_physics_interpolated]).\n"
+"Node (see [member physics_interpolation_mode]).\n"
 "[b]Note:[/b] Interpolation will only be active is both the flag is set "
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
@@ -39530,8 +39669,8 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
-"Returns [code]true[/code] if physics interpolation is enabled (see [method "
-"set_physics_interpolated]) [b]and[/b] enabled in the [SceneTree].\n"
+"Returns [code]true[/code] if physics interpolation is enabled (see [member "
+"physics_interpolation_mode]) [b]and[/b] enabled in the [SceneTree].\n"
 "This is a convenience version of [method is_physics_interpolated] that also "
 "checks whether physics interpolation is enabled globally.\n"
 "See [member SceneTree.physics_interpolation] and [member ProjectSettings."
@@ -39825,14 +39964,6 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
-"Enables or disables physics interpolation per node, offering a finer grain "
-"of control than turning physics interpolation on and off globally.\n"
-"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
-"interpolation can sometimes give superior results."
-msgstr ""
-
-#: doc/classes/Node.xml
-msgid ""
 "Enables or disables physics (i.e. fixed framerate) processing. When a node "
 "is being processed, it will receive a [constant "
 "NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine."
@@ -39961,6 +40092,15 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Pause mode. How the node will behave if the [SceneTree] is paused."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Allows enabling or disabling physics interpolation per node, offering a "
+"finer grain of control than turning physics interpolation on and off "
+"globally.\n"
+"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
+"interpolation can sometimes give superior results."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -40123,6 +40263,24 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Continue to process regardless of the [SceneTree] pause state."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Inherits physics interpolation mode from the node's parent. For the root "
+"node, it is equivalent to [constant PHYSICS_INTERPOLATION_MODE_ON]. Default."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Turn off physics interpolation in this node and children set to [constant "
+"PHYSICS_INTERPOLATION_MODE_INHERIT]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Turn on physics interpolation in this node and children set to [constant "
+"PHYSICS_INTERPOLATION_MODE_INHERIT]."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -41369,10 +41527,13 @@ msgid "Returns the tooltip of the item at index [code]idx[/code]."
 msgstr "Liefert die Position des Punktes bei Index [code]Punkt[/code]."
 
 #: doc/classes/OptionButton.xml
+#, fuzzy
 msgid ""
-"Returns the ID of the selected item, or [code]0[/code] if no item is "
+"Returns the ID of the selected item, or [code]-1[/code] if no item is "
 "selected."
 msgstr ""
+"Liefert die [Animation] mit dem Schlüssel [code]name[/code] oder [code]null[/"
+"code], wenn nicht gefunden."
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -41392,7 +41553,8 @@ msgstr ""
 #: doc/classes/OptionButton.xml
 msgid ""
 "Selects an item by index and makes it the current item. This will work even "
-"if the item is disabled."
+"if the item is disabled.\n"
+"Passing [code]-1[/code] as the index deselects any currently selected item."
 msgstr ""
 
 #: doc/classes/OptionButton.xml
@@ -46791,6 +46953,17 @@ msgid ""
 "should always be preferred."
 msgstr ""
 
+#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
+#: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
+#: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
+#: doc/classes/PoolVector3Array.xml
+#, fuzzy
+msgid ""
+"Returns [code]true[/code] if the array contains the given value.\n"
+"[b]Note:[/b] This is equivalent to using the [code]in[/code] operator."
+msgstr ""
+"Liefert [code]true[/code] wenn die Länge der Zeichenkette [code]0[/code] ist."
+
 #: doc/classes/PoolByteArray.xml
 msgid ""
 "Returns a hexadecimal representation of this array as a [String].\n"
@@ -47657,6 +47830,11 @@ msgstr ""
 #: doc/classes/PopupMenu.xml
 msgid "[Font] used for the menu items."
 msgstr ""
+
+#: doc/classes/PopupMenu.xml
+#, fuzzy
+msgid "[Font] used for the labeled separator."
+msgstr "Kein Hinweis auf die bearbeitete Eigenschaft."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Texture] icon for the checked checkbox items."
@@ -51115,19 +51293,6 @@ msgstr ""
 msgid ""
 "Sets the time in seconds after which the [PropertyTweener] will start "
 "interpolating. By default there's no delay."
-msgstr ""
-
-#: doc/classes/PropertyTweener.xml
-msgid ""
-"Sets the type of used easing from [enum Tween.EaseType]. If not set, the "
-"default easing is used from the [Tween] that contains this Tweener."
-msgstr ""
-
-#: doc/classes/PropertyTweener.xml
-msgid ""
-"Sets the type of used transition from [enum Tween.TransitionType]. If not "
-"set, the default transition is used from the [Tween] that contains this "
-"Tweener."
 msgstr ""
 
 #: doc/classes/ProximityGroup.xml
@@ -56014,8 +56179,15 @@ msgstr ""
 
 #: doc/classes/Shape2D.xml
 msgid ""
-"Returns a list of the points where this shape touches another. If there are "
-"no collisions the list is empty.\n"
+"Returns a list of contact point pairs where this shape touches another.\n"
+"If there are no collisions, the returned list is empty. Otherwise, the "
+"returned list contains contact points arranged in pairs, with entries "
+"alternating between points on the boundary of this shape and points on the "
+"boundary of [code]with_shape[/code].\n"
+"A collision pair A, B can be used to calculate the collision normal with "
+"[code](B - A).normalized()[/code], and the collision depth with [code](B - "
+"A).length()[/code]. This information is typically used to separate shapes, "
+"particularly in collision solvers.\n"
 "This method needs the transformation matrix for this shape "
 "([code]local_xform[/code]), the shape to check collisions with "
 "([code]with_shape[/code]), and the transformation matrix of that shape "
@@ -56036,8 +56208,16 @@ msgstr ""
 
 #: doc/classes/Shape2D.xml
 msgid ""
-"Returns a list of the points where this shape would touch another, if a "
-"given movement was applied. If there are no collisions the list is empty.\n"
+"Returns a list of contact point pairs where this shape would touch another, "
+"if a given movement was applied.\n"
+"If there would be no collisions, the returned list is empty. Otherwise, the "
+"returned list contains contact points arranged in pairs, with entries "
+"alternating between points on the boundary of this shape and points on the "
+"boundary of [code]with_shape[/code].\n"
+"A collision pair A, B can be used to calculate the collision normal with "
+"[code](B - A).normalized()[/code], and the collision depth with [code](B - "
+"A).length()[/code]. This information is typically used to separate shapes, "
+"particularly in collision solvers.\n"
 "This method needs the transformation matrix for this shape "
 "([code]local_xform[/code]), the movement to test on this shape "
 "([code]local_motion[/code]), the shape to check collisions with "
@@ -76160,10 +76340,12 @@ msgstr ""
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid "Target ray from touch screen, mouse or other tactile input device."
 msgstr ""
+"Ziel-Strahl für einen Touch-Screen, eine Computer-Maus oder ein taktisches "
+"Eingabegerät."
 
 #: doc/classes/WindowDialog.xml
 msgid "Base class for window dialogs."
-msgstr ""
+msgstr "Basis-Klasse für Fenster-Dialoge."
 
 #: doc/classes/WindowDialog.xml
 msgid ""
@@ -76204,6 +76386,8 @@ msgid ""
 "The thickness of the border that can be dragged when scaling the window (if "
 "[member resizable] is enabled)."
 msgstr ""
+"Die Breite der Kante, die zum Anpassen der Fenstergröße genutzt werden kann "
+"(wenn [member resizable] aktiviert ist)."
 
 #: doc/classes/WindowDialog.xml
 msgid "The vertical offset of the title text."
@@ -76234,7 +76418,7 @@ msgstr ""
 
 #: doc/classes/World.xml
 msgid "Class that has everything pertaining to a world."
-msgstr ""
+msgstr "Eine Klasse die alles für eine Welt mitbringt."
 
 #: doc/classes/World.xml
 msgid ""
@@ -76248,6 +76432,8 @@ msgid ""
 "Direct access to the world's physics 3D space state. Used for querying "
 "current and potential collisions."
 msgstr ""
+"Direkter Zugang zu dem physischen Zustand des 3D Raums der Welt. Wird "
+"genutzt um aktuelle oder zukünftige Kollisionen abzufragen."
 
 #: doc/classes/World.xml
 msgid "The World's [Environment]."
@@ -76258,18 +76444,20 @@ msgid ""
 "The World's fallback_environment will be used if the World's [Environment] "
 "fails or is missing."
 msgstr ""
+"Das fallback_environment der Welt wird genutzt, sollte das [Environment] der "
+"Welt nicht existieren oder nicht geladen werden können."
 
 #: doc/classes/World.xml
 msgid "The World's visual scenario."
-msgstr ""
+msgstr "Das visuelle Szenario der Welt."
 
 #: doc/classes/World.xml
 msgid "The World's physics space."
-msgstr ""
+msgstr "The physikalische Raum der Welt."
 
 #: doc/classes/World2D.xml
 msgid "Class that has everything pertaining to a 2D world."
-msgstr ""
+msgstr "Eine Klasse die alles für eine 2D Welt mitbringt."
 
 #: doc/classes/World2D.xml
 msgid ""
@@ -76277,12 +76465,17 @@ msgid ""
 "visual scenario and a sound space. 2D nodes register their resources into "
 "the current 2D world."
 msgstr ""
+"Eine Klasse die alles für eine 2D Welt mitbringt. Einen physikalischen Raum, "
+"ein visuelles Szenario und einen Bereich für Sounds. 2D Knotenpunkte "
+"registrieren ihre Resourcen in die aktuelle 2D Welt."
 
 #: doc/classes/World2D.xml
 msgid ""
 "The [RID] of this world's canvas resource. Used by the [VisualServer] for 2D "
 "drawing."
 msgstr ""
+"Die [RID] der Canvas Resource dieser Welt. Wird von [VisualServer] für 2D-"
+"Zeichnungen genutzt."
 
 #: doc/classes/World2D.xml
 msgid ""
@@ -76357,6 +76550,8 @@ msgid ""
 "Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/"
 "XML]XML[/url] files."
 msgstr ""
+"Niedrig-levelige Klasse um Parser für [url=https://en.wikipedia.org/wiki/"
+"XML]XML[/url]-Dateien zu erstellen."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -76364,6 +76559,9 @@ msgid ""
 "flexible standard, this interface is low-level so it can be applied to any "
 "possible schema."
 msgstr ""
+"Diese Klasse kann als Grundlage für eigene XML Parser genutzt werden. Da XML "
+"ein sehr flexibler Standard ist, kann dieses niedrig-levelige Interface an "
+"jedes beliebige Schema angepasst werden."
 
 #: doc/classes/XMLParser.xml
 msgid "Gets the amount of attributes in the current element."
@@ -76374,16 +76572,22 @@ msgid ""
 "Gets the name of the attribute specified by the index in [code]idx[/code] "
 "argument."
 msgstr ""
+"Gibt den Namen des Attributes zurück, dass durch den Index in dem [code]idx[/"
+"code] Argument spezifiziert wird."
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the value of the attribute specified by the index in [code]idx[/code] "
 "argument."
 msgstr ""
+"Gibt den Wert eines Attributes zurück, das durch den Index in dem [code]idx[/"
+"code] Argument spezifiziert wird."
 
 #: doc/classes/XMLParser.xml
 msgid "Gets the current line in the parsed file (currently not implemented)."
 msgstr ""
+"Gibt die aktuelle Zeile in der geöffneten Datei zurück (aktuell nicht "
+"implementiert)."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -76396,12 +76600,17 @@ msgid ""
 "Gets the value of a certain attribute of the current element by name. This "
 "will return an empty [String] if the attribute is not found."
 msgstr ""
+"Gibt den Wert eines bestimmten Attributes innerhalb des aktuellen Elementes "
+"zurück, dass den gesuchten Namen besitzt. Der Rückgabewert ist ein leerer "
+"[String], sollte das Attribut nicht gefunden werden."
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the contents of a text node. This will raise an error in any other type "
 "of node."
 msgstr ""
+"Gibt den Inhalt eines Text-Knotenpunkts zurück. Sollte der Knotenpunkt ein "
+"anderer Typ sein, so wird ein Fehler geworfen."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -76420,10 +76629,12 @@ msgstr ""
 msgid ""
 "Gets the type of the current node. Compare with [enum NodeType] constants."
 msgstr ""
+"Gibt den Typ des aktuellen Knotenpunkts zurück. Der Typ kann mit den [enum "
+"NodeType] Konstanten verglichen werden."
 
 #: doc/classes/XMLParser.xml
 msgid "Check whether the current element has a certain attribute."
-msgstr ""
+msgstr "Überprüft, ob das aktuelle Element einen bestimmtes Attribut enthält."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -76433,15 +76644,19 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml
 msgid "Opens an XML file for parsing. This returns an error code."
-msgstr ""
+msgstr "Öffnet eine XML-Datei zum Parsen. Der Rückgabewert ist ein Fehlercode."
 
 #: doc/classes/XMLParser.xml
 msgid "Opens an XML raw buffer for parsing. This returns an error code."
 msgstr ""
+"Öffnet einen unbearbeiteten Buffer zum Parsen. Der Rückgabewert ist ein "
+"Fehlercode."
 
 #: doc/classes/XMLParser.xml
 msgid "Reads the next node of the file. This returns an error code."
 msgstr ""
+"Liest den Text-Knotenpunkt der Datei aus. Der Reückgabewert ist ein "
+"Fehlercode."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -76458,10 +76673,12 @@ msgstr ""
 #: doc/classes/XMLParser.xml
 msgid "There's no node (no file or buffer opened)."
 msgstr ""
+"Es ist kein Knotenpunkt verfügbar (da keine Datei oder kein Buffer geöffnet "
+"wurde)."
 
 #: doc/classes/XMLParser.xml
 msgid "Element (tag)."
-msgstr ""
+msgstr "Element (Tag)."
 
 #: doc/classes/XMLParser.xml
 msgid "End of element."
@@ -76469,11 +76686,11 @@ msgstr "Ende des Elements."
 
 #: doc/classes/XMLParser.xml
 msgid "Text node."
-msgstr ""
+msgstr "Text-Knotenpunkt."
 
 #: doc/classes/XMLParser.xml
 msgid "Comment node."
-msgstr ""
+msgstr "Kommentar-Knotenpunkt."
 
 #: doc/classes/XMLParser.xml
 msgid "CDATA content."
@@ -76485,7 +76702,7 @@ msgstr "unbekanntes Node."
 
 #: doc/classes/YSort.xml
 msgid "Sort all child nodes based on their Y positions."
-msgstr ""
+msgstr "Sotiert alle Kind-Knotenpunkte basierend auf ihrer Y-Position."
 
 #: doc/classes/YSort.xml
 msgid ""
