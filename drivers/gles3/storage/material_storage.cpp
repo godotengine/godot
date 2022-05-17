@@ -1024,6 +1024,7 @@ MaterialData::~MaterialData() {
 
 	if (uniform_buffer) {
 		glDeleteBuffers(1, &uniform_buffer);
+		uniform_buffer = 0;
 	}
 }
 
@@ -1677,9 +1678,6 @@ ShaderCompiler::DefaultIdentifierActions actions;
 	//shaders.copy.initialize();
 	//shaders.copy_version = shaders.copy.version_create(); //TODO
 	//shaders.copy.version_bind_shader(shaders.copy_version, CopyShaderGLES3::MODE_COPY_SECTION);
-	//shaders.cubemap_filter.init();
-	//bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
-	//shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 }
 
 MaterialStorage::~MaterialStorage() {
@@ -3133,6 +3131,7 @@ GLES3::ShaderData *GLES3::_create_sky_shader_func() {
 // Sky material
 
 void SkyMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	uniform_set_updated = true;
 	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 

@@ -42,11 +42,11 @@ vec2 unpackSnorm2x16(uint p) {
 
 uint packUnorm4x8(vec4 v) {
 	uvec4 uv = uvec4(round(clamp(v, vec4(0.0), vec4(1.0)) * 255.0));
-	return uv.x | uv.y << uint(8) | uv.z << uint(16) | uv.w << uint(24);
+	return uv.x | (uv.y << uint(8)) | (uv.z << uint(16)) | (uv.w << uint(24));
 }
 
 vec4 unpackUnorm4x8(uint p) {
-	return vec4(float(p & uint(0xffff)), float((p >> uint(8)) & uint(0xffff)), float((p >> uint(16)) & uint(0xffff)), float(p >> uint(24))) * 0.00392156862; // 1.0 / 255.0
+	return vec4(float(p & uint(0xff)), float((p >> uint(8)) & uint(0xff)), float((p >> uint(16)) & uint(0xff)), float(p >> uint(24))) * 0.00392156862; // 1.0 / 255.0
 }
 
 uint packSnorm4x8(vec4 v) {
@@ -55,6 +55,6 @@ uint packSnorm4x8(vec4 v) {
 }
 
 vec4 unpackSnorm4x8(uint p) {
-	vec4 v = vec4(float(p & uint(0xffff)), float((p >> uint(8)) & uint(0xffff)), float((p >> uint(16)) & uint(0xffff)), float(p >> uint(24)));
+	vec4 v = vec4(float(p & uint(0xff)), float((p >> uint(8)) & uint(0xff)), float((p >> uint(16)) & uint(0xff)), float(p >> uint(24)));
 	return clamp((v - vec4(127.0)) * vec4(0.00787401574), vec4(-1.0), vec4(1.0));
 }

@@ -570,24 +570,29 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 
 		if (s.vertex_buffer != 0) {
 			glDeleteBuffers(1, &s.vertex_buffer);
+			s.vertex_buffer = 0;
 		}
 
 		if (s.version_count != 0) {
 			for (uint32_t j = 0; j < s.version_count; j++) {
 				glDeleteVertexArrays(1, &s.versions[j].vertex_array);
+				s.versions[j].vertex_array = 0;
 			}
 		}
 
 		if (s.attribute_buffer != 0) {
 			glDeleteBuffers(1, &s.attribute_buffer);
+			s.attribute_buffer = 0;
 		}
 
 		if (s.skin_buffer != 0) {
 			glDeleteBuffers(1, &s.skin_buffer);
+			s.skin_buffer = 0;
 		}
 
 		if (s.index_buffer != 0) {
 			glDeleteBuffers(1, &s.index_buffer);
+			s.index_buffer = 0;
 		}
 		memdelete(mesh->surfaces[i]);
 	}
@@ -804,17 +809,20 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 		if (mi->surfaces[i].version_count != 0) {
 			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
 				glDeleteVertexArrays(1, &mi->surfaces[i].versions[j].vertex_array);
+				mi->surfaces[i].versions[j].vertex_array = 0;
 			}
 			memfree(mi->surfaces[i].versions);
 		}
 		if (mi->surfaces[i].vertex_buffer != 0) {
 			glDeleteBuffers(1, &mi->surfaces[i].vertex_buffer);
+			mi->surfaces[i].vertex_buffer = 0;
 		}
 	}
 	mi->surfaces.clear();
 
 	if (mi->blend_weights_buffer != 0) {
 		glDeleteBuffers(1, &mi->blend_weights_buffer);
+		mi->blend_weights_buffer = 0;
 	}
 	mi->blend_weights.clear();
 	mi->weights_dirty = false;

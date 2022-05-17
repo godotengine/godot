@@ -45,6 +45,7 @@
 #include "drivers/gles3/shaders/copy.glsl.gen.h"
 
 #include "../shaders/canvas.glsl.gen.h"
+#include "../shaders/cubemap_filter.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
@@ -56,6 +57,7 @@ struct Shaders {
 	CanvasShaderGLES3 canvas_shader;
 	SkyShaderGLES3 sky_shader;
 	SceneShaderGLES3 scene_shader;
+	CubemapFilterShaderGLES3 cubemap_filter_shader;
 
 	ShaderCompiler compiler_canvas;
 	ShaderCompiler compiler_scene;
@@ -241,6 +243,7 @@ ShaderData *_create_sky_shader_func();
 
 struct SkyMaterialData : public MaterialData {
 	SkyShaderData *shader_data = nullptr;
+	bool uniform_set_updated = false;
 
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_next_pass(RID p_pass) {}
@@ -457,8 +460,6 @@ private:
 	mutable RID_Owner<Material, true> material_owner;
 
 	SelfList<Material>::List material_update_list;
-
-	//static void _material_uniform_set_erased(void *p_material);
 
 public:
 	static MaterialStorage *get_singleton();

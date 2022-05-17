@@ -3006,8 +3006,8 @@ RenderingServer::RenderingServer() {
 	// OpenGL limits
 	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_elements", 65536);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"));
-	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_lights", 256);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "16,4096,1"));
+	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_lights", 32);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"));
 	GLOBAL_DEF_RST("rendering/limits/opengl/max_lights_per_object", 8);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_lights_per_object", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"));
 
