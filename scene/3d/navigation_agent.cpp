@@ -130,6 +130,24 @@ void NavigationAgent::_notification(int p_what) {
 			// the navigation map may not be ready at that time. This fixes issues with taking the agent out of the scene tree.
 			request_ready();
 		} break;
+		case NOTIFICATION_PAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = NavigationServer::get_singleton()->agent_get_map(get_rid());
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+		case NOTIFICATION_UNPAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = NavigationServer::get_singleton()->agent_get_map(get_rid());
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);

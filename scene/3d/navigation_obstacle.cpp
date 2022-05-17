@@ -81,6 +81,24 @@ void NavigationObstacle::_notification(int p_what) {
 
 			set_physics_process_internal(true);
 		} break;
+		case NOTIFICATION_PAUSED: {
+			if (parent_spatial && !parent_spatial->can_process()) {
+				map_before_pause = NavigationServer::get_singleton()->agent_get_map(get_rid());
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_spatial && parent_spatial->can_process() && !(map_before_pause == RID())) {
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+		case NOTIFICATION_UNPAUSED: {
+			if (parent_spatial && !parent_spatial->can_process()) {
+				map_before_pause = NavigationServer::get_singleton()->agent_get_map(get_rid());
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_spatial && parent_spatial->can_process() && !(map_before_pause == RID())) {
+				NavigationServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			set_navigation(nullptr);
 			set_physics_process_internal(false);

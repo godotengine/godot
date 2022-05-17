@@ -94,6 +94,24 @@ void NavigationObstacle2D::_notification(int p_what) {
 		case NOTIFICATION_UNPARENTED: {
 			parent_node2d = nullptr;
 		} break;
+		case NOTIFICATION_PAUSED: {
+			if (parent_node2d && !parent_node2d->can_process()) {
+				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+		case NOTIFICATION_UNPAUSED: {
+			if (parent_node2d && !parent_node2d->can_process()) {
+				map_before_pause = Navigation2DServer::get_singleton()->agent_get_map(get_rid());
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
+				Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d && parent_node2d->is_inside_tree()) {
 				Navigation2DServer::get_singleton()->agent_set_position(agent, parent_node2d->get_global_transform().get_origin());

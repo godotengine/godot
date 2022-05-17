@@ -44,6 +44,7 @@ class NavigationAgent2D : public Node {
 	Navigation2D *navigation;
 
 	RID agent;
+	RID map_before_pause;
 
 	real_t target_desired_distance;
 	real_t radius;
