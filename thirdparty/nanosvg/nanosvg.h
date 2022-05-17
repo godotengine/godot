@@ -187,6 +187,7 @@ void nsvgDelete(NSVGimage* image);
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 
 #define NSVG_PI (3.14159265358979323846264338327f)
@@ -1226,10 +1227,11 @@ static unsigned int nsvg__parseColorHex(const char* str)
 static unsigned int nsvg__parseColorRGB(const char* str)
 {
 	unsigned int r=0, g=0, b=0;
+	float rf=0, gf=0, bf=0;
 	if (sscanf(str, "rgb(%u, %u, %u)", &r, &g, &b) == 3)		// decimal integers
 		return NSVG_RGB(r, g, b);
-	if (sscanf(str, "rgb(%u%%, %u%%, %u%%)", &r, &g, &b) == 3)	// decimal integer percentage
-		return NSVG_RGB(r*255/100, g*255/100, b*255/100);
+	if (sscanf(str, "rgb(%f%%, %f%%, %f%%)", &rf, &gf, &bf) == 3)	// decimal integer percentage
+		return NSVG_RGB(roundf(rf*2.55f), roundf(gf*2.55f), roundf(bf*2.55f)); // (255 / 100.0f)
 	return NSVG_RGB(128, 128, 128);
 }
 
