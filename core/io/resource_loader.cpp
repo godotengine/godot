@@ -217,21 +217,27 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 	load_task.loader_id = Thread::get_caller_id();
 
-	if (load_task.semaphore) {
-		//this is an actual thread, so wait for Ok from semaphore
-		thread_load_semaphore->wait(); //wait until its ok to start loading
+	if (load_task.thread) {
+		// This is an actual thread, so wait for ok from our pool to start loading.
+		thread_load_semaphore->wait();
 	}
-	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 
-	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
+	// Do the work that takes a long time, without lock held.
+	Ref<Resource> resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 
 	thread_load_mutex->lock();
+
+	// Write everything under lock, as we are communicating with another thread in non-volatile memory, so we want the compiler to know that.
+	load_task.resource = resource;
+	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
+
 	if (load_task.error != OK) {
 		load_task.status = THREAD_LOAD_FAILED;
 	} else {
 		load_task.status = THREAD_LOAD_LOADED;
 	}
-	if (load_task.semaphore) {
+
+	if (load_task.thread) {
 		if (load_task.start_next && thread_waiting_count > 0) {
 			thread_waiting_count--;
 			//thread loading count remains constant, this ends but another one begins
@@ -241,12 +247,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		}
 
 		print_lt("END: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
-
-		for (int i = 0; i < load_task.poll_requests; i++) {
-			load_task.semaphore->post();
-		}
-		memdelete(load_task.semaphore);
-		load_task.semaphore = nullptr;
 	}
 
 	if (load_task.resource.is_valid()) {
@@ -257,7 +257,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		}
 
 #ifdef TOOLS_ENABLED
-
 		load_task.resource->set_edited(false);
 		if (timestamp_on_load) {
 			uint64_t mt = FileAccess::get_modified_time(load_task.remapped_path);
@@ -271,6 +270,22 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		}
 	}
 
+	// Post once for each waiting client who registered under lock; we know exactly
+	// how many there are. The semaphore will already be allocated if there are any clients.
+	if (load_task.semaphore) {
+		for (int i = 0; i < load_task.semaphore_clients; i++) {
+			load_task.semaphore->post();
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+		ERR_PRINT("Thread load task completed without reaching valid terminal state. Broken implementation (please report).");
+	}
+#endif
+
+	// When the waiting clients are done, the semaphore is deallocated.
+	// New clients will not wait because we are in a terminal state.
 	thread_load_mutex->unlock();
 }
 
@@ -284,6 +299,7 @@ static String _validate_local_path(const String &p_path) {
 		return ProjectSettings::get_singleton()->localize_path(p_path);
 	}
 }
+
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode, const String &p_source_resource) {
 	String local_path = _validate_local_path(p_path);
 
@@ -317,55 +333,49 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		return OK;
 	}
 
-	{
-		//create load task
+	// Create load task.
+	ThreadLoadTask load_task;
+	load_task.requests = 1;
 
-		ThreadLoadTask load_task;
+	// FIXME: Is it intentional that remapping is done under lock of thread_load_mutex? It does not appear to
+	// be set up under lock.
+	load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
+	load_task.local_path = local_path;
+	load_task.type_hint = p_type_hint;
+	load_task.cache_mode = p_cache_mode;
+	load_task.use_sub_threads = p_use_sub_threads;
 
-		load_task.requests = 1;
-		load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
-		load_task.local_path = local_path;
-		load_task.type_hint = p_type_hint;
-		load_task.cache_mode = p_cache_mode;
-		load_task.use_sub_threads = p_use_sub_threads;
+	{ //must check if resource is already loaded before attempting to load it in a thread
 
-		{ //must check if resource is already loaded before attempting to load it in a thread
-
-			if (load_task.loader_id == Thread::get_caller_id()) {
-				thread_load_mutex->unlock();
-				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
-			}
-			//lock first if possible
-			ResourceCache::lock.read_lock();
-
-			//get ptr
-			Resource **rptr = ResourceCache::resources.getptr(local_path);
-
-			if (rptr) {
-				Ref<Resource> res(*rptr);
-				//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-				if (res.is_valid()) {
-					//referencing is fine
-					load_task.resource = res;
-					load_task.status = THREAD_LOAD_LOADED;
-					load_task.progress = 1.0;
-				}
-			}
-			ResourceCache::lock.read_unlock();
+		if (load_task.loader_id == Thread::get_caller_id()) {
+			thread_load_mutex->unlock();
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 		}
+		//lock first if possible
+		ResourceCache::lock.read_lock();
 
-		if (!p_source_resource.is_empty()) {
-			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
+		//get ptr
+		Resource **rptr = ResourceCache::resources.getptr(local_path);
+
+		if (rptr) {
+			Ref<Resource> res(*rptr);
+			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+			if (res.is_valid()) {
+				//referencing is fine
+				load_task.resource = res;
+				load_task.status = THREAD_LOAD_LOADED;
+				load_task.progress = 1.0;
+			}
 		}
-
-		thread_load_tasks[local_path] = load_task;
+		ResourceCache::lock.read_unlock();
 	}
 
-	ThreadLoadTask &load_task = thread_load_tasks[local_path];
+	if (!p_source_resource.is_empty()) {
+		thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
+	}
 
-	if (load_task.resource.is_null()) { //needs to be loaded in thread
-
-		load_task.semaphore = memnew(Semaphore);
+	if (load_task.resource.is_null()) {
+		// We need to load this resource on a thread.
 		if (thread_loading_count < thread_load_max) {
 			thread_loading_count++;
 			thread_load_semaphore->post(); //we have free threads, so allow one
@@ -380,6 +390,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		load_task.loader_id = load_task.thread->get_id();
 	}
 
+	thread_load_tasks[local_path] = load_task;
 	thread_load_mutex->unlock();
 
 	return OK;
@@ -431,6 +442,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 	String local_path = _validate_local_path(p_path);
 
 	thread_load_mutex->lock();
+
 	if (!thread_load_tasks.has(local_path)) {
 		thread_load_mutex->unlock();
 		if (r_error) {
@@ -439,38 +451,44 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		return Ref<Resource>();
 	}
 
-	ThreadLoadTask &load_task = thread_load_tasks[local_path];
+	ThreadLoadTask *load_task = &(thread_load_tasks[local_path]);
 
-	//semaphore still exists, meaning it's still loading, request poll
-	Semaphore *semaphore = load_task.semaphore;
-	if (semaphore) {
-		load_task.poll_requests++;
+	if (load_task->status == THREAD_LOAD_IN_PROGRESS) {
+		// We need to wait for the load to complete, which may be synchronous or on a
+		// loader thread.
 
-		{
-			// As we got a semaphore, this means we are going to have to wait
-			// until the sub-resource is done loading
-			//
-			// As this thread will become 'blocked' we should "exchange" its
-			// active status with a waiting one, to ensure load continues.
-			//
-			// This ensures loading is never blocked and that is also within
-			// the maximum number of active threads.
+		// Indicate that an additional semaphore resource is needed (we are about to wait.)
+		// Also acts as a reference count on the semaphore.
+		load_task->semaphore_clients++;
 
-			if (thread_waiting_count > 0) {
-				thread_waiting_count--;
-				thread_loading_count++;
-				thread_load_semaphore->post();
-
-				load_task.start_next = false; //do not start next since we are doing it here
-			}
-
-			thread_suspended_count++;
-
-			print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
+		if (1 == load_task->semaphore_clients) {
+			load_task->semaphore = memnew(Semaphore);
 		}
 
+		// As this thread will become 'blocked' we should "exchange" its
+		// active status with a waiting one, to ensure load continues.
+		//
+		// This ensures loading is never blocked and that is also within
+		// the maximum number of active threads.
+
+		if (thread_waiting_count > 0) {
+			thread_waiting_count--;
+			thread_loading_count++;
+			thread_load_semaphore->post();
+
+			load_task->start_next = false; //do not start next since we are doing it here
+		}
+
+		thread_suspended_count++;
+
+		print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
+
 		thread_load_mutex->unlock();
-		semaphore->wait();
+
+		// Wait without lock, but asserting the lifetime of the semaphore with the semaphore_clients counter.
+		load_task->semaphore->wait();
+
+		// WARNING: This lock extends beyond this scope intentionally.
 		thread_load_mutex->lock();
 
 		thread_suspended_count--;
@@ -482,19 +500,36 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			}
 			return Ref<Resource>();
 		}
-	}
 
-	Ref<Resource> resource = load_task.resource;
+		// Immediately after a failed load, another load could have replaced the task cache entry, so fetch it again.
+		// FIXME: This is paranoid and should not be able to happen, because the load_task->requests reference count should
+		// prevent it from being removed.  Once the threading is entirely fixed, this can be changed back to just assuming
+		// we still have the reference.
+		load_task = &(thread_load_tasks[local_path]);
+
+		load_task->semaphore_clients--;
+		if (0 == load_task->semaphore_clients) {
+			// We are the last client that waited, so clean up the semaphore.
+			memdelete(load_task->semaphore);
+			load_task->semaphore = nullptr;
+		}
+	} // We come out of this scope holding thread_load_mutex, which ensures the load_task pointer.
+
+	// At this point, load_task is either the item we created or a replacement from the task cache.
+
+	// Acquire resource reference under lock, to return later without lock on the task.
+	Ref<Resource> resource = load_task->resource;
 	if (r_error) {
-		*r_error = load_task.error;
+		*r_error = load_task->error;
 	}
 
-	load_task.requests--;
+	load_task->requests--;
 
-	if (load_task.requests == 0) {
-		if (load_task.thread) { //thread may not have been used
-			load_task.thread->wait_to_finish();
-			memdelete(load_task.thread);
+	if (load_task->requests == 0) {
+		if (load_task->thread) { // Thread will not have been used if we loaded synchronously.
+			load_task->thread->wait_to_finish();
+			memdelete(load_task->thread);
+			load_task->thread = nullptr;
 		}
 		thread_load_tasks.erase(local_path);
 	}
@@ -514,8 +549,11 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 	if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 		thread_load_mutex->lock();
 
-		//Is it already being loaded? poll until done
+		// Is it already being loaded? Wait for a result.
 		if (thread_load_tasks.has(local_path)) {
+			// WARNING: We call the async function but we are actually only reusing its first half. Because thread_load_tasks.has(local_path),
+			// we know it will only execute the first part and register as an interested client, not create a thread.
+			// Factoring this common part out into another method may be difficult, because of locking.
 			Error err = load_threaded_request(p_path, p_type_hint);
 			if (err != OK) {
 				if (r_error) {
@@ -526,10 +564,11 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 			}
 			thread_load_mutex->unlock();
 
+			// Now wait for a result.
 			return load_threaded_get(p_path, r_error);
 		}
 
-		//Is it cached?
+		// Is it cached?
 		ResourceCache::lock.read_lock();
 
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
@@ -552,7 +591,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 		ResourceCache::lock.read_unlock();
 
-		//load using task (but this thread)
+		// It isn't available or being loaded, so load using task (but this thread.)
 		ThreadLoadTask load_task;
 
 		load_task.requests = 1;
@@ -561,11 +600,11 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		load_task.type_hint = p_type_hint;
 		load_task.cache_mode = p_cache_mode; //ignore
 		load_task.loader_id = Thread::get_caller_id();
-
 		thread_load_tasks[local_path] = load_task;
 
 		thread_load_mutex->unlock();
 
+		// Now do the work that may take a while.
 		_thread_load_function(&thread_load_tasks[local_path]);
 
 		return load_threaded_get(p_path, r_error);

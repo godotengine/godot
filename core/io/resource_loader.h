@@ -131,7 +131,7 @@ private:
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
 		Thread::ID loader_id = 0;
-		Semaphore *semaphore = nullptr;
+		Semaphore *semaphore = nullptr; // Semaphore to notify clients of completion, allocated if semaphore_clients > 0.
 		String local_path;
 		String remapped_path;
 		String type_hint;
@@ -144,7 +144,7 @@ private:
 		bool use_sub_threads = false;
 		bool start_next = true;
 		int requests = 0;
-		int poll_requests = 0;
+		int semaphore_clients = 0; // Number of clients waiting on the semaphore.
 		HashSet<String> sub_tasks;
 	};
 
