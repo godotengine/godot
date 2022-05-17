@@ -4,7 +4,7 @@
  *
  *   FreeType internal cache interface (specification).
  *
- * Copyright (C) 2000-2021 by
+ * Copyright (C) 2000-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -210,7 +210,7 @@ FT_BEGIN_HEADER
 #define FTC_CACHE_LOOKUP_CMP( cache, nodecmp, hash, query, node, error ) \
   FT_BEGIN_STMNT                                                         \
     FTC_Node             *_bucket, *_pnode, _node;                       \
-    FTC_Cache             _cache   = FTC_CACHE(cache);                   \
+    FTC_Cache             _cache   = FTC_CACHE( cache );                 \
     FT_Offset             _hash    = (FT_Offset)(hash);                  \
     FTC_Node_CompareFunc  _nodcomp = (FTC_Node_CompareFunc)(nodecmp);    \
     FT_Bool               _list_changed = FALSE;                         \

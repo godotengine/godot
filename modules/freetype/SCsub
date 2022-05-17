@@ -51,6 +51,7 @@ if env["builtin_freetype"]:
         "src/psnames/psnames.c",
         "src/raster/raster.c",
         "src/sdf/sdf.c",
+        "src/svg/svg.c",
         "src/smooth/smooth.c",
         "src/truetype/truetype.c",
         "src/type1/type1.c",
@@ -86,7 +87,7 @@ if env["builtin_freetype"]:
     # Also needed in main env for scene/
     env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
 
-    env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG"])
+    env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
     if env["target"] == "debug":
         env_freetype.Append(CPPDEFINES=["ZLIB_DEBUG"])
 

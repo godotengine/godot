@@ -4,7 +4,7 @@
  *
  *   FreeType error codes (specification).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -101,6 +101,8 @@
                 "too many hints" )
   FT_ERRORDEF_( Invalid_Pixel_Size,                          0x17,
                 "invalid pixel size" )
+  FT_ERRORDEF_( Invalid_SVG_Document,                        0x18,
+                "invalid SVG document" )
 
   /* handle errors */
 
@@ -234,6 +236,8 @@
                 "found FDEF or IDEF opcode in glyf bytecode" )
   FT_ERRORDEF_( Missing_Bitmap,                              0x9D,
                 "missing bitmap in strike" )
+  FT_ERRORDEF_( Missing_SVG_Hooks,                           0x9E,
+                "SVG hooks have not been set" )
 
   /* CFF, CID, and Type 1 errors */
 

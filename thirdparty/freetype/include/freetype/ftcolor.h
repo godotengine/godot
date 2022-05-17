@@ -4,7 +4,7 @@
  *
  *   FreeType's glyph color management (specification).
  *
- * Copyright (C) 2018-2021 by
+ * Copyright (C) 2018-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -528,14 +528,14 @@ FT_BEGIN_HEADER
    * @fields:
    *   num_color_stops ::
    *     The number of color stops for the requested glyph index.  Set by
-   *     @FT_Get_Colorline_Stops.
+   *     @FT_Get_Paint.
    *
    *   current_color_stop ::
    *     The current color stop.  Set by @FT_Get_Colorline_Stops.
    *
    *   p ::
-   *     An opaque pointer into 'COLR' table data.  The caller must set this
-   *     to `NULL` before the first call of @FT_Get_Colorline_Stops.
+   *     An opaque pointer into 'COLR' table data.  Set by @FT_Get_Paint.
+   *     Updated by @FT_Get_Colorline_Stops.
    *
    * @since:
    *   2.11 -- **currently experimental only!**  There might be changes

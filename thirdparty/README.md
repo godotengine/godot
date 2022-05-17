@@ -131,13 +131,14 @@ comments.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.11.1 (3f83daeecb1a78d851b660eed025eeba362c0e4a, 2021)
+- Version: 2.12.1 (e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf, 2022)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
-- the `src/` folder, minus the `.mk` files and the `dlg` and `tools` subfolders
-- the `include/` folder, minus the `dlg` subfolder
+- `src/` folder, minus the `dlg` and `tools` subfolders
+  * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
+- `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
 

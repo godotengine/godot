@@ -613,7 +613,7 @@
           if ( FT_QREALLOC( buf, buf_size, new_size ) )
             goto Exit;
 
-          cursor   = (ptrdiff_t)buf_size;
+          cursor   = avail;
           buf_size = new_size;
         }
         else
@@ -623,7 +623,6 @@
           FT_MEM_MOVE( buf, buf + start, bytes );
 
           cursor = bytes;
-          avail -= bytes;
           start  = 0;
         }
         refill = 1;
@@ -1175,7 +1174,6 @@
                             font->props_size + 1 ) )
         goto Exit;
 
-      fp = font->props + font->props_size;
       font->props_size++;
     }
 
@@ -1537,8 +1535,6 @@
           /* kept.                                                */
           FT_FREE( p->glyph_name );
         }
-
-        p->glyph_name = NULL;
       }
 
       /* Clear the flags that might be added when width and height are */
@@ -1953,7 +1949,7 @@
         }
       }
 
-      if ( FT_ALLOC( p->font->internal, sizeof ( FT_HashRec ) ) )
+      if ( FT_QALLOC( p->font->internal, sizeof ( FT_HashRec ) ) )
         goto Exit;
       error = ft_hash_str_init( (FT_Hash)p->font->internal, memory );
       if ( error )

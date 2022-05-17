@@ -4,7 +4,7 @@
  *
  *   High-level Type 42 driver interface (body).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -150,22 +150,13 @@
   }
 
 
-  static FT_Error
-  t42_ps_get_font_private( FT_Face         face,
-                           PS_PrivateRec*  afont_private )
-  {
-    *afont_private = ((T42_Face)face)->type1.private_dict;
-
-    return FT_Err_Ok;
-  }
-
-
   static const FT_Service_PsInfoRec  t42_service_ps_info =
   {
     (PS_GetFontInfoFunc)   t42_ps_get_font_info,    /* ps_get_font_info    */
     (PS_GetFontExtraFunc)  t42_ps_get_font_extra,   /* ps_get_font_extra   */
     (PS_HasGlyphNamesFunc) t42_ps_has_glyph_names,  /* ps_has_glyph_names  */
-    (PS_GetFontPrivateFunc)t42_ps_get_font_private, /* ps_get_font_private */
+    /* Type42 fonts don't have a Private dict */
+    (PS_GetFontPrivateFunc)NULL,                    /* ps_get_font_private */
     /* not implemented */
     (PS_GetFontValueFunc)  NULL                     /* ps_get_font_value   */
   };

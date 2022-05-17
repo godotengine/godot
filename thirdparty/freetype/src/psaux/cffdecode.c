@@ -4,7 +4,7 @@
  *
  *   PostScript CFF (Type 2) decoding routines (body).
  *
- * Copyright (C) 2017-2021 by
+ * Copyright (C) 2017-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -248,7 +248,7 @@
     else
 #endif /* FT_CONFIG_OPTION_INCREMENTAL */
     {
-      CFF_Font cff = (CFF_Font)(face->extra.data);
+      CFF_Font cff = (CFF_Font)( face->extra.data );
 
 
       bchar_index = cff_lookup_glyph_by_stdcharcode( cff, bchar );

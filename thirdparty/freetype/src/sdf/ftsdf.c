@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2021 by
+ * Copyright (C) 2020-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -497,7 +497,7 @@
       goto Exit;
     }
 
-    if ( !FT_QALLOC( ptr, sizeof ( *ptr ) ) )
+    if ( !FT_QNEW( ptr ) )
     {
       *ptr = null_edge;
       *edge = ptr;
@@ -536,7 +536,7 @@
       goto Exit;
     }
 
-    if ( !FT_QALLOC( ptr, sizeof ( *ptr ) ) )
+    if ( !FT_QNEW( ptr ) )
     {
       *ptr     = null_contour;
       *contour = ptr;
@@ -591,7 +591,7 @@
       goto Exit;
     }
 
-    if ( !FT_QALLOC( ptr, sizeof ( *ptr ) ) )
+    if ( !FT_QNEW( ptr ) )
     {
       *ptr        = null_shape;
       ptr->memory = memory;
@@ -738,6 +738,18 @@
 
     contour = shape->contours;
 
+    /* If the control point coincides with any of the end points */
+    /* then it is a line and should be treated as one to avoid   */
+    /* unnecessary complexity later in the algorithm.            */
+    if ( ( contour->last_pos.x == control_1->x &&
+           contour->last_pos.y == control_1->y ) ||
+         ( control_1->x == to->x &&
+           control_1->y == to->y )               )
+    {
+      sdf_line_to( to, user );
+      goto Exit;
+    }
+
     FT_CALL( sdf_edge_new( memory, &edge ) );
 
     edge->edge_type = SDF_EDGE_CONIC;
@@ -764,9 +776,9 @@
                 const FT_26D6_Vec*  to,
                 void*               user )
   {
-    SDF_Shape*    shape    = ( SDF_Shape* )user;
-    SDF_Edge*     edge     = NULL;
-    SDF_Contour*  contour  = NULL;
+    SDF_Shape*    shape   = ( SDF_Shape* )user;
+    SDF_Edge*     edge    = NULL;
+    SDF_Contour*  contour = NULL;
 
     FT_Error   error  = FT_Err_Ok;
     FT_Memory  memory = shape->memory;
@@ -1065,7 +1077,7 @@
   static FT_Error
   split_sdf_conic( FT_Memory     memory,
                    FT_26D6_Vec*  control_points,
-                   FT_Int        max_splits,
+                   FT_UInt       max_splits,
                    SDF_Edge**    out )
   {
     FT_Error     error = FT_Err_Ok;
@@ -1134,25 +1146,40 @@
   static FT_Error
   split_sdf_cubic( FT_Memory     memory,
                    FT_26D6_Vec*  control_points,
-                   FT_Int        max_splits,
+                   FT_UInt       max_splits,
                    SDF_Edge**    out )
   {
-    FT_Error     error = FT_Err_Ok;
-    FT_26D6_Vec  cpos[7];
-    SDF_Edge*    left,*  right;
+    FT_Error       error = FT_Err_Ok;
+    FT_26D6_Vec    cpos[7];
+    SDF_Edge*      left, *right;
+    const FT_26D6  threshold = ONE_PIXEL / 4;
 
 
-    if ( !memory || !out  )
+    if ( !memory || !out )
     {
       error = FT_THROW( Invalid_Argument );
       goto Exit;
     }
 
-    /* split the conic */
+    /* split the cubic */
     cpos[0] = control_points[0];
     cpos[1] = control_points[1];
     cpos[2] = control_points[2];
     cpos[3] = control_points[3];
+
+    /* If the segment is flat enough we won't get any benefit by */
+    /* splitting it further, so we can just stop splitting.      */
+    /*                                                           */
+    /* Check the deviation of the Bezier curve and stop if it is */
+    /* smaller than the pre-defined `threshold` value.           */
+    if ( FT_ABS( 2 * cpos[0].x - 3 * cpos[1].x + cpos[3].x ) < threshold &&
+         FT_ABS( 2 * cpos[0].y - 3 * cpos[1].y + cpos[3].y ) < threshold &&
+         FT_ABS( cpos[0].x - 3 * cpos[2].x + 2 * cpos[3].x ) < threshold &&
+         FT_ABS( cpos[0].y - 3 * cpos[2].y + 2 * cpos[3].y ) < threshold )
+    {
+      split_cubic( cpos );
+      goto Append;
+    }
 
     split_cubic( cpos );
 
@@ -1250,13 +1277,32 @@
           /* Subdivide the curve and add it to the list. */
           {
             FT_26D6_Vec  ctrls[3];
+            FT_26D6      dx, dy;
+            FT_UInt      num_splits;
 
 
             ctrls[0] = edge->start_pos;
             ctrls[1] = edge->control_a;
             ctrls[2] = edge->end_pos;
 
-            error = split_sdf_conic( memory, ctrls, 32, &new_edges );
+            dx = FT_ABS( ctrls[2].x + ctrls[0].x - 2 * ctrls[1].x );
+            dy = FT_ABS( ctrls[2].y + ctrls[0].y - 2 * ctrls[1].y );
+            if ( dx < dy )
+              dx = dy;
+
+            /* Calculate the number of necessary bisections.  Each      */
+            /* bisection causes a four-fold reduction of the deviation, */
+            /* hence we bisect the Bezier curve until the deviation     */
+            /* becomes less than 1/8th of a pixel.  For more details    */
+            /* check file `ftgrays.c`.                                  */
+            num_splits = 1;
+            while ( dx > ONE_PIXEL / 8 )
+            {
+              dx         >>= 2;
+              num_splits <<= 1;
+            }
+
+            error = split_sdf_conic( memory, ctrls, num_splits, &new_edges );
           }
           break;
 
@@ -1277,8 +1323,10 @@
 
         default:
           error = FT_THROW( Invalid_Argument );
-          goto Exit;
         }
+
+        if ( error != FT_Err_Ok )
+          goto Exit;
 
         edges = edges->next;
       }
@@ -2966,7 +3014,7 @@
         diff = current_dist.distance - min_dist.distance;
 
 
-        if ( FT_ABS(diff ) < CORNER_CHECK_EPSILON )
+        if ( FT_ABS( diff ) < CORNER_CHECK_EPSILON )
           min_dist = resolve_corner( min_dist, current_dist );
         else if ( diff < 0 )
           min_dist = current_dist;
@@ -3240,7 +3288,7 @@
     buffer   = (FT_SDFFormat*)bitmap->buffer;
 
     if ( USE_SQUARED_DISTANCES )
-      sp_sq = fixed_spread * fixed_spread;
+      sp_sq = FT_INT_16D16( (FT_Int)( spread * spread ) );
     else
       sp_sq = fixed_spread;
 
@@ -3284,6 +3332,7 @@
             FT_26D6_Vec          grid_point = zero_vector;
             SDF_Signed_Distance  dist       = max_sdf;
             FT_UInt              index      = 0;
+            FT_16D16             diff       = 0;
 
 
             if ( x < 0 || x >= width )
@@ -3311,7 +3360,7 @@
             if ( dist.distance > sp_sq )
               continue;
 
-            /* square_root the values and fit in a 6.10 fixed-point */
+            /* take the square root of the distance if required */
             if ( USE_SQUARED_DISTANCES )
               dist.distance = square_root( dist.distance );
 
@@ -3323,11 +3372,15 @@
             /* check whether the pixel is set or not */
             if ( dists[index].sign == 0 )
               dists[index] = dist;
-            else if ( dists[index].distance > dist.distance )
-              dists[index] = dist;
-            else if ( FT_ABS( dists[index].distance - dist.distance )
-                        < CORNER_CHECK_EPSILON )
-              dists[index] = resolve_corner( dists[index], dist );
+            else
+            {
+              diff = FT_ABS( dists[index].distance - dist.distance );
+
+              if ( diff <= CORNER_CHECK_EPSILON )
+                dists[index] = resolve_corner( dists[index], dist );
+              else if ( dists[index].distance > dist.distance )
+                dists[index] = dist;
+            }
           }
         }
 

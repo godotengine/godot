@@ -4,7 +4,7 @@
  *
  *   Objects manager (specification).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -281,6 +281,8 @@ FT_BEGIN_HEADER
     FT_Size_Metrics    hinted_metrics; /* for the hinted rendering mode  */
 
     TT_Size_Metrics    ttmetrics;
+
+    FT_Byte*           widthp;          /* glyph widths from the hdmx table */
 
     FT_ULong           strike_index;      /* 0xFFFFFFFF to indicate invalid */
 

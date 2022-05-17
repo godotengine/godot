@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT common tables validation (body).
  *
- * Copyright (C) 2004-2021 by
+ * Copyright (C) 2004-2022 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -1033,7 +1033,7 @@
     GXV_NAME_ENTER( "StateArray" );
 
     GXV_TRACE(( "parse %d bytes by stateSize=%d maxClassID=%d\n",
-                (int)(*length_p), stateSize, (int)(maxClassID) ));
+                (int)( *length_p ), stateSize, (int)maxClassID ));
 
     /*
      * 2 states are predefined and must be described in StateArray:
@@ -1418,7 +1418,7 @@
     GXV_NAME_ENTER( "XStateArray" );
 
     GXV_TRACE(( "parse % 3d bytes by stateSize=% 3d maxClassID=% 3d\n",
-                (int)(*length_p), (int)stateSize, (int)(maxClassID) ));
+                (int)( *length_p ), (int)stateSize, (int)maxClassID ));
 
     /*
      * 2 states are predefined and must be described:
