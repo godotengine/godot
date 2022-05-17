@@ -31,10 +31,13 @@
 #include "navigation_obstacle_2d.h"
 
 #include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/physics_body_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle2D::set_estimate_radius);
 	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle2D::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle2D::set_radius);
@@ -79,7 +82,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (parent_node2d) {
+			if (parent_node2d && parent_node2d->is_inside_tree()) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());
 			}
 		} break;
@@ -103,6 +106,11 @@ TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
 		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
 	}
 
+	if (Object::cast_to<StaticBody2D>(get_parent())) {
+		warnings.push_back(RTR("The NavigationObstacle2D is intended for constantly moving bodies like CharacterBody2D or RigidDynamicBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+							   "\nNot constantly moving or complete static objects should be captured with a refreshed NavigationPolygon so agents can not only avoid them but also move along those objects outline at high detail"));
+	}
+
 	return warnings;
 }
 
@@ -122,13 +130,13 @@ void NavigationObstacle2D::reevaluate_agent_radius() {
 }
 
 real_t NavigationObstacle2D::estimate_agent_radius() const {
-	if (parent_node2d) {
+	if (parent_node2d && parent_node2d->is_inside_tree()) {
 		// Estimate the radius of this physics body
 		real_t radius = 0.0;
 		for (int i(0); i < parent_node2d->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(parent_node2d->get_child(i));
-			if (cs) {
+			if (cs && cs->is_inside_tree()) {
 				// Take the distance between the Body center to the shape center
 				real_t r = cs->get_transform().get_origin().length();
 				if (cs->get_shape().is_valid()) {
@@ -139,6 +147,9 @@ real_t NavigationObstacle2D::estimate_agent_radius() const {
 				r *= MAX(s.x, s.y);
 				// Takes the biggest radius
 				radius = MAX(radius, r);
+			} else if (cs && !cs->is_inside_tree()) {
+				WARN_PRINT("A CollisionShape2D of the NavigationObstacle2D parent node was not inside the SceneTree when estimating the obstacle radius."
+						   "\nMove the NavigationObstacle2D to a child position below any CollisionShape2D node of the parent node so the CollisionShape2D is already inside the SceneTree.");
 			}
 		}
 		Vector2 s = parent_node2d->get_global_scale();

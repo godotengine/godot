@@ -494,7 +494,7 @@ Vector<int> MultiplayerAPI::get_peer_ids() const {
 	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
-	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = connected_peers.front(); E; E = E->next()) {
 		ret.push_back(E->get());
 	}
 

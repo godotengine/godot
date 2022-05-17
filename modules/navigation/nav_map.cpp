@@ -541,7 +541,7 @@ void NavMap::sync() {
 		}
 
 		// Group all edges per key.
-		Map<gd::EdgeKey, Vector<gd::Edge::Connection>> connections;
+		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
 		for (size_t poly_id(0); poly_id < polygons.size(); poly_id++) {
 			gd::Polygon &poly(polygons[poly_id]);
 
@@ -549,7 +549,7 @@ void NavMap::sync() {
 				int next_point = (p + 1) % poly.points.size();
 				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
 
-				Map<gd::EdgeKey, Vector<gd::Edge::Connection>>::Element *connection = connections.find(ek);
+				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
 				if (!connection) {
 					connections[ek] = Vector<gd::Edge::Connection>();
 				}

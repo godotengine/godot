@@ -2360,10 +2360,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
 				cursor_set_shape(p_shape);
 				return;
 			}
@@ -3456,9 +3456,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_PRESSURE)) {
-							Map<int, Vector2>::Element *pen_pressure = xi.pen_pressure_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_pressure = xi.pen_pressure_range.find(device_id);
 							if (pen_pressure) {
-								Vector2 pen_pressure_range = pen_pressure->value();
+								Vector2 pen_pressure_range = pen_pressure->value;
 								if (pen_pressure_range != Vector2()) {
 									xi.pressure_supported = true;
 									xi.pressure = (*values - pen_pressure_range[0]) /
@@ -3470,9 +3470,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTX)) {
-							Map<int, Vector2>::Element *pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
 							if (pen_tilt_x) {
-								Vector2 pen_tilt_x_range = pen_tilt_x->value();
+								Vector2 pen_tilt_x_range = pen_tilt_x->value;
 								if (pen_tilt_x_range[0] != 0 && *values < 0) {
 									xi.tilt.x = *values / -pen_tilt_x_range[0];
 								} else if (pen_tilt_x_range[1] != 0) {
@@ -3484,9 +3484,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTY)) {
-							Map<int, Vector2>::Element *pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
 							if (pen_tilt_y) {
-								Vector2 pen_tilt_y_range = pen_tilt_y->value();
+								Vector2 pen_tilt_y_range = pen_tilt_y->value;
 								if (pen_tilt_y_range[0] != 0 && *values < 0) {
 									xi.tilt.y = *values / -pen_tilt_y_range[0];
 								} else if (pen_tilt_y_range[1] != 0) {
@@ -3508,11 +3508,11 @@ void DisplayServerX11::process_events() {
 						xi.raw_pos.x = rel_x;
 						xi.raw_pos.y = rel_y;
 
-						Map<int, Vector2>::Element *abs_info = xi.absolute_devices.find(device_id);
+						HashMap<int, Vector2>::Iterator abs_info = xi.absolute_devices.find(device_id);
 
 						if (abs_info) {
 							// Absolute mode device
-							Vector2 mult = abs_info->value();
+							Vector2 mult = abs_info->value;
 
 							xi.relative_motion.x += (xi.raw_pos.x - xi.old_raw_pos.x) * mult.x;
 							xi.relative_motion.y += (xi.raw_pos.y - xi.old_raw_pos.y) * mult.y;
@@ -3557,21 +3557,21 @@ void DisplayServerX11::process_events() {
 					} break;
 
 					case XI_TouchUpdate: {
-						Map<int, Vector2>::Element *curr_pos_elem = xi.state.find(index);
+						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;
 						}
 
-						if (curr_pos_elem->value() != pos) {
+						if (curr_pos_elem->value != pos) {
 							Ref<InputEventScreenDrag> sd;
 							sd.instantiate();
 							sd->set_window_id(window_id);
 							sd->set_index(index);
 							sd->set_position(pos);
-							sd->set_relative(pos - curr_pos_elem->value());
+							sd->set_relative(pos - curr_pos_elem->value);
 							Input::get_singleton()->parse_input_event(sd);
 
-							curr_pos_elem->value() = pos;
+							curr_pos_elem->value = pos;
 						}
 					} break;
 #endif

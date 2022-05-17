@@ -154,7 +154,7 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 	}
 }
 
-Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Dictionary deps_dict;
 	for (KeyValue<String, String> E : p_map) {
 		deps_dict[E.key] = E.value;
@@ -391,7 +391,7 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
 			float dep_progress = 0;
-			for (Set<String>::Element *E = load_task.sub_tasks.front(); E; E = E->next()) {
+			for (RBSet<String>::Element *E = load_task.sub_tasks.front(); E; E = E->next()) {
 				dep_progress += _dependency_get_progress(E->get());
 			}
 			dep_progress /= float(dep_count);
@@ -733,7 +733,7 @@ void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_depe
 	}
 }
 
-Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
 	for (int i = 0; i < loader_count; i++) {

@@ -345,7 +345,7 @@ void CollisionObject3D::_update_debug_shapes() {
 		return;
 	}
 
-	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
+	for (RBSet<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
 		if (shapes.has(shapedata_idx->get())) {
 			ShapeData &shapedata = shapes[shapedata_idx->get()];
 			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
@@ -459,7 +459,7 @@ void CollisionObject3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,MakeStatic,KeepActive"), "set_disable_mode", "get_disable_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,Make Static,Keep Active"), "set_disable_mode", "get_disable_mode");
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");

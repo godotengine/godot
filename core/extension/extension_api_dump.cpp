@@ -334,7 +334,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		// Global enums and constants.
 		Array constants;
-		Map<String, List<Pair<String, int>>> enum_list;
+		HashMap<String, List<Pair<String, int>>> enum_list;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			int value = CoreConstants::get_global_constant_value(i);

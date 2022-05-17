@@ -64,7 +64,7 @@ class CreateDialog : public ConfirmationDialog {
 	HashMap<String, String> custom_type_parents;
 	HashMap<String, int> custom_type_indices;
 	List<StringName> type_list;
-	Set<StringName> type_blacklist;
+	RBSet<StringName> type_blacklist;
 
 	void _update_search();
 	bool _should_hide_type(const String &p_type) const;

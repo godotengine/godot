@@ -73,8 +73,8 @@ public:
 
 		Vector<Category> categories;
 
-		Map<StringName, Category *> category_ptrs;
-		Map<StringName, Category::Item *> item_ptrs;
+		HashMap<StringName, Category *> category_ptrs;
+		HashMap<StringName, Category::Item *> item_ptrs;
 	};
 
 	enum DisplayMode {
@@ -98,7 +98,7 @@ private:
 	Tree *variables = nullptr;
 	HSplitContainer *h_split = nullptr;
 
-	Set<StringName> plot_sigs;
+	RBSet<StringName> plot_sigs;
 
 	OptionButton *display_mode = nullptr;
 	OptionButton *display_time = nullptr;

@@ -119,6 +119,13 @@
 				Returns the right (output) type of the slot [code]idx[/code].
 			</description>
 		</method>
+		<method name="is_slot_draw_stylebox" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns true if the background [StyleBox] of the slot [code]idx[/code] is drawn.
+			</description>
+		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="idx" type="int" />
@@ -152,6 +159,7 @@
 			<argument index="6" name="color_right" type="Color" />
 			<argument index="7" name="custom_left" type="Texture2D" default="null" />
 			<argument index="8" name="custom_right" type="Texture2D" default="null" />
+			<argument index="9" name="enable" type="bool" default="true" />
 			<description>
 				Sets properties of the slot with ID [code]idx[/code].
 				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
@@ -176,6 +184,14 @@
 			<argument index="1" name="color_right" type="Color" />
 			<description>
 				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
+			</description>
+		</method>
+		<method name="set_slot_draw_stylebox">
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="draw_stylebox" type="bool" />
+			<description>
+				Toggles the background [StyleBox] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
@@ -301,6 +317,8 @@
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Color of the title text.
 		</theme_item>
+		<theme_item name="close_h_offset" data_type="constant" type="int" default="22">
+		</theme_item>
 		<theme_item name="close_offset" data_type="constant" type="int" default="22">
 			The vertical offset of the close button.
 		</theme_item>
@@ -342,6 +360,9 @@
 		</theme_item>
 		<theme_item name="selected_frame" data_type="style" type="StyleBox">
 			The background used when the [GraphNode] is selected.
+		</theme_item>
+		<theme_item name="slot" data_type="style" type="StyleBox">
+			The [StyleBox] used for each slot of the [GraphNode].
 		</theme_item>
 	</theme_items>
 </class>

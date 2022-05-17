@@ -26,6 +26,8 @@
 
 #ifdef _WIN32
     #include <malloc.h>
+#elif __FreeBSD__
+    #include<stdlib.h>
 #else
     #include <alloca.h>
 #endif

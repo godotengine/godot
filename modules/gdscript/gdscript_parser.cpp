@@ -3053,7 +3053,7 @@ bool GDScriptParser::has_comment(int p_line) {
 }
 
 String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	ERR_FAIL_COND_V(!comments.has(p_line), String());
 
 	if (p_single_line) {
@@ -3105,7 +3105,7 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 }
 
 void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	if (!comments.has(p_line)) {
 		return;
 	}

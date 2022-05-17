@@ -703,10 +703,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			} else if (subscript->is_attribute) {
 				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 					GDScriptParser::IdentifierNode *identifier = subscript->attribute;
-					const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(identifier->name);
+					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
 
 #ifdef DEBUG_ENABLED
-					if (MI && MI->get().getter == codegen.function_name) {
+					if (MI && MI->value.getter == codegen.function_name) {
 						String n = identifier->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in getter.", identifier);
 						r_error = ERR_COMPILATION_FAILED;
@@ -714,11 +714,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 #endif
 
-					if (MI && MI->get().getter == "") {
+					if (MI && MI->value.getter == "") {
 						// Remove result temp as we don't need it.
 						gen->pop_temporary();
 						// Faster than indexing self (as if no self. had been used).
-						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->get().index, _gdtype_from_datatype(subscript->get_datatype()));
+						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->value.index, _gdtype_from_datatype(subscript->get_datatype()));
 					}
 				}
 
@@ -894,8 +894,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(assignment->assignee);
 #ifdef DEBUG_ENABLED
 				if (subscript->is_attribute && subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
-					const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(subscript->attribute->name);
-					if (MI && MI->get().setter == codegen.function_name) {
+					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
+					if (MI && MI->value.setter == codegen.function_name) {
 						String n = subscript->attribute->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
 						r_error = ERR_COMPILATION_FAILED;
@@ -2500,8 +2500,8 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 	//validate instances if keeping state
 
 	if (p_keep_state) {
-		for (Set<Object *>::Element *E = p_script->instances.front(); E;) {
-			Set<Object *>::Element *N = E->next();
+		for (RBSet<Object *>::Element *E = p_script->instances.front(); E;) {
+			RBSet<Object *>::Element *N = E->next();
 
 			ScriptInstance *si = E->get()->get_script_instance();
 			if (si->is_placeholder()) {
@@ -2563,7 +2563,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 }
 
 void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
-	Map<StringName, Ref<GDScript>> old_subclasses;
+	HashMap<StringName, Ref<GDScript>> old_subclasses;
 
 	if (p_keep_state) {
 		old_subclasses = p_script->subclasses;

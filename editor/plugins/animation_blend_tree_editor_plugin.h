@@ -61,7 +61,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	Tree *filters = nullptr;
 	CheckBox *filter_enabled = nullptr;
 
-	Map<StringName, ProgressBar *> animations;
+	HashMap<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
 
 	String to_node = "";

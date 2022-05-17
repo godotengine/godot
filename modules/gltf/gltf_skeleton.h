@@ -50,9 +50,9 @@ private:
 	Skeleton3D *godot_skeleton = nullptr;
 
 	// Set of unique bone names for the skeleton
-	Set<String> unique_names;
+	RBSet<String> unique_names;
 
-	Map<int32_t, GLTFNodeIndex> godot_bone_node;
+	HashMap<int32_t, GLTFNodeIndex> godot_bone_node;
 
 	Vector<BoneAttachment3D *> bone_attachments;
 
@@ -78,10 +78,10 @@ public:
 	Array get_unique_names();
 	void set_unique_names(Array p_unique_names);
 
-	//Map<int32_t, GLTFNodeIndex> get_godot_bone_node() {
+	//RBMap<int32_t, GLTFNodeIndex> get_godot_bone_node() {
 	//	return this->godot_bone_node;
 	//}
-	//void set_godot_bone_node(Map<int32_t, GLTFNodeIndex> p_godot_bone_node) {
+	//void set_godot_bone_node(RBMap<int32_t, GLTFNodeIndex> p_godot_bone_node) {
 	//	this->godot_bone_node = p_godot_bone_node;
 	//}
 	Dictionary get_godot_bone_node();

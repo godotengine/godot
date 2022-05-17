@@ -147,12 +147,12 @@ void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceI
 	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");
 }
 
-bool EditorImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	Dictionary d;
-	Map<StringName, Variant>::Element *E = p_options.front();
+	HashMap<StringName, Variant>::ConstIterator E = p_options.begin();
 	while (E) {
-		d[E->key()] = E->get();
-		E = E->next();
+		d[E->key] = E->value;
+		++E;
 	}
 	bool visible;
 	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
@@ -162,14 +162,14 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 	ERR_FAIL_V_MSG(false, "Unimplemented _get_option_visibility in add-on.");
 }
 
-Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Dictionary options;
 	Array platform_variants, gen_files;
 
-	Map<StringName, Variant>::Element *E = p_options.front();
+	HashMap<StringName, Variant>::ConstIterator E = p_options.begin();
 	while (E) {
-		options[E->key()] = E->get();
-		E = E->next();
+		options[E->key] = E->value;
+		++E;
 	}
 
 	int err;

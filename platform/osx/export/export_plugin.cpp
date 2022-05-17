@@ -51,7 +51,7 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back("64");
 }
 
-bool EditorExportPlatformOSX::get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorExportPlatformOSX::get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	// These options are not supported by built-in codesign, used on non macOS host.
 	if (!OS::get_singleton()->has_feature("macos")) {
 		if (p_option == "codesign/identity" || p_option == "codesign/timestamp" || p_option == "codesign/hardened_runtime" || p_option == "codesign/custom_options" || p_option.begins_with("notarization/")) {

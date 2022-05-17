@@ -171,7 +171,12 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
 
-	if (p_on_thread) {
+	if (p_on_thread && !OS::get_singleton()->can_use_threads()) {
+		WARN_PRINT("NavigationMesh bake 'on_thread' will be disabled as the current OS does not support multiple threads."
+				   "\nAs a fallback the navigation mesh will bake on the main thread which can cause framerate issues.");
+	}
+
+	if (p_on_thread && OS::get_singleton()->can_use_threads()) {
 		bake_thread.start(_bake_navigation_mesh, args);
 	} else {
 		_bake_navigation_mesh(args);

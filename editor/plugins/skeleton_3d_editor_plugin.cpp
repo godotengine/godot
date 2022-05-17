@@ -588,7 +588,7 @@ void Skeleton3DEditor::update_joint_tree() {
 
 	TreeItem *root = joint_tree->create_item();
 
-	Map<int, TreeItem *> items;
+	HashMap<int, TreeItem *> items;
 
 	items.insert(-1, root);
 
@@ -600,7 +600,7 @@ void Skeleton3DEditor::update_joint_tree() {
 		bones_to_process.erase(current_bone_idx);
 
 		const int parent_idx = skeleton->get_bone_parent(current_bone_idx);
-		TreeItem *parent_item = items.find(parent_idx)->get();
+		TreeItem *parent_item = items.find(parent_idx)->value;
 
 		TreeItem *joint_item = joint_tree->create_item(parent_item);
 		items.insert(current_bone_idx, joint_item);

@@ -39,7 +39,7 @@ class EditorSceneFormatImporterCollada : public EditorSceneFormatImporter {
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) override;
 
 	EditorSceneFormatImporterCollada();
 };

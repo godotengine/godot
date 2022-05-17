@@ -69,7 +69,7 @@ private:
 	int next_packet_peer = 0;
 	bool server_compat = false;
 
-	Map<int, Ref<ConnectedPeer>> peer_map;
+	HashMap<int, Ref<ConnectedPeer>> peer_map;
 	List<Dictionary> channels_config;
 
 	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);

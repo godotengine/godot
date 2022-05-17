@@ -1531,7 +1531,7 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 		GodotShape3D *shape = shape_owner.get_or_null(p_rid);
 
 		while (shape->get_owners().size()) {
-			GodotShapeOwner3D *so = shape->get_owners().front()->key();
+			GodotShapeOwner3D *so = shape->get_owners().begin()->key;
 			so->remove_shape(shape);
 		}
 
@@ -1611,7 +1611,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
+	for (RBSet<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
 		stepper->step(const_cast<GodotSpace3D *>(E->get()), p_step);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
@@ -1635,7 +1635,7 @@ void GodotPhysicsServer3D::flush_queries() {
 
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
-	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
+	for (RBSet<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
 		GodotSpace3D *space = const_cast<GodotSpace3D *>(E->get());
 		space->call_queries();
 	}
@@ -1656,7 +1656,7 @@ void GodotPhysicsServer3D::flush_queries() {
 			total_time[i] = 0;
 		}
 
-		for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
+		for (RBSet<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
 			for (int i = 0; i < GodotSpace3D::ELAPSED_TIME_MAX; i++) {
 				total_time[i] += E->get()->get_elapsed_time(GodotSpace3D::ElapsedTime(i));
 			}

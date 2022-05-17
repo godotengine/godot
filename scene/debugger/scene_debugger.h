@@ -132,14 +132,14 @@ public:
 class LiveEditor {
 private:
 	friend class SceneDebugger;
-	Map<int, NodePath> live_edit_node_path_cache;
-	Map<int, String> live_edit_resource_cache;
+	HashMap<int, NodePath> live_edit_node_path_cache;
+	HashMap<int, String> live_edit_resource_cache;
 
 	NodePath live_edit_root;
 	String live_edit_scene;
 
-	Map<String, Set<Node *>> live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *>> live_edit_remove_list;
+	HashMap<String, RBSet<Node *>> live_scene_edit_cache;
+	HashMap<Node *, HashMap<ObjectID, Node *>> live_edit_remove_list;
 
 	void _send_tree();
 

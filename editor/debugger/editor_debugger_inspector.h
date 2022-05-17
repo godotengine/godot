@@ -46,7 +46,7 @@ public:
 	ObjectID remote_object_id;
 	String type_name;
 	List<PropertyInfo> prop_list;
-	Map<StringName, Variant> prop_values;
+	HashMap<StringName, Variant> prop_values;
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
 	String get_title();
@@ -68,8 +68,8 @@ class EditorDebuggerInspector : public EditorInspector {
 
 private:
 	ObjectID inspected_object_id;
-	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
-	Set<Ref<Resource>> remote_dependencies;
+	HashMap<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
+	RBSet<Ref<Resource>> remote_dependencies;
 	EditorDebuggerRemoteObject *variables = nullptr;
 
 	void _object_selected(ObjectID p_object);

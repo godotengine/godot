@@ -65,7 +65,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		return;
 	}
 
-	Set<String> paths;
+	RBSet<String> paths;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);
@@ -81,9 +81,9 @@ void EditorPropertyRootMotion::_node_assign() {
 	filters->clear();
 	TreeItem *root = filters->create_item();
 
-	Map<String, TreeItem *> parenthood;
+	HashMap<String, TreeItem *> parenthood;
 
-	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = paths.front(); E; E = E->next()) {
 		NodePath path = E->get();
 		TreeItem *ti = nullptr;
 		String accum;

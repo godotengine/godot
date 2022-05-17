@@ -535,22 +535,22 @@ class BindingsGenerator {
 
 	HashMap<StringName, TypeInterface> obj_types;
 
-	Map<StringName, TypeInterface> placeholder_types;
-	Map<StringName, TypeInterface> builtin_types;
-	Map<StringName, TypeInterface> enum_types;
+	HashMap<StringName, TypeInterface> placeholder_types;
+	HashMap<StringName, TypeInterface> builtin_types;
+	HashMap<StringName, TypeInterface> enum_types;
 
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
 
 	List<InternalCall> method_icalls;
-	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
+	HashMap<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	List<const InternalCall *> generated_icall_funcs;
 
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName>> blacklisted_methods;
+	HashMap<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 

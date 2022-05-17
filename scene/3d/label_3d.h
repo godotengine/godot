@@ -83,7 +83,7 @@ private:
 		RID material;
 	};
 
-	Map<uint64_t, SurfaceData> surfaces;
+	HashMap<uint64_t, SurfaceData> surfaces;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;

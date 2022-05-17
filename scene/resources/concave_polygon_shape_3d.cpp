@@ -33,7 +33,7 @@
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
-	Set<DrawEdge> edges;
+	RBSet<DrawEdge> edges;
 
 	int index_count = faces.size();
 	ERR_FAIL_COND_V((index_count % 3) != 0, Vector<Vector3>());
@@ -50,7 +50,7 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 	points.resize(edges.size() * 2);
 	int idx = 0;
-	for (Set<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
+	for (RBSet<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
 		points.write[idx + 0] = E->get().a;
 		points.write[idx + 1] = E->get().b;
 		idx += 2;

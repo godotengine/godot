@@ -131,7 +131,7 @@ private:
 	// Each debugger should have it's tree in the future I guess.
 	const Tree *editor_remote_tree = nullptr;
 
-	Map<int, String> profiler_signature;
+	HashMap<int, String> profiler_signature;
 
 	Tree *vmem_tree = nullptr;
 	Button *vmem_refresh = nullptr;
@@ -147,7 +147,7 @@ private:
 
 	HashMap<NodePath, int> node_path_cache;
 	int last_path_id;
-	Map<String, int> res_path_cache;
+	HashMap<String, int> res_path_cache;
 
 	EditorProfiler *profiler = nullptr;
 	EditorVisualProfiler *visual_profiler = nullptr;
@@ -163,9 +163,9 @@ private:
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
-	Map<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
+	HashMap<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
 
-	Map<StringName, Callable> captures;
+	HashMap<StringName, Callable> captures;
 
 	void _stack_dump_frame_selected();
 

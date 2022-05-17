@@ -46,7 +46,7 @@ static bool _genOutline(SwImage* image, const Matrix* transform, SwMpool* mpool,
 
     if (outline->reservedCntrsCnt < 1) {
         outline->reservedCntrsCnt = 1;
-        outline->cntrs = static_cast<uint16_t*>(realloc(outline->cntrs, outline->reservedCntrsCnt * sizeof(uint16_t)));
+        outline->cntrs = static_cast<uint32_t*>(realloc(outline->cntrs, outline->reservedCntrsCnt * sizeof(uint32_t)));
         outline->closed = static_cast<bool*>(realloc(outline->closed, outline->reservedCntrsCnt * sizeof(bool)));
         outline->closed[0] = true;
     }

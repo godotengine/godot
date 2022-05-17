@@ -137,14 +137,14 @@ void Area2D::_body_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
-	Map<ObjectID, BodyState>::Element *E = body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_tree);
+	ERR_FAIL_COND(E->value.in_tree);
 
-	E->get().in_tree = true;
+	E->value.in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
 	}
 }
 
@@ -152,13 +152,13 @@ void Area2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
-	Map<ObjectID, BodyState>::Element *E = body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_tree);
-	E->get().in_tree = false;
+	ERR_FAIL_COND(!E->value.in_tree);
+	E->value.in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
 	}
 }
 
@@ -169,7 +169,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	Map<ObjectID, BodyState>::Element *E = body_map.find(objid);
+	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(objid);
 
 	if (!body_in && !E) {
 		return; //does not exist because it was likely removed from the tree
@@ -180,36 +180,36 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	if (body_in) {
 		if (!E) {
 			E = body_map.insert(objid, BodyState());
-			E->get().rid = p_body;
-			E->get().rc = 0;
-			E->get().in_tree = node && node->is_inside_tree();
+			E->value.rid = p_body;
+			E->value.rc = 0;
+			E->value.in_tree = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area2D::_body_enter_tree), make_binds(objid));
 				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area2D::_body_exit_tree), make_binds(objid));
-				if (E->get().in_tree) {
+				if (E->value.in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
 			}
 		}
-		E->get().rc++;
+		E->value.rc++;
 		if (node) {
-			E->get().shapes.insert(ShapePair(p_body_shape, p_area_shape));
+			E->value.shapes.insert(ShapePair(p_body_shape, p_area_shape));
 		}
 
-		if (!node || E->get().in_tree) {
+		if (!node || E->value.in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_area_shape);
 		}
 
 	} else {
-		E->get().rc--;
+		E->value.rc--;
 
 		if (node) {
-			E->get().shapes.erase(ShapePair(p_body_shape, p_area_shape));
+			E->value.shapes.erase(ShapePair(p_body_shape, p_area_shape));
 		}
 
-		bool in_tree = E->get().in_tree;
-		if (E->get().rc == 0) {
-			body_map.erase(E);
+		bool in_tree = E->value.in_tree;
+		if (E->value.rc == 0) {
+			body_map.remove(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area2D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area2D::_body_exit_tree));
@@ -231,14 +231,14 @@ void Area2D::_area_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
-	Map<ObjectID, AreaState>::Element *E = area_map.find(p_id);
+	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_tree);
+	ERR_FAIL_COND(E->value.in_tree);
 
-	E->get().in_tree = true;
+	E->value.in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->area_entered, node);
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->area_shape_entered, E->get().rid, node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->area_shape_entered, E->value.rid, node, E->value.shapes[i].area_shape, E->value.shapes[i].self_shape);
 	}
 }
 
@@ -246,13 +246,13 @@ void Area2D::_area_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
-	Map<ObjectID, AreaState>::Element *E = area_map.find(p_id);
+	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_tree);
-	E->get().in_tree = false;
+	ERR_FAIL_COND(!E->value.in_tree);
+	E->value.in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->area_exited, node);
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->get().rid, node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->value.rid, node, E->value.shapes[i].area_shape, E->value.shapes[i].self_shape);
 	}
 }
 
@@ -263,7 +263,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	Map<ObjectID, AreaState>::Element *E = area_map.find(objid);
+	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(objid);
 
 	if (!area_in && !E) {
 		return; //likely removed from the tree
@@ -273,36 +273,36 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	if (area_in) {
 		if (!E) {
 			E = area_map.insert(objid, AreaState());
-			E->get().rid = p_area;
-			E->get().rc = 0;
-			E->get().in_tree = node && node->is_inside_tree();
+			E->value.rid = p_area;
+			E->value.rc = 0;
+			E->value.in_tree = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area2D::_area_enter_tree), make_binds(objid));
 				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area2D::_area_exit_tree), make_binds(objid));
-				if (E->get().in_tree) {
+				if (E->value.in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_entered, node);
 				}
 			}
 		}
-		E->get().rc++;
+		E->value.rc++;
 		if (node) {
-			E->get().shapes.insert(AreaShapePair(p_area_shape, p_self_shape));
+			E->value.shapes.insert(AreaShapePair(p_area_shape, p_self_shape));
 		}
 
-		if (!node || E->get().in_tree) {
+		if (!node || E->value.in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->area_shape_entered, p_area, node, p_area_shape, p_self_shape);
 		}
 
 	} else {
-		E->get().rc--;
+		E->value.rc--;
 
 		if (node) {
-			E->get().shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
+			E->value.shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
 		}
 
-		bool in_tree = E->get().in_tree;
-		if (E->get().rc == 0) {
-			area_map.erase(E);
+		bool in_tree = E->value.in_tree;
+		if (E->value.rc == 0) {
+			area_map.remove(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area2D::_area_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area2D::_area_exit_tree));
@@ -323,7 +323,7 @@ void Area2D::_clear_monitoring() {
 	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
-		Map<ObjectID, BodyState> bmcopy = body_map;
+		HashMap<ObjectID, BodyState> bmcopy = body_map;
 		body_map.clear();
 		//disconnect all monitored stuff
 
@@ -351,7 +351,7 @@ void Area2D::_clear_monitoring() {
 	}
 
 	{
-		Map<ObjectID, AreaState> bmcopy = area_map;
+		HashMap<ObjectID, AreaState> bmcopy = area_map;
 		area_map.clear();
 		//disconnect all monitored stuff
 
@@ -461,20 +461,20 @@ TypedArray<Area2D> Area2D::get_overlapping_areas() const {
 
 bool Area2D::overlaps_area(Node *p_area) const {
 	ERR_FAIL_NULL_V(p_area, false);
-	const Map<ObjectID, AreaState>::Element *E = area_map.find(p_area->get_instance_id());
+	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
 	if (!E) {
 		return false;
 	}
-	return E->get().in_tree;
+	return E->value.in_tree;
 }
 
 bool Area2D::overlaps_body(Node *p_body) const {
 	ERR_FAIL_NULL_V(p_body, false);
-	const Map<ObjectID, BodyState>::Element *E = body_map.find(p_body->get_instance_id());
+	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(p_body->get_instance_id());
 	if (!E) {
 		return false;
 	}
-	return E->get().in_tree;
+	return E->value.in_tree;
 }
 
 void Area2D::set_audio_bus_override(bool p_override) {

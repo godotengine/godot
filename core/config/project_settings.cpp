@@ -331,7 +331,7 @@ struct _VCSort {
 void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -360,7 +360,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (RBSet<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 		String prop_info_name = E->get().name;
 		int dot = prop_info_name.find(".");
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
@@ -764,7 +764,7 @@ Error ProjectSettings::save() {
 	return error;
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const HashMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
@@ -800,19 +800,20 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		for (String &key : E->get()) {
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+	for (const KeyValue<String, List<String>> &E : props) {
+		for (const String &key : E.value) {
+			String k = key;
+			if (!E.key.is_empty()) {
+				k = E.key + "/" + k;
 			}
 			Variant value;
-			if (p_custom.has(key)) {
-				value = p_custom[key];
+			if (p_custom.has(k)) {
+				value = p_custom[k];
 			} else {
-				value = get(key);
+				value = get(k);
 			}
 
-			file->store_pascal_string(key);
+			file->store_pascal_string(k);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
@@ -831,7 +832,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const HashMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -852,18 +853,18 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	}
 	file->store_string("\n");
 
-	for (const Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		if (E != props.front()) {
+	for (const KeyValue<String, List<String>> &E : props) {
+		if (E.key != props.begin()->key) {
 			file->store_string("\n");
 		}
 
-		if (!E->key().is_empty()) {
-			file->store_string("[" + E->key() + "]\n\n");
+		if (!E.key.is_empty()) {
+			file->store_string("[" + E.key + "]\n\n");
 		}
-		for (const String &F : E->get()) {
+		for (const String &F : E.value) {
 			String key = F;
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+			if (!E.key.is_empty()) {
+				key = E.key + "/" + key;
 			}
 			Variant value;
 			if (p_custom.has(key)) {
@@ -917,7 +918,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	project_features = _trim_to_supported_features(project_features);
 	set_setting("application/config/features", project_features);
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	if (p_merge_with_current) {
 		for (const KeyValue<StringName, VariantContainer> &G : props) {
@@ -946,19 +947,19 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 	for (const KeyValue<String, Variant> &E : p_custom) {
 		// Lookup global prop to store in the same order
-		Map<StringName, VariantContainer>::Element *global_prop = props.find(E.key);
+		HashMap<StringName, VariantContainer>::Iterator global_prop = props.find(E.key);
 
 		_VCSort vc;
 		vc.name = E.key;
-		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
+		vc.order = global_prop ? global_prop->value.order : 0xFFFFFFF;
 		vc.type = E.value.get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String>> props;
+	HashMap<String, List<String>> props;
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (RBSet<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 		String category = E->get().name;
 		String name = E->get().name;
 
@@ -1051,7 +1052,7 @@ void ProjectSettings::set_custom_property_info(const String &p_prop, const Prope
 	custom_prop_info[p_prop].name = p_prop;
 }
 
-const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
+const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
 	return custom_prop_info;
 }
 

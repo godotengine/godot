@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 #define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 #include "editor/editor_translation_parser.h"
 #include "modules/gdscript/gdscript_parser.h"
 
@@ -44,9 +44,9 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
 	StringName trn_func = "tr_n";
-	Set<StringName> assignment_patterns;
-	Set<StringName> first_arg_patterns;
-	Set<StringName> second_arg_patterns;
+	RBSet<StringName> assignment_patterns;
+	RBSet<StringName> first_arg_patterns;
+	RBSet<StringName> second_arg_patterns;
 	// FileDialog patterns.
 	StringName fd_add_filter = "add_filter";
 	StringName fd_set_filter = "set_filters";

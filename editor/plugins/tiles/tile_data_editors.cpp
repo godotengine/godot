@@ -862,7 +862,7 @@ Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_s
 	return tile_data->get(property);
 }
 
-void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
+void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E.key.alternative_tile, property), E.value);
@@ -882,7 +882,7 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 		rect.set_end(p_tile_atlas_view->get_atlas_tile_coords_at_pos(p_transform.affine_inverse().xform(p_canvas_item->get_local_mouse_position())));
 		rect = rect.abs();
 
-		Set<TileMapCell> edited;
+		RBSet<TileMapCell> edited;
 		for (int x = rect.get_position().x; x <= rect.get_end().x; x++) {
 			for (int y = rect.get_position().y; y <= rect.get_end().y; y++) {
 				Vector2i coords = Vector2i(x, y);
@@ -897,7 +897,7 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 			}
 		}
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
+		for (RBSet<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 			Vector2i coords = E->get().get_atlas_coords();
 			p_canvas_item->draw_rect(p_tile_set_atlas_source->get_tile_texture_region(coords), selection_color, false);
 		}
@@ -1299,7 +1299,7 @@ Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_
 	return tile_data->get_occluder(occlusion_layer);
 }
 
-void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
+void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, occlusion_layer), E.value);
@@ -1479,7 +1479,7 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 	return dict;
 }
 
-void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
+void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	Array new_array = p_new_value;
 	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Array old_array = E.value;
@@ -1740,7 +1740,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 		rect.set_end(p_tile_atlas_view->get_atlas_tile_coords_at_pos(p_transform.affine_inverse().xform(p_canvas_item->get_local_mouse_position())));
 		rect = rect.abs();
 
-		Set<TileMapCell> edited;
+		RBSet<TileMapCell> edited;
 		for (int x = rect.get_position().x; x <= rect.get_end().x; x++) {
 			for (int y = rect.get_position().y; y <= rect.get_end().y; y++) {
 				Vector2i coords = Vector2i(x, y);
@@ -1755,7 +1755,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			}
 		}
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
+		for (RBSet<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 			Vector2i coords = E->get().get_atlas_coords();
 			p_canvas_item->draw_rect(p_tile_set_atlas_source->get_tile_texture_region(coords), selection_color, false);
 		}
@@ -1770,7 +1770,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 		rect.set_end(p_tile_atlas_view->get_atlas_tile_coords_at_pos(p_transform.affine_inverse().xform(p_canvas_item->get_local_mouse_position())));
 		rect = rect.abs();
 
-		Set<TileMapCell> edited;
+		RBSet<TileMapCell> edited;
 		for (int x = rect.get_position().x; x <= rect.get_end().x; x++) {
 			for (int y = rect.get_position().y; y <= rect.get_end().y; y++) {
 				Vector2i coords = Vector2i(x, y);
@@ -1800,7 +1800,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
+		for (RBSet<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 			Vector2i coords = E->get().get_atlas_coords();
 
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
@@ -2118,7 +2118,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					rect.set_end(p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position()));
 					rect = rect.abs();
 
-					Set<TileMapCell> edited;
+					RBSet<TileMapCell> edited;
 					for (int x = rect.get_position().x; x <= rect.get_end().x; x++) {
 						for (int y = rect.get_position().y; y <= rect.get_end().y; y++) {
 							Vector2i coords = Vector2i(x, y);
@@ -2133,7 +2133,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						}
 					}
 					undo_redo->create_action(TTR("Painting Terrain Set"));
-					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
+					for (RBSet<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 						Vector2i coords = E->get().get_atlas_coords();
 						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->get().alternative_tile), tile_data->get_terrain_set());
@@ -2195,7 +2195,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					rect.set_end(p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position()));
 					rect = rect.abs();
 
-					Set<TileMapCell> edited;
+					RBSet<TileMapCell> edited;
 					for (int x = rect.get_position().x; x <= rect.get_end().x; x++) {
 						for (int y = rect.get_position().y; y <= rect.get_end().y; y++) {
 							Vector2i coords = Vector2i(x, y);
@@ -2220,7 +2220,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					mouse_pos_rect_polygon.push_back(Vector2(drag_start_pos.x, mb->get_position().y));
 
 					undo_redo->create_action(TTR("Painting Terrain"));
-					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
+					for (RBSet<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 						Vector2i coords = E->get().get_atlas_coords();
 						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 
@@ -2571,7 +2571,7 @@ Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atla
 	return tile_data->get_navigation_polygon(navigation_layer);
 }
 
-void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
+void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
 		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), E.value);

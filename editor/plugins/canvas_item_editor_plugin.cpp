@@ -562,7 +562,11 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree() && (include_locked_nodes || !_is_node_locked(canvas_item))) {
-		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform *= canvas_item->get_transform();
 		Rect2 rect = canvas_item->_edit_get_rect();
 		if (r_first) {
 			r_rect = Rect2(xform.xform(rect.get_center()), Size2());
@@ -608,7 +612,11 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree()) {
-		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform = (xform * canvas_item->get_transform()).affine_inverse();
 		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(canvas_item);
@@ -698,7 +706,11 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree() && !locked && editable) {
-		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform *= canvas_item->get_transform();
 
 		if (canvas_item->_edit_use_rect()) {
 			Rect2 rect = canvas_item->_edit_get_rect();
@@ -4085,7 +4097,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
-	const Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4396,7 +4408,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_COPY_POSE: {
 			pose_clipboard.clear();
 
-			const Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4442,7 +4454,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case ANIM_CLEAR_POSE: {
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4511,7 +4523,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
@@ -4559,7 +4571,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	Rect2 rect;
 	int count = 0;
 
-	const Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item) {

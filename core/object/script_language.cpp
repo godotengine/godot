@@ -93,7 +93,7 @@ Array Script::_get_script_signal_list() {
 
 Dictionary Script::_get_script_constant_map() {
 	Dictionary ret;
-	Map<StringName, Variant> map;
+	HashMap<StringName, Variant> map;
 	get_constants(&map);
 	for (const KeyValue<StringName, Variant> &E : map) {
 		ret[E.key] = E.value;
@@ -474,8 +474,8 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	return false;
 }
 
-void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
-	Set<StringName> new_values;
+void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {
+	RBSet<StringName> new_values;
 	for (const PropertyInfo &E : p_properties) {
 		StringName n = E.name;
 		new_values.insert(n);
@@ -490,16 +490,16 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	properties = p_properties;
 	List<StringName> to_remove;
 
-	for (Map<StringName, Variant>::Element *E = values.front(); E; E = E->next()) {
-		if (!new_values.has(E->key())) {
-			to_remove.push_back(E->key());
+	for (KeyValue<StringName, Variant> &E : values) {
+		if (!new_values.has(E.key)) {
+			to_remove.push_back(E.key);
 		}
 
 		Variant defval;
-		if (script->get_property_default_value(E->key(), defval)) {
+		if (script->get_property_default_value(E.key, defval)) {
 			//remove because it's the same as the default value
-			if (defval == E->get()) {
-				to_remove.push_back(E->key());
+			if (defval == E.value) {
+				to_remove.push_back(E.key);
 			}
 		}
 	}
@@ -520,10 +520,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 	if (script->is_placeholder_fallback_enabled()) {
-		Map<StringName, Variant>::Element *E = values.find(p_name);
+		HashMap<StringName, Variant>::Iterator E = values.find(p_name);
 
 		if (E) {
-			E->value() = p_value;
+			E->value = p_value;
 		} else {
 			values.insert(p_name, p_value);
 		}
@@ -547,13 +547,13 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 
 Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
 	if (script->is_placeholder_fallback_enabled()) {
-		const Map<StringName, Variant>::Element *E = values.find(p_name);
+		HashMap<StringName, Variant>::ConstIterator E = values.find(p_name);
 
 		if (E) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return E->value();
+			return E->value;
 		}
 
 		E = constants.find(p_name);
@@ -561,7 +561,7 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return E->value();
+			return E->value;
 		}
 	}
 

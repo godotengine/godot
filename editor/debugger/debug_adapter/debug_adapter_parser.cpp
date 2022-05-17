@@ -381,12 +381,12 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 
 	DAP::StackFrame frame;
 	frame.id = frame_id;
-	Map<DAP::StackFrame, List<int>>::Element *E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
+	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame>::Iterator E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
 	if (E) {
-		ERR_FAIL_COND_V(E->value().size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
+		ERR_FAIL_COND_V(E->value.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
 		for (int i = 0; i < 3; i++) {
 			DAP::Scope scope;
-			scope.variablesReference = E->value()[i];
+			scope.variablesReference = E->value[i];
 			switch (i) {
 				case 0:
 					scope.name = "Locals";
@@ -424,16 +424,16 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	int variable_id = args["variablesReference"];
 
-	Map<int, Array>::Element *E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id);
+	HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id);
 
 	if (E) {
 		if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsVariableType) {
-			for (int i = 0; i < E->value().size(); i++) {
-				Dictionary variable = E->value()[i];
+			for (int i = 0; i < E->value.size(); i++) {
+				Dictionary variable = E->value[i];
 				variable.erase("type");
 			}
 		}
-		body["variables"] = E ? E->value() : Array();
+		body["variables"] = E ? E->value : Array();
 		return response;
 	} else {
 		return Dictionary();

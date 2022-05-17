@@ -604,14 +604,14 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
 	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
 
-	const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
+	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
 
 	if (!enum_match && search_cname != p_target_cname) {
 		enum_match = enum_types.find(p_target_cname);
 	}
 
 	if (enum_match) {
-		const TypeInterface &target_enum_itype = enum_match->value();
+		const TypeInterface &target_enum_itype = enum_match->value;
 
 		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 		p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
@@ -1938,10 +1938,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			return OK; // Won't increment method bind count
 		}
 
-		const Map<const MethodInterface *, const InternalCall *>::Element *match = method_icalls_map.find(&p_imethod);
+		HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = method_icalls_map.find(&p_imethod);
 		ERR_FAIL_NULL_V(match, ERR_BUG);
 
-		const InternalCall *im_icall = match->value();
+		const InternalCall *im_icall = match->value;
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
 		im_call += ".";
@@ -2322,10 +2322,10 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		i++;
 	}
 
-	const Map<const MethodInterface *, const InternalCall *>::Element *match = method_icalls_map.find(&p_imethod);
+	HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = method_icalls_map.find(&p_imethod);
 	ERR_FAIL_NULL_V(match, ERR_BUG);
 
-	const InternalCall *im_icall = match->value();
+	const InternalCall *im_icall = match->value;
 	String icall_method = im_icall->name;
 
 	if (!generated_icall_funcs.find(im_icall)) {
@@ -2468,29 +2468,29 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(const TypeReference &p_typeref) {
-	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator builtin_type_match = builtin_types.find(p_typeref.cname);
 
 	if (builtin_type_match) {
-		return &builtin_type_match->get();
+		return &builtin_type_match->value;
 	}
 
-	const HashMap<StringName, TypeInterface>::Iterator obj_type_match = obj_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator obj_type_match = obj_types.find(p_typeref.cname);
 
 	if (obj_type_match) {
 		return &obj_type_match->value;
 	}
 
 	if (p_typeref.is_enum) {
-		const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(p_typeref.cname);
+		HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(p_typeref.cname);
 
 		if (enum_match) {
-			return &enum_match->get();
+			return &enum_match->value;
 		}
 
 		// Enum not found. Most likely because none of its constants were bound, so it's empty. That's fine. Use int instead.
-		const Map<StringName, TypeInterface>::Element *int_match = builtin_types.find(name_cache.type_int);
+		HashMap<StringName, TypeInterface>::ConstIterator int_match = builtin_types.find(name_cache.type_int);
 		ERR_FAIL_NULL_V(int_match, nullptr);
-		return &int_match->get();
+		return &int_match->value;
 	}
 
 	return nullptr;
@@ -2505,16 +2505,16 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 
 	ERR_PRINT(String() + "Type not found. Creating placeholder: '" + p_typeref.cname.operator String() + "'.");
 
-	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator match = placeholder_types.find(p_typeref.cname);
 
 	if (match) {
-		return &match->get();
+		return &match->value;
 	}
 
 	TypeInterface placeholder;
 	TypeInterface::create_placeholder_type(placeholder, p_typeref.cname);
 
-	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
+	return &placeholder_types.insert(placeholder.cname, placeholder)->value;
 }
 
 StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
@@ -2708,7 +2708,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(type_cname, &property_list, true);
 
-		Map<StringName, StringName> accessor_methods;
+		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
@@ -2903,9 +2903,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.proxy_name += "_";
 			}
 
-			Map<StringName, StringName>::Element *accessor = accessor_methods.find(imethod.cname);
+			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value());
+				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value);
 
 				// We only deprecate an accessor method if it's in the same class as the property. It's easier this way, but also
 				// we don't know if an accessor method in a different class could have other purposes, so better leave those untouched.
@@ -3594,11 +3594,11 @@ void BindingsGenerator::_populate_global_constants() {
 	int global_constants_count = CoreConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
-		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
+		HashMap<String, DocData::ClassDoc>::Iterator match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
 
 		CRASH_COND_MSG(!match, "Could not find '@GlobalScope' in DocData.");
 
-		const DocData::ClassDoc &global_scope_doc = match->value();
+		const DocData::ClassDoc &global_scope_doc = match->value;
 
 		for (int i = 0; i < global_constants_count; i++) {
 			String constant_name = CoreConstants::get_global_constant_name(i);

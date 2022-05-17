@@ -87,7 +87,7 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 void GodotStep3D::_populate_island_soft_body(GodotSoftBody3D *p_soft_body, LocalVector<GodotBody3D *> &p_body_island, LocalVector<GodotConstraint3D *> &p_constraint_island) {
 	p_soft_body->set_island_step(_step);
 
-	for (Set<GodotConstraint3D *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
+	for (RBSet<GodotConstraint3D *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
 		GodotConstraint3D *constraint = const_cast<GodotConstraint3D *>(E->get());
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
@@ -236,7 +236,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	const SelfList<GodotArea3D>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<GodotConstraint3D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
+		for (const RBSet<GodotConstraint3D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
 			GodotConstraint3D *constraint = E->get();
 			if (constraint->get_island_step() == _step) {
 				continue;

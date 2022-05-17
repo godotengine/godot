@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  map.h                                                                */
+/*  rb_map.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAP_H
-#define MAP_H
+#ifndef RB_MAP_H
+#define RB_MAP_H
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
@@ -39,7 +39,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <class K, class V, class C = Comparator<K>, class A = DefaultAllocator>
-class Map {
+class RBMap {
 	enum Color {
 		RED,
 		BLACK
@@ -49,7 +49,7 @@ class Map {
 public:
 	class Element {
 	private:
-		friend class Map<K, V, C, A>;
+		friend class RBMap<K, V, C, A>;
 		int color = RED;
 		Element *right = nullptr;
 		Element *left = nullptr;
@@ -111,7 +111,9 @@ public:
 
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
-
+		explicit operator bool() const {
+			return E != nullptr;
+		}
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
@@ -136,7 +138,9 @@ public:
 
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
-
+		explicit operator bool() const {
+			return E != nullptr;
+		}
 		ConstIterator(const Element *p_E) { E = p_E; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
@@ -572,7 +576,7 @@ private:
 		memdelete_allocator<Element, A>(p_element);
 	}
 
-	void _copy_from(const Map &p_map) {
+	void _copy_from(const RBMap &p_map) {
 		clear();
 		// not the fastest way, but safeset to write.
 		for (Element *I = p_map.front(); I; I = I->next()) {
@@ -710,8 +714,12 @@ public:
 		return e;
 	}
 
-	inline bool is_empty() const { return _data.size_cache == 0; }
-	inline int size() const { return _data.size_cache; }
+	inline bool is_empty() const {
+		return _data.size_cache == 0;
+	}
+	inline int size() const {
+		return _data.size_cache;
+	}
 
 	int calculate_depth() const {
 		// used for debug mostly
@@ -735,17 +743,17 @@ public:
 		_data._free_root();
 	}
 
-	void operator=(const Map &p_map) {
+	void operator=(const RBMap &p_map) {
 		_copy_from(p_map);
 	}
 
-	Map(const Map &p_map) {
+	RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
 	}
 
-	_FORCE_INLINE_ Map() {}
+	_FORCE_INLINE_ RBMap() {}
 
-	~Map() {
+	~RBMap() {
 		clear();
 	}
 };

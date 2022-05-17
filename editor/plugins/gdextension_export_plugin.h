@@ -35,10 +35,10 @@
 
 class GDExtensionExportPlugin : public EditorExportPlugin {
 protected:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+	virtual void _export_file(const String &p_path, const String &p_type, const RBSet<String> &p_features);
 };
 
-void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p_type, const RBSet<String> &p_features) {
 	if (p_type != "NativeExtension") {
 		return;
 	}

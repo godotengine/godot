@@ -53,7 +53,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int size = Math::larger_prime(keys.size());
 
 	Vector<Vector<Pair<int, CharString>>> buckets;
-	Vector<Map<uint32_t, int>> table;
+	Vector<HashMap<uint32_t, int>> table;
 	Vector<uint32_t> hfunc_table;
 	Vector<CompressedString> compressed;
 
@@ -108,7 +108,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
-		Map<uint32_t, int> &t = table.write[i];
+		HashMap<uint32_t, int> &t = table.write[i];
 
 		if (b.size() == 0) {
 			continue;
@@ -147,7 +147,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int btindex = 0;
 
 	for (int i = 0; i < size; i++) {
-		const Map<uint32_t, int> &t = table[i];
+		const HashMap<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;

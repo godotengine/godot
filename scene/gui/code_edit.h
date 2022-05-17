@@ -58,7 +58,7 @@ private:
 	String indent_text = "\t";
 
 	bool auto_indent = false;
-	Set<char32_t> auto_indent_prefixes;
+	RBSet<char32_t> auto_indent_prefixes;
 
 	bool indent_using_spaces = false;
 	int _calculate_spaces_till_next_left_indent(int p_column) const;
@@ -176,7 +176,7 @@ private:
 	 *      ]
 	 *  ]
 	 */
-	Vector<Map<int, int>> delimiter_cache;
+	Vector<RBMap<int, int>> delimiter_cache;
 
 	void _update_delimiter_cache(int p_from_line = 0, int p_to_line = -1);
 	int _is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const;
@@ -214,7 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
-	Set<char32_t> code_completion_prefixes;
+	RBSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;

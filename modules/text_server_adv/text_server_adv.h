@@ -126,7 +126,7 @@ class TextServerAdvanced : public TextServerExtension {
 	_THREAD_SAFE_CLASS_
 
 	struct NumSystemData {
-		Set<StringName> lang;
+		RBSet<StringName> lang;
 		String digits;
 		String percent_sign;
 		String exp;
@@ -192,7 +192,6 @@ class TextServerAdvanced : public TextServerExtension {
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> kerning_map;
-
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -236,7 +235,7 @@ class TextServerAdvanced : public TextServerExtension {
 		HashMap<Vector2i, FontDataForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
-		Set<uint32_t> supported_scripts;
+		RBSet<uint32_t> supported_scripts;
 		Dictionary supported_features;
 		Dictionary supported_varaitions;
 		Dictionary feature_overrides;

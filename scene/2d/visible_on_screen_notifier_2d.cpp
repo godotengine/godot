@@ -198,7 +198,7 @@ void VisibleOnScreenEnabler2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibleOnScreenEnabler2D::get_enable_node_path);
 
 	ADD_GROUP("Enabling", "enable_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,WhenPaused"), "set_enable_mode", "get_enable_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,When Paused"), "set_enable_mode", "get_enable_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "enable_node_path"), "set_enable_node_path", "get_enable_node_path");
 
 	BIND_ENUM_CONSTANT(ENABLE_MODE_INHERIT);

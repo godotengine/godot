@@ -110,7 +110,7 @@ protected:
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};
-	Map<ProcessID, ProcessInfo> *process_map;
+	HashMap<ProcessID, ProcessInfo> *process_map;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;

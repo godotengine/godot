@@ -335,7 +335,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 		return;
 	}
 
-	Map<int, String> flags;
+	HashMap<int, String> flags;
 	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();

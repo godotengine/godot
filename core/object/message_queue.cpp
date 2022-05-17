@@ -142,9 +142,9 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 }
 
 void MessageQueue::statistics() {
-	Map<StringName, int> set_count;
-	Map<int, int> notify_count;
-	Map<Callable, int> call_count;
+	HashMap<StringName, int> set_count;
+	HashMap<int, int> notify_count;
+	HashMap<Callable, int> call_count;
 	int null_count = 0;
 
 	uint32_t read_pos = 0;

@@ -141,9 +141,9 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String uri = params["uri"];
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
-	if (const Map<String, ExtendGDScriptParser *>::Element *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
+	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
 		Vector<lsp::DocumentedSymbolInformation> list;
-		parser->get()->get_symbols().symbol_tree_as_list(uri, list);
+		parser->value->get_symbols().symbol_tree_as_list(uri, list);
 		for (int i = 0; i < list.size(); i++) {
 			arr.push_back(list[i].to_json());
 		}
@@ -267,8 +267,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 			}
 
 			if (!symbol) {
-				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
-					symbol = E->get()->get_member_symbol(member_name, inner_class_name);
+				if (HashMap<String, ExtendGDScriptParser *>::ConstIterator E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
+					symbol = E->value->get_member_symbol(member_name, inner_class_name);
 				}
 			}
 		}

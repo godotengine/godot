@@ -342,9 +342,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -b, --breakpoints                            Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                                  Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --gpu-profile                                Show a GPU profile of the tasks that took the most time during frame rendering.\n");
-	OS::get_singleton()->print("  --vk-layers                                  Enable Vulkan validation layers for debugging.\n");
+	OS::get_singleton()->print("  --gpu-validation                             Enable graphics API validation layers for debugging.\n");
 #if DEBUG_ENABLED
-	OS::get_singleton()->print("  --gpu-abort                                  Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
+	OS::get_singleton()->print("  --gpu-abort                                  Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED)
@@ -831,7 +831,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--vk-layers") {
+		} else if (I->get() == "--gpu-validation") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED
 		} else if (I->get() == "--gpu-abort") {
@@ -1506,7 +1506,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
 
 	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head mounted,Handheld"));
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"));
 
 	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
 	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
@@ -2149,8 +2149,8 @@ bool Main::start() {
 		doc.generate(doc_base);
 
 		DocTools docsrc;
-		Map<String, String> doc_data_classes;
-		Set<String> checked_paths;
+		HashMap<String, String> doc_data_classes;
+		RBSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -2189,7 +2189,7 @@ bool Main::start() {
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 
-		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
+		for (RBSet<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
 			err = DocTools::erase_classes(E->get());
 			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));

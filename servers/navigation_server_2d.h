@@ -80,11 +80,15 @@ public:
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
 
+	virtual Array map_get_regions(RID p_map) const;
+	virtual Array map_get_agents(RID p_map) const;
+
 	/// Creates a new region.
 	virtual RID region_create() const;
 
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const;
+	virtual RID region_get_map(RID p_region) const;
 
 	/// Set the region's layers
 	virtual void region_set_layers(RID p_region, uint32_t p_layers) const;
@@ -106,6 +110,7 @@ public:
 
 	/// Put the agent in the map.
 	virtual void agent_set_map(RID p_agent, RID p_map) const;
+	virtual RID agent_get_map(RID p_agent) const;
 
 	/// The maximum distance (center point to
 	/// center point) to other agents this agent

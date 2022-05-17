@@ -67,7 +67,7 @@ private:
 		HGLRC hRC;
 	};
 
-	Map<DisplayServer::WindowID, GLWindow> _windows;
+	RBMap<DisplayServer::WindowID, GLWindow> _windows;
 	LocalVector<GLDisplay> _displays;
 
 	GLWindow *_current_window = nullptr;

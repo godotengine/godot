@@ -5782,8 +5782,8 @@ bool VisualShaderNodeTextureUniform::is_show_prop_names() const {
 	return true;
 }
 
-Map<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
-	Map<StringName, String> names;
+HashMap<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
 	names.insert("texture_type", RTR("Type"));
 	names.insert("color_default", RTR("Default Color"));
 	names.insert("texture_filter", RTR("Filter"));

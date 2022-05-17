@@ -47,7 +47,7 @@
 
 static bool saved_warnings_enabled = false;
 static bool saved_treat_warning_as_errors = false;
-static Map<ShaderWarning::Code, bool> saved_warnings;
+static HashMap<ShaderWarning::Code, bool> saved_warnings;
 static uint32_t saved_warning_flags = 0U;
 
 void ShaderTextEditor::_notification(int p_what) {

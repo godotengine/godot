@@ -1071,9 +1071,9 @@ String DisplayServerOSX::global_menu_get_item_submenu(const String &p_menu_root,
 		if (menu_item) {
 			const NSMenu *sub_menu = [menu_item submenu];
 			if (sub_menu) {
-				for (Map<String, NSMenu *>::Element *E = submenu.front(); E; E = E->next()) {
-					if (E->get() == sub_menu) {
-						return E->key();
+				for (const KeyValue<String, NSMenu *> &E : submenu) {
+					if (E.value == sub_menu) {
+						return E.key;
 					}
 				}
 			}
@@ -1901,8 +1901,8 @@ Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<int> ret;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -2468,8 +2468,8 @@ bool DisplayServerOSX::window_can_draw(WindowID p_window) const {
 bool DisplayServerOSX::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (window_get_mode(E->key()) != WINDOW_MODE_MINIMIZED) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) {
 			return true;
 		}
 	}
@@ -2505,9 +2505,9 @@ DisplayServer::WindowID DisplayServerOSX::get_window_at_screen_position(const Po
 	position /= screen_get_max_scale();
 
 	NSInteger wnum = [NSWindow windowNumberAtPoint:NSMakePoint(position.x, position.y) belowWindowWithWindowNumber:0 /*topmost*/];
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if ([E->get().window_object windowNumber] == wnum) {
-			return E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if ([E.value.window_object windowNumber] == wnum) {
+			return E.key;
 		}
 	}
 	return INVALID_WINDOW_ID;
@@ -2678,10 +2678,10 @@ void DisplayServerOSX::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
 				cursor_set_shape(p_shape);
 				return;
 			}
@@ -2886,8 +2886,8 @@ void DisplayServerOSX::process_events() {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		WindowData &wd = E->get();
+	for (KeyValue<WindowID, WindowData> &E : windows) {
+		WindowData &wd = E.value;
 		if (wd.mpath.size() > 0) {
 			update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 			if (Geometry2D::is_point_in_polygon(wd.mouse_pos, wd.mpath)) {
@@ -3266,11 +3266,11 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 DisplayServerOSX::~DisplayServerOSX() {
 	// Destroy all windows.
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E;) {
-		Map<WindowID, WindowData>::Element *F = E;
-		E = E->next();
-		[F->get().window_object setContentView:nil];
-		[F->get().window_object close];
+	for (HashMap<WindowID, WindowData>::Iterator E = windows.begin(); E;) {
+		HashMap<WindowID, WindowData>::Iterator F = E;
+		++E;
+		[F->value.window_object setContentView:nil];
+		[F->value.window_object close];
 	}
 
 	// Destroy drivers.

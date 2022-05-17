@@ -34,7 +34,7 @@
 bool PolygonPathFinder::_is_point_inside(const Vector2 &p_point) const {
 	int crosses = 0;
 
-	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+	for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 		const Edge &e = E->get();
 
 		Vector2 a = points[e.points[0]].pos;
@@ -105,7 +105,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 
 			bool valid = true;
 
-			for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+			for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 				const Edge &e = E->get();
 				if (e.points[0] == i || e.points[1] == i || e.points[0] == j || e.points[1] == j) {
 					continue;
@@ -140,7 +140,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		float closest_dist = 1e20f;
 		Vector2 closest_point;
 
-		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+		for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
 			Vector2 seg[2] = {
 				points[e.points[0]].pos,
@@ -164,7 +164,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		float closest_dist = 1e20f;
 		Vector2 closest_point;
 
-		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+		for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
 			Vector2 seg[2] = {
 				points[e.points[0]].pos,
@@ -188,7 +188,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	{
 		bool can_see_eachother = true;
 
-		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+		for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
 			if (e.points[0] == ignore_from_edge.points[0] && e.points[1] == ignore_from_edge.points[1]) {
 				continue;
@@ -240,7 +240,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			valid_b = false;
 		}
 
-		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+		for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
 
 			if (e.points[0] == i || e.points[1] == i) {
@@ -289,11 +289,11 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	}
 	//solve graph
 
-	Set<int> open_list;
+	RBSet<int> open_list;
 
 	points.write[aidx].distance = 0;
 	points.write[aidx].prev = aidx;
-	for (Set<int>::Element *E = points[aidx].connections.front(); E; E = E->next()) {
+	for (RBSet<int>::Element *E = points[aidx].connections.front(); E; E = E->next()) {
 		open_list.insert(E->get());
 		points.write[E->get()].distance = from.distance_to(points[E->get()].pos);
 		points.write[E->get()].prev = aidx;
@@ -312,7 +312,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		float least_cost = 1e30;
 
 		//this could be faster (cache previous results)
-		for (Set<int>::Element *E = open_list.front(); E; E = E->next()) {
+		for (RBSet<int>::Element *E = open_list.front(); E; E = E->next()) {
 			const Point &p = points[E->get()];
 			float cost = p.distance;
 			cost += p.pos.distance_to(to);
@@ -327,7 +327,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		const Point &np = points[least_cost_point];
 		//open the neighbours for search
 
-		for (Set<int>::Element *E = np.connections.front(); E; E = E->next()) {
+		for (RBSet<int>::Element *E = np.connections.front(); E; E = E->next()) {
 			Point &p = points.write[E->get()];
 			float distance = np.pos.distance_to(p.pos) + np.distance;
 
@@ -459,7 +459,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 			{
 				int *cw = c.ptrw();
 				int idx = 0;
-				for (Set<int>::Element *E = points[i].connections.front(); E; E = E->next()) {
+				for (RBSet<int>::Element *E = points[i].connections.front(); E; E = E->next()) {
 					cw[idx++] = E->get();
 				}
 			}
@@ -469,7 +469,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 	{
 		int *iw = ind.ptrw();
 		int idx = 0;
-		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+		for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			iw[idx++] = E->get().points[0];
 			iw[idx++] = E->get().points[1];
 		}
@@ -492,7 +492,7 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2 &p_point) const {
 	float closest_dist = 1e20f;
 	Vector2 closest_point;
 
-	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+	for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 		const Edge &e = E->get();
 		Vector2 seg[2] = {
 			points[e.points[0]].pos,
@@ -516,7 +516,7 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2 &p_point) const {
 Vector<Vector2> PolygonPathFinder::get_intersections(const Vector2 &p_from, const Vector2 &p_to) const {
 	Vector<Vector2> inters;
 
-	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
+	for (RBSet<Edge>::Element *E = edges.front(); E; E = E->next()) {
 		Vector2 a = points[E->get().points[0]].pos;
 		Vector2 b = points[E->get().points[1]].pos;
 

@@ -93,7 +93,7 @@ struct _GDFKCS {
 
 void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const {
 	int oc = 0;
-	Map<StringName, _GDFKC> sdmap;
+	HashMap<StringName, _GDFKC> sdmap;
 	for (const StackDebug &sd : stack_debug) {
 		if (sd.line >= p_line) {
 			break;
@@ -279,7 +279,8 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 void GDScriptFunctionState::_clear_stack() {
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
-		for (int i = 0; i < state.stack_size; i++) {
+		// The first 3 are special addresses and not copied to the state, so we skip them here.
+		for (int i = 3; i < state.stack_size; i++) {
 			stack[i].~Variant();
 		}
 		state.stack_size = 0;
@@ -300,8 +301,6 @@ GDScriptFunctionState::GDScriptFunctionState() :
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {
-	_clear_stack();
-
 	{
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 		scripts_list.remove_from_list();

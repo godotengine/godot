@@ -141,7 +141,7 @@ void MultiMeshEditor::_populate() {
 	const Face3 *r = faces.ptr();
 
 	float area_accum = 0;
-	Map<float, int> triangle_area_map;
+	RBMap<float, int> triangle_area_map;
 	for (int i = 0; i < facecount; i++) {
 		float area = r[i].get_area();
 		if (area < CMP_EPSILON) {
@@ -180,9 +180,9 @@ void MultiMeshEditor::_populate() {
 	for (int i = 0; i < instance_count; i++) {
 		float areapos = Math::random(0.0f, area_accum);
 
-		Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
+		RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
 		ERR_FAIL_COND(!E);
-		int index = E->get();
+		int index = E->value;
 		ERR_FAIL_INDEX(index, facecount);
 
 		// ok FINALLY get face

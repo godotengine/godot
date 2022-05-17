@@ -60,8 +60,8 @@ private:
 	String profile; // this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
 
-	Map<StringName, Ref<XRPose>> poses;
-	Map<StringName, Variant> inputs;
+	HashMap<StringName, Ref<XRPose>> poses;
+	HashMap<StringName, Variant> inputs;
 
 protected:
 	static void _bind_methods();

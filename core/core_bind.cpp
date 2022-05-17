@@ -439,7 +439,7 @@ void OS::print_resources_by_type(const Vector<String> &p_types) {
 
 	print_line(vformat("Resources currently in use for the following types: %s", p_types));
 
-	Map<String, int> type_count;
+	RBMap<String, int> type_count;
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 

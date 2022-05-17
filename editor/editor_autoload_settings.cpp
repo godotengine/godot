@@ -428,7 +428,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 	updating_autoload = true;
 
-	Map<String, AutoloadInfo> to_remove;
+	HashMap<String, AutoloadInfo> to_remove;
 	List<AutoloadInfo *> to_add;
 
 	for (const AutoloadInfo &info : autoload_cache) {

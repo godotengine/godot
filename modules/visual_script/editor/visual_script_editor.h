@@ -142,9 +142,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 		Vector<Pair<Variant::Type, String>> args;
 	};
 
-	Map<StringName, Color> node_colors;
+	HashMap<StringName, Color> node_colors;
 	HashMap<StringName, Ref<StyleBox>> node_styles;
-	Map<StringName, Variant::Type> base_type_map;
+	HashMap<StringName, Variant::Type> base_type_map;
 
 	void _update_graph_connections();
 	void _update_graph(int p_only_id = -1);
@@ -159,11 +159,11 @@ class VisualScriptEditor : public ScriptEditorBase {
 	String _validate_name(const String &p_name) const;
 
 	struct Clipboard {
-		Map<int, Ref<VisualScriptNode>> nodes;
-		Map<int, Vector2> nodes_positions;
+		HashMap<int, Ref<VisualScriptNode>> nodes;
+		HashMap<int, Vector2> nodes_positions;
 
-		Set<VisualScript::SequenceConnection> sequence_connections;
-		Set<VisualScript::DataConnection> data_connections;
+		RBSet<VisualScript::SequenceConnection> sequence_connections;
+		RBSet<VisualScript::DataConnection> data_connections;
 	};
 
 	static Clipboard *clipboard;
@@ -213,7 +213,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _end_node_move();
 	void _move_node(int p_id, const Vector2 &p_to);
 
-	void _get_ends(int p_node, const List<VisualScript::SequenceConnection> &p_seqs, const Set<int> &p_selected, Set<int> &r_end_nodes);
+	void _get_ends(int p_node, const List<VisualScript::SequenceConnection> &p_seqs, const RBSet<int> &p_selected, RBSet<int> &r_end_nodes);
 
 	void _node_moved(Vector2 p_from, Vector2 p_to, int p_id);
 	void _remove_node(int p_id);
@@ -287,7 +287,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _draw_color_over_button(Object *obj, Color p_color);
 	void _button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
 
-	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, Set<int> &p_visited_nodes);
+	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, RBSet<int> &p_visited_nodes);
 
 	void _member_rmb_selected(const Vector2 &p_pos);
 	void _member_option(int p_option);
@@ -359,7 +359,7 @@ protected:
 	static void _bind_methods();
 	static VisualScriptCustomNodes *singleton;
 
-	static Map<String, Ref<RefCounted>> custom_nodes;
+	static HashMap<String, Ref<RefCounted>> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:

@@ -34,7 +34,7 @@
 #include "thread_jandroid.h"
 
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
-	Map<StringName, List<MethodInfo>>::Element *M = methods.find(p_method);
+	HashMap<StringName, List<MethodInfo>>::Iterator M = methods.find(p_method);
 	if (!M) {
 		return false;
 	}
@@ -43,7 +43,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	ERR_FAIL_COND_V(env == nullptr, false);
 
 	MethodInfo *method = nullptr;
-	for (MethodInfo &E : M->get()) {
+	for (MethodInfo &E : M->value) {
 		if (!p_instance && !E._static) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			continue;

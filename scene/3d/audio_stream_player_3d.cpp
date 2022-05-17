@@ -281,7 +281,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				active.set();
 				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-				Map<StringName, Vector<AudioFrame>> bus_map;
+				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
@@ -387,7 +387,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
 
-	Set<Camera3D *> cameras = world_3d->get_cameras();
+	RBSet<Camera3D *> cameras = world_3d->get_cameras();
 	cameras.insert(get_viewport()->get_camera_3d());
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
@@ -466,7 +466,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
 		}
 
-		Map<StringName, Vector<AudioFrame>> bus_volumes;
+		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
 		if (area) {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus

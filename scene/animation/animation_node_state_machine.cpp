@@ -188,7 +188,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	Vector2 current_pos = p_state_machine->states[current].position;
 	Vector2 target_pos = p_state_machine->states[p_travel].position;
 
-	Map<StringName, AStarCost> cost_map;
+	HashMap<StringName, AStarCost> cost_map;
 
 	List<int> open_list;
 

@@ -88,7 +88,9 @@ public:
 				instID(INVALID_GEOMETRY_ID) {}
 
 		/*! Tests if we hit something. */
-		_FORCE_INLINE_ explicit operator bool() const { return geomID != INVALID_GEOMETRY_ID; }
+		_FORCE_INLINE_ explicit operator bool() const {
+			return geomID != INVALID_GEOMETRY_ID;
+		}
 
 	public:
 		Vector3 org; //!< Ray origin + tnear
@@ -116,7 +118,7 @@ public:
 	virtual void set_mesh_alpha_texture(Ref<Image> p_alpha_texture, unsigned int p_id) = 0;
 	virtual void commit() = 0;
 
-	virtual void set_mesh_filter(const Set<int> &p_mesh_ids) = 0;
+	virtual void set_mesh_filter(const RBSet<int> &p_mesh_ids) = 0;
 	virtual void clear_mesh_filter() = 0;
 
 	static Ref<LightmapRaycaster> create();

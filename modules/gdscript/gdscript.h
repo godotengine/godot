@@ -80,48 +80,48 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	Set<StringName> members; //members are just indices to the instantiated script.
-	Map<StringName, Variant> constants;
-	Map<StringName, GDScriptFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
-	Map<StringName, Ref<GDScript>> subclasses;
-	Map<StringName, Vector<StringName>> _signals;
+	RBSet<StringName> members; //members are just indices to the instantiated script.
+	HashMap<StringName, Variant> constants;
+	HashMap<StringName, GDScriptFunction *> member_functions;
+	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
+	HashMap<StringName, Ref<GDScript>> subclasses;
+	HashMap<StringName, Vector<StringName>> _signals;
 	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 
-	Map<StringName, int> member_lines;
-	Map<StringName, Variant> member_default_values;
+	HashMap<StringName, int> member_lines;
+	HashMap<StringName, Variant> member_default_values;
 	List<PropertyInfo> members_cache;
-	Map<StringName, Variant> member_default_values_cache;
+	HashMap<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
-	Set<ObjectID> inheriters_cache;
+	RBSet<ObjectID> inheriters_cache;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
-	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
 	String doc_brief_description;
 	String doc_description;
 	Vector<DocData::TutorialDoc> doc_tutorials;
-	Map<String, String> doc_functions;
-	Map<String, String> doc_variables;
-	Map<String, String> doc_constants;
-	Map<String, String> doc_signals;
-	Map<String, DocData::EnumDoc> doc_enums;
+	HashMap<String, String> doc_functions;
+	HashMap<String, String> doc_variables;
+	HashMap<String, String> doc_constants;
+	HashMap<String, String> doc_signals;
+	HashMap<String, DocData::EnumDoc> doc_enums;
 	void _clear_doc();
 	void _update_doc();
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
 
 #endif
-	Map<StringName, PropertyInfo> member_info;
+	HashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 
 	int subclass_count = 0;
-	Set<Object *> instances;
+	RBSet<Object *> instances;
 	//exported members
 	String source;
 	String path;
@@ -139,14 +139,14 @@ class GDScript : public Script {
 	String _get_debug_path() const;
 
 #ifdef TOOLS_ENABLED
-	Set<PlaceHolderScriptInstance *> placeholders;
+	RBSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 #ifdef DEBUG_ENABLED
 
-	Map<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
+	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 
 #endif
 
@@ -176,14 +176,14 @@ public:
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
-	const Map<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
-	const Map<StringName, Variant> &get_constants() const { return constants; }
-	const Set<StringName> &get_members() const { return members; }
+	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
+	const HashMap<StringName, Variant> &get_constants() const { return constants; }
+	const RBSet<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const Map<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
+	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 	const String &get_script_class_name() const { return name; }
 
@@ -193,8 +193,8 @@ public:
 	bool is_tool() const override { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const Map<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
+	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -245,8 +245,8 @@ public:
 		return -1;
 	}
 
-	virtual void get_constants(Map<StringName, Variant> *p_constants) override;
-	virtual void get_members(Set<StringName> *p_members) override;
+	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
+	virtual void get_members(RBSet<StringName> *p_members) override;
 
 	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
@@ -270,7 +270,7 @@ class GDScriptInstance : public ScriptInstance {
 	Object *owner = nullptr;
 	Ref<GDScript> script;
 #ifdef DEBUG_ENABLED
-	Map<StringName, int> member_indices_cache; //used only for hot script reloading
+	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
 	bool base_ref_counted;
@@ -315,8 +315,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
-	Map<StringName, int> globals;
-	Map<StringName, Variant> named_globals;
+	HashMap<StringName, int> globals;
+	HashMap<StringName, Variant> named_globals;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -348,7 +348,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	bool profiling;
 	uint64_t script_frame_time;
 
-	Map<String, ObjectID> orphan_subclasses;
+	HashMap<String, ObjectID> orphan_subclasses;
 
 public:
 	int calls;
@@ -427,8 +427,8 @@ public:
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
-	_FORCE_INLINE_ const Map<StringName, int> &get_global_map() const { return globals; }
-	_FORCE_INLINE_ const Map<StringName, Variant> &get_named_globals_map() const { return named_globals; }
+	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
+	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 
@@ -449,7 +449,7 @@ public:
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 	virtual bool has_named_classes() const override;
 	virtual bool supports_builtin_mode() const override;

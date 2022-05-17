@@ -609,7 +609,7 @@ void AnimationNodeStateMachineEditor::_group_selected_nodes() {
 
 void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 	bool find = false;
-	Set<StringName> new_selected_nodes;
+	RBSet<StringName> new_selected_nodes;
 
 	for (const StringName &E : selected_nodes) {
 		Ref<AnimationNodeStateMachine> group_sm = state_machine->get_node(E);

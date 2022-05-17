@@ -2006,14 +2006,14 @@ void RenderForwardClustered::_render_sdfgi(RID p_render_buffers, const Vector3i 
 
 		RID rp_uniform_set = _setup_sdfgi_render_pass_uniform_set(p_albedo_texture, p_emission_texture, p_emission_aniso_texture, p_geom_facing_texture);
 
-		Map<Size2i, RID>::Element *E = sdfgi_framebuffer_size_cache.find(fb_size);
+		HashMap<Size2i, RID>::Iterator E = sdfgi_framebuffer_size_cache.find(fb_size);
 		if (!E) {
 			RID fb = RD::get_singleton()->framebuffer_create_empty(fb_size);
 			E = sdfgi_framebuffer_size_cache.insert(fb_size, fb);
 		}
 
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, 0, true, false, rp_uniform_set, false);
-		_render_list_with_threads(&render_list_params, E->get(), RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2(), sbs);
+		_render_list_with_threads(&render_list_params, E->value, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2(), sbs);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -3276,8 +3276,8 @@ RenderForwardClustered::~RenderForwardClustered() {
 		memdelete_arr(scene_state.lightmap_captures);
 	}
 
-	while (sdfgi_framebuffer_size_cache.front()) {
-		RD::get_singleton()->free(sdfgi_framebuffer_size_cache.front()->get());
-		sdfgi_framebuffer_size_cache.erase(sdfgi_framebuffer_size_cache.front());
+	while (sdfgi_framebuffer_size_cache.begin()) {
+		RD::get_singleton()->free(sdfgi_framebuffer_size_cache.begin()->value);
+		sdfgi_framebuffer_size_cache.remove(sdfgi_framebuffer_size_cache.begin());
 	}
 }

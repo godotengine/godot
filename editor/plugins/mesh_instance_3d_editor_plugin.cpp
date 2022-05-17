@@ -373,7 +373,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(!mesh.is_valid());
 
-	Set<MeshInstance3DEditorEdgeSort> edges;
+	RBSet<MeshInstance3DEditorEdgeSort> edges;
 	uv_lines.clear();
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {

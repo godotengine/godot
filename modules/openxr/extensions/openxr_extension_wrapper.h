@@ -33,7 +33,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/camera_matrix.h"
-#include "core/templates/map.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
 
 #include "thirdparty/openxr/src/common/xr_linear.h"
@@ -49,10 +49,10 @@ protected:
 	// Store extension we require.
 	// If bool pointer is a nullptr this means this extension is mandatory and initialisation will fail if it is not available
 	// If bool pointer is set, value will be set to true or false depending on whether extension is available
-	Map<const char *, bool *> request_extensions;
+	HashMap<String, bool *> request_extensions;
 
 public:
-	virtual Map<const char *, bool *> get_request_extensions() {
+	virtual HashMap<String, bool *> get_request_extensions() {
 		return request_extensions;
 	}
 

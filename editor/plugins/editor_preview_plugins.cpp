@@ -481,8 +481,8 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	List<String> kwors;
 	scr->get_language()->get_reserved_words(&kwors);
 
-	Set<String> control_flow_keywords;
-	Set<String> keywords;
+	RBSet<String> control_flow_keywords;
+	RBSet<String> keywords;
 
 	for (const String &E : kwors) {
 		if (scr->get_language()->is_control_flow_keyword(E)) {

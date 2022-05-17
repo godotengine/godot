@@ -122,7 +122,7 @@ GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeRestInfo)
 class PhysicsDirectSpaceState3DExtension : public PhysicsDirectSpaceState3D {
 	GDCLASS(PhysicsDirectSpaceState3DExtension, PhysicsDirectSpaceState3D);
 
-	thread_local static const Set<RID> *exclude;
+	thread_local static const RBSet<RID> *exclude;
 
 protected:
 	static void _bind_methods();
@@ -388,8 +388,8 @@ public:
 
 	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform3D &, const Vector3 &, real_t, int, bool, GDNativePtr<PhysicsServer3DExtensionMotionResult>)
 
-	thread_local static const Set<RID> *exclude_bodies;
-	thread_local static const Set<ObjectID> *exclude_objects;
+	thread_local static const RBSet<RID> *exclude_bodies;
+	thread_local static const RBSet<ObjectID> *exclude_objects;
 
 	bool body_test_motion_is_excluding_body(RID p_body) const;
 	bool body_test_motion_is_excluding_object(ObjectID p_object) const;

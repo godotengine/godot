@@ -3067,7 +3067,7 @@ void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features
 	r_features->push_back("android");
 }
 
-void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) {
 }
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {

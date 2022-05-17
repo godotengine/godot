@@ -71,7 +71,7 @@ public:
 class DummyObject : public Object {
 	GDCLASS(DummyObject, Object)
 private:
-	Map<String, Variant> properties;
+	HashMap<String, Variant> properties;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -206,7 +206,7 @@ private:
 	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_pos;
 	Vector2 drag_last_pos;
-	Map<TileMapCell, Variant> drag_modified;
+	HashMap<TileMapCell, Variant, TileMapCell> drag_modified;
 	Variant drag_painted_value;
 
 	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
@@ -224,7 +224,7 @@ protected:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile);
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value);
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile);
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value);
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value);
 
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
@@ -276,7 +276,7 @@ private:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
 	UndoRedo *undo_redo = nullptr;
@@ -301,7 +301,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	// UI
 	GenericTilePolygonEditor *polygon_editor = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
-	Map<StringName, EditorProperty *> property_editors;
+	HashMap<StringName, EditorProperty *> property_editors;
 
 	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
 	void _property_selected(StringName p_path, int p_focusable);
@@ -311,7 +311,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
 	UndoRedo *undo_redo = nullptr;
@@ -348,7 +348,7 @@ private:
 	DragType drag_type = DRAG_TYPE_NONE;
 	Vector2 drag_start_pos;
 	Vector2 drag_last_pos;
-	Map<TileMapCell, Variant> drag_modified;
+	HashMap<TileMapCell, Variant, TileMapCell> drag_modified;
 	Variant drag_painted_value;
 
 	// UI
@@ -396,7 +396,7 @@ private:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
 
 protected:
 	UndoRedo *undo_redo = nullptr;

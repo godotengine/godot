@@ -34,14 +34,14 @@
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
-	typedef Map<String, Variant> CustomMap;
+	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
 	enum {
@@ -84,15 +84,15 @@ protected:
 	int last_builtin_order = 0;
 	uint64_t last_save_time = 0;
 
-	Map<StringName, VariantContainer> props;
+	HashMap<StringName, VariantContainer> props;
 	String resource_path;
-	Map<StringName, PropertyInfo> custom_prop_info;
+	HashMap<StringName, PropertyInfo> custom_prop_info;
 	bool disable_feature_overrides = false;
 	bool using_datapack = false;
 	List<String> input_presets;
 
-	Set<String> custom_features;
-	Map<StringName, StringName> feature_overrides;
+	RBSet<String> custom_features;
+	HashMap<StringName, StringName> feature_overrides;
 
 	HashMap<StringName, AutoloadInfo> autoloads;
 
@@ -108,8 +108,8 @@ protected:
 	Error _load_settings_binary(const String &p_path);
 	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
-	Error _save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
-	Error _save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_text(const String &p_file, const HashMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_binary(const String &p_file, const HashMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	Error _save_custom_bnd(const String &p_file);
 
@@ -168,7 +168,7 @@ public:
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
-	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
+	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
 	Vector<String> get_optimizer_presets() const;

@@ -73,7 +73,7 @@ class ThemeItemImportTree : public VBoxContainer {
 		SELECT_IMPORT_FULL,
 	};
 
-	Map<ThemeItem, ItemCheckedState> selected_items;
+	RBMap<ThemeItem, ItemCheckedState> selected_items;
 
 	LineEdit *import_items_filter = nullptr;
 

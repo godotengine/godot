@@ -47,7 +47,7 @@ public:
 
 private:
 	TypedArray<PackedScene> spawnable_scenes;
-	Set<ResourceUID::ID> spawnable_ids;
+	RBSet<ResourceUID::ID> spawnable_ids;
 	NodePath spawn_path;
 
 	struct SpawnInfo {

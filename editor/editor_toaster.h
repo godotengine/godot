@@ -80,7 +80,7 @@ private:
 		String tooltip;
 		int count = 0;
 	};
-	Map<Control *, Toast> toasts;
+	HashMap<Control *, Toast> toasts;
 
 	bool is_processing_error = false; // Makes sure that we don't handle errors that are triggered within the EditorToaster error processing.
 

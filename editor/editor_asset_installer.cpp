@@ -62,7 +62,7 @@ void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) 
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
-	Set<String> files_sorted;
+	RBSet<String> files_sorted;
 
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
@@ -87,7 +87,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		ret = unzGoToNextFile(pkg);
 	}
 
-	Map<String, Ref<Texture2D>> extension_guess;
+	HashMap<String, Ref<Texture2D>> extension_guess;
 	{
 		extension_guess["bmp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["dds"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
@@ -150,11 +150,11 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	root->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	root->set_text(0, "res://");
 	root->set_editable(0, true);
-	Map<String, TreeItem *> dir_map;
+	HashMap<String, TreeItem *> dir_map;
 
 	int num_file_conflicts = 0;
 
-	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
+	for (RBSet<String>::Element *E = files_sorted.front(); E; E = E->next()) {
 		String path = E->get();
 		int depth = p_depth;
 		bool skip = false;

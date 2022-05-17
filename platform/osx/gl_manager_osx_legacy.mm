@@ -167,8 +167,8 @@ void GLManager_OSX::make_current() {
 }
 
 void GLManager_OSX::swap_buffers() {
-	for (Map<DisplayServer::WindowID, GLWindow>::Element *E = windows.front(); E; E = E->next()) {
-		[E->get().context flushBuffer];
+	for (const KeyValue<DisplayServer::WindowID, GLWindow> &E : windows) {
+		[E.value.context flushBuffer];
 	}
 }
 

@@ -102,7 +102,7 @@ public:
 	virtual void add_mesh(const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices, unsigned int p_id) = 0;
 	virtual void commit() = 0;
 
-	virtual void set_mesh_filter(const Set<int> &p_mesh_ids) = 0;
+	virtual void set_mesh_filter(const RBSet<int> &p_mesh_ids) = 0;
 	virtual void clear_mesh_filter() = 0;
 
 	static Ref<StaticRaycaster> create();

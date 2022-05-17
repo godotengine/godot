@@ -140,10 +140,11 @@ size_t PListNode::get_asn1_size(uint8_t p_len_octets) const {
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_DICT: {
 			size_t size = 0;
-			for (const Map<String, Ref<PListNode>>::Element *it = data_dict.front(); it; it = it->next()) {
+
+			for (const KeyValue<String, Ref<PListNode>> &E : data_dict) {
 				size += 1 + _asn1_size_len(p_len_octets); // Sequence.
-				size += 1 + _asn1_size_len(p_len_octets) + it->key().utf8().length(); //Key.
-				size += 1 + _asn1_size_len(p_len_octets) + it->value()->get_asn1_size(p_len_octets); // Value.
+				size += 1 + _asn1_size_len(p_len_octets) + E.key.utf8().length(); //Key.
+				size += 1 + _asn1_size_len(p_len_octets) + E.value->get_asn1_size(p_len_octets); // Value.
 			}
 			return size;
 		} break;
@@ -225,13 +226,13 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 		case PList::PLNodeType::PL_NODE_TYPE_DICT: {
 			p_stream.push_back(0x31); // Set.
 			store_asn1_size(p_stream, p_len_octets);
-			for (const Map<String, Ref<PListNode>>::Element *it = data_dict.front(); it; it = it->next()) {
-				CharString cs = it->key().utf8();
+			for (const KeyValue<String, Ref<PListNode>> &E : data_dict) {
+				CharString cs = E.key.utf8();
 				uint32_t size = cs.length();
 
 				// Sequence.
 				p_stream.push_back(0x30);
-				uint32_t seq_size = 2 * (1 + _asn1_size_len(p_len_octets)) + size + it->value()->get_asn1_size(p_len_octets);
+				uint32_t seq_size = 2 * (1 + _asn1_size_len(p_len_octets)) + size + E.value->get_asn1_size(p_len_octets);
 				if (p_len_octets > 1) {
 					p_stream.push_back(0x80 + p_len_octets);
 				}
@@ -252,7 +253,7 @@ bool PListNode::store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) cons
 					p_stream.push_back(cs[i]);
 				}
 				// Value.
-				valid = valid && it->value()->store_asn1(p_stream, p_len_octets);
+				valid = valid && E.value->store_asn1(p_stream, p_len_octets);
 			}
 		} break;
 	}
@@ -317,12 +318,12 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 		case PList::PLNodeType::PL_NODE_TYPE_DICT: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<dict>\n";
-			for (const Map<String, Ref<PListNode>>::Element *it = data_dict.front(); it; it = it->next()) {
+			for (const KeyValue<String, Ref<PListNode>> &E : data_dict) {
 				p_stream += String("\t").repeat(p_indent + 1);
 				p_stream += "<key>";
-				p_stream += it->key();
+				p_stream += E.key;
 				p_stream += "</key>\n";
-				it->value()->store_text(p_stream, p_indent + 1);
+				E.value->store_text(p_stream, p_indent + 1);
 			}
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "</dict>\n";

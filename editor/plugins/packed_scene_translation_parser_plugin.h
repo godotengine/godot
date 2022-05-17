@@ -37,9 +37,9 @@ class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserP
 	GDCLASS(PackedSceneEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
 	// Scene Node's properties that contain translation strings.
-	Set<String> lookup_properties;
+	RBSet<String> lookup_properties;
 	// Properties from specific Nodes that should be ignored.
-	Map<String, Vector<String>> exception_list;
+	HashMap<String, Vector<String>> exception_list;
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;

@@ -14,7 +14,7 @@
 			<return type="void" />
 			<argument index="0" name="on_thread" type="bool" default="true" />
 			<description>
-				Bakes the [NavigationMesh]. If [code]on_thread[/code] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization.
+				Bakes the [NavigationMesh]. If [code]on_thread[/code] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization. Also, please note that baking on a separate thread is automatically disabled on operating systems that cannot use threads (such as HTML5 with threads disabled).
 			</description>
 		</method>
 		<method name="get_region_rid" qualifiers="const">

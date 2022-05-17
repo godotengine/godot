@@ -1,4 +1,4 @@
-VERSION=0.8.0
+VERSION=0.8.1
 rm -rf AUTHORS inc LICENSE src *.zip
 curl -L -O https://github.com/Samsung/thorvg/archive/refs/tags/v$VERSION.zip
 bsdtar --strip-components=1 -xvf *.zip

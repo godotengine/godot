@@ -2294,7 +2294,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					attributes["COLOR_0"] = _encode_accessor_as_color(state, a, true);
 				}
 			}
-			Map<int, int> joint_i_to_bone_i;
+			HashMap<int, int> joint_i_to_bone_i;
 			for (GLTFNodeIndex node_i = 0; node_i < state->nodes.size(); node_i++) {
 				GLTFSkinIndex skin_i = -1;
 				if (state->nodes[node_i]->mesh == gltf_mesh_i) {
@@ -2468,9 +2468,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				mat = import_mesh->get_surface_material(surface_i);
 			}
 			if (mat.is_valid()) {
-				Map<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Element *material_cache_i = state->material_cache.find(mat);
-				if (material_cache_i && material_cache_i->get() != -1) {
-					primitive["material"] = material_cache_i->get();
+				HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Iterator material_cache_i = state->material_cache.find(mat);
+				if (material_cache_i && material_cache_i->value != -1) {
+					primitive["material"] = material_cache_i->value;
 				} else {
 					GLTFMaterialIndex mat_i = state->materials.size();
 					state->materials.push_back(mat);
@@ -5904,9 +5904,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 		Node *root = ap->get_parent();
 		ERR_FAIL_COND(root == nullptr);
-		Map<GLTFNodeIndex, Node *>::Element *node_element = state->scene_nodes.find(node_index);
-		ERR_CONTINUE_MSG(node_element == nullptr, vformat("Unable to find node %d for animation", node_index));
-		node_path = root->get_path_to(node_element->get());
+		HashMap<GLTFNodeIndex, Node *>::Iterator node_element = state->scene_nodes.find(node_index);
+		ERR_CONTINUE_MSG(!node_element, vformat("Unable to find node %d for animation", node_index));
+		node_path = root->get_path_to(node_element->value);
 
 		if (gltf_node->skeleton >= 0) {
 			const Skeleton3D *sk = state->skeletons[gltf_node->skeleton]->godot_skeleton;
@@ -6116,11 +6116,11 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		if (node->mesh < 0) {
 			continue;
 		}
-		Map<GLTFNodeIndex, Node *>::Element *mi_element = state->scene_nodes.find(mi_node_i);
+		HashMap<GLTFNodeIndex, Node *>::Iterator mi_element = state->scene_nodes.find(mi_node_i);
 		if (!mi_element) {
 			continue;
 		}
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(mi_element->get());
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(mi_element->value);
 		if (!mi) {
 			continue;
 		}
@@ -6250,11 +6250,11 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 		if (node->skin >= 0 && node->mesh >= 0) {
 			const GLTFSkinIndex skin_i = node->skin;
 
-			Map<GLTFNodeIndex, Node *>::Element *mi_element = state->scene_nodes.find(node_i);
-			ERR_CONTINUE_MSG(mi_element == nullptr, vformat("Unable to find node %d", node_i));
+			HashMap<GLTFNodeIndex, Node *>::Iterator mi_element = state->scene_nodes.find(node_i);
+			ERR_CONTINUE_MSG(!mi_element, vformat("Unable to find node %d", node_i));
 
-			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(mi_element->get());
-			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, mi_element->get()->get_class_name()));
+			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(mi_element->value);
+			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, mi_element->value->get_class_name()));
 
 			const GLTFSkeletonIndex skel_i = state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
@@ -6436,10 +6436,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (const KeyValue<GLTFNodeIndex, Node *> &position_scene_node_i : state->scene_nodes) {
 				if (position_scene_node_i.value == node) {
 					GLTFNodeIndex node_index = position_scene_node_i.key;
-					Map<int, GLTFAnimation::Track>::Element *position_track_i = gltf_animation->get_tracks().find(node_index);
+					HashMap<int, GLTFAnimation::Track>::Iterator position_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (position_track_i) {
-						track = position_track_i->get();
+						track = position_track_i->value;
 					}
 					track = _convert_animation_track(state, track, animation, track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
@@ -6452,10 +6452,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (const KeyValue<GLTFNodeIndex, Node *> &rotation_degree_scene_node_i : state->scene_nodes) {
 				if (rotation_degree_scene_node_i.value == node) {
 					GLTFNodeIndex node_index = rotation_degree_scene_node_i.key;
-					Map<int, GLTFAnimation::Track>::Element *rotation_degree_track_i = gltf_animation->get_tracks().find(node_index);
+					HashMap<int, GLTFAnimation::Track>::Iterator rotation_degree_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (rotation_degree_track_i) {
-						track = rotation_degree_track_i->get();
+						track = rotation_degree_track_i->value;
 					}
 					track = _convert_animation_track(state, track, animation, track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
@@ -6468,10 +6468,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (const KeyValue<GLTFNodeIndex, Node *> &scale_scene_node_i : state->scene_nodes) {
 				if (scale_scene_node_i.value == node) {
 					GLTFNodeIndex node_index = scale_scene_node_i.key;
-					Map<int, GLTFAnimation::Track>::Element *scale_track_i = gltf_animation->get_tracks().find(node_index);
+					HashMap<int, GLTFAnimation::Track>::Iterator scale_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (scale_track_i) {
-						track = scale_track_i->get();
+						track = scale_track_i->value;
 					}
 					track = _convert_animation_track(state, track, animation, track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
@@ -6503,7 +6503,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 				}
 			}
 			ERR_CONTINUE(mesh_index == -1);
-			Map<int, GLTFAnimation::Track> &tracks = gltf_animation->get_tracks();
+			HashMap<int, GLTFAnimation::Track> &tracks = gltf_animation->get_tracks();
 			GLTFAnimation::Track track = gltf_animation->get_tracks().has(mesh_index) ? gltf_animation->get_tracks()[mesh_index] : GLTFAnimation::Track();
 			if (!tracks.has(mesh_index)) {
 				for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
@@ -6565,10 +6565,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 						continue;
 					}
 					GLTFNodeIndex node_i = skeleton_gltf->godot_bone_node[bone];
-					Map<int, GLTFAnimation::Track>::Element *property_track_i = gltf_animation->get_tracks().find(node_i);
+					HashMap<int, GLTFAnimation::Track>::Iterator property_track_i = gltf_animation->get_tracks().find(node_i);
 					GLTFAnimation::Track track;
 					if (property_track_i) {
-						track = property_track_i->get();
+						track = property_track_i->value;
 					}
 					track = _convert_animation_track(state, track, animation, track_i, node_i);
 					gltf_animation->get_tracks()[node_i] = track;
@@ -6580,10 +6580,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : state->scene_nodes) {
 				if (scene_node_i.value == godot_node) {
 					GLTFNodeIndex node_i = scene_node_i.key;
-					Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_i);
+					HashMap<int, GLTFAnimation::Track>::Iterator node_track_i = gltf_animation->get_tracks().find(node_i);
 					GLTFAnimation::Track track;
 					if (node_track_i) {
-						track = node_track_i->get();
+						track = node_track_i->value;
 					}
 					track = _convert_animation_track(state, track, animation, track_i, node_i);
 					gltf_animation->get_tracks()[node_i] = track;

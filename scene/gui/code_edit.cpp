@@ -740,7 +740,7 @@ void CodeEdit::set_auto_indent_prefixes(const TypedArray<String> &p_prefixes) {
 
 TypedArray<String> CodeEdit::get_auto_indent_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const Set<char32_t>::Element *E = auto_indent_prefixes.front(); E; E = E->next()) {
+	for (const RBSet<char32_t>::Element *E = auto_indent_prefixes.front(); E; E = E->next()) {
 		prefixes.push_back(String::chr(E->get()));
 	}
 	return prefixes;
@@ -1628,7 +1628,7 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 	start_position.y = -1;
 	start_position.x = -1;
 
-	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value()) != -1;
+	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->get()) != -1;
 
 	/* Check the keys for this line. */
 	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
@@ -1752,7 +1752,7 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 
 TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const Set<char32_t>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
+	for (const RBSet<char32_t>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
 		prefixes.push_back(String::chr(E->get()));
 	}
 	return prefixes;
@@ -2402,7 +2402,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 			}
 		} else {
 			for (int i = start_line; i < end_line; i++) {
-				delimiter_cache.insert(i, Map<int, int>());
+				delimiter_cache.insert(i, RBMap<int, int>());
 			}
 		}
 	}
@@ -2539,7 +2539,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 
 	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
 	bool in_region = region != -1 && delimiters[region].type == p_type;
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
+	for (RBMap<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
 		/* If column is specified, loop until the key is larger then the column. */
 		if (p_column != -1) {
 			if (E->key() > p_column) {

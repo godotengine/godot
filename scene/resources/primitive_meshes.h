@@ -31,7 +31,9 @@
 #ifndef PRIMITIVE_MESHES_H
 #define PRIMITIVE_MESHES_H
 
+#include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "servers/text_server.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
 
@@ -445,6 +447,130 @@ public:
 	virtual Transform3D get_builtin_bind_pose(int p_index) const override;
 
 	RibbonTrailMesh();
+};
+
+/**
+	Text...
+*/
+
+class TextMesh : public PrimitiveMesh {
+	GDCLASS(TextMesh, PrimitiveMesh);
+
+private:
+	struct ContourPoint {
+		Vector2 point;
+		bool sharp = false;
+
+		ContourPoint(){};
+		ContourPoint(const Vector2 &p_pt, bool p_sharp) {
+			point = p_pt;
+			sharp = p_sharp;
+		};
+	};
+	struct ContourInfo {
+		real_t length = 0.0;
+		bool ccw = true;
+		ContourInfo(){};
+		ContourInfo(real_t p_len, bool p_ccw) {
+			length = p_len;
+			ccw = p_ccw;
+		}
+	};
+	struct GlyphMeshData {
+		Vector<Vector2> triangles;
+		Vector<Vector<ContourPoint>> contours;
+		Vector<ContourInfo> contours_info;
+		Vector2 min_p = Vector2(INFINITY, INFINITY);
+		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+	};
+	mutable HashMap<uint32_t, GlyphMeshData> cache;
+
+	RID text_rid;
+	String text;
+	String xl_text;
+
+	int font_size = 16;
+	Ref<Font> font_override;
+	float width = 500.0;
+
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
+	bool uppercase = false;
+	Dictionary opentype_features;
+	String language;
+	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+	Array st_args;
+
+	real_t depth = 0.05;
+	real_t pixel_size = 0.01;
+	real_t curve_step = 0.5;
+
+	mutable bool dirty_text = true;
+	mutable bool dirty_font = true;
+	mutable bool dirty_cache = true;
+
+	void _generate_glyph_mesh_data(uint32_t p_hash, const Glyph &p_glyph) const;
+	void _font_changed();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+
+	TextMesh();
+	~TextMesh();
+
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
+
+	void set_text(const String &p_string);
+	String get_text() const;
+
+	void set_font(const Ref<Font> &p_font);
+	Ref<Font> get_font() const;
+	Ref<Font> _get_font_or_default() const;
+
+	void set_font_size(int p_size);
+	int get_font_size() const;
+
+	void set_text_direction(TextServer::Direction p_text_direction);
+	TextServer::Direction get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
+
+	void set_structured_text_bidi_override_options(Array p_args);
+	Array get_structured_text_bidi_override_options() const;
+
+	void set_uppercase(bool p_uppercase);
+	bool is_uppercase() const;
+
+	void set_width(real_t p_width);
+	real_t get_width() const;
+
+	void set_depth(real_t p_depth);
+	real_t get_depth() const;
+
+	void set_curve_step(real_t p_step);
+	real_t get_curve_step() const;
+
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
 };
 
 VARIANT_ENUM_CAST(RibbonTrailMesh::Shape)

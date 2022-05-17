@@ -45,8 +45,8 @@
 #include "gltf_texture.h"
 
 #include "core/io/resource.h"
-#include "core/templates/map.h"
 #include "core/templates/pair.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
@@ -72,7 +72,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
-	Map<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
+	HashMap<Ref<BaseMaterial3D>, GLTFMaterialIndex> material_cache;
 	Vector<Ref<BaseMaterial3D>> materials;
 
 	String scene_name;
@@ -83,16 +83,16 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
 	Vector<Ref<GLTFLight>> lights;
-	Set<String> unique_names;
-	Set<String> unique_animation_names;
+	RBSet<String> unique_names;
+	RBSet<String> unique_animation_names;
 
 	Vector<Ref<GLTFSkeleton>> skeletons;
-	Map<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
+	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
-	Map<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, Node *> scene_nodes;
 
-	Map<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
-	Map<ObjectID, Map<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
+	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
 
 protected:
 	static void _bind_methods();
@@ -176,7 +176,7 @@ public:
 
 	AnimationPlayer *get_animation_player(int idx);
 
-	//void set_scene_nodes(Map<GLTFNodeIndex, Node *> p_scene_nodes) {
+	//void set_scene_nodes(RBMap<GLTFNodeIndex, Node *> p_scene_nodes) {
 	//	this->scene_nodes = p_scene_nodes;
 	//}
 
@@ -184,10 +184,10 @@ public:
 	//	this->animation_players = p_animation_players;
 	//}
 
-	//Map<Ref<Material>, GLTFMaterialIndex> get_material_cache() {
+	//RBMap<Ref<Material>, GLTFMaterialIndex> get_material_cache() {
 	//	return this->material_cache;
 	//}
-	//void set_material_cache(Map<Ref<Material>, GLTFMaterialIndex> p_material_cache) {
+	//void set_material_cache(RBMap<Ref<Material>, GLTFMaterialIndex> p_material_cache) {
 	//	this->material_cache = p_material_cache;
 	//}
 };

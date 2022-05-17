@@ -39,11 +39,11 @@ class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
 
 public:
-	Map<StringName, Variant> values;
+	HashMap<StringName, Variant> values;
 	List<PropertyInfo> properties;
 	Ref<ResourceImporter> importer;
 	Vector<String> paths;
-	Set<StringName> checked;
+	RBSet<StringName> checked;
 	bool checking;
 	String base_options_path;
 
@@ -193,8 +193,8 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	clear();
 
 	// Use the value that is repeated the most.
-	Map<String, Dictionary> value_frequency;
-	Set<String> extensions;
+	HashMap<String, Dictionary> value_frequency;
+	RBSet<String> extensions;
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;

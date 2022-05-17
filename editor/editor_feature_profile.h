@@ -56,11 +56,11 @@ public:
 	};
 
 private:
-	Set<StringName> disabled_classes;
-	Set<StringName> disabled_editors;
-	Map<StringName, Set<StringName>> disabled_properties;
+	RBSet<StringName> disabled_classes;
+	RBSet<StringName> disabled_editors;
+	HashMap<StringName, RBSet<StringName>> disabled_properties;
 
-	Set<StringName> collapsed_classes;
+	RBSet<StringName> collapsed_classes;
 
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];

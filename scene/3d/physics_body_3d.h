@@ -212,7 +212,7 @@ private:
 
 	struct ContactMonitor {
 		bool locked = false;
-		Map<ObjectID, BodyState> body_map;
+		HashMap<ObjectID, BodyState> body_map;
 	};
 
 	ContactMonitor *contact_monitor = nullptr;
@@ -714,7 +714,9 @@ public:
 	const JointData *get_joint_data() const;
 	Skeleton3D *find_skeleton_parent();
 
-	int get_bone_id() const { return bone_id; }
+	int get_bone_id() const {
+		return bone_id;
+	}
 
 	void set_joint_type(JointType p_joint_type);
 	JointType get_joint_type() const;

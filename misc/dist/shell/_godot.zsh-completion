@@ -61,8 +61,8 @@ _arguments \
   '(-b --breakpoints)'{-b,--breakpoints}'[specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)]:breakpoint list' \
   '--profiling[enable profiling in the script debugger]' \
   '--gpu-profile[show a GPU profile of the tasks that took the most time during frame rendering]' \
-  '--vk-layers[enable Vulkan validation layers for debugging]' \
-  '--gpu-abort[abort on GPU errors (usually validation layer errors)]' \
+  '--gpu-validation[enable graphics API validation layers for debugging]' \
+  '--gpu-abort[abort on graphics API usage errors (usually validation layer errors)]' \
   '--remote-debug[enable remote debugging]:remote debugger address' \
   '--debug-collisions[show collision shapes when running the scene]' \
   '--debug-navigation[show navigation polygons when running the scene]' \

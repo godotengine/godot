@@ -103,9 +103,9 @@ class SceneImportSettings : public ConfirmationDialog {
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
 
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, MaterialData> material_map;
+	HashMap<String, MaterialData> material_map;
 
 	struct MeshData {
 		bool has_import_id;
@@ -116,31 +116,31 @@ class SceneImportSettings : public ConfirmationDialog {
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, MeshData> mesh_map;
+	HashMap<String, MeshData> mesh_map;
 
 	struct AnimationData {
 		Ref<Animation> animation;
 		TreeItem *scene_node = nullptr;
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, AnimationData> animation_map;
+	HashMap<String, AnimationData> animation_map;
 
 	struct NodeData {
 		Node *node = nullptr;
 		TreeItem *scene_node = nullptr;
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, NodeData> node_map;
+	HashMap<String, NodeData> node_map;
 
 	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
 	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
-	Set<Ref<Mesh>> mesh_set;
-	Set<Ref<Material>> material_set;
+	RBSet<Ref<Mesh>> mesh_set;
+	RBSet<Ref<Material>> material_set;
 
 	String selected_type;
 	String selected_id;
@@ -156,7 +156,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> defaults;
 
 	SceneImportSettingsData *scene_import_settings_data = nullptr;
 
@@ -187,7 +187,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Dictionary base_subresource_settings;
 
-	void _load_default_subresource_settings(Map<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
+	void _load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
 
 	bool editing_animation = false;
 

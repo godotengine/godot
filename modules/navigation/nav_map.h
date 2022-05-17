@@ -34,7 +34,7 @@
 #include "nav_rid.h"
 
 #include "core/math/math_defs.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/thread_work_pool.h"
 #include "nav_utils.h"
 

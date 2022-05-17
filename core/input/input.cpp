@@ -227,8 +227,8 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<StringName, Input::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed) {
+	for (const KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed) {
 			return true;
 		}
 	}
@@ -272,65 +272,65 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return false;
 	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+		return E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
+		return E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return false;
 	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+		return !E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
+		return !E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return 0.0f;
 	}
 
-	return E->get().strength;
+	return E->value.strength;
 }
 
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return 0.0f;
 	}
 
-	return E->get().raw_strength;
+	return E->value.raw_strength;
 }
 
 float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
@@ -1403,12 +1403,12 @@ String Input::get_joy_guid(int p_device) const {
 
 Array Input::get_connected_joypads() {
 	Array ret;
-	Map<int, Joypad>::Element *elem = joy_names.front();
+	HashMap<int, Joypad>::Iterator elem = joy_names.begin();
 	while (elem) {
-		if (elem->get().connected) {
-			ret.push_back(elem->key());
+		if (elem->value.connected) {
+			ret.push_back(elem->key);
 		}
-		elem = elem->next();
+		++elem;
 	}
 	return ret;
 }

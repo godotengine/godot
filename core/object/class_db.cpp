@@ -1390,7 +1390,7 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 }
 
 HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
-Set<StringName> ClassDB::default_values_cached;
+RBSet<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 	if (!default_values_cached.has(p_class)) {
@@ -1492,7 +1492,7 @@ void ClassDB::unregister_extension_class(const StringName &p_class) {
 	classes.erase(p_class);
 }
 
-Map<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
+HashMap<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
 void ClassDB::register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size) {
 	NativeStruct ns;
 	ns.ccode = p_code;

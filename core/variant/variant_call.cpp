@@ -919,11 +919,11 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		Map<StringName, int> value;
+		HashMap<StringName, int> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
-		Map<StringName, Variant> variant_value;
+		HashMap<StringName, Variant> variant_value;
 #ifdef DEBUG_ENABLED
 		List<StringName> variant_value_ordered;
 #endif
@@ -1281,14 +1281,14 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	Map<StringName, int>::Element *E = cd.value.find(p_value);
+	HashMap<StringName, int>::Iterator E = cd.value.find(p_value);
 	if (!E) {
-		Map<StringName, Variant>::Element *F = cd.variant_value.find(p_value);
+		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return F->get();
+			return F->value;
 		} else {
 			return -1;
 		}
@@ -1297,7 +1297,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 		*r_valid = true;
 	}
 
-	return E->get();
+	return E->value;
 }
 
 #ifdef DEBUG_METHODS_ENABLED

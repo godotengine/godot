@@ -200,7 +200,7 @@ private:
 
 	struct ContactMonitor {
 		bool locked = false;
-		Map<ObjectID, BodyState> body_map;
+		HashMap<ObjectID, BodyState> body_map;
 	};
 
 	ContactMonitor *contact_monitor = nullptr;

@@ -120,22 +120,22 @@ private:
 	bool drag_erasing = false;
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
-	Map<Vector2i, TileMapCell> drag_modified;
+	HashMap<Vector2i, TileMapCell> drag_modified;
 
 	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
-	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
-	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
-	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
 
 	///// Selection system. /////
-	Set<Vector2i> tile_map_selection;
+	RBSet<Vector2i> tile_map_selection;
 	Ref<TileMapPattern> tile_map_clipboard;
 	Ref<TileMapPattern> selection_pattern;
 	void _set_tile_map_selection(const TypedArray<Vector2i> &p_selection);
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 
-	Set<TileMapCell> tile_set_selection;
+	RBSet<TileMapCell> tile_set_selection;
 
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_tiles_selection();
@@ -265,14 +265,14 @@ private:
 	bool drag_erasing = false;
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
-	Map<Vector2i, TileMapCell> drag_modified;
+	HashMap<Vector2i, TileMapCell> drag_modified;
 
 	// Painting
-	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const;
-	Map<Vector2i, TileMapCell> _draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
-	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
-	Set<Vector2i> _get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous);
-	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_terrains(const HashMap<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const;
+	HashMap<Vector2i, TileMapCell> _draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	RBSet<Vector2i> _get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous);
+	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
 
 	int selected_terrain_set = -1;
@@ -284,7 +284,7 @@ private:
 	ItemList *terrains_tile_list = nullptr;
 
 	// Cache.
-	LocalVector<LocalVector<Set<TileSet::TerrainsPattern>>> per_terrain_terrains_patterns;
+	LocalVector<LocalVector<RBSet<TileSet::TerrainsPattern>>> per_terrain_terrains_patterns;
 
 	// Update functions.
 	void _update_terrains_cache();

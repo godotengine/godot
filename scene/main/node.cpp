@@ -1637,7 +1637,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 		return const_cast<Node *>(p_node);
 	}
 
-	Set<const Node *> visited;
+	RBSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -1669,7 +1669,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 		return NodePath(".");
 	}
 
-	Set<const Node *> visited;
+	RBSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -1763,15 +1763,15 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 void Node::remove_from_group(const StringName &p_identifier) {
 	ERR_FAIL_COND(!data.grouped.has(p_identifier));
 
-	Map<StringName, GroupData>::Element *E = data.grouped.find(p_identifier);
+	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
 	ERR_FAIL_COND(!E);
 
 	if (data.tree) {
-		data.tree->remove_from_group(E->key(), this);
+		data.tree->remove_from_group(E->key, this);
 	}
 
-	data.grouped.erase(E);
+	data.grouped.remove(E);
 }
 
 Array Node::_get_groups() const {
@@ -2042,7 +2042,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 }
 #endif
 
-void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+void Node::get_storable_properties(RBSet<StringName> &r_storable_properties) const {
 	List<PropertyInfo> pi;
 	get_property_list(&pi);
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
@@ -2088,7 +2088,7 @@ bool Node::get_scene_instance_load_placeholder() const {
 	return data.use_placeholder;
 }
 
-Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
+Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) const {
 	Node *node = nullptr;
 
 	bool instantiated = false;
@@ -2280,11 +2280,11 @@ Node *Node::duplicate(int p_flags) const {
 }
 
 #ifdef TOOLS_ENABLED
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, Map<Ref<Resource>, Ref<Resource>>());
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const {
+	return duplicate_from_editor(r_duplimap, HashMap<Ref<Resource>, Ref<Resource>>());
 }
 
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
@@ -2300,7 +2300,7 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const M
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2326,7 +2326,7 @@ void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resou
 	}
 }
 
-void Node::remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
