@@ -353,8 +353,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2021, University of Cambridge
- 2009-2021, Zoltan Herczeg
+Copyright: 1997-2022, University of Cambridge
+ 2009-2022, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
