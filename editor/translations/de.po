@@ -80,13 +80,14 @@
 # Andreas <self@andreasbresser.de>, 2022.
 # ARez <dark.gaming@fantasymail.de>, 2022.
 # Christian Packenius <christian@packenius.com>, 2022.
+# Sajeg <jfx@posteo.de>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-30 17:12+0000\n"
-"Last-Translator: Christian Packenius <christian@packenius.com>\n"
+"PO-Revision-Date: 2022-05-17 17:18+0000\n"
+"Last-Translator: Sajeg <jfx@posteo.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -94,7 +95,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -148,11 +149,12 @@ msgstr "Maximale Fenstergröße"
 msgid "Screen Orientation"
 msgstr "Bildschirmausrichtung"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Fenster"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Rahmenlos"
 
@@ -160,7 +162,7 @@ msgstr "Rahmenlos"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Pixelweise Transparenz aktiviert"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "Vollbildmodus"
 
@@ -172,7 +174,7 @@ msgstr "Maximiert"
 msgid "Minimized"
 msgstr "Minimiert"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Verstellbar"
@@ -185,10 +187,11 @@ msgstr "Verstellbar"
 msgid "Position"
 msgstr "Position"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -638,6 +641,39 @@ msgstr "Eigenes Nutzerverzeichnis verwenden"
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "Eigener Nutzerverzeichnisname"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr "Anzeige"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Breite"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "Höhe"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "Immer im Vordergrund"
+
+#: core/project_settings.cpp
+msgid "Test Width"
+msgstr "Testbreite"
+
+#: core/project_settings.cpp
+msgid "Test Height"
+msgstr "Testhöhe"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1216,7 +1252,7 @@ msgstr "Diese Spur an-/abschalten."
 msgid "Update Mode (How this property is set)"
 msgstr "Aktualisierungs-Modus (wie Eigenschaften gesetzt werden)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Interpolationsmodus"
 
@@ -6004,6 +6040,11 @@ msgstr ""
 msgid "Flat"
 msgstr "Flach"
 
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Schieber"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Selektiere Node(s) für den Import"
@@ -6704,7 +6745,6 @@ msgid "Delimiter"
 msgstr "Trennzeichen"
 
 #: editor/import/resource_importer_layered_texture.cpp
-#, fuzzy
 msgid "ColorCorrect"
 msgstr "Farbkorrektur"
 
@@ -6995,14 +7035,12 @@ msgid "Saving..."
 msgstr "Speichere..."
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D, Detect 3D"
-msgstr "3D erkennen"
+msgstr "2D, 3D erkennen"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D Pixel"
-msgstr "Festkörper-Pixel"
+msgstr "2D-Pixel"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -8336,7 +8374,7 @@ msgstr "Testphase"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "Die Repository-Konfiguration konnte nicht abgerufen werden."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -10070,8 +10108,9 @@ msgid "Sync Bones to Polygon"
 msgstr "Knochen mit Polygon synchronisieren"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Set cast_to"
-msgstr ""
+msgstr "Setzte cast_to"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -15017,16 +15056,16 @@ msgstr "Lokal machen"
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Another node already uses this unique name in the scene."
 msgstr ""
+"Ein anderes Node nutzt schon diesen einzigartigen Namen in dieser Szene."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name"
-msgstr "Eindeutiger Name"
+msgstr "Einzigartigen Namen der Szene aktivieren"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 #, fuzzy
 msgid "Disable Scene Unique Name"
-msgstr "Eindeutiger Name"
+msgstr "Szene eindeutiger Name deaktivieren"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15101,8 +15140,9 @@ msgid "Sub-Resources"
 msgstr "Unter-Ressourcen"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Access as Scene Unique Name"
-msgstr ""
+msgstr "Zugrif als einzigartige Szene"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15899,38 +15939,6 @@ msgstr "Rückfall auf GLES2"
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr "Nvidia-Rechtecksflackern-Abhilfe verwenden"
-
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr "Anzeige"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Breite"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "Höhe"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "Immer im Vordergrund"
-
-#: main/main.cpp
-msgid "Test Width"
-msgstr "Testbreite"
-
-#: main/main.cpp
-msgid "Test Height"
-msgstr "Testhöhe"
 
 #: main/main.cpp
 msgid "DPI"
@@ -20046,6 +20054,11 @@ msgstr ""
 "Ungültiges Polygon. Mindestens zwei Punkte werden im ‚Segment‘-Baumodus "
 "benötigt."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Build Mode"
 msgstr "Baumodus"
@@ -21715,9 +21728,10 @@ msgid "NavMesh"
 msgstr "NavMesh backen"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 "Der einzige Zweck eines NavigationObstacle ist es, Kollisionsvermeidung für "
 "ein Spatial-Objekt bereitzustellen."
@@ -23754,6 +23768,11 @@ msgid "Pause Mode"
 msgstr "Pausiermodus"
 
 #: scene/main/node.cpp
+#, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Physikinterpolation"
+
+#: scene/main/node.cpp
 msgid "Display Folded"
 msgstr "Eingeklappt anzeigen"
 
@@ -23781,10 +23800,6 @@ msgstr "Mehrspieler benutzerdefiniert"
 #: scene/main/node.cpp
 msgid "Process Priority"
 msgstr "Prozesspriorität"
-
-#: scene/main/node.cpp
-msgid "Physics Interpolated"
-msgstr "Physikinterpoliert"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 msgid "Time Left"
@@ -24398,6 +24413,11 @@ msgstr "Benannter Trenner Links"
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Labeled Separator Right"
 msgstr "Benannter Trenner Rechts"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Schriftfarbe Trenner"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Accel"
@@ -25078,6 +25098,11 @@ msgstr "Anstieg"
 #: scene/resources/font.cpp
 msgid "Distance Field"
 msgstr "Distanzfeld"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Kartendaten"
 
 #: scene/resources/gradient.cpp
 msgid "Offsets"
