@@ -6,7 +6,7 @@
 # Georgios Katsanakis <geo.elgeo@gmail.com>, 2019.
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
-# Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
+# Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020, 2022.
 # pandektis <pandektis@gmail.com>, 2020.
 # KostasMSC <kargyris@athtech.gr>, 2020.
 # lawfulRobot <czavantias@gmail.com>, 2020, 2021.
@@ -22,8 +22,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-05 10:10+0000\n"
-"Last-Translator: Anthony V. <batmanplayer123@gmail.com>\n"
+"PO-Revision-Date: 2022-05-07 05:11+0000\n"
+"Last-Translator: Overloaded @ Orama Interactive <manoschool@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -88,11 +88,12 @@ msgstr "Μέγιστο Μέγεθος Παραθύρου"
 msgid "Screen Orientation"
 msgstr "Προσανατολισμός οθόνης"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Παράθυρο"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Xωρίς σύνορα"
 
@@ -100,7 +101,7 @@ msgstr "Xωρίς σύνορα"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Διαφάνεια ανά εικονοστοιχείο Ενεργοποιημένη"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "Πλήρης οθόνη"
 
@@ -112,7 +113,7 @@ msgstr "Μεγιστοποιημένη"
 msgid "Minimized"
 msgstr "Ελαχιστοποίηση"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Mεταβλητό Mέγεθος"
@@ -126,10 +127,11 @@ msgstr "Mεταβλητό Mέγεθος"
 msgid "Position"
 msgstr "Θέση"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -595,6 +597,43 @@ msgstr "Χρήση Προσαρμοσμένης Διεύθυνση Καταλό�
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "Όνομα διεύθυνσης προσαρμοσμένου χρήστη"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Display"
+msgstr "Εμφάνιση όλων"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr ""
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Height"
+msgstr "Φως"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "Ευρεία Αριστερά"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "Δοκιμαστικά"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1204,7 +1243,7 @@ msgstr "Εναλλαγή κομματιού on/off."
 msgid "Update Mode (How this property is set)"
 msgstr "Μέθοδος ανανέωσης (της ιδιότητας)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Μέθοδος παρεμβολής"
 
@@ -6169,6 +6208,11 @@ msgstr ""
 #, fuzzy
 msgid "Flat"
 msgstr "Επίπεδο 0"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Λειτουργία Σύγκρουσης"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -14701,7 +14745,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
-msgstr ""
+msgstr "Φυσικό πλήκτρο"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -14749,7 +14793,7 @@ msgstr "Όλες οι Συσκευές"
 
 #: editor/project_settings_editor.cpp
 msgid " (Physical)"
-msgstr ""
+msgstr " (Φυσικό)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -16314,42 +16358,6 @@ msgstr ""
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
-
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
-msgid "Display"
-msgstr "Εμφάνιση όλων"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr ""
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-#, fuzzy
-msgid "Height"
-msgstr "Φως"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr ""
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "Ευρεία Αριστερά"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "Δοκιμαστικά"
 
 #: main/main.cpp
 msgid "DPI"
@@ -20788,6 +20796,11 @@ msgstr ""
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -22643,7 +22656,7 @@ msgstr "Ψήσιμο NavMesh"
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 
 #: scene/3d/occluder.cpp
@@ -24911,6 +24924,11 @@ msgstr "Λειτουργία Μετακίνησης Κάμερας"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Μέθοδος παρεμβολής"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "Εμφάνιση χωρίς σκιές"
 
@@ -24943,11 +24961,6 @@ msgstr "Ορισμός πολλών:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "Επεξεργασία Προτεραιότητας"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "Μέθοδος παρεμβολής"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25654,6 +25667,11 @@ msgstr "Ονομασμένο Διαχωριστικό"
 #, fuzzy
 msgid "Labeled Separator Right"
 msgstr "Ονομασμένο Διαχωριστικό"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Τελεστής χρώματος."
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26460,6 +26478,11 @@ msgstr "Πρόσφατα:"
 #, fuzzy
 msgid "Distance Field"
 msgstr "Λειτουργία χωρίς διάσπαση προσοχής"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Βάθος"
 
 #: scene/resources/gradient.cpp
 #, fuzzy

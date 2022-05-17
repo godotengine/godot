@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-30 23:27+0000\n"
+"PO-Revision-Date: 2022-05-15 20:00+0000\n"
 "Last-Translator: Alessandro Casalino <alessandro.casalino93@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -82,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -136,11 +136,12 @@ msgstr "Dimensione Massima Finestra"
 msgid "Screen Orientation"
 msgstr "Orientazione Schermo"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Finestra"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Senza contorno"
 
@@ -148,7 +149,7 @@ msgstr "Senza contorno"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Trasparenza A Livello Di Pixel Abilitata"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "Schermo intero"
 
@@ -160,7 +161,7 @@ msgstr "Massimizzata"
 msgid "Minimized"
 msgstr "Minimizzata"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Ridimensionabile"
@@ -173,10 +174,11 @@ msgstr "Ridimensionabile"
 msgid "Position"
 msgstr "Posizione"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -625,6 +627,41 @@ msgstr "Utilizza Percorso Utente Personalizzato"
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "Nome Personalizzato del Percorso Utente"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr "Display"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Larghezza"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "Altezza"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "Sempre In Primo Piano"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "Larghezza Test"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "Altezza Test"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1203,7 +1240,7 @@ msgstr "Abilita/Disabilita questa traccia."
 msgid "Update Mode (How this property is set)"
 msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Modalità d'interpolazione"
 
@@ -4349,7 +4386,7 @@ msgstr "Explorer di risorse orfane…"
 
 #: editor/editor_node.cpp
 msgid "Reload Current Project"
-msgstr "Rinomina il progetto corrente"
+msgstr "Ricarica il Progetto Corrente"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -5996,6 +6033,11 @@ msgstr ""
 msgid "Flat"
 msgstr "Flat"
 
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Modalità Collisioni"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Scegli Nodo(i) da Importare"
@@ -6992,14 +7034,12 @@ msgid "Saving..."
 msgstr "Salvataggio..."
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D, Detect 3D"
-msgstr "Rileva 3D"
+msgstr "2D, Rileva 3D"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D Pixel"
-msgstr "Pixel Solidi"
+msgstr "Pixel 2D"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
@@ -7769,9 +7809,8 @@ msgid "New"
 msgstr "Nuovo"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Paste As Reference"
-msgstr "%s Riferimento di classe"
+msgstr "Incolla Come Reference"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -8334,7 +8373,7 @@ msgstr "Testing"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "Impossibile recuperare la configurazione del repository."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9435,7 +9474,7 @@ msgstr ""
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Crea Singolo Fratello di Collisione Convessa"
+msgstr "Crea Fratello di Collisione Convessa Semplificato"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -9466,17 +9505,16 @@ msgid "Create Outline Mesh..."
 msgstr "Crea Mesh di Outline..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a static outline mesh. The outline mesh will have its normals "
 "flipped automatically.\n"
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
-"Crea intorno una mesh statica. Questa mesh avrà le suoe normali invertite "
+"Crea una mesh di contorno statica. Questa mesh avrà le sue normali invertite "
 "automaticamente.\n"
-"Questo puó essere usato come sostitutivo per la proprietà Grow (ingrandisci) "
-"delle SpatialMaterial quando questa non é disponibile."
+"Può essere utilizzata al posto della proprietà Grow (ingrandisci) delle "
+"SpatialMaterial quando questa non è disponibile."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -10075,7 +10113,7 @@ msgstr "Sincronizza Ossa a Poligono"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
 msgid "Set cast_to"
-msgstr ""
+msgstr "Imposta cast_to"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -10128,9 +10166,8 @@ msgid "ResourcePreloader"
 msgstr "ResourcePreloader"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portals"
-msgstr "Ribalta orizzontalmente"
+msgstr "Ribalta Portali"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Room Generate Points"
@@ -10141,14 +10178,13 @@ msgid "Generate Points"
 msgstr "Genera punti"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portal"
-msgstr "Ribalta orizzontalmente"
+msgstr "Ribalta Portale"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Azzera la trasformazione"
+msgstr "Trasformazione dell'Insieme dell'Occlusore"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Center Node"
@@ -10337,7 +10373,7 @@ msgstr "Importa tema..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr "Ricarica tema"
+msgstr "Ricarica Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
@@ -10438,9 +10474,8 @@ msgid "Exec Path"
 msgstr "Percorso di Esecuzione"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Script Temperature Enabled"
-msgstr "Seleziona File Modello"
+msgstr "Temperatura dello Script Abilitata"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Highlight Current Script"
@@ -10448,7 +10483,7 @@ msgstr "Evidenzia Script Attuale"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script Temperature History Size"
-msgstr ""
+msgstr "Dimensione Storico della Temperatura dello Script"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Current Script Background Color"
@@ -10705,9 +10740,8 @@ msgid "Reset to Rest Pose"
 msgstr "Ripristina a Posizione di Riposo"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Sovrascrivi Scena esistente"
+msgstr "Sovrascrivi Posa a Riposo"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -10790,7 +10824,6 @@ msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid " [portals active]"
 msgstr " [portali attivi]"
 
@@ -10887,7 +10920,6 @@ msgid "Vertices:"
 msgstr "Vertici:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "FPS: %d (%s ms)"
 msgstr "FPS: %d (%s ms)"
 
@@ -11095,8 +11127,9 @@ msgid "Use Snap"
 msgstr "Usa Scatto"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "Converte stanze per culling del portale."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -11294,12 +11327,14 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Size"
-msgstr ""
+msgstr "Dimensione Gizmo Di Controllo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Opacity"
-msgstr ""
+msgstr "Opacità Gizmo Di Controllo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Show Viewport Rotation Gizmo"
@@ -11754,15 +11789,17 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Type"
-msgstr "Rimuovi Tile"
+msgstr "Rimuovi Tipo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
 msgstr ""
+"Seleziona un tipo di tema dalla lista per editare i suoi elementi.\n"
+"Puoi aggiungere un tipo personalizzato o importare un tipo con i suoi "
+"elementi da un altro tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Color Items"
@@ -11797,14 +11834,12 @@ msgstr ""
 "Aggiungici più elementi manualmente o importando da un altro tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Theme Type"
-msgstr "Aggiungi Tipo Elemento"
+msgstr "Aggiungi Tipo Di Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Theme Type"
-msgstr "Rimuovi da Remoto"
+msgstr "Rimuovi Tipo Di Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Color Item"
@@ -12002,12 +12037,15 @@ msgstr "Sovrascrivi tutti gli elementi predefiniti."
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
 msgstr ""
+"Seleziona la variazione del tipo base da una lista di tipi disponibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Un tipo associato ad una classe integrata non può essere indicato come "
+"variazione di un altro tipo."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -12034,10 +12072,13 @@ msgid "Select UI Scene:"
 msgstr "Seleziona Scena UI:"
 
 #: editor/plugins/theme_editor_preview.cpp
+#, fuzzy
 msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
+"Alterna il picker di controllo, permettendo di selezionare visualmente i "
+"tipi di controllo per la modifica."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -15014,14 +15055,12 @@ msgid "Another node already uses this unique name in the scene."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name"
-msgstr "Nome del Nodo:"
+msgstr "Abilita Nome Unico Scena"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name"
-msgstr "Nome del Nodo:"
+msgstr "Disabilita Nome Unico Scena"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15097,7 +15136,7 @@ msgstr "Sotto-Risorse"
 
 #: editor/scene_tree_dock.cpp
 msgid "Access as Scene Unique Name"
-msgstr ""
+msgstr "Accedi come Nome Unico Scena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15204,8 +15243,9 @@ msgid "Show Scene Tree Root Selection"
 msgstr "Mostra Selezione del Tree Root di Scena"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Derive Script Globals By Name"
-msgstr ""
+msgstr "Ricava Script Globali Dal Nome"
 
 #: editor/scene_tree_dock.cpp
 msgid "Use Favorites Root Selection"
@@ -15237,6 +15277,9 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
+"Si può accedere a questo nodo da qualcunque punto della scena facendolo "
+"precedere dal prefisso '%s' in un percorso di nodo.\n"
+"Clicca per disabilitarlo."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15752,17 +15795,16 @@ msgid "Set Room Point Position"
 msgstr "Imposta Posizione Punto Stanza"
 
 #: editor/spatial_editor_gizmos.cpp scene/3d/portal.cpp
-#, fuzzy
 msgid "Portal Margin"
 msgstr "Margine del Portale"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Edge"
-msgstr ""
+msgstr "Confine del Portale"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Arrow"
-msgstr ""
+msgstr "Freccia del Portale"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Portal Point Position"
@@ -15899,43 +15941,9 @@ msgstr "Ripiega Su GLES2"
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
 
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr "Display"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Larghezza"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "Altezza"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "Sempre In Primo Piano"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "Larghezza Test"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "Altezza Test"
-
 #: main/main.cpp
 msgid "DPI"
-msgstr ""
+msgstr "DPI"
 
 #: main/main.cpp
 msgid "Allow hiDPI"
@@ -16035,9 +16043,8 @@ msgid "Physics Interpolation"
 msgstr "Modalità d'interpolazione"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Enable Warnings"
-msgstr "Abilita filtraggio"
+msgstr "Abilita Avvertimenti"
 
 #: main/main.cpp
 msgid "Frame Delay Msec"
@@ -16057,7 +16064,7 @@ msgstr ""
 
 #: main/main.cpp
 msgid "Hide Home Indicator"
-msgstr ""
+msgstr "Nascondi Indicatore Home"
 
 #: main/main.cpp
 msgid "Input Devices"
@@ -16092,12 +16099,13 @@ msgid "Environment"
 msgstr "Ambiente"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Default Clear Color"
-msgstr ""
+msgstr "Colore Di Cancellamento Di Default"
 
 #: main/main.cpp
 msgid "Boot Splash"
-msgstr ""
+msgstr "Sfondo Di Avvio"
 
 #: main/main.cpp
 msgid "Show Image"
@@ -16156,9 +16164,8 @@ msgid "Custom Image Hotspot"
 msgstr ""
 
 #: main/main.cpp
-#, fuzzy
 msgid "Tooltip Position Offset"
-msgstr "Scostamento della rotazione:"
+msgstr "Suggerimento Scostamento Posizione"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 msgid "Debugger Agent"
@@ -16328,7 +16335,6 @@ msgid "Polygon"
 msgstr "Poligono"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Spin Degrees"
 msgstr "Gradi di Rotazione"
 
@@ -16337,9 +16343,8 @@ msgid "Spin Sides"
 msgstr ""
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Path Node"
-msgstr "Incolla nodi"
+msgstr "Percorso Nodo"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -16518,16 +16523,15 @@ msgstr "GDScript"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
-msgstr ""
+msgstr "Colore Definizione Funzione"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
-#, fuzzy
 msgid "Node Path Color"
-msgstr "Copia percorso del nodo"
+msgstr "Colore Percorso Nodo"
 
 #: modules/gdscript/gdscript.cpp modules/visual_script/visual_script.cpp
 msgid "Max Call Stack"
-msgstr ""
+msgstr "Max Chiamate In Coda"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
@@ -16539,7 +16543,7 @@ msgstr "Escludi Componenti Aggiuntivi"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Autocomplete Setters And Getters"
-msgstr ""
+msgstr "Autocompleta Setters E Getters"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -16590,7 +16594,7 @@ msgstr "Abilita Risoluzione Intelligente"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Show Native Symbols In Editor"
-msgstr ""
+msgstr "Mostra Simboli Nativi Nell'Editor"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Use Thread"
@@ -16629,14 +16633,12 @@ msgid "Min"
 msgstr "Min"
 
 #: modules/gltf/gltf_accessor.cpp scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Max"
-msgstr "Mischia"
+msgstr "Max"
 
 #: modules/gltf/gltf_accessor.cpp
-#, fuzzy
 msgid "Sparse Count"
-msgstr "Istanza"
+msgstr "Conteggio Sparso"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Buffer View"
@@ -16659,18 +16661,16 @@ msgid "Sparse Values Byte Offset"
 msgstr ""
 
 #: modules/gltf/gltf_buffer_view.cpp
-#, fuzzy
 msgid "Buffer"
-msgstr "Vista dal retro"
+msgstr "Buffer"
 
 #: modules/gltf/gltf_buffer_view.cpp
-#, fuzzy
 msgid "Byte Length"
-msgstr "Tema Predefinito"
+msgstr "Lunghezza Byte"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Stride"
-msgstr ""
+msgstr "Stride Byte"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Indices"
@@ -16717,9 +16717,8 @@ msgid "Outer Cone Angle"
 msgstr "Angolo Cono Esterno"
 
 #: modules/gltf/gltf_mesh.cpp
-#, fuzzy
 msgid "Blend Weights"
-msgstr "Preprocessa Lightmaps"
+msgstr "Sfuma Pesi"
 
 #: modules/gltf/gltf_mesh.cpp
 msgid "Instance Materials"
@@ -16745,32 +16744,28 @@ msgstr "Traslazione"
 #: modules/gltf/gltf_node.cpp scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp
 #: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
 #: scene/3d/spatial.cpp scene/gui/control.cpp scene/main/canvas_layer.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "Passo di rotazione:"
+msgstr "Rotazione"
 
 #: modules/gltf/gltf_node.cpp
-#, fuzzy
 msgid "Children"
-msgstr "Figli Modificabili"
+msgstr "Figli"
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_skin.cpp
-#, fuzzy
 msgid "Joints"
-msgstr "Punto"
+msgstr "Articolazioni"
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_skin.cpp
 msgid "Roots"
-msgstr ""
+msgstr "Radici"
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_state.cpp
 msgid "Unique Names"
-msgstr ""
+msgstr "Nomi Unici"
 
 #: modules/gltf/gltf_skeleton.cpp
-#, fuzzy
 msgid "Godot Bone Node"
-msgstr "Nodo TimeScale"
+msgstr "Nodo Osso Godot"
 
 #: modules/gltf/gltf_skin.cpp
 #, fuzzy
@@ -16787,9 +16782,8 @@ msgid "Inverse Binds"
 msgstr ""
 
 #: modules/gltf/gltf_skin.cpp
-#, fuzzy
 msgid "Non Joints"
-msgstr "Sposta Articolazione"
+msgstr "Non Articolazioni"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Bone I"
@@ -16801,19 +16795,19 @@ msgstr ""
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Godot Skin"
-msgstr ""
+msgstr "Skin Godot"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Img"
-msgstr ""
+msgstr "Immagine Diffuse"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Factor"
-msgstr ""
+msgstr "Coefficiente Diffuse"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Gloss Factor"
-msgstr ""
+msgstr "Coefficiente Gloss"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Specular Factor"
@@ -16821,26 +16815,23 @@ msgstr "Coefficiente Speculare"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Immagine Gloss Speculare"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
 msgstr ""
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Major Version"
-msgstr "Versione"
+msgstr "Versione Principale"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Minor Version"
-msgstr "Versione"
+msgstr "Versione Minore"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "GLB Data"
-msgstr "Con i Dati"
+msgstr "Dati GLB"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Use Named Skin Binds"
@@ -16853,107 +16844,92 @@ msgstr "Vista dal retro"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Accessors"
-msgstr ""
+msgstr "Accessori"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Scene Name"
-msgstr "Percorso Scena:"
+msgstr "Nome Scena"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Root Nodes"
-msgstr "Nome del nodo radice"
+msgstr "Nodi Radice"
 
 #: modules/gltf/gltf_state.cpp scene/2d/particles_2d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_progress.cpp
 #: scene/resources/font.cpp
-#, fuzzy
 msgid "Textures"
-msgstr "Funzionalità"
+msgstr "Textures"
 
 #: modules/gltf/gltf_state.cpp platform/uwp/export/export.cpp
 msgid "Images"
-msgstr ""
+msgstr "Immagini"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
-msgstr ""
+msgstr "Telecamere"
 
 #: modules/gltf/gltf_state.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Lights"
-msgstr "Luce"
+msgstr "Luci"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Unique Animation Names"
-msgstr "Nuovo Nome Animazione:"
+msgstr "Nomi Unici Di Animazione"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Skeletons"
-msgstr "Scheletro"
+msgstr "Scheletri"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Skeleton To Node"
-msgstr "Scegli un Nodo"
+msgstr "Da Scheletro A Nodo"
 
 #: modules/gltf/gltf_state.cpp scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid "Animations"
-msgstr "Animazioni:"
+msgstr "Animazioni"
 
 #: modules/gltf/gltf_texture.cpp
-#, fuzzy
 msgid "Src Image"
-msgstr "Mostra Ossa"
+msgstr "Risorsa Immagine"
 
 #: modules/gridmap/grid_map.cpp
 msgid "Mesh Library"
 msgstr "Libreria Mesh"
 
 #: modules/gridmap/grid_map.cpp
-#, fuzzy
 msgid "Physics Material"
-msgstr "Fotogramma fisico %"
+msgstr "Materiale Fisico"
 
 #: modules/gridmap/grid_map.cpp scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use In Baked Light"
-msgstr "Preprocessa Lightmaps"
+msgstr "Utilizza in Luce Preprocessata"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
 #: scene/resources/navigation_mesh.cpp
 msgid "Cell"
-msgstr ""
+msgstr "Cella"
 
 #: modules/gridmap/grid_map.cpp
-#, fuzzy
 msgid "Octant Size"
-msgstr "Vista frontale"
+msgstr "Dimensione Ottante"
 
 #: modules/gridmap/grid_map.cpp
-#, fuzzy
 msgid "Center X"
-msgstr "Centro"
+msgstr "Centra X"
 
 #: modules/gridmap/grid_map.cpp
-#, fuzzy
 msgid "Center Y"
-msgstr "Centro"
+msgstr "Centra Y"
 
 #: modules/gridmap/grid_map.cpp
-#, fuzzy
 msgid "Center Z"
-msgstr "Centro"
+msgstr "Centra Z"
 
 #: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
 #: scene/2d/tile_map.cpp scene/3d/collision_object.cpp scene/3d/soft_body.cpp
 #: scene/resources/material.cpp
 msgid "Mask"
-msgstr ""
+msgstr "Maschera"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -16997,9 +16973,8 @@ msgid "GridMap Paint"
 msgstr "GridMap Riempi"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Selection"
-msgstr "GridMap Riempi Selezione"
+msgstr "Selezione GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -17122,40 +17097,38 @@ msgstr "Preprocessa Lightmaps"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Low Quality Ray Count"
-msgstr ""
+msgstr "Contaggio Raggi Qualità Bassa"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Medium Quality Ray Count"
-msgstr ""
+msgstr "Conteggio Raggi Qualità Media"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "High Quality Ray Count"
-msgstr ""
+msgstr "Conteggio Raggi Qualità Alta"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Ultra Quality Ray Count"
-msgstr ""
+msgstr "Conteggio Raggi Qualità Ultra"
 
 #: modules/minimp3/audio_stream_mp3.cpp
 #: modules/minimp3/resource_importer_mp3.cpp
 #: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
 #: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp
-#, fuzzy
 msgid "Loop Offset"
-msgstr "Scostamento:"
+msgstr "Scostamento Loop"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
-msgstr ""
+msgstr "Altezza Occhio"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "IOD"
 msgstr ""
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
-#, fuzzy
 msgid "Display Width"
-msgstr "Mostra Wireframe"
+msgstr "Larghezza Display"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 #, fuzzy
@@ -17183,9 +17156,8 @@ msgid "Build Solution"
 msgstr "Crea Soluzione"
 
 #: modules/mono/editor/csharp_project.cpp
-#, fuzzy
 msgid "Auto Update Project"
-msgstr "Progetto Senza Nome"
+msgstr "Auto-Aggiorna Progetto"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 #, fuzzy
@@ -17261,56 +17233,51 @@ msgstr "Fatto!"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Seamless"
-msgstr ""
+msgstr "Senza cuciture"
 
 #: modules/opensimplex/noise_texture.cpp
-#, fuzzy
 msgid "As Normal Map"
-msgstr "Scala Casuale:"
+msgstr "Come Normal Map"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Bump Strength"
-msgstr ""
+msgstr "Intensità Bump"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise"
-msgstr ""
+msgstr "Rumore"
 
 #: modules/opensimplex/noise_texture.cpp
-#, fuzzy
 msgid "Noise Offset"
-msgstr "Scostamento della griglia:"
+msgstr "Scostamento Rumore"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
-msgstr ""
+msgstr "Ottave"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Period"
-msgstr ""
+msgstr "Periodo"
 
 #: modules/opensimplex/open_simplex_noise.cpp
-#, fuzzy
 msgid "Persistence"
-msgstr "Prospettica"
+msgstr "Persistenza"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Lacunarity"
-msgstr ""
+msgstr "Lacunarietà"
 
 #: modules/regex/regex.cpp
 msgid "Subject"
-msgstr ""
+msgstr "Soggetto"
 
 #: modules/regex/regex.cpp
-#, fuzzy
 msgid "Names"
-msgstr "Nome"
+msgstr "Nomi"
 
 #: modules/regex/regex.cpp
-#, fuzzy
 msgid "Strings"
-msgstr "Impostazioni:"
+msgstr "Stringhe"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
@@ -17325,14 +17292,12 @@ msgid "Discover IPv6"
 msgstr ""
 
 #: modules/upnp/upnp_device.cpp
-#, fuzzy
 msgid "Description URL"
-msgstr "Descrizione"
+msgstr "Descrizione URL"
 
 #: modules/upnp/upnp_device.cpp
-#, fuzzy
 msgid "Service Type"
-msgstr "Imposta Tipo di Variabile"
+msgstr "Tipo Di Servizio"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Control URL"
@@ -17731,19 +17696,17 @@ msgid "Return Enabled"
 msgstr "Eseguibile"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Return Type"
-msgstr "Tipo di membro"
+msgstr "Tipo di Ritorno"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Condition"
 msgstr "Condizione"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "if (cond) is:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
@@ -17755,7 +17718,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iteratore"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "for (elem) in (input):"
@@ -17775,12 +17738,11 @@ msgstr "L'iteratore è diventato invalido: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sequenza"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "in order:"
-msgstr "Rinomina cartella:"
+msgstr "in ordine:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
@@ -17793,7 +17755,7 @@ msgstr "Inverti"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
-msgstr ""
+msgstr "'input' è:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
@@ -17802,41 +17764,36 @@ msgstr "Tipo:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "È %s?"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Base Script"
-msgstr "Nuovo script"
+msgstr "Script Base"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
-msgstr ""
+msgstr "Su %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "On Self"
-msgstr "Proprio"
+msgstr "Su se stesso"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Call Mode"
-msgstr "Modalità scala"
+msgstr "Modalità Chiamata"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Basic Type"
-msgstr "Cambia Tipo di Base"
+msgstr "Tipo Base"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Node Path"
-msgstr "Copia percorso del nodo"
+msgstr "Percorso Nodo"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -17844,14 +17801,12 @@ msgid "Argument Cache"
 msgstr "Cambia nome Argomento"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Use Default Args"
-msgstr "Ripristinare le impostazioni predefinite"
+msgstr "Utilizza Argomenti Predefiniti"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Validate"
-msgstr "Caratteri validi:"
+msgstr "Valida"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -17859,36 +17814,32 @@ msgid "RPC Call Mode"
 msgstr "Modalità scala"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Subtract %s"
-msgstr "Al carattere %s"
+msgstr "Sottrai %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Multiply %s"
-msgstr ""
+msgstr "Moltiplica %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Divide %s"
-msgstr ""
+msgstr "Dividi %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Mod %s"
-msgstr "Aggiungi %s"
+msgstr "Modulo %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "ShiftLeft %s"
-msgstr "Imposta %s"
+msgstr "ShiftLeft %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "ShiftRight %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "BitAnd %s"
-msgstr "Aggiungi %s"
+msgstr "BitAnd %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitOr %s"
@@ -18100,12 +18051,11 @@ msgstr "Fotogramma Fisico Successivo"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s secondi(s)"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp scene/main/timer.cpp
-#, fuzzy
 msgid "Wait Time"
-msgstr "Disegna tile"
+msgstr "Tempo Di Attesa"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
@@ -18138,11 +18088,11 @@ msgstr "Dimensione Index Buffer dei Poligoni nel Canvas (KB)"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
-msgstr ""
+msgstr "Verifica SSL"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
-msgstr ""
+msgstr "Certificato SSL Fidato"
 
 #: modules/websocket/websocket_macros.h
 #, fuzzy
@@ -18177,13 +18127,12 @@ msgid "Bind IP"
 msgstr ""
 
 #: modules/websocket/websocket_server.cpp
-#, fuzzy
 msgid "Private Key"
-msgstr "Tasto Fisico"
+msgstr "Chiave Privata"
 
 #: modules/websocket/websocket_server.cpp platform/javascript/export/export.cpp
 msgid "SSL Certificate"
-msgstr ""
+msgstr "Certificato SSL"
 
 #: modules/websocket/websocket_server.cpp
 #, fuzzy
@@ -18195,19 +18144,16 @@ msgid "Handshake Timeout"
 msgstr "Timeout Handshake"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Session Mode"
-msgstr "Modalità Regione"
+msgstr "Modalità Sessione"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Required Features"
-msgstr "Funzionalità Principali:"
+msgstr "Funzionalità Richieste"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Optional Features"
-msgstr "Funzionalità Principali:"
+msgstr "Funzionalità Opzionali"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Requested Reference Space Types"
@@ -18218,14 +18164,12 @@ msgid "Reference Space Type"
 msgstr ""
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Visibility State"
-msgstr "Commuta visibilità"
+msgstr "Stato Visibilità"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Bounds Geometry"
-msgstr "Riprova"
+msgstr "Confini Geometria"
 
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
@@ -18234,7 +18178,7 @@ msgstr "Agganciamento Intelligente"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
-msgstr ""
+msgstr "Percorso SDK Android"
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -18251,7 +18195,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Force System User"
-msgstr ""
+msgstr "Forza Utente System"
 
 #: platform/android/export/export.cpp
 msgid "Shutdown ADB On Exit"
@@ -18287,19 +18231,16 @@ msgid "The package must have at least one '.' separator."
 msgstr "Il pacchetto deve avere almeno un \".\" separatore."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Use Custom Build"
-msgstr "Utilizza Percorso Utente Personalizzato"
+msgstr "Utilizza Build Personalizzata"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Export Format"
-msgstr "Percorso di Esportazione"
+msgstr "Formato Esportazione"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Keystore"
-msgstr "Debugger"
+msgstr "Archivio Chiavi"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18311,47 +18252,40 @@ msgid "Debug Password"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Release User"
-msgstr "Rilascio"
+msgstr "Utente Di Rilascio"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Release Password"
-msgstr "Password"
+msgstr "Password Di Rilascio"
 
 #: platform/android/export/export_plugin.cpp
 msgid "One Click Deploy"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Clear Previous Install"
-msgstr "Ispeziona Istanza Precedente"
+msgstr "Elimina Installazione Precedente"
 
 #: platform/android/export/export_plugin.cpp scene/resources/shader.cpp
 msgid "Code"
-msgstr ""
+msgstr "Codice"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Min SDK"
-msgstr "Dimensione Outline:"
+msgstr "SDK Min"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Target SDK"
-msgstr "Target FPS"
+msgstr "Target SDK"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Package"
-msgstr "Impacchettando"
+msgstr "Pacchetto"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Unique Name"
-msgstr "Nome del Nodo:"
+msgstr "Nome Unico"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18359,38 +18293,32 @@ msgid "Signed"
 msgstr "Segnale"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Classify As Game"
-msgstr "Nome Classe:"
+msgstr "Classifica Come Gioco"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Retain Data On Uninstall"
-msgstr ""
+msgstr "Conserva Dati Dopo Disinstallazione"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exclude From Recents"
-msgstr "Elimina Nodi"
+msgstr "Escludi Da Recenti"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Graphics"
-msgstr "Scostamento della griglia:"
+msgstr "Grafica"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "OpenGL Debug"
-msgstr "Apri"
+msgstr "Debug OpenGL"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "XR Features"
-msgstr "Funzionalità"
+msgstr "Funzionalità XR"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "XR Mode"
-msgstr "Modalità di Pan"
+msgstr "Modalità XR"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18407,9 +18335,8 @@ msgid "Passthrough"
 msgstr "Passthrough"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Immersive Mode"
-msgstr "Modalità Priorità"
+msgstr "Modalità Immersiva"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18441,38 +18368,32 @@ msgid "Allow"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Command Line"
-msgstr "Comando"
+msgstr "Linea Di Comando"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Extra Args"
-msgstr "Argomenti di chiamata aggiuntivi:"
+msgstr "Argomenti Extra"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "APK Expansion"
-msgstr "Cambia espressione"
+msgstr "Espansione APK"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Salt"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Public Key"
-msgstr "Percorso Chiave SSH Pubblica"
+msgstr "Chiave Pubblica"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Permissions"
-msgstr "Maschera Emissione"
+msgstr "Permessi"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Custom Permissions"
-msgstr "Avvia una scena personalizzata"
+msgstr "Permessi Personalizzati"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
@@ -20298,6 +20219,11 @@ msgstr ""
 "Poligono non valido. Sono necessari almeno 2 punti nella modalità di "
 "costruzione \"Segmenti\"."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -20376,9 +20302,8 @@ msgstr "Nodo OneShot"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Preprocess"
-msgstr "Post processing"
+msgstr "Preprocesso"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -22148,7 +22073,7 @@ msgstr "Prepara NavMesh"
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 
 #: scene/3d/occluder.cpp
@@ -24414,6 +24339,11 @@ msgstr "Modalità di Pan"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Modalità d'interpolazione"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "Mostra Unshaded"
 
@@ -24446,11 +24376,6 @@ msgstr "Imposta più valori:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "Abilita Priorità Tile"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "Modalità d'interpolazione"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25162,6 +25087,11 @@ msgstr "Chiamato Separatore"
 #, fuzzy
 msgid "Labeled Separator Right"
 msgstr "Chiamato Separatore"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Operatore colore."
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25969,6 +25899,11 @@ msgstr "Recenti:"
 #, fuzzy
 msgid "Distance Field"
 msgstr "Modalità senza distrazioni"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Profondità"
 
 #: scene/resources/gradient.cpp
 #, fuzzy

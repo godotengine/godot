@@ -59,13 +59,15 @@
 # Katarzyna Twardowska <katarina.twardowska@gmail.com>, 2022.
 # Mateusz Zdrzałek <matjozohd@gmail.com>, 2022.
 # Konrad <kobe-interactive@protonmail.com>, 2022.
+# Pixel Zone - Godot Engine Tutorials <karoltomaszewskimusic@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-04 13:05+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2022-05-15 20:00+0000\n"
+"Last-Translator: Pixel Zone - Godot Engine Tutorials "
+"<karoltomaszewskimusic@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -74,7 +76,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -128,11 +130,12 @@ msgstr "Maks. rozmiar okna"
 msgid "Screen Orientation"
 msgstr "Orientacja ekranu"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Okno"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Bez obramowania"
 
@@ -140,7 +143,7 @@ msgstr "Bez obramowania"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Włączona przezroczystość na piksel"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "Pełny ekran"
 
@@ -152,7 +155,7 @@ msgstr "Zmaksymalizowane"
 msgid "Minimized"
 msgstr "Zminimalizowane"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Zmienny rozmiar"
@@ -165,10 +168,11 @@ msgstr "Zmienny rozmiar"
 msgid "Position"
 msgstr "Pozycja"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -178,7 +182,7 @@ msgstr "Rozmiar"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Zamiana Endian"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
@@ -278,7 +282,7 @@ msgstr "Rozmiar strony"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Strona czytana z wyprzedzeniem"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
@@ -618,6 +622,43 @@ msgstr "Użyj niestandardowego katalogu użytkownika"
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr "Własna nazwa katalogu użytkownika"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Display"
+msgstr "Pokaż wszystko"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Szerokość"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Height"
+msgstr "Światło"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "Zawsze na wierzchu"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "Rozciągnij po lewej"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "Testowanie"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1198,7 +1239,7 @@ msgstr "Włącz/wyłącz ścieżkę."
 msgid "Update Mode (How this property is set)"
 msgstr "Sposób odświeżania (jak ta właściwość jest ustawiana)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Sposób interpolacji"
 
@@ -6106,6 +6147,11 @@ msgstr ""
 #, fuzzy
 msgid "Flat"
 msgstr "Płaskie 0"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Tryb kolizji"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -16069,42 +16115,6 @@ msgstr ""
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
 
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
-msgid "Display"
-msgstr "Pokaż wszystko"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Szerokość"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-#, fuzzy
-msgid "Height"
-msgstr "Światło"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "Zawsze na wierzchu"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "Rozciągnij po lewej"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "Testowanie"
-
 #: main/main.cpp
 #, fuzzy
 msgid "DPI"
@@ -20526,6 +20536,11 @@ msgstr ""
 "Nieprawidłowy wielokąt. Co najmniej 3 punkty są potrzebne do trybu budowania "
 "\"Segments\"."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -22385,9 +22400,10 @@ msgid "NavMesh"
 msgstr "Przygotuj NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 "NavigationObstacle służy jedynie do zapewnienia unikania kolizji dla obiektu "
 "przestrzennego."
@@ -24680,6 +24696,11 @@ msgstr "Tryb przesuwania"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Sposób interpolacji"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "Widok bezcieniowy"
 
@@ -24712,11 +24733,6 @@ msgstr "Ustaw wiele:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "Włącz priorytety"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "Sposób interpolacji"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25427,6 +25443,11 @@ msgstr "Nazwany separator"
 #, fuzzy
 msgid "Labeled Separator Right"
 msgstr "Nazwany separator"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Operator koloru."
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26236,6 +26257,11 @@ msgstr "Ostatnie:"
 #, fuzzy
 msgid "Distance Field"
 msgstr "Tryb bez rozproszeń"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Głębia"
 
 #: scene/resources/gradient.cpp
 #, fuzzy

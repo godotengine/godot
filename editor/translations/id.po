@@ -32,7 +32,7 @@
 # Reza Almanda <rezaalmanda27@gmail.com>, 2021, 2022.
 # Naufal Adriansyah <naufaladrn90@gmail.com>, 2021.
 # undisputedgoose <diablodvorak@gmail.com>, 2021.
-# Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>, 2021.
+# Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>, 2021, 2022.
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 # Brian <brian@brianthe.dev>, 2021.
 # Helmi Hibatullah <helmihibatullah393@gmail.com>, 2022.
@@ -44,8 +44,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-25 15:02+0000\n"
-"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
+"PO-Revision-Date: 2022-05-15 09:38+0000\n"
+"Last-Translator: Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -53,11 +53,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr "Driver Tablet"
+msgstr "Tablet Driver"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -97,7 +97,7 @@ msgstr "Biarkan Layar Menyala"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "Ukuran Jendela Minimum"
+msgstr "Ukuran Jendela Minim"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
@@ -107,11 +107,12 @@ msgstr "Ukuran Jendela Maks"
 msgid "Screen Orientation"
 msgstr "Orientasi Layar"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Jendela"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Tanpa batas"
 
@@ -119,9 +120,9 @@ msgstr "Tanpa batas"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Aktifkan Transparansi Per Piksel"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
-msgstr "Layar penuh"
+msgstr "Fullscreen"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
@@ -131,7 +132,7 @@ msgstr "Dimaksimalkan"
 msgid "Minimized"
 msgstr "Diminimalkan"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Dapat diubah ukurannya"
@@ -144,10 +145,11 @@ msgstr "Dapat diubah ukurannya"
 msgid "Position"
 msgstr "Posisi"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -173,7 +175,7 @@ msgstr "Pengulangan Per Detik"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr "FPS Sasaran"
+msgstr "Target FPS"
 
 #: core/bind/core_bind.cpp
 msgid "Time Scale"
@@ -185,7 +187,7 @@ msgstr "Perbaikan Fisika Jitter"
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
-msgstr "Galat"
+msgstr "Error"
 
 #: core/bind/core_bind.cpp
 msgid "Error String"
@@ -193,7 +195,7 @@ msgstr "String Error"
 
 #: core/bind/core_bind.cpp
 msgid "Error Line"
-msgstr "Baris Galat"
+msgstr "Baris Error"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
@@ -257,7 +259,7 @@ msgstr "Ukuran Halaman"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Halaman Baca Terlebih Dahulu"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
@@ -344,7 +346,7 @@ msgstr "String dengan panjang 1 (karakter) diharapkan."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Tidak cukup bita untuk mendekode bita, atau format tidak valid."
+msgstr "Tidak cukup byte untuk decoding byte, atau format tidak valid."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -365,7 +367,7 @@ msgstr "Index tidak valid dari tipe %s untuk tipe dasar %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "index bernama '%s' untuk tipe dasar %s tidak sah"
+msgstr "Indeks bernama '%s' tidak valid untuk tipe dasar %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -433,7 +435,7 @@ msgstr "Kode Pindaian Fisik"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr "Unikode"
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -508,7 +510,7 @@ msgstr "Delta"
 
 #: core/os/input_event.cpp
 msgid "Channel"
-msgstr "Kanal"
+msgstr "Channel"
 
 #: core/os/input_event.cpp main/main.cpp
 msgid "Message"
@@ -548,7 +550,7 @@ msgstr "Konfigurasi"
 
 #: core/project_settings.cpp
 msgid "Project Settings Override"
-msgstr "Penimpaan Setelan Proyek"
+msgstr "Penggantian Pengaturan Proyek"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
@@ -595,9 +597,44 @@ msgid "Use Custom User Dir"
 msgstr "Gunakan Direktori Pengguna Kustom"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Custom User Dir Name"
-msgstr "Nama Direktori Pengguna Kustom"
+msgstr "Nama Dir Pengguna Kustom"
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+msgid "Display"
+msgstr "Tampilan"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Lebar"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "Tinggi"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Always On Top"
+msgstr "Selalu Di Depan"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "Kiri Lebar"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "Menguji"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -605,9 +642,8 @@ msgid "Audio"
 msgstr "Suara"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Default Bus Layout"
-msgstr "Muat default Layout Bus."
+msgstr "Tata Letak Bus Default"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -617,9 +653,8 @@ msgid "Editor"
 msgstr "Editor"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Main Run Args"
-msgstr "Argumen Skena Utama:"
+msgstr "Jalan Utama Argumen"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
@@ -627,7 +662,7 @@ msgstr "Cari dalam Ekstensi File"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Jalur Pencarian Template Skrip"
 
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -874,7 +909,7 @@ msgstr "Pesan"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "Pelokalan"
+msgstr "Lokal"
 
 #: core/translation.cpp
 msgid "Test"
@@ -1182,7 +1217,7 @@ msgstr "Alihkan track ini ke nyala/mati."
 msgid "Update Mode (How this property is set)"
 msgstr "Mode Pembaruan (Bagaimana properti ini akan di terapkan)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Mode Interpolasi"
 
@@ -1440,7 +1475,7 @@ msgstr "Transformasi"
 
 #: editor/animation_track_editor.cpp editor/editor_help.cpp
 msgid "Methods"
-msgstr "Metode"
+msgstr "Method"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier"
@@ -1535,7 +1570,7 @@ msgstr "FPS"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Sunting"
+msgstr "Edit"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
@@ -1922,7 +1957,7 @@ msgstr "Putuskan Semuanya"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr "sunting..."
+msgstr "Edit..."
 
 #: editor/connections_dialog.cpp
 msgid "Go to Method"
@@ -2399,7 +2434,7 @@ msgstr "Berkas salah, tidak layout suara bus."
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
-msgstr "Galat menyimpan berkas: %s"
+msgstr "Error menyimpan berkas: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2872,7 +2907,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr "Galat saat menyimpan profil ke: '%s'."
+msgstr "Error saat menyimpan profil ke: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Reset to Default"
@@ -3221,7 +3256,7 @@ msgstr "Warna"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr "Konstanta"
+msgstr "konstan"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -3539,7 +3574,7 @@ msgstr "Oke"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr "Galat saat menyimpan resource!"
+msgstr "Error saat menyimpan resource!"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3575,7 +3610,7 @@ msgstr "Kesalahan saat melakukan parsing '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "akhir dari berkas tak terduga '%s'."
+msgstr "Akhir file '%s' yang tidak terduga."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
@@ -4074,7 +4109,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
-msgstr "Skena"
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Scene Naming"
@@ -4708,7 +4743,7 @@ msgstr "Turunan Baru"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr "Muat Galat"
+msgstr "Muat Error"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -4733,7 +4768,7 @@ msgstr "Buka Editor Skrip"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "Buka Pustaka Aset"
+msgstr "Buka Aset Library"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
@@ -6069,6 +6104,11 @@ msgstr ""
 msgid "Flat"
 msgstr "Flat 0"
 
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Penabrak"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Pilih node untuk diimpor"
@@ -6088,7 +6128,7 @@ msgstr "Impor dari Node:"
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
 msgid "%s Error"
-msgstr "%s Galat"
+msgstr "%s Error"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -6112,7 +6152,7 @@ msgstr "Memulai pengunduhan..."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
-msgstr "Galat saat meminta URL:"
+msgstr "Error saat meminta URL:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to the mirror..."
@@ -6161,7 +6201,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
-msgstr "Galat dalam mendapatkan daftar mirror."
+msgstr "Error dalam mendapatkan daftar mirror."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
@@ -6391,11 +6431,11 @@ msgstr "Tidak dapat memindahkan folder ke dalam dirinya sendiri."
 
 #: editor/filesystem_dock.cpp
 msgid "Error moving:"
-msgstr "Galat saat memindahkan:"
+msgstr "Error saat memindahkan:"
 
 #: editor/filesystem_dock.cpp
 msgid "Error duplicating:"
-msgstr "Galat saat menggandakan berkas:"
+msgstr "Error saat menggandakan berkas:"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:"
@@ -6439,11 +6479,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
-"file dan/atau berkas-berkas berikut mempunyai konflik di '%s':\n"
+"File atau folder berikut ini bentrok dengan item di lokasi target '%s':\n"
 "\n"
 "%s\n"
 "\n"
-"Apakah Anda ingin melanjutkan (overwrite)?"
+"Apakah Anda ingin menimpanya?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -6811,7 +6851,7 @@ msgstr ""
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -8255,7 +8295,7 @@ msgstr "Tidak dapat menyimpan respons ke:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr "Galat saat menyimpan ke dalam berkas."
+msgstr "Error saat menyimpan ke dalam berkas."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -10267,7 +10307,7 @@ msgstr "Tutup dan simpan perubahan?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
-msgstr "Galat saat menulis TextFile:"
+msgstr "Error saat menulis TextFile:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Could not load file at:"
@@ -10275,23 +10315,23 @@ msgstr "Tidak dapat memuat berkas di:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
-msgstr "Galat saat menyimpan berkas!"
+msgstr "Error saat menyimpan berkas!"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme."
-msgstr "Galat saat menyimpan tema."
+msgstr "Error saat menyimpan tema."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Saving"
-msgstr "Galat Menyimpan"
+msgstr "Error Menyimpan"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme."
-msgstr "Galat saat mengimpor tema."
+msgstr "Error saat mengimpor tema."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Importing"
-msgstr "Galat saat mengimpor"
+msgstr "Error saat mengimpor"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New Text File..."
@@ -10827,7 +10867,7 @@ msgstr "Mainkan IK"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr "Ortogonal"
+msgstr "Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
@@ -12330,7 +12370,7 @@ msgstr "Cat Persegi Panjang"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
-msgstr "Ember Isian"
+msgstr "Bucket Fill"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -12883,9 +12923,8 @@ msgid "Select SSH private key path"
 msgstr "Pilih jalur kunci pribadi SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "SSH Passphrase"
-msgstr "Frasa Sandi SSH"
+msgstr "SSH Passphrase"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -14099,7 +14138,7 @@ msgstr "Lokasi yang ditentukan tidak ada."
 
 #: editor/project_manager.cpp
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Galat saat membuka berkas paket (tidak dalam format ZIP)."
+msgstr "Error saat membuka berkas paket (tidak dalam format ZIP)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -14267,7 +14306,7 @@ msgstr "Proyek hilang"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
-msgstr "Galat: Proyek ini tidak ditemukan dalam berkas sistem."
+msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -14390,9 +14429,8 @@ msgid "Project Manager"
 msgstr "Manajer Proyek"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "Proyek"
+msgstr "Proyek Lokal"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
@@ -14427,7 +14465,7 @@ msgstr "Pilih Berkas untuk Dipindai"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr "Projek Baru"
+msgstr "Proyek Baru"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -14448,9 +14486,8 @@ msgid "About"
 msgstr "Tentang"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Asset Library Projects"
-msgstr "Pustaka Aset"
+msgstr "Proyek Perpustakaan Aset"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -14473,13 +14510,12 @@ msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
-"Saat ini Anda tidak memiliki proyek.\n"
-"Apakah Anda ingin menjelajahi contoh proyek resmi di Pustaka Aset?"
+"Saat ini Anda tidak memiliki proyek apa pun.\n"
+"Apakah Anda ingin menjelajahi contoh proyek resmi di Perpustakaan Aset?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "Filter properti"
+msgstr "Filter proyek"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -14669,7 +14705,7 @@ msgstr "Tampah Aksi Input"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
-msgstr "Galat saat menyimpan pengaturan."
+msgstr "Error saat menyimpan pengaturan."
 
 #: editor/project_settings_editor.cpp
 msgid "Settings saved OK."
@@ -14848,7 +14884,7 @@ msgstr "Pilih Node"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr "Galat saat memuat berkas: Bukan resource!"
+msgstr "Error saat memuat berkas: Bukan resource!"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
@@ -15039,7 +15075,7 @@ msgstr "Tidak ada parent untuk menginstansi skena disana."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr "Galat saat memuat skena dari %s"
+msgstr "Error saat memuat skena dari %s"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15289,11 +15325,11 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
-msgstr "Galat menyimpan skena."
+msgstr "Error menyimpan skena."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr "Galat menduplikasi skena untuk menyimpannya."
+msgstr "Error menduplikasi skena untuk menyimpannya."
 
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
@@ -15554,15 +15590,15 @@ msgstr "Ekstensi salah dipilih."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
-msgstr "Galat saat memuat templat '%s'"
+msgstr "Error saat memuat templat '%s'"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
-msgstr "Galat - Tidak dapat membuat skrip di berkas sistem."
+msgstr "Error - Tidak dapat membuat skrip di berkas sistem."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
-msgstr "Galat saat memuat skrip dari %s"
+msgstr "Error saat memuat skrip dari %s"
 
 #: editor/script_create_dialog.cpp
 msgid "Overrides"
@@ -15666,15 +15702,15 @@ msgstr "Peringatan:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Error:"
-msgstr "Galat:"
+msgstr "Error:"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error"
-msgstr "Galat C++"
+msgstr "Error C++"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error:"
-msgstr "Galat C++ :"
+msgstr "Error C++ :"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Source"
@@ -15694,7 +15730,7 @@ msgstr "Jejak Tumpukan"
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
-msgstr "Galat"
+msgstr "Error"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child process connected."
@@ -15702,7 +15738,7 @@ msgstr "Proses anak terhubung."
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
-msgstr "Salin Galat"
+msgstr "Salin Error"
 
 #: editor/script_editor_debugger.cpp
 msgid "Open C++ Source on GitHub"
@@ -16071,7 +16107,7 @@ msgstr "Maksimal Pesan Per Bingkai"
 
 #: main/main.cpp
 msgid "Max Errors Per Second"
-msgstr "Maksimal Galat Per Detik"
+msgstr "Maksimal Error Per Detik"
 
 #: main/main.cpp
 msgid "Max Warnings Per Second"
@@ -16119,41 +16155,6 @@ msgstr ""
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
-
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-msgid "Display"
-msgstr "Tampilan"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Lebar"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "Tinggi"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Always On Top"
-msgstr "Selalu Di Depan"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "Kiri Lebar"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "Menguji"
 
 #: main/main.cpp
 msgid "DPI"
@@ -16350,7 +16351,7 @@ msgstr "Warna Latar Belakang"
 
 #: main/main.cpp
 msgid "macOS Native Icon"
-msgstr "Ikon macOS"
+msgstr "Ikon Asli macOS"
 
 #: main/main.cpp
 msgid "Windows Native Icon"
@@ -16788,7 +16789,7 @@ msgstr ""
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
-msgstr "Perlakukan Peringatan Sebagai Galat"
+msgstr "Perlakukan Peringatan Sebagai Error"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Exclude Addons"
@@ -17988,7 +17989,7 @@ msgstr "if (kondisi) adalah:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Ketika"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -20478,6 +20479,11 @@ msgstr ""
 "Poligon tidak valid. Minimal 2 titik dibutuhkan untuk mode pembangunan "
 "'Segmen\"."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -21900,7 +21906,7 @@ msgstr "Proyeksi"
 
 #: scene/3d/camera.cpp
 msgid "FOV"
-msgstr "Bidang Pandang"
+msgstr "FOV"
 
 #: scene/3d/camera.cpp
 #, fuzzy
@@ -22242,10 +22248,13 @@ msgid "NavMesh"
 msgstr "Panggang NavMesh"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
+"NavigationObstacle2D hanya berfungsi untuk memberikan penghindaran tabrakan "
+"ke objek Node2D."
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -24516,6 +24525,11 @@ msgstr "Mode Geser Pandangan"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Mode Interpolasi"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "Tampilan Tak Berbayang"
 
@@ -24548,11 +24562,6 @@ msgstr "Terapkan Bersamaan:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "Aktifkan Prioritas"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "Mode Interpolasi"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25262,6 +25271,11 @@ msgstr "Pemisah yang diberi nama"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
+msgid "Font Separator"
+msgstr "Operator warna."
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
 msgid "Font Color Accel"
 msgstr "Warna Tulang 1"
 
@@ -25520,9 +25534,8 @@ msgid "Large"
 msgstr "Sasaran"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder"
-msgstr "Direktori:"
+msgstr "Folder"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26071,6 +26084,11 @@ msgstr "Mode Tanpa Gangguan"
 
 #: scene/resources/gradient.cpp
 #, fuzzy
+msgid "Raw Data"
+msgstr "Kedalaman"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
 msgid "Offsets"
 msgstr "Pengimbangan:"
 
@@ -26468,9 +26486,8 @@ msgid "Visible Instance Count"
 msgstr ""
 
 #: scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Transform Array"
-msgstr "Transformasi Dibatalkan."
+msgstr "Transformasi Array"
 
 #: scene/resources/multimesh.cpp
 #, fuzzy
@@ -26493,9 +26510,8 @@ msgid "Sample Partition Type"
 msgstr "Atur Jenis variabel"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Parsed Geometry Type"
-msgstr "Mengurai Geometri..."
+msgstr "Jenis Geometri yang Diuraikan"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Source Geometry Mode"
@@ -26537,9 +26553,8 @@ msgid "Verts Per Poly"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Sample Distance"
-msgstr "Pilih Jarak:"
+msgstr "Jarak sampel"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -26599,14 +26614,12 @@ msgid "Color Modifier"
 msgstr "Pengubah Lambat Tampilan Bebas"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Point Texture"
-msgstr "Titik Emisi:"
+msgstr "Tekstur Titik"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Normal Texture"
-msgstr "Sumber Emisi: "
+msgstr "Texture Normal"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -26619,9 +26632,8 @@ msgid "Point Count"
 msgstr "Tambah Port Masukan"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale Random"
-msgstr "Rasio Skala:"
+msgstr "Skala Acak"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -26637,9 +26649,8 @@ msgid "Absorbent"
 msgstr ""
 
 #: scene/resources/plane_shape.cpp
-#, fuzzy
 msgid "Plane"
-msgstr "Dataran:"
+msgstr "Plane"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -26663,19 +26674,16 @@ msgid "Subdivide Depth"
 msgstr ""
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Top Radius"
-msgstr "Radius:"
+msgstr "Radius Atas"
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Bottom Radius"
-msgstr "Kanan Bawah"
+msgstr "Radius Bawah"
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Left To Right"
-msgstr "Kanan Atas"
+msgstr "Kiri Ke Kanan"
 
 #: scene/resources/primitive_meshes.cpp
 msgid "Is Hemisphere"
@@ -26699,9 +26707,8 @@ msgid "Custom Solver Bias"
 msgstr ""
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Radiance Size"
-msgstr "Ukuran Garis Tepi:"
+msgstr "Ukuran Pancaran"
 
 #: scene/resources/sky.cpp
 msgid "Panorama"
@@ -26713,9 +26720,8 @@ msgid "Top Color"
 msgstr "Floor Selanjutnya"
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Horizon Color"
-msgstr "Menyimpan File:"
+msgstr "Warna Horizon"
 
 #: scene/resources/sky.cpp
 #, fuzzy
@@ -26799,9 +26805,8 @@ msgid "Base Texture"
 msgstr "Hapus Tekstur"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Image Size"
-msgstr "Halaman: "
+msgstr "Ukuran Gambar"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -26814,14 +26819,12 @@ msgid "Lossy Storage Quality"
 msgstr "Tangkap"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Fill From"
-msgstr "Mode Putar:"
+msgstr "Isi Dari"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Fill To"
-msgstr "Mode Putar:"
+msgstr "Isi Ke"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -26975,9 +26978,8 @@ msgid "Audio Stream"
 msgstr "Item Radio"
 
 #: servers/audio/audio_stream.cpp
-#, fuzzy
 msgid "Random Pitch"
-msgstr "Kemiringan Acak:"
+msgstr "Pitch Acak"
 
 #: servers/audio/effects/audio_effect_capture.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
@@ -27027,9 +27029,8 @@ msgstr ""
 #: servers/audio/effects/audio_effect_chorus.cpp
 #: servers/audio/effects/audio_effect_delay.cpp
 #: servers/audio/effects/audio_effect_panner.cpp
-#, fuzzy
 msgid "Pan"
-msgstr "Dataran:"
+msgstr "Pan"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
@@ -27125,9 +27126,8 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
-#, fuzzy
 msgid "FFT Size"
-msgstr "Ukuran:"
+msgstr "Ukuran FFT"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Predelay"
@@ -27223,9 +27223,8 @@ msgid "Time Before Sleep"
 msgstr ""
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
-#, fuzzy
 msgid "BP Hash Table Size"
-msgstr "Ukuran:"
+msgstr "Ukuran Tabel Hash BP"
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
 msgid "Large Object Surface Threshold In Cells"
@@ -27291,33 +27290,28 @@ msgid "Collision Normal"
 msgstr "Mode Tabrakan"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Depth"
-msgstr "Mode Tabrakan"
+msgstr "Kedalaman Collision"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Safe Fraction"
-msgstr "Mode Tabrakan"
+msgstr "Fraksi Aman Collision"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Unsafe Fraction"
-msgstr "Mode Tabrakan"
+msgstr "Fraksi Tidak Aman Collision"
 
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Center Of Mass"
-msgstr "Kiri Tengah"
+msgstr "Pusat Massa"
 
 #: servers/physics_server.cpp
 msgid "Principal Inertia Axes"
 msgstr ""
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid "Varying may not be assigned in the '%s' function."
-msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
+msgstr "Memvariasikan mungkin tidak ditetapkan dalam fungsi '%s'."
 
 #: servers/visual/shader_language.cpp
 msgid ""
@@ -27344,53 +27338,44 @@ msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
 
 #: servers/visual/visual_server_scene.cpp
-#, fuzzy
 msgid "Spatial Partitioning"
-msgstr "Mempartisi..."
+msgstr "Partisi Spatial"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Render Loop Enabled"
-msgstr "Filter sinyal"
+msgstr "Render Loop Diaktifkan"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "VRAM Compression"
-msgstr "Tetapkan ekspresi"
+msgstr "Kompresi VRAM"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import BPTC"
-msgstr "Impor"
+msgstr "Impor BPTC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import S3TC"
-msgstr "Impor"
+msgstr "Impor S3TC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC"
-msgstr "Impor"
+msgstr "Impor ETC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC2"
-msgstr "Impor"
+msgstr "Impor ETC2"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import PVRTC"
-msgstr "Impor Tema"
+msgstr "Impor PVRTC"
 
 #: servers/visual_server.cpp
 msgid "Lossless Compression"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Force PNG"
-msgstr "Sumber Mesh:"
+msgstr "Paksa PNG"
 
 #: servers/visual_server.cpp
 msgid "WebP Compression Level"
@@ -27401,9 +27386,8 @@ msgid "Time Rollover Secs"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Cubemap Size"
-msgstr "Ubah Ukuran Kamera"
+msgstr "Ukuran Cubemap"
 
 #: servers/visual_server.cpp
 msgid "Quadrant 0 Subdiv"
@@ -27422,19 +27406,16 @@ msgid "Quadrant 3 Subdiv"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shadows"
-msgstr "Shader"
+msgstr "Bayangan"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filter Mode"
-msgstr "Filter node"
+msgstr "Mode Filter"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Texture Array Reflections"
-msgstr "Seleksi Tengah"
+msgstr "Refleksi Tekstur Array"
 
 #: servers/visual_server.cpp
 msgid "High Quality GGX"
@@ -27445,9 +27426,8 @@ msgid "Irradiance Max Size"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shading"
-msgstr "Lapisan"
+msgstr "Shading"
 
 #: servers/visual_server.cpp
 msgid "Force Vertex Shading"
@@ -27466,9 +27446,8 @@ msgid "Mesh Storage"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Split Stream"
-msgstr "Pisahkan Kurva"
+msgstr "Stream Terpisah"
 
 #: servers/visual_server.cpp
 msgid "Use Physical Light Attenuation"
@@ -27507,23 +27486,20 @@ msgid "Use Software Skinning"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Ninepatch Mode"
-msgstr "Mode Interpolasi"
+msgstr "Mode Ninepatch"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Buka"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Batching Stream"
-msgstr "Ubah Nama Massal"
+msgstr "Batching Stream"
 
 #: servers/visual_server.cpp
 msgid "Legacy Orphan Buffers"
@@ -27534,18 +27510,16 @@ msgid "Legacy Stream"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Batching"
-msgstr "Mencari..."
+msgstr "Batching"
 
 #: servers/visual_server.cpp
 msgid "Use Batching"
-msgstr ""
+msgstr "Gunakan Batching"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Batching In Editor"
-msgstr "Memperbarui editor"
+msgstr "Gunakan Batching Di Editor"
 
 #: servers/visual_server.cpp
 msgid "Single Rect Fallback"
@@ -27564,9 +27538,8 @@ msgid "Scissor Area Threshold"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Max Join Items"
-msgstr "Kelola Templat Ekspor…"
+msgstr "Item Gabung Maks"
 
 #: servers/visual_server.cpp
 msgid "Batch Buffer Size"
@@ -27581,13 +27554,12 @@ msgid "Flash Batching"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Diagnose Frame"
-msgstr "Rekat Frame"
+msgstr "Diagnosis Frame"
 
 #: servers/visual_server.cpp
 msgid "GLES2"
-msgstr ""
+msgstr "GLES2"
 
 #: servers/visual_server.cpp
 msgid "Compatibility"
@@ -27598,14 +27570,12 @@ msgid "Disable Half Float"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Enable High Float"
-msgstr "Aktifkan Prioritas"
+msgstr "Aktifkan Float Tinggi"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Precision"
-msgstr "Tetapkan ekspresi"
+msgstr "Presisi"
 
 #: servers/visual_server.cpp
 msgid "UV Contract"
@@ -27616,47 +27586,40 @@ msgid "UV Contract Amount"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Simple PVS"
-msgstr "Gunakan Pengancingan Skala"
+msgstr "Gunakan PVS Sederhana"
 
 #: servers/visual_server.cpp
 msgid "PVS Logging"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Signals"
-msgstr "Sinyal"
+msgstr "Gunakan Sinyal"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Remove Danglers"
-msgstr "Hapus Tile"
+msgstr "Hapus Danglers"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Flip Imported Portals"
-msgstr "Balikkan Portal"
+msgstr "Balik Portal Impor"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Occlusion Culling"
-msgstr "Pengaturan Viewport"
+msgstr "Pemusnahan Oklusi"
 
 #: servers/visual_server.cpp
 msgid "Max Active Spheres"
-msgstr ""
+msgstr "Bola Aktif Maks"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Max Active Polygons"
-msgstr "Geser Poligon"
+msgstr "Poligon Aktif Maks"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shader Compilation Mode"
-msgstr "Mode Interpolasi"
+msgstr "Mode Kompilasi Shader"
 
 #: servers/visual_server.cpp
 msgid "Max Simultaneous Compiles"
@@ -27667,6 +27630,5 @@ msgid "Log Active Async Compiles Count"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shader Cache Size (MB)"
-msgstr "Ubah Ukuran Kamera"
+msgstr "Ukuran Cache Shader (MB)"

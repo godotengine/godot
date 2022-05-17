@@ -43,7 +43,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-25 15:02+0000\n"
+"PO-Revision-Date: 2022-05-10 13:14+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -106,11 +106,12 @@ msgstr "ウィンドウの最大サイズ"
 msgid "Screen Orientation"
 msgstr "画面の向き"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "ウィンドウ"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "ボーダーレス"
 
@@ -118,7 +119,7 @@ msgstr "ボーダーレス"
 msgid "Per Pixel Transparency Enabled"
 msgstr "ピクセル単位の透明度を有効化"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "フルスクリーン"
 
@@ -130,7 +131,7 @@ msgstr "最大化"
 msgid "Minimized"
 msgstr "最小化"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "サイズを変更可能"
@@ -143,10 +144,11 @@ msgstr "サイズを変更可能"
 msgid "Position"
 msgstr "位置"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -601,6 +603,43 @@ msgstr ""
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr ""
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Display"
+msgstr "すべて表示"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr ""
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Height"
+msgstr "ライト"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr "常に最前面"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "左伸長"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "試験的"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1197,7 +1236,7 @@ msgstr "このトラックの オン/オフ を切り替え。"
 msgid "Update Mode (How this property is set)"
 msgstr "Update モード (このプロパティの設定方法)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "補間モード"
 
@@ -6006,6 +6045,11 @@ msgstr "%s を押したままで整数値に丸める。Shiftを押したまま�
 #: editor/editor_spin_slider.cpp scene/gui/button.cpp
 msgid "Flat"
 msgstr "フラット"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "コリジョンモード"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -15539,9 +15583,8 @@ msgid "Stack Frames"
 msgstr "スタックフレーム"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Filter stack variables"
-msgstr "タイルを絞り込む"
+msgstr "スタック変数を絞り込む"
 
 #: editor/script_editor_debugger.cpp
 msgid "Auto Switch To Remote Scene Tree"
@@ -15918,42 +15961,6 @@ msgstr "GLES2にフォールバック"
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr "NvidiaでのRectちらつきの回避策を使用"
-
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
-msgid "Display"
-msgstr "すべて表示"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr ""
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-#, fuzzy
-msgid "Height"
-msgstr "ライト"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr "常に最前面"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "左伸長"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "試験的"
 
 #: main/main.cpp
 msgid "DPI"
@@ -20288,6 +20295,11 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "無効なポリゴンです。'Segments' ビルドモードでは最低2つのポイントが必要です。"
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -22125,9 +22137,10 @@ msgid "NavMesh"
 msgstr "NavMeshを焼き込む"
 
 #: scene/3d/navigation_obstacle.cpp
+#, fuzzy
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 "NavigationObstacle はSpatialなオブジェクトにコリジョン回避を提供するためだけ"
 "に機能します。"
@@ -24413,6 +24426,11 @@ msgstr "パンモード"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "補間モード"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "シェーディングなしで表示"
 
@@ -24445,11 +24463,6 @@ msgstr "複数設定:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "優先順位を有効化"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "補間モード"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25159,6 +25172,11 @@ msgstr "名前付きセパレーター"
 #, fuzzy
 msgid "Labeled Separator Right"
 msgstr "名前付きセパレーター"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Color演算子。"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25967,6 +25985,11 @@ msgstr "最近:"
 #, fuzzy
 msgid "Distance Field"
 msgstr "集中モード"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Depth(深度/奥行)"
 
 #: scene/resources/gradient.cpp
 #, fuzzy

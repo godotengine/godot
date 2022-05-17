@@ -20,13 +20,14 @@
 # SyliawDeV <thanhlongstranger@gmail.com>, 2021.
 # IoeCmcomc <hopdaigia2004@gmail.com>, 2021, 2022.
 # Hung <hungthitkhia@gmail.com>, 2021.
+# Paweł Fertyk <pfertyk@pfertyk.me>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-25 15:02+0000\n"
-"Last-Translator: IoeCmcomc <hopdaigia2004@gmail.com>\n"
+"PO-Revision-Date: 2022-05-10 13:14+0000\n"
+"Last-Translator: Paweł Fertyk <pfertyk@pfertyk.me>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -89,11 +90,12 @@ msgstr "Cỡ cửa sổ tối đa"
 msgid "Screen Orientation"
 msgstr "Hướng xoay màn hình"
 
-#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
+#: platform/uwp/os_uwp.cpp
 msgid "Window"
 msgstr "Cửa sổ"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
 msgstr "Tràn viền"
 
@@ -101,7 +103,7 @@ msgstr "Tràn viền"
 msgid "Per Pixel Transparency Enabled"
 msgstr "Bật độ trong suốt mỗi điểm ảnh"
 
-#: core/bind/core_bind.cpp main/main.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
 msgstr "Toàn màn hình"
 
@@ -113,7 +115,7 @@ msgstr "Đã cực đại hoá"
 msgid "Minimized"
 msgstr "Đã cực tiểu hoá"
 
-#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
 msgstr "Đổi kích cỡ được"
@@ -126,10 +128,11 @@ msgstr "Đổi kích cỡ được"
 msgid "Position"
 msgstr "Vị trí"
 
-#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
-#: modules/gridmap/grid_map.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
-#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
+#: main/main.cpp modules/gridmap/grid_map.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/2d/tile_map.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -587,6 +590,42 @@ msgstr ""
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
 msgstr ""
+
+#: core/project_settings.cpp main/main.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Display"
+msgstr "Hiển thị tất cả"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr "Chiều rộng"
+
+#: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
+#: scene/2d/light_2d.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
+#: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
+msgid "Height"
+msgstr "Chiều cao"
+
+#: core/project_settings.cpp
+msgid "Always On Top"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "Rộng bên trái"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "Kiểm tra"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -1174,7 +1213,7 @@ msgstr "Bật/tắt kênh này."
 msgid "Update Mode (How this property is set)"
 msgstr "Cập nhật chế độ (Cách thuộc tính được thiết lập)"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Nội suy"
 
@@ -1760,7 +1799,7 @@ msgid ""
 "target node."
 msgstr ""
 "Phương thức không được tìm thấy. Chỉ định phương thức hợp lệ hoặc đính kèm "
-"tập lệnh vào nút."
+"tập lệnh vào nút mục tiêu."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
@@ -5966,6 +6005,11 @@ msgstr "Giữ Ctrl để làm tròn về số nguyên. Giữ Shift để sửa t
 #: editor/editor_spin_slider.cpp scene/gui/button.cpp
 msgid "Flat"
 msgstr ""
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hide Slider"
+msgstr "Chế độ va chạm"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -14947,9 +14991,8 @@ msgid "Paste Node(s)"
 msgstr "Dán các nút"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Đính kèm Script"
+msgstr "Tách tập lệnh ra"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -15122,7 +15165,7 @@ msgstr "Không thể thực hiện thao tác này trên Cảnh được khởi t
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
-msgstr "Đính kèm Script"
+msgstr "Đính kèm tập lệnh"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -15178,8 +15221,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
-"Không thể đính kèm tệp lệnh: Không ghi nhận thấy ngôn ngữ nào.\n"
-"Vấn đề có thể là do các module ngôn ngữ bị vô hiệu hóa khi trình biên tập "
+"Không thể đính kèm tập lệnh: Không ghi nhận thấy ngôn ngữ nào.\n"
+"Vấn đề có thể là do các mô đun ngôn ngữ bị vô hiệu hóa khi trình chỉnh sửa "
 "này được xây dựng."
 
 #: editor/scene_tree_dock.cpp
@@ -15231,9 +15274,8 @@ msgstr ""
 "Tệp tin cảnh giống như một nút. Tạo một cảnh kế thừa nếu nó không có nút gốc."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Đính kèm một tệp lệnh cho nút đã chọn."
+msgstr "Đính kèm một tập lệnh cho nút đã chọn."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -15514,7 +15556,7 @@ msgstr "Tệp lệnh có sẵn:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "Đính kèm lệnh cho nút"
+msgstr "Đính kèm tập lệnh của nút"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -15994,41 +16036,6 @@ msgstr ""
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
-
-#: main/main.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
-msgid "Display"
-msgstr "Hiển thị tất cả"
-
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
-msgid "Width"
-msgstr "Chiều rộng"
-
-#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
-#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
-#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
-#: scene/resources/texture.cpp
-msgid "Height"
-msgstr "Chiều cao"
-
-#: main/main.cpp
-msgid "Always On Top"
-msgstr ""
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Width"
-msgstr "Rộng bên trái"
-
-#: main/main.cpp
-#, fuzzy
-msgid "Test Height"
-msgstr "Kiểm tra"
 
 #: main/main.cpp
 msgid "DPI"
@@ -17616,7 +17623,7 @@ msgstr "Tên không phải định danh hợp lệ:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr "Tên đã được sử dụng bởi func/var/singal khác:"
+msgstr "Tên đã được sử dụng bởi func/var/signal khác:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -20419,6 +20426,11 @@ msgstr "Đa giác không hợp lệ. Cần ít nhất 3 điểm trong chế đ�
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr "Đa giác không hợp lệ. Cần ít nhất 2 điểm trong chế độ dựng 'Segments'."
 
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+msgid ""
+"The One Way Collision property will be ignored when the parent is an Area2D."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 #, fuzzy
 msgid "Build Mode"
@@ -22237,7 +22249,7 @@ msgstr "Lưới"
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
-"spatial object."
+"Spatial inheriting parent object."
 msgstr ""
 
 #: scene/3d/occluder.cpp
@@ -24456,6 +24468,11 @@ msgstr "Chế độ Xoay"
 
 #: scene/main/node.cpp
 #, fuzzy
+msgid "Physics Interpolation Mode"
+msgstr "Nội suy"
+
+#: scene/main/node.cpp
+#, fuzzy
 msgid "Display Folded"
 msgstr "Hiển thị tất cả"
 
@@ -24488,11 +24505,6 @@ msgstr "Gán nhiều:"
 #, fuzzy
 msgid "Process Priority"
 msgstr "Chỉnh độ ưu tiên của ô"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Physics Interpolated"
-msgstr "Nội suy"
 
 #: scene/main/scene_tree.cpp scene/main/timer.cpp
 #, fuzzy
@@ -25190,6 +25202,11 @@ msgstr ""
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Labeled Separator Right"
 msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Separator"
+msgstr "Thu phóng (theo tỉ lệ):"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25990,6 +26007,11 @@ msgstr "Gần đây:"
 #, fuzzy
 msgid "Distance Field"
 msgstr "Chế độ tập trung"
+
+#: scene/resources/gradient.cpp
+#, fuzzy
+msgid "Raw Data"
+msgstr "Chiều sâu"
 
 #: scene/resources/gradient.cpp
 #, fuzzy
