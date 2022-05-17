@@ -562,7 +562,11 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree() && (include_locked_nodes || !_is_node_locked(canvas_item))) {
-		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform *= canvas_item->get_transform();
 		Rect2 rect = canvas_item->_edit_get_rect();
 		if (r_first) {
 			r_rect = Rect2(xform.xform(rect.get_center()), Size2());
@@ -608,7 +612,11 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree()) {
-		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform = (xform * canvas_item->get_transform()).affine_inverse();
 		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(canvas_item);
@@ -698,7 +706,11 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	}
 
 	if (canvas_item && canvas_item->is_visible_in_tree() && !locked && editable) {
-		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
+		Transform2D xform = p_canvas_xform;
+		if (!canvas_item->is_set_as_top_level()) {
+			xform *= p_parent_xform;
+		}
+		xform *= canvas_item->get_transform();
 
 		if (canvas_item->_edit_use_rect()) {
 			Rect2 rect = canvas_item->_edit_get_rect();
