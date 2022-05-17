@@ -1558,19 +1558,46 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 		String text_to_drop;
-		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ",";
-			}
 
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-			String path = sn->get_path_to(node);
-			text_to_drop += path.c_escape().quote(quote_style);
+				String path = sn->get_path_to(node);
+				for (const String &segment : path.split("/")) {
+					if (!segment.is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+
+				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				if (use_type) {
+					text_to_drop += vformat("@onready var %s: %s = $%s\n", variable_name, node->get_class_name(), path);
+				} else {
+					text_to_drop += vformat("@onready var %s = $%s\n", variable_name, path);
+				}
+			}
+		} else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if (i > 0) {
+					text_to_drop += ",";
+				}
+
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String path = sn->get_path_to(node);
+				text_to_drop += path.c_escape().quote(quote_style);
+			}
 		}
 
 		te->set_caret_line(row);
