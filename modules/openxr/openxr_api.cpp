@@ -172,7 +172,7 @@ bool OpenXRAPI::load_supported_extensions() {
 
 bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
-		if ((supported_extensions[i].extensionName == p_extension) == 0) {
+		if (supported_extensions[i].extensionName == p_extension) {
 #ifdef DEBUG
 			print_line("OpenXR: requested extension", p_extension, "is supported");
 #endif
