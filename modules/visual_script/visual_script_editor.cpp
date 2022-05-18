@@ -1831,17 +1831,23 @@ void VisualScriptEditor::_on_nodes_paste() {
 	}
 }
 
-void VisualScriptEditor::_on_nodes_delete() {
+void VisualScriptEditor::_on_nodes_delete(const Array &p_nodes) {
 	// delete all the selected nodes
 
 	List<int> to_erase;
 
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
+	if (p_nodes.empty()) {
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					to_erase.push_back(gn->get_name().operator String().to_int());
+				}
 			}
+		}
+	} else {
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			to_erase.push_back(p_nodes[i].operator String().to_int());
 		}
 	}
 
@@ -4253,7 +4259,7 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 void VisualScriptEditor::_menu_option(int p_what) {
 	switch (p_what) {
 		case EDIT_DELETE_NODES: {
-			_on_nodes_delete();
+			_on_nodes_delete(Array());
 		} break;
 		case EDIT_TOGGLE_BREAKPOINT: {
 			List<String> reselect;
@@ -4288,7 +4294,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		} break;
 		case EDIT_CUT_NODES: {
 			_on_nodes_copy();
-			_on_nodes_delete();
+			_on_nodes_delete(Array());
 		} break;
 		case EDIT_PASTE_NODES: {
 			_on_nodes_paste();
