@@ -60,6 +60,7 @@
 			<argument index="0" name="character" type="int" />
 			<description>
 				Returns the line number of the character position provided.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_character_paragraph">
@@ -67,24 +68,28 @@
 			<argument index="0" name="character" type="int" />
 			<description>
 				Returns the paragraph number of the character position provided.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the height of the content.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_width" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the width of the content.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_offset">
@@ -92,6 +97,7 @@
 			<argument index="0" name="line" type="int" />
 			<description>
 				Returns the vertical offset of the line found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -112,6 +118,7 @@
 			<argument index="0" name="paragraph" type="int" />
 			<description>
 				Returns the vertical offset of the paragraph found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
@@ -155,12 +162,14 @@
 			<return type="int" />
 			<description>
 				Returns the number of visible lines.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_visible_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -174,6 +183,12 @@
 			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
+			</description>
+		</method>
+		<method name="is_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
 			</description>
 		</method>
 		<method name="newline">
@@ -476,6 +491,10 @@
 			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
+		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
+			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
+			[b]Note:[/b] Progress bar is dislayed only if [member threaded] is enabled.
+		</member>
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -504,6 +523,9 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
 		</member>
+		<member name="threaded" type="bool" setter="set_threaded" getter="is_threaded" default="false">
+			If [code]true[/code], text processing is done in a background thread.
+		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
@@ -513,6 +535,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="finished">
+			<description>
+				Triggered when the document is fully loaded.
+			</description>
+		</signal>
 		<signal name="meta_clicked">
 			<argument index="0" name="meta" type="Variant" />
 			<description>

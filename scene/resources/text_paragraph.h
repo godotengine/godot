@@ -31,6 +31,7 @@
 #ifndef TEXT_PARAGRAPH_H
 #define TEXT_PARAGRAPH_H
 
+#include "core/templates/local_vector.h"
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
@@ -38,6 +39,7 @@
 
 class TextParagraph : public RefCounted {
 	GDCLASS(TextParagraph, RefCounted);
+	_THREAD_SAFE_CLASS_
 
 public:
 	enum OverrunBehavior {
@@ -54,7 +56,7 @@ private:
 	Rect2 dropcap_margins;
 
 	RID rid;
-	Vector<RID> lines_rid;
+	LocalVector<RID> lines_rid;
 	int spacing_top = 0;
 	int spacing_bottom = 0;
 
@@ -155,6 +157,8 @@ public:
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(const Point2 &p_coords) const;
+
+	Mutex &get_mutex() const { return _thread_safe_; };
 
 	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
