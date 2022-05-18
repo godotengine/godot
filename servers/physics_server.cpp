@@ -811,7 +811,7 @@ PhysicsServer::~PhysicsServer() {
 Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;
 int PhysicsServerManager::default_server_id = -1;
 int PhysicsServerManager::default_server_priority = -1;
-const String PhysicsServerManager::setting_property_name("physics/3d/physics_engine");
+const String PhysicsServerManager::setting_property_name(PNAME("physics/3d/physics_engine"));
 
 void PhysicsServerManager::on_servers_changed() {
 	String physics_servers2("DEFAULT");

@@ -738,7 +738,7 @@ Physics2DServer::~Physics2DServer() {
 Vector<Physics2DServerManager::ClassInfo> Physics2DServerManager::physics_2d_servers;
 int Physics2DServerManager::default_server_id = -1;
 int Physics2DServerManager::default_server_priority = -1;
-const String Physics2DServerManager::setting_property_name("physics/2d/physics_engine");
+const String Physics2DServerManager::setting_property_name(PNAME("physics/2d/physics_engine"));
 
 void Physics2DServerManager::on_servers_changed() {
 	String physics_servers("DEFAULT");
