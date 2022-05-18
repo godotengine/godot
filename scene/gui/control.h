@@ -217,12 +217,12 @@ private:
 		NodePath focus_prev;
 
 		bool bulk_theme_override = false;
-		HashMap<StringName, Ref<Texture2D>> icon_override;
-		HashMap<StringName, Ref<StyleBox>> style_override;
-		HashMap<StringName, Ref<Font>> font_override;
-		HashMap<StringName, int> font_size_override;
-		HashMap<StringName, Color> color_override;
-		HashMap<StringName, int> constant_override;
+		Theme::ThemeIconMap icon_override;
+		Theme::ThemeStyleMap style_override;
+		Theme::ThemeFontMap font_override;
+		Theme::ThemeFontSizeMap font_size_override;
+		Theme::ThemeColorMap color_override;
+		Theme::ThemeConstantMap constant_override;
 
 	} data;
 
