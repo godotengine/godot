@@ -1568,7 +1568,12 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				String path = sn->get_path_to(node);
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_identifier()) {
 						path = path.c_escape().quote(quote_style);
@@ -1595,7 +1600,12 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				String path = sn->get_path_to(node);
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_identifier()) {
 						path = path.c_escape().quote(quote_style);
