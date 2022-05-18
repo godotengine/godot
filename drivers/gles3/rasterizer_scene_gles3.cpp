@@ -3742,7 +3742,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		if (composite_from != storage->frame.current_rt->buffers.diffuse) {
 			glEnable(GL_BLEND);
 			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			// Alpha was used by the horizontal pass, it should not carry over.
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
 		} else {
 			glActiveTexture(GL_TEXTURE2);

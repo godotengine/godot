@@ -204,7 +204,7 @@ vec4 apply_glow(vec4 color, vec3 glow) { // apply glow using the selected blendi
 #ifndef USE_GLOW_SOFTLIGHT // softlight has no effect on black color
 	// compute the alpha from glow
 	float a = max(max(glow.r, glow.g), glow.b);
-	color.a = a + color.a * (1 - a);
+	color.a = a + color.a * (1.0 - a);
 	if (color.a == 0.0) {
 		color.rgb = vec3(0.0);
 	} else if (color.a < 1.0) {
@@ -242,10 +242,10 @@ vec4 apply_fxaa(vec4 color, vec2 uv_interp, vec2 pixel_size) {
 	vec4 rgbSE = texture2DLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0);
 	vec3 rgbM = color.rgb;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
-	float lumaNW = dot(rgbNW.rgb, luma) - ((1 - rgbNW.a) / 8.0);
-	float lumaNE = dot(rgbNE.rgb, luma) - ((1 - rgbNE.a) / 8.0);
-	float lumaSW = dot(rgbSW.rgb, luma) - ((1 - rgbSW.a) / 8.0);
-	float lumaSE = dot(rgbSE.rgb, luma) - ((1 - rgbSE.a) / 8.0);
+	float lumaNW = dot(rgbNW.rgb, luma) - ((1.0 - rgbNW.a) / 8.0);
+	float lumaNE = dot(rgbNE.rgb, luma) - ((1.0 - rgbNE.a) / 8.0);
+	float lumaSW = dot(rgbSW.rgb, luma) - ((1.0 - rgbSW.a) / 8.0);
+	float lumaSE = dot(rgbSE.rgb, luma) - ((1.0 - rgbSE.a) / 8.0);
 	float lumaM = dot(rgbM, luma) - (color.a / 8.0);
 	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
 	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
@@ -267,7 +267,7 @@ vec4 apply_fxaa(vec4 color, vec2 uv_interp, vec2 pixel_size) {
 	vec4 rgbA = 0.5 * (texture2DLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0) + texture2DLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0));
 	vec4 rgbB = rgbA * 0.5 + 0.25 * (texture2DLod(source, uv_interp + dir * -0.5, 0.0) + texture2DLod(source, uv_interp + dir * 0.5, 0.0));
 
-	float lumaB = dot(rgbB.rgb, luma) - ((1 - rgbB.a) / 8.0);
+	float lumaB = dot(rgbB.rgb, luma) - ((1.0 - rgbB.a) / 8.0);
 	vec4 color_output = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
 	if (color_output.a == 0.0) {
 		color_output.rgb = vec3(0.0);

@@ -240,7 +240,6 @@ void main() {
 	vec4 color_accum = vec4(0.0);
 
 	float max_accum = 0.0;
-	float k_accum = 0.0;
 
 	for (int i = 0; i < dof_kernel_size; i++) {
 		int int_ofs = i - dof_kernel_from;
@@ -250,7 +249,6 @@ void main() {
 		float tap_k = dof_kernel[i];
 
 		vec4 tap_color = textureLod(source_color, tap_uv, 0.0);
-		float w = tap_color.a;
 
 		float tap_depth = texture(dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
@@ -270,14 +268,9 @@ void main() {
 
 		max_accum = max(max_accum, tap_amount * ofs_influence);
 
-		k_accum += w;
-		tap_color.rgb *= w;
 		color_accum += tap_color * tap_k;
 	}
 
-	if (k_accum > 0.0) {
-		color_accum.rgb /= k_accum / dof_kernel_size;
-	}
 	color_accum.a = max(color_accum.a, sqrt(max_accum));
 
 #ifdef DOF_NEAR_BLUR_MERGE
