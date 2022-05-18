@@ -516,16 +516,16 @@ public:
 
 		if (use_fps && animation->get_step() > 0) {
 			float max_frame = animation->get_length() / animation->get_step();
-			p_list->push_back(PropertyInfo(Variant::REAL, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
+			p_list->push_back(PropertyInfo(Variant::REAL, PNAME("frame"), PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
 		} else {
-			p_list->push_back(PropertyInfo(Variant::REAL, "time", PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01"));
+			p_list->push_back(PropertyInfo(Variant::REAL, PNAME("time"), PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01"));
 		}
 
 		switch (animation->track_get_type(track)) {
 			case Animation::TYPE_TRANSFORM: {
-				p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
-				p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
+				p_list->push_back(PropertyInfo(Variant::VECTOR3, PNAME("location")));
+				p_list->push_back(PropertyInfo(Variant::QUAT, PNAME("rotation")));
+				p_list->push_back(PropertyInfo(Variant::VECTOR3, PNAME("scale")));
 
 			} break;
 			case Animation::TYPE_VALUE: {
@@ -533,7 +533,7 @@ public:
 
 				if (hint.type != Variant::NIL) {
 					PropertyInfo pi = hint;
-					pi.name = "value";
+					pi.name = PNAME("value");
 					p_list->push_back(pi);
 				} else {
 					PropertyHint hint = PROPERTY_HINT_NONE;
@@ -549,15 +549,15 @@ public:
 					}
 
 					if (v.get_type() != Variant::NIL) {
-						p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+						p_list->push_back(PropertyInfo(v.get_type(), PNAME("value"), hint, hint_string));
 					}
 				}
 
 			} break;
 			case Animation::TYPE_METHOD: {
-				p_list->push_back(PropertyInfo(Variant::STRING, "name"));
+				p_list->push_back(PropertyInfo(Variant::STRING, PNAME("name")));
 				static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
-				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
+				p_list->push_back(PropertyInfo(Variant::INT, PNAME("arg_count"), PROPERTY_HINT_RANGE, "0,8,1"));
 
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND(!d.has("args"));
@@ -571,23 +571,23 @@ public:
 				}
 
 				for (int i = 0; i < args.size(); i++) {
-					p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
+					p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%d/%s", PNAME("args"), i, PNAME("type")), PROPERTY_HINT_ENUM, vtypes));
 					if (args[i].get_type() != Variant::NIL) {
-						p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+						p_list->push_back(PropertyInfo(args[i].get_type(), vformat("%s/%d/%s", PNAME("args"), i, PNAME("value"))));
 					}
 				}
 
 			} break;
 			case Animation::TYPE_BEZIER: {
-				p_list->push_back(PropertyInfo(Variant::REAL, "value"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
+				p_list->push_back(PropertyInfo(Variant::REAL, PNAME("value")));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("in_handle")));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("out_handle")));
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+				p_list->push_back(PropertyInfo(Variant::REAL, PNAME("start_offset"), PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
+				p_list->push_back(PropertyInfo(Variant::REAL, PNAME("end_offset"), PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
@@ -613,13 +613,13 @@ public:
 				}
 				animations += "[stop]";
 
-				p_list->push_back(PropertyInfo(Variant::STRING, "animation", PROPERTY_HINT_ENUM, animations));
+				p_list->push_back(PropertyInfo(Variant::STRING, PNAME("animation"), PROPERTY_HINT_ENUM, animations));
 
 			} break;
 		}
 
 		if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
-			p_list->push_back(PropertyInfo(Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+			p_list->push_back(PropertyInfo(Variant::REAL, PNAME("easing"), PROPERTY_HINT_EXP_EASING));
 		}
 	}
 

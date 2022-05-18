@@ -101,16 +101,18 @@ message_patterns = {
     re.compile(r'TTRC\("(?P<message>([^"\\]|\\.)*)"\)'): ExtractType.TEXT,
     re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
-    re.compile(r'GLOBAL_DEF\("(?P<message>layer_names/\w+)/layer_"'): ExtractType.PROPERTY_PATH,
     re.compile(r'EDITOR_DEF(_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(
-        r'(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
+        r"(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\("
+        + r"Variant::[_A-Z0-9]+"  # Name
+        + r', "(?P<message>[^"]+)"'  # Type
+        + r'(, [_A-Z0-9]+(, "([^"\\]|\\.)*"(, (?P<usage>[_A-Z0-9]+))?)?|\))'  # [, hint[, hint string[, usage]]].
     ): ExtractType.PROPERTY_PATH,
     re.compile(
         r"(?!#define )LIMPL_PROPERTY(_RANGE)?\(Variant::[_A-Z0-9]+, (?P<message>[^,]+?),"
     ): ExtractType.PROPERTY_PATH,
-    re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
-    re.compile(r'#define (WSC|WSS|WRTC)_\w+ "(?P<message>[^"]+?)"'): ExtractType.PROPERTY_PATH,
+    re.compile(r'(ADD_GROUP|GNAME)\("(?P<message>[^"]+)", "(?P<prefix>[^"]*)"\)'): ExtractType.GROUP,
+    re.compile(r'PNAME\("(?P<message>[^"]+)"\)'): ExtractType.PROPERTY_PATH,
 }
 theme_property_patterns = {
     re.compile(r'set_(constant|font|stylebox|color|icon)\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
@@ -221,11 +223,17 @@ def process_file(f, fname):
                     if extract_type == ExtractType.TEXT:
                         _add_message(msg, msgctx, location, translator_comment)
                     elif extract_type == ExtractType.PROPERTY_PATH:
+                        if captures.get("usage") == "PROPERTY_USAGE_NOEDITOR":
+                            continue
+
                         if current_group:
                             if msg.startswith(current_group):
                                 msg = msg[len(current_group) :]
+                            elif current_group.startswith(msg):
+                                pass  # Keep this as-is. See EditorInspector::update_tree().
                             else:
                                 current_group = ""
+
                         if "." in msg:  # Strip feature tag.
                             msg = msg.split(".", 1)[0]
                         for part in msg.split("/"):

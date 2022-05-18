@@ -785,13 +785,13 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/2d_render"), i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/3d_render"), i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/2d_physics"), i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
 	}
 }
 
