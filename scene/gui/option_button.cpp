@@ -344,10 +344,6 @@ void OptionButton::clear() {
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which == current) {
-		return;
-	}
-
 	if (p_which == NONE_SELECTED) {
 		for (int i = 0; i < popup->get_item_count(); i++) {
 			popup->set_item_checked(i, false);
