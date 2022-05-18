@@ -105,7 +105,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	Vector<ObjectID> subresources;
 
-	bool restore_script_editor_on_drag = false;
 	bool reset_create_dialog = false;
 
 	int current_option = 0;
@@ -172,6 +171,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_create(Node *p_parent);
 	Node *scene_root = nullptr;
 	Node *edited_scene = nullptr;
+	Node *pending_click_select = nullptr;
 
 	VBoxContainer *create_root_dialog = nullptr;
 	String selected_favorite_root;
@@ -198,6 +198,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 	void _push_item(Object *p_object);
+	void _handle_select(Node *p_node);
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
 	bool _track_inherit(const String &p_target_scene_path, Node *p_desired_node);
