@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <http://gamma.cs.unc.edu/RVO2/>
+ * <https://gamma.cs.unc.edu/RVO2/>
  */
 
 #include "KdTree.h"
@@ -38,7 +38,7 @@
 #include "Definitions.h"
 
 namespace RVO {
-	const size_t RVO_MAX_LEAF_SIZE = 10;
+	const size_t RVO3D_MAX_LEAF_SIZE = 10;
 
 	KdTree::KdTree() { }
 
@@ -68,7 +68,7 @@ namespace RVO {
 			agentTree_[node].minCoord[2] = std::min(agentTree_[node].minCoord[2], agents_[i]->position_.z());
 		}
 
-		if (end - begin > RVO_MAX_LEAF_SIZE) {
+		if (end - begin > RVO3D_MAX_LEAF_SIZE) {
 			/* No leaf node. */
 			size_t coord;
 
@@ -127,7 +127,7 @@ namespace RVO {
 
 	void KdTree::queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const
 	{
-		if (agentTree_[node].end - agentTree_[node].begin <= RVO_MAX_LEAF_SIZE) {
+		if (agentTree_[node].end - agentTree_[node].begin <= RVO3D_MAX_LEAF_SIZE) {
 			for (size_t i = agentTree_[node].begin; i < agentTree_[node].end; ++i) {
 				agent->insertAgentNeighbor(agents_[i], rangeSq);
 			}

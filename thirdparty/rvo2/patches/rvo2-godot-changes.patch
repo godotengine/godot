@@ -1,40 +1,5 @@
-diff --git a/thirdparty/rvo2/API.h b/thirdparty/rvo2/API.h
-index afef140253..9d424a661b 100644
---- a/thirdparty/rvo2/API.h
-+++ b/thirdparty/rvo2/API.h
-@@ -38,30 +38,6 @@
- #ifndef RVO_API_H_
- #define RVO_API_H_
- 
--#ifdef _WIN32
--#include <SDKDDKVer.h>
--#define WIN32_LEAN_AND_MEAN
--#define NOCOMM
--#define NOIMAGE
--#define NOIME
--#define NOKANJI
--#define NOMCX
--#define NOMINMAX
--#define NOPROXYSTUB
--#define NOSERVICE
--#define NOSOUND
--#define NOTAPE
--#define NORPC
--#define _USE_MATH_DEFINES
--#include <windows.h>
--#endif
--
--#ifdef RVO_EXPORTS
--#define RVO_API __declspec(dllexport)
--#elif defined(RVO_IMPORTS)
--#define RVO_API __declspec(dllimport)
--#else
- #define RVO_API
--#endif
- 
- #endif /* RVO_API_H_ */
 diff --git a/thirdparty/rvo2/Agent.cpp b/thirdparty/rvo2/Agent.cpp
-index 1a236c7831..49f14c4f7d 100644
+index 5e49a3554c..b35eee9c12 100644
 --- a/thirdparty/rvo2/Agent.cpp
 +++ b/thirdparty/rvo2/Agent.cpp
 @@ -105,18 +105,17 @@ namespace RVO {
@@ -123,10 +88,10 @@ index 1a236c7831..49f14c4f7d 100644
  	{
  		const float dotProduct = line.point * line.direction;
 diff --git a/thirdparty/rvo2/Agent.h b/thirdparty/rvo2/Agent.h
-index 238f2d31b7..fd0bf4d1d4 100644
+index d3922ec645..45fbead2f5 100644
 --- a/thirdparty/rvo2/Agent.h
 +++ b/thirdparty/rvo2/Agent.h
-@@ -43,30 +43,52 @@
+@@ -41,30 +41,52 @@
  #include <utility>
  #include <vector>
  
@@ -184,7 +149,7 @@ index 238f2d31b7..fd0bf4d1d4 100644
  
  		/**
  		 * \brief   Inserts an agent neighbor into the set of neighbors of this agent.
-@@ -75,16 +97,10 @@ namespace RVO {
+@@ -73,16 +95,10 @@ namespace RVO {
  		 */
  		void insertAgentNeighbor(const Agent *agent, float &rangeSq);
  
@@ -201,7 +166,7 @@ index 238f2d31b7..fd0bf4d1d4 100644
  		size_t id_;
  		size_t maxNeighbors_;
  		float maxSpeed_;
-@@ -93,9 +109,11 @@ namespace RVO {
+@@ -91,9 +107,11 @@ namespace RVO {
  		float timeHorizon_;
  		std::vector<std::pair<float, const Agent *> > agentNeighbors_;
  		std::vector<Plane> orcaPlanes_;
@@ -215,7 +180,7 @@ index 238f2d31b7..fd0bf4d1d4 100644
  }
  
 diff --git a/thirdparty/rvo2/KdTree.cpp b/thirdparty/rvo2/KdTree.cpp
-index 719fabdf34..c6d43ee415 100644
+index 5e9e9777a6..c857f299df 100644
 --- a/thirdparty/rvo2/KdTree.cpp
 +++ b/thirdparty/rvo2/KdTree.cpp
 @@ -36,16 +36,15 @@
@@ -225,7 +190,7 @@ index 719fabdf34..c6d43ee415 100644
 -#include "RVOSimulator.h"
  
  namespace RVO {
- 	const size_t RVO_MAX_LEAF_SIZE = 10;
+ 	const size_t RVO3D_MAX_LEAF_SIZE = 10;
  
 -	KdTree::KdTree(RVOSimulator *sim) : sim_(sim) { }
 +	KdTree::KdTree() { }
@@ -239,10 +204,10 @@ index 719fabdf34..c6d43ee415 100644
  		if (!agents_.empty()) {
  			agentTree_.resize(2 * agents_.size() - 1);
 diff --git a/thirdparty/rvo2/KdTree.h b/thirdparty/rvo2/KdTree.h
-index 5dbc2b492f..e05a7f40d4 100644
+index a09384c20f..69d8920ce0 100644
 --- a/thirdparty/rvo2/KdTree.h
 +++ b/thirdparty/rvo2/KdTree.h
-@@ -43,6 +43,9 @@
+@@ -41,6 +41,9 @@
  
  #include "Vector3.h"
  
@@ -252,7 +217,7 @@ index 5dbc2b492f..e05a7f40d4 100644
  namespace RVO {
  	class Agent;
  	class RVOSimulator;
-@@ -51,7 +54,7 @@ namespace RVO {
+@@ -49,7 +52,7 @@ namespace RVO {
  	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
  	 */
  	class KdTree {
@@ -261,7 +226,7 @@ index 5dbc2b492f..e05a7f40d4 100644
  		/**
  		 * \brief   Defines an agent <i>k</i>d-tree node.
  		 */
-@@ -92,12 +95,12 @@ namespace RVO {
+@@ -90,12 +93,12 @@ namespace RVO {
  		 * \brief   Constructs a <i>k</i>d-tree instance.
  		 * \param   sim  The simulator instance.
  		 */
@@ -276,7 +241,7 @@ index 5dbc2b492f..e05a7f40d4 100644
  
  		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
  
-@@ -112,7 +115,6 @@ namespace RVO {
+@@ -110,7 +113,6 @@ namespace RVO {
  
  		std::vector<Agent *> agents_;
  		std::vector<AgentTreeNode> agentTree_;
@@ -285,9 +250,18 @@ index 5dbc2b492f..e05a7f40d4 100644
  		friend class Agent;
  		friend class RVOSimulator;
 diff --git a/thirdparty/rvo2/Vector3.h b/thirdparty/rvo2/Vector3.h
-index adf3382339..8c8835c865 100644
+index 6c3223bb87..f44e311f29 100644
 --- a/thirdparty/rvo2/Vector3.h
 +++ b/thirdparty/rvo2/Vector3.h
+@@ -41,7 +41,7 @@
+ #include <cstddef>
+ #include <ostream>
+ 
+-#include "Export.h"
++#define RVO3D_EXPORT
+ 
+ namespace RVO {
+ 	/**
 @@ -59,17 +59,6 @@ namespace RVO {
  			val_[2] = 0.0f;
  		}
@@ -296,7 +270,7 @@ index adf3382339..8c8835c865 100644
 -		 * \brief   Constructs and initializes a three-dimensional vector from the specified three-dimensional vector.
 -		 * \param   vector  The three-dimensional vector containing the xyz-coordinates.
 -		 */
--		RVO_API inline Vector3(const Vector3 &vector)
+-		inline Vector3(const Vector3 &vector)
 -		{
 -			val_[0] = vector[0];
 -			val_[1] = vector[1];

@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <http://gamma.cs.unc.edu/RVO2/>
+ * <https://gamma.cs.unc.edu/RVO2/>
  */
 
 #include "Agent.h"
@@ -42,7 +42,7 @@ namespace RVO {
 	/**
 	 * \brief   A sufficiently small positive number.
 	 */
-	const float RVO_EPSILON = 0.00001f;
+	const float RVO3D_EPSILON = 0.00001f;
 
 	/**
 	 * \brief   Defines a directed line.
@@ -168,12 +168,12 @@ namespace RVO {
 					const float b = relativePosition * relativeVelocity;
 					const float c = absSq(relativeVelocity) - absSq(cross(relativePosition, relativeVelocity)) / (distSq - combinedRadiusSq);
 					const float t = (b + std::sqrt(sqr(b) - a * c)) / a;
-					const Vector3 w = relativeVelocity - t * relativePosition;
-					const float wLength = abs(w);
-					const Vector3 unitW = w / wLength;
+					const Vector3 ww = relativeVelocity - t * relativePosition;
+					const float wwLength = abs(ww);
+					const Vector3 unitWW = ww / wwLength;
 
-					plane.normal = unitW;
-					u = (combinedRadius * t - wLength) * unitW;
+					plane.normal = unitWW;
+					u = (combinedRadius * t - wwLength) * unitWW;
 				}
 			}
 			else {
@@ -247,7 +247,7 @@ namespace RVO {
 			const float numerator = (planes[i].point - line.point) * planes[i].normal;
 			const float denominator = line.direction * planes[i].normal;
 
-			if (sqr(denominator) <= RVO_EPSILON) {
+			if (sqr(denominator) <= RVO3D_EPSILON) {
 				/* Lines line is (almost) parallel to plane i. */
 				if (numerator > 0.0f) {
 					return false;
@@ -322,7 +322,7 @@ namespace RVO {
 			const Vector3 planeOptVelocity = optVelocity - (optVelocity * planes[planeNo].normal) * planes[planeNo].normal;
 			const float planeOptVelocityLengthSq = absSq(planeOptVelocity);
 
-			if (planeOptVelocityLengthSq <= RVO_EPSILON) {
+			if (planeOptVelocityLengthSq <= RVO3D_EPSILON) {
 				result = planeCenter;
 			}
 			else {
@@ -347,7 +347,7 @@ namespace RVO {
 				/* Compute intersection line of plane i and plane planeNo. */
 				Vector3 crossProduct = cross(planes[i].normal, planes[planeNo].normal);
 
-				if (absSq(crossProduct) <= RVO_EPSILON) {
+				if (absSq(crossProduct) <= RVO3D_EPSILON) {
 					/* Planes planeNo and i are (almost) parallel, and plane i fully invalidates plane planeNo. */
 					return false;
 				}
@@ -410,7 +410,7 @@ namespace RVO {
 
 					const Vector3 crossProduct = cross(planes[j].normal, planes[i].normal);
 
-					if (absSq(crossProduct) <= RVO_EPSILON) {
+					if (absSq(crossProduct) <= RVO3D_EPSILON) {
 						/* Plane i and plane j are (almost) parallel. */
 						if (planes[i].normal * planes[j].normal > 0.0f) {
 							/* Plane i and plane j point in the same direction. */
