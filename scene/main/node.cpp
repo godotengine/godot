@@ -2528,9 +2528,10 @@ Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, 
 		int j = 0;
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
 		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
-			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
+			bool is_valid = false;
+			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j), &is_valid) : r_res->get(p_path.get_subname(j), &is_valid);
 
-			if (new_res_v.get_type() == Variant::NIL) { // Found nothing on that path
+			if (!is_valid) { // Found nothing on that path
 				return nullptr;
 			}
 
