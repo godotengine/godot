@@ -1272,12 +1272,44 @@ void Theme::remove_type(const StringName &p_theme_type) {
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	get_icon_type_list(p_list);
-	get_stylebox_type_list(p_list);
-	get_font_type_list(p_list);
-	get_font_size_type_list(p_list);
-	get_color_type_list(p_list);
-	get_constant_type_list(p_list);
+	// This Set guarantees uniqueness.
+	// Because each map can have the same type defined, but for this method
+	// we only want one occurrence of each type.
+	RBSet<StringName> types;
+
+	// Icons.
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+		types.insert(E.key);
+	}
+
+	// Styles.
+	for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+		types.insert(E.key);
+	}
+
+	// Fonts.
+	for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+		types.insert(E.key);
+	}
+
+	// Font sizes.
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : font_size_map) {
+		types.insert(E.key);
+	}
+
+	// Colors.
+	for (const KeyValue<StringName, HashMap<StringName, Color>> &E : color_map) {
+		types.insert(E.key);
+	}
+
+	// Constants.
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : constant_map) {
+		types.insert(E.key);
+	}
+
+	for (RBSet<StringName>::Element *E = types.front(); E; E = E->next()) {
+		p_list->push_back(E->get());
+	}
 }
 
 void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
