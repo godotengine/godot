@@ -498,6 +498,9 @@ void NavigationPolygonInstance::_navpoly_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		update();
 	}
+	if (navpoly.is_valid()) {
+		Navigation2DServer::get_singleton()->region_set_navpoly(region, navpoly);
+	}
 }
 
 String NavigationPolygonInstance::get_configuration_warning() const {
