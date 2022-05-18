@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RVO_SPACE_H
-#define RVO_SPACE_H
+#ifndef NAV_MAP_H
+#define NAV_MAP_H
 
 #include "nav_rid.h"
 
@@ -149,4 +149,4 @@ private:
 	void clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const;
 };
 
-#endif // RVO_SPACE_H
+#endif // NAV_MAP_H
