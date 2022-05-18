@@ -1307,8 +1307,8 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
-	for (RBSet<StringName>::Element *E = types.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const StringName &E : types) {
+		p_list->push_back(E);
 	}
 }
 

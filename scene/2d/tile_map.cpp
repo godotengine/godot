@@ -810,8 +810,8 @@ void TileMap::_update_dirty_quadrants() {
 		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 			q->self()->map_to_world.clear();
 			q->self()->world_to_map.clear();
-			for (RBSet<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
-				Vector2i pk = E->get();
+			for (const Vector2i &E : q->self()->cells) {
+				Vector2i pk = E;
 				Vector2i pk_world_coords = map_to_world(pk);
 				q->self()->map_to_world[pk] = pk_world_coords;
 				q->self()->world_to_map[pk_world_coords] = pk;
@@ -1250,8 +1250,8 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
-	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
-		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell->get(), true);
+	for (const Vector2i &E_cell : p_quadrant->cells) {
+		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell, true);
 
 		TileSetSource *source;
 		if (tile_set->has_source(c.source_id)) {
@@ -1281,7 +1281,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					// Draw a placeholder tile.
 					Transform2D xform;
-					xform.set_origin(map_to_world(E_cell->get()) - quadrant_pos);
+					xform.set_origin(map_to_world(E_cell) - quadrant_pos);
 					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
@@ -1464,8 +1464,8 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 		q.bodies.clear();
 
 		// Recreate bodies and shapes.
-		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
-			TileMapCell c = get_cell(q.layer, E_cell->get(), true);
+		for (const Vector2i &E_cell : q.cells) {
+			TileMapCell c = get_cell(q.layer, E_cell, true);
 
 			TileSetSource *source;
 			if (tile_set->has_source(c.source_id)) {
@@ -1478,8 +1478,8 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					const TileData *tile_data;
-					if (q.runtime_tile_data_cache.has(E_cell->get())) {
-						tile_data = q.runtime_tile_data_cache[E_cell->get()];
+					if (q.runtime_tile_data_cache.has(E_cell)) {
+						tile_data = q.runtime_tile_data_cache[E_cell];
 					} else {
 						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
@@ -1490,12 +1490,12 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 
 						// Create the body.
 						RID body = ps->body_create();
-						bodies_coords[body] = E_cell->get();
+						bodies_coords[body] = E_cell;
 						ps->body_set_mode(body, collision_animatable ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
 						ps->body_set_space(body, space);
 
 						Transform2D xform;
-						xform.set_origin(map_to_world(E_cell->get()));
+						xform.set_origin(map_to_world(E_cell));
 						xform = global_transform * xform;
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 
@@ -1661,8 +1661,8 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 		q.navigation_regions.clear();
 
 		// Get the navigation polygons and create regions.
-		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
-			TileMapCell c = get_cell(q.layer, E_cell->get(), true);
+		for (const Vector2i &E_cell : q.cells) {
+			TileMapCell c = get_cell(q.layer, E_cell, true);
 
 			TileSetSource *source;
 			if (tile_set->has_source(c.source_id)) {
@@ -1675,12 +1675,12 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					const TileData *tile_data;
-					if (q.runtime_tile_data_cache.has(E_cell->get())) {
-						tile_data = q.runtime_tile_data_cache[E_cell->get()];
+					if (q.runtime_tile_data_cache.has(E_cell)) {
+						tile_data = q.runtime_tile_data_cache[E_cell];
 					} else {
 						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
-					q.navigation_regions[E_cell->get()].resize(tile_set->get_navigation_layers_count());
+					q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
 					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
 						Ref<NavigationPolygon> navpoly;
@@ -1688,13 +1688,13 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 
 						if (navpoly.is_valid()) {
 							Transform2D tile_transform;
-							tile_transform.set_origin(map_to_world(E_cell->get()));
+							tile_transform.set_origin(map_to_world(E_cell));
 
 							RID region = NavigationServer2D::get_singleton()->region_create();
 							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
 							NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
-							q.navigation_regions[E_cell->get()].write[layer_index] = region;
+							q.navigation_regions[E_cell].write[layer_index] = region;
 						}
 					}
 				}
@@ -1750,8 +1750,8 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 
-	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
-		TileMapCell c = get_cell(p_quadrant->layer, E_cell->get(), true);
+	for (const Vector2i &E_cell : p_quadrant->cells) {
+		TileMapCell c = get_cell(p_quadrant->layer, E_cell, true);
 
 		TileSetSource *source;
 		if (tile_set->has_source(c.source_id)) {
@@ -1764,14 +1764,14 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				const TileData *tile_data;
-				if (p_quadrant->runtime_tile_data_cache.has(E_cell->get())) {
-					tile_data = p_quadrant->runtime_tile_data_cache[E_cell->get()];
+				if (p_quadrant->runtime_tile_data_cache.has(E_cell)) {
+					tile_data = p_quadrant->runtime_tile_data_cache[E_cell];
 				} else {
 					tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 				}
 
 				Transform2D xform;
-				xform.set_origin(map_to_world(E_cell->get()) - quadrant_pos);
+				xform.set_origin(map_to_world(E_cell) - quadrant_pos);
 				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 
 				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
@@ -1825,8 +1825,8 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 		q.scenes.clear();
 
 		// Recreate the scenes.
-		for (RBSet<Vector2i>::Element *E_cell = q.cells.front(); E_cell; E_cell = E_cell->next()) {
-			const TileMapCell &c = get_cell(q.layer, E_cell->get(), true);
+		for (const Vector2i &E_cell : q.cells) {
+			const TileMapCell &c = get_cell(q.layer, E_cell, true);
 
 			TileSetSource *source;
 			if (tile_set->has_source(c.source_id)) {
@@ -1845,13 +1845,13 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 						Control *scene_as_control = Object::cast_to<Control>(scene);
 						Node2D *scene_as_node2d = Object::cast_to<Node2D>(scene);
 						if (scene_as_control) {
-							scene_as_control->set_position(map_to_world(E_cell->get()) + scene_as_control->get_position());
+							scene_as_control->set_position(map_to_world(E_cell) + scene_as_control->get_position());
 						} else if (scene_as_node2d) {
 							Transform2D xform;
-							xform.set_origin(map_to_world(E_cell->get()));
+							xform.set_origin(map_to_world(E_cell));
 							scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
 						}
-						q.scenes[E_cell->get()] = scene->get_name();
+						q.scenes[E_cell] = scene->get_name();
 					}
 				}
 			}
@@ -1883,8 +1883,8 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
 	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
-	for (RBSet<Vector2i>::Element *E_cell = p_quadrant->cells.front(); E_cell; E_cell = E_cell->next()) {
-		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell->get(), true);
+	for (const Vector2i &E_cell : p_quadrant->cells) {
+		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell, true);
 
 		TileSetSource *source;
 		if (tile_set->has_source(c.source_id)) {
@@ -1912,7 +1912,7 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					// Draw a placeholder tile.
 					Transform2D xform;
-					xform.set_origin(map_to_world(E_cell->get()) - quadrant_pos);
+					xform.set_origin(map_to_world(E_cell) - quadrant_pos);
 					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
@@ -2189,19 +2189,19 @@ RBSet<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_
 
 	// Build a set of dummy constraints get the constrained points.
 	RBSet<TerrainConstraint> dummy_constraints;
-	for (RBSet<Vector2i>::Element *E = p_to_replace.front(); E; E = E->next()) {
+	for (const Vector2i &E : p_to_replace) {
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) { // Iterates over sides.
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
-				dummy_constraints.insert(TerrainConstraint(this, E->get(), bit, -1));
+				dummy_constraints.insert(TerrainConstraint(this, E, bit, -1));
 			}
 		}
 	}
 
 	// For each constrained point, we get all overlapping tiles, and select the most adequate terrain for it.
 	RBSet<TerrainConstraint> constraints;
-	for (RBSet<TerrainConstraint>::Element *E = dummy_constraints.front(); E; E = E->next()) {
-		TerrainConstraint c = E->get();
+	for (const TerrainConstraint &E : dummy_constraints) {
+		TerrainConstraint c = E;
 
 		HashMap<int, int> terrain_count;
 
@@ -2348,8 +2348,8 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_colla
 
 		// Add the new constraints from the added tiles.
 		RBSet<TerrainConstraint> new_constraints = get_terrain_constraints_from_added_tile(selected_cell_to_replace, p_terrain_set, selected_terrain_tile_pattern);
-		for (RBSet<TerrainConstraint>::Element *E_constraint = new_constraints.front(); E_constraint; E_constraint = E_constraint->next()) {
-			constraints.insert(E_constraint->get());
+		for (const TerrainConstraint &E_constraint : new_constraints) {
+			constraints.insert(E_constraint);
 		}
 
 		// Compute valid tiles again for neighbors.
@@ -2425,8 +2425,8 @@ void TileMap::fix_invalid_tiles() {
 				coords.insert(E.key);
 			}
 		}
-		for (RBSet<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
-			set_cell(i, E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+		for (const Vector2i &E : coords) {
+			set_cell(i, E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 		}
 	}
 }
@@ -3524,11 +3524,11 @@ void TileMap::draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Co
 	Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
 	TileSet::TileShape shape = tile_set->get_tile_shape();
 
-	for (RBSet<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
-		Vector2 center = map_to_world(E->get());
+	for (const Vector2i &E : p_cells) {
+		Vector2 center = map_to_world(E);
 
 #define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
-	if (!p_cells.has(get_neighbor_cell(E->get(), side))) {                                  \
+	if (!p_cells.has(get_neighbor_cell(E, side))) {                                         \
 		Vector2 from = p_transform.xform(center + polygon[polygon_index_from] * tile_size); \
 		Vector2 to = p_transform.xform(center + polygon[polygon_index_to] * tile_size);     \
 		p_control->draw_line(from, to, p_color);                                            \

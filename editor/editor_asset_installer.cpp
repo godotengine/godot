@@ -154,8 +154,8 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	int num_file_conflicts = 0;
 
-	for (RBSet<String>::Element *E = files_sorted.front(); E; E = E->next()) {
-		String path = E->get();
+	for (const String &E : files_sorted) {
+		String path = E;
 		int depth = p_depth;
 		bool skip = false;
 		while (depth > 0) {
@@ -224,7 +224,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			ti->set_metadata(0, res_path);
 		}
 
-		status_map[E->get()] = ti;
+		status_map[E] = ti;
 	}
 
 	if (num_file_conflicts >= 1) {

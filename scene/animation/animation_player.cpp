@@ -1766,12 +1766,12 @@ void AnimationPlayer::_animation_changed() {
 }
 
 void AnimationPlayer::_stop_playing_caches() {
-	for (RBSet<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
-		if (E->get()->node && E->get()->audio_playing) {
-			E->get()->node->call(SNAME("stop"));
+	for (TrackNodeCache *E : playing_caches) {
+		if (E->node && E->audio_playing) {
+			E->node->call(SNAME("stop"));
 		}
-		if (E->get()->node && E->get()->animation_playing) {
-			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
+		if (E->node && E->animation_playing) {
+			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->node);
 			if (!player) {
 				continue;
 			}

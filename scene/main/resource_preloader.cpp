@@ -62,9 +62,9 @@ Array ResourcePreloader::_get_resources() const {
 	}
 
 	int i = 0;
-	for (RBSet<String>::Element *E = sorted_names.front(); E; E = E->next()) {
-		names.set(i, E->get());
-		arr[i] = resources[E->get()];
+	for (const String &E : sorted_names) {
+		names.set(i, E);
+		arr[i] = resources[E];
 		i++;
 	}
 

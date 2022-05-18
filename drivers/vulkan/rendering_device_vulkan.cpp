@@ -159,8 +159,8 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 	E = reverse_dependency_map.find(p_id);
 
 	if (E) {
-		for (RBSet<RID>::Element *F = E->value.front(); F; F = F->next()) {
-			HashMap<RID, RBSet<RID>>::Iterator G = dependency_map.find(F->get());
+		for (const RID &F : E->value) {
+			HashMap<RID, RBSet<RID>>::Iterator G = dependency_map.find(F);
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->value.has(p_id));
 			G->value.erase(p_id);
@@ -5473,9 +5473,9 @@ RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_a
 
 	DescriptorPool *pool = nullptr;
 
-	for (RBSet<DescriptorPool *>::Element *E = descriptor_pools[p_key].front(); E; E = E->next()) {
-		if (E->get()->usage < max_descriptors_per_pool) {
-			pool = E->get();
+	for (DescriptorPool *E : descriptor_pools[p_key]) {
+		if (E->usage < max_descriptors_per_pool) {
+			pool = E;
 			break;
 		}
 	}
@@ -8349,31 +8349,31 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 
 	uint32_t barrier_idx = 0;
 
-	for (RBSet<Texture *>::Element *E = compute_list->state.textures_to_sampled_layout.front(); E; E = E->next()) {
+	for (Texture *E : compute_list->state.textures_to_sampled_layout) {
 		VkImageMemoryBarrier &image_memory_barrier = image_barriers[barrier_idx++];
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		image_memory_barrier.dstAccessMask = access_flags;
-		image_memory_barrier.oldLayout = E->get()->layout;
+		image_memory_barrier.oldLayout = E->layout;
 		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		image_memory_barrier.image = E->get()->image;
-		image_memory_barrier.subresourceRange.aspectMask = E->get()->read_aspect_mask;
-		image_memory_barrier.subresourceRange.baseMipLevel = E->get()->base_mipmap;
-		image_memory_barrier.subresourceRange.levelCount = E->get()->mipmaps;
-		image_memory_barrier.subresourceRange.baseArrayLayer = E->get()->base_layer;
-		image_memory_barrier.subresourceRange.layerCount = E->get()->layers;
+		image_memory_barrier.image = E->image;
+		image_memory_barrier.subresourceRange.aspectMask = E->read_aspect_mask;
+		image_memory_barrier.subresourceRange.baseMipLevel = E->base_mipmap;
+		image_memory_barrier.subresourceRange.levelCount = E->mipmaps;
+		image_memory_barrier.subresourceRange.baseArrayLayer = E->base_layer;
+		image_memory_barrier.subresourceRange.layerCount = E->layers;
 
-		E->get()->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		E->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		if (E->get()->used_in_frame != frames_drawn) {
-			E->get()->used_in_transfer = false;
-			E->get()->used_in_raster = false;
-			E->get()->used_in_compute = false;
-			E->get()->used_in_frame = frames_drawn;
+		if (E->used_in_frame != frames_drawn) {
+			E->used_in_transfer = false;
+			E->used_in_raster = false;
+			E->used_in_compute = false;
+			E->used_in_frame = frames_drawn;
 		}
 	}
 

@@ -740,8 +740,8 @@ void CodeEdit::set_auto_indent_prefixes(const TypedArray<String> &p_prefixes) {
 
 TypedArray<String> CodeEdit::get_auto_indent_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const RBSet<char32_t>::Element *E = auto_indent_prefixes.front(); E; E = E->next()) {
-		prefixes.push_back(String::chr(E->get()));
+	for (const char32_t &E : auto_indent_prefixes) {
+		prefixes.push_back(String::chr(E));
 	}
 	return prefixes;
 }
@@ -1752,8 +1752,8 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 
 TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	TypedArray<String> prefixes;
-	for (const RBSet<char32_t>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
-		prefixes.push_back(String::chr(E->get()));
+	for (const char32_t &E : code_completion_prefixes) {
+		prefixes.push_back(String::chr(E));
 	}
 	return prefixes;
 }

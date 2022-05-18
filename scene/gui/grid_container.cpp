@@ -104,11 +104,11 @@ void GridContainer::_notification(int p_what) {
 				// Check if all minwidth constraints are OK if we use the remaining space.
 				can_fit = true;
 				int max_index = col_expanded.front()->get();
-				for (RBSet<int>::Element *E = col_expanded.front(); E; E = E->next()) {
-					if (col_minw[E->get()] > col_minw[max_index]) {
-						max_index = E->get();
+				for (const int &E : col_expanded) {
+					if (col_minw[E] > col_minw[max_index]) {
+						max_index = E;
 					}
-					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E->get()]) {
+					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E]) {
 						can_fit = false;
 					}
 				}
@@ -125,11 +125,11 @@ void GridContainer::_notification(int p_what) {
 				// Check if all minheight constraints are OK if we use the remaining space.
 				can_fit = true;
 				int max_index = row_expanded.front()->get();
-				for (RBSet<int>::Element *E = row_expanded.front(); E; E = E->next()) {
-					if (row_minh[E->get()] > row_minh[max_index]) {
-						max_index = E->get();
+				for (const int &E : row_expanded) {
+					if (row_minh[E] > row_minh[max_index]) {
+						max_index = E;
 					}
-					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E->get()]) {
+					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E]) {
 						can_fit = false;
 					}
 				}

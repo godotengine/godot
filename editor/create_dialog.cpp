@@ -138,8 +138,8 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
-		for (RBSet<StringName>::Element *E = type_blacklist.front(); E; E = E->next()) {
-			if (ClassDB::is_parent_class(p_type, E->get())) {
+		for (const StringName &E : type_blacklist) {
+			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
 			}
 		}

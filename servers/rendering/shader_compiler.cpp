@@ -303,8 +303,8 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 	Vector<StringName> uses_functions;
 
-	for (RBSet<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
-		uses_functions.push_back(E->get());
+	for (const StringName &E : p_node->functions[fidx].uses_function) {
+		uses_functions.push_back(E);
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 

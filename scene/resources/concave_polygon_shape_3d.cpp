@@ -50,9 +50,9 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 	points.resize(edges.size() * 2);
 	int idx = 0;
-	for (RBSet<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
-		points.write[idx + 0] = E->get().a;
-		points.write[idx + 1] = E->get().b;
+	for (const DrawEdge &E : edges) {
+		points.write[idx + 0] = E.a;
+		points.write[idx + 1] = E.b;
 		idx += 2;
 	}
 

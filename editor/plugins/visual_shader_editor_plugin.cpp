@@ -3215,8 +3215,8 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 	const RBSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
 	RBSet<String> deleted_names;
 
-	for (RBSet<int>::Element *E = current_set.front(); E; E = E->next()) {
-		int node_id = E->get();
+	for (const int &E : current_set) {
+		int node_id = E;
 		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
 		bool caught = false;
 		Variant var;

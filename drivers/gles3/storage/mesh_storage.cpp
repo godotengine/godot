@@ -68,8 +68,8 @@ void MeshStorage::mesh_free(RID p_rid) {
 		ERR_PRINT("deleting mesh with active instances");
 	}
 	if (mesh->shadow_owners.size()) {
-		for (RBSet<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-			Mesh *shadow_owner = E->get();
+		for (Mesh *E : mesh->shadow_owners) {
+			Mesh *shadow_owner = E;
 			shadow_owner->shadow_mesh = RID();
 			shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 		}
@@ -268,8 +268,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 
-	for (RBSet<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 	}
@@ -610,8 +610,8 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 
-	for (RBSet<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 	}

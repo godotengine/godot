@@ -2091,8 +2091,8 @@ void MaterialStorage::global_variable_set(const StringName &p_name, const Varian
 		} else {
 			//texture
 			MaterialStorage *material_storage = MaterialStorage::get_singleton();
-			for (RBSet<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-				Material *material = material_storage->get_material(E->get());
+			for (const RID &E : gv.texture_materials) {
+				Material *material = material_storage->get_material(E);
 				ERR_CONTINUE(!material);
 				material_storage->_material_queue_update(material, false, true);
 			}
@@ -2123,8 +2123,8 @@ void MaterialStorage::global_variable_set_override(const StringName &p_name, con
 	} else {
 		//texture
 		MaterialStorage *material_storage = MaterialStorage::get_singleton();
-		for (RBSet<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-			Material *material = material_storage->get_material(E->get());
+		for (const RID &E : gv.texture_materials) {
+			Material *material = material_storage->get_material(E);
 			ERR_CONTINUE(!material);
 			material_storage->_material_queue_update(material, false, true);
 		}
@@ -2421,8 +2421,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 			shader->data = nullptr;
 		}
 
-		for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *E : shader->owners) {
+			Material *material = E;
 			material->shader_mode = new_mode;
 			if (material->data) {
 				memdelete(material->data);
@@ -2438,8 +2438,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 			shader->mode = RS::SHADER_MAX; //invalid
 		}
 
-		for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *E : shader->owners) {
+			Material *material = E;
 			if (shader->data) {
 				material->data = material_data_request_func[new_mode](shader->data);
 				material->data->self = material->self;
@@ -2462,8 +2462,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		shader->data->set_code(p_code);
 	}
 
-	for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *E : shader->owners) {
+		Material *material = E;
 		material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
 	}
@@ -2504,8 +2504,8 @@ void MaterialStorage::shader_set_default_texture_param(RID p_shader, const Strin
 	if (shader->data) {
 		shader->data->set_default_texture_param(p_name, p_texture, p_index);
 	}
-	for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *E : shader->owners) {
+		Material *material = E;
 		_material_queue_update(material, false, true);
 	}
 }

@@ -5464,8 +5464,8 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_rid);
 
 		//remove from shadow atlases..
-		for (RBSet<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
-			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(E->get());
+		for (const RID &E : light_instance->shadow_atlases) {
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(E);
 			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
 			uint32_t key = shadow_atlas->shadow_owners[p_rid];
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;

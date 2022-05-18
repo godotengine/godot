@@ -193,8 +193,8 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
-		for (RBSet<String>::Element *E = changed.front(); E; E = E->next()) {
-			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E->get());
+		for (const String &E : changed) {
+			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E);
 		}
 	} else {
 		//full update, because props were added or removed

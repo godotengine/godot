@@ -1831,8 +1831,8 @@ void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 
 	RSG::canvas_render->occluder_polygon_set_shape(occluder_poly->occluder, p_shape, p_closed);
 
-	for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
-		E->get()->aabb_cache = occluder_poly->aabb;
+	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
+		E->aabb_cache = occluder_poly->aabb;
 	}
 }
 
@@ -1841,8 +1841,8 @@ void RendererCanvasCull::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 	ERR_FAIL_COND(!occluder_poly);
 	occluder_poly->cull_mode = p_mode;
 	RSG::canvas_render->occluder_polygon_set_cull_mode(occluder_poly->occluder, p_mode);
-	for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
-		E->get()->cull_cache = p_mode;
+	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
+		E->cull_cache = p_mode;
 	}
 }
 
@@ -1942,12 +1942,12 @@ bool RendererCanvasCull::free(RID p_rid) {
 			canvas->child_items[i].item->parent = RID();
 		}
 
-		for (RBSet<RendererCanvasRender::Light *>::Element *E = canvas->lights.front(); E; E = E->next()) {
-			E->get()->canvas = RID();
+		for (RendererCanvasRender::Light *E : canvas->lights) {
+			E->canvas = RID();
 		}
 
-		for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *E = canvas->occluders.front(); E; E = E->next()) {
-			E->get()->canvas = RID();
+		for (RendererCanvasRender::LightOccluderInstance *E : canvas->occluders) {
+			E->canvas = RID();
 		}
 
 		canvas_owner.free(p_rid);

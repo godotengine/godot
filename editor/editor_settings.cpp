@@ -268,25 +268,25 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (RBSet<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (const _EVCSort &E : vclist) {
 		uint32_t pusage = PROPERTY_USAGE_NONE;
-		if (E->get().save || !optimize_save) {
+		if (E.save || !optimize_save) {
 			pusage |= PROPERTY_USAGE_STORAGE;
 		}
 
-		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
+		if (!E.name.begins_with("_") && !E.name.begins_with("projects/")) {
 			pusage |= PROPERTY_USAGE_EDITOR;
 		} else {
 			pusage |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
 		}
 
-		PropertyInfo pi(E->get().type, E->get().name);
+		PropertyInfo pi(E.type, E.name);
 		pi.usage = pusage;
-		if (hints.has(E->get().name)) {
-			pi = hints[E->get().name];
+		if (hints.has(E.name)) {
+			pi = hints[E.name];
 		}
 
-		if (E->get().restart_if_changed) {
+		if (E.restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
 

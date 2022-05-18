@@ -95,9 +95,9 @@ Ref<EditorExportPlatform> EditorExportPreset::get_platform() const {
 
 void EditorExportPreset::update_files_to_export() {
 	Vector<String> to_remove;
-	for (RBSet<String>::Element *E = selected_files.front(); E; E = E->next()) {
-		if (!FileAccess::exists(E->get())) {
-			to_remove.push_back(E->get());
+	for (const String &E : selected_files) {
+		if (!FileAccess::exists(E)) {
+			to_remove.push_back(E);
 		}
 	}
 	for (int i = 0; i < to_remove.size(); ++i) {
@@ -107,8 +107,8 @@ void EditorExportPreset::update_files_to_export() {
 
 Vector<String> EditorExportPreset::get_files_to_export() const {
 	Vector<String> files;
-	for (RBSet<String>::Element *E = selected_files.front(); E; E = E->next()) {
-		files.push_back(E->get());
+	for (const String &E : selected_files) {
+		files.push_back(E);
 	}
 	return files;
 }
@@ -879,8 +879,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	int idx = 0;
 	int total = paths.size();
 
-	for (RBSet<String>::Element *E = paths.front(); E; E = E->next()) {
-		String path = E->get();
+	for (const String &E : paths) {
+		String path = E;
 		String type = ResourceLoader::get_resource_type(path);
 
 		if (FileAccess::exists(path + ".import")) {

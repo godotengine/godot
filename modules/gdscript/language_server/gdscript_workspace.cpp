@@ -794,7 +794,7 @@ GDScriptWorkspace::~GDScriptWorkspace() {
 		cached_parsers.insert(E.key);
 	}
 
-	for (RBSet<String>::Element *E = cached_parsers.front(); E; E = E->next()) {
-		remove_cache_parser(E->get());
+	for (const String &E : cached_parsers) {
+		remove_cache_parser(E);
 	}
 }

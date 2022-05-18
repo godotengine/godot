@@ -198,13 +198,13 @@ void EditorProfiler::_update_plot() {
 	for (int i = 0; i < total_metrics; i++) {
 		const Metric &m = _get_frame_metric(i);
 
-		for (RBSet<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
-			HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E->get());
+		for (const StringName &E : plot_sigs) {
+			HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 			if (F) {
 				highest = MAX(F->value->total_time, highest);
 			}
 
-			HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E->get());
+			HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
 			if (G) {
 				if (use_self) {
 					highest = MAX(G->value->self, highest);
@@ -234,17 +234,17 @@ void EditorProfiler::_update_plot() {
 
 			int current = i * frame_metrics.size() / w;
 
-			for (RBSet<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
+			for (const StringName &E : plot_sigs) {
 				const Metric &m = _get_frame_metric(current);
 
 				float value = 0;
 
-				HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E->get());
+				HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 				if (F) {
 					value = F->value->total_time;
 				}
 
-				HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E->get());
+				HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
 				if (G) {
 					if (use_self) {
 						value = G->value->self;
@@ -256,12 +256,12 @@ void EditorProfiler::_update_plot() {
 				int plot_pos = CLAMP(int(value * h / highest), 0, h - 1);
 
 				int prev_plot = plot_pos;
-				HashMap<StringName, int>::Iterator H = prev_plots.find(E->get());
+				HashMap<StringName, int>::Iterator H = prev_plots.find(E);
 				if (H) {
 					prev_plot = H->value;
 					H->value = plot_pos;
 				} else {
-					prev_plots[E->get()] = plot_pos;
+					prev_plots[E] = plot_pos;
 				}
 
 				plot_pos = h - plot_pos - 1;
@@ -271,7 +271,7 @@ void EditorProfiler::_update_plot() {
 					SWAP(prev_plot, plot_pos);
 				}
 
-				Color col = _get_color_from_signature(E->get());
+				Color col = _get_color_from_signature(E);
 
 				for (int j = prev_plot; j <= plot_pos; j++) {
 					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
@@ -534,9 +534,9 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	Vector<String> signatures;
 	signatures.resize(possible_signatures.size());
 	int sig_index = 0;
-	for (const RBSet<StringName>::Element *E = possible_signatures.front(); E; E = E->next()) {
-		signatures.write[sig_index] = E->get();
-		sig_map[E->get()] = sig_index;
+	for (const StringName &E : possible_signatures) {
+		signatures.write[sig_index] = E;
+		sig_map[E] = sig_index;
 		sig_index++;
 	}
 	res.push_back(signatures);

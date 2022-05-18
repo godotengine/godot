@@ -412,9 +412,9 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 			if (audio_listener_3d_set.size() && !audio_listener_3d) {
 				AudioListener3D *first = nullptr;
-				for (RBSet<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
-					if (first == nullptr || first->is_greater_than(E->get())) {
-						first = E->get();
+				for (AudioListener3D *E : audio_listener_3d_set) {
+					if (first == nullptr || first->is_greater_than(E)) {
+						first = E;
 					}
 				}
 
@@ -426,9 +426,9 @@ void Viewport::_notification(int p_what) {
 			if (camera_3d_set.size() && !camera_3d) {
 				// There are cameras but no current camera, pick first in tree and make it current.
 				Camera3D *first = nullptr;
-				for (RBSet<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
-					if (first == nullptr || first->is_greater_than(E->get())) {
-						first = E->get();
+				for (Camera3D *E : camera_3d_set) {
+					if (first == nullptr || first->is_greater_than(E)) {
+						first = E;
 					}
 				}
 
@@ -647,13 +647,13 @@ void Viewport::_process_picking() {
 			uint64_t frame = get_tree()->get_frame();
 
 			PhysicsDirectSpaceState2D::ShapeResult res[64];
-			for (RBSet<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
+			for (const CanvasLayer *E : canvas_layers) {
 				Transform2D canvas_transform;
 				ObjectID canvas_layer_id;
-				if (E->get()) {
+				if (E) {
 					// A descendant CanvasLayer.
-					canvas_transform = E->get()->get_transform();
-					canvas_layer_id = E->get()->get_instance_id();
+					canvas_transform = E->get_transform();
+					canvas_layer_id = E->get_instance_id();
 				} else {
 					// This Viewport's builtin canvas.
 					canvas_transform = get_canvas_transform();
@@ -3202,18 +3202,18 @@ void Viewport::_audio_listener_3d_remove(AudioListener3D *p_listener) {
 
 void Viewport::_audio_listener_3d_make_next_current(AudioListener3D *p_exclude) {
 	if (audio_listener_3d_set.size() > 0) {
-		for (RBSet<AudioListener3D *>::Element *E = audio_listener_3d_set.front(); E; E = E->next()) {
-			if (p_exclude == E->get()) {
+		for (AudioListener3D *E : audio_listener_3d_set) {
+			if (p_exclude == E) {
 				continue;
 			}
-			if (!E->get()->is_inside_tree()) {
+			if (!E->is_inside_tree()) {
 				continue;
 			}
 			if (audio_listener_3d != nullptr) {
 				return;
 			}
 
-			E->get()->make_current();
+			E->make_current();
 		}
 	} else {
 		// Attempt to reset listener to the camera position.
@@ -3290,18 +3290,18 @@ void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 }
 
 void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
-	for (RBSet<Camera3D *>::Element *E = camera_3d_set.front(); E; E = E->next()) {
-		if (p_exclude == E->get()) {
+	for (Camera3D *E : camera_3d_set) {
+		if (p_exclude == E) {
 			continue;
 		}
-		if (!E->get()->is_inside_tree()) {
+		if (!E->is_inside_tree()) {
 			continue;
 		}
 		if (camera_3d != nullptr) {
 			return;
 		}
 
-		E->get()->make_current();
+		E->make_current();
 	}
 }
 
@@ -3936,8 +3936,8 @@ Viewport::Viewport() {
 
 Viewport::~Viewport() {
 	// Erase itself from viewport textures.
-	for (RBSet<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
-		E->get()->vp = nullptr;
+	for (ViewportTexture *E : viewport_textures) {
+		E->vp = nullptr;
 	}
 	RenderingServer::get_singleton()->free(viewport);
 }

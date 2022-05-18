@@ -1369,12 +1369,12 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	// Count the sum of probabilities.
 	double sum = 0.0;
 	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
-	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				sum += tile_data->get_probability();
 			} else {
 				sum += 1.0;
@@ -1389,13 +1389,13 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	double picked = Math::random(0.0, sum);
 
 	// Pick the tile.
-	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				count += tile_data->get_probability();
 			} else {
 				count += 1.0;
@@ -1405,7 +1405,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 		}
 
 		if (count >= picked) {
-			return E->get();
+			return E;
 		}
 	}
 

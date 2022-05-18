@@ -46,8 +46,8 @@ void POTGenerator::_print_all_translation_strings() {
 			print_line("msgid: " + E.key());
 			print_line("context: " + v_md[i].ctx);
 			print_line("msgid_plural: " + v_md[i].plural);
-			for (RBSet<String>::Element *F = v_md[i].locations.front(); F; F = F->next()) {
-				print_line("location: " + F->get());
+			for (const String &F : v_md[i].locations) {
+				print_line("location: " + F);
 			}
 		}
 	}
@@ -133,8 +133,8 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			file->store_line("");
 
 			// Write file locations.
-			for (RBSet<String>::Element *E = locations.front(); E; E = E->next()) {
-				file->store_line("#: " + E->get().trim_prefix("res://"));
+			for (const String &E : locations) {
+				file->store_line("#: " + E.trim_prefix("res://"));
 			}
 
 			// Write context.
