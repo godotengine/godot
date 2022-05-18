@@ -300,6 +300,12 @@ real_t FastNoiseLite::get_domain_warp_fractal_gain() const {
 // Noise interface functions.
 
 real_t FastNoiseLite::get_noise_1d(real_t p_x) const {
+	p_x += offset.x;
+	if (domain_warp_enabled) {
+		// Needed since DomainWarp expects a reference.
+		real_t y_dummy = 0;
+		_domain_warp_noise.DomainWarp(p_x, y_dummy);
+	}
 	return get_noise_2d(p_x, 0.0);
 }
 
@@ -308,10 +314,12 @@ real_t FastNoiseLite::get_noise_2dv(Vector2 p_v) const {
 }
 
 real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) const {
+	p_x += offset.x;
+	p_y += offset.y;
 	if (domain_warp_enabled) {
 		_domain_warp_noise.DomainWarp(p_x, p_y);
 	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y);
+	return _noise.GetNoise(p_x, p_y);
 }
 
 real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
@@ -319,10 +327,13 @@ real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
 }
 
 real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
+	p_x += offset.x;
+	p_y += offset.y;
+	p_z += offset.z;
 	if (domain_warp_enabled) {
 		_domain_warp_noise.DomainWarp(p_x, p_y, p_z);
 	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y, p_z + offset.z);
+	return _noise.GetNoise(p_x, p_y, p_z);
 }
 
 void FastNoiseLite::_changed() {
