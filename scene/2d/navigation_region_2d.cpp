@@ -509,6 +509,9 @@ void NavigationRegion2D::_navpoly_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		update();
 	}
+	if (navpoly.is_valid()) {
+		NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
+	}
 }
 void NavigationRegion2D::_map_changed(RID p_map) {
 	if (enabled && get_world_2d()->get_navigation_map() == p_map) {
