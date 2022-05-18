@@ -108,11 +108,15 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::CLASS: {
-			// Locate class by constructing the path to it and following that path
+			// Locate class by constructing the path to it and following that path.
 			GDScriptParser::ClassNode *class_type = p_datatype.class_type;
 			if (class_type) {
-				const bool is_inner_by_path = (!main_script->path.is_empty()) && (class_type->fqcn.split("::")[0] == main_script->path);
-				const bool is_inner_by_name = (!main_script->name.is_empty()) && (class_type->fqcn.split("::")[0] == main_script->name);
+				result.kind = GDScriptDataType::GDSCRIPT;
+				result.builtin_type = p_datatype.builtin_type;
+
+				String class_name = class_type->fqcn.split("::")[0];
+				const bool is_inner_by_path = (!main_script->path.is_empty()) && (class_name == main_script->path);
+				const bool is_inner_by_name = (!main_script->name.is_empty()) && (class_name == main_script->name);
 				if (is_inner_by_path || is_inner_by_name) {
 					// Local class.
 					List<StringName> names;
@@ -131,16 +135,41 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						script = script->subclasses[names.back()->get()];
 						names.pop_back();
 					}
-					result.kind = GDScriptDataType::GDSCRIPT;
 					result.script_type = script.ptr();
 					result.native_type = script->get_instance_base_type();
-					result.builtin_type = p_datatype.builtin_type;
 				} else {
-					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					// Inner class.
+					PackedStringArray classes = class_type->fqcn.split("::");
+					if (!classes.is_empty()) {
+						for (GDScript *script : parsed_classes) {
+							// Checking of inheritance structure of inner class to find a correct script link.
+							if (script->name == classes[classes.size() - 1]) {
+								PackedStringArray classes2 = script->fully_qualified_name.split("::");
+								bool valid = true;
+								if (classes.size() != classes2.size()) {
+									valid = false;
+								} else {
+									for (int i = 0; i < classes.size(); i++) {
+										if (classes[i] != classes2[i]) {
+											valid = false;
+											break;
+										}
+									}
+								}
+								if (!valid) {
+									continue;
+								}
+								result.script_type_ref = Ref<GDScript>(script);
+								break;
+							}
+						}
+					}
+					if (result.script_type_ref.is_null()) {
+						result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					}
+
 					result.script_type = result.script_type_ref.ptr();
 					result.native_type = p_datatype.native_type;
-					result.builtin_type = p_datatype.builtin_type;
 				}
 			}
 		} break;
