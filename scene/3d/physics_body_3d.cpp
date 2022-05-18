@@ -94,13 +94,11 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p_test_only, real_t p_margin, int p_max_collisions) {
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 	parameters.max_collisions = p_max_collisions;
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
 	PhysicsServer3D::MotionResult result;
 
-	bool collided = move_and_collide(parameters, result, p_test_only);
-
-	// Don't report collision when the whole motion is done.
-	if (collided && result.collision_safe_fraction < 1) {
+	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -184,15 +182,9 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distan
 	}
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_distance, p_margin);
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
-
-	if (colliding) {
-		// Don't report collision when the whole motion is done.
-		return (r->collision_safe_fraction < 1.0);
-	} else {
-		return false;
-	}
+	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -1214,6 +1206,8 @@ bool CharacterBody3D::move_and_slide() {
 
 	if (!current_platform_velocity.is_equal_approx(Vector3())) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
 			parameters.exclude_objects.insert(platform_object_id);
@@ -1277,6 +1271,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.max_collisions = 4;
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
@@ -1521,6 +1516,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1575,6 +1571,7 @@ void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -1610,6 +1607,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;

@@ -874,7 +874,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 	bool collided = false;
 
-	if (recovered || (safe < 1)) {
+	if ((p_parameters.recovery_as_collision && recovered) || (safe < 1)) {
 		if (safe >= 1) {
 			best_shape = -1; //no best shape with cast, reset to -1
 		}

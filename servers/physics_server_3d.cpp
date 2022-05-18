@@ -527,6 +527,9 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters3D::get_exclude_objects);
 	ClassDB::bind_method(D_METHOD("set_exclude_objects", "exclude_list"), &PhysicsTestMotionParameters3D::set_exclude_objects);
 
+	ClassDB::bind_method(D_METHOD("is_recovery_as_collision_enabled"), &PhysicsTestMotionParameters3D::is_recovery_as_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_recovery_as_collision_enabled", "enabled"), &PhysicsTestMotionParameters3D::set_recovery_as_collision_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
@@ -534,6 +537,7 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recovery_as_collision"), "set_recovery_as_collision_enabled", "is_recovery_as_collision_enabled");
 }
 
 ///////////////////////////////
