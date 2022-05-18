@@ -485,12 +485,12 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry/source_group_name"), "set_source_group_name", "get_source_group_name");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/height", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/radius", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_climb", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_slope", PROPERTY_HINT_RANGE, "0.0,90.0,0.1"), "set_agent_max_slope", "get_agent_max_slope");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_climb", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_slope", PROPERTY_HINT_RANGE, "0.02,90.0,0.01"), "set_agent_max_slope", "get_agent_max_slope");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge/max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater"), "set_edge_max_length", "get_edge_max_length");
@@ -536,13 +536,13 @@ void NavigationMesh::_validate_property(PropertyInfo &property) const {
 }
 
 NavigationMesh::NavigationMesh() {
-	cell_size = 0.3f;
-	cell_height = 0.2f;
-	agent_height = 2.0f;
-	agent_radius = 0.6f;
-	agent_max_climb = 0.9f;
+	cell_size = 0.25f;
+	cell_height = 0.25f;
+	agent_height = 1.5f;
+	agent_radius = 0.5f;
+	agent_max_climb = 0.25f;
 	agent_max_slope = 45.0f;
-	region_min_size = 8.0f;
+	region_min_size = 2.0f;
 	region_merge_size = 20.0f;
 	edge_max_length = 12.0f;
 	edge_max_error = 1.3f;
