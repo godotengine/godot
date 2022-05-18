@@ -171,22 +171,11 @@ public:
 
 		InstanceData *instance_data_array = nullptr;
 		bool canvas_texscreen_used;
-		//CanvasShaderGLES3 canvas_shader;
 		RID canvas_shader_current_version;
 		RID canvas_shader_default_version;
-		//CanvasShadowShaderGLES3 canvas_shadow_shader;
-		//LensDistortedShaderGLES3 lens_shader;
-
-		bool using_texture_rect;
-
-		bool using_ninepatch;
-		bool using_skeleton;
-
-		Transform2D skeleton_transform;
-		Transform2D skeleton_transform_inverse;
-		Size2i skeleton_texture_size;
 
 		RID current_tex = RID();
+		Size2 current_pixel_size = Size2();
 		RID current_normal = RID();
 		RID current_specular = RID();
 		GLES3::Texture *current_tex_ptr;
@@ -195,14 +184,7 @@ public:
 		uint32_t current_primitive_points = 0;
 		Item::Command::Type current_command = Item::Command::TYPE_RECT;
 
-		bool end_batch = false;
-
-		Transform3D vp;
-		Light *using_light = nullptr;
-		bool using_shadow;
-		bool using_transparent_rt;
-
-		// FROM RD Renderer
+		bool transparent_render_target = false;
 
 		double time = 0.0;
 
@@ -224,16 +206,13 @@ public:
 
 	RasterizerStorageGLES3 *storage = nullptr;
 
-	void _set_uniforms();
-
-	void canvas_begin();
-	void canvas_end();
+	void canvas_begin(RID p_to_render_target, bool p_to_backbuffer);
 
 	//virtual void draw_window_margins(int *black_margin, RID *black_image) override;
 	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
 
-	virtual void reset_canvas();
-	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
+	void reset_canvas();
+	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
 
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
 
@@ -252,7 +231,7 @@ public:
 	bool free(RID p_rid) override;
 	void update() override;
 
-	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, RID &r_last_texture, Size2 &r_texpixel_size);
+	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index);
 
 	struct PolygonBuffers {
 		GLuint vertex_buffer;
@@ -273,7 +252,6 @@ public:
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer = false);
 	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index);
 	void _render_batch(uint32_t &p_max_index);
-	void _end_batch(const uint32_t p_index);
 	void _allocate_instance_data_buffer();
 
 	void set_time(double p_time);

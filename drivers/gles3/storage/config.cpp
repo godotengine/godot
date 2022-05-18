@@ -55,81 +55,33 @@ Config::Config() {
 		}
 	}
 
-	keep_original_textures = true; // false
-	depth_internalformat = GL_DEPTH_COMPONENT;
-	depth_type = GL_UNSIGNED_INT;
-
-	srgb_decode_supported = extensions.has("GL_EXT_texture_sRGB_decode");
-	etc2_supported = true;
+	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
 #ifdef GLES_OVER_GL
 	float_texture_supported = true;
+	etc2_supported = false;
 	s3tc_supported = true;
-	etc_supported = false; // extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
-	rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
-	support_npot_repeat_mipmap = true;
-	depth_buffer_internalformat = GL_DEPTH_COMPONENT24;
+	rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 #else
 	float_texture_supported = extensions.has("GL_ARB_texture_float") || extensions.has("GL_OES_texture_float");
-	s3tc_supported = extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
-	etc_supported = extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || extensions.has("WEBGL_compressed_texture_etc1");
-	bptc_supported = false;
-	rgtc_supported = false;
-	support_npot_repeat_mipmap = extensions.has("GL_OES_texture_npot");
-
-#ifdef JAVASCRIPT_ENABLED
-	// RenderBuffer internal format must be 16 bits in WebGL,
-	// but depth_texture should default to 32 always
-	// if the implementation doesn't support 32, it should just quietly use 16 instead
-	// https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/
-	depth_buffer_internalformat = GL_DEPTH_COMPONENT16;
-	depth_type = GL_UNSIGNED_INT;
-#else
-	// on mobile check for 24 bit depth support for RenderBufferStorage
-	if (extensions.has("GL_OES_depth24")) {
-		depth_buffer_internalformat = _DEPTH_COMPONENT24_OES;
-		depth_type = GL_UNSIGNED_INT;
-	} else {
-		depth_buffer_internalformat = GL_DEPTH_COMPONENT16;
-		depth_type = GL_UNSIGNED_SHORT;
-	}
-#endif
+	etc2_supported = true;
+	s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
+	rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
 #endif
 
 #ifdef GLES_OVER_GL
 	use_rgba_2d_shadows = false;
-	use_rgba_3d_shadows = false;
-	support_depth_cubemaps = true;
 #else
 	use_rgba_2d_shadows = !(float_texture_supported && extensions.has("GL_EXT_texture_rg"));
-	use_rgba_3d_shadows = false;
-	support_depth_cubemaps = extensions.has("GL_OES_depth_texture_cube_map");
 #endif
 
-#ifdef GLES_OVER_GL
-	support_32_bits_indices = true;
-#else
-	support_32_bits_indices = extensions.has("GL_OES_element_index_uint");
-#endif
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
 
-#ifdef GLES_OVER_GL
-	support_write_depth = true;
-#elif defined(JAVASCRIPT_ENABLED)
-	support_write_depth = false;
-#else
-	support_write_depth = extensions.has("GL_EXT_frag_depth");
-#endif
-
-	//picky requirements for these
-	support_shadow_cubemaps = support_write_depth && support_depth_cubemaps;
 	// the use skeleton software path should be used if either float texture is not supported,
 	// OR max_vertex_texture_image_units is zero
 	use_skeleton_software = (float_texture_supported == false) || (max_vertex_texture_image_units == 0);
-
-	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
 
 	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (support_anisotropic_filter) {

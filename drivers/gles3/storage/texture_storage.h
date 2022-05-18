@@ -71,6 +71,17 @@ namespace GLES3 {
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#define _EXT_COMPRESSED_R11_EAC 0x9270
+#define _EXT_COMPRESSED_SIGNED_R11_EAC 0x9271
+#define _EXT_COMPRESSED_RG11_EAC 0x9272
+#define _EXT_COMPRESSED_SIGNED_RG11_EAC 0x9273
+#define _EXT_COMPRESSED_RGB8_ETC2 0x9274
+#define _EXT_COMPRESSED_SRGB8_ETC2 0x9275
+#define _EXT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9276
+#define _EXT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9277
+#define _EXT_COMPRESSED_RGBA8_ETC2_EAC 0x9278
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC 0x9279
+
 #define _GL_TEXTURE_EXTERNAL_OES 0x8D65
 
 #ifdef GLES_OVER_GL
@@ -161,8 +172,6 @@ struct Texture {
 
 	bool compressed = false;
 
-	bool srgb = false;
-
 	bool resize_to_po2 = false;
 
 	bool active = false;
@@ -178,9 +187,6 @@ struct Texture {
 
 	RS::TextureDetectCallback detect_3d_callback = nullptr;
 	void *detect_3d_callback_ud = nullptr;
-
-	RS::TextureDetectCallback detect_srgb = nullptr;
-	void *detect_srgb_ud = nullptr;
 
 	RS::TextureDetectCallback detect_normal_callback = nullptr;
 	void *detect_normal_callback_ud = nullptr;
@@ -213,8 +219,6 @@ struct Texture {
 		redraw_if_visible = o.redraw_if_visible;
 		detect_3d_callback = o.detect_3d_callback;
 		detect_3d_callback_ud = o.detect_3d_callback_ud;
-		detect_srgb = o.detect_srgb;
-		detect_srgb_ud = o.detect_srgb_ud;
 		detect_normal_callback = o.detect_normal_callback;
 		detect_normal_callback_ud = o.detect_normal_callback_ud;
 		detect_roughness_callback = o.detect_roughness_callback;
@@ -311,21 +315,6 @@ private:
 };
 
 struct RenderTarget {
-	struct MipMaps {
-		struct Size {
-			GLuint fbo;
-			int width;
-			int height;
-		};
-
-		Vector<Size> sizes;
-		GLuint color = 0;
-		int levels = 0;
-
-		MipMaps() {
-		}
-	};
-
 	struct External {
 		GLuint fbo = 0;
 		GLuint color = 0;
@@ -338,23 +327,21 @@ struct RenderTarget {
 
 	Point2i position = Point2i(0, 0);
 	Size2i size = Size2i(0, 0);
+	int mipmap_count = 1;
 	RID self;
 	GLuint fbo = 0;
 	GLuint color = 0;
+	GLuint backbuffer_fbo = 0;
+	GLuint backbuffer = 0;
 
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
 	GLuint color_type = GL_UNSIGNED_BYTE;
 	Image::Format image_format = Image::FORMAT_RGBA8;
 
-	MipMaps mip_maps[2];
-	bool mip_maps_allocated = false;
+	bool is_transparent = false;
+	bool direct_to_screen = false;
 
-	bool flags[RendererTextureStorage::RENDER_TARGET_FLAG_MAX];
-
-	// instead of allocating sized render targets immediately,
-	// defer this for faster startup
-	bool allocate_is_dirty = false;
 	bool used_in_frame = false;
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 
@@ -364,9 +351,6 @@ struct RenderTarget {
 	bool clear_requested = false;
 
 	RenderTarget() {
-		for (int i = 0; i < RendererTextureStorage::RENDER_TARGET_FLAG_MAX; ++i) {
-			flags[i] = false;
-		}
 	}
 };
 
@@ -384,28 +368,15 @@ private:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
 	/* Render Target API */
 
 	mutable RID_Owner<RenderTarget> render_target_owner;
 
-	// make access easier to these
-	struct Dimensions {
-		// render target
-		int rt_width;
-		int rt_height;
-
-		// window
-		int win_width;
-		int win_height;
-		Dimensions() {
-			rt_width = 0;
-			rt_height = 0;
-			win_width = 0;
-			win_height = 0;
-		}
-	} _dims;
+	void _clear_render_target(RenderTarget *rt);
+	void _update_render_target(RenderTarget *rt);
+	void _create_render_target_backbuffer(RenderTarget *rt);
 
 public:
 	static TextureStorage *get_singleton();
@@ -522,19 +493,8 @@ public:
 
 	static GLuint system_fbo;
 
-	// TODO this should be moved back to storage or removed
-	struct Frame {
-		GLES3::RenderTarget *current_rt;
-	} frame;
-
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
-
-	// TODO these internals should be private
-	void _clear_render_target(RenderTarget *rt);
-	void _update_render_target(RenderTarget *rt);
-	void _create_render_target_backbuffer(RenderTarget *rt);
-	void _set_current_render_target(RID p_render_target);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
@@ -544,7 +504,8 @@ public:
 	virtual RID render_target_get_texture(RID p_render_target) override;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
 
-	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
+	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
+	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
 	virtual bool render_target_was_used(RID p_render_target) override;
 	void render_target_clear_used(RID p_render_target);
 
@@ -563,13 +524,9 @@ public:
 	Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
 	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
 
-	void bind_framebuffer(GLuint framebuffer) {
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	}
-
-	void bind_framebuffer_system() {
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-	}
+	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
+	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
+	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
 
 	String get_framebuffer_error(GLenum p_status);
 };

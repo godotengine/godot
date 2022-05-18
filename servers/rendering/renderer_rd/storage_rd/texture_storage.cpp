@@ -2075,7 +2075,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
 	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-	rt->image_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+	rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 
 	RD::TextureFormat rd_format;
 	RD::TextureView rd_view;
@@ -2127,7 +2127,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		//so transparent can be supported
 		RD::TextureView view;
 		view.format_override = rt->color_format;
-		if (!rt->flags[RENDER_TARGET_TRANSPARENT]) {
+		if (!rt->is_transparent) {
 			view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		}
 		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->color);
@@ -2194,9 +2194,6 @@ RID TextureStorage::render_target_create() {
 	render_target.was_used = false;
 	render_target.clear_requested = false;
 
-	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
-		render_target.flags[i] = false;
-	}
 	_update_render_target(&render_target);
 	return render_target_owner.make_rid(render_target);
 }
@@ -2240,11 +2237,14 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 void TextureStorage::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
 }
 
-void TextureStorage::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
+void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
-	rt->flags[p_flag] = p_value;
+	rt->is_transparent = p_is_transparent;
 	_update_render_target(rt);
+}
+
+void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_value) {
 }
 
 bool TextureStorage::render_target_was_used(RID p_render_target) {

@@ -36,20 +36,6 @@
 
 #ifdef GLES3_ENABLED
 
-void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
-#ifdef GLES_OVER_GL
-
-	for (int i = 0; i < levels; i++) {
-		glTexImage2D(target, i, internalformat, width, height, 0, format, type, nullptr);
-		width = MAX(1, (width / 2));
-		height = MAX(1, (height / 2));
-	}
-
-#else
-	glTexStorage2D(target, levels, internalformat, width, height);
-#endif
-}
-
 uint64_t RasterizerSceneGLES3::auto_exposure_counter = 2;
 
 RasterizerSceneGLES3 *RasterizerSceneGLES3::singleton = nullptr;
@@ -2480,100 +2466,6 @@ RID RasterizerSceneGLES3::render_buffers_create() {
 	return render_buffers_owner.make_rid(rb);
 }
 
-/* BACK FBO */
-/* For MSAA */
-/*
-#ifndef JAVASCRIPT_ENABLED
-	if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_8X) {
-		rt->multisample_active = true;
-
-		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
-		int msaa = msaa_value[rt->msaa];
-
-		int max_samples = 0;
-		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
-		if (msaa > max_samples) {
-			WARN_PRINT("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
-			msaa = max_samples;
-		}
-
-		//regular fbo
-		glGenFramebuffers(1, &rt->multisample_fbo);
-		bind_framebuffer(rt->multisample_fbo);
-
-		glGenRenderbuffers(1, &rt->multisample_depth);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->multisample_depth);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, config.depth_buffer_internalformat, rt->size.x, rt->size.y);
-
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->multisample_depth);
-
-		glGenRenderbuffers(1, &rt->multisample_color);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->multisample_color);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, color_internal_format, rt->size.x, rt->size.y);
-
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->multisample_color);
-
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			// Delete allocated resources and default to no MSAA
-			WARN_PRINT_ONCE("Cannot allocate back framebuffer for MSAA");
-			printf("err status: %x\n", status);
-			rt->multisample_active = false;
-
-			glDeleteFramebuffers(1, &rt->multisample_fbo);
-			rt->multisample_fbo = 0;
-
-			glDeleteRenderbuffers(1, &rt->multisample_depth);
-			rt->multisample_depth = 0;
-
-			glDeleteRenderbuffers(1, &rt->multisample_color);
-			rt->multisample_color = 0;
-		}
-
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		bind_framebuffer(0);
-
-	} else
-#endif // JAVASCRIPT_ENABLED
-	{
-		rt->multisample_active = false;
-	}
-	*/
-
-// copy texscreen buffers
-//	if (!(rt->flags[RendererStorage::RENDER_TARGET_NO_SAMPLING])) {
-/*
-if (false) {
-glGenTextures(1, &rt->copy_screen_effect.color);
-glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
-
-if (rt->flags[RendererStorage::RENDER_TARGET_TRANSPARENT]) {
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->size.x, rt->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-} else {
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->size.x, rt->size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-}
-
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-glGenFramebuffers(1, &rt->copy_screen_effect.fbo);
-bind_framebuffer(rt->copy_screen_effect.fbo);
-glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->copy_screen_effect.color, 0);
-
-glClearColor(0, 0, 0, 0);
-glClear(GL_COLOR_BUFFER_BIT);
-
-GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-if (status != GL_FRAMEBUFFER_COMPLETE) {
-	_clear_render_target(rt);
-	ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-}
-}
-*/
-
 void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
@@ -2595,7 +2487,7 @@ void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 
-	rb->is_transparent = rt->flags[RendererTextureStorage::RENDER_TARGET_TRANSPARENT];
+	rb->is_transparent = rt->is_transparent;
 
 	// framebuffer
 	glGenFramebuffers(1, &rb->framebuffer);

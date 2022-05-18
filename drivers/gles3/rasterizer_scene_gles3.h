@@ -553,49 +553,6 @@ protected:
 		};
 
 		Blur blur[2]; //the second one starts from the first mipmap
-
-		/*
-		GLuint fbo = 0;
-		GLuint color = 0;
-		GLuint depth = 0;
-
-		GLuint multisample_fbo = 0;
-		GLuint multisample_color = 0;
-		GLuint multisample_depth = 0;
-		bool multisample_active = false;
-
-		struct Effect {
-			GLuint fbo = 0;
-			int width = 0;
-			int height = 0;
-
-			GLuint color = 0;
-
-			Effect() {
-			}
-		};
-
-		Effect copy_screen_effect;
-
-		struct MipMaps {
-			struct Size {
-				GLuint fbo;
-				GLuint color;
-				int width;
-				int height;
-			};
-
-			Vector<Size> sizes;
-			GLuint color = 0;
-			int levels = 0;
-
-			MipMaps() {
-			}
-		};
-
-		MipMaps mip_maps[2];
-
-		*/
 	};
 
 	bool screen_space_roughness_limiter = false;
