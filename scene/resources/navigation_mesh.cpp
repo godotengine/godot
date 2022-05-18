@@ -38,6 +38,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
+			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to wrong primitive type in the source mesh. Mesh surface must be made out of triangles.");
 			continue;
 		}
 		Array arr = p_mesh->surface_get_arrays(i);
@@ -46,6 +47,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
 		if (varr.size() == 0 || iarr.size() == 0) {
+			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to an empty vertex or index array.");
 			continue;
 		}
 
