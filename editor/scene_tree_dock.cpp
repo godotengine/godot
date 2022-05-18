@@ -52,10 +52,7 @@
 #include "modules/modules_enabled.gen.h" // For regex.
 
 void SceneTreeDock::_nodes_drag_begin() {
-	if (restore_script_editor_on_drag) {
-		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
-		restore_script_editor_on_drag = false;
-	}
+	pending_click_select = nullptr;
 }
 
 void SceneTreeDock::_quick_open() {
@@ -65,8 +62,9 @@ void SceneTreeDock::_quick_open() {
 void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-		restore_script_editor_on_drag = false; //lost chance
+	if (pending_click_select && mb.is_valid() && !mb->is_pressed() && (mb->get_button_index() == BUTTON_LEFT || mb->get_button_index() == BUTTON_RIGHT)) {
+		_push_item(pending_click_select);
+		pending_click_select = nullptr;
 	}
 }
 
@@ -1413,8 +1411,14 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 }
 
 void SceneTreeDock::_push_item(Object *p_object) {
-	if (!Input::get_singleton()->is_key_pressed(KEY_ALT)) {
-		editor->push_item(p_object);
+	editor->push_item(p_object);
+}
+
+void SceneTreeDock::_handle_select(Node *p_node) {
+	if ((Input::get_singleton()->get_mouse_button_mask() & (BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT)) != 0) {
+		pending_click_select = p_node;
+	} else {
+		editor->push_item(p_node);
 	}
 }
 
@@ -1424,12 +1428,7 @@ void SceneTreeDock::_node_selected() {
 	if (!node) {
 		return;
 	}
-
-	if (ScriptEditor::get_singleton()->is_visible_in_tree()) {
-		restore_script_editor_on_drag = true;
-	}
-
-	_push_item(node);
+	_handle_select(node);
 }
 
 void SceneTreeDock::_node_renamed() {
@@ -2173,7 +2172,7 @@ void SceneTreeDock::_selection_changed() {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		_push_item(editor_selection->get_selection().front()->key());
+		_handle_select(editor_selection->get_selection().front()->key());
 	} else if (selection_size == 0) {
 		_push_item(nullptr);
 	}
@@ -3272,6 +3271,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	editor_data = &p_editor_data;
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
+	pending_click_select = nullptr;
 
 	VBoxContainer *vbc = this;
 
@@ -3445,7 +3445,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	menu_subresources->connect("id_pressed", this, "_tool_selected");
 	menu->add_child(menu_subresources);
 	first_enter = true;
-	restore_script_editor_on_drag = false;
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);
