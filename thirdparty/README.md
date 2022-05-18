@@ -505,12 +505,12 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
 - LICENSE
 
 Important: Some files have Godot-made changes; so to enrich the features
 originally proposed by this library and better integrate this library with
-Godot. Please check the file to know what's new.
+Godot. See the patch in the `patches` folder for details.
 
 
 ## squish

@@ -53,69 +53,68 @@
 // - Moved the `Plane` class here.
 // - Added a new parameter `ignore_y_` in the `Agent`. This parameter is used to control a godot feature that allows to avoid collisions by moving on the horizontal plane.
 namespace RVO {
-/**
-     * \brief   Defines a plane.
-     */
-class Plane {
-public:
-    /**
-         * \brief   A point on the plane.
-         */
-    Vector3 point;
+	/**
+	 * \brief   Defines a plane.
+	 */
+	class Plane {
+	public:
+		/**
+		 * \brief   A point on the plane.
+		 */
+		Vector3 point;
 
-    /**
-         * \brief   The normal to the plane.
-         */
-    Vector3 normal;
-};
+		/**
+		 * \brief   The normal to the plane.
+		 */
+		Vector3 normal;
+	};
 
-/**
-     * \brief   Defines an agent in the simulation.
-     */
-class Agent {
-
-public:
-    /**
+	/**
+	 * \brief   Defines an agent in the simulation.
+	 */
+	class Agent {
+	public:
+		/**
 		 * \brief   Constructs an agent instance.
 		 * \param   sim  The simulator instance.
 		 */
-    explicit Agent();
+		explicit Agent();
 
-    /**
+		/**
 		 * \brief   Computes the neighbors of this agent.
 		 */
-    void computeNeighbors(class KdTree *kdTree_);
+		void computeNeighbors(class KdTree *kdTree_);
 
-    /**
+		/**
 		 * \brief   Computes the new velocity of this agent.
 		 */
-    void computeNewVelocity(float timeStep);
+		void computeNewVelocity(float timeStep);
 
-    /**
+		/**
 		 * \brief   Inserts an agent neighbor into the set of neighbors of this agent.
 		 * \param   agent    A pointer to the agent to be inserted.
 		 * \param   rangeSq  The squared range around this agent.
 		 */
-    void insertAgentNeighbor(const Agent *agent, float &rangeSq);
+		void insertAgentNeighbor(const Agent *agent, float &rangeSq);
 
-    Vector3 newVelocity_;
-    Vector3 position_;
-    Vector3 prefVelocity_;
-    Vector3 velocity_;
-    size_t id_;
-    size_t maxNeighbors_;
-    float maxSpeed_;
-    float neighborDist_;
-    float radius_;
-    float timeHorizon_;
-    std::vector<std::pair<float, const Agent *> > agentNeighbors_;
-    std::vector<Plane> orcaPlanes_;
-    /// This is a godot feature that allows the Agent to avoid collision by mooving
-    /// on the horizontal plane.
-    bool ignore_y_;
+		Vector3 newVelocity_;
+		Vector3 position_;
+		Vector3 prefVelocity_;
+		Vector3 velocity_;
+		size_t id_;
+		size_t maxNeighbors_;
+		float maxSpeed_;
+		float neighborDist_;
+		float radius_;
+		float timeHorizon_;
+		std::vector<std::pair<float, const Agent *> > agentNeighbors_;
+		std::vector<Plane> orcaPlanes_;
+		/// This is a godot feature that allows the Agent to avoid collision by mooving
+		/// on the horizontal plane.
+		bool ignore_y_;
 
-    friend class KdTree;
-};
-} // namespace RVO
+		friend class KdTree;
+	};
+}
 
 #endif /* RVO_AGENT_H_ */
