@@ -53,7 +53,7 @@ public:
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -87,8 +87,8 @@ public:
 	};
 
 private:
-	float fade_in = 0.1;
-	float fade_out = 0.1;
+	float fade_in = 0.0;
+	float fade_out = 0.0;
 
 	bool autorestart = false;
 	float autorestart_delay = 1.0;
@@ -138,7 +138,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeOneShot();
 };
@@ -164,7 +164,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeAdd2();
 };
@@ -188,7 +188,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeAdd3();
 };
@@ -207,7 +207,7 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -234,7 +234,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeBlend3();
 };
 
@@ -252,7 +252,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTimeScale();
 };
@@ -271,7 +271,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTimeSeek();
 };
@@ -329,7 +329,7 @@ public:
 	void set_cross_fade_time(float p_fade);
 	float get_cross_fade_time() const;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTransition();
 };
@@ -339,7 +339,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeOutput();
 };
 
@@ -408,7 +408,7 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void get_node_list(List<StringName> *r_list);
 

@@ -1417,14 +1417,14 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 void AnimationTimelineEdit::_anim_loop_pressed() {
 	undo_redo->create_action(TTR("Change Animation Loop"));
 	switch (animation->get_loop_mode()) {
-		case Animation::LoopMode::LOOP_NONE: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_LINEAR);
+		case Animation::LOOP_NONE: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LOOP_LINEAR);
 		} break;
-		case Animation::LoopMode::LOOP_LINEAR: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_PINGPONG);
+		case Animation::LOOP_LINEAR: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LOOP_PINGPONG);
 		} break;
-		case Animation::LoopMode::LOOP_PINGPONG: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_NONE);
+		case Animation::LOOP_PINGPONG: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LOOP_NONE);
 		} break;
 		default:
 			break;
@@ -1724,15 +1724,15 @@ void AnimationTimelineEdit::update_values() {
 	}
 
 	switch (animation->get_loop_mode()) {
-		case Animation::LoopMode::LOOP_NONE: {
+		case Animation::LOOP_NONE: {
 			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
 			loop->set_pressed(false);
 		} break;
-		case Animation::LoopMode::LOOP_LINEAR: {
+		case Animation::LOOP_LINEAR: {
 			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
 			loop->set_pressed(true);
 		} break;
-		case Animation::LoopMode::LOOP_PINGPONG: {
+		case Animation::LOOP_PINGPONG: {
 			loop->set_icon(get_theme_icon(SNAME("PingPongLoop"), SNAME("EditorIcons")));
 			loop->set_pressed(true);
 		} break;

@@ -466,7 +466,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			static const char *loop_strings[loop_string_count] = { "loop_mode", "loop", "cycle" };
 			for (int i = 0; i < loop_string_count; i++) {
 				if (_teststr(animname, loop_strings[i])) {
-					anim->set_loop_mode(Animation::LoopMode::LOOP_LINEAR);
+					anim->set_loop_mode(Animation::LOOP_LINEAR);
 					animname = _fixstr(animname, loop_strings[i]);
 
 					Ref<AnimationLibrary> library = ap->get_animation_library(ap->find_animation_library(anim));
