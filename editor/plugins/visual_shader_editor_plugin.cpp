@@ -1950,16 +1950,22 @@ void VisualShaderEditor::_paste_nodes() {
 	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
 
-void VisualShaderEditor::_on_nodes_delete() {
+void VisualShaderEditor::_on_nodes_delete(const Array &p_nodes) {
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 	List<int> to_erase;
 
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
+	if (p_nodes.empty()) {
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					to_erase.push_back(gn->get_name().operator String().to_int());
+				}
 			}
+		}
+	} else {
+		for (int i = 0; i < p_nodes.size(); i++) {
+			to_erase.push_back(p_nodes[i].operator String().to_int());
 		}
 	}
 
