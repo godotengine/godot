@@ -212,8 +212,9 @@
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
+			<argument index="0" name="nodes" type="Array" />
 			<description>
-				Emitted when a GraphNode is attempted to be removed from the GraphEdit.
+				Emitted when a GraphNode is attempted to be removed from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">
