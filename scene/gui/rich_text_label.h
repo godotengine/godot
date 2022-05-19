@@ -141,10 +141,10 @@ private:
 	struct ItemFrame : public Item {
 		bool cell = false;
 
-		Vector<Line> lines;
-		int first_invalid_line = 0;
-		int first_invalid_font_line = 0;
-		int first_resized_line = 0;
+		LocalVector<Line> lines;
+		std::atomic<int> first_invalid_line;
+		std::atomic<int> first_invalid_font_line;
+		std::atomic<int> first_resized_line;
 
 		ItemFrame *parent_frame = nullptr;
 
@@ -155,7 +155,12 @@ private:
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
 
-		ItemFrame() { type = ITEM_FRAME; }
+		ItemFrame() {
+			type = ITEM_FRAME;
+			first_invalid_line.store(0);
+			first_invalid_font_line.store(0);
+			first_resized_line.store(0);
+		}
 	};
 
 	struct ItemText : public Item {
@@ -263,8 +268,8 @@ private:
 			int width = 0;
 		};
 
-		Vector<Column> columns;
-		Vector<float> rows;
+		LocalVector<Column> columns;
+		LocalVector<float> rows;
 
 		int total_width = 0;
 		int total_height = 0;
@@ -363,6 +368,16 @@ private:
 	Item *current = nullptr;
 	ItemFrame *current_frame = nullptr;
 
+	Thread thread;
+	Mutex data_mutex;
+	bool threaded = false;
+	std::atomic<bool> stop_thread;
+	std::atomic<bool> updating;
+	std::atomic<double> loaded;
+
+	uint64_t loading_started = 0;
+	int progress_delay = 1000;
+
 	VScrollBar *vscroll = nullptr;
 
 	AutowrapMode autowrap_mode = AUTOWRAP_WORD_SMART;
@@ -392,7 +407,11 @@ private:
 	Array custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
-	void _validate_line_caches(ItemFrame *p_frame);
+
+	static void _thread_function(void *self);
+	void _stop_thread();
+	bool _validate_line_caches();
+	void _process_line_caches();
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -446,8 +465,9 @@ private:
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 
-	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
-	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
+	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
+	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
+
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
@@ -480,9 +500,9 @@ private:
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
-	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
+	int _find_first_line(int p_from, int p_to, int p_vofs) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -610,6 +630,14 @@ public:
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
+
+	bool is_ready() const;
+
+	void set_threaded(bool p_threaded);
+	bool is_threaded() const;
+
+	void set_progress_bar_delay(int p_delay_ms);
+	int get_progress_bar_delay() const;
 
 	// Context menu.
 	PopupMenu *get_menu() const;

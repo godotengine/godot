@@ -1691,6 +1691,8 @@ hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_
 }
 
 RID TextServerAdvanced::create_font() {
+	_THREAD_SAFE_METHOD_
+
 	FontDataAdvanced *fd = memnew(FontDataAdvanced);
 
 	return font_owner.make_rid(fd);
@@ -3359,6 +3361,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 
 RID TextServerAdvanced::create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+
 	ShapedTextDataAdvanced *sd = memnew(ShapedTextDataAdvanced);
 	sd->hb_buffer = hb_buffer_create();
 	sd->direction = p_direction;
@@ -3748,6 +3751,8 @@ void TextServerAdvanced::_realign(ShapedTextDataAdvanced *p_sd) const {
 }
 
 RID TextServerAdvanced::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {
+	_THREAD_SAFE_METHOD_
+
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
 

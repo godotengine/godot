@@ -235,7 +235,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 }
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
-	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
+	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
@@ -593,8 +593,8 @@ void EditorHelp::_update_doc() {
 
 	// Class description
 	if (!cd.description.is_empty()) {
-		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_line_count() - 2));
-		description_line = class_desc->get_line_count() - 2;
+		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
+		description_line = class_desc->get_paragraph_count() - 2;
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Description"));
@@ -664,7 +664,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	if (has_properties) {
-		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Properties"));
@@ -682,7 +682,7 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.is_empty()) {
 				continue;
 			}
-			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
 			// Property type.
 			class_desc->push_cell();
@@ -828,7 +828,7 @@ void EditorHelp::_update_doc() {
 			cd.constructors.sort();
 		}
 
-		section_line.push_back(Pair<String, int>(TTR("Constructors"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Constructors"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Constructors"));
@@ -839,7 +839,7 @@ void EditorHelp::_update_doc() {
 		if (sort_methods) {
 			methods.sort();
 		}
-		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Methods"));
@@ -851,7 +851,7 @@ void EditorHelp::_update_doc() {
 			cd.operators.sort();
 		}
 
-		section_line.push_back(Pair<String, int>(TTR("Operators"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Operators"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Operators"));
@@ -860,7 +860,7 @@ void EditorHelp::_update_doc() {
 
 	// Theme properties
 	if (!cd.theme_properties.is_empty()) {
-		section_line.push_back(Pair<String, int>(TTR("Theme Properties"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Theme Properties"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Theme Properties"));
@@ -882,7 +882,7 @@ void EditorHelp::_update_doc() {
 		data_type_names["style"] = TTR("Styles");
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
+			theme_property_line[cd.theme_properties[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			if (theme_data_type != cd.theme_properties[i].data_type) {
 				theme_data_type = cd.theme_properties[i].data_type;
@@ -954,7 +954,7 @@ void EditorHelp::_update_doc() {
 			cd.signals.sort();
 		}
 
-		section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Signals"));
@@ -967,7 +967,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_indent(1);
 
 		for (int i = 0; i < cd.signals.size(); i++) {
-			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
+			signal_line[cd.signals[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
 			class_desc->push_color(headline_color);
@@ -1040,7 +1040,7 @@ void EditorHelp::_update_doc() {
 
 		// Enums
 		if (enums.size()) {
-			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_line_count() - 2));
+			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
 			class_desc->push_color(title_color);
 			class_desc->push_font(doc_title_font);
 			class_desc->add_text(TTR("Enumerations"));
@@ -1051,7 +1051,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
-				enum_line[E.key] = class_desc->get_line_count() - 2;
+				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(title_color);
@@ -1098,7 +1098,7 @@ void EditorHelp::_update_doc() {
 					}
 
 					// Add the enum constant line to the constant_line map so we can locate it as a constant.
-					constant_line[enum_list[i].name] = class_desc->get_line_count() - 2;
+					constant_line[enum_list[i].name] = class_desc->get_paragraph_count() - 2;
 
 					class_desc->push_font(doc_code_font);
 					class_desc->push_color(headline_color);
@@ -1144,7 +1144,7 @@ void EditorHelp::_update_doc() {
 
 		// Constants
 		if (constants.size()) {
-			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_line_count() - 2));
+			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_paragraph_count() - 2));
 			class_desc->push_color(title_color);
 			class_desc->push_font(doc_title_font);
 			class_desc->add_text(TTR("Constants"));
@@ -1155,7 +1155,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 
 			for (int i = 0; i < constants.size(); i++) {
-				constant_line[constants[i].name] = class_desc->get_line_count() - 2;
+				constant_line[constants[i].name] = class_desc->get_paragraph_count() - 2;
 				class_desc->push_font(doc_code_font);
 
 				if (constants[i].value.begins_with("Color(") && constants[i].value.ends_with(")")) {
@@ -1205,7 +1205,7 @@ void EditorHelp::_update_doc() {
 
 	// Property descriptions
 	if (property_descr) {
-		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Property Descriptions"));
@@ -1220,7 +1220,7 @@ void EditorHelp::_update_doc() {
 				continue;
 			}
 
-			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
+			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2;
 
 			class_desc->push_table(2);
 			class_desc->set_table_column_expand(1, true);
@@ -1371,7 +1371,7 @@ void EditorHelp::_update_doc() {
 
 	// Constructor descriptions
 	if (constructor_descriptions) {
-		section_line.push_back(Pair<String, int>(TTR("Constructor Descriptions"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Constructor Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Constructor Descriptions"));
@@ -1380,7 +1380,7 @@ void EditorHelp::_update_doc() {
 
 	// Method descriptions
 	if (method_descriptions) {
-		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Method Descriptions"));
@@ -1389,7 +1389,7 @@ void EditorHelp::_update_doc() {
 
 	// Operator descriptions
 	if (operator_descriptions) {
-		section_line.push_back(Pair<String, int>(TTR("Operator Descriptions"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Operator Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Operator Descriptions"));
@@ -1868,6 +1868,7 @@ EditorHelp::EditorHelp() {
 
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
+	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
