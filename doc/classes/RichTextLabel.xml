@@ -430,7 +430,7 @@
 			The default text font.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
+			The background used when the [RichTextLabel] is focused.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			The normal background for the [RichTextLabel].

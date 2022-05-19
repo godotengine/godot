@@ -39,7 +39,7 @@
 		<method name="is_scanning" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] of the filesystem is being scanned.
+				Returns [code]true[/code] if the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">

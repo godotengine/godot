@@ -125,7 +125,7 @@
 			When set to an empty string, the [code]address[/code] parameter passed to [method create_client] is used instead.
 		</member>
 		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
-			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
+			Enable or disable certificate verification when [member use_dtls] is [code]true[/code].
 		</member>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" overrides="NetworkedMultiplayerPeer" default="false" />
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
