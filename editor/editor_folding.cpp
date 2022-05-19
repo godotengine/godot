@@ -87,7 +87,7 @@ void EditorFolding::load_resource_folding(Ref<Resource> p_resource, const String
 	_set_unfolds(p_resource.ptr(), unfolds);
 }
 
-void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, RBSet<Ref<Resource>> &resources) {
+void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, HashSet<Ref<Resource>> &resources) {
 	if (p_root != p_node) {
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
@@ -140,7 +140,7 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	config.instantiate();
 
 	Array unfolds, res_unfolds;
-	RBSet<Ref<Resource>> resources;
+	HashSet<Ref<Resource>> resources;
 	Array nodes_folded;
 	_fill_folds(p_scene, p_scene, unfolds, res_unfolds, nodes_folded, resources);
 
@@ -220,13 +220,13 @@ bool EditorFolding::has_folding_data(const String &p_path) {
 	return FileAccess::exists(file);
 }
 
-void EditorFolding::_do_object_unfolds(Object *p_object, RBSet<Ref<Resource>> &resources) {
+void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> &resources) {
 	List<PropertyInfo> plist;
 	p_object->get_property_list(&plist);
 	String group_base;
 	String group;
 
-	RBSet<String> unfold_group;
+	HashSet<String> unfold_group;
 
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_CATEGORY) {
@@ -275,7 +275,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, RBSet<Ref<Resource>> &r
 	}
 }
 
-void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, RBSet<Ref<Resource>> &resources) {
+void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, HashSet<Ref<Resource>> &resources) {
 	if (p_root != p_node) {
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
@@ -293,7 +293,7 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, RBSet<Ref<Resou
 }
 
 void EditorFolding::unfold_scene(Node *p_scene) {
-	RBSet<Ref<Resource>> resources;
+	HashSet<Ref<Resource>> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
 }
 

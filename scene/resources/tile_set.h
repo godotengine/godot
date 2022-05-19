@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 #include "core/object/object.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_set.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/main/canvas_item.h"

@@ -515,7 +515,7 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	}
 
 	// Different metrics may contain different number of categories.
-	RBSet<StringName> possible_signatures;
+	HashSet<StringName> possible_signatures;
 	for (int i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
 		if (!m.valid) {

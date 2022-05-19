@@ -349,12 +349,13 @@ struct MeshInstance3DEditorEdgeSort {
 	Vector2 a;
 	Vector2 b;
 
-	bool operator<(const MeshInstance3DEditorEdgeSort &p_b) const {
-		if (a == p_b.a) {
-			return b < p_b.b;
-		} else {
-			return a < p_b.a;
-		}
+	static uint32_t hash(const MeshInstance3DEditorEdgeSort &p_edge) {
+		uint32_t h = hash_djb2_one_32(HashMapHasherDefault::hash(p_edge.a));
+		return hash_djb2_one_32(HashMapHasherDefault::hash(p_edge.b), h);
+	}
+
+	bool operator==(const MeshInstance3DEditorEdgeSort &p_b) const {
+		return a == p_b.a && b == p_b.b;
 	}
 
 	MeshInstance3DEditorEdgeSort() {}
@@ -373,7 +374,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(!mesh.is_valid());
 
-	RBSet<MeshInstance3DEditorEdgeSort> edges;
+	HashSet<MeshInstance3DEditorEdgeSort, MeshInstance3DEditorEdgeSort> edges;
 	uv_lines.clear();
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {

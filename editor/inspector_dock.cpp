@@ -307,7 +307,7 @@ void InspectorDock::_prepare_history() {
 	history_menu->get_popup()->clear();
 
 	Ref<Texture2D> base_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	RBSet<ObjectID> already;
+	HashSet<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 		ObjectID id = editor_history->get_history_obj(i);
 		Object *obj = ObjectDB::get_instance(id);

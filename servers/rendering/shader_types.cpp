@@ -39,7 +39,7 @@ const Vector<ShaderLanguage::ModeInfo> &ShaderTypes::get_modes(RS::ShaderMode p_
 	return shader_modes[p_mode].modes;
 }
 
-const RBSet<String> &ShaderTypes::get_types() const {
+const HashSet<String> &ShaderTypes::get_types() const {
 	return shader_types;
 }
 

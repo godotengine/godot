@@ -2381,7 +2381,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 
 	//make material unreference this
 	while (shader->owners.size()) {
-		material_set_shader(shader->owners.front()->get()->self, RID());
+		material_set_shader((*shader->owners.begin())->self, RID());
 	}
 
 	//clear data if exists

@@ -126,7 +126,7 @@ class TextServerAdvanced : public TextServerExtension {
 	_THREAD_SAFE_CLASS_
 
 	struct NumSystemData {
-		RBSet<StringName> lang;
+		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
 		String exp;
@@ -235,7 +235,7 @@ class TextServerAdvanced : public TextServerExtension {
 		HashMap<Vector2i, FontDataForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
-		RBSet<uint32_t> supported_scripts;
+		HashSet<uint32_t> supported_scripts;
 		Dictionary supported_features;
 		Dictionary supported_varaitions;
 		Dictionary feature_overrides;

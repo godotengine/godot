@@ -92,7 +92,7 @@ private:
 	static void *_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_self);
 	static void _broadphase_unpair(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_data, void *p_self);
 
-	RBSet<GodotCollisionObject2D *> objects;
+	HashSet<GodotCollisionObject2D *> objects;
 
 	GodotArea2D *area = nullptr;
 
@@ -156,7 +156,7 @@ public:
 
 	void add_object(GodotCollisionObject2D *p_object);
 	void remove_object(GodotCollisionObject2D *p_object);
-	const RBSet<GodotCollisionObject2D *> &get_objects() const;
+	const HashSet<GodotCollisionObject2D *> &get_objects() const;
 
 	_FORCE_INLINE_ int get_solver_iterations() const { return solver_iterations; }
 	_FORCE_INLINE_ real_t get_contact_recycle_radius() const { return contact_recycle_radius; }

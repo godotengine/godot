@@ -65,7 +65,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		return;
 	}
 
-	RBSet<String> paths;
+	HashSet<String> paths;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);

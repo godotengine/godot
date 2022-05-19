@@ -1096,7 +1096,7 @@ void GodotSpace3D::remove_object(GodotCollisionObject3D *p_object) {
 	objects.erase(p_object);
 }
 
-const RBSet<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
+const HashSet<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
 	return objects;
 }
 

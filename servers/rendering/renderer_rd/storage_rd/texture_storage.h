@@ -124,7 +124,7 @@ public:
 	RID proxy_to;
 	Vector<RID> proxies;
 
-	RBSet<RID> lightmap_users;
+	HashSet<RID> lightmap_users;
 
 	RS::TextureDetectCallback detect_3d_callback = nullptr;
 	void *detect_3d_callback_ud = nullptr;

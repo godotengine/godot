@@ -139,7 +139,7 @@ private:
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
 
-	bool _find_updated_instances(Node *p_root, Node *p_node, RBSet<String> &checked_paths);
+	bool _find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths);
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;

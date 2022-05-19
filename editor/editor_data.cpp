@@ -549,7 +549,7 @@ void EditorData::remove_scene(int p_idx) {
 	edited_scene.remove_at(p_idx);
 }
 
-bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, RBSet<String> &checked_paths) {
+bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
 	Ref<SceneState> ss;
 
 	if (p_node == p_root) {
@@ -587,7 +587,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		return false;
 	}
 
-	RBSet<String> checked_scenes;
+	HashSet<String> checked_scenes;
 
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 

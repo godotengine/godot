@@ -64,7 +64,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Vector<String> functions;
 	List<ScriptLanguage::Warning> warnings;
 	List<ScriptLanguage::ScriptError> errors;
-	RBSet<int> safe_lines;
+	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
 

@@ -62,7 +62,7 @@ void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) 
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
-	RBSet<String> files_sorted;
+	HashSet<String> files_sorted;
 
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);

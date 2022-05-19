@@ -52,7 +52,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 	Vector<bool> valid_points;
 	valid_points.resize(p_points.size());
-	RBSet<Vector3> valid_cache;
+	HashSet<Vector3> valid_cache;
 
 	for (int i = 0; i < p_points.size(); i++) {
 		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));

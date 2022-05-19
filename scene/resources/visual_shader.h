@@ -139,7 +139,7 @@ private:
 	Vector2 graph_offset;
 
 	HashMap<String, int> modes;
-	RBSet<StringName> flags;
+	HashSet<StringName> flags;
 
 	HashMap<String, Varying> varyings;
 	List<Varying> varyings_list;
@@ -158,7 +158,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, RBSet<int> &processed, bool for_preview, RBSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, HashSet<int> &processed, bool for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;

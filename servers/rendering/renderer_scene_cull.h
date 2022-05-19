@@ -443,7 +443,7 @@ public:
 		float visibility_range_end_margin = 0.0f;
 		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
-		RBSet<Instance *> visibility_dependencies;
+		HashSet<Instance *> visibility_dependencies;
 		uint32_t visibility_dependencies_depth = 0;
 		float transparency = 0.0f;
 		Scenario *scenario = nullptr;
@@ -579,16 +579,16 @@ public:
 
 	struct InstanceGeometryData : public InstanceBaseData {
 		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
-		RBSet<Instance *> lights;
+		HashSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
 		uint32_t projector_count = 0;
 		uint32_t softshadow_count = 0;
 
-		RBSet<Instance *> decals;
-		RBSet<Instance *> reflection_probes;
-		RBSet<Instance *> voxel_gi_instances;
-		RBSet<Instance *> lightmap_captures;
+		HashSet<Instance *> decals;
+		HashSet<Instance *> reflection_probes;
+		HashSet<Instance *> voxel_gi_instances;
+		HashSet<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -599,7 +599,7 @@ public:
 	struct InstanceReflectionProbeData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		RBSet<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		RID instance;
 		SelfList<InstanceReflectionProbeData> update_list;
@@ -616,7 +616,7 @@ public:
 		Instance *owner = nullptr;
 		RID instance;
 
-		RBSet<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		InstanceDecalData() {
 		}
@@ -654,7 +654,7 @@ public:
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
-		RBSet<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		Instance *baked_light = nullptr;
 
@@ -673,10 +673,10 @@ public:
 	struct InstanceVoxelGIData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		RBSet<Instance *> geometries;
-		RBSet<Instance *> dynamic_geometries;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> dynamic_geometries;
 
-		RBSet<Instance *> lights;
+		HashSet<Instance *> lights;
 
 		struct LightCache {
 			RS::LightType type;
@@ -713,8 +713,8 @@ public:
 
 	struct InstanceLightmapData : public InstanceBaseData {
 		RID instance;
-		RBSet<Instance *> geometries;
-		RBSet<Instance *> users;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> users;
 
 		InstanceLightmapData() {
 		}
@@ -779,7 +779,7 @@ public:
 		}
 	};
 
-	RBSet<Instance *> heightfield_particle_colliders_update_list;
+	HashSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
 	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;

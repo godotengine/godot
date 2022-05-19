@@ -138,7 +138,7 @@ public:
 		r_features->push_back(get_os_name().to_lower());
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
 	String get_debug_protocol() const override { return "ws://"; }

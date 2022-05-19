@@ -152,7 +152,7 @@ void LightmapRaycasterEmbree::commit() {
 	rtcCommitScene(embree_scene);
 }
 
-void LightmapRaycasterEmbree::set_mesh_filter(const RBSet<int> &p_mesh_ids) {
+void LightmapRaycasterEmbree::set_mesh_filter(const HashSet<int> &p_mesh_ids) {
 	for (const int &E : p_mesh_ids) {
 		rtcDisableGeometry(rtcGetGeometry(embree_scene, E));
 	}

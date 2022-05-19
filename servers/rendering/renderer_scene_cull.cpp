@@ -562,8 +562,8 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			case RS::INSTANCE_LIGHTMAP: {
 				InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(instance->base_data);
 				//erase dependencies, since no longer a lightmap
-				while (lightmap_data->users.front()) {
-					instance_geometry_set_lightmap(lightmap_data->users.front()->get()->self, RID(), Rect2(), 0);
+				while (lightmap_data->users.begin()) {
+					instance_geometry_set_lightmap((*lightmap_data->users.begin())->self, RID(), Rect2(), 0);
 				}
 				scene_render->free(lightmap_data->instance);
 			} break;
@@ -1292,7 +1292,7 @@ void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_par
 
 bool RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
 	bool cycle_detected = false;
-	RBSet<Instance *> traversed_nodes;
+	HashSet<Instance *> traversed_nodes;
 
 	{
 		Instance *instance = p_instance;
@@ -3592,8 +3592,8 @@ void RendererSceneCull::render_probes() {
 }
 
 void RendererSceneCull::render_particle_colliders() {
-	while (heightfield_particle_colliders_update_list.front()) {
-		Instance *hfpc = heightfield_particle_colliders_update_list.front()->get();
+	while (heightfield_particle_colliders_update_list.begin()) {
+		Instance *hfpc = *heightfield_particle_colliders_update_list.begin();
 
 		if (hfpc->scenario && hfpc->base_type == RS::INSTANCE_PARTICLES_COLLISION && RSG::particles_storage->particles_collision_is_heightfield(hfpc->base)) {
 			//update heightfield
@@ -3625,7 +3625,7 @@ void RendererSceneCull::render_particle_colliders() {
 
 			scene_render->render_particle_collider_heightfield(hfpc->base, hfpc->transform, scene_cull_result.geometry_instances);
 		}
-		heightfield_particle_colliders_update_list.erase(heightfield_particle_colliders_update_list.front());
+		heightfield_particle_colliders_update_list.remove(heightfield_particle_colliders_update_list.begin());
 	}
 }
 

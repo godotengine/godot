@@ -46,7 +46,7 @@ public:
 	void set_whole_words(bool p_whole_word);
 	void set_match_case(bool p_match_case);
 	void set_folder(String folder);
-	void set_filter(const RBSet<String> &exts);
+	void set_filter(const HashSet<String> &exts);
 
 	String get_search_text() const { return _pattern; }
 
@@ -72,7 +72,7 @@ private:
 
 	// Config
 	String _pattern;
-	RBSet<String> _extension_filter;
+	HashSet<String> _extension_filter;
 	String _root_dir;
 	bool _whole_words = true;
 	bool _match_case = true;
@@ -115,7 +115,7 @@ public:
 	bool is_match_case() const;
 	bool is_whole_words() const;
 	String get_folder() const;
-	RBSet<String> get_filter() const;
+	HashSet<String> get_filter() const;
 
 protected:
 	void _notification(int p_what);

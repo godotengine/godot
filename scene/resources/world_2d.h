@@ -46,7 +46,7 @@ class World2D : public Resource {
 	RID space;
 	RID navigation_map;
 
-	RBSet<Viewport *> viewports;
+	HashSet<Viewport *> viewports;
 
 protected:
 	static void _bind_methods();
@@ -62,7 +62,7 @@ public:
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 
-	_FORCE_INLINE_ const RBSet<Viewport *> &get_viewports() { return viewports; }
+	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() { return viewports; }
 
 	World2D();
 	~World2D();

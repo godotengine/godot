@@ -218,8 +218,11 @@ private:
 			uint64_t key = 0;
 		};
 
-		bool operator<(const ConnType &p_type) const {
-			return key < p_type.key;
+		static uint32_t hash(const ConnType &p_conn) {
+			return hash_one_uint64(p_conn.key);
+		}
+		bool operator==(const ConnType &p_type) const {
+			return key == p_type.key;
 		}
 
 		ConnType(uint32_t a = 0, uint32_t b = 0) {
@@ -228,9 +231,9 @@ private:
 		}
 	};
 
-	RBSet<ConnType> valid_connection_types;
-	RBSet<int> valid_left_disconnect_types;
-	RBSet<int> valid_right_disconnect_types;
+	HashSet<ConnType, ConnType> valid_connection_types;
+	HashSet<int> valid_left_disconnect_types;
+	HashSet<int> valid_right_disconnect_types;
 
 	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
 	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
@@ -258,12 +261,12 @@ private:
 		UNION,
 	};
 
-	int _set_operations(SET_OPERATIONS p_operation, RBSet<StringName> &r_u, const RBSet<StringName> &r_v);
-	HashMap<int, Vector<StringName>> _layering(const RBSet<StringName> &r_selected_nodes, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours);
+	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
+	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
 	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
-	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours, const RBSet<StringName> &r_selected_nodes);
-	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, RBSet<StringName>> &r_upper_neighbours);
-	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const RBSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
+	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes);
+	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
+	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
 	float _calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
 	void _place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
 

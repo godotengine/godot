@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_set.h"
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public RefCounted {
@@ -80,7 +81,7 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	RBSet<StringName> members; //members are just indices to the instantiated script.
+	HashSet<StringName> members; //members are just indices to the instantiated script.
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
@@ -95,7 +96,7 @@ class GDScript : public Script {
 	List<PropertyInfo> members_cache;
 	HashMap<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
-	RBSet<ObjectID> inheriters_cache;
+	HashSet<ObjectID> inheriters_cache;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
@@ -139,7 +140,7 @@ class GDScript : public Script {
 	String _get_debug_path() const;
 
 #ifdef TOOLS_ENABLED
-	RBSet<PlaceHolderScriptInstance *> placeholders;
+	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
@@ -178,7 +179,7 @@ public:
 
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }
-	const RBSet<StringName> &get_members() const { return members; }
+	const HashSet<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
@@ -246,7 +247,7 @@ public:
 	}
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
-	virtual void get_members(RBSet<StringName> *p_members) override;
+	virtual void get_members(HashSet<StringName> *p_members) override;
 
 	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
@@ -449,7 +450,7 @@ public:
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 	virtual bool has_named_classes() const override;
 	virtual bool supports_builtin_mode() const override;

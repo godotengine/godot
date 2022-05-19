@@ -128,12 +128,12 @@ private:
 	}
 
 	template <class T>
-	static Array to_array(const RBSet<T> &p_inp) {
+	static Array to_array(const HashSet<T> &p_inp) {
 		Array ret;
-		typename RBSet<T>::Element *elem = p_inp.front();
+		typename HashSet<T>::Iterator elem = p_inp.begin();
 		while (elem) {
-			ret.push_back(elem->get());
-			elem = elem->next();
+			ret.push_back(*elem);
+			++elem;
 		}
 		return ret;
 	}
@@ -147,7 +147,7 @@ private:
 	}
 
 	template <class T>
-	static void set_from_array(RBSet<T> &r_out, const Array &p_inp) {
+	static void set_from_array(HashSet<T> &r_out, const Array &p_inp) {
 		r_out.clear();
 		for (int i = 0; i < p_inp.size(); i++) {
 			r_out.insert(p_inp[i]);

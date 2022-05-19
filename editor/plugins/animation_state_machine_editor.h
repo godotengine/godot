@@ -64,7 +64,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *panel = nullptr;
 
 	StringName selected_node;
-	RBSet<StringName> selected_nodes;
+	HashSet<StringName> selected_nodes;
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -105,7 +105,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	RBSet<StringName> previous_selected;
+	HashSet<StringName> previous_selected;
 
 	bool dragging_selected_attempt = false;
 	bool dragging_selected = false;

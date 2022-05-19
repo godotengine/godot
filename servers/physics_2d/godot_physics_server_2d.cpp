@@ -1212,7 +1212,7 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 		GodotSpace2D *space = space_owner.get_or_null(p_rid);
 
 		while (space->get_objects().size()) {
-			GodotCollisionObject2D *co = static_cast<GodotCollisionObject2D *>(space->get_objects().front()->get());
+			GodotCollisionObject2D *co = static_cast<GodotCollisionObject2D *>(*space->get_objects().begin());
 			co->set_space(nullptr);
 		}
 

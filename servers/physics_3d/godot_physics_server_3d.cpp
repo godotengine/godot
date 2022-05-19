@@ -1570,7 +1570,7 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 		GodotSpace3D *space = space_owner.get_or_null(p_rid);
 
 		while (space->get_objects().size()) {
-			GodotCollisionObject3D *co = static_cast<GodotCollisionObject3D *>(space->get_objects().front()->get());
+			GodotCollisionObject3D *co = static_cast<GodotCollisionObject3D *>(*space->get_objects().begin());
 			co->set_space(nullptr);
 		}
 

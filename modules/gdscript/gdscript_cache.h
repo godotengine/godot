@@ -34,7 +34,7 @@
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/rb_set.h"
+#include "core/templates/hash_set.h"
 #include "gdscript.h"
 
 class GDScriptAnalyzer;
@@ -74,7 +74,7 @@ class GDScriptCache {
 	HashMap<String, GDScriptParserRef *> parser_map;
 	HashMap<String, GDScript *> shallow_gdscript_cache;
 	HashMap<String, GDScript *> full_gdscript_cache;
-	HashMap<String, RBSet<String>> dependencies;
+	HashMap<String, HashSet<String>> dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;

@@ -29,12 +29,13 @@
 /*************************************************************************/
 
 #include "grid_container.h"
+#include "core/templates/rb_set.h"
 
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			HashMap<int, int> col_minw; // Max of min_width of all controls in each col (indexed by col).
-			HashMap<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
+			RBMap<int, int> col_minw; // Max of min_width of all controls in each col (indexed by col).
+			RBMap<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			RBSet<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
 			RBSet<int> row_expanded; // Rows which have the SIZE_EXPAND flag set.
 
@@ -261,8 +262,8 @@ void GridContainer::_bind_methods() {
 }
 
 Size2 GridContainer::get_minimum_size() const {
-	HashMap<int, int> col_minw;
-	HashMap<int, int> row_minh;
+	RBMap<int, int> col_minw;
+	RBMap<int, int> row_minh;
 
 	int hsep = get_theme_constant(SNAME("h_separation"));
 	int vsep = get_theme_constant(SNAME("v_separation"));

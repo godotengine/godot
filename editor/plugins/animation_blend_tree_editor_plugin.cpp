@@ -563,7 +563,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	updating = true;
 
-	RBSet<String> paths;
+	HashSet<String> paths;
 	HashMap<String, RBSet<String>> types;
 	{
 		List<StringName> animations;
@@ -698,11 +698,12 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				//just a node, not a property track
 				String types_text = "[";
 				if (types.has(path)) {
-					RBSet<String>::Element *F = types[path].front();
-					types_text += F->get();
-					while (F->next()) {
-						F = F->next();
-						types_text += " / " + F->get();
+					RBSet<String>::Iterator F = types[path].begin();
+					types_text += *F;
+					while (F) {
+						types_text += " / " + *F;
+						;
+						++F;
 					}
 				}
 				types_text += "]";

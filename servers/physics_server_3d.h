@@ -133,7 +133,7 @@ public:
 	struct RayParameters {
 		Vector3 from;
 		Vector3 to;
-		RBSet<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -165,7 +165,7 @@ public:
 
 	struct PointParameters {
 		Vector3 position;
-		RBSet<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -179,7 +179,7 @@ public:
 		Transform3D transform;
 		Vector3 motion;
 		real_t margin = 0.0;
-		RBSet<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -520,8 +520,8 @@ public:
 		real_t margin = 0.001;
 		int max_collisions = 1;
 		bool collide_separation_ray = false;
-		RBSet<RID> exclude_bodies;
-		RBSet<ObjectID> exclude_objects;
+		HashSet<RID> exclude_bodies;
+		HashSet<ObjectID> exclude_objects;
 		bool recovery_as_collision = false;
 
 		MotionParameters() {}

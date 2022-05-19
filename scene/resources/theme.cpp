@@ -1275,7 +1275,7 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	// This Set guarantees uniqueness.
 	// Because each map can have the same type defined, but for this method
 	// we only want one occurrence of each type.
-	RBSet<StringName> types;
+	HashSet<StringName> types;
 
 	// Icons.
 	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {

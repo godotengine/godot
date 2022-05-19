@@ -1928,14 +1928,14 @@ bool RendererCanvasCull::free(RID p_rid) {
 		ERR_FAIL_COND_V(!canvas, false);
 
 		while (canvas->viewports.size()) {
-			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(canvas->viewports.front()->get());
+			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(*canvas->viewports.begin());
 			ERR_FAIL_COND_V(!vp, true);
 
 			HashMap<RID, RendererViewport::Viewport::CanvasData>::Iterator E = vp->canvas_map.find(p_rid);
 			ERR_FAIL_COND_V(!E, true);
 			vp->canvas_map.erase(p_rid);
 
-			canvas->viewports.erase(canvas->viewports.front());
+			canvas->viewports.erase(*canvas->viewports.begin());
 		}
 
 		for (int i = 0; i < canvas->child_items.size(); i++) {
@@ -2030,8 +2030,8 @@ bool RendererCanvasCull::free(RID p_rid) {
 		RSG::canvas_render->free(occluder_poly->occluder);
 
 		while (occluder_poly->owners.size()) {
-			occluder_poly->owners.front()->get()->polygon = RID();
-			occluder_poly->owners.erase(occluder_poly->owners.front());
+			(*occluder_poly->owners.begin())->polygon = RID();
+			occluder_poly->owners.remove(occluder_poly->owners.begin());
 		}
 
 		canvas_light_occluder_polygon_owner.free(p_rid);

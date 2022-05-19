@@ -123,7 +123,7 @@ struct Mesh {
 	List<MeshInstance *> instances;
 
 	RID shadow_mesh;
-	RBSet<Mesh *> shadow_owners;
+	HashSet<Mesh *> shadow_owners;
 
 	RendererStorage::Dependency dependency;
 };

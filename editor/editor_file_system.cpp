@@ -1636,7 +1636,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	_queue_update_script_classes();
 }
 
-RBSet<String> EditorFileSystem::get_valid_extensions() const {
+HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
 }
 
@@ -2047,7 +2047,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
-void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, RBSet<String> &groups_to_reimport) {
+void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport) {
 	int fc = efd->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = efd->files.ptr();
 	for (int i = 0; i < fc; i++) {
@@ -2079,7 +2079,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	Vector<ImportFile> reimport_files;
 
-	RBSet<String> groups_to_reimport;
+	HashSet<String> groups_to_reimport;
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
@@ -2290,7 +2290,7 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 	}
 }
 
-static void _scan_extensions_dir(EditorFileSystemDirectory *d, RBSet<String> &extensions) {
+static void _scan_extensions_dir(EditorFileSystemDirectory *d, HashSet<String> &extensions) {
 	int fc = d->get_file_count();
 	for (int i = 0; i < fc; i++) {
 		if (d->get_file_type(i) == SNAME("NativeExtension")) {
@@ -2304,7 +2304,7 @@ static void _scan_extensions_dir(EditorFileSystemDirectory *d, RBSet<String> &ex
 }
 bool EditorFileSystem::_scan_extensions() {
 	EditorFileSystemDirectory *d = get_filesystem();
-	RBSet<String> extensions;
+	HashSet<String> extensions;
 
 	_scan_extensions_dir(d, extensions);
 

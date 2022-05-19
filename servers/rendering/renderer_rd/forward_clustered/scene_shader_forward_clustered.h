@@ -239,7 +239,7 @@ public:
 	ShaderData *overdraw_material_shader_ptr = nullptr;
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
-	RBSet<uint32_t> valid_color_pass_pipelines;
+	HashSet<uint32_t> valid_color_pass_pipelines;
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 

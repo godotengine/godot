@@ -98,7 +98,7 @@ private:
 	Tree *variables = nullptr;
 	HSplitContainer *h_split = nullptr;
 
-	RBSet<StringName> plot_sigs;
+	HashSet<StringName> plot_sigs;
 
 	OptionButton *display_mode = nullptr;
 	OptionButton *display_time = nullptr;

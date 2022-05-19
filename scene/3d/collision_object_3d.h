@@ -78,7 +78,7 @@ private:
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
-	RBSet<uint32_t> debug_shapes_to_update;
+	HashSet<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
 	Transform3D debug_shape_old_transform;
 

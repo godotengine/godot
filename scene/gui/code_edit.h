@@ -58,7 +58,7 @@ private:
 	String indent_text = "\t";
 
 	bool auto_indent = false;
-	RBSet<char32_t> auto_indent_prefixes;
+	HashSet<char32_t> auto_indent_prefixes;
 
 	bool indent_using_spaces = false;
 	int _calculate_spaces_till_next_left_indent(int p_column) const;
@@ -214,7 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
-	RBSet<char32_t> code_completion_prefixes;
+	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
