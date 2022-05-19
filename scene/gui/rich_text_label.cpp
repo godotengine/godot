@@ -1233,7 +1233,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				}
 				selection.click = nullptr;
 
-				if (!b->is_doubleclick() && !scroll_updated) {
+				if (!b->is_doubleclick() && !scroll_updated && !selection.active) {
 					int line = 0;
 					Item *item = nullptr;
 
