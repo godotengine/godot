@@ -896,13 +896,13 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 }
 
 VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
-	{ Shader::MODE_SPATIAL, "blend" },
-	{ Shader::MODE_SPATIAL, "depth_draw" },
-	{ Shader::MODE_SPATIAL, "cull" },
-	{ Shader::MODE_SPATIAL, "diffuse" },
-	{ Shader::MODE_SPATIAL, "specular" },
-	{ Shader::MODE_SPATIAL, "async" },
-	{ Shader::MODE_CANVAS_ITEM, "blend" },
+	{ Shader::MODE_SPATIAL, PNAME("blend") },
+	{ Shader::MODE_SPATIAL, PNAME("depth_draw") },
+	{ Shader::MODE_SPATIAL, PNAME("cull") },
+	{ Shader::MODE_SPATIAL, PNAME("diffuse") },
+	{ Shader::MODE_SPATIAL, PNAME("specular") },
+	{ Shader::MODE_SPATIAL, PNAME("async") },
+	{ Shader::MODE_CANVAS_ITEM, PNAME("blend") },
 	{ Shader::MODE_CANVAS_ITEM, nullptr }
 };
 
@@ -1051,7 +1051,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 }
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
-	p_list->push_back(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles"));
+	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles"));
 	//render modes
 
 	Map<String, String> blend_mode_enums;
@@ -1082,11 +1082,11 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (Map<String, String>::Element *E = blend_mode_enums.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E->key(), PROPERTY_HINT_ENUM, E->get()));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("modes"), E->key()), PROPERTY_HINT_ENUM, E->get()));
 	}
 
 	for (Set<String>::Element *E = toggles.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "flags/" + E->get()));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E->get())));
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {
