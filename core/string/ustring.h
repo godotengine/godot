@@ -528,6 +528,16 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define TTRGET(m_value) (m_value)
 #endif
 
+// Use this to mark property names for editor translation.
+// Often for dynamic properties defined in _get_property_list().
+// Property names defined directly inside EDITOR_DEF, GLOBAL_DEF, and ADD_PROPERTY macros don't need this.
+#define PNAME(m_value) (m_value)
+
+// Similar to PNAME, but to mark groups, i.e. properties with PROPERTY_USAGE_GROUP.
+// Groups defined directly inside ADD_GROUP macros don't need this.
+// The arguments are the same as ADD_GROUP. m_prefix is only used for extraction.
+#define GNAME(m_value, m_prefix) (m_value)
+
 // Runtime translate for the public node API.
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");

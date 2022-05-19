@@ -102,7 +102,7 @@ private:
 	float time;
 	float remaining;*/
 
-	StringName active = "active";
+	StringName active = PNAME("active");
 	StringName prev_active = "prev_active";
 	StringName time = "time";
 	StringName remaining = "remaining";
@@ -148,7 +148,7 @@ VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
-	StringName add_amount = "add_amount";
+	StringName add_amount = PNAME("add_amount");
 	bool sync = false;
 
 protected:
@@ -172,7 +172,7 @@ public:
 class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
-	StringName add_amount = "add_amount";
+	StringName add_amount = PNAME("add_amount");
 	bool sync = false;
 
 protected:
@@ -196,7 +196,7 @@ public:
 class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
-	StringName blend_amount = "blend_amount";
+	StringName blend_amount = PNAME("blend_amount");
 	bool sync = false;
 
 protected:
@@ -219,7 +219,7 @@ public:
 class AnimationNodeBlend3 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend3, AnimationNode);
 
-	StringName blend_amount;
+	StringName blend_amount = PNAME("blend_amount");
 	bool sync;
 
 protected:
@@ -241,7 +241,7 @@ public:
 class AnimationNodeTimeScale : public AnimationNode {
 	GDCLASS(AnimationNodeTimeScale, AnimationNode);
 
-	StringName scale = "scale";
+	StringName scale = PNAME("scale");
 
 protected:
 	static void _bind_methods();
@@ -260,7 +260,7 @@ public:
 class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
-	StringName seek_pos = "seek_position";
+	StringName seek_pos = PNAME("seek_position");
 
 protected:
 	static void _bind_methods();
@@ -300,7 +300,7 @@ class AnimationNodeTransition : public AnimationNode {
 	StringName prev_xfading = "prev_xfading";
 	StringName prev = "prev";
 	StringName time = "time";
-	StringName current = "current";
+	StringName current = PNAME("current");
 	StringName prev_current = "prev_current";
 
 	float xfade = 0.0;
