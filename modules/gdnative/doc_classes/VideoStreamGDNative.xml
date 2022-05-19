@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VideoStreamGDNative" inherits="VideoStream" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		[VideoStream] resource for for video formats implemented via GDNative.
+		[VideoStream] resource for video formats implemented via GDNative.
 	</brief_description>
 	<description>
-		[VideoStream] resource for for video formats implemented via GDNative.
+		[VideoStream] resource for video formats implemented via GDNative.
 		It can be used via [url=https://github.com/KidRigger/godot-videodecoder]godot-videodecoder[/url] which uses the [url=https://ffmpeg.org]FFmpeg[/url] library.
 	</description>
 	<tutorials>
