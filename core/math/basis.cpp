@@ -31,6 +31,7 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
@@ -1109,4 +1110,96 @@ Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
 	Basis basis;
 	basis.set_columns(v_x, v_y, v_z);
 	return basis;
+}
+
+Basis Basis::log() const {
+	// https://www.geometrictools.com/Documentation/InterpolationRigidMotions.pdf
+	Basis skew_symmetric;
+	real_t arg = 0.5 * (rows[0][0] + rows[1][1] + rows[2][2] - 1.0);
+	if (arg > -1.0) {
+		if (arg < 1.0) {
+			// 0 < angle < pi
+			real_t angle = Math::acos(arg);
+			real_t sin_angle = Math::sin(angle);
+			real_t c = 0.5 * angle / sin_angle;
+			Basis r = *this;
+			skew_symmetric = (r - r.transposed()).scaled(Vector3(c, c, c));
+		} else { // arg = 1, angle = 0.
+			// R is the identity matrix.
+			// S is the zero matrix.
+			skew_symmetric = Basis(Vector3(), Vector3(), Vector3());
+		}
+	} else { // arg = -1, angle = PI.
+		// Knowing R + 1 is symmetrical and wanting to avoid bias, we use
+		// (R (i, j) + R(j,i)) / 2 for  the off-diagnoal entries rather than R(i, j).
+		real_t s[3] = {};
+		if (rows[0][0] >= rows[1][1]) {
+			if (rows[0][0] >= rows[2][2]) {
+				// r00 is the maximum diagonal term
+				s[0] = rows[0][0] + 1.0;
+				s[1] = 0.5 * (rows[0][1] + rows[1][0]);
+				s[2] = 0.5 * (rows[0][2] + rows[2][0]);
+			} else {
+				// r22 is the maximum diagonal term
+				s[0] = 0.5 * (rows[2][0] + rows[0][2]);
+				s[1] = 0.5 * (rows[2][1] + rows[1][2]);
+			}
+		}
+		real_t length = Math::sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]);
+		if (length > 0.0) {
+			real_t adjust = Math_PI * Math::sqrt(0.5) / length;
+			s[0] *= adjust;
+			s[1] *= adjust;
+			s[2] *= adjust;
+		} else {
+			s[0] = 0.0;
+			s[1] = 0.0;
+			s[2] = 0.0;
+		}
+
+		skew_symmetric.rows[0][0] = 0.0;
+		skew_symmetric.rows[0][1] = -s[2];
+		skew_symmetric.rows[0][2] = +s[1];
+		skew_symmetric.rows[1][0] = +s[2];
+		skew_symmetric.rows[1][1] = 0.0;
+		skew_symmetric.rows[1][2] = -s[0];
+		skew_symmetric.rows[2][0] = -s[1];
+		skew_symmetric.rows[2][1] = +s[0];
+		skew_symmetric.rows[2][2] = 0.0;
+	}
+	return skew_symmetric;
+}
+
+Basis Basis::exp(real_t p_t, real_t p_theta) const {
+	real_t angle = p_t * p_theta;
+	real_t theta_sqr = p_theta * p_theta;
+	real_t new_angle = Math::sin(angle) / p_theta;
+	real_t new_angle_sqr = (1.0 - Math::cos(angle)) / theta_sqr;
+	Basis ret = Basis() + this->scaled(Vector3(new_angle, new_angle, new_angle)) + (*this * *this).scaled(Vector3(new_angle_sqr, new_angle_sqr, new_angle_sqr));
+	if (!ret.is_rotation()) {
+		return Basis();
+	}
+	return ret;
+}
+
+Basis Basis::_compute_inverse_v_1(real_t p_theta) const {
+	Basis s = *this;
+	if (p_theta <= 0.0) {
+		return Basis();
+	}
+	real_t theta_sqr = p_theta * p_theta;
+	real_t c = (1.0 - (p_theta * Math::sin(p_theta)) / (2.0 * (1.0 - Math::cos(p_theta)))) / theta_sqr;
+	return Basis() - s.scaled(Vector3(0.5, 0.5, 0.5)) + (s * s).scaled(Vector3(c, c, c));
+}
+
+Basis Basis::_compute_t_times_v(real_t p_theta, real_t p_c) const {
+	if (p_theta <= 0.0) {
+		return this->scaled(Vector3(p_c, p_c, p_c));
+	}
+	real_t angle = p_c * p_theta;
+	real_t theta_sqr = p_theta * p_theta;
+	real_t theta_cub = p_theta * theta_sqr;
+	real_t c_0 = (1.0 - Math::cos(angle)) / theta_sqr;
+	real_t c_1 = (angle - Math::sin(angle)) / theta_cub;
+	return Basis().scaled(Vector3(p_c, p_c, p_c)) + this->scaled(Vector3(c_0, c_0, c_0)) + (*this * *this).scaled(Vector3(c_1, c_1, c_1));
 }

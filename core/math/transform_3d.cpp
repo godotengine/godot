@@ -30,8 +30,10 @@
 
 #include "transform_3d.h"
 
+#include "core/math/basis.h"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
 
 void Transform3D::affine_invert() {
 	basis.invert();
@@ -81,22 +83,25 @@ void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, con
 }
 
 Transform3D Transform3D::sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
-	/* not sure if very "efficient" but good enough? */
+	// If you plan on calling sphere_interpolate_with with the same two transform but for different values of p_c.
+	// The following terms can be cached for use by the last block of code.
+	Transform3D inverse = this->affine_inverse();
+	Transform3D h = p_transform * inverse;
+	Basis s = h.basis.log();
+	real_t s_0 = s.elements[2][1];
+	real_t s_1 = s.elements[0][2];
+	real_t s_2 = s.elements[1][0];
+	real_t theta = Math::sqrt(s_0 * s_0 + s_1 * s_1 + s_2 * s_2);
+	Basis inv_v_1 = s._compute_inverse_v_1(theta);
+	Vector3 u = inv_v_1.xform(h.origin);
+	// End section on caching u.
 
-	Transform3D interp;
-
-	Vector3 src_scale = basis.get_scale();
-	Quaternion src_rot = basis.get_rotation_quaternion();
-	Vector3 src_loc = origin;
-
-	Vector3 dst_scale = p_transform.basis.get_scale();
-	Quaternion dst_rot = p_transform.basis.get_rotation_quaternion();
-	Vector3 dst_loc = p_transform.origin;
-
-	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
-	interp.origin = src_loc.lerp(dst_loc, p_c);
-
-	return interp;
+	Basis interp_r = s.exp(p_c, theta);
+	Basis interp_t_t_times_v = s._compute_t_times_v(theta, p_c);
+	Transform3D interp_h;
+	interp_h.basis = interp_r * basis;
+	interp_h.origin = interp_r.xform(origin) + interp_t_t_times_v.xform(u);
+	return interp_h;
 }
 
 Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
@@ -215,4 +220,37 @@ Transform3D::Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &
 Transform3D::Transform3D(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {
 	basis = Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz);
 	origin = Vector3(ox, oy, oz);
+}
+
+Transform3D Transform3D::cubic_interpolate(const Transform3D &p_b, const Transform3D &p_pre_a, const Transform3D &p_post_b, const real_t &p_weight) const {
+	LocalVector<Transform3D> transforms;
+	transforms.resize(4);
+	transforms[0] = *this;
+	transforms[1] = p_b;
+	transforms[2] = p_pre_a;
+	transforms[3] = p_post_b;
+	Transform3D inverse_transform = this->affine_inverse();
+	for (int32_t basis_i = 0; basis_i < 4; basis_i++) {
+		Transform3D h = transforms[basis_i] * inverse_transform;
+		Transform3D skew_symmetric = Transform3D(h.basis.log(), Vector3());
+		transforms[basis_i] = skew_symmetric;
+	}
+	Vector3 origin = this->origin.cubic_interpolate(p_b.origin, p_pre_a.origin, p_post_b.origin, p_weight);
+	Vector3 basis_x = transforms[0].basis.get_axis(0).cubic_interpolate(transforms[1].basis.get_axis(0), transforms[2].basis.get_axis(0), transforms[3].basis.get_axis(0), p_weight);
+	Vector3 basis_y = transforms[0].basis.get_axis(1).cubic_interpolate(transforms[1].basis.get_axis(1), transforms[2].basis.get_axis(1), transforms[3].basis.get_axis(1), p_weight);
+	Vector3 basis_z = transforms[0].basis.get_axis(2).cubic_interpolate(transforms[1].basis.get_axis(2), transforms[2].basis.get_axis(2), transforms[3].basis.get_axis(2), p_weight);
+	Basis s;
+	s.set(basis_x, basis_y, basis_z);
+	real_t s_0 = s.elements[2][1];
+	real_t s_1 = s.elements[0][2];
+	real_t s_2 = s.elements[1][0];
+	real_t theta = Math::sqrt(s_0 * s_0 + s_1 * s_1 + s_2 * s_2);
+	Basis inv_v_1 = s._compute_inverse_v_1(theta);
+	Vector3 u = inv_v_1.xform(origin);
+	Basis interp_r = s.exp(p_weight, theta);
+	Basis interp_t_t_times_v = s._compute_t_times_v(theta, p_weight);
+	Transform3D interp_h;
+	interp_h.basis = interp_r * this->basis;
+	interp_h.origin = interp_r.xform(this->origin) + interp_t_t_times_v.xform(u);
+	return interp_h;
 }

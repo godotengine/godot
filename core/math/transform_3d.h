@@ -100,7 +100,16 @@ struct _NO_DISCARD_ Transform3D {
 	void operator*=(const real_t p_val);
 	Transform3D operator*(const real_t p_val) const;
 
+	// Interpolation of Rigid Motions in 3D
+	// David Eberly, Geometric Tools, Redmond WA 98052
+	// https://www.geometrictools.com/
+	// This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy
+	// of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons,
+	// PO Box 1866, Mountain View, CA 94042, USA
+	// https://www.geometrictools.com/Documentation/InterpolationRigidMotions.pdf
 	Transform3D sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const;
+	Transform3D cubic_interpolate(const Transform3D &p_b, const Transform3D &p_pre_a, const Transform3D &p_post_b, const real_t &p_weight) const;
+	// End Interpolation of Rigid Motions in 3D.
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {

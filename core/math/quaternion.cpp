@@ -31,6 +31,8 @@
 #include "quaternion.h"
 
 #include "core/math/basis.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/string/print_string.h"
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
@@ -132,15 +134,9 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 	// adjust signs (if necessary)
 	if (cosom < 0.0f) {
 		cosom = -cosom;
-		to1.x = -p_to.x;
-		to1.y = -p_to.y;
-		to1.z = -p_to.z;
-		to1.w = -p_to.w;
+		to1 = -p_to;
 	} else {
-		to1.x = p_to.x;
-		to1.y = p_to.y;
-		to1.z = p_to.z;
-		to1.w = p_to.w;
+		to1 = p_to;
 	}
 
 	// calculate coefficients
@@ -194,11 +190,9 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0f - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+	Transform3D ret = Transform3D(*this, Vector3());
+	Basis ret_basis = ret.cubic_interpolate(Transform3D(p_b, Vector3()), Transform3D(p_pre_a, Vector3()), Transform3D(p_post_b, Vector3()), p_weight).basis;
+	return ret_basis.get_rotation_quaternion();
 }
 
 Quaternion::operator String() const {

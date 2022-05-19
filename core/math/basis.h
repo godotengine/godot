@@ -31,6 +31,7 @@
 #ifndef BASIS_H
 #define BASIS_H
 
+#include "core/math/math_defs.h"
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
@@ -83,6 +84,10 @@ struct _NO_DISCARD_ Basis {
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
 	Quaternion get_rotation_quaternion() const;
+	Basis exp(real_t p_t, real_t p_theta) const;
+	Basis log() const;
+	Basis _compute_inverse_v_1(real_t p_theta) const;
+	Basis _compute_t_times_v(real_t p_t, real_t p_theta) const;
 
 	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);
 
