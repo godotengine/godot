@@ -258,12 +258,9 @@ int OptionButton::get_selected() const {
 }
 
 int OptionButton::get_selected_id() const {
-	int idx = get_selected();
-	if (idx < 0) {
-		return 0;
-	}
 	return get_item_id(current);
 }
+
 Variant OptionButton::get_selected_metadata() const {
 	int idx = get_selected();
 	if (idx < 0) {
