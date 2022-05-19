@@ -172,7 +172,7 @@
 	</members>
 	<constants>
 		<constant name="NO_INDEX_ARRAY" value="-1">
-			Default value used for index_array_len when no indices are present.
+			Value used internally when no indices are present.
 		</constant>
 		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
 			Amount of weights/bone indices per vertex (always 4).

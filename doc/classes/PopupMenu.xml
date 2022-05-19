@@ -249,7 +249,7 @@
 			<return type="String" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Returns the tooltip associated with the specified index index [code]idx[/code].
+				Returns the tooltip associated with the specified index [code]idx[/code].
 			</description>
 		</method>
 		<method name="is_hide_on_window_lose_focus" qualifiers="const">

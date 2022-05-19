@@ -2893,14 +2893,14 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == String("fragment")) {
-				*r_message = RTR("Varyings which assigned in 'vertex' function may not be reassigned in 'fragment' or 'light'.");
+				*r_message = RTR("Varyings which were assigned in 'vertex' function may not be reassigned in 'fragment' or 'light'.");
 				return false;
 			}
 			break;
 		case ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT:
 		case ShaderNode::Varying::STAGE_FRAGMENT:
 			if (current_function == String("vertex")) {
-				*r_message = RTR("Varyings which assigned in 'fragment' function may not be reassigned in 'vertex' or 'light'.");
+				*r_message = RTR("Varyings which were assigned in 'fragment' function may not be reassigned in 'vertex' or 'light'.");
 				return false;
 			}
 			break;

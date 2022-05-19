@@ -2166,7 +2166,7 @@ public:
 				Node *another = node->get_node(node_path);
 				if (!another) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-					r_error_str = RTR("Path does not lead Node!");
+					r_error_str = RTR("Path does not lead to Node!");
 					return 0;
 				}
 

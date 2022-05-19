@@ -392,7 +392,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the physics interpolated flag is set for this Node (see [member physics_interpolation_mode]).
-				[b]Note:[/b] Interpolation will only be active is both the flag is set [b]and[/b] physics interpolation is enabled within the [SceneTree]. This can be tested using [method is_physics_interpolated_and_enabled].
+				[b]Note:[/b] Interpolation will only be active if both the flag is set [b]and[/b] physics interpolation is enabled within the [SceneTree]. This can be tested using [method is_physics_interpolated_and_enabled].
 			</description>
 		</method>
 		<method name="is_physics_interpolated_and_enabled" qualifiers="const">
