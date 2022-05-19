@@ -1069,6 +1069,7 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		bold_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			// Try to match OpenSans ExtraBold.
 			data->set_embolden(1.2);
 			bold_font->add_data(data);
 		}
@@ -1076,15 +1077,17 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		bold_italics_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			// Try to match OpenSans ExtraBold Italic.
 			data->set_embolden(1.2);
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 			bold_italics_font->add_data(data);
 		}
 
 		italics_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			// Try to match OpenSans Italic.
+			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 			italics_font->add_data(data);
 		}
 	}
