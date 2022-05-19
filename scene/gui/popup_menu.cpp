@@ -666,7 +666,7 @@ void PopupMenu::_notification(int p_what) {
 #define ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel) \
 	item.text = p_label;                              \
 	item.xl_text = tr(p_label);                       \
-	item.id = p_id == -1 ? items.size() - 1 : p_id;   \
+	item.id = p_id == -1 ? items.size() : p_id;       \
 	item.accel = p_accel;
 
 void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
@@ -739,7 +739,7 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	_ref_shortcut(p_shortcut);                                                         \
 	item.text = p_shortcut->get_name();                                                \
 	item.xl_text = tr(item.text);                                                      \
-	item.id = p_id == -1 ? items.size() - 1 : p_id;                                    \
+	item.id = p_id == -1 ? items.size() : p_id;                                        \
 	item.shortcut = p_shortcut;                                                        \
 	item.shortcut_is_global = p_global;
 
@@ -802,7 +802,7 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 	Item item;
 	item.text = p_label;
 	item.xl_text = tr(p_label);
-	item.id = p_id == -1 ? items.size() - 1 : p_id;
+	item.id = p_id == -1 ? items.size() : p_id;
 	item.submenu = p_submenu;
 	items.push_back(item);
 	update();
