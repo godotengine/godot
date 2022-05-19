@@ -183,13 +183,15 @@ private:
 	float height = 2.0;
 	int radial_segments = 64;
 	int rings = 4;
+	bool cap_top = true;
+	bool cap_bottom = true;
 
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
-	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4);
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true);
 
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
@@ -205,6 +207,12 @@ public:
 
 	void set_rings(const int p_rings);
 	int get_rings() const;
+
+	void set_cap_top(bool p_cap_top);
+	bool is_cap_top() const;
+
+	void set_cap_bottom(bool p_cap_bottom);
+	bool is_cap_bottom() const;
 
 	CylinderMesh();
 };
