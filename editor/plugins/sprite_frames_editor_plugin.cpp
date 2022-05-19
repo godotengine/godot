@@ -125,8 +125,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	Color accent = get_theme_color("accent_color", "Editor");
 
-	for (RBSet<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		const int idx = E->get();
+	for (const int &E : frames_selected) {
+		const int idx = E;
 		const int x = idx % frame_count.x;
 		const int y = idx / frame_count.x;
 		const Point2 pos = draw_offset + Point2(x, y) * (draw_frame_size + draw_sep);
@@ -248,8 +248,8 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	for (RBSet<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		int idx = E->get();
+	for (const int &E : frames_selected) {
+		int idx = E;
 		const Point2 frame_coords(idx % frame_count.x, idx / frame_count.x);
 
 		Ref<AtlasTexture> at;

@@ -40,8 +40,8 @@ Vector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 	if (sections.size()) {
 		String *w = sections.ptrw();
 		int idx = 0;
-		for (const RBSet<String>::Element *E = p_object->editor_get_section_folding().front(); E; E = E->next()) {
-			w[idx++] = E->get();
+		for (const String &E : p_object->editor_get_section_folding()) {
+			w[idx++] = E;
 		}
 	}
 
@@ -270,8 +270,8 @@ void EditorFolding::_do_object_unfolds(Object *p_object, RBSet<Ref<Resource>> &r
 		}
 	}
 
-	for (RBSet<String>::Element *E = unfold_group.front(); E; E = E->next()) {
-		p_object->editor_set_section_unfold(E->get(), true);
+	for (const String &E : unfold_group) {
+		p_object->editor_set_section_unfold(E, true);
 	}
 }
 

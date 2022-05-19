@@ -391,8 +391,8 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
 			float dep_progress = 0;
-			for (RBSet<String>::Element *E = load_task.sub_tasks.front(); E; E = E->next()) {
-				dep_progress += _dependency_get_progress(E->get());
+			for (const String &E : load_task.sub_tasks) {
+				dep_progress += _dependency_get_progress(E);
 			}
 			dep_progress /= float(dep_count);
 			dep_progress *= 0.5;

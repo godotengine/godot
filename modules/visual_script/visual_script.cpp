@@ -230,12 +230,12 @@ void VisualScript::_node_ports_changed(int p_id) {
 	{
 		List<SequenceConnection> to_remove;
 
-		for (RBSet<SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id && E->get().from_output >= vsn->get_output_sequence_port_count()) {
-				to_remove.push_back(E->get());
+		for (const SequenceConnection &E : sequence_connections) {
+			if (E.from_node == p_id && E.from_output >= vsn->get_output_sequence_port_count()) {
+				to_remove.push_back(E);
 			}
-			if (E->get().to_node == p_id && !vsn->has_input_sequence_port()) {
-				to_remove.push_back(E->get());
+			if (E.to_node == p_id && !vsn->has_input_sequence_port()) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -248,12 +248,12 @@ void VisualScript::_node_ports_changed(int p_id) {
 	{
 		List<DataConnection> to_remove;
 
-		for (RBSet<DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id && E->get().from_port >= vsn->get_output_value_port_count()) {
-				to_remove.push_back(E->get());
+		for (const DataConnection &E : data_connections) {
+			if (E.from_node == p_id && E.from_port >= vsn->get_output_value_port_count()) {
+				to_remove.push_back(E);
 			}
-			if (E->get().to_node == p_id && E->get().to_port >= vsn->get_input_value_port_count()) {
-				to_remove.push_back(E->get());
+			if (E.to_node == p_id && E.to_port >= vsn->get_input_value_port_count()) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -292,9 +292,9 @@ void VisualScript::remove_node(int p_id) {
 	{
 		List<SequenceConnection> to_remove;
 
-		for (RBSet<SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+		for (const SequenceConnection &E : sequence_connections) {
+			if (E.from_node == p_id || E.to_node == p_id) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -307,9 +307,9 @@ void VisualScript::remove_node(int p_id) {
 	{
 		List<DataConnection> to_remove;
 
-		for (RBSet<DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+		for (const DataConnection &E : data_connections) {
+			if (E.from_node == p_id || E.to_node == p_id) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -384,8 +384,8 @@ bool VisualScript::has_sequence_connection(int p_from_node, int p_from_output, i
 }
 
 void VisualScript::get_sequence_connection_list(List<SequenceConnection> *r_connection) const {
-	for (const RBSet<SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-		r_connection->push_back(E->get());
+	for (const SequenceConnection &E : sequence_connections) {
+		r_connection->push_back(E);
 	}
 }
 
@@ -426,8 +426,8 @@ bool VisualScript::has_data_connection(int p_from_node, int p_from_port, int p_t
 }
 
 bool VisualScript::is_input_value_port_connected(int p_node, int p_port) const {
-	for (const RBSet<DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		if (E->get().to_node == p_node && E->get().to_port == p_port) {
+	for (const DataConnection &E : data_connections) {
+		if (E.to_node == p_node && E.to_port == p_port) {
 			return true;
 		}
 	}
@@ -435,10 +435,10 @@ bool VisualScript::is_input_value_port_connected(int p_node, int p_port) const {
 }
 
 bool VisualScript::get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const {
-	for (const RBSet<DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		if (E->get().to_node == p_node && E->get().to_port == p_port) {
-			*r_node = E->get().from_node;
-			*r_port = E->get().from_port;
+	for (const DataConnection &E : data_connections) {
+		if (E.to_node == p_node && E.to_port == p_port) {
+			*r_node = E.from_node;
+			*r_port = E.from_port;
 			return true;
 		}
 	}
@@ -446,8 +446,8 @@ bool VisualScript::get_input_value_port_connection_source(int p_node, int p_port
 }
 
 void VisualScript::get_data_connection_list(List<DataConnection> *r_connection) const {
-	for (const RBSet<DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		r_connection->push_back(E->get());
+	for (const DataConnection &E : data_connections) {
+		r_connection->push_back(E);
 	}
 }
 
@@ -764,8 +764,8 @@ void VisualScript::_update_placeholders() {
 		values[p.name] = variables[E.key].default_value;
 	}
 
-	for (RBSet<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-		E->get()->update(pinfo, values);
+	for (PlaceHolderScriptInstance *E : placeholders) {
+		E->update(pinfo, values);
 	}
 }
 
@@ -1078,19 +1078,19 @@ Dictionary VisualScript::_get_data() const {
 	d["nodes"] = nds;
 
 	Array seqconns;
-	for (const RBSet<SequenceConnection>::Element *F = sequence_connections.front(); F; F = F->next()) {
-		seqconns.push_back(F->get().from_node);
-		seqconns.push_back(F->get().from_output);
-		seqconns.push_back(F->get().to_node);
+	for (const SequenceConnection &F : sequence_connections) {
+		seqconns.push_back(F.from_node);
+		seqconns.push_back(F.from_output);
+		seqconns.push_back(F.to_node);
 	}
 	d["sequence_connections"] = seqconns;
 
 	Array dataconns;
-	for (const RBSet<DataConnection>::Element *F = data_connections.front(); F; F = F->next()) {
-		dataconns.push_back(F->get().from_node);
-		dataconns.push_back(F->get().from_port);
-		dataconns.push_back(F->get().to_node);
-		dataconns.push_back(F->get().to_port);
+	for (const DataConnection &F : data_connections) {
+		dataconns.push_back(F.from_node);
+		dataconns.push_back(F.from_port);
+		dataconns.push_back(F.to_node);
+		dataconns.push_back(F.to_port);
 	}
 	d["data_connections"] = dataconns;
 
@@ -1869,23 +1869,23 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				List<int> nd_queue;
 				nd_queue.push_back(function.node);
 				while (!nd_queue.is_empty()) {
-					for (const RBSet<VisualScript::SequenceConnection>::Element *F = script->sequence_connections.front(); F; F = F->next()) {
-						if (nd_queue.front()->get() == F->get().from_node && !node_ids.has(F->get().to_node)) {
-							nd_queue.push_back(F->get().to_node);
-							node_ids.insert(F->get().to_node);
+					for (const VisualScript::SequenceConnection &F : script->sequence_connections) {
+						if (nd_queue.front()->get() == F.from_node && !node_ids.has(F.to_node)) {
+							nd_queue.push_back(F.to_node);
+							node_ids.insert(F.to_node);
 						}
-						if (nd_queue.front()->get() == F->get().from_node && !seqconns.has(F->get())) {
-							seqconns.insert(F->get());
+						if (nd_queue.front()->get() == F.from_node && !seqconns.has(F)) {
+							seqconns.insert(F);
 						}
 					}
 					nd_queue.pop_front();
 				}
 				HashMap<int, HashMap<int, Pair<int, int>>> dc_lut; // :: to -> to_port -> (from, from_port)
-				for (const RBSet<VisualScript::DataConnection>::Element *F = script->data_connections.front(); F; F = F->next()) {
-					dc_lut[F->get().to_node][F->get().to_port] = Pair<int, int>(F->get().from_node, F->get().from_port);
+				for (const VisualScript::DataConnection &F : script->data_connections) {
+					dc_lut[F.to_node][F.to_port] = Pair<int, int>(F.from_node, F.from_port);
 				}
-				for (const RBSet<int>::Element *F = node_ids.front(); F; F = F->next()) {
-					nd_queue.push_back(F->get());
+				for (const int &F : node_ids) {
+					nd_queue.push_back(F);
 				}
 				List<int> dc_keys;
 				while (!nd_queue.is_empty()) {
@@ -1907,15 +1907,15 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 			//Multiple passes are required to set up this complex thing..
 			//First create the nodes.
-			for (const RBSet<int>::Element *F = node_ids.front(); F; F = F->next()) {
-				Ref<VisualScriptNode> node = script->nodes[F->get()].node;
+			for (const int &F : node_ids) {
+				Ref<VisualScriptNode> node = script->nodes[F].node;
 
 				VisualScriptNodeInstance *instance = node->instantiate(this); // Create instance.
 				ERR_FAIL_COND(!instance);
 
 				instance->base = node.ptr();
 
-				instance->id = F->get();
+				instance->id = F;
 				instance->input_port_count = node->get_input_value_port_count();
 				instance->input_ports = nullptr;
 				instance->output_port_count = node->get_output_value_port_count();
@@ -1975,14 +1975,14 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				max_input_args = MAX(max_input_args, instance->input_port_count);
 				max_output_args = MAX(max_output_args, instance->output_port_count);
 
-				instances[F->get()] = instance;
+				instances[F] = instance;
 			}
 
 			function.trash_pos = function.max_stack++; // create pos for trash
 
 			// Second pass, do data connections.
-			for (const RBSet<VisualScript::DataConnection>::Element *F = dataconns.front(); F; F = F->next()) {
-				VisualScript::DataConnection dc = F->get();
+			for (const VisualScript::DataConnection &F : dataconns) {
+				VisualScript::DataConnection dc = F;
 				ERR_CONTINUE(!instances.has(dc.from_node));
 				VisualScriptNodeInstance *from = instances[dc.from_node];
 				ERR_CONTINUE(!instances.has(dc.to_node));
@@ -2008,8 +2008,8 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			}
 
 			// Third pass, do sequence connections.
-			for (const RBSet<VisualScript::SequenceConnection>::Element *F = seqconns.front(); F; F = F->next()) {
-				VisualScript::SequenceConnection sc = F->get();
+			for (const VisualScript::SequenceConnection &F : seqconns) {
+				VisualScript::SequenceConnection sc = F;
 				ERR_CONTINUE(!instances.has(sc.from_node));
 				VisualScriptNodeInstance *from = instances[sc.from_node];
 				ERR_CONTINUE(!instances.has(sc.to_node));
@@ -2022,11 +2022,11 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			//fourth pass:
 			// 1) unassigned input ports to default values
 			// 2) connect unassigned output ports to trash
-			for (const RBSet<int>::Element *F = node_ids.front(); F; F = F->next()) {
-				ERR_CONTINUE(!instances.has(F->get()));
+			for (const int &F : node_ids) {
+				ERR_CONTINUE(!instances.has(F));
 
-				Ref<VisualScriptNode> node = script->nodes[F->get()].node;
-				VisualScriptNodeInstance *instance = instances[F->get()];
+				Ref<VisualScriptNode> node = script->nodes[F].node;
+				VisualScriptNodeInstance *instance = instances[F];
 
 				// Connect to default values.
 				for (int i = 0; i < instance->input_port_count; i++) {

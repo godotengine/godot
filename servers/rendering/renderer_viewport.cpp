@@ -247,15 +247,15 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-				for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-					if (!F->get()->enabled) {
+				for (RendererCanvasRender::LightOccluderInstance *F : canvas->occluders) {
+					if (!F->enabled) {
 						continue;
 					}
-					F->get()->xform_cache = xf * F->get()->xform;
+					F->xform_cache = xf * F->xform;
 
-					if (sdf_rect.intersects_transformed(F->get()->xform_cache, F->get()->aabb_cache)) {
-						F->get()->next = occluders;
-						occluders = F->get();
+					if (sdf_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
+						F->next = occluders;
+						occluders = F;
 					}
 				}
 			}
@@ -281,8 +281,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			// Find lights in canvas.
 
-			for (RBSet<RendererCanvasRender::Light *>::Element *F = canvas->lights.front(); F; F = F->next()) {
-				RendererCanvasRender::Light *cl = F->get();
+			for (RendererCanvasRender::Light *F : canvas->lights) {
+				RendererCanvasRender::Light *cl = F;
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize = RSG::texture_storage->texture_size_with_proxy(cl->texture);
@@ -313,8 +313,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				}
 			}
 
-			for (RBSet<RendererCanvasRender::Light *>::Element *F = canvas->directional_lights.front(); F; F = F->next()) {
-				RendererCanvasRender::Light *cl = F->get();
+			for (RendererCanvasRender::Light *F : canvas->directional_lights) {
+				RendererCanvasRender::Light *cl = F;
 				if (cl->enabled) {
 					cl->filter_next_ptr = directional_lights;
 					directional_lights = cl;
@@ -349,14 +349,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-				for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-					if (!F->get()->enabled) {
+				for (RendererCanvasRender::LightOccluderInstance *F : canvas->occluders) {
+					if (!F->enabled) {
 						continue;
 					}
-					F->get()->xform_cache = xf * F->get()->xform;
-					if (shadow_rect.intersects_transformed(F->get()->xform_cache, F->get()->aabb_cache)) {
-						F->get()->next = occluders;
-						occluders = F->get();
+					F->xform_cache = xf * F->xform;
+					if (shadow_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
+						F->next = occluders;
+						occluders = F;
 					}
 				}
 			}
@@ -429,19 +429,19 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 					Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
-					for (RBSet<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-						if (!F->get()->enabled) {
+					for (RendererCanvasRender::LightOccluderInstance *F : canvas->occluders) {
+						if (!F->enabled) {
 							continue;
 						}
-						F->get()->xform_cache = xf * F->get()->xform;
-						Transform2D localizer = F->get()->xform_cache.affine_inverse();
+						F->xform_cache = xf * F->xform;
+						Transform2D localizer = F->xform_cache.affine_inverse();
 
 						for (int j = 0; j < point_count; j++) {
 							xf_points[j] = localizer.xform(points[j]);
 						}
-						if (F->get()->aabb_cache.intersects_filled_polygon(xf_points, point_count)) {
-							F->get()->next = occluders;
-							occluders = F->get();
+						if (F->aabb_cache.intersects_filled_polygon(xf_points, point_count)) {
+							F->next = occluders;
+							occluders = F;
 						}
 					}
 				}

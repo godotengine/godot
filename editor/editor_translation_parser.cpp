@@ -96,8 +96,8 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (RBSet<String>::Element *E = extensions.front(); E; E = E->next()) {
-		r_extensions->push_back(E->get());
+	for (const String &E : extensions) {
+		r_extensions->push_back(E);
 	}
 }
 

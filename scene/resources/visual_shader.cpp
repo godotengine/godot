@@ -1579,8 +1579,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("modes"), E.key), PROPERTY_HINT_ENUM, E.value));
 	}
 
-	for (RBSet<String>::Element *E = toggles.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E->get())));
+	for (const String &E : toggles) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E)));
 	}
 
 	for (const KeyValue<String, Varying> &E : varyings) {

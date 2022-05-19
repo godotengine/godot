@@ -483,15 +483,15 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	HashMap<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
-	for (RBSet<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
-		ERR_CONTINUE(!cell_map.has(E->get()));
-		const Cell &c = cell_map[E->get()];
+	for (const IndexKey &E : g.cells) {
+		ERR_CONTINUE(!cell_map.has(E));
+		const Cell &c = cell_map[E];
 
 		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item)) {
 			continue;
 		}
 
-		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
+		Vector3 cellpos = Vector3(E.x, E.y, E.z);
 		Vector3 ofs = _get_offset();
 
 		Transform3D xform;
@@ -507,7 +507,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 				Pair<Transform3D, IndexKey> p;
 				p.first = xform * mesh_library->get_item_mesh_transform(c.item);
-				p.second = E->get();
+				p.second = E;
 				multimesh_items[c.item].push_back(p);
 			}
 		}
@@ -540,7 +540,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				nm.region = region;
 			}
 
-			g.navmesh_ids[E->get()] = nm;
+			g.navmesh_ids[E] = nm;
 		}
 	}
 

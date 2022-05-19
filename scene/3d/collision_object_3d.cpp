@@ -345,9 +345,9 @@ void CollisionObject3D::_update_debug_shapes() {
 		return;
 	}
 
-	for (RBSet<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
-		if (shapes.has(shapedata_idx->get())) {
-			ShapeData &shapedata = shapes[shapedata_idx->get()];
+	for (const uint32_t &shapedata_idx : debug_shapes_to_update) {
+		if (shapes.has(shapedata_idx)) {
+			ShapeData &shapedata = shapes[shapedata_idx];
 			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				ShapeData::ShapeBase &s = shapes[i];

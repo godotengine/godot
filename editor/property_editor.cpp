@@ -143,8 +143,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					file->clear_filters();
-					for (RBSet<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-						file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+					for (const String &E : valid_extensions) {
+						file->add_filter("*." + E + " ; " + E.to_upper());
 					}
 
 					file->popup_file_dialog();
@@ -890,8 +890,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						E = E->next();
 					}
 
-					for (RBSet<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						const String &t = j->get();
+					for (const String &j : valid_inheritors) {
+						const String &t = j;
 
 						bool is_custom_resource = false;
 						Ref<Texture2D> icon;

@@ -263,9 +263,9 @@ void Window::_make_window() {
 		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
 	}
 
-	for (RBSet<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
-		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, transient_parent->window_id);
+	for (const Window *E : transient_children) {
+		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->window_id, transient_parent->window_id);
 		}
 	}
 
@@ -290,9 +290,9 @@ void Window::_clear_window() {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
 
-	for (RBSet<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
-		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, DisplayServer::INVALID_WINDOW_ID);
+	for (const Window *E : transient_children) {
+		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->window_id, DisplayServer::INVALID_WINDOW_ID);
 		}
 	}
 

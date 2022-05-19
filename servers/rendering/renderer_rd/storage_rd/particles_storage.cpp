@@ -838,8 +838,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		}
 
 		uint32_t collision_3d_textures_used = 0;
-		for (const RBSet<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
-			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E->get());
+		for (const RID &E : p_particles->collisions) {
+			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E);
 			if (!pci || !pci->active) {
 				continue;
 			}

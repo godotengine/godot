@@ -487,9 +487,9 @@ void AnimationTree::set_active(bool p_active) {
 	}
 
 	if (!active && is_inside_tree()) {
-		for (RBSet<TrackCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
-			if (ObjectDB::get_instance(E->get()->object_id)) {
-				E->get()->object->call(SNAME("stop"));
+		for (const TrackCache *E : playing_caches) {
+			if (ObjectDB::get_instance(E->object_id)) {
+				E->object->call(SNAME("stop"));
 			}
 		}
 

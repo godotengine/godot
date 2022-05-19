@@ -693,8 +693,8 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 		_find_changed_scripts_for_external_editor(base, base, scripts);
 	}
 
-	for (RBSet<Ref<Script>>::Element *E = scripts.front(); E; E = E->next()) {
-		Ref<Script> script = E->get();
+	for (const Ref<Script> &E : scripts) {
+		Ref<Script> script = E;
 
 		if (p_for_script.is_valid() && p_for_script != script) {
 			continue;

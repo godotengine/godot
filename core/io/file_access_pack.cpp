@@ -406,8 +406,8 @@ Error DirAccessPack::list_dir_begin() {
 		list_dirs.push_back(E.key);
 	}
 
-	for (RBSet<String>::Element *E = current->files.front(); E; E = E->next()) {
-		list_files.push_back(E->get());
+	for (const String &E : current->files) {
+		list_files.push_back(E);
 	}
 
 	return OK;

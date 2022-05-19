@@ -293,10 +293,10 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	real_t closest_dist = 1e20;
 	Vector3 closest_point;
 
-	for (const RBSet<Segment>::Element *E = segments.front(); E; E = E->next()) {
+	for (const Segment &E : segments) {
 		Point *from_point = nullptr, *to_point = nullptr;
-		points.lookup(E->get().u, from_point);
-		points.lookup(E->get().v, to_point);
+		points.lookup(E.u, from_point);
+		points.lookup(E.v, to_point);
 
 		if (!(from_point->enabled && to_point->enabled)) {
 			continue;

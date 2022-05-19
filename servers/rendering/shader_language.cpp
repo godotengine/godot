@@ -4036,8 +4036,8 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 		idx++;
 	}
 
-	for (RBSet<String>::Element *E = kws.front(); E; E = E->next()) {
-		r_keywords->push_back(E->get());
+	for (const String &E : kws) {
+		r_keywords->push_back(E);
 	}
 }
 
@@ -4066,8 +4066,8 @@ void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
 		idx++;
 	}
 
-	for (RBSet<String>::Element *E = kws.front(); E; E = E->next()) {
-		r_keywords->push_back(E->get());
+	for (const String &E : kws) {
+		r_keywords->push_back(E);
 	}
 }
 
@@ -4341,8 +4341,8 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
 				for (KeyValue<StringName, RBSet<int>> &E : arg->tex_argument_connect) {
-					for (RBSet<int>::Element *F = E.value.front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_uniform_settings(E.key, F->get(), p_filter, p_repeat)) {
+					for (const int &F : E.value) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat)) {
 							return false;
 						}
 					}
@@ -4375,8 +4375,8 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 				arg->tex_builtin = p_builtin;
 
 				for (KeyValue<StringName, RBSet<int>> &E : arg->tex_argument_connect) {
-					for (RBSet<int>::Element *F = E.value.front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_builtin_reference(E.key, F->get(), p_builtin)) {
+					for (const int &F : E.value) {
+						if (!_propagate_function_call_sampler_builtin_reference(E.key, F, p_builtin)) {
 							return false;
 						}
 					}
@@ -7568,12 +7568,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 String ShaderLanguage::_get_shader_type_list(const RBSet<String> &p_shader_types) const {
 	// Return a list of shader types as an human-readable string
 	String valid_types;
-	for (const RBSet<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
+	for (const String &E : p_shader_types) {
 		if (!valid_types.is_empty()) {
 			valid_types += ", ";
 		}
 
-		valid_types += "'" + E->get() + "'";
+		valid_types += "'" + E + "'";
 	}
 
 	return valid_types;

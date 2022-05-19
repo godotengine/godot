@@ -6710,8 +6710,8 @@ RBSet<RID> _get_physics_bodies_rid(Node *node) {
 		rids.insert(pb->get_rid());
 	}
 	RBSet<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
-	for (RBSet<PhysicsBody3D *>::Element *I = child_nodes.front(); I; I = I->next()) {
-		rids.insert(I->get()->get_rid());
+	for (const PhysicsBody3D *I : child_nodes) {
+		rids.insert(I->get_rid());
 	}
 
 	return rids;
@@ -6755,8 +6755,8 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			}
 			if (!found_valid_shape && vi.size()) {
 				AABB aabb = vi.front()->get()->get_transformed_aabb();
-				for (RBSet<VisualInstance3D *>::Element *I = vi.front(); I; I = I->next()) {
-					aabb.merge_with(I->get()->get_transformed_aabb());
+				for (const VisualInstance3D *I : vi) {
+					aabb.merge_with(I->get_transformed_aabb());
 				}
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;

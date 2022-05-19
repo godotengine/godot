@@ -436,11 +436,11 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 	// Members
 	for (KeyValue<const Script *, RBSet<StringName>> sm : members) {
-		for (RBSet<StringName>::Element *E = sm.value.front(); E; E = E->next()) {
+		for (const StringName &E : sm.value) {
 			Variant m;
-			if (p_instance->get(E->get(), m)) {
+			if (p_instance->get(E, m)) {
 				String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
-				PropertyInfo pi(m.get_type(), "Members/" + script_path + E->get());
+				PropertyInfo pi(m.get_type(), "Members/" + script_path + E);
 				properties.push_back(SceneDebuggerProperty(pi, m));
 			}
 		}
@@ -629,8 +629,8 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -673,8 +673,8 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -758,8 +758,8 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -802,8 +802,8 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -968,8 +968,8 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -1007,8 +1007,8 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F; F = F->next()) {
-		Node *n = F->get();
+	for (Node *F : E->value) {
+		Node *n = F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;

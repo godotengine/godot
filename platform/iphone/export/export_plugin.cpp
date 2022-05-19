@@ -1350,8 +1350,8 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	// Update Linker Flag Values
 	{
 		String result_linker_flags = " ";
-		for (RBSet<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
-			const String &flag = E->get();
+		for (const String &E : plugin_linker_flags) {
+			const String &flag = E;
 
 			if (flag.length() == 0) {
 				continue;

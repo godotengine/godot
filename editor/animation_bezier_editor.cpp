@@ -747,8 +747,8 @@ void AnimationBezierTrackEdit::_update_locked_tracks_after(int p_track) {
 	}
 
 	Vector<int> updated_locked_tracks;
-	for (RBSet<int>::Element *E = locked_tracks.front(); E; E = E->next()) {
-		updated_locked_tracks.push_back(E->get());
+	for (const int &E : locked_tracks) {
+		updated_locked_tracks.push_back(E);
 	}
 	locked_tracks.clear();
 	for (int i = 0; i < updated_locked_tracks.size(); ++i) {
@@ -766,8 +766,8 @@ void AnimationBezierTrackEdit::_update_hidden_tracks_after(int p_track) {
 	}
 
 	Vector<int> updated_hidden_tracks;
-	for (RBSet<int>::Element *E = hidden_tracks.front(); E; E = E->next()) {
-		updated_hidden_tracks.push_back(E->get());
+	for (const int &E : hidden_tracks) {
+		updated_hidden_tracks.push_back(E);
 	}
 	hidden_tracks.clear();
 	for (int i = 0; i < updated_hidden_tracks.size(); ++i) {

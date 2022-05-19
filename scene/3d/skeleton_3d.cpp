@@ -263,19 +263,19 @@ void Skeleton3D::_notification(int p_what) {
 			force_update_all_bone_transforms();
 
 			// Update skins.
-			for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
-				const Skin *skin = E->get()->skin.operator->();
-				RID skeleton = E->get()->skeleton;
+			for (SkinReference *E : skin_bindings) {
+				const Skin *skin = E->skin.operator->();
+				RID skeleton = E->skeleton;
 				uint32_t bind_count = skin->get_bind_count();
 
-				if (E->get()->bind_count != bind_count) {
+				if (E->bind_count != bind_count) {
 					RS::get_singleton()->skeleton_allocate_data(skeleton, bind_count);
-					E->get()->bind_count = bind_count;
-					E->get()->skin_bone_indices.resize(bind_count);
-					E->get()->skin_bone_indices_ptrs = E->get()->skin_bone_indices.ptrw();
+					E->bind_count = bind_count;
+					E->skin_bone_indices.resize(bind_count);
+					E->skin_bone_indices_ptrs = E->skin_bone_indices.ptrw();
 				}
 
-				if (E->get()->skeleton_version != version) {
+				if (E->skeleton_version != version) {
 					for (uint32_t i = 0; i < bind_count; i++) {
 						StringName bind_name = skin->get_bind_name(i);
 
@@ -284,7 +284,7 @@ void Skeleton3D::_notification(int p_what) {
 							bool found = false;
 							for (int j = 0; j < len; j++) {
 								if (bonesptr[j].name == bind_name) {
-									E->get()->skin_bone_indices_ptrs[i] = j;
+									E->skin_bone_indices_ptrs[i] = j;
 									found = true;
 									break;
 								}
@@ -292,27 +292,27 @@ void Skeleton3D::_notification(int p_what) {
 
 							if (!found) {
 								ERR_PRINT("Skin bind #" + itos(i) + " contains named bind '" + String(bind_name) + "' but Skeleton3D has no bone by that name.");
-								E->get()->skin_bone_indices_ptrs[i] = 0;
+								E->skin_bone_indices_ptrs[i] = 0;
 							}
 						} else if (skin->get_bind_bone(i) >= 0) {
 							int bind_index = skin->get_bind_bone(i);
 							if (bind_index >= len) {
 								ERR_PRINT("Skin bind #" + itos(i) + " contains bone index bind: " + itos(bind_index) + " , which is greater than the skeleton bone count: " + itos(len) + ".");
-								E->get()->skin_bone_indices_ptrs[i] = 0;
+								E->skin_bone_indices_ptrs[i] = 0;
 							} else {
-								E->get()->skin_bone_indices_ptrs[i] = bind_index;
+								E->skin_bone_indices_ptrs[i] = bind_index;
 							}
 						} else {
 							ERR_PRINT("Skin bind #" + itos(i) + " does not contain a name nor a bone index.");
-							E->get()->skin_bone_indices_ptrs[i] = 0;
+							E->skin_bone_indices_ptrs[i] = 0;
 						}
 					}
 
-					E->get()->skeleton_version = version;
+					E->skeleton_version = version;
 				}
 
 				for (uint32_t i = 0; i < bind_count; i++) {
-					uint32_t bone_index = E->get()->skin_bone_indices_ptrs[i];
+					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
@@ -1000,9 +1000,9 @@ Ref<Skin> Skeleton3D::create_skin_from_rest_transforms() {
 Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	ERR_FAIL_COND_V(p_skin.is_null(), Ref<SkinReference>());
 
-	for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
-		if (E->get()->skin == p_skin) {
-			return Ref<SkinReference>(E->get());
+	for (const SkinReference *E : skin_bindings) {
+		if (E->skin == p_skin) {
+			return Ref<SkinReference>(E);
 		}
 	}
 
@@ -1303,7 +1303,7 @@ Skeleton3D::Skeleton3D() {
 
 Skeleton3D::~Skeleton3D() {
 	// Some skins may remain bound.
-	for (RBSet<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
-		E->get()->skeleton_node = nullptr;
+	for (SkinReference *E : skin_bindings) {
+		E->skeleton_node = nullptr;
 	}
 }
