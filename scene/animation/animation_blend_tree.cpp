@@ -576,7 +576,6 @@ void AnimationNodeBlend3::_bind_methods() {
 }
 
 AnimationNodeBlend3::AnimationNodeBlend3() {
-	blend_amount = "blend_amount";
 	add_input("-blend");
 	add_input("in");
 	add_input("+blend");

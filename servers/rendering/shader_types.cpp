@@ -192,26 +192,26 @@ ShaderTypes::ShaderTypes() {
 
 	// spatial render modes
 	{
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "blend", "mix", "add", "sub", "mul" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_draw", "opaque", "always", "never" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_prepass_alpha" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_test_disabled" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "sss_mode_skin" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "cull", "back", "front", "disabled" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "unshaded" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "wireframe" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse", "lambert", "lambert_wrap", "burley", "toon" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular", "schlick_ggx", "toon", "disabled" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "skip_vertex_transform" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "world_vertex_coords" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ensure_correct_normals" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "shadows_disabled" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ambient_light_disabled" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "shadow_to_opacity" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "vertex_lighting" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "particle_trails" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "alpha_to_coverage" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "alpha_to_coverage_and_one" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_draw"), "opaque", "always", "never" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_prepass_alpha") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_test_disabled") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("sss_mode_skin") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("cull"), "back", "front", "disabled" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("unshaded") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("wireframe") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("diffuse"), "lambert", "lambert_wrap", "burley", "toon" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular"), "schlick_ggx", "toon", "disabled" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("skip_vertex_transform") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("world_vertex_coords") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("ensure_correct_normals") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("shadows_disabled") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("ambient_light_disabled") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("shadow_to_opacity") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("vertex_lighting") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("particle_trails") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage_and_one") });
 	}
 
 	/************ CANVAS ITEM **************************/
@@ -299,10 +299,10 @@ ShaderTypes::ShaderTypes() {
 
 	// canvasitem render modes
 	{
-		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "skip_vertex_transform" });
-		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend", "mix", "add", "sub", "mul", "premul_alpha", "disabled" });
-		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "unshaded" });
-		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "light_only" });
+		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("skip_vertex_transform") });
+		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "premul_alpha", "disabled" });
+		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("unshaded") });
+		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("light_only") });
 	}
 
 	/************ PARTICLES **************************/
@@ -380,10 +380,10 @@ ShaderTypes::ShaderTypes() {
 
 	// particles render modes
 	{
-		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "collision_use_scale" });
-		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "disable_force" });
-		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "disable_velocity" });
-		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "keep_data" });
+		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ PNAME("collision_use_scale") });
+		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ PNAME("disable_force") });
+		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ PNAME("disable_velocity") });
+		shader_modes[RS::SHADER_PARTICLES].modes.push_back({ PNAME("keep_data") });
 	}
 
 	/************ SKY **************************/
@@ -430,9 +430,9 @@ ShaderTypes::ShaderTypes() {
 
 	// sky render modes
 	{
-		shader_modes[RS::SHADER_SKY].modes.push_back({ "use_half_res_pass" });
-		shader_modes[RS::SHADER_SKY].modes.push_back({ "use_quarter_res_pass" });
-		shader_modes[RS::SHADER_SKY].modes.push_back({ "disable_fog" });
+		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_half_res_pass") });
+		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_quarter_res_pass") });
+		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("disable_fog") });
 	}
 
 	/************ FOG **************************/
