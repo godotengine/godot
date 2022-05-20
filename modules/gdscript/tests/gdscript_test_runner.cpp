@@ -36,6 +36,7 @@
 #include "../gdscript_parser.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
@@ -142,8 +143,8 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 #endif
 
 	// Enable printing to show results
-	_print_line_enabled = true;
-	_print_error_enabled = true;
+	CoreGlobals::print_line_enabled = true;
+	CoreGlobals::print_error_enabled = true;
 }
 
 GDScriptTestRunner::~GDScriptTestRunner() {

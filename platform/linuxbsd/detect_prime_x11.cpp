@@ -177,6 +177,11 @@ int detect_prime() {
 		} else {
 			// In child, exit() here will not quit the engine.
 
+			// Prevent false leak reports as we will not be properly
+			// cleaning up these processes, and fork() makes a copy
+			// of all globals.
+			CoreGlobals::leak_reporting_enabled = false;
+
 			char string[201];
 
 			close(fdset[0]);

@@ -194,11 +194,11 @@ bool Engine::is_validation_layers_enabled() const {
 }
 
 void Engine::set_print_error_messages(bool p_enabled) {
-	_print_error_enabled = p_enabled;
+	CoreGlobals::print_error_enabled = p_enabled;
 }
 
 bool Engine::is_printing_error_messages() const {
-	return _print_error_enabled;
+	return CoreGlobals::print_error_enabled;
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {

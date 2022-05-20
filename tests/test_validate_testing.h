@@ -31,6 +31,7 @@
 #ifndef TEST_VALIDATE_TESTING_H
 #define TEST_VALIDATE_TESTING_H
 
+#include "core/core_globals.h"
 #include "core/os/os.h"
 
 #include "tests/test_macros.h"
@@ -49,10 +50,10 @@ TEST_SUITE("Validate tests") {
 	}
 	TEST_CASE("Muting Godot error messages") {
 		ERR_PRINT_OFF;
-		CHECK_MESSAGE(!_print_error_enabled, "Error printing should be disabled.");
+		CHECK_MESSAGE(!CoreGlobals::print_error_enabled, "Error printing should be disabled.");
 		ERR_PRINT("Still waiting for Godot!"); // This should never get printed!
 		ERR_PRINT_ON;
-		CHECK_MESSAGE(_print_error_enabled, "Error printing should be re-enabled.");
+		CHECK_MESSAGE(CoreGlobals::print_error_enabled, "Error printing should be re-enabled.");
 	}
 	TEST_CASE("Stringify Variant types") {
 		Variant var;
