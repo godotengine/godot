@@ -7,38 +7,38 @@
 		[SceneTreeTween] is a tween managed by the scene tree. As opposed to [Tween], it does not require the instantiation of a node.
 		[SceneTreeTween]s are more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [SceneTreeTween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [SceneTreeTween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid. They can't be used for tweening values, but you can do manual interpolation with [method interpolate_value].
-		A [SceneTreeTween] animation is composed of a sequence of [Tweener]s, which by default are executed one after another. You can create a sequence by appending [Tweener]s to the [SceneTreeTween]. Animating something with a [Tweener] is called tweening. Example tweening sequence looks like this:
+		A tween animation is created by adding [Tweener]s to the [SceneTreeTween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
 		[codeblock]
 		var tween = get_tree().create_tween()
 		tween.tween_property($Sprite, "modulate", Color.red, 1)
 		tween.tween_property($Sprite, "scale", Vector2(), 1)
 		tween.tween_callback($Sprite, "queue_free")
 		[/codeblock]
-		This sequence will make the [code]$Sprite[/code] node turn red, then shrink and finally the [method Node.queue_free] is called to remove the sprite. See methods [method tween_property], [method tween_interval], [method tween_callback] and [method tween_method] for more usage information.
-		When a [Tweener] is created with one of the [code]tween_*[/code] methods, a chained method call can be used to tweak the properties of this [Tweener]. For example, if you want to set different transition type in the above example, you can do:
+		This sequence will make the [code]$Sprite[/code] node turn red, then shrink, before finally calling [method Node.queue_free] to free the sprite. [Tweener]s are executed one after another by default. This behavior can be changed using [method parallel] and [method set_parallel].
+		When a [Tweener] is created with one of the [code]tween_*[/code] methods, a chained method call can be used to tweak the properties of this [Tweener]. For example, if you want to set a different transition type in the above example, you can use [method set_trans]:
 		[codeblock]
 		var tween = get_tree().create_tween()
 		tween.tween_property($Sprite, "modulate", Color.red, 1).set_trans(Tween.TRANS_SINE)
 		tween.tween_property($Sprite, "scale", Vector2(), 1).set_trans(Tween.TRANS_BOUNCE)
 		tween.tween_callback($Sprite, "queue_free")
 		[/codeblock]
-		Most of the [SceneTreeTween] methods can be chained this way too. In this example the [SceneTreeTween] is bound and have set a default transition:
+		Most of the [SceneTreeTween] methods can be chained this way too. In the following example the [SceneTreeTween] is bound to the running script's node and a default transition is set for its [Tweener]s:
 		[codeblock]
 		var tween = get_tree().create_tween().bind_node(self).set_trans(Tween.TRANS_ELASTIC)
 		tween.tween_property($Sprite, "modulate", Color.red, 1)
 		tween.tween_property($Sprite, "scale", Vector2(), 1)
 		tween.tween_callback($Sprite, "queue_free")
 		[/codeblock]
-		Another interesting use for [SceneTreeTween]s is animating arbitrary set of objects:
+		Another interesting use for [SceneTreeTween]s is animating arbitrary sets of objects:
 		[codeblock]
 		var tween = create_tween()
 		for sprite in get_children():
-		    tween.tween_property(sprite, "position", Vector2(), 1)
+		    tween.tween_property(sprite, "position", Vector2(0, 0), 1)
 		[/codeblock]
 		In the example above, all children of a node are moved one after another to position (0, 0).
-		Some [Tweener]s use transitions and eases. The first accepts an [enum Tween.TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum Tween.EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum Tween.TransitionType] constants with [constant Tween.EASE_IN_OUT], and use the one that looks best.
+		Some [Tweener]s use transitions and eases. The first accepts a [enum Tween.TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum Tween.EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum Tween.TransitionType] constants with [constant Tween.EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]
-		[b]Note:[/b] All [SceneTreeTween]s will automatically start by default. To prevent a [SceneTreeTween] from autostarting, you can call [method stop] immediately after it was created.
+		[b]Note:[/b] All [SceneTreeTween]s will automatically start by default. To prevent a [SceneTreeTween] from autostarting, you can call [method stop] immediately after it is created.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -67,15 +67,15 @@
 			<return type="bool" />
 			<argument index="0" name="delta" type="float" />
 			<description>
-				Processes the [SceneTreeTween] by given [code]delta[/code] value, in seconds. Mostly useful when the [SceneTreeTween] is paused, for controlling it manually. Can also be used to end the [SceneTreeTween] animation immediately, by using [code]delta[/code] longer than the whole duration.
+				Processes the [SceneTreeTween] by the given [code]delta[/code] value, in seconds. This is mostly useful for manual control when the [SceneTreeTween] is paused. It can also be used to end the [SceneTreeTween] animation immediately, by setting [code]delta[/code] longer than the whole duration of the [SceneTreeTween] animation.
 				Returns [code]true[/code] if the [SceneTreeTween] still has [Tweener]s that haven't finished.
-				[b]Note:[/b] The [SceneTreeTween] will become invalid after finished, but you can call [method stop] after the step, to keep it and reset.
+				[b]Note:[/b] The [SceneTreeTween] will become invalid in the next processing frame after its animation finishes. Calling [method stop] after performing [method custom_step] instead keeps and resets the [SceneTreeTween].
 			</description>
 		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the total time in seconds the [SceneTreeTween] has been animating (i.e. time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale] and [method stop] will reset it to [code]0[/code].
+				Returns the total time in seconds the [SceneTreeTween] has been animating (i.e. the time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale], and [method stop] will reset it to [code]0[/code].
 				[b]Note:[/b] As it results from accumulating frame deltas, the time returned after the [SceneTreeTween] has finished animating will be slightly greater than the actual [SceneTreeTween] duration.
 			</description>
 		</method>
@@ -105,7 +105,7 @@
 		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the [SceneTreeTween] is valid. A valid [SceneTreeTween] is a [SceneTreeTween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). [SceneTreeTween] might become invalid when it has finished tweening or was killed, also when created with [code]Tween.new()[/code]. Invalid [SceneTreeTween] can't have [Tweener]s appended, because it can't animate them. You can however still use [method interpolate_value].
+				Returns whether the [SceneTreeTween] is valid. A valid [SceneTreeTween] is a [SceneTreeTween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A [SceneTreeTween] might become invalid when it has finished tweening, is killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid [SceneTreeTween]s can't have [Tweener]s appended.
 			</description>
 		</method>
 		<method name="kill">
@@ -152,8 +152,8 @@
 			<argument index="0" name="loops" type="int" default="0" />
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
-				Calling this method without arguments will make the [SceneTreeTween] run infinitely, until it is either killed by [method kill] or by freeing bound node, or all the animated objects have been freed (which makes further animation impossible).
-				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. 0-duration looped animations (e.g. single [CallbackTweener] with no delay or [PropertyTweener] with invalid node) are equivalent to infinite [code]while[/code] loops and will freeze your game. If a [SceneTreeTween]'s lifetime depends on some node, always use [method bind_node].
+				Calling this method without arguments will make the [Tween] run infinitely, until either it is killed with [method kill], the [Tween]'s bound node is freed, or all the animated objects have been freed (which makes further animation impossible).
+				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. To prevent the game freezing, 0-duration looped animations (e.g. a single [CallbackTweener] with no delay) are stopped after a small number of loops, which may produce unexpected results. If a [Tween]'s lifetime depends on some node, always use [method bind_node].
 			</description>
 		</method>
 		<method name="set_parallel">
@@ -223,7 +223,7 @@
 			<return type="IntervalTweener" />
 			<argument index="0" name="time" type="float" />
 			<description>
-				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative for using the delay in other [Tweener]s or when there's no animation (in which case the [SceneTreeTween] acts as a timer). [code]time[/code] is the length of the interval, in seconds.
+				Creates and appends an [IntervalTweener]. This method can be used to create delays in the tween animation, as an alternative to using the delay in other [Tweener]s, or when there's no animation (in which case the [SceneTreeTween] acts as a timer). [code]time[/code] is the length of the interval, in seconds.
 				Example: creating an interval in code execution.
 				[codeblock]
 				# ... some code
@@ -275,7 +275,7 @@
 			<argument index="2" name="final_val" type="Variant" />
 			<argument index="3" name="duration" type="float" />
 			<description>
-				Creates and appends a [PropertyTweener]. This method tweens a [code]property[/code] of an [code]object[/code] between an initial value and [code]final_val[/code] in a span of time equal to [code]duration[/code], in seconds. The initial value by default is a value at the time the tweening of the [PropertyTweener] start. For example:
+				Creates and appends a [PropertyTweener]. This method tweens a [code]property[/code] of an [code]object[/code] between an initial value and [code]final_val[/code] in a span of time equal to [code]duration[/code], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts. For example:
 				[codeblock]
 				var tween = create_tween()
 				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
@@ -296,19 +296,19 @@
 		<signal name="finished">
 			<description>
 				Emitted when the [SceneTreeTween] has finished all tweening. Never emitted when the [SceneTreeTween] is set to infinite looping (see [method set_loops]).
-				[b]Note:[/b] The [SceneTreeTween] is removed (invalidated) after this signal is emitted, but it doesn't happen immediately, but on the next processing frame. Calling [method stop] inside the signal callback will preserve the [SceneTreeTween].
+				[b]Note:[/b] The [SceneTreeTween] is removed (invalidated) in the next processing frame after this signal is emitted. Calling [method stop] inside the signal callback will prevent the [SceneTreeTween] from being removed.
 			</description>
 		</signal>
 		<signal name="loop_finished">
 			<argument index="0" name="loop_count" type="int" />
 			<description>
-				Emitted when a full loop is complete (see [method set_loops]), providing the loop index. This signal is not emitted after final loop, use [signal finished] instead for this case.
+				Emitted when a full loop is complete (see [method set_loops]), providing the loop index. This signal is not emitted after the final loop, use [signal finished] instead for this case.
 			</description>
 		</signal>
 		<signal name="step_finished">
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Emitted when one step of the [SceneTreeTween] is complete, providing the step index. One step is either a single [Tweener] or a group of [Tweener]s running parallelly.
+				Emitted when one step of the [SceneTreeTween] is complete, providing the step index. One step is either a single [Tweener] or a group of [Tweener]s running in parallel.
 			</description>
 		</signal>
 	</signals>
