@@ -349,9 +349,11 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (cs->is_root_shape()) {
 		Array csg_meshes = cs->get_meshes();
-		Ref<Mesh> csg_mesh = csg_meshes[1];
-		if (csg_mesh.is_valid()) {
-			p_gizmo->add_collision_triangles(csg_mesh->generate_triangle_mesh());
+		if (csg_meshes.size() == 2) {
+			Ref<Mesh> csg_mesh = csg_meshes[1];
+			if (csg_mesh.is_valid()) {
+				p_gizmo->add_collision_triangles(csg_mesh->generate_triangle_mesh());
+			}
 		}
 	}
 
