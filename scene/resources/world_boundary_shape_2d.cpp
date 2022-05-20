@@ -108,7 +108,7 @@ void WorldBoundaryShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_distance"), &WorldBoundaryShape2D::get_distance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "set_normal", "get_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_distance", "get_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_distance", "get_distance");
 }
 
 WorldBoundaryShape2D::WorldBoundaryShape2D() :

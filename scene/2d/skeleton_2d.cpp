@@ -390,7 +390,7 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_angle", "angle"), &Bone2D::set_bone_angle);
 	ClassDB::bind_method(D_METHOD("get_bone_angle"), &Bone2D::get_bone_angle);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest", PROPERTY_HINT_NONE, "suffix:px"), "set_rest", "get_rest");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
