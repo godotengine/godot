@@ -1884,6 +1884,16 @@ void ProjectManager::_notification(int p_what) {
 			if (open_templates->is_visible()) {
 				open_templates->popup_centered();
 			}
+			real_t size = get_size().x / EDSCALE;
+			asset_library->set_columns(size < 1000 ? 1 : 2);
+			// Adjust names of tabs to fit the new size.
+			if (size < 650) {
+				local_projects_hb->set_name(TTR("Local"));
+				asset_library->set_name(TTR("Asset Library"));
+			} else {
+				local_projects_hb->set_name(TTR("Local Projects"));
+				asset_library->set_name(TTR("Asset Library Projects"));
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -2567,14 +2577,14 @@ ProjectManager::ProjectManager() {
 	tabs->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	tabs->connect("tab_changed", callable_mp(this, &ProjectManager::_on_tab_changed));
 
-	HBoxContainer *projects_hb = memnew(HBoxContainer);
-	projects_hb->set_name(TTR("Local Projects"));
-	tabs->add_child(projects_hb);
+	local_projects_hb = memnew(HBoxContainer);
+	local_projects_hb->set_name(TTR("Local Projects"));
+	tabs->add_child(local_projects_hb);
 
 	{
 		// Projects + search bar
 		VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-		projects_hb->add_child(search_tree_vb);
+		local_projects_hb->add_child(search_tree_vb);
 		search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 		HBoxContainer *hb = memnew(HBoxContainer);
@@ -2630,7 +2640,7 @@ ProjectManager::ProjectManager() {
 		// Project tab side bar
 		VBoxContainer *tree_vb = memnew(VBoxContainer);
 		tree_vb->set_custom_minimum_size(Size2(120, 120));
-		projects_hb->add_child(tree_vb);
+		local_projects_hb->add_child(tree_vb);
 
 		Button *create = memnew(Button);
 		create->set_text(TTR("New Project"));
