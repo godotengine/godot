@@ -1259,12 +1259,13 @@ void EditorPropertyInteger::update_property() {
 void EditorPropertyInteger::_bind_methods() {
 }
 
-void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
+void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
+	spin->set_suffix(p_suffix);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
@@ -3492,7 +3493,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
+				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
 
 				return editor;
 			}

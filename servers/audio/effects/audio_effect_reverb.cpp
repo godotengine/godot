@@ -176,7 +176,7 @@ void AudioEffectReverb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hpf"), &AudioEffectReverb::get_hpf);
 
 	ADD_GROUP("Predelay", "predelay_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1"), "set_predelay_msec", "get_predelay_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1,suffix:ms"), "set_predelay_msec", "get_predelay_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_feedback", PROPERTY_HINT_RANGE, "0,0.98,0.01"), "set_predelay_feedback", "get_predelay_feedback");
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "room_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_room_size", "get_room_size");
