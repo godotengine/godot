@@ -128,10 +128,10 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		state->buffers.push_back(Vector<uint8_t>());
 	}
 
-	/* STEP 1 CONVERT MESH INSTANCES */
+	/* STEP CONVERT MESH INSTANCES */
 	_convert_mesh_instances(state);
 
-	/* STEP 2 SERIALIZE CAMERAS */
+	/* STEP SERIALIZE CAMERAS */
 	Error err = _serialize_cameras(state);
 	if (err != OK) {
 		return Error::FAILED;
@@ -143,37 +143,37 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
-	/* STEP 5 SERIALIZE MESHES (we have enough info now) */
+	/* STEP SERIALIZE MESHES (we have enough info now) */
 	err = _serialize_meshes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 6 SERIALIZE TEXTURES */
+	/* STEP SERIALIZE TEXTURES */
 	err = _serialize_materials(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 7 SERIALIZE ANIMATIONS */
+	/* STEP SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 8 SERIALIZE ACCESSORS */
+	/* STEP SERIALIZE ACCESSORS */
 	err = _encode_accessors(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 9 SERIALIZE IMAGES */
+	/* STEP SERIALIZE IMAGES */
 	err = _serialize_images(state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 SERIALIZE TEXTURES */
+	/* STEP SERIALIZE TEXTURES */
 	err = _serialize_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
@@ -183,40 +183,47 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		state->buffer_views.write[i]->buffer = 0;
 	}
 
-	/* STEP 11 SERIALIZE BUFFER VIEWS */
+	/* STEP SERIALIZE BUFFER VIEWS */
 	err = _encode_buffer_views(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 12 SERIALIZE NODES */
+	/* STEP SERIALIZE NODES */
 	err = _serialize_nodes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 13 SERIALIZE SCENE */
+	/* STEP SERIALIZE SCENE */
 	err = _serialize_scenes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 14 SERIALIZE SCENE */
+	/* STEP SERIALIZE SCENE */
 	err = _serialize_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 15 SERIALIZE EXTENSIONS */
+	/* STEP SERIALIZE EXTENSIONS */
 	err = _serialize_extensions(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 16 SERIALIZE VERSION */
+	/* STEP SERIALIZE VERSION */
 	err = _serialize_version(state);
 	if (err != OK) {
 		return Error::FAILED;
+	}
+
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		err = ext->export_post(state);
+		ERR_FAIL_COND_V(err != OK, err);
 	}
 
 	return OK;
@@ -442,6 +449,15 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			}
 			node["children"] = children;
 		}
+
+		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+			ERR_CONTINUE(ext.is_null());
+			ERR_CONTINUE(!state->scene_nodes.find(i));
+			Error err = ext->export_node(state, n, state->json, state->scene_nodes[i]);
+			ERR_CONTINUE(err != OK);
+		}
+
 		nodes.push_back(node);
 	}
 	state->json["nodes"] = nodes;
@@ -5658,7 +5674,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 	if (!current_node) {
 		current_node = _generate_spatial(state, node_index);
 	}
-	scene_parent->add_child(current_node);
+	scene_parent->add_child(current_node, true);
 	if (current_node != scene_root) {
 		current_node->set_owner(scene_root);
 	}
@@ -6642,8 +6658,8 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_preflight(this);
-		ERR_FAIL_COND_V(err != OK, FAILED);
+		err = ext->import_preflight(state);
+		ERR_FAIL_COND_V(err != OK, err);
 	}
 	err = _parse_gltf_state(state, p_path, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, err);
@@ -6870,12 +6886,10 @@ PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> state) {
 
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_path) {
 	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
-
 	Error err = _serialize(state, p_path);
 	if (err != OK) {
 		return err;
 	}
-
 	err = _serialize_file(state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
@@ -6886,6 +6900,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_pa
 Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
+	Error err = OK;
 	GLTFNodeIndex gltf_root = state->root_nodes.write[0];
 	Node *gltf_root_node = state->get_scene_node(gltf_root);
 	Node *root = gltf_root_node->get_parent();
@@ -6899,12 +6914,26 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 			_import_animation(state, ap, i, p_bake_fps);
 		}
 	}
-
+	for (KeyValue<GLTFNodeIndex, Node *> E : state->scene_nodes) {
+		ERR_CONTINUE(!E.value);
+		for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+			ERR_CONTINUE(ext.is_null());
+			ERR_CONTINUE(!state->json.has("nodes"));
+			Array nodes = state->json["nodes"];
+			ERR_CONTINUE(E.key >= nodes.size());
+			ERR_CONTINUE(E.key < 0);
+			Dictionary node_json = nodes[E.key];
+			Ref<GLTFNode> gltf_node = state->nodes[E.key];
+			err = ext->import_node(state, gltf_node, node_json, E.value);
+			ERR_CONTINUE(err != OK);
+		}
+	}
 	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
-		Error err = ext->import_post(this, root);
-		ERR_FAIL_COND_V(err != OK, nullptr);
+		err = ext->import_post(state, root);
+		ERR_CONTINUE(err != OK);
 	}
 	ERR_FAIL_NULL_V(root, nullptr);
 	return root;
@@ -6919,13 +6948,23 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	if (!state->buffers.size()) {
 		state->buffers.push_back(Vector<uint8_t>());
 	}
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+	}
 
-	/* STEP 1 CONVERT MESH INSTANCES */
-	_convert_mesh_instances(state);
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_preflight(p_node);
+		ERR_FAIL_COND_V(err != OK, FAILED);
+	}
+	_convert_scene_node(state, p_node, -1, -1);
+	if (!state->buffers.size()) {
+		state->buffers.push_back(Vector<uint8_t>());
+	}
 
-	/* STEP 2 CREATE SKINS */
-	Error err = _serialize_skins(state);
-	return err;
+	return OK;
 }
 
 Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
@@ -6938,8 +6977,15 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
-	err = _parse(state, p_base_path.get_base_dir(), file_access, p_bake_fps);
-	ERR_FAIL_COND_V(err != OK, FAILED);
+	state->base_path = p_base_path.get_base_dir();
+	err = _parse(state, state->base_path, file_access, p_bake_fps);
+	ERR_FAIL_COND_V(err != OK, err);
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_post_parse(state);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
 	return OK;
 }
 
@@ -7030,6 +7076,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	for (int32_t root_i = 0; root_i < state->root_nodes.size(); root_i++) {
 		_generate_scene_node(state, root, root, state->root_nodes[root_i]);
 	}
+
 	return OK;
 }
 
@@ -7049,9 +7096,16 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
 	}
+	r_state->base_path = base_path;
 	err = _parse(r_state, base_path, f, p_bake_fps);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-	return err;
+	ERR_FAIL_COND_V(err != OK, err);
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_post_parse(r_state);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
+	return OK;
 }
 
 Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {

@@ -192,6 +192,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="base_path" type="String" setter="set_base_path" getter="get_base_path" default="&quot;&quot;">
+		</member>
 		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[]">
 		</member>
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">

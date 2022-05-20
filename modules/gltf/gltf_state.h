@@ -44,10 +44,7 @@
 #include "gltf_skin.h"
 #include "gltf_texture.h"
 
-#include "core/io/resource.h"
-#include "core/templates/pair.h"
 #include "core/templates/rb_map.h"
-#include "core/templates/vector.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
 
@@ -56,6 +53,7 @@ class GLTFState : public Resource {
 	friend class GLTFDocument;
 
 	String filename;
+	String base_path;
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
@@ -136,6 +134,9 @@ public:
 
 	String get_scene_name();
 	void set_scene_name(String p_scene_name);
+
+	String get_base_path();
+	void set_base_path(String p_base_path);
 
 	Array get_root_nodes();
 	void set_root_nodes(Array p_root_nodes);
