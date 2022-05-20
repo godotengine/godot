@@ -2468,12 +2468,12 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
-	loading_label = memnew(Label(TTR("Loading, please wait...")));
-	loading_label->add_font_override("font", get_font("bold", "EditorFonts"));
-	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	sort_filters->add_child(loading_label);
-	// The loading label is shown later.
-	loading_label->hide();
+
+	project_filter = memnew(ProjectListFilter);
+	project_filter->add_search_box();
+	project_filter->connect("filter_changed", this, "_on_filter_option_changed");
+	project_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	sort_filters->add_child(project_filter);
 
 	Label *sort_label = memnew(Label);
 	sort_label->set_text(TTR("Sort:"));
@@ -2488,17 +2488,18 @@ ProjectManager::ProjectManager() {
 	project_order_filter->set_filter_size(150);
 	sort_filters->add_child(project_order_filter);
 	project_order_filter->connect("filter_changed", this, "_on_order_option_changed");
-
-	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
+	const int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
 
-	project_filter = memnew(ProjectListFilter);
-	project_filter->add_search_box();
-	project_filter->connect("filter_changed", this, "_on_filter_option_changed");
-	project_filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	sort_filters->add_child(project_filter);
-
 	search_tree_vb->add_child(sort_filters);
+
+	loading_label = memnew(Label(TTR("Loading, please wait...")));
+	loading_label->add_font_override("font", get_font("bold", "EditorFonts"));
+	loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sort_filters->add_child(loading_label);
+	// The loading label is shown later.
+	loading_label->hide();
 
 	PanelContainer *pc = memnew(PanelContainer);
 	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
