@@ -160,7 +160,7 @@ void main() {
 				}
 
 				if (params.has_tangent) {
-					blend_tangent += decode_abgr_2_10_10_10(src_blend_shapes.data[base_offset]).rgb;
+					blend_tangent += decode_abgr_2_10_10_10(src_blend_shapes.data[base_offset]).rgb * w;
 				}
 
 				blend_total += w;
@@ -174,8 +174,8 @@ void main() {
 		}
 
 		vertex += blend_vertex;
-		normal += normalize(normal + blend_normal);
-		tangent.rgb += normalize(tangent.rgb + blend_tangent);
+		normal = normalize(normal + blend_normal);
+		tangent.rgb = normalize(tangent.rgb + blend_tangent);
 	}
 
 	if (params.has_skeleton) {
