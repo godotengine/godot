@@ -115,14 +115,15 @@
 		<member name="attractor_interaction_enabled" type="bool" setter="set_attractor_interaction_enabled" getter="is_attractor_interaction_enabled" default="true">
 			True if the interaction with particle attractors is enabled.
 		</member>
-		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce" default="0.0">
-			Collision bounciness.
+		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce">
+			The particles' bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness). Only effective if [member collision_mode] is [constant COLLISION_RIGID].
 		</member>
-		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="false">
-			True if collisions are enabled for this particle system.
+		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction">
+			The particles' friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Only effective if [member collision_mode] is [constant COLLISION_RIGID].
 		</member>
-		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction" default="0.0">
-			Collision friction.
+		<member name="collision_mode" type="int" setter="set_collision_mode" getter="get_collision_mode" enum="ParticlesMaterial.CollisionMode" default="0">
+			The particles' collision mode.
+			[b]Note:[/b] Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
 		</member>
 		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
 			Should collision take scale into account.
@@ -403,6 +404,18 @@
 		</constant>
 		<constant name="SUB_EMITTER_MAX" value="4" enum="SubEmitterMode">
 			Represents the size of the [enum SubEmitterMode] enum.
+		</constant>
+		<constant name="COLLISION_DISABLED" value="0" enum="CollisionMode">
+			No collision for particles. Particles will go through [GPUParticlesCollision3D] nodes.
+		</constant>
+		<constant name="COLLISION_RIGID" value="1" enum="CollisionMode">
+			[RigidDynamicBody3D]-style collision for particles using [GPUParticlesCollision3D] nodes.
+		</constant>
+		<constant name="COLLISION_HIDE_ON_CONTACT" value="2" enum="CollisionMode">
+			Hide particles instantly when colliding with a [GPUParticlesCollision3D] node. This can be combined with a subemitter that uses the [constant COLLISION_RIGID] collision mode to "replace" the parent particle with the subemitter on impact.
+		</constant>
+		<constant name="COLLISION_MAX" value="3" enum="CollisionMode">
+			Represents the size of the [enum CollisionMode] enum.
 		</constant>
 	</constants>
 </class>

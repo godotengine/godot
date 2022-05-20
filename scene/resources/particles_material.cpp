@@ -287,7 +287,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform sampler2D anim_offset_texture : repeat_disable;\n";
 	}
 
-	if (collision_enabled) {
+	if (collision_mode == COLLISION_RIGID) {
 		code += "uniform float collision_friction;\n";
 		code += "uniform float collision_bounce;\n";
 	}
@@ -695,8 +695,10 @@ void ParticlesMaterial::_update_shader() {
 		}
 		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
 		// If collision happened, turbulence is no longer applied.
+		// We don't need this check when the collision mode is "hide on contact",
+		// as the particle will be hidden anyway.
 		String extra_tab = "";
-		if (collision_enabled) {
+		if (collision_mode != COLLISION_RIGID) {
 			code += "	if (!COLLIDED) {\n";
 			extra_tab = "	";
 		}
@@ -704,7 +706,7 @@ void ParticlesMaterial::_update_shader() {
 		code += extra_tab + "	float vel_mag = length(VELOCITY);\n";
 		code += extra_tab + "	float vel_infl = clamp(mix(turbulence_influence_min, turbulence_influence_max, rand_from_seed(alt_seed)) * turbulence_influence, 0.0, 1.0);\n";
 		code += extra_tab + "	VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
-		if (collision_enabled) {
+		if (collision_mode != COLLISION_RIGID) {
 			code += "	}";
 		}
 	}
@@ -828,7 +830,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 
-	if (collision_enabled) {
+	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
 		code += "		if (length(VELOCITY) > 3.0) {\n";
 		code += "			TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
@@ -850,6 +852,18 @@ void ParticlesMaterial::_update_shader() {
 	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
 	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
 	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
+
+	if (collision_mode == COLLISION_RIGID) {
+		code += "	if (COLLIDED) {\n";
+		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
+		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
+		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
+		code += "	}\n";
+	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
+		code += "	if (COLLIDED) {\n";
+		code += "		ACTIVE = false;\n";
+		code += "	}\n";
+	}
 
 	if (sub_emitter_mode != SUB_EMITTER_DISABLED) {
 		code += "	int emit_count = 0;\n";
@@ -1436,6 +1450,14 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
+
+	if (property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void ParticlesMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode) {
@@ -1483,13 +1505,14 @@ bool ParticlesMaterial::is_attractor_interaction_enabled() const {
 	return attractor_interaction_enabled;
 }
 
-void ParticlesMaterial::set_collision_enabled(bool p_enabled) {
-	collision_enabled = p_enabled;
+void ParticlesMaterial::set_collision_mode(CollisionMode p_collision_mode) {
+	collision_mode = p_collision_mode;
 	_queue_shader_change();
+	notify_property_list_changed();
 }
 
-bool ParticlesMaterial::is_collision_enabled() const {
-	return collision_enabled;
+ParticlesMaterial::CollisionMode ParticlesMaterial::get_collision_mode() const {
+	return collision_mode;
 }
 
 void ParticlesMaterial::set_collision_use_scale(bool p_scale) {
@@ -1623,8 +1646,8 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attractor_interaction_enabled", "enabled"), &ParticlesMaterial::set_attractor_interaction_enabled);
 	ClassDB::bind_method(D_METHOD("is_attractor_interaction_enabled"), &ParticlesMaterial::is_attractor_interaction_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_collision_enabled", "enabled"), &ParticlesMaterial::set_collision_enabled);
-	ClassDB::bind_method(D_METHOD("is_collision_enabled"), &ParticlesMaterial::is_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_collision_mode", "mode"), &ParticlesMaterial::set_collision_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_mode"), &ParticlesMaterial::get_collision_mode);
 
 	ClassDB::bind_method(D_METHOD("set_collision_use_scale", "radius"), &ParticlesMaterial::set_collision_use_scale);
 	ClassDB::bind_method(D_METHOD("is_collision_using_scale"), &ParticlesMaterial::is_collision_using_scale);
@@ -1734,7 +1757,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_GROUP("Attractor Interaction", "attractor_interaction_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "attractor_interaction_enabled"), "set_attractor_interaction_enabled", "is_attractor_interaction_enabled");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mode", PROPERTY_HINT_ENUM, "Disabled,Rigid,Hide On Contact"), "set_collision_mode", "get_collision_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_scale"), "set_collision_use_scale", "is_collision_using_scale");
@@ -1776,6 +1799,11 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_END);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_COLLISION);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_MAX);
+
+	BIND_ENUM_CONSTANT(COLLISION_DISABLED);
+	BIND_ENUM_CONSTANT(COLLISION_RIGID);
+	BIND_ENUM_CONSTANT(COLLISION_HIDE_ON_CONTACT);
+	BIND_ENUM_CONSTANT(COLLISION_MAX);
 }
 
 ParticlesMaterial::ParticlesMaterial() :
@@ -1834,7 +1862,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_sub_emitter_keep_velocity(false);
 
 	set_attractor_interaction_enabled(true);
-	set_collision_enabled(false);
+	set_collision_mode(COLLISION_DISABLED);
 	set_collision_bounce(0.0);
 	set_collision_friction(0.0);
 	set_collision_use_scale(false);
