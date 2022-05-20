@@ -161,7 +161,7 @@ EditorAbout::EditorAbout() {
 
 	TabContainer *tc = memnew(TabContainer);
 	tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
