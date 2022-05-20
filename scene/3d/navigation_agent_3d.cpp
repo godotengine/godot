@@ -35,6 +35,9 @@
 void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent3D::get_rid);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationAgent3D::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationAgent3D::get_avoidance_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent3D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent3D::get_target_desired_distance);
 
@@ -88,6 +91,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:m/s"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1,suffix:m"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_y"), "set_ignore_y", "get_ignore_y");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
@@ -103,7 +107,7 @@ void NavigationAgent3D::_notification(int p_what) {
 			if (agent_parent != nullptr) {
 				// place agent on navigation map first or else the RVO agent callback creation fails silently later
 				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_3d()->get_navigation_map());
-				NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+				set_avoidance_enabled(avoidance_enabled);
 			}
 			set_physics_process_internal(true);
 		} break;
@@ -155,6 +159,19 @@ NavigationAgent3D::NavigationAgent3D() {
 NavigationAgent3D::~NavigationAgent3D() {
 	NavigationServer3D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationAgent3D::set_avoidance_enabled(bool p_enabled) {
+	avoidance_enabled = p_enabled;
+	if (avoidance_enabled) {
+		NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+	} else {
+		NavigationServer3D::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	}
+}
+
+bool NavigationAgent3D::get_avoidance_enabled() const {
+	return avoidance_enabled;
 }
 
 void NavigationAgent3D::set_navigable_layers(uint32_t p_layers) {
@@ -283,7 +300,7 @@ TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationAgent3D can be used only under a spatial node."));
+		warnings.push_back(RTR("The NavigationAgent3D can be used only under a Node3D inheriting parent node."));
 	}
 
 	return warnings;

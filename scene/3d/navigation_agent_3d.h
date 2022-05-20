@@ -43,6 +43,7 @@ class NavigationAgent3D : public Node {
 	RID agent;
 	RID map_before_pause;
 
+	bool avoidance_enabled = false;
 	uint32_t navigable_layers = 1;
 
 	real_t target_desired_distance = 1.0;
@@ -79,6 +80,9 @@ public:
 	RID get_rid() const {
 		return agent;
 	}
+
+	void set_avoidance_enabled(bool p_enabled);
+	bool get_avoidance_enabled() const;
 
 	void set_navigable_layers(uint32_t p_layers);
 	uint32_t get_navigable_layers() const;
