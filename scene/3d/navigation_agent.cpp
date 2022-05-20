@@ -37,6 +37,9 @@
 void NavigationAgent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent::get_rid);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationAgent::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationAgent::get_avoidance_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent::get_target_desired_distance);
 
@@ -90,6 +93,7 @@ void NavigationAgent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_y"), "set_ignore_y", "get_ignore_y");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -102,7 +106,7 @@ void NavigationAgent::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			agent_parent = Object::cast_to<Spatial>(get_parent());
 
-			NavigationServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+			set_avoidance_enabled(avoidance_enabled);
 
 			// Search the navigation node and set it
 			{
@@ -161,6 +165,7 @@ NavigationAgent::NavigationAgent() :
 		agent_parent(nullptr),
 		navigation(nullptr),
 		agent(RID()),
+		avoidance_enabled(false),
 		target_desired_distance(1.0),
 		navigation_height_offset(0.0),
 		path_max_distance(3.0),
@@ -179,6 +184,19 @@ NavigationAgent::NavigationAgent() :
 NavigationAgent::~NavigationAgent() {
 	NavigationServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationAgent::set_avoidance_enabled(bool p_enabled) {
+	avoidance_enabled = p_enabled;
+	if (avoidance_enabled) {
+		NavigationServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+	} else {
+		NavigationServer::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	}
+}
+
+bool NavigationAgent::get_avoidance_enabled() const {
+	return avoidance_enabled;
 }
 
 void NavigationAgent::set_navigation(Navigation *p_nav) {
@@ -315,7 +333,7 @@ void NavigationAgent::_avoidance_done(Vector3 p_new_velocity) {
 
 String NavigationAgent::get_configuration_warning() const {
 	if (!Object::cast_to<Spatial>(get_parent())) {
-		return TTR("The NavigationAgent can be used only under a spatial node.");
+		return TTR("The NavigationAgent can be used only under a Spatial inheriting parent node.");
 	}
 
 	return String();

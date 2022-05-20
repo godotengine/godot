@@ -37,6 +37,9 @@
 void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationAgent2D::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationAgent2D::get_avoidance_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
@@ -82,6 +85,7 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_time_horizon", "get_time_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1"), "set_path_max_distance", "get_path_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -94,7 +98,7 @@ void NavigationAgent2D::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			agent_parent = Object::cast_to<Node2D>(get_parent());
 
-			Navigation2DServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+			set_avoidance_enabled(avoidance_enabled);
 
 			// Search the navigation node and set it
 			{
@@ -153,6 +157,7 @@ NavigationAgent2D::NavigationAgent2D() :
 		agent_parent(nullptr),
 		navigation(nullptr),
 		agent(RID()),
+		avoidance_enabled(false),
 		target_desired_distance(1.0),
 		path_max_distance(3.0),
 		velocity_submitted(false),
@@ -169,6 +174,19 @@ NavigationAgent2D::NavigationAgent2D() :
 NavigationAgent2D::~NavigationAgent2D() {
 	Navigation2DServer::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
+	avoidance_enabled = p_enabled;
+	if (avoidance_enabled) {
+		Navigation2DServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+	} else {
+		Navigation2DServer::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	}
+}
+
+bool NavigationAgent2D::get_avoidance_enabled() const {
+	return avoidance_enabled;
 }
 
 void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
@@ -297,7 +315,7 @@ void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
 
 String NavigationAgent2D::get_configuration_warning() const {
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		return TTR("The NavigationAgent2D can be used only under a Node2D node.");
+		return TTR("The NavigationAgent2D can be used only under a Node2D inheriting parent node.");
 	}
 
 	return String();

@@ -48,7 +48,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the object's [RID].
+				Returns the [RID] of this agent on the [Navigation2DServer].
 			</description>
 		</method>
 		<method name="get_target_location" qualifiers="const">
@@ -98,6 +98,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="false">
+			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [Navigation2DServer]. When [method set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector2 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
+		</member>
 		<member name="max_neighbors" type="int" setter="set_max_neighbors" getter="get_max_neighbors" default="10">
 			The maximum number of neighbors for the agent to consider.
 		</member>
