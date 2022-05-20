@@ -1839,8 +1839,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 						deselect();
 					}
 				}
-
-				if (!b->is_double_click() && !scroll_updated) {
+				if (!b->is_double_click() && !scroll_updated && !selection.active) {
 					Item *c_item = nullptr;
 
 					bool outside = true;
