@@ -722,11 +722,9 @@ void ParticlesMaterial::_update_shader() {
 				code += "	if (DELTA >= interval_rem) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_COLLISION: {
-				//not implemented yet
 				code += "	if (COLLIDED) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				//not implemented yet
 				code += "	float unit_delta = DELTA/LIFETIME;\n";
 				code += "	float end_time = CUSTOM.w * 0.95;\n"; // if we do at the end we might miss it, as it can just get deactivated by emitter
 				code += "	if (CUSTOM.y < end_time && (CUSTOM.y + unit_delta) >= end_time) emit_count = sub_emitter_amount_at_end;\n";
