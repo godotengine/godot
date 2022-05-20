@@ -1868,6 +1868,13 @@ bool RasterizerCanvasGLES3::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 		join = false;
 	}
 
+	if (r_ris.prev_distance_field != p_ci->distance_field) {
+		// Break batching for SDF font rendering.
+		r_ris.prev_distance_field = p_ci->distance_field;
+		join = false;
+		r_batch_break = true;
+	}
+
 	// non rects will break the batching anyway, we don't want to record item changes, detect this
 	if (!r_batch_break && _detect_item_batch_break(r_ris, p_ci, r_batch_break)) {
 		join = false;

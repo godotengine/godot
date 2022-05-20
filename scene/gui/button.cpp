@@ -279,6 +279,8 @@ void Button::_notification(int p_what) {
 
 			text_ofs.y += font->get_ascent();
 			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
+
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 		} break;
 	}
 }

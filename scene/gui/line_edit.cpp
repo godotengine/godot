@@ -807,6 +807,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_font("font");
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
 			style->draw(ci, Rect2(Point2(), size));
 

@@ -244,6 +244,8 @@ void Tabs::_notification(int p_what) {
 			Color color_disabled = get_color("font_color_disabled");
 			Ref<Texture> close = get_icon("close");
 
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 			int h = get_size().height;
 			int w = 0;
 			int mw = 0;

@@ -205,6 +205,8 @@ void WindowDialog::_notification(int p_what) {
 			int x = (size.x - title_font->get_string_size(xl_title).x) / 2;
 			int y = (-title_height + font_height) / 2;
 			title_font->draw(canvas, Point2(x, y), xl_title, title_color, size.x - panel->get_minimum_size().x);
+
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), title_font.is_valid() && title_font->is_distance_field_hint());
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:

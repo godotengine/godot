@@ -282,6 +282,8 @@ void TabContainer::_notification(int p_what) {
 			Color font_color_disabled = get_color("font_color_disabled");
 			int side_margin = get_constant("side_margin");
 
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 			// Find out start and width of the header area.
 			int header_x = side_margin;
 			int header_width = size.width - side_margin * 2;

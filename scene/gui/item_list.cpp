@@ -778,6 +778,8 @@ void ItemList::_notification(int p_what) {
 		Vector<int> line_size_cache;
 		Vector<int> line_limit_cache;
 
+		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 		if (max_text_lines) {
 			line_size_cache.resize(max_text_lines);
 			line_limit_cache.resize(max_text_lines);
