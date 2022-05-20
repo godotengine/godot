@@ -1772,6 +1772,16 @@ void ProjectManager::_notification(int p_what) {
 			if (open_templates->is_visible()) {
 				open_templates->popup_centered_minsize();
 			}
+			real_t size = get_size().x / EDSCALE;
+			asset_library->set_columns(size < 1000 ? 1 : 2);
+			// Adjust names of tabs to fit the new size.
+			if (size < 650) {
+				local_projects_hb->set_name(TTR("Local"));
+				asset_library->set_name(TTR("Asset Library"));
+			} else {
+				local_projects_hb->set_name(TTR("Local Projects"));
+				asset_library->set_name(TTR("Asset Library Projects"));
+			}
 		} break;
 		case NOTIFICATION_READY: {
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available()) {
@@ -2449,15 +2459,12 @@ ProjectManager::ProjectManager() {
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 	tabs->connect("tab_changed", this, "_on_tab_changed");
 
-	HBoxContainer *tree_hb = memnew(HBoxContainer);
-	projects_hb = tree_hb;
-
-	projects_hb->set_name(TTR("Local Projects"));
-
-	tabs->add_child(tree_hb);
+	local_projects_hb = memnew(HBoxContainer);
+	local_projects_hb->set_name(TTR("Local Projects"));
+	tabs->add_child(local_projects_hb);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-	tree_hb->add_child(search_tree_vb);
+	local_projects_hb->add_child(search_tree_vb);
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
@@ -2507,7 +2514,7 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
 	tree_vb->set_custom_minimum_size(Size2(120, 120));
-	tree_hb->add_child(tree_vb);
+	local_projects_hb->add_child(tree_vb);
 
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));

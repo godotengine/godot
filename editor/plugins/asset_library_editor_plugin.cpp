@@ -1341,6 +1341,10 @@ void EditorAssetLibrary::disable_community_support() {
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
 }
 
+void EditorAssetLibrary::set_columns(const int p_columns) {
+	asset_items->set_columns(p_columns);
+}
+
 void EditorAssetLibrary::_bind_methods() {
 	ClassDB::bind_method("_http_request_completed", &EditorAssetLibrary::_http_request_completed);
 	ClassDB::bind_method("_select_asset", &EditorAssetLibrary::_select_asset);
@@ -1426,8 +1430,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
+	sort->set_clip_text(true);
 	sort->connect("item_selected", this, "_rerun_search");
-
 	search_hb2->add_child(memnew(VSeparator));
 
 	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
@@ -1435,6 +1439,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
+	categories->set_clip_text(true);
 	categories->connect("item_selected", this, "_rerun_search");
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1448,6 +1453,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(SIZE_EXPAND_FILL);
+	repository->set_clip_text(true);
 
 	search_hb2->add_child(memnew(VSeparator));
 
