@@ -130,7 +130,7 @@
 		<theme_item name="file_icon_modulate" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			The color modulation applied to the file icon.
 		</theme_item>
-		<theme_item name="files_disabled" data_type="color" type="Color" default="Color( 0, 0, 0, 0.7 )">
+		<theme_item name="files_disabled" data_type="color" type="Color" default="Color( 1, 1, 1, 0.25 )">
 			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
 		<theme_item name="folder_icon_modulate" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
