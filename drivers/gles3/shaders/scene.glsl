@@ -812,7 +812,7 @@ vec4 fog_process(vec3 vertex) {
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
 		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near));
 
-		sky_fog_color = textureCubeLod(radiance_map, cube_view, mip_level * RADIANCE_MAX_LOD).rgb;
+		sky_fog_color = textureLod(radiance_map, cube_view, mip_level * RADIANCE_MAX_LOD).rgb;
 
 		fog_color = mix(fog_color, sky_fog_color, scene_data.fog_aerial_perspective);
 	}
@@ -1031,7 +1031,7 @@ void main() {
 #endif
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
-		specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).rgb;
+		specular_light = textureLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).rgb;
 		specular_light = srgb_to_linear(specular_light);
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
@@ -1052,7 +1052,7 @@ void main() {
 #ifdef USE_RADIANCE_MAP
 		if (scene_data.use_ambient_cubemap) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * normal;
-			vec3 cubemap_ambient = textureCubeLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).rgb;
+			vec3 cubemap_ambient = textureLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).rgb;
 			cubemap_ambient = srgb_to_linear(cubemap_ambient);
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}

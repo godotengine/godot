@@ -855,7 +855,7 @@ void RasterizerSceneGLES3::_setup_sky(Environment *p_env, RID p_render_buffers, 
 
 			if (light_data_dirty) {
 				glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
-				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirectionalLightData) * sky_globals.directional_light_count, sky_globals.directional_lights);
+				glBufferData(GL_UNIFORM_BUFFER, sizeof(DirectionalLightData) * sky_globals.max_directional_lights, sky_globals.directional_lights, GL_STREAM_DRAW);
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 				DirectionalLightData *temp = sky_globals.last_frame_directional_lights;
