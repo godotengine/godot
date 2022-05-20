@@ -2105,7 +2105,7 @@ void ProjectManager::_confirm_update_settings() {
 void ProjectManager::_open_selected_projects() {
 	// Show loading text to tell the user that the project manager is busy loading.
 	// This is especially important for the HTML5 project manager.
-	loading_label->set_modulate(Color(1, 1, 1));
+	loading_label->show();
 
 	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
 
@@ -2602,8 +2602,8 @@ ProjectManager::ProjectManager() {
 		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(loading_label);
-		// Hide the label but make it still take up space. This prevents reflows when showing the label.
-		loading_label->set_modulate(Color(0, 0, 0, 0));
+		// The loading label is shown later.
+		loading_label->hide();
 
 		Label *sort_label = memnew(Label);
 		sort_label->set_text(TTR("Sort:"));
@@ -2611,7 +2611,7 @@ ProjectManager::ProjectManager() {
 
 		filter_option = memnew(OptionButton);
 		filter_option->set_clip_text(true);
-		filter_option->set_custom_minimum_size(Size2(150 * EDSCALE, 10 * EDSCALE));
+		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
 		hb->add_child(filter_option);
 
@@ -2737,6 +2737,12 @@ ProjectManager::ProjectManager() {
 		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
+#ifdef ANDROID_ENABLED
+		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
+		// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
+		// Hiding the language selection dropdown also leaves more space for the version label to display.
+		language_btn->hide();
+#endif
 
 		Vector<String> editor_languages;
 		List<PropertyInfo> editor_settings_properties;
@@ -2879,8 +2885,8 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
-	// Define a minimum window size to prevent UI elements from overlapping or being cut off
-	DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
+	DisplayServer::get_singleton()->window_set_min_size(Size2(520, 350) * EDSCALE);
 
 	// Resize the bootsplash window based on Editor display scale EDSCALE.
 	float scale_factor = MAX(1, EDSCALE);
