@@ -44,6 +44,7 @@
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+#include "storage/voxel_gi_storage.h"
 
 class RasterizerGLES3 : public RendererCompositor {
 private:
@@ -59,6 +60,7 @@ protected:
 	GLES3::MeshStorage *mesh_storage = nullptr;
 	GLES3::ParticlesStorage *particles_storage = nullptr;
 	GLES3::LightStorage *light_storage = nullptr;
+	GLES3::VoxelGIStorage *voxel_gi_storage = nullptr;
 	GLES3::CopyEffects *copy_effects = nullptr;
 	RasterizerStorageGLES3 *storage = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
@@ -72,6 +74,7 @@ public:
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
 	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
 	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	RendererVoxelGIStorage *get_voxel_gi_storage() { return voxel_gi_storage; }
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }

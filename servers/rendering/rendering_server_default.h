@@ -436,8 +436,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererVoxelGIStorage
+#define server_name RSG::voxel_gi_storage
 
 	FUNCRIDSPLIT(voxel_gi)
 

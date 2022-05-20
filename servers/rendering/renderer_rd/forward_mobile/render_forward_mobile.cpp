@@ -675,7 +675,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
 	}
 
-	_pre_opaque_render(p_render_data, false, false, false, RID(), RID());
+	RID null_rids[2];
+	_pre_opaque_render(p_render_data, false, false, false, null_rids, RID());
 
 	uint32_t spec_constant_base_flags = 0;
 

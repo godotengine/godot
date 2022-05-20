@@ -86,19 +86,21 @@ voxel_gi_instances;
 
 layout(set = 0, binding = 17) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
-layout(push_constant, std430) uniform Params {
+layout(set = 0, binding = 18, std140) uniform SceneData {
+	mat4x4 inv_projection[2];
+	mat4x4 cam_transform[2];
+
 	ivec2 screen_size;
-	float z_near;
-	float z_far;
+	float pad1;
+	float pad2;
+}
+scene_data;
 
-	vec4 proj_info;
-
-	uint max_voxel_gi_instances;
-	bool high_quality_vct;
-	bool orthogonal;
-	uint pad;
-
-	mat3x4 cam_rotation;
+layout(push_constant, std430) uniform Params {
+	uint view_index; // 4 - 4
+	uint max_voxel_gi_instances; //  4 - 8
+	bool high_quality_vct; // 4 - 12
+	bool orthogonal; // 4 - 16
 }
 params;
 
@@ -130,23 +132,14 @@ vec4 blend_color(vec4 src, vec4 dst) {
 }
 
 vec3 reconstruct_position(ivec2 screen_pos) {
-	vec3 pos;
-	pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r;
+	vec4 pos;
+	pos.xy = (2.0 * vec2(screen_pos) / vec2(scene_data.screen_size)) - 1.0;
+	pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r * 2.0 - 1.0;
+	pos.w = 1.0;
 
-	pos.z = pos.z * 2.0 - 1.0;
-	if (params.orthogonal) {
-		pos.z = ((pos.z + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
-	} else {
-		pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - pos.z * (params.z_far - params.z_near));
-	}
-	pos.z = -pos.z;
+	pos = scene_data.inv_projection[params.view_index] * pos;
 
-	pos.xy = vec2(screen_pos) * params.proj_info.xy + params.proj_info.zw;
-	if (!params.orthogonal) {
-		pos.xy *= pos.z;
-	}
-
-	return pos;
+	return pos.xyz / pos.w;
 }
 
 void sdfvoxel_gi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
@@ -579,9 +572,10 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
-		vertex = mat3(params.cam_rotation) * vertex;
-		normal = normalize(mat3(params.cam_rotation) * normal);
+		vertex = mat3(scene_data.cam_transform[params.view_index]) * vertex;
+		normal = normalize(mat3(scene_data.cam_transform[params.view_index]) * normal);
 		vec3 reflection = normalize(reflect(normalize(vertex), normal));
+		vertex += scene_data.cam_transform[params.view_index][3].xyz;
 
 #ifdef USE_SDFGI
 		sdfgi_process(vertex, normal, reflection, roughness, ambient_light, reflection_light);
@@ -629,7 +623,7 @@ void main() {
 #ifdef MODE_HALF_RES
 	pos <<= 1;
 #endif
-	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(pos, scene_data.screen_size))) { //too large, do nothing
 		return;
 	}
 

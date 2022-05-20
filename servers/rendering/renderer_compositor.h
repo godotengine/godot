@@ -39,6 +39,7 @@
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
+#include "servers/rendering/storage/voxel_gi_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererSceneRender;
@@ -81,6 +82,7 @@ public:
 	virtual RendererMeshStorage *get_mesh_storage() = 0;
 	virtual RendererParticlesStorage *get_particles_storage() = 0;
 	virtual RendererTextureStorage *get_texture_storage() = 0;
+	virtual RendererVoxelGIStorage *get_voxel_gi_storage() = 0;
 	virtual RendererStorage *get_storage() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;

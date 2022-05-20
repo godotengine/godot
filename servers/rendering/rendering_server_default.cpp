@@ -409,6 +409,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+	RSG::voxel_gi_storage = RSG::rasterizer->get_voxel_gi_storage();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());
