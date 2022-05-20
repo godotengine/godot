@@ -2314,6 +2314,12 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 	}
 
+	if (p_slice_type == TEXTURE_SLICE_2D) {
+		texture.type = TEXTURE_TYPE_2D;
+	} else if (p_slice_type == TEXTURE_SLICE_3D) {
+		texture.type = TEXTURE_TYPE_3D;
+	}
+
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {

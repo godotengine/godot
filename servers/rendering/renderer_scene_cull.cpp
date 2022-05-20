@@ -1894,7 +1894,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 
 		} break;
 		case RenderingServer::INSTANCE_VOXEL_GI: {
-			new_aabb = RSG::storage->voxel_gi_get_bounds(p_instance->base);
+			new_aabb = RSG::gi->voxel_gi_get_bounds(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_LIGHTMAP: {

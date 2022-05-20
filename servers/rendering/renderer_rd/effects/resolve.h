@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.cpp                                         */
+/*  resolve.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_globals.h"
+#ifndef RESOLVE_RD_H
+#define RESOLVE_RD_H
 
-bool RenderingServerGlobals::threaded = false;
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/resolve.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 
-RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
-RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
-RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
-RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
-RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
-RendererGI *RenderingServerGlobals::gi = nullptr;
-RendererStorage *RenderingServerGlobals::storage = nullptr;
-RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
-RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+#include "servers/rendering_server.h"
 
-RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
-RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+namespace RendererRD {
+
+class Resolve {
+private:
+	struct ResolvePushConstant {
+		int32_t screen_size[2];
+		int32_t samples;
+		uint32_t pad;
+	};
+
+	enum ResolveMode {
+		RESOLVE_MODE_GI,
+		RESOLVE_MODE_GI_VOXEL_GI,
+		RESOLVE_MODE_DEPTH,
+		RESOLVE_MODE_MAX
+	};
+
+	struct ResolveShader {
+		ResolvePushConstant push_constant;
+		ResolveShaderRD shader;
+		RID shader_version;
+		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
+	} resolve;
+
+public:
+	Resolve();
+	~Resolve();
+
+	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+	void resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+};
+
+} // namespace RendererRD
+
+#endif // !RESOLVE_RD_H

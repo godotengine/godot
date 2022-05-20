@@ -40,10 +40,13 @@ layout(push_constant, std430) uniform Params {
 	bool use_occlusion;
 	float y_mult;
 
-	vec3 cam_extent;
 	int probe_axis_size;
+	float z_near;
+	float reserved1;
+	float reserved2;
 
 	mat4 cam_transform;
+	mat4 inv_projection;
 }
 params;
 
@@ -81,8 +84,9 @@ void main() {
 	{
 		ray_pos = params.cam_transform[3].xyz;
 
-		ray_dir.xy = params.cam_extent.xy * ((vec2(screen_pos) / vec2(params.screen_size)) * 2.0 - 1.0);
-		ray_dir.z = params.cam_extent.z;
+		ray_dir.xy = ((vec2(screen_pos) / vec2(params.screen_size)) * 2.0 - 1.0);
+		ray_dir.z = params.z_near;
+		ray_dir = (params.inv_projection * vec4(ray_dir, 1.0)).xyz;
 
 		ray_dir = normalize(mat3(params.cam_transform) * ray_dir);
 	}
