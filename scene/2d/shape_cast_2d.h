@@ -46,7 +46,7 @@ class ShapeCast2D : public Node2D {
 	RID shape_rid;
 	Vector2 target_position = Vector2(0, 50);
 
-	RBSet<RID> exclude;
+	HashSet<RID> exclude;
 	real_t margin = 0.0;
 	uint32_t collision_mask = 1;
 	bool exclude_parent_body = true;

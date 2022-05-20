@@ -74,7 +74,7 @@ class TranslationServer : public Object {
 	String locale = "en";
 	String fallback;
 
-	RBSet<Ref<Translation>> translations;
+	HashSet<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
 	Ref<Translation> doc_translation;
 
@@ -111,7 +111,7 @@ class TranslationServer : public Object {
 		String name;
 		String script;
 		String default_country;
-		RBSet<String> supported_countries;
+		HashSet<String> supported_countries;
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
 

@@ -2029,7 +2029,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 		NodeGeometry *gnode = static_cast<NodeGeometry *>(p_node);
 		if (gnode->controller) {
 			// recount skeletons used
-			RBSet<NodeSkeleton *> skeletons;
+			HashSet<NodeSkeleton *> skeletons;
 
 			for (int i = 0; i < gnode->skeletons.size(); i++) {
 				String nodeid = gnode->skeletons[i];
@@ -2049,11 +2049,11 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 			if (skeletons.size() > 1) {
 				//do the merger!!
-				RBSet<NodeSkeleton *>::Element *E = skeletons.front();
-				NodeSkeleton *base = E->get();
+				HashSet<NodeSkeleton *>::Iterator E = skeletons.begin();
+				NodeSkeleton *base = *E;
 
-				for (E = E->next(); E; E = E->next()) {
-					NodeSkeleton *merged = E->get();
+				for (++E; E; ++E) {
+					NodeSkeleton *merged = *E;
 					_remove_node(p_vscene, merged);
 					for (int i = 0; i < merged->children.size(); i++) {
 						_joint_set_owner(merged->children[i], base);

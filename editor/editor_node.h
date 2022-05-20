@@ -394,7 +394,7 @@ private:
 	BackgroundProgress *progress_hb = nullptr;
 
 	DependencyErrorDialog *dependency_error = nullptr;
-	HashMap<String, RBSet<String>> dependency_errors;
+	HashMap<String, HashSet<String>> dependency_errors;
 	DependencyEditor *dependency_fixer = nullptr;
 	OrphanResourcesDialog *orphan_resources = nullptr;
 	ConfirmationDialog *open_imported = nullptr;
@@ -470,9 +470,9 @@ private:
 
 	String import_reload_fn;
 
-	RBSet<String> textfile_extensions;
-	RBSet<FileDialog *> file_dialogs;
-	RBSet<EditorFileDialog *> editor_file_dialogs;
+	HashSet<String> textfile_extensions;
+	HashSet<FileDialog *> file_dialogs;
+	HashSet<EditorFileDialog *> editor_file_dialogs;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -489,7 +489,7 @@ private:
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = static_cast<EditorNode *>(ud);
 		if (!en->dependency_errors.has(p_path)) {
-			en->dependency_errors[p_path] = RBSet<String>();
+			en->dependency_errors[p_path] = HashSet<String>();
 		}
 		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}

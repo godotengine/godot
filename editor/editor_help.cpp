@@ -648,7 +648,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Properties overview
-	RBSet<String> skip_methods;
+	HashSet<String> skip_methods;
 	bool property_descr = false;
 
 	bool has_properties = cd.properties.size() != 0;

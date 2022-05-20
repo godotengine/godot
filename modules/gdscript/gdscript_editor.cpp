@@ -110,7 +110,7 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	}
 }
 
-bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, RBSet<int> *r_safe_lines) const {
+bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
@@ -159,7 +159,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 
 #ifdef DEBUG_ENABLED
 	if (r_safe_lines) {
-		const RBSet<int> &unsafe_lines = parser.get_unsafe_lines();
+		const HashSet<int> &unsafe_lines = parser.get_unsafe_lines();
 		for (int i = 1; i <= parser.get_last_line_number(); i++) {
 			if (!unsafe_lines.has(i)) {
 				r_safe_lines->insert(i);

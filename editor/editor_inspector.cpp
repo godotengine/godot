@@ -839,7 +839,7 @@ void EditorProperty::_update_pin_flags() {
 		}
 		pin_hidden = false;
 		{
-			RBSet<StringName> storable_properties;
+			HashSet<StringName> storable_properties;
 			node->get_storable_properties(storable_properties);
 			if (storable_properties.has(node->get_property_store_alias(property))) {
 				can_pin = true;
@@ -3543,7 +3543,7 @@ void EditorInspector::_notification(int p_what) {
 
 			} else {
 				while (pending.size()) {
-					StringName prop = pending.front()->get();
+					StringName prop = *pending.begin();
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
@@ -3551,7 +3551,7 @@ void EditorInspector::_notification(int p_what) {
 							E->update_cache();
 						}
 					}
-					pending.erase(pending.front());
+					pending.remove(pending.begin());
 				}
 			}
 
@@ -3638,7 +3638,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		break;
 	}
 
-	RBSet<StringName> added;
+	HashSet<StringName> added;
 	for (const Ref<Script> &s : classes) {
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);

@@ -1670,7 +1670,7 @@ void VisualShaderEditor::_update_uniforms(bool p_update_refs) {
 	}
 }
 
-void VisualShaderEditor::_update_uniform_refs(RBSet<String> &p_deleted_names) {
+void VisualShaderEditor::_update_uniform_refs(HashSet<String> &p_deleted_names) {
 	for (int i = 0; i < VisualShader::TYPE_MAX; i++) {
 		VisualShader::Type type = VisualShader::Type(i);
 
@@ -2288,7 +2288,7 @@ void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_
 	undo_redo->add_do_method(this, "_update_uniforms", true);
 	undo_redo->add_undo_method(this, "_update_uniforms", true);
 
-	RBSet<String> changed_names;
+	HashSet<String> changed_names;
 	changed_names.insert(node->get_uniform_name());
 	_update_uniform_refs(changed_names);
 
@@ -3108,7 +3108,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		}
 	}
 
-	RBSet<String> uniform_names;
+	HashSet<String> uniform_names;
 
 	for (const int &F : p_nodes) {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, F);
@@ -3212,8 +3212,8 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 		undo_redo->create_action(TTR("Convert Uniform Node(s) To Constant(s)"));
 	}
 
-	const RBSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
-	RBSet<String> deleted_names;
+	const HashSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
+	HashSet<String> deleted_names;
 
 	for (const int &E : current_set) {
 		int node_id = E;
@@ -3789,7 +3789,7 @@ void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, Li
 	selection_center.x = 0.0f;
 	selection_center.y = 0.0f;
 
-	RBSet<int> nodes;
+	HashSet<int> nodes;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
@@ -3869,8 +3869,8 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
 	HashMap<int, int> connection_remap;
-	RBSet<int> unsupported_set;
-	RBSet<int> added_set;
+	HashSet<int> unsupported_set;
+	HashSet<int> added_set;
 
 	for (CopyItem &item : r_items) {
 		if (item.disabled) {

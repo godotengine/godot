@@ -784,7 +784,7 @@ GDScriptWorkspace::GDScriptWorkspace() {
 }
 
 GDScriptWorkspace::~GDScriptWorkspace() {
-	RBSet<String> cached_parsers;
+	HashSet<String> cached_parsers;
 
 	for (const KeyValue<String, ExtendGDScriptParser *> &E : parse_results) {
 		cached_parsers.insert(E.key);

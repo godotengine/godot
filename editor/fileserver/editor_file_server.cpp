@@ -282,7 +282,7 @@ void EditorFileServer::_thread_start(void *s) {
 
 		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
-			Thread *w = self->to_wait.front()->get();
+			Thread *w = *self->to_wait.begin();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
 			w->wait_to_finish();

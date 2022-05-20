@@ -165,7 +165,7 @@ class ResourceFormatSaverTextInstance {
 
 	RBMap<NonPersistentKey, Ref<Resource>> non_persistent_map;
 
-	RBSet<Ref<Resource>> resource_set;
+	HashSet<Ref<Resource>> resource_set;
 	List<Ref<Resource>> saved_resources;
 	HashMap<Ref<Resource>, String> external_resources;
 	HashMap<Ref<Resource>, String> internal_resources;

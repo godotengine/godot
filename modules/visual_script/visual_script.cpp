@@ -2223,7 +2223,7 @@ Ref<Script> VisualScriptLanguage::make_template(const String &p_template, const 
 	return script;
 }
 
-bool VisualScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, RBSet<int> *r_safe_lines) const {
+bool VisualScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
 	return false;
 }
 

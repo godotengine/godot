@@ -437,7 +437,7 @@ class EditorInspector : public ScrollContainer {
 	//map use to cache the instantiated editors
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	RBSet<StringName> pending;
+	HashSet<StringName> pending;
 
 	void _clear();
 	Object *object = nullptr;
@@ -470,7 +470,7 @@ class EditorInspector : public ScrollContainer {
 
 	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 	HashMap<StringName, String> class_descr_cache;
-	RBSet<StringName> restart_request_props;
+	HashSet<StringName> restart_request_props;
 
 	HashMap<ObjectID, int> scroll_cache;
 

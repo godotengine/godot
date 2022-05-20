@@ -127,7 +127,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 		for (int i = 0; i < v_msgid_data.size(); i++) {
 			String context = v_msgid_data[i].ctx;
 			String plural = v_msgid_data[i].plural;
-			const RBSet<String> &locations = v_msgid_data[i].locations;
+			const HashSet<String> &locations = v_msgid_data[i].locations;
 
 			// Put the blank line at the start, to avoid a double at the end when closing the file.
 			file->store_line("");

@@ -800,7 +800,7 @@ void EditorNode::_notification(int p_what) {
 				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
 
-			RBSet<String> updated_textfile_extensions;
+			HashSet<String> updated_textfile_extensions;
 			bool extensions_match = true;
 			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 			for (const String &E : textfile_ext) {
@@ -1622,7 +1622,7 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, RBSet<Ref<Resource>> &edited_resources) {
+static bool _find_edited_resources(const Ref<Resource> &p_resource, HashSet<Ref<Resource>> &edited_resources) {
 	if (p_resource->is_edited()) {
 		edited_resources.insert(p_resource);
 		return true;
@@ -1659,7 +1659,7 @@ int EditorNode::_save_external_resources() {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	RBSet<Ref<Resource>> edited_subresources;
+	HashSet<Ref<Resource>> edited_subresources;
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
@@ -3678,7 +3678,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.erase(lpath); // At least not self path.
 
-	for (KeyValue<String, RBSet<String>> &E : dependency_errors) {
+	for (KeyValue<String, HashSet<String>> &E : dependency_errors) {
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E.key) + "\n";
 		for (const String &F : E.value) {
 			txt += "\t" + F + "\n";

@@ -788,7 +788,7 @@ void GDScript::update_exports() {
 		return;
 	}
 
-	RBSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy = inheriters_cache; //might get modified
 
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
@@ -937,7 +937,7 @@ void GDScript::get_constants(HashMap<StringName, Variant> *p_constants) {
 	}
 }
 
-void GDScript::get_members(RBSet<StringName> *p_members) {
+void GDScript::get_members(HashSet<StringName> *p_members) {
 	if (p_members) {
 		for (const StringName &E : members) {
 			p_members->insert(E);
@@ -1916,7 +1916,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 #ifdef TOOLS_ENABLED
 
 			while (script->placeholders.size()) {
-				Object *obj = script->placeholders.front()->get()->get_owner();
+				Object *obj = (*script->placeholders.begin())->get_owner();
 
 				//save instance info
 				if (obj->get_script_instance()) {
@@ -1926,7 +1926,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
-					script->placeholders.erase(script->placeholders.front()->get());
+					script->placeholders.erase(*script->placeholders.begin());
 				}
 			}
 

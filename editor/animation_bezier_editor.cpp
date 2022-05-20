@@ -792,8 +792,8 @@ void AnimationBezierTrackEdit::_clear_selection() {
 void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode) {
 	undo_redo->create_action(TTR("Update Selected Key Handles"));
 	double ratio = timeline->get_zoom_scale() * v_zoom;
-	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
-		const IntPair track_key_pair = E->get();
+	for (const IntPair &E : selection) {
+		const IntPair track_key_pair = E;
 		undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track_key_pair.first, track_key_pair.second, animation->bezier_track_get_key_handle_mode(track_key_pair.first, track_key_pair.second), ratio);
 		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track_key_pair.first, track_key_pair.second, p_mode, ratio);
 	}
@@ -851,14 +851,14 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					focused_keys.insert(key_pair);
 				}
 			} else {
-				for (SelectionSet::Element *E = selection.front(); E; E = E->next()) {
-					focused_keys.insert(E->get());
-					if (E->get().second > 0) {
-						IntPair previous_key = IntPair(E->get().first, E->get().second - 1);
+				for (const IntPair &E : selection) {
+					focused_keys.insert(E);
+					if (E.second > 0) {
+						IntPair previous_key = IntPair(E.first, E.second - 1);
 						focused_keys.insert(previous_key);
 					}
-					if (E->get().second < animation->track_get_key_count(E->get().first) - 1) {
-						IntPair next_key = IntPair(E->get().first, E->get().second + 1);
+					if (E.second < animation->track_get_key_count(E.first) - 1) {
+						IntPair next_key = IntPair(E.first, E.second + 1);
 						focused_keys.insert(next_key);
 					}
 				}
@@ -873,8 +873,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			float minimum_value = INFINITY;
 			float maximum_value = -INFINITY;
 
-			for (SelectionSet::Element *E = focused_keys.front(); E; E = E->next()) {
-				IntPair key_pair = E->get();
+			for (const IntPair &E : selection) {
+				IntPair key_pair = E;
 
 				float time = animation->track_get_key_time(key_pair.first, key_pair.second);
 				float value = animation->bezier_track_get_key_value(key_pair.first, key_pair.second);

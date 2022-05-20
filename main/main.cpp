@@ -2150,7 +2150,7 @@ bool Main::start() {
 
 		DocTools docsrc;
 		HashMap<String, String> doc_data_classes;
-		RBSet<String> checked_paths;
+		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {

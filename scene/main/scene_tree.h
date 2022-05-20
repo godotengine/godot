@@ -130,7 +130,7 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	RBSet<Node *> call_skip; // Skip erased nodes.
+	HashSet<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 

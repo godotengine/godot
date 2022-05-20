@@ -345,8 +345,8 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 		return;
 	}
 
-	HashMap<String, RBSet<Node *>> &edit_cache = debugger->live_scene_edit_cache;
-	HashMap<String, RBSet<Node *>>::Iterator E = edit_cache.find(p_filename);
+	HashMap<String, HashSet<Node *>> &edit_cache = debugger->live_scene_edit_cache;
+	HashMap<String, HashSet<Node *>>::Iterator E = edit_cache.find(p_filename);
 	if (E) {
 		E->value.erase(p_node);
 		if (E->value.size() == 0) {
@@ -408,12 +408,12 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 }
 
 void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInstance *p_instance) {
-	typedef HashMap<const Script *, RBSet<StringName>> ScriptMemberMap;
+	typedef HashMap<const Script *, HashSet<StringName>> ScriptMemberMap;
 	typedef HashMap<const Script *, HashMap<StringName, Variant>> ScriptConstantsMap;
 
 	ScriptMemberMap members;
 	if (p_instance) {
-		members[p_script] = RBSet<StringName>();
+		members[p_script] = HashSet<StringName>();
 		p_script->get_members(&(members[p_script]));
 	}
 
@@ -424,7 +424,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	Ref<Script> base = p_script->get_base_script();
 	while (base.is_valid()) {
 		if (p_instance) {
-			members[base.ptr()] = RBSet<StringName>();
+			members[base.ptr()] = HashSet<StringName>();
 			base->get_members(&(members[base.ptr()]));
 		}
 
@@ -435,7 +435,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	}
 
 	// Members
-	for (KeyValue<const Script *, RBSet<StringName>> sm : members) {
+	for (KeyValue<const Script *, HashSet<StringName>> sm : members) {
 		for (const StringName &E : sm.value) {
 			Variant m;
 			if (p_instance->get(E, m)) {
@@ -624,7 +624,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
@@ -668,7 +668,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
@@ -753,7 +753,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
@@ -797,7 +797,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
@@ -835,15 +835,15 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F;) {
-		RBSet<Node *>::Element *N = F->next();
+	Vector<Node *> to_delete;
 
-		Node *n = F->get();
+	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
+		Node *n = *F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -854,9 +854,11 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		}
 		Node *n2 = n->get_node(p_at);
 
-		memdelete(n2);
+		to_delete.push_back(n2);
+	}
 
-		F = N;
+	for (int i = 0; i < to_delete.size(); i++) {
+		memdelete(to_delete[i]);
 	}
 }
 
@@ -871,15 +873,14 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F;) {
-		RBSet<Node *>::Element *N = F->next();
-
-		Node *n = F->get();
+	Vector<Node *> to_remove;
+	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
+		Node *n = *F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -889,13 +890,14 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 			continue;
 		}
 
+		to_remove.push_back(n);
+	}
+
+	for (int i = 0; i < to_remove.size(); i++) {
+		Node *n = to_remove[i];
 		Node *n2 = n->get_node(p_at);
-
 		n2->get_parent()->remove_child(n2);
-
 		live_edit_remove_list[n][p_keep_id] = n2;
-
-		F = N;
 	}
 }
 
@@ -910,15 +912,16 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
 
-	for (RBSet<Node *>::Element *F = E->value.front(); F;) {
-		RBSet<Node *>::Element *N = F->next();
+	for (HashSet<Node *>::Iterator F = E->value.begin(); F;) {
+		HashSet<Node *>::Iterator N = F;
+		++N;
 
-		Node *n = F->get();
+		Node *n = *F;
 
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
@@ -963,7 +966,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}
@@ -1002,7 +1005,7 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		base = scene_tree->root->get_node(live_edit_root);
 	}
 
-	HashMap<String, RBSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
+	HashMap<String, HashSet<Node *>>::Iterator E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E) {
 		return; //scene not editable
 	}

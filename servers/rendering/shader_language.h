@@ -589,7 +589,7 @@ public:
 			bool is_const;
 			int array_size;
 
-			HashMap<StringName, RBSet<int>> tex_argument_connect;
+			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
 
 		StringName name;
@@ -622,7 +622,7 @@ public:
 		struct Function {
 			StringName name;
 			FunctionNode *function = nullptr;
-			RBSet<StringName> uses_function;
+			HashSet<StringName> uses_function;
 			bool callable;
 		};
 
@@ -1068,10 +1068,10 @@ private:
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
-	String _get_shader_type_list(const RBSet<String> &p_shader_types) const;
+	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const RBSet<String> &p_shader_types);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1097,7 +1097,7 @@ public:
 		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
-		RBSet<String> shader_types;
+		HashSet<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
 	};
 

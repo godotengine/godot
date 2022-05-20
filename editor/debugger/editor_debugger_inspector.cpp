@@ -146,7 +146,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	debugObj->prop_list.clear();
 	int new_props_added = 0;
-	RBSet<String> changed;
+	HashSet<String> changed;
 	for (int i = 0; i < obj.properties.size(); i++) {
 		PropertyInfo &pinfo = obj.properties[i].first;
 		Variant &var = obj.properties[i].second;

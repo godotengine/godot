@@ -132,13 +132,13 @@ static void update_external_dependency_for_store(VkSubpassDependency &dependency
 
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 	if (!dependency_map.has(p_depends_on)) {
-		dependency_map[p_depends_on] = RBSet<RID>();
+		dependency_map[p_depends_on] = HashSet<RID>();
 	}
 
 	dependency_map[p_depends_on].insert(p_id);
 
 	if (!reverse_dependency_map.has(p_id)) {
-		reverse_dependency_map[p_id] = RBSet<RID>();
+		reverse_dependency_map[p_id] = HashSet<RID>();
 	}
 
 	reverse_dependency_map[p_id].insert(p_depends_on);
@@ -147,10 +147,10 @@ void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 	//direct dependencies must be freed
 
-	HashMap<RID, RBSet<RID>>::Iterator E = dependency_map.find(p_id);
+	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		while (E->value.size()) {
-			free(E->value.front()->get());
+			free(*E->value.begin());
 		}
 		dependency_map.remove(E);
 	}
@@ -160,7 +160,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 
 	if (E) {
 		for (const RID &F : E->value) {
-			HashMap<RID, RBSet<RID>>::Iterator G = dependency_map.find(F);
+			HashMap<RID, HashSet<RID>>::Iterator G = dependency_map.find(F);
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->value.has(p_id));
 			G->value.erase(p_id);
@@ -4138,7 +4138,7 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 	vdcache.bindings = memnew_arr(VkVertexInputBindingDescription, p_vertex_formats.size());
 	vdcache.attributes = memnew_arr(VkVertexInputAttributeDescription, p_vertex_formats.size());
 
-	RBSet<int> used_locations;
+	HashSet<int> used_locations;
 	for (int i = 0; i < p_vertex_formats.size(); i++) {
 		ERR_CONTINUE(p_vertex_formats[i].format >= DATA_FORMAT_MAX);
 		ERR_FAIL_COND_V(used_locations.has(p_vertex_formats[i].location), INVALID_ID);
@@ -5468,7 +5468,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 
 RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_allocate(const DescriptorPoolKey &p_key) {
 	if (!descriptor_pools.has(p_key)) {
-		descriptor_pools[p_key] = RBSet<DescriptorPool *>();
+		descriptor_pools[p_key] = HashSet<DescriptorPool *>();
 	}
 
 	DescriptorPool *pool = nullptr;

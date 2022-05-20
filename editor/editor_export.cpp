@@ -446,7 +446,7 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	return preset;
 }
 
-void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_dir, RBSet<String> &p_paths) {
+void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths) {
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_export_find_resources(p_dir->get_subdir(i), p_paths);
 	}
@@ -459,7 +459,7 @@ void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_d
 	}
 }
 
-void EditorExportPlatform::_export_find_dependencies(const String &p_path, RBSet<String> &p_paths) {
+void EditorExportPlatform::_export_find_dependencies(const String &p_path, HashSet<String> &p_paths) {
 	if (p_paths.has(p_path)) {
 		return;
 	}
@@ -480,7 +480,7 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, RBSet
 	}
 }
 
-void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, RBSet<String> &r_list, bool exclude) {
+void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude) {
 	da->list_dir_begin();
 	String cur_dir = da->get_current_dir().replace("\\", "/");
 	if (!cur_dir.ends_with("/")) {
@@ -528,7 +528,7 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 	}
 }
 
-void EditorExportPlatform::_edit_filter_list(RBSet<String> &r_list, const String &p_filter, bool exclude) {
+void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude) {
 	if (p_filter.is_empty()) {
 		return;
 	}
@@ -648,10 +648,10 @@ void EditorExportPlugin::_export_end_script() {
 	GDVIRTUAL_CALL(_export_end);
 }
 
-void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const RBSet<String> &p_features) {
+void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
-void EditorExportPlugin::_export_begin(const RBSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
+void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
 }
 
 void EditorExportPlugin::skip() {
@@ -739,7 +739,7 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 	//figure out paths of files that will be exported
-	RBSet<String> paths;
+	HashSet<String> paths;
 	Vector<String> path_remaps;
 
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
@@ -872,7 +872,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	FeatureContainers feature_containers = get_feature_containers(p_preset, p_debug);
-	RBSet<String> &features = feature_containers.features;
+	HashSet<String> &features = feature_containers.features;
 	Vector<String> &features_pv = feature_containers.features_pv;
 
 	//store everything in the export medium
@@ -910,7 +910,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			List<String> remaps;
 			config->get_section_keys("remap", &remaps);
 
-			RBSet<String> remap_features;
+			HashSet<String> remap_features;
 
 			for (const String &F : remaps) {
 				String remap = F;
@@ -1934,7 +1934,7 @@ void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
 }
 
-void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, RBSet<String> &p_features) {
+void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 	if (p_features.has("bptc")) {
 		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
 			p_features.erase("s3tc");
@@ -1952,7 +1952,7 @@ void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
 
 ///////////////////////
 
-void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, const String &p_type, const RBSet<String> &p_features) {
+void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 	String extension = p_path.get_extension().to_lower();
 	if (extension != "tres" && extension != "tscn") {
 		return;

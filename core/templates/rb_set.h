@@ -99,6 +99,7 @@ public:
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
 
+		explicit operator bool() const { return E != nullptr; }
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
@@ -127,6 +128,8 @@ public:
 		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+		explicit operator bool() const { return E != nullptr; }
 
 	private:
 		const Element *E = nullptr;

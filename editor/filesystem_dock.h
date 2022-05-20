@@ -108,7 +108,7 @@ private:
 	VSplitContainer *split_box = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
-	RBSet<String> favorites;
+	HashSet<String> favorites;
 
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_reload = nullptr;

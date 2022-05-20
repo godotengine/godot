@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_COMPILER_H
 #define GDSCRIPT_COMPILER_H
 
-#include "core/templates/rb_set.h"
+#include "core/templates/hash_set.h"
 #include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
@@ -39,8 +39,8 @@
 
 class GDScriptCompiler {
 	const GDScriptParser *parser = nullptr;
-	RBSet<GDScript *> parsed_classes;
-	RBSet<GDScript *> parsing_classes;
+	HashSet<GDScript *> parsed_classes;
+	HashSet<GDScript *> parsing_classes;
 	GDScript *main_script = nullptr;
 
 	struct CodeGen {

@@ -81,8 +81,8 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
 	Vector<Ref<GLTFLight>> lights;
-	RBSet<String> unique_names;
-	RBSet<String> unique_animation_names;
+	HashSet<String> unique_names;
+	HashSet<String> unique_animation_names;
 
 	Vector<Ref<GLTFSkeleton>> skeletons;
 	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;

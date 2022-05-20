@@ -99,7 +99,7 @@ class SceneTreeEditor : public Control {
 	void _renamed();
 	UndoRedo *undo_redo = nullptr;
 
-	RBSet<Node *> marked;
+	HashSet<Node *> marked;
 	bool marked_selectable = false;
 	bool marked_children_selectable = false;
 	bool display_foreign = false;
@@ -140,7 +140,7 @@ public:
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);
 
-	void set_marked(const RBSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
+	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();

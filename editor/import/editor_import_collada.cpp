@@ -76,12 +76,12 @@ struct ColladaImport {
 
 	HashMap<Skeleton3D *, HashMap<String, int>> skeleton_bone_map;
 
-	RBSet<String> valid_animated_nodes;
+	HashSet<String> valid_animated_nodes;
 	Vector<int> valid_animated_properties;
 	HashMap<String, bool> bones_with_animation;
 
-	RBSet<String> mesh_unique_names;
-	RBSet<String> material_unique_names;
+	HashSet<String> mesh_unique_names;
+	HashSet<String> material_unique_names;
 
 	Error _populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
 	Error _create_scene_skeletons(Collada::Node *p_node);
@@ -94,7 +94,7 @@ struct ColladaImport {
 	void create_animation(int p_clip, bool p_import_value_tracks);
 	void create_animations(bool p_import_value_tracks);
 
-	RBSet<String> tracks_in_clips;
+	HashSet<String> tracks_in_clips;
 	Vector<String> missing_textures;
 
 	void _pre_process_lights(Collada::Node *p_node);
@@ -875,7 +875,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		Vector<Collada::Vertex> vertex_array; //there we go, vertex array
 
 		vertex_array.resize(vertex_set.size());
-		for (Collada::Vertex &F : vertex_set) {
+		for (const Collada::Vertex &F : vertex_set) {
 			vertex_array.write[F.idx] = F;
 		}
 
@@ -1452,7 +1452,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		//main anim
 	}
 
-	RBSet<int> track_filter;
+	HashSet<int> track_filter;
 
 	if (p_clip == -1) {
 		for (int i = 0; i < collada.state.animation_clips.size(); i++) {

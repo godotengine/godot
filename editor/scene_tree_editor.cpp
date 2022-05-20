@@ -874,7 +874,7 @@ Node *SceneTreeEditor::get_selected() {
 	return selected;
 }
 
-void SceneTreeEditor::set_marked(const RBSet<Node *> &p_marked, bool p_selectable, bool p_children_selectable) {
+void SceneTreeEditor::set_marked(const HashSet<Node *> &p_marked, bool p_selectable, bool p_children_selectable) {
 	if (tree_dirty) {
 		_update_tree();
 	}
@@ -885,7 +885,7 @@ void SceneTreeEditor::set_marked(const RBSet<Node *> &p_marked, bool p_selectabl
 }
 
 void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_children_selectable) {
-	RBSet<Node *> s;
+	HashSet<Node *> s;
 	if (p_marked) {
 		s.insert(p_marked);
 	}

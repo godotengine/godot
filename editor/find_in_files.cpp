@@ -99,7 +99,7 @@ void FindInFiles::set_folder(String folder) {
 	_root_dir = folder;
 }
 
-void FindInFiles::set_filter(const RBSet<String> &exts) {
+void FindInFiles::set_filter(const HashSet<String> &exts) {
 	_extension_filter = exts;
 }
 
@@ -443,9 +443,9 @@ String FindInFilesDialog::get_folder() const {
 	return text.strip_edges();
 }
 
-RBSet<String> FindInFilesDialog::get_filter() const {
+HashSet<String> FindInFilesDialog::get_filter() const {
 	// Could check the _filters_preferences but it might not have been generated yet.
-	RBSet<String> filters;
+	HashSet<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
 		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		if (cb->is_pressed()) {

@@ -108,7 +108,7 @@ public:
 		Rect2 aabb;
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		RID occluder;
-		RBSet<RendererCanvasRender::LightOccluderInstance *> owners;
+		HashSet<RendererCanvasRender::LightOccluderInstance *> owners;
 
 		LightOccluderPolygon() {
 			active = false;
@@ -121,7 +121,7 @@ public:
 	RID_Owner<RendererCanvasRender::LightOccluderInstance, true> canvas_light_occluder_owner;
 
 	struct Canvas : public RendererViewport::CanvasBase {
-		RBSet<RID> viewports;
+		HashSet<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
 			Item *item = nullptr;
@@ -130,10 +130,10 @@ public:
 			}
 		};
 
-		RBSet<RendererCanvasRender::Light *> lights;
-		RBSet<RendererCanvasRender::Light *> directional_lights;
+		HashSet<RendererCanvasRender::Light *> lights;
+		HashSet<RendererCanvasRender::Light *> directional_lights;
 
-		RBSet<RendererCanvasRender::LightOccluderInstance *> occluders;
+		HashSet<RendererCanvasRender::LightOccluderInstance *> occluders;
 
 		bool children_order_dirty;
 		Vector<ChildItem> child_items;

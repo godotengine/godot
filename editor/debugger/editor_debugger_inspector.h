@@ -69,7 +69,7 @@ class EditorDebuggerInspector : public EditorInspector {
 private:
 	ObjectID inspected_object_id;
 	HashMap<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
-	RBSet<Ref<Resource>> remote_dependencies;
+	HashSet<Ref<Resource>> remote_dependencies;
 	EditorDebuggerRemoteObject *variables = nullptr;
 
 	void _object_selected(ObjectID p_object);

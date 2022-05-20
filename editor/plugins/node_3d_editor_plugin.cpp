@@ -518,7 +518,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) {
 	}
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
-	RBSet<Ref<EditorNode3DGizmo>> found_gizmos;
+	HashSet<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 	ObjectID closest;
@@ -581,7 +581,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector3 pos = _get_ray_pos(p_pos);
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
-	RBSet<Node3D *> found_nodes;
+	HashSet<Node3D *> found_nodes;
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
@@ -764,7 +764,7 @@ void Node3DEditorViewport::_select_region() {
 	}
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world_3d()->get_scenario());
-	RBSet<Node3D *> found_nodes;
+	HashSet<Node3D *> found_nodes;
 	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -6685,8 +6685,8 @@ void Node3DEditor::_refresh_menu_icons() {
 }
 
 template <typename T>
-RBSet<T *> _get_child_nodes(Node *parent_node) {
-	RBSet<T *> nodes = RBSet<T *>();
+HashSet<T *> _get_child_nodes(Node *parent_node) {
+	HashSet<T *> nodes = HashSet<T *>();
 	T *node = Node::cast_to<T>(parent_node);
 	if (node) {
 		nodes.insert(node);
@@ -6694,22 +6694,22 @@ RBSet<T *> _get_child_nodes(Node *parent_node) {
 
 	for (int i = 0; i < parent_node->get_child_count(); i++) {
 		Node *child_node = parent_node->get_child(i);
-		RBSet<T *> child_nodes = _get_child_nodes<T>(child_node);
-		for (typename RBSet<T *>::Element *I = child_nodes.front(); I; I = I->next()) {
-			nodes.insert(I->get());
+		HashSet<T *> child_nodes = _get_child_nodes<T>(child_node);
+		for (T *I : child_nodes) {
+			nodes.insert(I);
 		}
 	}
 
 	return nodes;
 }
 
-RBSet<RID> _get_physics_bodies_rid(Node *node) {
-	RBSet<RID> rids = RBSet<RID>();
+HashSet<RID> _get_physics_bodies_rid(Node *node) {
+	HashSet<RID> rids = HashSet<RID>();
 	PhysicsBody3D *pb = Node::cast_to<PhysicsBody3D>(node);
 	if (pb) {
 		rids.insert(pb->get_rid());
 	}
-	RBSet<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
+	HashSet<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
 	for (const PhysicsBody3D *I : child_nodes) {
 		rids.insert(I->get_rid());
 	}
@@ -6728,20 +6728,21 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Vector3 position_offset = Vector3();
 
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
-			RBSet<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);
-			RBSet<CollisionShape3D *> cs = _get_child_nodes<CollisionShape3D>(sp);
+			HashSet<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);
+			HashSet<CollisionShape3D *> cs = _get_child_nodes<CollisionShape3D>(sp);
 			bool found_valid_shape = false;
 
 			if (cs.size()) {
 				AABB aabb;
-				RBSet<CollisionShape3D *>::Element *I = cs.front();
-				if (I->get()->get_shape().is_valid()) {
-					CollisionShape3D *collision_shape = cs.front()->get();
+				HashSet<CollisionShape3D *>::Iterator I = cs.begin();
+				if ((*I)->get_shape().is_valid()) {
+					CollisionShape3D *collision_shape = *cs.begin();
 					aabb = collision_shape->get_global_transform().xform(collision_shape->get_shape()->get_debug_mesh()->get_aabb());
 					found_valid_shape = true;
 				}
-				for (I = I->next(); I; I = I->next()) {
-					CollisionShape3D *col_shape = I->get();
+
+				for (++I; I; ++I) {
+					CollisionShape3D *col_shape = *I;
 					if (col_shape->get_shape().is_valid()) {
 						aabb.merge_with(col_shape->get_global_transform().xform(col_shape->get_shape()->get_debug_mesh()->get_aabb()));
 						found_valid_shape = true;
@@ -6754,7 +6755,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				}
 			}
 			if (!found_valid_shape && vi.size()) {
-				AABB aabb = vi.front()->get()->get_transformed_aabb();
+				AABB aabb = (*vi.begin())->get_transformed_aabb();
 				for (const VisualInstance3D *I : vi) {
 					aabb.merge_with(I->get_transformed_aabb());
 				}
@@ -6798,7 +6799,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Dictionary d = snap_data[node];
 			Vector3 from = d["from"];
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
-			RBSet<RID> excluded = _get_physics_bodies_rid(sp);
+			HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
 			PhysicsDirectSpaceState3D::RayParameters ray_params;
 			ray_params.from = from;
@@ -6820,7 +6821,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				Dictionary d = snap_data[node];
 				Vector3 from = d["from"];
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
-				RBSet<RID> excluded = _get_physics_bodies_rid(sp);
+				HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
 				PhysicsDirectSpaceState3D::RayParameters ray_params;
 				ray_params.from = from;

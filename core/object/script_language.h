@@ -155,7 +155,7 @@ public:
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
-	virtual void get_members(RBSet<StringName> *p_constants) {}
+	virtual void get_members(HashSet<StringName> *p_constants) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -283,7 +283,7 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const = 0;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;

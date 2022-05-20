@@ -494,7 +494,7 @@ Control::CursorShape AnimationNodeStateMachineEditor::get_cursor_shape(const Poi
 
 void AnimationNodeStateMachineEditor::_group_selected_nodes() {
 	if (!selected_nodes.is_empty()) {
-		if (selected_nodes.size() == 1 && (selected_nodes.front()->get() == state_machine->start_node || selected_nodes.front()->get() == state_machine->end_node))
+		if (selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node))
 			return;
 
 		Ref<AnimationNodeStateMachine> group_sm = memnew(AnimationNodeStateMachine);
@@ -609,7 +609,7 @@ void AnimationNodeStateMachineEditor::_group_selected_nodes() {
 
 void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 	bool find = false;
-	RBSet<StringName> new_selected_nodes;
+	HashSet<StringName> new_selected_nodes;
 
 	for (const StringName &E : selected_nodes) {
 		Ref<AnimationNodeStateMachine> group_sm = state_machine->get_node(E);
@@ -1846,7 +1846,7 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
 		tool_erase_hb->show();
 		bool nothing_selected = selected_nodes.is_empty() && selected_transition_from == StringName() && selected_transition_to == StringName();
-		bool start_end_selected = selected_nodes.size() == 1 && (selected_nodes.front()->get() == state_machine->start_node || selected_nodes.front()->get() == state_machine->end_node);
+		bool start_end_selected = selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node);
 		tool_erase->set_disabled(nothing_selected || start_end_selected);
 
 		if (selected_nodes.is_empty() || start_end_selected) {
@@ -1854,7 +1854,7 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 			tool_group->set_visible(true);
 			tool_ungroup->set_visible(false);
 		} else {
-			Ref<AnimationNodeStateMachine> ansm = state_machine->get_node(selected_nodes.front()->get());
+			Ref<AnimationNodeStateMachine> ansm = state_machine->get_node(*selected_nodes.begin());
 
 			if (selected_nodes.size() == 1 && ansm.is_valid()) {
 				tool_group->set_disabled(true);

@@ -53,7 +53,7 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	if (pinned.is_empty()) {
 		return Array();
 	}
-	RBSet<StringName> storable_properties;
+	HashSet<StringName> storable_properties;
 	p_node->get_storable_properties(storable_properties);
 	int i = 0;
 	do {

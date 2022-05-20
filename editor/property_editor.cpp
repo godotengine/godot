@@ -137,7 +137,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",", i), &extensions);
 					}
 
-					RBSet<String> valid_extensions;
+					HashSet<String> valid_extensions;
 					for (const String &E : extensions) {
 						valid_extensions.insert(E);
 					}
@@ -875,7 +875,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 					String base = hint_text.get_slice(",", i);
 
-					RBSet<String> valid_inheritors;
+					HashSet<String> valid_inheritors;
 					valid_inheritors.insert(base);
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);

@@ -139,8 +139,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
-	RBSet<Ref<Mesh>> mesh_set;
-	RBSet<Ref<Material>> material_set;
+	HashSet<Ref<Mesh>> mesh_set;
+	HashSet<Ref<Material>> material_set;
 
 	String selected_type;
 	String selected_id;

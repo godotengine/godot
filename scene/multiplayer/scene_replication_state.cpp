@@ -93,8 +93,8 @@ bool SceneReplicationState::update_sync_time(const ObjectID &p_id, uint64_t p_ms
 	return false;
 }
 
-const RBSet<ObjectID> SceneReplicationState::get_known_nodes(int p_peer) {
-	ERR_FAIL_COND_V(!peers_info.has(p_peer), RBSet<ObjectID>());
+const HashSet<ObjectID> SceneReplicationState::get_known_nodes(int p_peer) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), HashSet<ObjectID>());
 	return peers_info[p_peer].known_nodes;
 }
 

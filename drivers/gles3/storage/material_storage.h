@@ -89,7 +89,7 @@ struct Shader {
 	String code;
 	RS::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
-	RBSet<Material *> owners;
+	HashSet<Material *> owners;
 };
 
 /* Material structs */
@@ -384,7 +384,7 @@ struct GlobalVariables {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
-		RBSet<RID> texture_materials; // materials using this
+		HashSet<RID> texture_materials; // materials using this
 
 		RS::GlobalVariableType type;
 		Variant value;

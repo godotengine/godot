@@ -101,8 +101,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VkDevice device = VK_NULL_HANDLE;
 
-	HashMap<RID, RBSet<RID>> dependency_map; //IDs to IDs that depend on it
-	HashMap<RID, RBSet<RID>> reverse_dependency_map; //same as above, but in reverse
+	HashMap<RID, HashSet<RID>> dependency_map; //IDs to IDs that depend on it
+	HashMap<RID, HashSet<RID>> reverse_dependency_map; //same as above, but in reverse
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
@@ -702,7 +702,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage;
 	};
 
-	RBMap<DescriptorPoolKey, RBSet<DescriptorPool *>> descriptor_pools;
+	RBMap<DescriptorPoolKey, HashSet<DescriptorPool *>> descriptor_pools;
 	uint32_t max_descriptors_per_pool = 0;
 
 	DescriptorPool *_descriptor_pool_allocate(const DescriptorPoolKey &p_key);
@@ -923,7 +923,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		};
 
 		struct State {
-			RBSet<Texture *> textures_to_sampled_layout;
+			HashSet<Texture *> textures_to_sampled_layout;
 			SetState sets[MAX_UNIFORM_SETS];
 			uint32_t set_count = 0;
 			RID pipeline;

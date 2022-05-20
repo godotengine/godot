@@ -34,6 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/rb_set.h"
 
 class EditorPlugin;
 class InputEvent;
@@ -77,7 +78,7 @@ private:
 
 	static Ref<EditorSettings> singleton;
 
-	RBSet<String> changed_settings;
+	HashSet<String> changed_settings;
 
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;

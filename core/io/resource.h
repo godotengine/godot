@@ -54,7 +54,7 @@ public:
 	virtual String get_base_extension() const { return "res"; }
 
 private:
-	RBSet<ObjectID> owners;
+	HashSet<ObjectID> owners;
 
 	friend class ResBase;
 	friend class ResourceCache;

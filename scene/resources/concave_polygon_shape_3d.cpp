@@ -33,7 +33,7 @@
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
-	RBSet<DrawEdge> edges;
+	HashSet<DrawEdge, DrawEdge> edges;
 
 	int index_count = faces.size();
 	ERR_FAIL_COND_V((index_count % 3) != 0, Vector<Vector3>());

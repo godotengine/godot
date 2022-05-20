@@ -33,6 +33,7 @@
 
 #include "editor/import/resource_importer_dynamic_font.h"
 
+#include "core/templates/rb_set.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/option_button.h"

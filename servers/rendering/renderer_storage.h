@@ -117,7 +117,7 @@ public:
 	private:
 		friend struct Dependency;
 		uint32_t instance_version = 0;
-		RBSet<Dependency *> dependencies;
+		HashSet<Dependency *> dependencies;
 	};
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;

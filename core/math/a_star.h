@@ -92,7 +92,10 @@ class AStar3D : public RefCounted {
 		};
 		unsigned char direction = NONE;
 
-		bool operator<(const Segment &p_s) const { return key < p_s.key; }
+		static uint32_t hash(const Segment &p_seg) {
+			return hash_one_uint64(p_seg.key);
+		}
+		bool operator==(const Segment &p_s) const { return key == p_s.key; }
 
 		Segment() {}
 		Segment(int p_from, int p_to) {
@@ -112,7 +115,7 @@ class AStar3D : public RefCounted {
 	uint64_t pass = 1;
 
 	OAHashMap<int, Point *> points;
-	RBSet<Segment> segments;
+	HashSet<Segment, Segment> segments;
 
 	bool _solve(Point *begin_point, Point *end_point);
 

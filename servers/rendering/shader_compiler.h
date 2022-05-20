@@ -103,20 +103,20 @@ private:
 
 	String _get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat);
 
-	void _dump_function_deps(const ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, RBSet<StringName> &added);
+	void _dump_function_deps(const ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added);
 	String _dump_node_code(const ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_scope = true);
 
 	const ShaderLanguage::ShaderNode *shader = nullptr;
 	const ShaderLanguage::FunctionNode *function = nullptr;
 	StringName current_func_name;
 	StringName time_name;
-	RBSet<StringName> texture_functions;
+	HashSet<StringName> texture_functions;
 
-	RBSet<StringName> used_name_defines;
-	RBSet<StringName> used_flag_pointers;
-	RBSet<StringName> used_rmode_defines;
-	RBSet<StringName> internal_functions;
-	RBSet<StringName> fragment_varyings;
+	HashSet<StringName> used_name_defines;
+	HashSet<StringName> used_flag_pointers;
+	HashSet<StringName> used_rmode_defines;
+	HashSet<StringName> internal_functions;
+	HashSet<StringName> fragment_varyings;
 
 	DefaultIdentifierActions actions;
 

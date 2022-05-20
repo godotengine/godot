@@ -717,7 +717,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> nodes = editor_selection->get_selected_node_list();
-			RBSet<Node *> nodeset;
+			HashSet<Node *> nodeset;
 			for (Node *E : nodes) {
 				nodeset.insert(E);
 			}
@@ -1528,8 +1528,8 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, RBSet<int>> *r_rem_anims) {
-	HashMap<Ref<Animation>, RBSet<int>> rem_anims;
+void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims) {
+	HashMap<Ref<Animation>, HashSet<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
 	}
@@ -1581,14 +1581,14 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 				for (const StringName &E : anims) {
 					Ref<Animation> anim = ap->get_animation(E);
 					if (!r_rem_anims->has(anim)) {
-						r_rem_anims->insert(anim, RBSet<int>());
-						RBSet<int> &ran = r_rem_anims->find(anim)->value;
+						r_rem_anims->insert(anim, HashSet<int>());
+						HashSet<int> &ran = r_rem_anims->find(anim)->value;
 						for (int i = 0; i < anim->get_track_count(); i++) {
 							ran.insert(i);
 						}
 					}
 
-					RBSet<int> &ran = r_rem_anims->find(anim)->value;
+					HashSet<int> &ran = r_rem_anims->find(anim)->value;
 
 					if (anim.is_null()) {
 						continue;
@@ -1611,11 +1611,11 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 								//will be erased
 
 								int idx = 0;
-								RBSet<int>::Element *EI = ran.front();
+								HashSet<int>::Iterator EI = ran.begin();
 								ERR_FAIL_COND(!EI); //bug
-								while (EI->get() != i) {
+								while (*EI != i) {
 									idx++;
-									EI = EI->next();
+									++EI;
 									ERR_FAIL_COND(!EI); //another bug
 								}
 

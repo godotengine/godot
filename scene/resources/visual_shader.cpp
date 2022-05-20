@@ -1180,7 +1180,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	StringBuilder global_code_per_node;
 	HashMap<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
-	RBSet<StringName> classes;
+	HashSet<StringName> classes;
 
 	global_code += String() + "shader_type canvas_item;\n";
 
@@ -1222,7 +1222,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	code += "\nvoid fragment() {\n";
 
-	RBSet<int> processed;
+	HashSet<int> processed;
 	Error err = _write_node(p_type, &global_code, &global_code_per_node, &global_code_per_func, code, default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
 	ERR_FAIL_COND_V(err != OK, String());
 
@@ -1551,7 +1551,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//render modes
 
 	HashMap<String, String> blend_mode_enums;
-	RBSet<String> toggles;
+	HashSet<String> toggles;
 
 	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
 
@@ -1611,7 +1611,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, RBSet<int> &processed, bool for_preview, RBSet<StringName> &r_classes) const {
+Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, HashSet<int> &processed, bool for_preview, HashSet<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
 	if (vsnode->is_disabled()) {
@@ -2136,7 +2136,7 @@ void VisualShader::_update_shader() const {
 	HashMap<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
-	RBSet<StringName> classes;
+	HashSet<StringName> classes;
 	HashMap<int, int> insertion_pos;
 	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
 
@@ -2181,7 +2181,7 @@ void VisualShader::_update_shader() const {
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
 
 	String global_expressions;
-	RBSet<String> used_uniform_names;
+	HashSet<String> used_uniform_names;
 	List<VisualShaderNodeUniform *> uniforms;
 	HashMap<int, List<int>> emitters;
 	HashMap<int, List<int>> varying_setters;
@@ -2270,7 +2270,7 @@ void VisualShader::_update_shader() const {
 	}
 
 	HashMap<int, String> code_map;
-	RBSet<int> empty_funcs;
+	HashSet<int> empty_funcs;
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
@@ -2282,7 +2282,7 @@ void VisualShader::_update_shader() const {
 		VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
 		StringBuilder func_code;
-		RBSet<int> processed;
+		HashSet<int> processed;
 
 		bool is_empty_func = false;
 		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG) {

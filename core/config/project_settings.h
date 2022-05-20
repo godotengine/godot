@@ -91,7 +91,7 @@ protected:
 	bool using_datapack = false;
 	List<String> input_presets;
 
-	RBSet<String> custom_features;
+	HashSet<String> custom_features;
 	HashMap<StringName, StringName> feature_overrides;
 
 	HashMap<StringName, AutoloadInfo> autoloads;
