@@ -99,7 +99,7 @@ Ref<Environment> World3D::get_fallback_environment() const {
 	return fallback_environment;
 }
 
-void World3D::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
+void World3D::set_camera_effects(const Ref<CameraEffects3D> &p_camera_effects) {
 	camera_effects = p_camera_effects;
 	if (camera_effects.is_valid()) {
 		RS::get_singleton()->scenario_set_camera_effects(scenario, camera_effects->get_rid());
@@ -108,7 +108,7 @@ void World3D::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
 	}
 }
 
-Ref<CameraEffects> World3D::get_camera_effects() const {
+Ref<CameraEffects3D> World3D::get_camera_effects() const {
 	return camera_effects;
 }
 
@@ -129,7 +129,7 @@ void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects3D"), "set_camera_effects", "get_camera_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");

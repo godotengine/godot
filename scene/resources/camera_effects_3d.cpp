@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  camera_effects.cpp                                                   */
+/*  camera_effects_3d.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,82 +28,82 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "camera_effects.h"
+#include "camera_effects_3d.h"
 
 #include "servers/rendering_server.h"
 
-RID CameraEffects::get_rid() const {
+RID CameraEffects3D::get_rid() const {
 	return camera_effects;
 }
 
 // DOF blur
 
-void CameraEffects::set_dof_blur_far_enabled(bool p_enabled) {
+void CameraEffects3D::set_dof_blur_far_enabled(bool p_enabled) {
 	dof_blur_far_enabled = p_enabled;
 	_update_dof_blur();
 	notify_property_list_changed();
 }
 
-bool CameraEffects::is_dof_blur_far_enabled() const {
+bool CameraEffects3D::is_dof_blur_far_enabled() const {
 	return dof_blur_far_enabled;
 }
 
-void CameraEffects::set_dof_blur_far_distance(float p_distance) {
+void CameraEffects3D::set_dof_blur_far_distance(float p_distance) {
 	dof_blur_far_distance = p_distance;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_far_distance() const {
+float CameraEffects3D::get_dof_blur_far_distance() const {
 	return dof_blur_far_distance;
 }
 
-void CameraEffects::set_dof_blur_far_transition(float p_distance) {
+void CameraEffects3D::set_dof_blur_far_transition(float p_distance) {
 	dof_blur_far_transition = p_distance;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_far_transition() const {
+float CameraEffects3D::get_dof_blur_far_transition() const {
 	return dof_blur_far_transition;
 }
 
-void CameraEffects::set_dof_blur_near_enabled(bool p_enabled) {
+void CameraEffects3D::set_dof_blur_near_enabled(bool p_enabled) {
 	dof_blur_near_enabled = p_enabled;
 	_update_dof_blur();
 	notify_property_list_changed();
 }
 
-bool CameraEffects::is_dof_blur_near_enabled() const {
+bool CameraEffects3D::is_dof_blur_near_enabled() const {
 	return dof_blur_near_enabled;
 }
 
-void CameraEffects::set_dof_blur_near_distance(float p_distance) {
+void CameraEffects3D::set_dof_blur_near_distance(float p_distance) {
 	dof_blur_near_distance = p_distance;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_near_distance() const {
+float CameraEffects3D::get_dof_blur_near_distance() const {
 	return dof_blur_near_distance;
 }
 
-void CameraEffects::set_dof_blur_near_transition(float p_distance) {
+void CameraEffects3D::set_dof_blur_near_transition(float p_distance) {
 	dof_blur_near_transition = p_distance;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_near_transition() const {
+float CameraEffects3D::get_dof_blur_near_transition() const {
 	return dof_blur_near_transition;
 }
 
-void CameraEffects::set_dof_blur_amount(float p_amount) {
+void CameraEffects3D::set_dof_blur_amount(float p_amount) {
 	dof_blur_amount = p_amount;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_amount() const {
+float CameraEffects3D::get_dof_blur_amount() const {
 	return dof_blur_amount;
 }
 
-void CameraEffects::_update_dof_blur() {
+void CameraEffects3D::_update_dof_blur() {
 	RS::get_singleton()->camera_effects_set_dof_blur(
 			camera_effects,
 			dof_blur_far_enabled,
@@ -117,26 +117,26 @@ void CameraEffects::_update_dof_blur() {
 
 // Custom exposure
 
-void CameraEffects::set_override_exposure_enabled(bool p_enabled) {
+void CameraEffects3D::set_override_exposure_enabled(bool p_enabled) {
 	override_exposure_enabled = p_enabled;
 	_update_override_exposure();
 	notify_property_list_changed();
 }
 
-bool CameraEffects::is_override_exposure_enabled() const {
+bool CameraEffects3D::is_override_exposure_enabled() const {
 	return override_exposure_enabled;
 }
 
-void CameraEffects::set_override_exposure(float p_exposure) {
+void CameraEffects3D::set_override_exposure(float p_exposure) {
 	override_exposure = p_exposure;
 	_update_override_exposure();
 }
 
-float CameraEffects::get_override_exposure() const {
+float CameraEffects3D::get_override_exposure() const {
 	return override_exposure;
 }
 
-void CameraEffects::_update_override_exposure() {
+void CameraEffects3D::_update_override_exposure() {
 	RS::get_singleton()->camera_effects_set_custom_exposure(
 			camera_effects,
 			override_exposure_enabled,
@@ -145,7 +145,7 @@ void CameraEffects::_update_override_exposure() {
 
 // Private methods, constructor and destructor
 
-void CameraEffects::_validate_property(PropertyInfo &property) const {
+void CameraEffects3D::_validate_property(PropertyInfo &property) const {
 	if ((!dof_blur_far_enabled && (property.name == "dof_blur_far_distance" || property.name == "dof_blur_far_transition")) ||
 			(!dof_blur_near_enabled && (property.name == "dof_blur_near_distance" || property.name == "dof_blur_near_transition")) ||
 			(!override_exposure_enabled && property.name == "override_exposure")) {
@@ -153,25 +153,25 @@ void CameraEffects::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void CameraEffects::_bind_methods() {
+void CameraEffects3D::_bind_methods() {
 	// DOF blur
 
-	ClassDB::bind_method(D_METHOD("set_dof_blur_far_enabled", "enabled"), &CameraEffects::set_dof_blur_far_enabled);
-	ClassDB::bind_method(D_METHOD("is_dof_blur_far_enabled"), &CameraEffects::is_dof_blur_far_enabled);
-	ClassDB::bind_method(D_METHOD("set_dof_blur_far_distance", "distance"), &CameraEffects::set_dof_blur_far_distance);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_far_distance"), &CameraEffects::get_dof_blur_far_distance);
-	ClassDB::bind_method(D_METHOD("set_dof_blur_far_transition", "distance"), &CameraEffects::set_dof_blur_far_transition);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_far_transition"), &CameraEffects::get_dof_blur_far_transition);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_far_enabled", "enabled"), &CameraEffects3D::set_dof_blur_far_enabled);
+	ClassDB::bind_method(D_METHOD("is_dof_blur_far_enabled"), &CameraEffects3D::is_dof_blur_far_enabled);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_far_distance", "distance"), &CameraEffects3D::set_dof_blur_far_distance);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_far_distance"), &CameraEffects3D::get_dof_blur_far_distance);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_far_transition", "distance"), &CameraEffects3D::set_dof_blur_far_transition);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_far_transition"), &CameraEffects3D::get_dof_blur_far_transition);
 
-	ClassDB::bind_method(D_METHOD("set_dof_blur_near_enabled", "enabled"), &CameraEffects::set_dof_blur_near_enabled);
-	ClassDB::bind_method(D_METHOD("is_dof_blur_near_enabled"), &CameraEffects::is_dof_blur_near_enabled);
-	ClassDB::bind_method(D_METHOD("set_dof_blur_near_distance", "distance"), &CameraEffects::set_dof_blur_near_distance);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_near_distance"), &CameraEffects::get_dof_blur_near_distance);
-	ClassDB::bind_method(D_METHOD("set_dof_blur_near_transition", "distance"), &CameraEffects::set_dof_blur_near_transition);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_near_transition"), &CameraEffects::get_dof_blur_near_transition);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_near_enabled", "enabled"), &CameraEffects3D::set_dof_blur_near_enabled);
+	ClassDB::bind_method(D_METHOD("is_dof_blur_near_enabled"), &CameraEffects3D::is_dof_blur_near_enabled);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_near_distance", "distance"), &CameraEffects3D::set_dof_blur_near_distance);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_near_distance"), &CameraEffects3D::get_dof_blur_near_distance);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_near_transition", "distance"), &CameraEffects3D::set_dof_blur_near_transition);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_near_transition"), &CameraEffects3D::get_dof_blur_near_transition);
 
-	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "amount"), &CameraEffects::set_dof_blur_amount);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "amount"), &CameraEffects3D::set_dof_blur_amount);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects3D::get_dof_blur_amount);
 
 	ADD_GROUP("DOF Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
@@ -184,23 +184,23 @@ void CameraEffects::_bind_methods() {
 
 	// Override exposure
 
-	ClassDB::bind_method(D_METHOD("set_override_exposure_enabled", "enabled"), &CameraEffects::set_override_exposure_enabled);
-	ClassDB::bind_method(D_METHOD("is_override_exposure_enabled"), &CameraEffects::is_override_exposure_enabled);
-	ClassDB::bind_method(D_METHOD("set_override_exposure", "exposure"), &CameraEffects::set_override_exposure);
-	ClassDB::bind_method(D_METHOD("get_override_exposure"), &CameraEffects::get_override_exposure);
+	ClassDB::bind_method(D_METHOD("set_override_exposure_enabled", "enabled"), &CameraEffects3D::set_override_exposure_enabled);
+	ClassDB::bind_method(D_METHOD("is_override_exposure_enabled"), &CameraEffects3D::is_override_exposure_enabled);
+	ClassDB::bind_method(D_METHOD("set_override_exposure", "exposure"), &CameraEffects3D::set_override_exposure);
+	ClassDB::bind_method(D_METHOD("get_override_exposure"), &CameraEffects3D::get_override_exposure);
 
 	ADD_GROUP("Override Exposure", "override_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_exposure_enabled"), "set_override_exposure_enabled", "is_override_exposure_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "override_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_override_exposure", "get_override_exposure");
 }
 
-CameraEffects::CameraEffects() {
+CameraEffects3D::CameraEffects3D() {
 	camera_effects = RS::get_singleton()->camera_effects_create();
 
 	_update_dof_blur();
 	_update_override_exposure();
 }
 
-CameraEffects::~CameraEffects() {
+CameraEffects3D::~CameraEffects3D() {
 	RS::get_singleton()->free(camera_effects);
 }

@@ -79,7 +79,7 @@ void WorldEnvironment::_update_current_camera_effects() {
 	if (first) {
 		get_viewport()->find_world_3d()->set_camera_effects(first->camera_effects);
 	} else {
-		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
+		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects3D>());
 	}
 
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
@@ -110,7 +110,7 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 	return environment;
 }
 
-void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
+void WorldEnvironment::set_camera_effects(const Ref<CameraEffects3D> &p_camera_effects) {
 	if (camera_effects == p_camera_effects) {
 		return;
 	}
@@ -131,7 +131,7 @@ void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_eff
 	}
 }
 
-Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
+Ref<CameraEffects3D> WorldEnvironment::get_camera_effects() const {
 	return camera_effects;
 }
 
@@ -139,7 +139,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!environment.is_valid() && !camera_effects.is_valid()) {
-		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
+		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects3D resource, or both."));
 	}
 
 	if (!is_inside_tree()) {
@@ -164,7 +164,7 @@ void WorldEnvironment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_camera_effects", "env"), &WorldEnvironment::set_camera_effects);
 	ClassDB::bind_method(D_METHOD("get_camera_effects"), &WorldEnvironment::get_camera_effects);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects3D"), "set_camera_effects", "get_camera_effects");
 }
 
 WorldEnvironment::WorldEnvironment() {

@@ -33,7 +33,7 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
-#include "scene/resources/camera_effects.h"
+#include "scene/resources/camera_effects_3d.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
@@ -81,7 +81,7 @@ private:
 	uint32_t layers = 0xfffff;
 
 	Ref<Environment> environment;
-	Ref<CameraEffects> effects;
+	Ref<CameraEffects3D> effects;
 
 	// void _camera_make_current(Node *p_camera);
 	friend class Viewport;
@@ -158,8 +158,8 @@ public:
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
-	void set_effects(const Ref<CameraEffects> &p_effects);
-	Ref<CameraEffects> get_effects() const;
+	void set_effects(const Ref<CameraEffects3D> &p_effects);
+	Ref<CameraEffects3D> get_effects() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  camera_effects.h                                                     */
+/*  camera_effects_3d.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,8 +34,8 @@
 #include "core/io/resource.h"
 #include "core/templates/rid.h"
 
-class CameraEffects : public Resource {
-	GDCLASS(CameraEffects, Resource);
+class CameraEffects3D : public Resource {
+	GDCLASS(CameraEffects3D, Resource);
 
 private:
 	RID camera_effects;
@@ -88,8 +88,8 @@ public:
 	void set_override_exposure(float p_exposure);
 	float get_override_exposure() const;
 
-	CameraEffects();
-	~CameraEffects();
+	CameraEffects3D();
+	~CameraEffects3D();
 };
 
 #endif // CAMERA_EFFECTS_H

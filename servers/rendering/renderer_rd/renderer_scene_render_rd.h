@@ -432,7 +432,7 @@ private:
 
 	/* CAMERA EFFECTS */
 
-	struct CameraEffects {
+	struct CameraEffects3D {
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
 		float dof_blur_far_transition = 5;
@@ -454,7 +454,7 @@ private:
 	float sss_scale = 0.05;
 	float sss_depth_scale = 0.01;
 
-	mutable RID_Owner<CameraEffects, true> camera_effects_owner;
+	mutable RID_Owner<CameraEffects3D, true> camera_effects_owner;
 
 	/* RENDER BUFFERS */
 
@@ -1123,7 +1123,7 @@ public:
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
 	bool camera_effects_uses_dof(RID p_camera_effects) {
-		CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
+		CameraEffects3D *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 
 		return camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0;
 	}

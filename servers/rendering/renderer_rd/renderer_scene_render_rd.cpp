@@ -1365,7 +1365,7 @@ RID RendererSceneRenderRD::camera_effects_allocate() {
 	return camera_effects_owner.allocate_rid();
 }
 void RendererSceneRenderRD::camera_effects_initialize(RID p_rid) {
-	camera_effects_owner.initialize_rid(p_rid, CameraEffects());
+	camera_effects_owner.initialize_rid(p_rid, CameraEffects3D());
 }
 
 void RendererSceneRenderRD::camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) {
@@ -1378,7 +1378,7 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokeh
 }
 
 void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
+	CameraEffects3D *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
 	camfx->dof_blur_far_enabled = p_far_enable;
@@ -1393,7 +1393,7 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bo
 }
 
 void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
+	CameraEffects3D *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
 	camfx->override_exposure_enabled = p_enable;
@@ -2382,7 +2382,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 	// Glow and override exposure (if enabled).
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
+	CameraEffects3D *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 	bool can_use_storage = _render_buffers_can_be_storage();
@@ -2612,7 +2612,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 	// Override exposure (if enabled).
-	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
+	CameraEffects3D *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
