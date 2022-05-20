@@ -141,7 +141,7 @@ void main() {
 	vec3 N = texelCoordToVec(uv, face_id);
 
 #ifdef MODE_DIRECT_WRITE
-	frag_color = vec4(textureCubeLod(source_cube, N, 0.0).rgb, 1.0);
+	frag_color = vec4(textureLod(source_cube, N, 0.0).rgb, 1.0);
 #else
 
 	vec4 sum = vec4(0.0);
@@ -171,7 +171,7 @@ void main() {
 
 			float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(solid_angle_sample / solid_angle_texel);
 
-			vec3 val = textureCubeLod(source_cube, L, mipLevel).rgb;
+			vec3 val = textureLod(source_cube, L, mipLevel).rgb;
 			// Mix using linear
 			val = srgb_to_linear(val);
 
