@@ -503,7 +503,7 @@ public:
 		BlockNode *parent_block = nullptr;
 
 		enum BlockType {
-			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_STANDARD,
 			BLOCK_TYPE_FOR_INIT,
 			BLOCK_TYPE_FOR_CONDITION,
 			BLOCK_TYPE_FOR_EXPRESSION,
@@ -512,7 +512,7 @@ public:
 			BLOCK_TYPE_DEFAULT,
 		};
 
-		int block_type = BLOCK_TYPE_STANDART;
+		int block_type = BLOCK_TYPE_STANDARD;
 		SubClassTag block_tag = SubClassTag::TAG_GLOBAL;
 
 		struct Variable {
