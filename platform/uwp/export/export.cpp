@@ -1359,7 +1359,7 @@ public:
 		EditorNode::progress_add_task("project_files", "Project Files", 100);
 		packager.set_progress_task("project_files");
 
-		err = export_project_files(p_preset, save_appx_file, &packager);
+		err = export_project_files(p_preset, save_appx_file, &packager, copy_shared_objects);
 
 		EditorNode::progress_end_task("project_files");
 
@@ -1432,6 +1432,10 @@ public:
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
+	static Error copy_shared_objects(void *p_userdata, const SharedObject &p_so) {
+		return save_appx_file(p_userdata, p_so.path, FileAccess::get_file_as_array(p_so.path), 0, 1);
 	}
 
 	EditorExportPlatformUWP() {
