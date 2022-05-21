@@ -83,7 +83,7 @@ void EditorHelp::_class_list_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_select(const String &p_select) {
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
 		if (select.find(".") != -1) {
@@ -125,36 +125,39 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			return;
 		}
 
-		if (link.find(".") != -1) {
-			emit_signal("go_to_help", topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
+		// Case order is important here to correctly handle edge cases like Variant.Type in @GlobalScope.
+		if (table->has(link)) {
+			// Found in the current page.
+			class_desc->scroll_to_line((*table)[link]);
 		} else {
-			if (table->has(link)) {
-				// Found in the current page
-				class_desc->scroll_to_line((*table)[link]);
-			} else {
-				if (topic == "class_enum") {
-					// Try to find the enum in @GlobalScope
-					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+			// Look for link in @GlobalScope
+			// Note that a link like @GlobalScope.enum_name won't be found in this section, only enum_name will be
+			if (topic == "class_enum") {
+				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-					for (int i = 0; i < cd.constants.size(); i++) {
-						if (cd.constants[i].enumeration == link) {
-							// Found in @GlobalScope
-							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
-							break;
-						}
-					}
-				} else if (topic == "class_constant") {
-					// Try to find the constant in @GlobalScope
-					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
-
-					for (int i = 0; i < cd.constants.size(); i++) {
-						if (cd.constants[i].name == link) {
-							// Found in @GlobalScope
-							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
-							break;
-						}
+				for (int i = 0; i < cd.constants.size(); i++) {
+					if (cd.constants[i].enumeration == link) {
+						// Found in @GlobalScope.
+						emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+						return;
 					}
 				}
+			} else if (topic == "class_constant") {
+				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+
+				for (int i = 0; i < cd.constants.size(); i++) {
+					if (cd.constants[i].name == link) {
+						// Found in @GlobalScope.
+						emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+						return;
+					}
+				}
+			}
+
+			if (link.find(".") != -1) {
+				// Parse the link as Class.X.
+				int class_end = link.find(".");
+				emit_signal("go_to_help", topic + ":" + link.substr(0, class_end) + ":" + link.substr(class_end + 1, link.length()));
 			}
 		}
 	} else if (p_select.begins_with("http")) {
@@ -197,9 +200,9 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->push_color(type_color);
 	if (can_ref) {
 		if (p_enum.empty()) {
-			class_desc->push_meta("#" + t); //class
+			class_desc->push_meta("#" + t); // class
 		} else {
-			class_desc->push_meta("$" + p_enum); //class
+			class_desc->push_meta("$" + p_enum); // class
 		}
 	}
 	class_desc->add_text(t);
@@ -226,7 +229,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 }
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
-	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
+	method_line[p_method.name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
 
@@ -327,7 +330,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	description_line = 0;
 
 	if (p_class == edited_class) {
-		return OK; //already there
+		return OK; // Already there.
 	}
 
 	edited_class = p_class;
@@ -348,7 +351,7 @@ void EditorHelp::_update_doc() {
 
 	_init_colors();
 
-	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
+	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
 	Ref<Font> doc_bold_font = get_font("doc_bold", "EditorFonts");
@@ -515,7 +518,7 @@ void EditorHelp::_update_doc() {
 		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
-			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 			// Property type.
 			class_desc->push_cell();
@@ -524,7 +527,7 @@ void EditorHelp::_update_doc() {
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
 			class_desc->pop();
 			class_desc->pop();
-			class_desc->pop(); // cell
+			class_desc->pop(); // Cell
 
 			bool describe = false;
 
@@ -563,7 +566,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop();
 			class_desc->pop();
-			class_desc->pop(); // cell
+			class_desc->pop(); // Cell
 
 			// Property value.
 			class_desc->push_cell();
@@ -592,12 +595,12 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->pop();
-			class_desc->pop(); // cell
+			class_desc->pop(); // Cell
 		}
 
-		class_desc->pop(); // table
+		class_desc->pop(); // Table
 		class_desc->pop();
-		class_desc->pop(); // font
+		class_desc->pop(); // Font
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -648,9 +651,9 @@ void EditorHelp::_update_doc() {
 
 			if (any_previous && !m.empty()) {
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // Cell
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // Cell
 			}
 
 			String group_prefix;
@@ -713,7 +716,7 @@ void EditorHelp::_update_doc() {
 		data_type_names["style"] = TTR("Styles");
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 			if (theme_data_type != cd.theme_properties[i].data_type) {
 				theme_data_type = cd.theme_properties[i].data_type;
@@ -798,7 +801,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_indent(1);
 
 		for (int i = 0; i < cd.signals.size(); i++) {
-			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
 			class_desc->push_color(headline_color);
@@ -830,7 +833,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(symbol_color);
 			class_desc->add_text(")");
 			class_desc->pop();
-			class_desc->pop(); // end monofont
+			class_desc->pop(); // End monofont
 			if (cd.signals[i].description != "") {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
@@ -911,7 +914,7 @@ void EditorHelp::_update_doc() {
 						enumValuesContainer[enum_list[i].name] = enumStartingLine;
 					}
 
-					// Add the enum constant line to the constant_line map so we can locate it as a constant
+					// Add the enum constant line to the constant_line map so we can locate it as a constant.
 					constant_line[enum_list[i].name] = class_desc->get_line_count() - 2;
 
 					class_desc->push_font(doc_code_font);
@@ -1210,7 +1213,7 @@ void EditorHelp::_request_help(const String &p_string) {
 	if (err == OK) {
 		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	}
-	//100 palabras
+	// 100 palabras
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
@@ -1221,7 +1224,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		name = p_topic.get_slice(":", 2);
 	}
 
-	_request_help(clss); //first go to class
+	_request_help(clss); // First go to class.
 
 	int line = 0;
 
@@ -1287,7 +1290,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
-	// remove extra new lines around code blocks
+	// Remove extra new lines around code blocks.
 	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
 	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
 
@@ -1311,7 +1314,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		}
 
 		if (brk_pos == bbcode.length()) {
-			break; //nothing else to add
+			break; // Nothing else to add.
 		}
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
@@ -1377,38 +1380,38 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			pos = brk_end + 1;
 
 		} else if (tag == "b") {
-			//use bold font
+			// Use bold font.
 			p_rt->push_font(doc_bold_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
-			//use italics font
+			// Use italics font.
 			p_rt->push_color(font_color_hl);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag == "codeblock") {
-			//use monospace font
+			// Use monospace font.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_color(code_color);
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
-			//align to center
+			// Align to center.
 			p_rt->push_align(RichTextLabel::ALIGN_CENTER);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
-			//force a line break
+			// Force a line break.
 			p_rt->add_newline();
 			pos = brk_end + 1;
 		} else if (tag == "u") {
-			//use underline
+			// Use underline.
 			p_rt->push_underline();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
-			//use strikethrough
+			// Use strikethrough.
 			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -1481,7 +1484,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			} else if (col == "yellow") {
 				color = Color(1, 1, 0);
 			} else {
-				color = Color(0, 0, 0); //base_color;
+				color = Color(0, 0, 0); // base_color;
 			}
 
 			p_rt->push_color(color);
@@ -1502,7 +1505,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front("font");
 
 		} else {
-			p_rt->add_text("["); //ignore
+			p_rt->add_text("["); // ignore
 			pos = brk_pos + 1;
 		}
 	}
@@ -1517,7 +1520,7 @@ void EditorHelp::generate_doc() {
 	doc->generate(true);
 	DocData compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
-	doc->merge_from(compdoc); //ensure all is up to date
+	doc->merge_from(compdoc); // Ensure all is up to date.
 }
 
 void EditorHelp::_notification(int p_what) {
@@ -1628,7 +1631,7 @@ void EditorHelpBit::_go_to_help(String p_what) {
 }
 
 void EditorHelpBit::_meta_clicked(String p_select) {
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
@@ -1646,7 +1649,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 		String m = p_select.substr(1, p_select.length());
 
 		if (m.find(".") != -1) {
-			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
+			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); // Must go somewhere else.
 		}
 	}
 }
