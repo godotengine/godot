@@ -98,7 +98,7 @@
 		</signal>
 		<signal name="script_classes_loaded">
 			<description>
-				Emitted once all scripts have been loaded. This happens after filesystem_changed is emitted.
+				Emitted once all scripts have been loaded. This happens after [signal filesystem_changed] is emitted.
 			</description>
 		</signal>
 		<signal name="sources_changed">
