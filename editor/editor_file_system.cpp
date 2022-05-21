@@ -1241,7 +1241,7 @@ void EditorFileSystem::scan_changes() {
 			sp.hi = 1;
 			sp.low = 0;
 			scan_total = 0;
-			// Accrues changess
+			// Accrues changes
 			_scan_fs_changes(filesystem, sp);
 			// Applies changes
 			_update_scan_actions();
