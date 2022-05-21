@@ -334,6 +334,147 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 	}
 }
 
+RID DynamicFontAtSize::get_char_texture(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return RID();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return RID();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+	DynamicFontAtSize *font = char_pair_with_font.second;
+
+	ERR_FAIL_COND_V(!ch, RID());
+	if (ch->found) {
+		ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= font->textures.size(), RID());
+
+		if (ch->texture_idx != -1) {
+			return font->textures[ch->texture_idx].texture->get_rid();
+		}
+	}
+	return RID();
+}
+
+Size2 DynamicFontAtSize::get_char_texture_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return Size2();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return Size2();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+	DynamicFontAtSize *font = char_pair_with_font.second;
+
+	ERR_FAIL_COND_V(!ch, Size2());
+	if (ch->found) {
+		ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= font->textures.size(), Size2());
+
+		if (ch->texture_idx != -1) {
+			return font->textures[ch->texture_idx].texture->get_size();
+		}
+	}
+	return Size2();
+}
+
+Vector2 DynamicFontAtSize::get_char_tx_offset(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return Vector2();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return Vector2();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+	DynamicFontAtSize *font = char_pair_with_font.second;
+
+	ERR_FAIL_COND_V(!ch, Vector2());
+	if (ch->found) {
+		Point2 cpos;
+		cpos.x += ch->h_align;
+		cpos.y -= font->get_ascent();
+		cpos.y += ch->v_align;
+
+		return cpos;
+	}
+	return Vector2();
+}
+
+Size2 DynamicFontAtSize::get_char_tx_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return Size2();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return Size2();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+
+	ERR_FAIL_COND_V(!ch, Size2());
+	if (ch->found) {
+		return ch->rect_uv.size;
+	}
+	return Size2();
+}
+
+Rect2 DynamicFontAtSize::get_char_tx_uv_rect(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return Rect2();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return Rect2();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+
+	ERR_FAIL_COND_V(!ch, Rect2());
+	if (ch->found) {
+		return ch->rect_uv;
+	}
+	return Rect2();
+}
+
 float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only, bool p_outline) const {
 	if (!valid) {
 		return 0;
@@ -940,6 +1081,81 @@ bool DynamicFont::is_distance_field_hint() const {
 
 bool DynamicFont::has_outline() const {
 	return outline_cache_id.outline_size > 0;
+}
+
+RID DynamicFont::get_char_texture(CharType p_char, CharType p_next, bool p_outline) const {
+	if (!data_at_size.is_valid()) {
+		return RID();
+	}
+
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			return outline_data_at_size->get_char_texture(p_char, p_next, fallback_outline_data_at_size);
+		}
+		return RID();
+	} else {
+		return data_at_size->get_char_texture(p_char, p_next, fallback_data_at_size);
+	}
+}
+
+Size2 DynamicFont::get_char_texture_size(CharType p_char, CharType p_next, bool p_outline) const {
+	if (!data_at_size.is_valid()) {
+		return Size2();
+	}
+
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			return outline_data_at_size->get_char_texture_size(p_char, p_next, fallback_outline_data_at_size);
+		}
+		return Size2();
+	} else {
+		return data_at_size->get_char_texture_size(p_char, p_next, fallback_data_at_size);
+	}
+}
+
+Vector2 DynamicFont::get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const {
+	if (!data_at_size.is_valid()) {
+		return Vector2();
+	}
+
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			return outline_data_at_size->get_char_tx_offset(p_char, p_next, fallback_outline_data_at_size);
+		}
+		return Vector2();
+	} else {
+		return data_at_size->get_char_tx_offset(p_char, p_next, fallback_data_at_size);
+	}
+}
+
+Size2 DynamicFont::get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const {
+	if (!data_at_size.is_valid()) {
+		return Size2();
+	}
+
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			return outline_data_at_size->get_char_tx_size(p_char, p_next, fallback_outline_data_at_size);
+		}
+		return Size2();
+	} else {
+		return data_at_size->get_char_tx_size(p_char, p_next, fallback_data_at_size);
+	}
+}
+
+Rect2 DynamicFont::get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const {
+	if (!data_at_size.is_valid()) {
+		return Rect2();
+	}
+
+	if (p_outline) {
+		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
+			return outline_data_at_size->get_char_tx_uv_rect(p_char, p_next, fallback_outline_data_at_size);
+		}
+		return Rect2();
+	} else {
+		return data_at_size->get_char_tx_uv_rect(p_char, p_next, fallback_data_at_size);
+	}
 }
 
 float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {

@@ -50,6 +50,9 @@
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
+		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the label is rendered at the same size regardless of distance.
+		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
 		</member>
@@ -60,6 +63,9 @@
 			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of light.
 			[b]Note:[/b] If a [member GeometryInstance.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
+		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
 		</member>
@@ -69,6 +75,11 @@
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the sprite to scale it in 3D.
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
+			Sets the render priority for the sprite. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
 			If [code]true[/code], the [Light] in the [Environment] has effects on the sprite.
@@ -87,7 +98,13 @@
 		<constant name="FLAG_DOUBLE_SIDED" value="2" enum="DrawFlags">
 			If set, texture can be seen from the back as well, if not, it is invisible when looking at it from behind.
 		</constant>
-		<constant name="FLAG_MAX" value="3" enum="DrawFlags">
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="3" enum="DrawFlags">
+			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
+			Sprite is scaled by depth so that it always appears the same size on screen.
+		</constant>
+		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">

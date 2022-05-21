@@ -195,7 +195,7 @@ void Label::_notification(int p_what) {
 				to = to->next;
 			}
 
-			bool can_fill = to && to->char_pos == WordCache::CHAR_WRAPLINE;
+			bool can_fill = to && (to->char_pos == WordCache::CHAR_WRAPLINE || to->char_pos == WordCache::CHAR_NEWLINE);
 
 			float x_ofs = 0;
 
