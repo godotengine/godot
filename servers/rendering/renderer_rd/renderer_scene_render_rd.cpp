@@ -2388,6 +2388,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	bool can_use_storage = _render_buffers_can_be_storage();
 
 	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
 			_allocate_blur_textures(rb);
@@ -2440,6 +2441,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	if (can_use_effects && env && env->auto_exposure) {
+		RENDER_TIMESTAMP("Auto exposure");
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
@@ -2467,6 +2469,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	int max_glow_level = -1;
 
 	if (can_use_effects && env && env->glow_enabled) {
+		RENDER_TIMESTAMP("Glow");
 		RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
 
 		/* see that blur textures are allocated */
@@ -2515,6 +2518,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	{
+		RENDER_TIMESTAMP("Tonemap");
 		RD::get_singleton()->draw_command_begin_label("Tonemap");
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
@@ -5170,7 +5174,6 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	if (p_render_buffers.is_valid()) {
 		/*
 		_debug_draw_cluster(p_render_buffers);
-		RENDER_TIMESTAMP("Tonemap");
 		_render_buffers_post_process_and_tonemap(&render_data);
 		*/
 
