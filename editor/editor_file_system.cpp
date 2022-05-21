@@ -1258,7 +1258,7 @@ void EditorFileSystem::scan_changes() {
 		// Accrues changes
 		thread_sources.start(_thread_func_sources, this, s);
 		// Because of multithreading, changes are applied in a check that occurs in the process loop.
-		// If the loop detects the multithread is done, then it applies the changes. See notification Process for more.
+		// If the loop detects the multithread is done, then it applies the changes. See NOTIFICATION_PROCESS for more.
 	}
 }
 
