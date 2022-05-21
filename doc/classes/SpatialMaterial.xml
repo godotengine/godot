@@ -183,6 +183,9 @@
 		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
 		</member>
+		<member name="flags_albedo_tex_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Enables signed distance field rendering shader.
+		</member>
 		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no ambient light.
 		</member>
@@ -570,7 +573,10 @@
 		<constant name="FLAG_USE_SHADOW_TO_OPACITY" value="18" enum="Flags">
 			Enables the shadow to opacity feature.
 		</constant>
-		<constant name="FLAG_MAX" value="19" enum="Flags">
+		<constant name="FLAG_ALBEDO_TEXTURE_SDF" value="19" enum="Flags">
+			Enables signed distance field rendering shader.
+		</constant>
+		<constant name="FLAG_MAX" value="20" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

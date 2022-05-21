@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Label3D" inherits="GeometryInstance" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Displays plain text in a 3D world.
+	</brief_description>
+	<description>
+		Label3D displays plain text in a 3D world. It gives you control over the horizontal and vertical alignment.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh" />
+			<description>
+				Returns a [TriangleMesh] with the label's vertices following its current configuration (such as its [member pixel_size]).
+			</description>
+		</method>
+		<method name="get_draw_flag" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<description>
+				Returns the value of the specified flag.
+			</description>
+		</method>
+		<method name="set_draw_flag">
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], the specified flag will be enabled. See [enum Label3D.DrawFlags] for a list of flags.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" enum="Label3D.AlphaCutMode" default="0">
+			The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for possible values.
+		</member>
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" default="0.5">
+			Threshold at which the alpha scissor will discard values.
+		</member>
+		<member name="autowrap" type="bool" setter="set_autowrap" getter="get_autowrap" default="false">
+			If [code]true[/code], wraps the text to the [member width].
+		</member>
+		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
+			The billboard mode to use for the label. See [enum SpatialMaterial.BillboardMode] for possible values.
+		</member>
+		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
+			If [code]true[/code], text can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
+		</member>
+		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the label is rendered at the same size regardless of distance.
+		</member>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+			[Font] used for the [Label3D]'s text.
+		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="Label3D.Align" default="1">
+			Controls the text's horizontal alignment. Supports left, center, right. Set it to one of the [enum Align] constants.
+		</member>
+		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
+			Vertical space between lines in multiline [Label3D].
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+			Text [Color] of the [Label3D].
+		</member>
+		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+			The text drawing offset (in pixels).
+		</member>
+		<member name="outline_modulate" type="Color" setter="set_outline_modulate" getter="get_outline_modulate" default="Color( 0, 0, 0, 1 )">
+			The tint of [Font]'s outline.
+		</member>
+		<member name="outline_render_priority" type="int" setter="set_outline_render_priority" getter="get_outline_render_priority" default="-1">
+			Sets the render priority for the text outline. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
+		</member>
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
+			The size of one pixel's width on the label to scale it in 3D.
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
+			Sets the render priority for the text. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
+		</member>
+		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the [Light] in the [Environment] has effects on the label.
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
+			The text to display on screen.
+		</member>
+		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
+			If [code]true[/code], all the text displays as UPPERCASE.
+		</member>
+		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="Label3D.VAlign" default="1">
+			Controls the text's vertical alignment. Supports top, center, bottom. Set it to one of the [enum VAlign] constants.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
+			Text width (in pixels), used for autowrap and fill alignment.
+		</member>
+	</members>
+	<constants>
+		<constant name="FLAG_SHADED" value="0" enum="DrawFlags">
+			If set, lights in the environment affect the label.
+		</constant>
+		<constant name="FLAG_DOUBLE_SIDED" value="1" enum="DrawFlags">
+			If set, text can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
+		</constant>
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2" enum="DrawFlags">
+			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="3" enum="DrawFlags">
+			Label is scaled by depth so that it always appears the same size on screen.
+		</constant>
+		<constant name="FLAG_MAX" value="4" enum="DrawFlags">
+			Represents the size of the [enum DrawFlags] enum.
+		</constant>
+		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
+			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
+		</constant>
+		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
+			This mode only allows fully transparent or fully opaque pixels. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
+			[b]Note:[/b] This mode might have issues with anti-aliased fonts and outlines, try adjusting [member alpha_scissor_threshold] or using SDF font.
+			[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive scripts), this mode might have transparency sorting issues between the main text and the outline.
+		</constant>
+		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2" enum="AlphaCutMode">
+			This mode draws fully opaque pixels in the depth prepass. This is slower than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it allows displaying translucent areas and smooth edges while using proper sorting.
+			[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive scripts), this mode might have transparency sorting issues between the main text and the outline.
+		</constant>
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
+			Align rows to the left (default).
+		</constant>
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
+			Align rows centered.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
+			Align rows to the right.
+		</constant>
+		<constant name="ALIGN_FILL" value="3" enum="Align">
+			Expand row whitespaces to fit the width.
+		</constant>
+		<constant name="VALIGN_TOP" value="0" enum="VAlign">
+			Align the whole text to the top.
+		</constant>
+		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
+			Align the whole text to the center.
+		</constant>
+		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
+			Align the whole text to the bottom.
+		</constant>
+		<constant name="VALIGN_FILL" value="3" enum="VAlign">
+			Align the whole text by spreading the rows.
+		</constant>
+	</constants>
+</class>
