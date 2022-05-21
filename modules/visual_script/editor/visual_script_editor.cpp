@@ -1966,15 +1966,6 @@ void VisualScriptEditor::_generic_search(Vector2 pos, bool node_centered) {
 	}
 
 	new_connect_node_select->select_from_visual_script(script, false); // do not reset text
-
-	// Ensure that the dialog fits inside the graph.
-	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
-	pos.x = pos.x > bounds.x ? bounds.x : pos.x;
-	pos.y = pos.y > bounds.y ? bounds.y : pos.y;
-
-	if (pos != Vector2()) {
-		new_connect_node_select->set_position(pos);
-	}
 }
 
 void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
