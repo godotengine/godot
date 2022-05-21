@@ -431,6 +431,8 @@ private:
 	int sections = 5;
 	float section_length = 0.2;
 	int section_rings = 3;
+	bool cap_top = true;
+	bool cap_bottom = true;
 
 	Ref<Curve> curve;
 
@@ -455,6 +457,12 @@ public:
 
 	void set_section_rings(const int p_section_rings);
 	int get_section_rings() const;
+
+	void set_cap_top(bool p_cap_top);
+	bool is_cap_top() const;
+
+	void set_cap_bottom(bool p_cap_bottom);
+	bool is_cap_bottom() const;
 
 	void set_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_curve() const;

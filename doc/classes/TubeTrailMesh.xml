@@ -7,6 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="cap_bottom" type="bool" setter="set_cap_bottom" getter="is_cap_bottom" default="true">
+			If [code]true[/code], generates a cap at the bottom of the tube. This can be set to [code]false[/code] to speed up generation and rendering when the cap is never seen by the camera.
+		</member>
+		<member name="cap_top" type="bool" setter="set_cap_top" getter="is_cap_top" default="true">
+			If [code]true[/code], generates a cap at the top of the tube. This can be set to [code]false[/code] to speed up generation and rendering when the cap is never seen by the camera.
+		</member>
 		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
 		</member>
 		<member name="radial_steps" type="int" setter="set_radial_steps" getter="get_radial_steps" default="8">
