@@ -127,30 +127,35 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (table->has(link)) {
 			// Found in the current page.
 			class_desc->scroll_to_paragraph((*table)[link]);
-		} else if (topic == "class_enum") {
-			// Try to find the enum in @GlobalScope.
-			const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+		} else {
+			// Look for link in @GlobalScope.
+			// Note that a link like @GlobalScope.enum_name will not be found in this section, only enum_name will be.
+			if (topic == "class_enum") {
+				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-			for (int i = 0; i < cd.constants.size(); i++) {
-				if (cd.constants[i].enumeration == link) {
-					// Found in @GlobalScope.
-					emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
-					break;
+				for (int i = 0; i < cd.constants.size(); i++) {
+					if (cd.constants[i].enumeration == link) {
+						// Found in @GlobalScope.
+						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
+						return;
+					}
+				}
+			} else if (topic == "class_constant") {
+				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+
+				for (int i = 0; i < cd.constants.size(); i++) {
+					if (cd.constants[i].name == link) {
+						// Found in @GlobalScope.
+						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
+						return;
+					}
 				}
 			}
-		} else if (topic == "class_constant") {
-			// Try to find the constant in @GlobalScope.
-			const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-			for (int i = 0; i < cd.constants.size(); i++) {
-				if (cd.constants[i].name == link) {
-					// Found in @GlobalScope.
-					emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
-					break;
-				}
+			if (link.contains(".")) {
+				int class_end = link.find(".");
+				emit_signal(SNAME("go_to_help"), topic + ":" + link.substr(0, class_end) + ":" + link.substr(class_end + 1, link.length()));
 			}
-		} else if (link.contains(".")) {
-			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		}
 	} else if (p_select.begins_with("http")) {
 		OS::get_singleton()->shell_open(p_select);
