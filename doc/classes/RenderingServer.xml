@@ -1186,7 +1186,7 @@
 			<argument index="0" name="fog_volume" type="RID" />
 			<argument index="1" name="extents" type="Vector3" />
 			<description>
-				Sets the size of the fog volume when shape is [constant FOG_VOLUME_SHAPE_ELLIPSOID] or [constant FOG_VOLUME_SHAPE_BOX].
+				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			</description>
 		</method>
 		<method name="fog_volume_set_material">
@@ -1202,7 +1202,7 @@
 			<argument index="0" name="fog_volume" type="RID" />
 			<argument index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
 			<description>
-				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX], or [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -3931,13 +3931,21 @@
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX" value="6" enum="ParticlesCollisionHeightfieldResolution">
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_ELLIPSOID" value="0" enum="FogVolumeShape">
-			[FogVolume] will be shaped like an ellipsoid.
+			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
 		</constant>
-		<constant name="FOG_VOLUME_SHAPE_BOX" value="1" enum="FogVolumeShape">
+		<constant name="FOG_VOLUME_SHAPE_CONE" value="1" enum="FogVolumeShape">
+			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the extents. The cone will be adjusted to fit within the extents. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_CYLINDER" value="2" enum="FogVolumeShape">
+			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the extents. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_BOX" value="3" enum="FogVolumeShape">
 			[FogVolume] will be shaped like a box.
 		</constant>
-		<constant name="FOG_VOLUME_SHAPE_WORLD" value="2" enum="FogVolumeShape">
+		<constant name="FOG_VOLUME_SHAPE_WORLD" value="4" enum="FogVolumeShape">
 			[FogVolume] will have no shape, will cover the whole world and will not be culled.
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.

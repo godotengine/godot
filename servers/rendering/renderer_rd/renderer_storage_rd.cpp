@@ -97,6 +97,8 @@ AABB RendererStorageRD::fog_volume_get_aabb(RID p_fog_volume) const {
 
 	switch (fog_volume->shape) {
 		case RS::FOG_VOLUME_SHAPE_ELLIPSOID:
+		case RS::FOG_VOLUME_SHAPE_CONE:
+		case RS::FOG_VOLUME_SHAPE_CYLINDER:
 		case RS::FOG_VOLUME_SHAPE_BOX: {
 			AABB aabb;
 			aabb.position = -fog_volume->extents;
