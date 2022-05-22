@@ -525,6 +525,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			}
 		}
 
+		// FIXME
 		// add the item's navmesh at given xform to GridMap's Navigation ancestor
 		Ref<NavigationMesh> navmesh = mesh_library->get_item_navmesh(c.item);
 		if (navmesh.is_valid()) {
