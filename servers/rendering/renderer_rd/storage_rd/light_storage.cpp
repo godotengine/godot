@@ -730,7 +730,7 @@ void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point,
 	ERR_FAIL_COND(!lm);
 
 	for (int i = 0; i < 9; i++) {
-		r_sh[i] = Color(0, 0, 0, 0);
+		r_sh[i] = Color::TRANSPARENT_BLACK;
 	}
 
 	if (!lm->points.size() || !lm->bsp_tree.size() || !lm->tetrahedra.size()) {

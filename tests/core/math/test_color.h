@@ -62,7 +62,7 @@ TEST_CASE("[Color] Constructor methods") {
 			"Creation with invalid HTML notation should result in a Color with the default values.");
 
 	const Color green_rgba = Color(0, 1, 0, 0.25);
-	const Color green_hsva = Color(0, 0, 0).from_hsv(120 / 360.0, 1, 1, 0.25);
+	const Color green_hsva = Color::BLACK.from_hsv(120 / 360.0, 1, 1, 0.25);
 
 	CHECK_MESSAGE(
 			green_rgba.is_equal_approx(green_hsva),

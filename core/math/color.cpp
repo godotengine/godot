@@ -35,6 +35,14 @@
 #include "core/string/print_string.h"
 #include "core/templates/rb_map.h"
 
+const Color Color::RED(1, 0, 0);
+const Color Color::GREEN(0, 1, 0);
+const Color Color::BLUE(0, 0, 1);
+const Color Color::WHITE(1, 1, 1);
+const Color Color::BLACK(0, 0, 0);
+const Color Color::TRANSPARENT_WHITE(1, 1, 1, 0);
+const Color Color::TRANSPARENT_BLACK(0, 0, 0, 0);
+
 uint32_t Color::to_argb32() const {
 	uint32_t c = (uint8_t)Math::round(a * 255);
 	c <<= 8;

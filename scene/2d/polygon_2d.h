@@ -49,7 +49,7 @@ class Polygon2D : public Node2D {
 
 	Vector<Bone> bone_weights;
 
-	Color color = Color(1, 1, 1);
+	Color color = Color::WHITE;
 	Ref<Texture2D> texture;
 
 	Size2 tex_scale = Vector2(1, 1);

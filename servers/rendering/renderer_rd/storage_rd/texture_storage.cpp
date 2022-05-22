@@ -1943,7 +1943,7 @@ void TextureStorage::update_decal_atlas() {
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
 
 	decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-	RD::get_singleton()->texture_clear(decal_atlas.texture, Color(0, 0, 0, 0), 0, decal_atlas.mipmaps, 0, 1);
+	RD::get_singleton()->texture_clear(decal_atlas.texture, Color::TRANSPARENT_BLACK, 0, decal_atlas.mipmaps, 0, 1);
 
 	{
 		//create the framebuffer

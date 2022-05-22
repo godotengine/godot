@@ -188,8 +188,8 @@ private:
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
 	float volumetric_fog_density = 0.05;
-	Color volumetric_fog_albedo = Color(1.0, 1.0, 1.0);
-	Color volumetric_fog_emission = Color(0.0, 0.0, 0.0);
+	Color volumetric_fog_albedo = Color::WHITE;
+	Color volumetric_fog_emission = Color::BLACK;
 	float volumetric_fog_emission_energy = 1.0;
 	float volumetric_fog_anisotropy = 0.2;
 	float volumetric_fog_length = 64.0;

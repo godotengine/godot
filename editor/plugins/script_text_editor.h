@@ -90,10 +90,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 	void _update_gutter_indexes();
 
 	int line_number_gutter = -1;
-	Color default_line_number_color = Color(1, 1, 1);
-	Color safe_line_number_color = Color(1, 1, 1);
+	Color default_line_number_color = Color::WHITE;
+	Color safe_line_number_color = Color::WHITE;
 
-	Color marked_line_color = Color(1, 1, 1);
+	Color marked_line_color = Color::WHITE;
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;

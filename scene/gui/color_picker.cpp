@@ -654,8 +654,8 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 				points.set(3, center + Vector2(-ring_radius_x, ring_radius_y));
 				colors.set(0, Color(1, 1, 1, 1));
 				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
+				colors.set(2, Color::BLACK);
+				colors.set(3, Color::BLACK);
 				c->draw_polygon(points, colors);
 
 				col.set_hsv(h, 1, 1);
@@ -680,8 +680,8 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 				points.set(3, Vector2(0, c->get_size().y));
 				colors.set(0, Color(1, 1, 1, 1));
 				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
+				colors.set(2, Color::BLACK);
+				colors.set(3, Color::BLACK);
 				c->draw_polygon(points, colors);
 				col = color;
 				col.set_hsv(h, 1, 1);
@@ -748,15 +748,15 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			points.set(3, Vector2(0, c->get_size().y));
 			colors.set(0, col);
 			colors.set(1, col);
-			colors.set(2, Color(0, 0, 0));
-			colors.set(3, Color(0, 0, 0));
+			colors.set(2, Color::BLACK);
+			colors.set(3, Color::BLACK);
 			c->draw_polygon(points, colors);
 			int y = c->get_size().y - c->get_size().y * CLAMP(v, 0, 1);
 			col.set_hsv(h, 1, v);
 			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
 		}
 	} else if (p_which == 2) {
-		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
+		c->draw_rect(Rect2(Point2(), c->get_size()), Color::WHITE);
 		if (picker_type == SHAPE_VHS_CIRCLE) {
 			circle_mat->set_shader_param("v", v);
 		}
@@ -788,13 +788,13 @@ void ColorPicker::_slider_draw(int p_which) {
 			if (p_which == 0) {
 				Ref<Texture2D> hue = get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
 				scroll[p_which]->draw_set_transform(Point2(), -Math_PI / 2, Size2(1.0, 1.0));
-				scroll[p_which]->draw_texture_rect(hue, Rect2(Vector2(margin * -2, 0), Vector2(scroll[p_which]->get_size().x, margin)), false, Color(1, 1, 1), true);
+				scroll[p_which]->draw_texture_rect(hue, Rect2(Vector2(margin * -2, 0), Vector2(scroll[p_which]->get_size().x, margin)), false, Color::WHITE, true);
 				return;
 			}
 			Color s_col;
 			Color v_col;
 			s_col.set_hsv(h, 0, v);
-			left_color = (p_which == 1) ? s_col : Color(0, 0, 0);
+			left_color = (p_which == 1) ? s_col : Color::BLACK;
 			s_col.set_hsv(h, 1, v);
 			v_col.set_hsv(h, s, 1);
 			right_color = (p_which == 1) ? s_col : v_col;
@@ -1265,7 +1265,7 @@ ColorPicker::ColorPicker() :
 	_update_controls();
 	updating = false;
 
-	set_pick_color(Color(1, 1, 1));
+	set_pick_color(Color::WHITE);
 
 	add_child(preset_separator, false, INTERNAL_MODE_FRONT);
 
@@ -1447,7 +1447,7 @@ void ColorPresetButton::_notification(int p_what) {
 			if (sb_flat.is_valid()) {
 				if (preset_color.a < 1) {
 					// Draw a background pattern when the color is transparent.
-					sb_flat->set_bg_color(Color(1, 1, 1));
+					sb_flat->set_bg_color(Color::WHITE);
 					sb_flat->draw(get_canvas_item(), r);
 
 					Rect2 bg_texture_rect = r.grow_side(SIDE_LEFT, -sb_flat->get_margin(SIDE_LEFT));

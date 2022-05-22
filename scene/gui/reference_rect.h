@@ -36,7 +36,7 @@
 class ReferenceRect : public Control {
 	GDCLASS(ReferenceRect, Control);
 
-	Color border_color = Color(1, 0, 0);
+	Color border_color = Color::RED;
 	float border_width = 1.0;
 	bool editor_only = true;
 

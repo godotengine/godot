@@ -443,7 +443,7 @@ void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
 	}
 
 	Color color = debug_shape_custom_color;
-	if (color == Color(0.0, 0.0, 0.0)) {
+	if (color == Color::BLACK) {
 		// Use the default debug shape color defined in the Project Settings.
 		color = get_tree()->get_debug_collisions_color();
 	}

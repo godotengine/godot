@@ -211,8 +211,8 @@ void EditorVisualProfiler::_update_plot() {
 		int half_w = w / 2;
 		for (int i = 0; i < half_w; i++) {
 			for (int j = 0; j < h; j++) {
-				column_cpu[j] = Color(0, 0, 0, 0);
-				column_gpu[j] = Color(0, 0, 0, 0);
+				column_cpu[j] = Color::TRANSPARENT_BLACK;
+				column_gpu[j] = Color::TRANSPARENT_BLACK;
 			}
 
 			int current = i * frame_metrics.size() / half_w;
@@ -457,8 +457,8 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color::WHITE);
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color::WHITE);
 	}
 
 	if (graph_height_cpu > 0) {
@@ -483,8 +483,8 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color::WHITE);
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color::WHITE);
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {

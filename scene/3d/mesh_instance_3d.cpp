@@ -413,19 +413,19 @@ void MeshInstance3D::create_debug_tangents() {
 			Vector3 b = (n.cross(t)).normalized() * tangents[j * 4 + 3];
 
 			lines.push_back(v); //normal
-			colors.push_back(Color(0, 0, 1)); //color
+			colors.push_back(Color::BLUE); //color
 			lines.push_back(v + n * 0.04); //normal
-			colors.push_back(Color(0, 0, 1)); //color
+			colors.push_back(Color::BLUE); //color
 
 			lines.push_back(v); //tangent
-			colors.push_back(Color(1, 0, 0)); //color
+			colors.push_back(Color::RED); //color
 			lines.push_back(v + t * 0.04); //tangent
-			colors.push_back(Color(1, 0, 0)); //color
+			colors.push_back(Color::RED); //color
 
 			lines.push_back(v); //binormal
-			colors.push_back(Color(0, 1, 0)); //color
+			colors.push_back(Color::GREEN); //color
 			lines.push_back(v + b * 0.04); //binormal
-			colors.push_back(Color(0, 1, 0)); //color
+			colors.push_back(Color::GREEN); //color
 		}
 	}
 

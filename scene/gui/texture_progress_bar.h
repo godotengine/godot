@@ -109,9 +109,9 @@ private:
 	Point2 rad_center_off;
 	bool nine_patch_stretch = false;
 	int stretch_margin[4] = {};
-	Color tint_under = Color(1, 1, 1);
-	Color tint_progress = Color(1, 1, 1);
-	Color tint_over = Color(1, 1, 1);
+	Color tint_under = Color::WHITE;
+	Color tint_progress = Color::WHITE;
+	Color tint_over = Color::WHITE;
 
 	Point2 unit_val_to_uv(float val);
 	Point2 get_relative_center();

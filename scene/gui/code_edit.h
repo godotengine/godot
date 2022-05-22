@@ -93,30 +93,30 @@ private:
 	// breakpoints
 	HashMap<int, bool> breakpointed_lines;
 	bool draw_breakpoints = false;
-	Color breakpoint_color = Color(1, 1, 1);
+	Color breakpoint_color = Color::WHITE;
 	Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
 
 	// bookmarks
 	bool draw_bookmarks = false;
-	Color bookmark_color = Color(1, 1, 1);
+	Color bookmark_color = Color::WHITE;
 	Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
 
 	// executing lines
 	bool draw_executing_lines = false;
-	Color executing_line_color = Color(1, 1, 1);
+	Color executing_line_color = Color::WHITE;
 	Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
 
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 0;
 	String line_number_padding = " ";
-	Color line_number_color = Color(1, 1, 1);
+	Color line_number_color = Color::WHITE;
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
 	int fold_gutter = -1;
 	bool draw_fold_gutter = false;
-	Color folding_color = Color(1, 1, 1);
+	Color folding_color = Color::WHITE;
 	Ref<Texture2D> can_fold_icon = Ref<Texture2D>();
 	Ref<Texture2D> folded_icon = Ref<Texture2D>();
 	void _fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
@@ -202,10 +202,10 @@ private:
 	int code_completion_max_width = 0;
 	int code_completion_max_lines = 7;
 	int code_completion_scroll_width = 0;
-	Color code_completion_scroll_color = Color(0, 0, 0, 0);
-	Color code_completion_background_color = Color(0, 0, 0, 0);
-	Color code_completion_selected_color = Color(0, 0, 0, 0);
-	Color code_completion_existing_color = Color(0, 0, 0, 0);
+	Color code_completion_scroll_color = Color::TRANSPARENT_BLACK;
+	Color code_completion_background_color = Color::TRANSPARENT_BLACK;
+	Color code_completion_selected_color = Color::TRANSPARENT_BLACK;
+	Color code_completion_existing_color = Color::TRANSPARENT_BLACK;
 
 	bool code_completion_active = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
@@ -398,7 +398,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color::WHITE, const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;

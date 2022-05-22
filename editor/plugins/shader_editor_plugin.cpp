@@ -264,12 +264,12 @@ void ShaderTextEditor::_validate_script() {
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+			get_text_editor()->set_line_background_color(i, Color::TRANSPARENT_BLACK);
 		}
 		get_text_editor()->set_line_background_color(sl.get_error_line() - 1, marked_line_color);
 	} else {
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+			get_text_editor()->set_line_background_color(i, Color::TRANSPARENT_BLACK);
 		}
 		set_error("");
 	}

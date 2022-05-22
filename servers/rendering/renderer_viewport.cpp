@@ -212,7 +212,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::storage->get_default_clear_color();
+	Color bgcolor = p_viewport->transparent_bg ? Color::TRANSPARENT_BLACK : RSG::storage->get_default_clear_color();
 
 	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
 		RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);

@@ -2961,7 +2961,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			/* also does not work on col 0                      */
 			code_edit->insert_text_at_caret("i");
 			code_edit->update_code_completion_options();
-			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color(1, 0, 0), Ref<Resource>(), Color(1, 0, 0));
+			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0", Color::RED, Ref<Resource>(), Color::RED);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_1.", "item_1");
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "item_2.", "item_2");
 
@@ -2988,9 +2988,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK((int)option["kind"] == (int)CodeEdit::CodeCompletionKind::KIND_CLASS);
 			CHECK(option["display_text"] == "item_0.");
 			CHECK(option["insert_text"] == "item_0");
-			CHECK(option["font_color"] == Color(1, 0, 0));
+			CHECK(option["font_color"] == Color::RED);
 			CHECK(option["icon"] == Ref<Resource>());
-			CHECK(option["default_value"] == Color(1, 0, 0));
+			CHECK(option["default_value"] == Color::RED);
 
 			/* Set size for mouse input. */
 			code_edit->set_size(Size2(100, 100));

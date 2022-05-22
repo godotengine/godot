@@ -339,7 +339,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_sky_horizon_color(Color(0.6463, 0.6558, 0.6708));
 	set_sky_curve(0.15);
 	set_sky_energy(1.0);
-	set_sky_cover_modulate(Color(1, 1, 1));
+	set_sky_cover_modulate(Color::WHITE);
 
 	set_ground_bottom_color(Color(0.2, 0.169, 0.133));
 	set_ground_horizon_color(Color(0.6463, 0.6558, 0.6708));

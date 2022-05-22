@@ -46,7 +46,7 @@ TEST_CASE("[Gradient] Default gradient") {
 			"Default gradient should contain the expected number of points.");
 
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(0.0).is_equal_approx(Color(0, 0, 0)),
+			gradient->get_color_at_offset(0.0).is_equal_approx(Color::BLACK),
 			"Default gradient should return the expected interpolated value at offset 0.0.");
 	CHECK_MESSAGE(
 			gradient->get_color_at_offset(0.4).is_equal_approx(Color(0.4, 0.4, 0.4)),
@@ -55,15 +55,15 @@ TEST_CASE("[Gradient] Default gradient") {
 			gradient->get_color_at_offset(0.8).is_equal_approx(Color(0.8, 0.8, 0.8)),
 			"Default gradient should return the expected interpolated value at offset 0.8.");
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(1.0).is_equal_approx(Color(1, 1, 1)),
+			gradient->get_color_at_offset(1.0).is_equal_approx(Color::WHITE),
 			"Default gradient should return the expected interpolated value at offset 1.0.");
 
 	// Out of bounds checks.
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(-1.0).is_equal_approx(Color(0, 0, 0)),
+			gradient->get_color_at_offset(-1.0).is_equal_approx(Color::BLACK),
 			"Default gradient should return the expected interpolated value at offset -1.0.");
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(1234.0).is_equal_approx(Color(1, 1, 1)),
+			gradient->get_color_at_offset(1234.0).is_equal_approx(Color::WHITE),
 			"Default gradient should return the expected interpolated value at offset 1234.0.");
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified in order)") {
 	// Red-yellow-green gradient (with overbright green).
 	Ref<Gradient> gradient = memnew(Gradient);
 	Vector<Gradient::Point> points;
-	points.push_back({ 0.0, Color(1, 0, 0) });
+	points.push_back({ 0.0, Color::RED });
 	points.push_back({ 0.5, Color(1, 1, 0) });
 	points.push_back({ 1.0, Color(0, 2, 0) });
 	gradient->set_points(points);
@@ -81,7 +81,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified in order)") {
 			"Custom gradient should contain the expected number of points.");
 
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(0.0).is_equal_approx(Color(1, 0, 0)),
+			gradient->get_color_at_offset(0.0).is_equal_approx(Color::RED),
 			"Custom gradient should return the expected interpolated value at offset 0.0.");
 	CHECK_MESSAGE(
 			gradient->get_color_at_offset(0.25).is_equal_approx(Color(1, 0.5, 0)),
@@ -110,11 +110,11 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 	// These should be sorted automatically when adding points.
 	Ref<Gradient> gradient = memnew(Gradient);
 	Vector<Gradient::Point> points;
-	points.push_back({ 0.2, Color(1, 0, 0) });
+	points.push_back({ 0.2, Color::RED });
 	points.push_back({ 0.0, Color(1, 1, 0) });
-	points.push_back({ 0.8, Color(0, 1, 0) });
+	points.push_back({ 0.8, Color::GREEN });
 	points.push_back({ 0.4, Color(0, 1, 1) });
-	points.push_back({ 1.0, Color(0, 0, 1) });
+	points.push_back({ 1.0, Color::BLUE });
 	points.push_back({ 0.6, Color(1, 0, 1) });
 	gradient->set_points(points);
 
@@ -132,7 +132,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 			gradient->get_color_at_offset(0.6).is_equal_approx(Color(1, 0, 1)),
 			"Custom out-of-order gradient should return the expected interpolated value at offset 0.6.");
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(1.0).is_equal_approx(Color(0, 0, 1)),
+			gradient->get_color_at_offset(1.0).is_equal_approx(Color::BLUE),
 			"Custom out-of-order gradient should return the expected interpolated value at offset 1.0.");
 
 	gradient->remove_point(0);
@@ -141,7 +141,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 			"Custom out-of-order gradient should contain the expected number of points after removing one point.");
 	// The color will be clamped to the nearest point (which is at offset 0.2).
 	CHECK_MESSAGE(
-			gradient->get_color_at_offset(0.1).is_equal_approx(Color(1, 0, 0)),
+			gradient->get_color_at_offset(0.1).is_equal_approx(Color::RED),
 			"Custom out-of-order gradient should return the expected interpolated value at offset 0.1 after removing point at index 0.");
 }
 } // namespace TestGradient

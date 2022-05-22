@@ -114,7 +114,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Color control_font_focus_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_disabled_color = control_font_color * Color(1, 1, 1, 0.5);
 	const Color control_font_placeholder_color = Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.6f);
-	const Color control_font_pressed_color = Color(1, 1, 1);
+	const Color control_font_pressed_color = Color::WHITE;
 	const Color control_selection_color = Color(0.5, 0.5, 0.5);
 
 	// StyleBox colors
@@ -168,7 +168,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_focus_color", "Button", control_font_focus_color);
 	theme->set_color("font_hover_pressed_color", "Button", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Button", control_font_disabled_color);
-	theme->set_color("font_outline_color", "Button", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "Button", Color::WHITE);
 
 	theme->set_color("icon_normal_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_pressed_color", "Button", Color(1, 1, 1, 1));
@@ -190,7 +190,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_pressed_color", "LinkButton", control_font_pressed_color);
 	theme->set_color("font_hover_color", "LinkButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "LinkButton", control_font_focus_color);
-	theme->set_color("font_outline_color", "LinkButton", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "LinkButton", Color::WHITE);
 
 	theme->set_constant("outline_size", "LinkButton", 0);
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
@@ -228,7 +228,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "OptionButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "OptionButton", Color::WHITE);
 
 	theme->set_constant("h_separation", "OptionButton", 2 * scale);
 	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
@@ -250,7 +250,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "MenuButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "MenuButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
-	theme->set_color("font_outline_color", "MenuButton", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "MenuButton", Color::WHITE);
 
 	theme->set_constant("h_separation", "MenuButton", 3 * scale);
 	theme->set_constant("outline_size", "MenuButton", 0);
@@ -293,7 +293,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_pressed_color", "CheckBox", control_font_pressed_color);
 	theme->set_color("font_focus_color", "CheckBox", control_font_focus_color);
 	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
-	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "CheckBox", Color::WHITE);
 
 	theme->set_constant("h_separation", "CheckBox", 4 * scale);
 	theme->set_constant("check_v_adjust", "CheckBox", 0 * scale);
@@ -333,7 +333,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_pressed_color", "CheckButton", control_font_pressed_color);
 	theme->set_color("font_focus_color", "CheckButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "CheckButton", Color::WHITE);
 
 	theme->set_constant("h_separation", "CheckButton", 4 * scale);
 	theme->set_constant("check_v_adjust", "CheckButton", 0 * scale);
@@ -345,9 +345,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "Label", Ref<Font>());
 	theme->set_font_size("font_size", "Label", -1);
 
-	theme->set_color("font_color", "Label", Color(1, 1, 1));
-	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "Label", Color(1, 1, 1));
+	theme->set_color("font_color", "Label", Color::WHITE);
+	theme->set_color("font_shadow_color", "Label", Color::TRANSPARENT_BLACK);
+	theme->set_color("font_outline_color", "Label", Color::WHITE);
 
 	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
 	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
@@ -387,7 +387,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_selected_color", "LineEdit", control_font_pressed_color);
 	theme->set_color("font_uneditable_color", "LineEdit", control_font_disabled_color);
 	theme->set_color("font_placeholder_color", "LineEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "LineEdit", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "LineEdit", Color::WHITE);
 	theme->set_color("caret_color", "LineEdit", control_font_hover_color);
 	theme->set_color("selection_color", "LineEdit", control_selection_color);
 	theme->set_color("clear_button_color", "LineEdit", control_font_color);
@@ -408,8 +408,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ProgressBar", -1);
 
 	theme->set_color("font_color", "ProgressBar", control_font_hover_color);
-	theme->set_color("font_shadow_color", "ProgressBar", Color(0, 0, 0));
-	theme->set_color("font_outline_color", "ProgressBar", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "ProgressBar", Color::BLACK);
+	theme->set_color("font_outline_color", "ProgressBar", Color::WHITE);
 
 	theme->set_constant("outline_size", "ProgressBar", 0);
 
@@ -425,16 +425,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "TextEdit", Ref<Font>());
 	theme->set_font_size("font_size", "TextEdit", -1);
 
-	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
+	theme->set_color("background_color", "TextEdit", Color::TRANSPARENT_BLACK);
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
 	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "TextEdit", Color::WHITE);
 	theme->set_color("selection_color", "TextEdit", control_selection_color);
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
-	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
+	theme->set_color("caret_background_color", "TextEdit", Color::BLACK);
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.5, 0.5, 0.5, 0.25));
 	theme->set_color("search_result_color", "TextEdit", Color(0.3, 0.3, 0.3));
 	theme->set_color("search_result_border_color", "TextEdit", Color(0.3, 0.3, 0.3, 0.4));
@@ -462,17 +462,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "CodeEdit", Ref<Font>());
 	theme->set_font_size("font_size", "CodeEdit", -1);
 
-	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
+	theme->set_color("background_color", "CodeEdit", Color::TRANSPARENT_BLACK);
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
-	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
+	theme->set_color("font_selected_color", "CodeEdit", Color::BLACK);
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "CodeEdit", Color::WHITE);
 	theme->set_color("selection_color", "CodeEdit", control_selection_color);
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
 	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
@@ -480,7 +480,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("current_line_color", "CodeEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("caret_color", "CodeEdit", control_font_color);
-	theme->set_color("caret_background_color", "CodeEdit", Color(0, 0, 0));
+	theme->set_color("caret_background_color", "CodeEdit", Color::BLACK);
 	theme->set_color("brace_mismatch_color", "CodeEdit", Color(1, 0.2, 0.2));
 	theme->set_color("line_number_color", "CodeEdit", Color(0.67, 0.67, 0.67, 0.4));
 	theme->set_color("word_highlighted_color", "CodeEdit", Color(0.8, 0.9, 0.9, 0.15));
@@ -575,7 +575,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("title_font", "Window", Ref<Font>());
 	theme->set_font_size("title_font_size", "Window", -1);
 	theme->set_color("title_color", "Window", control_font_color);
-	theme->set_color("title_outline_modulate", "Window", Color(1, 1, 1));
+	theme->set_color("title_outline_modulate", "Window", Color::WHITE);
 	theme->set_constant("title_outline_size", "Window", 0);
 	theme->set_constant("title_height", "Window", 36 * scale);
 	theme->set_constant("resize_margin", "Window", 4 * scale);
@@ -603,8 +603,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
-	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
+	theme->set_color("folder_icon_modulate", "FileDialog", Color::WHITE);
+	theme->set_color("file_icon_modulate", "FileDialog", Color::WHITE);
 	theme->set_color("files_disabled", "FileDialog", Color(1, 1, 1, 0.25));
 
 	// Popup
@@ -662,8 +662,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
 	theme->set_color("font_hover_color", "PopupMenu", control_font_color);
 	theme->set_color("font_separator_color", "PopupMenu", control_font_color);
-	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
-	theme->set_color("font_separator_outline_color", "PopupMenu", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "PopupMenu", Color::WHITE);
+	theme->set_color("font_separator_outline_color", "PopupMenu", Color::WHITE);
 
 	theme->set_constant("h_separation", "PopupMenu", 4 * scale);
 	theme->set_constant("v_separation", "PopupMenu", 4 * scale);
@@ -741,7 +741,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_low_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
-	theme->set_color("font_outline_color", "Tree", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "Tree", Color::WHITE);
 	theme->set_color("guide_color", "Tree", Color(0.7, 0.7, 0.7, 0.25));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
@@ -777,7 +777,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("font_color", "ItemList", control_font_lower_color);
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
-	theme->set_color("font_outline_color", "ItemList", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "ItemList", Color::WHITE);
 	theme->set_color("guide_color", "ItemList", Color(0, 0, 0, 0.1));
 	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
@@ -818,8 +818,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_selected_color", "TabContainer", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
-	theme->set_color("font_outline_color", "TabContainer", Color(1, 1, 1));
-	theme->set_color("drop_mark_color", "TabContainer", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "TabContainer", Color::WHITE);
+	theme->set_color("drop_mark_color", "TabContainer", Color::WHITE);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
@@ -846,8 +846,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
-	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
-	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "TabBar", Color::WHITE);
+	theme->set_color("drop_mark_color", "TabBar", Color::WHITE);
 
 	theme->set_constant("h_separation", "TabBar", 4 * scale);
 	theme->set_constant("outline_size", "TabBar", 0);
@@ -897,14 +897,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "ColorPickerButton", Color(1, 1, 1, 1));
 	theme->set_color("font_focus_color", "ColorPickerButton", Color(1, 1, 1, 1));
 	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
-	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "ColorPickerButton", Color::WHITE);
 
 	theme->set_constant("h_separation", "ColorPickerButton", 2 * scale);
 	theme->set_constant("outline_size", "ColorPickerButton", 0);
 
 	// ColorPresetButton
 
-	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color::WHITE, 2, 2, 2, 2);
 	preset_sb->set_corner_radius_all(2);
 	preset_sb->set_corner_detail(2);
 	preset_sb->set_anti_aliased(false);
@@ -922,8 +922,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TooltipLabel", -1);
 
 	theme->set_color("font_color", "TooltipLabel", control_font_color);
-	theme->set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "TooltipLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "TooltipLabel", Color::TRANSPARENT_BLACK);
+	theme->set_color("font_outline_color", "TooltipLabel", Color::TRANSPARENT_BLACK);
 
 	theme->set_constant("shadow_offset_x", "TooltipLabel", 1);
 	theme->set_constant("shadow_offset_y", "TooltipLabel", 1);
@@ -946,13 +946,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("bold_italics_font_size", "RichTextLabel", -1);
 	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
 
-	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
-	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0));
+	theme->set_color("default_color", "RichTextLabel", Color::WHITE);
+	theme->set_color("font_selected_color", "RichTextLabel", Color::BLACK);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
-	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "RichTextLabel", Color::TRANSPARENT_BLACK);
 
-	theme->set_color("font_outline_color", "RichTextLabel", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "RichTextLabel", Color::WHITE);
 
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
@@ -964,9 +964,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("outline_size", "RichTextLabel", 0);
 
-	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
-	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
-	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("table_odd_row_bg", "RichTextLabel", Color::TRANSPARENT_BLACK);
+	theme->set_color("table_even_row_bg", "RichTextLabel", Color::TRANSPARENT_BLACK);
+	theme->set_color("table_border", "RichTextLabel", Color::TRANSPARENT_BLACK);
 
 	// Containers
 
@@ -1003,7 +1003,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
 	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
 	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
-	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
+	theme->set_color("activity", "GraphEdit", Color::WHITE);
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
 
@@ -1017,7 +1017,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 	style_minimap_camera->set_border_width_all(1);
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
-	theme->set_stylebox("node", "GraphEditMinimap", make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0, 2));
+	theme->set_stylebox("node", "GraphEditMinimap", make_flat_stylebox(Color::WHITE, 0, 0, 0, 0, 2));
 
 	theme->set_icon("resizer", "GraphEditMinimap", icons["resizer_nw"]);
 	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));

@@ -2199,12 +2199,12 @@ void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environmen
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 			rb->ss_effects.ssil.ssil_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
 			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.ssil_final, "SSIL texture");
-			RD::get_singleton()->texture_clear(rb->ss_effects.ssil.ssil_final, Color(0, 0, 0, 0), 0, 1, 0, 1);
+			RD::get_singleton()->texture_clear(rb->ss_effects.ssil.ssil_final, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 			if (rb->ss_effects.last_frame.is_null()) {
 				tf.mipmaps = 6;
 				rb->ss_effects.last_frame = RD::get_singleton()->texture_create(tf, RD::TextureView());
 				RD::get_singleton()->set_resource_name(rb->ss_effects.last_frame, "Last Frame Radiance");
-				RD::get_singleton()->texture_clear(rb->ss_effects.last_frame, Color(0, 0, 0, 0), 0, tf.mipmaps, 0, 1);
+				RD::get_singleton()->texture_clear(rb->ss_effects.last_frame, Color::TRANSPARENT_BLACK, 0, tf.mipmaps, 0, 1);
 				for (uint32_t i = 0; i < 6; i++) {
 					RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.last_frame, 0, i);
 					rb->ss_effects.last_frame_slices.push_back(slice);
@@ -4184,7 +4184,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		rb->volumetric_fog->prev_light_density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->prev_light_density_map, "Fog previous light-density map");
-		RD::get_singleton()->texture_clear(rb->volumetric_fog->prev_light_density_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->volumetric_fog->prev_light_density_map, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
@@ -4207,13 +4207,13 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		rb->volumetric_fog->density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->density_map, "Fog density map");
-		RD::get_singleton()->texture_clear(rb->volumetric_fog->density_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->volumetric_fog->density_map, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 		rb->volumetric_fog->light_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->light_map, "Fog light map");
-		RD::get_singleton()->texture_clear(rb->volumetric_fog->light_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->volumetric_fog->light_map, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 		rb->volumetric_fog->emissive_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->emissive_map, "Fog emissive map");
-		RD::get_singleton()->texture_clear(rb->volumetric_fog->emissive_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(rb->volumetric_fog->emissive_map, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 #endif
 
 		Vector<RD::Uniform> uniforms;

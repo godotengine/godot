@@ -1432,7 +1432,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
 				} else if (!backbuffer_cleared) {
-					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
+					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color::TRANSPARENT_BLACK);
 					backbuffer_cleared = true;
 				}
 
@@ -1444,7 +1444,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		}
 
 		if (!backbuffer_cleared && canvas_group_owner == nullptr && ci->canvas_group != nullptr && !backbuffer_copy) {
-			texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
+			texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color::TRANSPARENT_BLACK);
 			backbuffer_cleared = true;
 		}
 

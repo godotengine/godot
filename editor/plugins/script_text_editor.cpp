@@ -560,11 +560,11 @@ void ScriptTextEditor::_update_errors() {
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
 		if (errors.is_empty()) {
-			te->set_line_background_color(i, Color(0, 0, 0, 0));
+			te->set_line_background_color(i, Color::TRANSPARENT_BLACK);
 		} else {
 			for (const ScriptLanguage::ScriptError &E : errors) {
 				bool error_line = i == E.line - 1;
-				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
+				te->set_line_background_color(i, error_line ? marked_line_color : Color::TRANSPARENT_BLACK);
 				if (error_line) {
 					break;
 				}

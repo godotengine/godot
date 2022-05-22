@@ -2838,7 +2838,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_specular(0.5);
 	set_roughness(1.0);
 	set_metallic(0.0);
-	set_emission(Color(0, 0, 0));
+	set_emission(Color::BLACK);
 	set_emission_energy(1.0);
 	set_normal_scale(1);
 	set_rim(1.0);
@@ -2848,7 +2848,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_anisotropy(0);
 	set_heightmap_scale(0.05);
 	set_subsurface_scattering_strength(0);
-	set_backlight(Color(0, 0, 0));
+	set_backlight(Color::BLACK);
 	set_transmittance_color(Color(1, 1, 1, 1));
 	set_transmittance_depth(0.1);
 	set_transmittance_boost(0.0);

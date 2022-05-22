@@ -126,7 +126,7 @@ void Sprite2D::_notification(int p_what) {
 			bool filter_clip_enabled;
 			_get_rects(src_rect, dst_rect, filter_clip_enabled);
 
-			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, filter_clip_enabled);
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color::WHITE, false, filter_clip_enabled);
 		} break;
 	}
 }

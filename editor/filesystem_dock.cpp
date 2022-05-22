@@ -267,7 +267,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			} else {
 				icon = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
 			}
-			color = Color(1, 1, 1);
+			color = Color::WHITE;
 		}
 
 		if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {

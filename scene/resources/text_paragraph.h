@@ -147,14 +147,14 @@ public:
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;
 
-	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
-	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color::WHITE, const Color &p_dc_color = Color::WHITE) const;
+	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color::WHITE, const Color &p_dc_color = Color::WHITE) const;
 
-	void draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color::WHITE) const;
+	void draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color::WHITE) const;
 
-	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color::WHITE) const;
+	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color::WHITE) const;
 
 	int hit_test(const Point2 &p_coords) const;
 

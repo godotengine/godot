@@ -115,8 +115,8 @@ public:
 	float get_line_underline_position() const;
 	float get_line_underline_thickness() const;
 
-	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color::WHITE) const;
+	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color::WHITE) const;
 
 	int hit_test(float p_coords) const;
 

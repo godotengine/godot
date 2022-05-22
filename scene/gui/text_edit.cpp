@@ -792,7 +792,7 @@ void TextEdit::_notification(int p_what) {
 							} else {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), current_line_color);
 							}
-						} else if (line_background_color != Color(0, 0, 0, 0)) {
+						} else if (line_background_color != Color::TRANSPARENT_BLACK) {
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
 							} else {
@@ -953,7 +953,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					if (text.get_line_background_color(line) != Color(0, 0, 0, 0)) {
+					if (text.get_line_background_color(line) != Color::TRANSPARENT_BLACK) {
 						if (rtl) {
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end - xmargin_beg, row_height), text.get_line_background_color(line));
 						} else {

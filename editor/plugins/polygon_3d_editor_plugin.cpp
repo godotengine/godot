@@ -553,7 +553,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_albedo(Color(1, 1, 1));
+	line_material->set_albedo(Color::WHITE);
 
 	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

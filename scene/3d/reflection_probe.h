@@ -58,7 +58,7 @@ private:
 	bool enable_shadows = false;
 	bool interior = false;
 	AmbientMode ambient_mode = AMBIENT_ENVIRONMENT;
-	Color ambient_color = Color(0, 0, 0);
+	Color ambient_color = Color::BLACK;
 	float ambient_color_energy = 1.0;
 	float mesh_lod_threshold = 1.0;
 

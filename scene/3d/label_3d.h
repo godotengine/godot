@@ -102,7 +102,7 @@ private:
 	int render_priority = 0;
 
 	int outline_size = 0;
-	Color outline_modulate = Color(0, 0, 0, 1);
+	Color outline_modulate = Color::BLACK;
 
 	float line_spacing = 0.f;
 

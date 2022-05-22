@@ -137,7 +137,7 @@ private:
 	bool background_transpose = false;
 	Color background_modulate;
 
-	Color polygon_color = Color(1.0, 0.0, 0.0);
+	Color polygon_color = Color::RED;
 
 	enum AdvancedMenuOption {
 		RESET_TO_DEFAULT_TILE,
@@ -167,7 +167,7 @@ public:
 	void set_use_undo_redo(bool p_use_undo_redo);
 
 	void set_tile_set(Ref<TileSet> p_tile_set);
-	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2 p_offset = Vector2(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color(1.0, 1.0, 1.0, 0.0));
+	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2 p_offset = Vector2(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color::TRANSPARENT_WHITE);
 
 	int get_polygon_count();
 	int add_polygon(Vector<Point2> p_polygon, int p_index = -1);

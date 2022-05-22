@@ -79,8 +79,8 @@ public:
 	///
 	bool volumetric_fog_enabled = false;
 	float volumetric_fog_density = 0.01;
-	Color volumetric_fog_scattering = Color(1, 1, 1);
-	Color volumetric_fog_emission = Color(0, 0, 0);
+	Color volumetric_fog_scattering = Color::WHITE;
+	Color volumetric_fog_emission = Color::BLACK;
 	float volumetric_fog_emission_energy = 0.0;
 	float volumetric_fog_anisotropy = 0.2;
 	float volumetric_fog_length = 64.0;

@@ -35,7 +35,7 @@
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white
 	points.resize(2);
-	points.write[0].color = Color(0, 0, 0, 1);
+	points.write[0].color = Color::BLACK;
 	points.write[0].offset = 0;
 	points.write[1].color = Color(1, 1, 1, 1);
 	points.write[1].offset = 1;

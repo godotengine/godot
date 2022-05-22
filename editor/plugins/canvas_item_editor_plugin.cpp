@@ -3773,8 +3773,8 @@ void CanvasItemEditor::_update_editor_settings() {
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
-	const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
-	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
+	const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color::WHITE : Color(4.25, 4.25, 4.25);
+	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color::RED, 0.55));
 	animation_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 	_update_context_menu_stylebox();
@@ -5838,7 +5838,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	}
 
 	label = memnew(Label);
-	label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
+	label->add_theme_color_override("font_shadow_color", Color::BLACK);
 	label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
 	label->hide();
 	canvas_item_editor->get_controls_container()->add_child(label);

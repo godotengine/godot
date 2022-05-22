@@ -35,6 +35,15 @@
 #include "core/string/ustring.h"
 
 struct _NO_DISCARD_ Color {
+	// Constants for commonly used colors.
+	static const Color RED;
+	static const Color GREEN;
+	static const Color BLUE;
+	static const Color WHITE;
+	static const Color BLACK;
+	static const Color TRANSPARENT_WHITE;
+	static const Color TRANSPARENT_BLACK;
+
 	union {
 		struct {
 			float r;
@@ -90,7 +99,7 @@ struct _NO_DISCARD_ Color {
 
 	bool is_equal_approx(const Color &p_color) const;
 
-	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
+	Color clamp(const Color &p_min = Color::TRANSPARENT_BLACK, const Color &p_max = Color(1, 1, 1, 1)) const;
 	void invert();
 	Color inverted() const;
 
@@ -160,7 +169,7 @@ struct _NO_DISCARD_ Color {
 		float sa = 1.0f - p_over.a;
 		res.a = a * sa + p_over.a;
 		if (res.a == 0) {
-			return Color(0, 0, 0, 0);
+			return Color::TRANSPARENT_BLACK;
 		} else {
 			res.r = (r * a * sa + p_over.r * p_over.a) / res.a;
 			res.g = (g * a * sa + p_over.g * p_over.a) / res.a;

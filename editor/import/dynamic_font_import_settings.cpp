@@ -743,7 +743,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 		}
 		if (font_main->has_char(c)) {
 			item->set_text(col + 1, String::chr(c));
-			item->set_custom_color(col + 1, Color(1, 1, 1));
+			item->set_custom_color(col + 1, Color::WHITE);
 			if (selected_chars.has(c) || (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, c)))) {
 				item->set_custom_color(col + 1, fcol);
 				item->set_custom_bg_color(col + 1, scol);

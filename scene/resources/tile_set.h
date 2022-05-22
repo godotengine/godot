@@ -167,7 +167,7 @@ private:
 		Ref<ShaderMaterial> material;
 		Rect2 region;
 		int tile_mode = 0;
-		Color modulate = Color(1, 1, 1);
+		Color modulate = Color::WHITE;
 
 		// Atlas or autotiles data
 		int autotile_bitmask_mode = 0;

@@ -840,7 +840,7 @@ void EditorNode::_update_update_spinner() {
 				gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
 		update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
-		update_spinner->set_self_modulate(Color(1, 1, 1));
+		update_spinner->set_self_modulate(Color::WHITE);
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
@@ -5645,7 +5645,7 @@ void EditorNode::_open_imported() {
 
 void EditorNode::dim_editor(bool p_dimming) {
 	dimmed = p_dimming;
-	gui_base->set_modulate(p_dimming ? Color(0.5, 0.5, 0.5) : Color(1, 1, 1));
+	gui_base->set_modulate(p_dimming ? Color(0.5, 0.5, 0.5) : Color::WHITE);
 }
 
 bool EditorNode::is_editor_dimmed() const {

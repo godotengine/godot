@@ -131,7 +131,7 @@ private:
 
 			Ref<Texture2D> icon = Ref<Texture2D>();
 			String text = "";
-			Color color = Color(1, 1, 1);
+			Color color = Color::WHITE;
 		};
 
 		struct Line {
@@ -141,7 +141,7 @@ private:
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
 
-			Color background_color = Color(0, 0, 0, 0);
+			Color background_color = Color::TRANSPARENT_BLACK;
 			bool hidden = false;
 			int height = 0;
 			int width = 0;
@@ -338,8 +338,8 @@ private:
 	void _clear_redo();
 
 	/* Search */
-	Color search_result_color = Color(1, 1, 1);
-	Color search_result_border_color = Color(1, 1, 1);
+	Color search_result_color = Color::WHITE;
+	Color search_result_border_color = Color::WHITE;
 
 	String search_text = "";
 	uint32_t search_flags = 0;
@@ -375,8 +375,8 @@ private:
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
 
-	Color caret_color = Color(1, 1, 1);
-	Color caret_background_color = Color(0, 0, 0);
+	Color caret_color = Color::WHITE;
+	Color caret_background_color = Color::BLACK;
 
 	CaretType caret_type = CaretType::CARET_TYPE_LINE;
 
@@ -423,8 +423,8 @@ private:
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
 
-	Color font_selected_color = Color(1, 1, 1);
-	Color selection_color = Color(1, 1, 1);
+	Color font_selected_color = Color::WHITE;
+	Color selection_color = Color::WHITE;
 	bool override_selected_font_color = false;
 
 	bool dragging_selection = false;
@@ -524,18 +524,18 @@ private:
 
 	Ref<Font> font;
 	int font_size = 16;
-	Color font_color = Color(1, 1, 1);
-	Color font_readonly_color = Color(1, 1, 1);
+	Color font_color = Color::WHITE;
+	Color font_readonly_color = Color::WHITE;
 	Color font_placeholder_color = Color(1, 1, 1, 0.6);
 
 	int outline_size = 0;
-	Color outline_color = Color(1, 1, 1);
+	Color outline_color = Color::WHITE;
 
 	int line_spacing = 1;
 
-	Color background_color = Color(1, 1, 1);
-	Color current_line_color = Color(1, 1, 1);
-	Color word_highlighted_color = Color(1, 1, 1);
+	Color background_color = Color::WHITE;
+	Color current_line_color = Color::WHITE;
+	Color word_highlighted_color = Color::WHITE;
 
 	bool window_has_focus = true;
 	bool first_draw = true;
@@ -588,7 +588,7 @@ protected:
 	Color brace_mismatch_color;
 
 	// Line hiding.
-	Color code_folding_color = Color(1, 1, 1);
+	Color code_folding_color = Color::WHITE;
 	Ref<Texture2D> folded_eol_icon;
 
 	bool hiding_enabled = false;

@@ -94,7 +94,7 @@ TextureStorage::TextureStorage() {
 			Ref<Image> image;
 			image.instantiate();
 			image->create(4, 4, true, Image::FORMAT_RGBA8);
-			image->fill(Color(0, 0, 0, 1));
+			image->fill(Color::BLACK);
 			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_BLACK] = texture_allocate();

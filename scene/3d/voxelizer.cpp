@@ -340,9 +340,9 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
 			img_albedo = albedo_tex->get_image();
-			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
+			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color::BLACK); // albedo texture, color is multiplicative
 		} else {
-			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
+			mc.albedo = _get_bake_texture(img_albedo, Color::WHITE, mat->get_albedo()); // no albedo texture, color is additive
 		}
 
 		Ref<Texture2D> emission_tex = mat->get_texture(StandardMaterial3D::TEXTURE_EMISSION);
@@ -357,16 +357,16 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		}
 
 		if (mat->get_emission_operator() == StandardMaterial3D::EMISSION_OP_ADD) {
-			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			mc.emission = _get_bake_texture(img_emission, Color::WHITE * emission_energy, emission_col * emission_energy);
 		} else {
-			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color::BLACK);
 		}
 
 	} else {
 		Ref<Image> empty;
 
-		mc.albedo = _get_bake_texture(empty, Color(0, 0, 0), Color(1, 1, 1));
-		mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
+		mc.albedo = _get_bake_texture(empty, Color::BLACK, Color::WHITE);
+		mc.emission = _get_bake_texture(empty, Color::BLACK, Color::BLACK);
 	}
 
 	material_cache[p_material] = mc;

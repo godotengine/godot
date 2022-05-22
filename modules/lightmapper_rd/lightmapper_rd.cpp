@@ -754,17 +754,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 
 		light_source_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_source_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
+		rd->texture_clear(light_source_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, atlas_slices);
 		light_primary_dynamic_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_primary_dynamic_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
+		rd->texture_clear(light_primary_dynamic_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, atlas_slices);
 
 		if (p_bake_sh) {
 			tf.array_layers *= 4;
 		}
 		light_accum_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_accum_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
+		rd->texture_clear(light_accum_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, tf.array_layers);
 		light_dest_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_dest_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
+		rd->texture_clear(light_dest_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, tf.array_layers);
 		light_accum_tex2 = light_dest_tex;
 
 		//env
@@ -776,7 +776,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			} else {
 				panorama_tex.instantiate();
 				panorama_tex->create(8, 8, false, Image::FORMAT_RGBAF);
-				panorama_tex->fill(Color(0, 0, 0, 1));
+				panorama_tex->fill(Color::BLACK);
 			}
 
 			RD::TextureFormat tfp;
@@ -1556,7 +1556,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		uint32_t triangle_offset = 0;
 
 		Vector<Color> clear_colors;
-		clear_colors.push_back(Color(0, 0, 0, 1));
+		clear_colors.push_back(Color::BLACK);
 		for (int i = 0; i < atlas_slices; i++) {
 			int subslices = (p_bake_sh ? 4 : 1);
 

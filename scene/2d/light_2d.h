@@ -55,8 +55,8 @@ private:
 	bool enabled = true;
 	bool editor_only = false;
 	bool shadow = false;
-	Color color = Color(1, 1, 1);
-	Color shadow_color = Color(0, 0, 0, 0);
+	Color color = Color::WHITE;
+	Color shadow_color = Color::TRANSPARENT_BLACK;
 	real_t height = 0.0;
 	real_t energy = 1.0;
 	int z_min = -1024;

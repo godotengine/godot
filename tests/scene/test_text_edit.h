@@ -3489,13 +3489,13 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		CHECK(text_edit->get_line_gutter_text(2, 0) == "");
 		CHECK(text_edit->get_line_gutter_text(-1, 0) == "");
 
-		text_edit->set_line_gutter_item_color(1, 0, Color(1, 0, 0));
-		text_edit->set_line_gutter_item_color(0, -1, Color(1, 0, 0));
-		text_edit->set_line_gutter_item_color(0, 2, Color(1, 0, 0));
-		text_edit->set_line_gutter_item_color(2, 0, Color(1, 0, 0));
-		text_edit->set_line_gutter_item_color(-1, 0, Color(1, 0, 0));
+		text_edit->set_line_gutter_item_color(1, 0, Color::RED);
+		text_edit->set_line_gutter_item_color(0, -1, Color::RED);
+		text_edit->set_line_gutter_item_color(0, 2, Color::RED);
+		text_edit->set_line_gutter_item_color(2, 0, Color::RED);
+		text_edit->set_line_gutter_item_color(-1, 0, Color::RED);
 
-		CHECK(text_edit->get_line_gutter_item_color(1, 0) == Color(1, 0, 0));
+		CHECK(text_edit->get_line_gutter_item_color(1, 0) == Color::RED);
 		CHECK(text_edit->get_line_gutter_item_color(0, -1) == Color());
 		CHECK(text_edit->get_line_gutter_item_color(0, 2) == Color());
 		CHECK(text_edit->get_line_gutter_item_color(2, 0) == Color());

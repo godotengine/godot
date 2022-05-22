@@ -175,8 +175,8 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->set_flat(true);
 	add_child(zoom_reset);
 	zoom_reset->add_theme_constant_override("outline_size", 1);
-	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
-	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
+	zoom_reset->add_theme_color_override("font_outline_color", Color::BLACK);
+	zoom_reset->add_theme_color_override("font_color", Color::WHITE);
 	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KeyModifierMask::CMD | Key::KEY_0));
 	zoom_reset->set_shortcut_context(this);
