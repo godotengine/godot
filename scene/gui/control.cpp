@@ -652,6 +652,7 @@ void Control::_notification(int p_notification) {
 				//remove modalness
 			} else {
 				data.minimum_size_valid = false;
+				_update_minimum_size();
 				_size_changed();
 			}
 
