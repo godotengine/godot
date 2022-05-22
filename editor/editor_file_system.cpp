@@ -41,6 +41,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/packed_scene.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
@@ -113,18 +114,6 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	}
 
 	return "res://" + file;
-}
-
-String EditorFileSystemDirectory::get_file_attached_script(int p_idx) const {
-	Vector<String> deps = get_file_deps(p_idx);
-	for (int i = 0; i < deps.size(); i++) {
-		String resource_type = ResourceLoader::get_resource_type(deps[i]);
-		if (ClassDB::is_parent_class(resource_type, Script::get_class_static())) {
-			return deps[i];
-		}
-	}
-
-	return "";
 }
 
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
@@ -966,7 +955,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 
-				if (!ClassDB::is_parent_class(fi->type, Script::get_class_static()) && ClassDB::is_parent_class(fi->type, Resource::get_class_static())) {
+				if (EditorFileSystem::_is_script_extendable_resource(fi->type)) {
 					fi->resource_script_path = ResourceLoader::get_attached_script_path(path);
 				}
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
@@ -1260,6 +1249,10 @@ void EditorFileSystem::scan_changes() {
 		// Because of multithreading, changes are applied in a check that occurs in the process loop.
 		// If the loop detects the multithread is done, then it applies the changes. See NOTIFICATION_PROCESS for more.
 	}
+}
+
+bool EditorFileSystem::_is_script_extendable_resource(const StringName &p_class) {
+	return ClassDB::is_parent_class(p_class, Script::get_class_static()) && !ClassDB::is_parent_class(p_class, PackedScene::get_class_static()) && ClassDB::is_parent_class(p_class, Resource::get_class_static());
 }
 
 void EditorFileSystem::_notification(int p_what) {
