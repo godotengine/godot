@@ -718,12 +718,10 @@ bool EditorFileSystem::_update_scan_actions_helper() {
 	return fs_changed;
 }
 
-bool EditorFileSystem::_try_emit_filesystem_changed() {
+void EditorFileSystem::_try_emit_filesystem_changed() {
 	if (!suppress_filesystem_changed_signal) {
 		emit_signal(SNAME("filesystem_changed"));
-		return true;
 	}
-	return false;
 }
 
 void EditorFileSystem::scan() {
@@ -1251,6 +1249,7 @@ void EditorFileSystem::scan_changes() {
 	}
 }
 
+// We assume that only Resources can have attached scripts (excluding Scripts and PackedScenes, which still extend Resource).
 bool EditorFileSystem::_is_script_extendable_resource(const StringName &p_class) {
 	return ClassDB::is_parent_class(p_class, Resource::get_class_static()) && !ClassDB::is_parent_class(p_class, Script::get_class_static()) && !ClassDB::is_parent_class(p_class, PackedScene::get_class_static());
 }

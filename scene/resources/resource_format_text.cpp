@@ -35,6 +35,7 @@
 #include "core/io/missing_resource.h"
 #include "core/io/resource_format_binary.h"
 #include "core/version.h"
+#include "editor/editor_file_system.h"
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
@@ -1444,7 +1445,7 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 			String path = next_tag.fields["path"];
 			String id = next_tag.fields["id"];
 
-			if (!path.contains("://") && path.is_relative_path()) {
+			if (path.is_relative_path()) {
 				// Path is relative to file being loaded, so convert to a resource path.
 				path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 			}
@@ -1572,8 +1573,7 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 String ResourceFormatLoaderText::get_attached_script_path(const String &p_path) const {
 	String type = ResourceLoader::get_resource_type(p_path);
 
-	// We assume that only Resources can have attached scripts (excluding Scripts, which still extend Resource).
-	if (ClassDB::is_parent_class(type, Script::get_class_static()) || !ClassDB::is_parent_class(type, Resource::get_class_static())) {
+	if (!EditorFileSystem::_is_script_extendable_resource(type)) {
 		return "";
 	}
 
