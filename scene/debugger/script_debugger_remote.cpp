@@ -484,7 +484,7 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 	}
 
 	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)ud;
-	sdr->send_error(p_func, p_file, p_line, p_err, p_descr, p_type, si);
+	sdr->send_error(String::utf8(p_func), String::utf8(p_file), p_line, String::utf8(p_err), String::utf8(p_descr), p_type, si);
 }
 
 bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
