@@ -336,6 +336,7 @@ public:
 	void move_group_file(const String &p_path, const String &p_new_path);
 
 	static bool _should_skip_directory(const String &p_path);
+	static bool _is_script_extendable_resource(const StringName &p_class);
 
 	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
