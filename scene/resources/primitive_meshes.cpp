@@ -2229,17 +2229,27 @@ void TextMesh::_generate_glyph_mesh_data(uint32_t p_hash, const Glyph &p_gl) con
 				}
 			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
 				// Cubic Bezier arc.
+				int32_t cur = j;
 				int32_t next1 = (j == end) ? start : (j + 1);
 				int32_t next2 = (next1 == end) ? start : (next1 + 1);
 				int32_t prev = (j == start) ? end : (j - 1);
 
 				// There must be exactly two OFF points and two ON points for each cubic arc.
+				if (points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON) {
+					cur = (cur == 0) ? end : cur - 1;
+					next1 = (next1 == 0) ? end : next1 - 1;
+					next2 = (next2 == 0) ? end : next2 - 1;
+					prev = (prev == 0) ? end : prev - 1;
+				} else {
+					j++;
+				}
 				ERR_FAIL_COND_MSG(points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, prev));
+				ERR_FAIL_COND_MSG(points[cur].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, cur));
 				ERR_FAIL_COND_MSG(points[next1].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, next1));
 				ERR_FAIL_COND_MSG(points[next2].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, next2));
 
 				Vector2 p0 = Vector2(points[prev].x, points[prev].y);
-				Vector2 p1 = Vector2(points[j].x, points[j].y);
+				Vector2 p1 = Vector2(points[cur].x, points[cur].y);
 				Vector2 p2 = Vector2(points[next1].x, points[next1].y);
 				Vector2 p3 = Vector2(points[next2].x, points[next2].y);
 
@@ -2257,7 +2267,6 @@ void TextMesh::_generate_glyph_mesh_data(uint32_t p_hash, const Glyph &p_gl) con
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
 				}
-				i++;
 			} else {
 				ERR_FAIL_MSG(vformat("Unknown point tag at %d:%d", i, j));
 			}
