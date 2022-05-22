@@ -149,7 +149,7 @@ String EditorFileSystemDirectory::get_file_resource_script_class_name(int p_idx)
 	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
 	String script_path = get_file_resource_script_path(p_idx);
 
-	if (script_path == "") {
+	if (script_path.is_empty()) {
 		return "";
 	}
 
