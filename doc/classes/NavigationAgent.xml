@@ -48,7 +48,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the object's [RID].
+				Returns the [RID] of this agent on the [NavigationServer].
 			</description>
 		</method>
 		<method name="get_target_location" qualifiers="const">
@@ -100,6 +100,9 @@
 	<members>
 		<member name="agent_height_offset" type="float" setter="set_agent_height_offset" getter="get_agent_height_offset" default="0.0">
 			The agent height offset to match the navigation mesh height.
+		</member>
+		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="false">
+			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer]. When [method set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector3 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
 		</member>
 		<member name="ignore_y" type="bool" setter="set_ignore_y" getter="get_ignore_y" default="true">
 			Ignores collisions on the Y axis. Must be [code]true[/code] to move on a horizontal plane.

@@ -74,25 +74,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height" default="2.0">
+		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height" default="1.5">
 			The minimum floor to ceiling height that will still allow the floor area to be considered walkable.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell/height].
 		</member>
-		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.9">
+		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.25">
 			The minimum ledge height that is considered to still be traversable.
 			[b]Note:[/b] While baking, this value will be rounded down to the nearest multiple of [member cell/height].
 		</member>
 		<member name="agent/max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope" default="45.0">
 			The maximum slope that is considered walkable, in degrees.
 		</member>
-		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.6">
+		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell/size].
 		</member>
-		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.2">
+		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The Y axis cell size to use for fields.
 		</member>
-		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.3">
+		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.25">
 			The XZ plane cell size to use for fields.
 		</member>
 		<member name="detail/sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
@@ -138,7 +138,7 @@
 			Any regions with a size smaller than this will be merged with larger regions if possible.
 			[b]Note:[/b] This value will be squared to calculate the number of cells. For example, a value of 20 will set the number of cells to 400.
 		</member>
-		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size" default="8.0">
+		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size" default="2.0">
 			The minimum size of a region for it to be created.
 			[b]Note:[/b] This value will be squared to calculate the minimum number of cells allowed to form isolated island areas. For example, a value of 8 will set the number of cells to 64.
 		</member>
