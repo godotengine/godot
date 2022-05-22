@@ -166,6 +166,14 @@
 				[b]Note:[/b] In order to be be detected, custom settings have to be either defined with [method set_setting], or exist in the [code]project.godot[/code] file. This is especially relevant when using [method set_initial_value].
 			</description>
 		</method>
+		<method name="is_pack_loaded">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if a given .pck or .zip file is currently loaded.
+				[b]Note:[/b] A pack is considered loaded even if nothing is currently using its resources, or if all of its files have been replaced by other packs.
+			</description>
+		</method>
 		<method name="load_resource_pack">
 			<return type="bool" />
 			<param index="0" name="pack" type="String" />
@@ -268,6 +276,15 @@
 				[/csharp]
 				[/codeblocks]
 				This can also be used to erase custom project settings. To do this change the setting value to [code]null[/code].
+			</description>
+		</method>
+		<method name="unload_resource_pack">
+			<return type="bool" />
+			<param index="0" name="pack" type="String" />
+			<description>
+				Unloads a previously loaded [param pack] from the resource filesystem. Returns [code]true[/code] on success.
+				[b]Note:[/b] If this pack replaced files when it was loaded, and if the affected pack is still loaded, then all the replaced files will be restored.
+				[b]Warning:[/b] Unloading a pack can cause issues and instability if any of it's resources are still being used. Ensure nothing is still using the pack's resources when unloading it.
 			</description>
 		</method>
 	</methods>
