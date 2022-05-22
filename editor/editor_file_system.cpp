@@ -369,7 +369,7 @@ void EditorFileSystem::_save_filesystem_cache() {
 	_save_filesystem_cache(filesystem, f);
 }
 
-// Multithreaded helper method for scan()
+// Multithreaded helper method for scan().
 void EditorFileSystem::_thread_func(void *_userdata) {
 	EditorFileSystem *sd = (EditorFileSystem *)_userdata;
 	sd->_scan_filesystem();
