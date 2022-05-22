@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextMesh" inherits="PrimitiveMesh" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Generate an [PrimitiveMesh] from the text.
+	</brief_description>
+	<description>
+		Generate an [PrimitiveMesh] from the text.
+		TextMesh can be generated only when using dynamic fonts with vector glyph contours. Bitmap fonts (including bitmap data in the TrueType/OpenType containers, like color emoji fonts) are not supported.
+		The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the height for the front face, 40% for the back face, 10% for the outer edges and 10% for the inner edges.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="curve_step" type="float" setter="set_curve_step" getter="get_curve_step" default="0.5">
+			Step (in pixels) used to approximate Bézier curves.
+		</member>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="0.05">
+			Depths of the mesh, if set to [code]0.0[/code] only front surface, is generated, and UV layout is changed to use full texture for the front face only.
+		</member>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+			[Font] used for the [TextMesh]'s text.
+		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="TextMesh.Align" default="1">
+			Controls the text's horizontal alignment. Supports left, center and right. Set it to one of the [enum Align] constants.
+		</member>
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
+			The size of one pixel's width on the text to scale it in 3D.
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
+			The text to generate mesh from.
+		</member>
+		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
+			If [code]true[/code], all the text displays as UPPERCASE.
+		</member>
+	</members>
+	<constants>
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
+			Align rows to the left (default).
+		</constant>
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
+			Align rows centered.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
+			Align rows to the right.
+		</constant>
+	</constants>
+</class>

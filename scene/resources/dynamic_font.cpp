@@ -540,6 +540,51 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 	return advance;
 }
 
+Dictionary DynamicFontAtSize::get_char_contours(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+	if (!valid) {
+		return Dictionary();
+	}
+
+	int32_t c = p_char;
+	if (((p_char & 0xfffffc00) == 0xd800) && (p_next & 0xfffffc00) == 0xdc00) { // decode surrogate pair.
+		c = (p_char << 10UL) + p_next - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+	}
+	if ((p_char & 0xfffffc00) == 0xdc00) { // skip trail surrogate.
+		return Dictionary();
+	}
+
+	const_cast<DynamicFontAtSize *>(this)->_update_char(c);
+
+	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(c, p_fallbacks);
+	const Character *ch = char_pair_with_font.first;
+	DynamicFontAtSize *font = char_pair_with_font.second;
+
+	if (ch->found) {
+		PoolVector3Array points;
+		PoolIntArray contours;
+
+		int error = FT_Load_Char(font->face, c, FT_LOAD_NO_BITMAP | (font->font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+		ERR_FAIL_COND_V(error, Dictionary());
+
+		double scale = (1.0 / 64.0) / oversampling * scale_color_font;
+		for (short i = 0; i < font->face->glyph->outline.n_points; i++) {
+			points.push_back(Vector3(font->face->glyph->outline.points[i].x * scale, -font->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(font->face->glyph->outline.tags[i])));
+		}
+		for (short i = 0; i < font->face->glyph->outline.n_contours; i++) {
+			contours.push_back(font->face->glyph->outline.contours[i]);
+		}
+		bool orientation = (FT_Outline_Get_Orientation(&font->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
+
+		Dictionary out;
+		out["points"] = points;
+		out["contours"] = contours;
+		out["orientation"] = orientation;
+		return out;
+	} else {
+		return Dictionary();
+	}
+}
+
 DynamicFontAtSize::Character DynamicFontAtSize::Character::not_found() {
 	Character ch;
 	ch.texture_idx = -1;
@@ -1176,6 +1221,14 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 	} else {
 		return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, fallback_data_at_size, false, false) + spacing; // Draw base glyph and return advance.
 	}
+}
+
+Dictionary DynamicFont::get_char_contours(CharType p_char, CharType p_next) const {
+	if (!data_at_size.is_valid()) {
+		return Dictionary();
+	}
+
+	return data_at_size->get_char_contours(p_char, p_next, fallback_data_at_size);
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {

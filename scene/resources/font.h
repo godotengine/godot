@@ -42,6 +42,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum ContourPointTag {
+		CONTOUR_CURVE_TAG_ON = 0x01,
+		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
+		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
+	};
+
 	virtual float get_height() const = 0;
 
 	virtual float get_ascent() const = 0;
@@ -65,6 +71,8 @@ public:
 	virtual Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const = 0;
 	virtual Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const = 0;
 	virtual Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const = 0;
+
+	virtual Dictionary get_char_contours(CharType p_char, CharType p_next = 0) const { return Dictionary(); }
 
 	void update_changes();
 	Font();
@@ -215,5 +223,7 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
+
+VARIANT_ENUM_CAST(Font::ContourPointTag);
 
 #endif

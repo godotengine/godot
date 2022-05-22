@@ -43,6 +43,17 @@
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="get_char_contours" qualifiers="const">
+			<return type="Dictionary" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<description>
+				Returns outline contours of the glyph as a [code]Dictionary[/code] with the following contents:
+				[code]points[/code]         - [PoolVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
+				[code]contours[/code]       - [PoolIntArray], containing indices the end points of each contour.
+				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
+			</description>
+		</method>
 		<method name="get_char_size" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="char" type="int" />
@@ -142,5 +153,14 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
+			Contour point is on the curve.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CONIC" value="0" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a conic (quadratic) Bézier arc.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CUBIC" value="2" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a cubic Bézier arc.
+		</constant>
 	</constants>
 </class>
