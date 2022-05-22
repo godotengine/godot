@@ -1445,7 +1445,7 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 			String id = next_tag.fields["id"];
 
 			if (!path.contains("://") && path.is_relative_path()) {
-				// path is relative to file being loaded, so convert to a resource path
+				// Path is relative to file being loaded, so convert to a resource path.
 				path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 			}
 
