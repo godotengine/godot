@@ -669,10 +669,20 @@ void CPUParticles3D::_particles_process(double p_delta) {
 	double system_phase = time / lifetime;
 
 	bool should_be_active = false;
+
+	// Pre-resize arrays to improve performance.
+	Array cpu_particles;
+	cpu_particles.resize(pcount);
+
+	// Size is not known in advance, so we can't resize it beforehand.
+	Array cpu_particles_expired;
+
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
+		Ref<CPUParticle3D> cpu_particle = memnew(CPUParticle3D);
 
 		if (!emitting && !p.active) {
+			cpu_particles.set(i, cpu_particle);
 			continue;
 		}
 
@@ -732,9 +742,11 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		if (restart) {
 			if (!emitting) {
 				p.active = false;
+				cpu_particles.set(i, cpu_particle);
 				continue;
 			}
 			p.active = true;
+			p.expired = false;
 
 			/*real_t tex_linear_velocity = 0;
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
@@ -893,6 +905,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			}
 
 		} else if (!p.active) {
+			cpu_particles.set(i, cpu_particle);
 			continue;
 		} else if (p.time > p.lifetime) {
 			p.active = false;
@@ -1136,11 +1149,36 @@ void CPUParticles3D::_particles_process(double p_delta) {
 
 		p.transform.origin += p.velocity * local_delta;
 
+		// If we got down here, we got past all the `continue`s from inactive particles.
+		// Therefore, the particle is active by definition.
+		cpu_particle->active = true;
+		cpu_particle->transform = p.transform;
+		cpu_particle->color = p.color;
+		cpu_particle->velocity = p.velocity;
+		cpu_particle->phase = p.time;
+		cpu_particle->seed = p.seed;
+		cpu_particles.set(i, cpu_particle);
+
+		// Empirically determined to work at Fixed FPS set to 0 (depends on rendering framerate),
+		// low values (10) and very high values (1000).
+		if (!p.expired && p.time >= 1.0 - p_delta * 2 - CMP_EPSILON) {
+			// Particle is about to expire. Add it to the list of expired particles if it hasn't been added already.
+			cpu_particles_expired.push_back(cpu_particle);
+			p.expired = true;
+		}
+
 		should_be_active = true;
 	}
+
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
 		emit_signal(SceneStringNames::get_singleton()->finished);
+	}
+
+	emit_signal(SNAME("particles_updated"), cpu_particles);
+
+	if (cpu_particles_expired.size() >= 1) {
+		emit_signal(SNAME("particles_expired"), cpu_particles_expired);
 	}
 }
 
@@ -1448,6 +1486,9 @@ void CPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles3D::restart);
 
+	ADD_SIGNAL(MethodInfo("particles_updated", PropertyInfo(Variant::ARRAY, "particles", PROPERTY_HINT_ARRAY_TYPE, "CPUParticle3D")));
+	ADD_SIGNAL(MethodInfo("particles_expired", PropertyInfo(Variant::ARRAY, "particles", PROPERTY_HINT_ARRAY_TYPE, "CPUParticle3D")));
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
@@ -1710,4 +1751,39 @@ CPUParticles3D::CPUParticles3D() {
 CPUParticles3D::~CPUParticles3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(multimesh);
+}
+
+// CPUParticle3D
+
+bool CPUParticle3D::is_active() const {
+	return active;
+}
+
+Transform3D CPUParticle3D::get_transform() const {
+	return transform;
+}
+
+Color CPUParticle3D::get_color() const {
+	return color;
+}
+
+Vector3 CPUParticle3D::get_velocity() const {
+	return velocity;
+}
+
+float CPUParticle3D::get_phase() const {
+	return phase;
+}
+
+uint32_t CPUParticle3D::get_seed() const {
+	return seed;
+}
+
+void CPUParticle3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_active"), &CPUParticle3D::is_active);
+	ClassDB::bind_method(D_METHOD("get_transform"), &CPUParticle3D::get_transform);
+	ClassDB::bind_method(D_METHOD("get_color"), &CPUParticle3D::get_color);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &CPUParticle3D::get_velocity);
+	ClassDB::bind_method(D_METHOD("get_phase"), &CPUParticle3D::get_phase);
+	ClassDB::bind_method(D_METHOD("get_seed"), &CPUParticle3D::get_seed);
 }

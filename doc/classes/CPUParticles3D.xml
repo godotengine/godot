@@ -6,6 +6,7 @@
 	<description>
 		CPU-based 3D particle node used to create a variety of particle systems and effects.
 		See also [GPUParticles3D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		Unlike [GPUParticles3D], the CPU is aware of particles' individual transforms. This means particle transforms can be used for any purpose in scripting, including gameplay-affecting elements. See [signal particles_updated] for more information.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -313,6 +314,20 @@
 		<signal name="finished">
 			<description>
 				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+			</description>
+		</signal>
+		<signal name="particles_expired">
+			<argument index="0" name="particles" type="CPUParticle3D[]" />
+			<description>
+				Emitted when one or more particles is about to expire on the next particle update. This can be used to make nodes (such as [Light3D]s, [AudioStreamPlayer3D]s or other [CPUParticles3D]s) spawn at individual particle expiration positions.
+				[b]Note:[/b] Only emitted when the particle system is currently [member emitting] or when at least 1 particle is still active.
+			</description>
+		</signal>
+		<signal name="particles_updated">
+			<argument index="0" name="particles" type="CPUParticle3D[]" />
+			<description>
+				Emitted when one or more particles are updated (every [code]1.0 /[/code] [member fixed_fps] seconds, or every rendered frame if [member fixed_fps] is [code]0[/code]). This can be used to make nodes (such as [Light3D]s, [AudioStreamPlayer3D]s or other [CPUParticles3D]s) follow particles individually for advanced effects. See [CPUParticle3D] to access information on each individual particle.
+				[b]Note:[/b] Only emitted when the particle system is currently [member emitting] or when at least 1 particle is still active.
 			</description>
 		</signal>
 	</signals>

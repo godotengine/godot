@@ -98,6 +98,9 @@ private:
 		double lifetime = 0.0;
 		Color base_color;
 
+		// Whether the expired signal was emitted for this particle already.
+		bool expired = false;
+
 		uint32_t seed = 0;
 	};
 
@@ -316,5 +319,32 @@ VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
+
+/**
+ * Higher-level version of the Particle struct. Unlike the Particle struct,
+ * CPUParticle3D is exposed to the scripting API for use by the `particles_updated` signal.
+ */
+class CPUParticle3D : public RefCounted {
+	GDCLASS(CPUParticle3D, RefCounted);
+
+	friend class CPUParticles3D;
+
+	bool active = false;
+	Transform3D transform;
+	Color color;
+	Vector3 velocity;
+	float phase = 0.0f;
+	uint32_t seed = 0;
+
+protected:
+	static void _bind_methods();
+
+	bool is_active() const;
+	Transform3D get_transform() const;
+	Color get_color() const;
+	Vector3 get_velocity() const;
+	float get_phase() const;
+	uint32_t get_seed() const;
+};
 
 #endif // CPU_PARTICLES_3D_H
