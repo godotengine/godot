@@ -106,6 +106,11 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_char_tx_uv_rect", "char", "next", "outline"), &Font::get_char_tx_uv_rect, DEFVAL(0), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
+	ClassDB::bind_method(D_METHOD("get_char_contours", "char", "next"), &Font::get_char_contours, DEFVAL(0));
+
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
 }
 
 Font::Font() {

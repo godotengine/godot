@@ -205,6 +205,8 @@ public:
 	void set_texture_flags(uint32_t p_flags);
 	void update_oversampling();
 
+	Dictionary get_char_contours(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
+
 	DynamicFontAtSize();
 	~DynamicFontAtSize();
 };
@@ -299,6 +301,8 @@ public:
 	Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const;
 	Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const;
 	Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const;
+
+	Dictionary get_char_contours(CharType p_char, CharType p_next) const;
 
 	SelfList<DynamicFont> font_list;
 
