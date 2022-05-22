@@ -1193,7 +1193,7 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 	}
 }
 
-// Multi-threaded threaded function for scan_changes()
+// Multi-threaded threaded function for scan_changes().
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
 	if (efs->filesystem) {
