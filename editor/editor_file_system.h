@@ -301,7 +301,7 @@ class EditorFileSystem : public Node {
 	bool _scan_extensions();
 	bool _scan_import_support(Vector<String> reimports);
 
-	bool _try_emit_filesystem_changed();
+	void _try_emit_filesystem_changed();
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
