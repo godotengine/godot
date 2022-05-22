@@ -61,7 +61,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_fil
 		if (EditorFileSystem::_is_script_extendable_resource(p_file_type)) {
 			// Fetches the resourse icon using the EditorNode's script icon cache and EditorFileSystemDirectory's FileInfo cache.
 			String resource_script_name = p_dir->get_file_resource_script_class_name(p_file_index);
-			if (resource_script_name.is_empty()) {
+			if (!resource_script_name.is_empty()) {
 				file_icon = EditorNode::get_singleton()->get_class_icon(resource_script_name);
 				return file_icon;
 			}

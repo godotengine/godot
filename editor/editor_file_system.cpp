@@ -1252,7 +1252,7 @@ void EditorFileSystem::scan_changes() {
 }
 
 bool EditorFileSystem::_is_script_extendable_resource(const StringName &p_class) {
-	return !ClassDB::is_parent_class(p_class, Script::get_class_static()) && !ClassDB::is_parent_class(p_class, PackedScene::get_class_static()) && ClassDB::is_parent_class(p_class, Resource::get_class_static());
+	return ClassDB::is_parent_class(p_class, Resource::get_class_static()) && !ClassDB::is_parent_class(p_class, Script::get_class_static()) && !ClassDB::is_parent_class(p_class, PackedScene::get_class_static());
 }
 
 void EditorFileSystem::_notification(int p_what) {
