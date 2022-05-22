@@ -771,7 +771,7 @@ String ResourceLoader::get_attached_script_path(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		String path = loader[i]->get_attached_script_path(local_path);
-		if (path != "") {
+		if (!path.is_empty()) {
 			return path;
 		}
 	}
