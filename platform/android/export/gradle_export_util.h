@@ -103,8 +103,6 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset);
 
-String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset);
-
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_storage_permission);
