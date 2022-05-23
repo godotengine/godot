@@ -83,5 +83,5 @@ void SphereShape3D::_bind_methods() {
 
 SphereShape3D::SphereShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SPHERE)) {
-	set_radius(1.0);
+	set_radius(0.5);
 }
