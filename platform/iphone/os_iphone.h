@@ -55,6 +55,8 @@ private:
 
 	iOS *ios;
 
+	id tts = nullptr;
+
 	JoypadIPhone *joypad_iphone;
 
 	MainLoop *main_loop;
@@ -102,6 +104,15 @@ public:
 	bool iterate();
 
 	void start();
+
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);

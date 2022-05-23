@@ -151,6 +151,8 @@ public:
 
 	PowerOSX *power_manager;
 
+	id tts = nullptr;
+
 	CrashHandler crash_handler;
 
 	void _update_window();
@@ -191,6 +193,15 @@ protected:
 
 public:
 	static OS_OSX *singleton;
+
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
 
 	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
 	void global_menu_add_separator(const String &p_menu);

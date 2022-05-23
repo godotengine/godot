@@ -255,6 +255,41 @@ void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 	}
 };
 
+bool OS_Windows::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_speaking();
+}
+
+bool OS_Windows::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_paused();
+}
+
+Array OS_Windows::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return tts->get_voices();
+}
+
+void OS_Windows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void OS_Windows::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	tts->pause();
+}
+
+void OS_Windows::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	tts->resume();
+}
+
+void OS_Windows::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	tts->stop();
+}
+
 void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 	Map<int, Vector2>::Element *curr = touch_state.find(idx);
 	// Defensive
@@ -1352,6 +1387,9 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		return ERR_UNAVAILABLE;
 	}
 
+	// Init TTS
+	tts = memnew(TTS_Windows);
+
 	use_raw_input = true;
 
 	RAWINPUTDEVICE Rid[1];
@@ -1782,6 +1820,11 @@ void OS_Windows::finalize() {
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 	}
+
+	if (tts) {
+		memdelete(tts);
+	}
+	CoUninitialize();
 }
 
 void OS_Windows::finalize_core() {
