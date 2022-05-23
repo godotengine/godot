@@ -866,6 +866,11 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	if (theme_font.is_valid()) {
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, const_cast<Label3D *>(this), "_font_changed");
+		theme_font.unref();
+	}
+
 	if (font_override.is_valid()) {
 		return font_override;
 	}
@@ -877,7 +882,12 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (List<StringName>::Element *E = theme_types.front(); E; E = E->next()) {
 			if (Theme::get_project_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E->get())) {
-				return Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E->get());
+				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E->get());
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, const_cast<Label3D *>(this), "_font_changed");
+				}
+				return f;
 			}
 		}
 	}
@@ -889,13 +899,23 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (List<StringName>::Element *E = theme_types.front(); E; E = E->next()) {
 			if (Theme::get_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E->get())) {
-				return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E->get());
+				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E->get());
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, const_cast<Label3D *>(this), "_font_changed");
+				}
+				return f;
 			}
 		}
 	}
 
 	// If they don't exist, use any type to return the default/empty value.
-	return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	if (f.is_valid()) {
+		theme_font = f;
+		theme_font->connect(CoreStringNames::get_singleton()->changed, const_cast<Label3D *>(this), "_font_changed");
+	}
+	return f;
 }
 
 void Label3D::set_modulate(const Color &p_color) {
