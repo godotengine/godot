@@ -544,7 +544,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Variant value = p_node->get(name);
 
 		if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
-			// Was this missing resource overriden? If so do not save the old value.
+			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
@@ -613,7 +613,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	if (states_stack.is_empty() && !is_editable_instance) {
 		//this node is not part of an instancing process, so save the type
 		if (missing_node != nullptr) {
-			// Its a missing node (type non existant on load).
+			// It's a missing node (type non existent on load).
 			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
 		} else {
 			nd.type = _nm_get_string(p_node->get_class(), name_map);

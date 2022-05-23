@@ -551,7 +551,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 	}
 
-	// time left must always be 1 because the end node don't lenght to compute
+	// time left must always be 1 because the end node don't length to compute
 	if (p_state_machine->end_node != current) {
 		rem = 1;
 	} else {

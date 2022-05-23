@@ -1891,7 +1891,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
-					// Was this missing resource overriden? If so do not save the old value.
+					// Was this missing resource overridden? If so do not save the old value.
 					Ref<Resource> ures = value;
 					if (ures.is_null()) {
 						value = missing_resource_properties[PE->get().name];

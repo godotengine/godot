@@ -310,7 +310,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	Error err = OS::get_singleton()->execute(path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
-			*r_err = TTR("Can't excecute Blender binary.");
+			*r_err = TTR("Can't execute Blender binary.");
 		}
 		return false;
 	}

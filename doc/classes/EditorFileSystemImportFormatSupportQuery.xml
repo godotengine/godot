@@ -4,7 +4,7 @@
 		Used to query and configure import format support.
 	</brief_description>
 	<description>
-		This class is used to query and configure a certain import format. It is used in conjuntion with asset format import plugins.
+		This class is used to query and configure a certain import format. It is used in conjunction with asset format import plugins.
 	</description>
 	<tutorials>
 	</tutorials>

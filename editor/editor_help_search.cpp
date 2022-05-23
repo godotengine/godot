@@ -333,7 +333,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
 			// If the search term is empty, add any classes which are not script docs or which don't start with
-			// a double-quotation. This will ensure that only C++ classes and explictly named classes will
+			// a double-quotation. This will ensure that only C++ classes and explicitly named classes will
 			// be added.
 			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
 		}

@@ -196,7 +196,7 @@ int register_test_command(String p_command, TestFunc p_function);
 		MessageQueue::get_singleton()->flush();                                                           \
 	}
 
-// We toogle _print_error_enabled to prevent display server not supported warnings.
+// We toggle _print_error_enabled to prevent display server not supported warnings.
 #define SEND_GUI_MOUSE_MOTION_EVENT(m_object, m_local_pos, m_mask, m_modifers) \
 	{                                                                          \
 		bool errors_enabled = _print_error_enabled;                            \

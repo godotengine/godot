@@ -493,7 +493,7 @@
 		</member>
 		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
 			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
-			[b]Note:[/b] Progress bar is dislayed only if [member threaded] is enabled.
+			[b]Note:[/b] Progress bar is displayed only if [member threaded] is enabled.
 		</member>
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].

@@ -65,7 +65,7 @@
 			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
 		</member>
 		<member name="albedo_tex_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
-			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF paramenters.
+			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.

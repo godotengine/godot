@@ -1395,7 +1395,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			// With selection should be a normal backsapce.
+			// With selection should be a normal backspace.
 			((Array)lines_edited_args[0])[0] = 1;
 			((Array)lines_edited_args[0])[1] = 1;
 
@@ -1469,7 +1469,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			// With selection should be a normal backsapce.
+			// With selection should be a normal backspace.
 			((Array)lines_edited_args[0])[0] = 1;
 			((Array)lines_edited_args[0])[1] = 1;
 
@@ -1542,7 +1542,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			// With selection should be a normal backsapce.
+			// With selection should be a normal backspace.
 			((Array)lines_edited_args[0])[0] = 1;
 			((Array)lines_edited_args[0])[1] = 1;
 
@@ -2784,7 +2784,7 @@ TEST_CASE("[SceneTree][TextEdit] line wrapping") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();
 
-	// Set size for boundry.
+	// Set size for boundary.
 	text_edit->set_size(Size2(800, 200));
 	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	CHECK_FALSE(text_edit->is_line_wrapped(0));
