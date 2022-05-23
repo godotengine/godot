@@ -9687,7 +9687,8 @@ msgstr ""
 "cuando se use un shader a vertices desplazados."
 
 #: doc/classes/ArrayMesh.xml
-msgid "Default value used for index_array_len when no indices are present."
+#, fuzzy
+msgid "Value used internally when no indices are present."
 msgstr "Valor por defecto usado para un index_array_len cuando no hay indices."
 
 #: doc/classes/ArrayMesh.xml
@@ -17838,7 +17839,6 @@ msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "Returns the object's [RID]."
 msgstr "Devuelve el [RID] del objeto."
 
@@ -21912,17 +21912,19 @@ msgstr ""
 "encima del nodo."
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
-"Show the system's wait mouse cursor, often an hourglass, when the user "
-"hovers the node."
+"Show the system's wait mouse cursor when the user hovers the node. Often an "
+"hourglass."
 msgstr ""
-"Muestra el cursor del ratón de espera del sistema, a menudo un reloj de "
-"arena, cuando el usuario pasa por encima del nodo."
+"Muestra el cursor del ratón ocupado del sistema cuando el usuario pasa por "
+"encima del nodo. A menudo un reloj de arena."
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
 "Show the system's busy mouse cursor when the user hovers the node. Often an "
-"hourglass."
+"arrow with a small hourglass."
 msgstr ""
 "Muestra el cursor del ratón ocupado del sistema cuando el usuario pasa por "
 "encima del nodo. A menudo un reloj de arena."
@@ -26871,7 +26873,8 @@ msgstr ""
 "Devuelve el progreso del escaneo de 0 a 1 si el FS está siendo escaneado."
 
 #: doc/classes/EditorFileSystem.xml
-msgid "Returns [code]true[/code] of the filesystem is being scanned."
+#, fuzzy
+msgid "Returns [code]true[/code] if the filesystem is being scanned."
 msgstr ""
 "Devuelve [code]true[/code] del sistema de archivos está siendo escaneado."
 
@@ -32315,6 +32318,19 @@ msgstr ""
 "de base)."
 
 #: doc/classes/Font.xml
+msgid ""
+"Returns outline contours of the glyph as a [code]Dictionary[/code] with the "
+"following contents:\n"
+"[code]points[/code]         - [PoolVector3Array], containing outline points. "
+"[code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is "
+"the type of the point, using the [enum ContourPointTag] values.\n"
+"[code]contours[/code]       - [PoolIntArray], containing indices the end "
+"points of each contour.\n"
+"[code]orientation[/code]    - [bool], contour orientation. If [code]true[/"
+"code], clockwise contours must be filled."
+msgstr ""
+
+#: doc/classes/Font.xml
 #, fuzzy
 msgid ""
 "Returns the size of a character, optionally taking kerning into account if "
@@ -32323,6 +32339,32 @@ msgid ""
 msgstr ""
 "Devuelve el tamaño de un carácter, opcionalmente teniendo en cuenta el "
 "kerning si se proporciona el siguiente carácter."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns resource id of the cache texture containing the char."
+msgstr "Devuelve la longitud del cuaternario."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the cache texture containing the char."
+msgstr "Devuelve la posición de contacto en el colisionador."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns char offset from the baseline."
+msgstr "Devuelve el desplazamiento de la textura del tile."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the char."
+msgstr "Devuelve el seno del parámetro."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns rectangle in the cache texture containing the char."
+msgstr ""
+"Devuelve un rectángulo que encierra los tiles usados (no vacíos) del mapa."
 
 #: doc/classes/Font.xml
 msgid "Returns the font descent (number of pixels below the baseline)."
@@ -32363,6 +32405,23 @@ msgstr ""
 "Después de editar una fuente (cambiar el tamaño, el ascenso, los caracteres, "
 "etc.). Llame a esta función para propagar los cambios a los controles que "
 "puedan utilizarla."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Contour point is on the curve."
+msgstr "Elimina todos los puntos de la curva."
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a conic "
+"(quadratic) Bézier arc."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a cubic "
+"Bézier arc."
+msgstr ""
 
 #: doc/classes/FuncRef.xml
 msgid "Reference to a function in an object."
@@ -34821,8 +34880,11 @@ msgid "Emitted when the user presses [code]Ctrl + C[/code]."
 msgstr "Se emite cuando el usuario pulsa [kbd]Ctrl + C[/kbd]."
 
 #: doc/classes/GraphEdit.xml
-msgid "Emitted when a GraphNode is attempted to be removed from the GraphEdit."
-msgstr "Emitido cuando se intenta eliminar un GraphNode del GraphEdit."
+msgid ""
+"Emitted when a GraphNode is attempted to be removed from the GraphEdit. "
+"Provides a list of node names to be removed (all selected nodes, excluding "
+"nodes without closing button)."
+msgstr ""
 
 #: doc/classes/GraphEdit.xml
 msgid ""
@@ -35802,7 +35864,8 @@ msgstr ""
 "Un HingeJoint3D normalmente utiliza el eje Z del cuerpo A como eje de "
 "bisagra, aunque se puede especificar otro eje al añadirlo manualmente."
 
-#: doc/classes/HingeJoint.xml doc/classes/SpriteBase3D.xml
+#: doc/classes/HingeJoint.xml doc/classes/Label3D.xml
+#: doc/classes/SpriteBase3D.xml
 msgid "Returns the value of the specified flag."
 msgstr "Devuelve el valor de la flag especificada."
 
@@ -37467,8 +37530,12 @@ msgstr ""
 "[HTTPClient] no puede conectarse al host."
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum allowed size for response bodies."
-msgstr "Tamaño máximo permitido para los cuerpos de la respuesta."
+msgid ""
+"Maximum allowed size for response bodies ([code]-1[/code] means no limit). "
+"When only small files are expected, this can be used to prevent disallow "
+"receiving files that are too large, preventing potential denial of service "
+"attacks."
+msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 #, fuzzy
@@ -37484,13 +37551,34 @@ msgstr ""
 "archivos grandes para lograr mejores velocidades a costa de la memoria."
 
 #: doc/classes/HTTPRequest.xml
-msgid "The file to download into. Will output any received file into it."
+msgid ""
+"The file to download into. If set to a non-empty string, the request output "
+"will be written to the file located at the path. If a file already exists at "
+"the specified location, it will be overwritten as soon as body data begins "
+"to be received.\n"
+"[b]Note:[/b] Folders are not automatically created when the file is created. "
+"If [member download_file] points to a subfolder, it's recommended to create "
+"the necessary folders beforehand using [method Directory.make_dir_recursive] "
+"to ensure the file can be written."
 msgstr ""
-"El archivo para descargar. dará salida a cualquier archivo recibido en él."
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum number of allowed redirects."
+#, fuzzy
+msgid ""
+"Maximum number of allowed redirects. This is used to prevent endless "
+"redirect loops."
 msgstr "Número máximo de redirecciones permitidas."
+
+#: doc/classes/HTTPRequest.xml
+msgid ""
+"If set to a value greater than [code]0.0[/code], the HTTP request will time "
+"out after [code]timeout[/code] seconds have passed and the request is not "
+"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
+"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
+"application from getting stuck if the request fails to get a response in a "
+"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
+"the download from failing if it takes too much time."
+msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 msgid "If [code]true[/code], multithreading is used to improve performance."
@@ -39429,24 +39517,26 @@ msgstr ""
 "realizar una operación de dibujo o para realizar selecciones."
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
-"This cursor shape denotes that the application is still usable during the "
-"operation."
-msgstr ""
-"Espera el cursor. Indica que la aplicación está ocupada realizando una "
-"operación. La forma del cursor indica que la aplicación sigue siendo "
-"utilizable durante la operación."
-
-#: doc/classes/Input.xml
-msgid ""
-"Busy cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application isn't usable during the "
 "operation (e.g. something is blocking its main thread)."
 msgstr ""
 "Cursor ocupado. Indica que la aplicación está ocupada realizando una "
 "operación. Esta forma de cursor denota que la aplicación no es utilizable "
 "durante la operación (por ejemplo, algo está bloqueando su hilo principal)."
+
+#: doc/classes/Input.xml
+#, fuzzy
+msgid ""
+"Busy cursor. Indicates that the application is busy performing an operation. "
+"This cursor shape denotes that the application is still usable during the "
+"operation."
+msgstr ""
+"Espera el cursor. Indica que la aplicación está ocupada realizando una "
+"operación. La forma del cursor indica que la aplicación sigue siendo "
+"utilizable durante la operación."
 
 #: doc/classes/Input.xml
 msgid "Drag cursor. Usually displayed when dragging something."
@@ -42596,11 +42686,11 @@ msgstr ""
 "mitad de los caracteres del texto. Es útil para animar el texto en un cuadro "
 "de diálogo."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "The text to display on screen."
 msgstr "El texto a mostrar en la pantalla."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "If [code]true[/code], all the text displays as UPPERCASE."
 msgstr "Si [code]true[/code], todo el texto se muestra como MAYÚSCULAS."
 
@@ -42618,36 +42708,36 @@ msgid "Restricts the number of characters to display. Set to -1 to disable."
 msgstr ""
 "Restringe el número de caracteres a mostrar. Ponlo en -1 para desactivarlo."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the left (default)."
 msgstr "Alinea las filas a la izquierda (por defecto)."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows centered."
 msgstr "Alinea las filas centradas."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the right."
 msgstr "Alinea las filas a la derecha."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Expand row whitespaces to fit the width."
 msgstr ""
 "Ampliar los espacios en blanco de las filas para que se ajusten al ancho."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the top."
 msgstr "Alinea todo el texto en la parte superior."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the center."
 msgstr "Alinea todo el texto al centro."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the bottom."
 msgstr "Alinea todo el texto al fondo."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text by spreading the rows."
 msgstr "Alinear todo el texto extendiendo las filas."
 
@@ -42691,6 +42781,254 @@ msgstr "[Font] que se usa para el texto de las [Label]."
 #: doc/classes/Label.xml
 msgid "Background [StyleBox] for the [Label]."
 msgstr "Fondo [StyleBox] para la [Label]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Displays plain text in a 3D world."
+msgstr "Nodo de sprite 2D en un mundo 3D."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Label3D displays plain text in a 3D world. It gives you control over the "
+"horizontal and vertical alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Returns a [TriangleMesh] with the label's vertices following its current "
+"configuration (such as its [member pixel_size])."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the specified flag will be enabled. See [enum Label3D."
+"DrawFlags] for a list of flags."
+msgstr ""
+"Devuelve [code]true[/code], si el flag especificado está activado. Ver el "
+"enumerador [enum Flags] para las opciones."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for "
+"possible values."
+msgstr ""
+"El modo de orientación de TileMap. Vea [enum Mode] para los posibles valores."
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+msgid "Threshold at which the alpha scissor will discard values."
+msgstr "Umbral en el que el alpha scissor descartará los valores."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "If [code]true[/code], wraps the text to the [member width]."
+msgstr "Si [code]true[/code], oculta la línea del índice especificado."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"The billboard mode to use for the label. See [enum SpatialMaterial."
+"BillboardMode] for possible values."
+msgstr ""
+"La dirección de llenado. Ver [enum FillMode] para los posibles valores."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], text can be seen from the back as well, if "
+"[code]false[/code], it is invisible when looking at it from behind."
+msgstr ""
+"Si [code]true[/code], la textura también se puede ver desde atrás, si "
+"[code]false[/code], es invisible cuando se mira desde atrás."
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the label is rendered at the same size regardless of "
+"distance."
+msgstr ""
+"Si [code]true[/code], el objeto se renderiza con el mismo tamaño "
+"independientemente de la distancia."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "[Font] used for the [Label3D]'s text."
+msgstr "[Font] que se usa para el texto de las [Label]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center, right. Set "
+"it to one of the [enum Align] constants."
+msgstr ""
+"Controla la alineación horizontal del texto. Apoya la izquierda, el centro, "
+"la derecha, y el relleno, o la justificación. Ponlo en una de las constantes "
+"[enum Align]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Vertical space between lines in multiline [Label3D]."
+msgstr "Espacio vertical entre líneas en multilínea [Label]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Text [Color] of the [Label3D]."
+msgstr "[Color] del texto predeterminado de la [Label]."
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"If [code]true[/code], depth testing is disabled and the object will be drawn "
+"in render order."
+msgstr ""
+"Si [code]true[/code], la prueba de profundidad está desactivada y el objeto "
+"se dibujará en orden de renderización."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The text drawing offset (in pixels)."
+msgstr "El desplazamiento al dibujar de la textura."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The tint of [Font]'s outline."
+msgstr "La altura del cilindro."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"Sets the render priority for the text outline. Higher priority objects will "
+"be sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+"Establece la prioridad de renderización de los objetos transparentes en las "
+"escenas 3D. Los objetos de mayor prioridad se clasificarán delante de los de "
+"menor prioridad.\n"
+"[b]Nota:[/b] esto sólo se aplica a la clasificación de los objetos "
+"transparentes. Esto no afectará a la forma en que se clasifican los objetos "
+"transparentes en relación con los opacos. Esto se debe a que los objetos "
+"opacos no se clasifican, mientras que los transparentes se clasifican de "
+"atrás hacia adelante (sujetos a prioridad)."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The size of one pixel's width on the label to scale it in 3D."
+msgstr "El tamaño del ancho de un píxel en el sprite para escalarlo en 3D."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"Sets the render priority for the text. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+"Establece la prioridad de renderización de los objetos transparentes en las "
+"escenas 3D. Los objetos de mayor prioridad se clasificarán delante de los de "
+"menor prioridad.\n"
+"[b]Nota:[/b] esto sólo se aplica a la clasificación de los objetos "
+"transparentes. Esto no afectará a la forma en que se clasifican los objetos "
+"transparentes en relación con los opacos. Esto se debe a que los objetos "
+"opacos no se clasifican, mientras que los transparentes se clasifican de "
+"atrás hacia adelante (sujetos a prioridad)."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the [Light] in the [Environment] has effects on the "
+"label."
+msgstr ""
+"Si [code]true[/code], la [Light] en el [Environment] tiene efectos sobre el "
+"sprite."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"Controls the text's vertical alignment. Supports top, center, bottom. Set it "
+"to one of the [enum VAlign] constants."
+msgstr ""
+"Controla la alineación vertical del texto. Soporta la parte superior, el "
+"centro, la parte inferior y el relleno. Ponlo en una de las constantes [enum "
+"VAlign]."
+
+#: doc/classes/Label3D.xml
+msgid "Text width (in pixels), used for autowrap and fill alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "If set, lights in the environment affect the label."
+msgstr "Si se ajusta, las luces del entorno afectan al sprite."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If set, text can be seen from the back as well. If not, the texture is "
+"invisible when looking at it from behind."
+msgstr ""
+"Si se fija, la textura puede ser vista desde atrás también, si no, es "
+"invisible cuando se mira desde atrás."
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"Disables the depth test, so this object is drawn on top of all others. "
+"However, objects drawn after it in the draw order may cover it."
+msgstr ""
+"Desactiva la prueba de profundidad, así que este objeto se dibuja encima de "
+"todos los demás. Sin embargo, los objetos dibujados después de él en el "
+"orden de dibujo pueden cubrirlo."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"Label is scaled by depth so that it always appears the same size on screen."
+msgstr ""
+"El objeto se escala según la profundidad para que siempre aparezca del mismo "
+"tamaño en la pantalla."
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+msgid "Represents the size of the [enum DrawFlags] enum."
+msgstr "Representa el tamaño del enum [enum DrawFlags]."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode performs standard alpha blending. It can display translucent "
+"areas, but transparency sorting issues may be visible when multiple "
+"transparent materials are overlapping."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode only allows fully transparent or fully opaque pixels. This mode is "
+"also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].\n"
+"[b]Note:[/b] This mode might have issues with anti-aliased fonts and "
+"outlines, try adjusting [member alpha_scissor_threshold] or using SDF font.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode draws fully opaque pixels in the depth prepass. This is slower "
+"than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it "
+"allows displaying translucent areas and smooth edges while using proper "
+"sorting.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
+msgstr ""
 
 #: doc/classes/LargeTexture.xml
 #, fuzzy
@@ -46926,6 +47264,11 @@ msgid ""
 "navigation path, it will return the origin of the agent's parent."
 msgstr ""
 
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [NavigationServer]."
+msgstr "Devuelve el [RID] de la forma enésima de un área."
+
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 #, fuzzy
 msgid ""
@@ -46980,6 +47323,16 @@ msgstr ""
 #, fuzzy
 msgid "The agent height offset to match the navigation mesh height."
 msgstr "Devuelve el desplazamiento del polígono de navegación del tile."
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [NavigationServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector3 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
+msgstr ""
 
 #: doc/classes/NavigationAgent.xml
 msgid ""
@@ -47089,9 +47442,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [Navigation2DServer]."
+msgstr "Devuelve el [RID] de la forma enésima de un área."
+
+#: doc/classes/NavigationAgent2D.xml
 msgid ""
 "Sets the [Navigation2D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation2D] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [Navigation2DServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector2 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -48046,8 +48414,9 @@ msgid ""
 msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
+#, fuzzy
 msgid ""
-"Enable or disable certificate verification when [member use_dtls] "
+"Enable or disable certificate verification when [member use_dtls] is "
 "[code]true[/code]."
 msgstr ""
 "Habilitar o deshabilitar la verificación del certificado cuando [member "
@@ -49323,7 +49692,7 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if the physics interpolated flag is set for this "
 "Node (see [member physics_interpolation_mode]).\n"
-"[b]Note:[/b] Interpolation will only be active is both the flag is set "
+"[b]Note:[/b] Interpolation will only be active if both the flag is set "
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
 msgstr ""
@@ -59851,9 +60220,9 @@ msgstr ""
 "submenú."
 
 #: doc/classes/PopupMenu.xml
+#, fuzzy
 msgid ""
-"Returns the tooltip associated with the specified index index [code]idx[/"
-"code]."
+"Returns the tooltip associated with the specified index [code]idx[/code]."
 msgstr ""
 "Devuelve la punta de la herramienta asociada al índice especificado "
 "[code]idx[/code]."
@@ -67527,7 +67896,8 @@ msgid "The default text font."
 msgstr "La fuente por defecto."
 
 #: doc/classes/RichTextLabel.xml
-msgid "The background The background used when the [RichTextLabel] is focused."
+#, fuzzy
+msgid "The background used when the [RichTextLabel] is focused."
 msgstr "El fondo utilizado cuando se enfoca el [RichTextLabel]."
 
 #: doc/classes/RichTextLabel.xml
@@ -69292,16 +69662,6 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"If [code]true[/code], the application automatically accepts quitting. "
-"Enabled by default.\n"
-"For mobile platforms, see [method set_quit_on_go_back]."
-msgstr ""
-"Si [code]true[/code], la aplicación acepta automáticamente salir. Habilitado "
-"por defecto.\n"
-"Para las plataformas móviles, véase [method set_quit_on_go_back]."
-
-#: doc/classes/SceneTree.xml
-msgid ""
 "Sets the given [code]property[/code] to [code]value[/code] on all members of "
 "the given group."
 msgstr ""
@@ -69322,23 +69682,20 @@ msgid "Marks the most recent [InputEvent] as handled."
 msgstr "Devuelve el [InputEvent] del atajo como una [String]."
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
-msgid ""
-"If [code]true[/code], the application quits automatically on going back (e."
-"g. on Android). Enabled by default.\n"
-"To handle 'Go Back' button when this option is disabled, use [constant "
-"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
-msgstr ""
-"Si [code]true[/code], la aplicación se cierra automáticamente al volver (por "
-"ejemplo, en Android). Habilitado por defecto.\n"
-"Para manejar el botón 'Retroceder' cuando esta opción está desactivada, usa "
-"[constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST]."
-
-#: doc/classes/SceneTree.xml
 msgid ""
 "Configures screen stretching to the given [enum StretchMode], [enum "
 "StretchAspect], minimum size and [code]scale[/code]."
 msgstr ""
+
+#: doc/classes/SceneTree.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the application automatically accepts quitting.\n"
+"For mobile platforms, see [member quit_on_go_back]."
+msgstr ""
+"Si [code]true[/code], la aplicación acepta automáticamente salir. Habilitado "
+"por defecto.\n"
+"Para las plataformas móviles, véase [method set_quit_on_go_back]."
 
 #: doc/classes/SceneTree.xml
 msgid "The current scene."
@@ -69428,6 +69785,19 @@ msgid ""
 "using [member ProjectSettings.physics/common/physics_interpolation], this "
 "property allows control over interpolation at runtime."
 msgstr ""
+
+#: doc/classes/SceneTree.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the application quits automatically on going back (e."
+"g. on Android).\n"
+"To handle 'Go Back' button when this option is disabled, use [constant "
+"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
+msgstr ""
+"Si [code]true[/code], la aplicación se cierra automáticamente al volver (por "
+"ejemplo, en Android). Habilitado por defecto.\n"
+"Para manejar el botón 'Retroceder' cuando esta opción está desactivada, usa "
+"[constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST]."
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -72234,6 +72604,10 @@ msgstr ""
 "espacio lineal."
 
 #: doc/classes/SpatialMaterial.xml
+msgid "Enables signed distance field rendering shader."
+msgstr ""
+
+#: doc/classes/SpatialMaterial.xml
 msgid "If [code]true[/code], the object receives no ambient light."
 msgstr "Si [code]true[/code], el objeto no recibe luz ambiental."
 
@@ -72259,14 +72633,6 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], el objeto se renderiza con el mismo tamaño "
 "independientemente de la distancia."
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"If [code]true[/code], depth testing is disabled and the object will be drawn "
-"in render order."
-msgstr ""
-"Si [code]true[/code], la prueba de profundidad está desactivada y el objeto "
-"se dibujará en orden de renderización."
 
 #: doc/classes/SpatialMaterial.xml
 #, fuzzy
@@ -72430,10 +72796,6 @@ msgstr ""
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]esta página[/url] "
 "para una comparación de las coordenadas del mapa normal esperadas por los "
 "motores populares."
-
-#: doc/classes/SpatialMaterial.xml
-msgid "Threshold at which the alpha scissor will discard values."
-msgstr "Umbral en el que el alpha scissor descartará los valores."
 
 #: doc/classes/SpatialMaterial.xml
 #, fuzzy
@@ -73014,15 +73376,6 @@ msgid ""
 "Lighting is calculated per-vertex rather than per-pixel. This can be used to "
 "increase the speed of the shader at the cost of quality."
 msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"Disables the depth test, so this object is drawn on top of all others. "
-"However, objects drawn after it in the draw order may cover it."
-msgstr ""
-"Desactiva la prueba de profundidad, así que este objeto se dibuja encima de "
-"todos los demás. Sin embargo, los objetos dibujados después de él en el "
-"orden de dibujo pueden cubrirlo."
 
 #: doc/classes/SpatialMaterial.xml
 msgid "Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh."
@@ -73850,6 +74203,27 @@ msgstr "El tamaño del ancho de un píxel en el sprite para escalarlo en 3D."
 #: doc/classes/SpriteBase3D.xml
 #, fuzzy
 msgid ""
+"Sets the render priority for the sprite. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+"Establece la prioridad de renderización de los objetos transparentes en las "
+"escenas 3D. Los objetos de mayor prioridad se clasificarán delante de los de "
+"menor prioridad.\n"
+"[b]Nota:[/b] esto sólo se aplica a la clasificación de los objetos "
+"transparentes. Esto no afectará a la forma en que se clasifican los objetos "
+"transparentes en relación con los opacos. Esto se debe a que los objetos "
+"opacos no se clasifican, mientras que los transparentes se clasifican de "
+"atrás hacia adelante (sujetos a prioridad)."
+
+#: doc/classes/SpriteBase3D.xml
+#, fuzzy
+msgid ""
 "If [code]true[/code], the [Light] in the [Environment] has effects on the "
 "sprite."
 msgstr ""
@@ -73885,8 +74259,12 @@ msgstr ""
 "invisible cuando se mira desde atrás."
 
 #: doc/classes/SpriteBase3D.xml
-msgid "Represents the size of the [enum DrawFlags] enum."
-msgstr "Representa el tamaño del enum [enum DrawFlags]."
+#, fuzzy
+msgid ""
+"Sprite is scaled by depth so that it always appears the same size on screen."
+msgstr ""
+"El objeto se escala según la profundidad para que siempre aparezca del mismo "
+"tamaño en la pantalla."
 
 #: doc/classes/SpriteFrames.xml
 #, fuzzy
@@ -77864,6 +78242,58 @@ msgid ""
 msgstr ""
 "Establece el [StyleBox] de este [TextEdit] cuando [member readonly] está "
 "activado."
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "Generate an [PrimitiveMesh] from the text."
+msgstr "Genera un [TriangleMesh] desde la malla."
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Generate an [PrimitiveMesh] from the text.\n"
+"TextMesh can be generated only when using dynamic fonts with vector glyph "
+"contours. Bitmap fonts (including bitmap data in the TrueType/OpenType "
+"containers, like color emoji fonts) are not supported.\n"
+"The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the "
+"height for the front face, 40% for the back face, 10% for the outer edges "
+"and 10% for the inner edges."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "Step (in pixels) used to approximate Bézier curves."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Depths of the mesh, if set to [code]0.0[/code] only front surface, is "
+"generated, and UV layout is changed to use full texture for the front face "
+"only."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "[Font] used for the [TextMesh]'s text."
+msgstr "[Font] que se usa para el texto de las [Label]."
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center and right. "
+"Set it to one of the [enum Align] constants."
+msgstr ""
+"Controla la alineación horizontal del texto. Apoya la izquierda, el centro, "
+"la derecha, y el relleno, o la justificación. Ponlo en una de las constantes "
+"[enum Align]."
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "The size of one pixel's width on the text to scale it in 3D."
+msgstr "El tamaño del ancho de un píxel en el sprite para escalarlo en 3D."
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "The text to generate mesh from."
+msgstr "El tipo del que obtener la constante."
 
 #: doc/classes/Texture.xml
 msgid "Texture for 2D and 3D."
@@ -84986,14 +85416,16 @@ msgstr ""
 "reproducir vídeos en [VideoPlayer]."
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
-msgid "[VideoStream] resource for for video formats implemented via GDNative."
+#, fuzzy
+msgid "[VideoStream] resource for video formats implemented via GDNative."
 msgstr ""
 "[VideoStream] recurso para formatos de video implementados a través de "
 "GDNative."
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
+#, fuzzy
 msgid ""
-"[VideoStream] resource for for video formats implemented via GDNative.\n"
+"[VideoStream] resource for video formats implemented via GDNative.\n"
 "It can be used via [url=https://github.com/KidRigger/godot-"
 "videodecoder]godot-videodecoder[/url] which uses the [url=https://ffmpeg."
 "org]FFmpeg[/url] library."
@@ -96180,7 +96612,7 @@ msgid "Emitted when [member visibility_state] has changed."
 msgstr "Emitido cuando [member frame] cambió."
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
-msgid "We don't know the the target ray mode."
+msgid "We don't know the target ray mode."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml

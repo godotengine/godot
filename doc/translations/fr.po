@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-17 21:38+0000\n"
+"PO-Revision-Date: 2022-05-23 22:03+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
@@ -1018,7 +1018,6 @@ msgstr ""
 "ease] ou [method smoothstep]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
@@ -1044,7 +1043,8 @@ msgstr ""
 "Interpolation linéaire entre deux angles (en radians) par une valeur "
 "normalisée.\n"
 "Similaire à [method lerp], mais interpole correctement lorsque les angles "
-"s'enroulent autour [constant @GDScript.TAU].\n"
+"proches de [constant @GDScript.TAU]. Pour une interpolation plus douce avec "
+"[method lerp_angle], utilisez aussi [method ease] ou [method smoothstep].\n"
 "[codeblock]\n"
 "extends Sprite\n"
 "var elapsed = 0.0\n"
@@ -1053,7 +1053,15 @@ msgstr ""
 "    var max_angle = deg2rad(90.0)\n"
 "    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
 "    elapsed += delta\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note :[/b] Cette méthode utiliser une interpolation avec le chemin le "
+"plus court entre [code]from[/code] et [code]to[/code]. Par contre, si ces "
+"deux angles sont approximativement [code]PI + k * TAU[/code] l'un de l'autre "
+"pour n'importe quel entier [code]k[/code], l'interpolation n'est pas "
+"évidente à cause des erreurs de précision des flottants. Par exemple, "
+"[code]lerp_angle(0, PI, weight)[/code] ira dans le sens anti-horaire, alors "
+"que [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] ira dans le sens "
+"horaire."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1547,7 +1555,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a random floating point value between [code]from[/code] and "
 "[code]to[/code] (both endpoints inclusive).\n"
@@ -1556,12 +1563,12 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code]."
 msgstr ""
-"Plage aléatoire, toute valeur à virgule flottante comprise entre [code]from[/"
-"code] et [code]to[/code].\n"
+"Retourne un flottant aléatoire entre [code]from[/code] et [code]to[/code].\n"
 "[codeblock]\n"
 "prints(rand_range(0, 1), rand_range(0, 1)) # Imprime par exemple 0.135591 "
 "0.405263\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note :[/b] C'est équivalent à [code]randf() * (to - from) + from[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1667,6 +1674,43 @@ msgid ""
 "3\n"
 "[/codeblock]"
 msgstr ""
+"Retourne un tableau avec l'intervalle donné. [method range] peut être appelé "
+"de trois façons:\n"
+"[code]range(n: int)[/code] : Commence à 0, augmente par étape de 1, et "
+"s'arrête [i]avant[/i] [code]n[/code]. L'argument [code]n[/code] est "
+"[b]exclusif[/b].\n"
+"[code]range(b: int, n: int)[/code]: Commence à [code]b[/code], augmente par "
+"étape de 1, et s'arrête [i]avant[/i] [code]n[/code]. L'argument [code]b[/"
+"code] est [b]inclusif[/b], et [code]n[/code] est [b]exclusif[/b].\n"
+"[code]range(b: int, n: int, s: int)[/code]: Commence à [code]b[/code], "
+"augmente/diminue par étape de [code]s[/code], et s'arrête [i]avant[/i] "
+"[code]n[/code]. L'argument [code]b[/code] est [b]inclusif[/b], et [code]n[/"
+"code] est [b]exclusif[/b]. L'argument [code]s[/code] [b]peut[/b] être "
+"négatif, mais pas [code]0[/code]. Si [code]s[/code] est [code]0[/code], une "
+"erreur est affichée.\n"
+"[method range] convertit tous les arguments en [int] avant tout.\n"
+"[b]Note :[/b] Retourne un tableau si les arguments ne correspondent pas "
+"mathématiquement (e.g. [code]range(2, 5, -1)[/code] ou [code]range(5, 5, 1)[/"
+"code]).\n"
+"Exemples :\n"
+"[codeblock]\n"
+"print(range(4))        # Affiche [0, 1, 2, 3]\n"
+"print(range(2, 5))     # Affiche [2, 3, 4]\n"
+"print(range(0, 6, 2))  # Affiche [0, 2, 4]\n"
+"print(range(4, 1, -1)) # Affiche [4, 3, 2]\n"
+"[/codeblock]\n"
+"Pour parcourir un [Array] à l'envers, utilisez :\n"
+"[codeblock]\n"
+"var array = [3, 6, 9]\n"
+"for i in range(array.size(), 0, -1):\n"
+"    print(array[i - 1])\n"
+"[/codeblock]\n"
+"Output:\n"
+"[codeblock]\n"
+"9\n"
+"6\n"
+"3\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2206,28 +2250,27 @@ msgid ""
 "[code]GDScriptFunctionState[/code]. Notice [code]yield(get_tree(), "
 "\"idle_frame\")[/code] from the above example."
 msgstr ""
-"Stoppe l'exécution de la fonction et renvoie l'état suspendu courant à la "
+"Arrête l'exécution de la fonction et renvoie l'état suspendu actuel à la "
 "fonction appelante.\n"
-"Depuis l'appelant, appeler [method GDScriptFunctionState.resume] sur l'état "
+"Depuis l'appelant, appelez [method GDScriptFunctionState.resume] sur l'état "
 "pour reprendre l'exécution. Cela invalide l'état. Dans la fonction reprise, "
-"[code]yield()[/code] renvoie renvoie l'argument qui a été passé lors de "
-"l'appel à la fonction [code]resume()[/code].\n"
-"Si la fonction a reçu comme argument un objet et un signal, l'exécution est "
-"reprise quand l'objet émet le signal donnée. Dans ce cas, [code]yield()[/"
-"code] renvoie l'argument passé lors de l'appel à [code]emit_signal()[/code] "
-"si le signal ne prend qu'un seul argument, ou un tableau contenant tous les "
-"arguments passés lors de l'appel à [code]emit_signal()[/code] si le signal "
-"prend plusieurs arguments.\n"
-"Vous pouvez aussi utilisez [code]yield[/code] pour attendre la fin de "
-"l'exécution d'une fonction:\n"
+"[code]yield()[/code] retourne ce qui a été transmis à la fonction appelée "
+"[code]resume()[/code].\n"
+"Si on lui communique un objet et un signal, l'exécution est reprise lorsque "
+"l'objet émet le signal donné. Dans ce cas, [code]yield()[/code] retourne "
+"l'argument passé à [code]emit_signal()[/code] si le signal ne prend qu'un "
+"seul argument, ou un tableau contenant tous les arguments communiqués à "
+"[code]emit_signal()[/code] si le signal prend plusieurs arguments.\n"
+"Vous pouvez également utiliser [code]yield[/code] pour attendre la fin d'une "
+"fonction:\n"
 "[codeblock]\n"
 "func _ready():\n"
-"    yield(countdown(), \"completed\") # attente que la fonction countdown() "
-"se termine\n"
+"    yield(countdown(), \"completed\") # en attendant que la fonction "
+"countdown() se termine\n"
 "    print('Ready')\n"
 "\n"
 "func countdown():\n"
-"    yield(get_tree(), \"idle_frame\") # renvoie un objet de type "
+"    yield(get_tree(), \"idle_frame\") # retourne un objet "
 "GDScriptFunctionState à _ready()\n"
 "    print(3)\n"
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
@@ -2236,19 +2279,19 @@ msgstr ""
 "    print(1)\n"
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "\n"
-"# affiche:\n"
+"# prints:\n"
 "# 3\n"
 "# 2\n"
 "# 1\n"
 "# Ready\n"
 "[/codeblock]\n"
-"Lors d'une attente sur une fonction, le signal [code]completed[/code] sera "
-"émis automatiquement quand la fonction se termine. Le signal peut donc être "
-"utilisé comme paramètre [code]signal[/code] de la méthode [code]yield[/code] "
-"à reprendre.\n"
-"Pour attendre sur une fonction, la fonction résultante devrait aussi "
-"renvoyer un [code]GDScriptFunctionState[/code]. Notez "
-"[code]yield(get_tree(), \"idle_frame\")[/code] dans l'exemple ci-dessus."
+"Lorsque l'on cède sur une fonction, le signal [code]completed[/code] sera "
+"émis automatiquement lorsque la fonction retourne. Il peut donc être utilisé "
+"comme le [code]signal[/code] du paramètre de la méthode [code]yield[/code] à "
+"reprendre.\n"
+"Dans l'ordre du yield surune fonction, la fonction résultante devrait "
+"également retourner un [code]GDScriptFunctionState[/code]. Notez depuis "
+"l'exemple ci-dessous [code]yield(get_tree(), \"idle_frame\")[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -3985,7 +4028,6 @@ msgstr ""
 "[InputEventMIDI] pour avoir des informations concernant les entrées MIDI."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ""
 "MIDI aftertouch message. This message is most often sent by pressing down on "
 "the key after it \"bottoms out\"."
@@ -4337,7 +4379,6 @@ msgstr ""
 "valeur min. Exemple : [code]\"-360,360,1,or_greater,or_lesser\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ""
 "Hints that a float property should be within an exponential range specified "
 "via the hint string [code]\"min,max\"[/code] or [code]\"min,max,step\"[/"
@@ -4838,7 +4879,6 @@ msgid "Axis-Aligned Bounding Box."
 msgstr "Boîte de délimitation alignée sur l'axe."
 
 #: doc/classes/AABB.xml
-#, fuzzy
 msgid ""
 "[AABB] consists of a position, a size, and several utility functions. It is "
 "typically used for fast overlap tests.\n"
@@ -4848,7 +4888,12 @@ msgid ""
 "integer coordinates."
 msgstr ""
 "Une AABB est constituée en une position, une taille, et plusieurs fonctions "
-"utilitaires. Principalement utilisée pour des tests de chevauchement rapides."
+"utilitaires. Principalement utilisée pour des tests de chevauchement "
+"rapides.\n"
+"Elle utilise des coordonnées à virgule. L'équivalent 2D du [AABB] est le "
+"[Rect2].\n"
+"[b]Note :[/b] Contrairement au [Rect2], la [AABB] n'a pas d'alternative avec "
+"des coordonnées entières."
 
 #: doc/classes/AABB.xml doc/classes/Basis.xml doc/classes/Rect2.xml
 #: doc/classes/Transform.xml doc/classes/Transform2D.xml
@@ -5028,15 +5073,15 @@ msgid "Beginning corner. Typically has values lower than [member end]."
 msgstr "Coin de départ. A généralement des valeurs inférieures à [member end]."
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml
-#, fuzzy
 msgid ""
 "Size from [member position] to [member end]. Typically, all components are "
 "positive.\n"
 "If the size is negative, you can use [method abs] to fix it."
 msgstr ""
-"Taille de [member position] à [member end]. Généralement toutes les "
-"composantes sont positives.\n"
-"Si la taille est négative, vous pouvez utiliser [method abs] pour la réparer."
+"La taille depuis [member position] jusqu'à [member end]. Généralement toutes "
+"les composantes sont positives.\n"
+"Si cette taille est négative, vous pouvez utiliser [method abs] pour la "
+"rendre positive."
 
 #: doc/classes/AcceptDialog.xml
 msgid "Base dialog for user notification."
@@ -5468,7 +5513,6 @@ msgid "Proxy texture for simple frame-based animations."
 msgstr "Texture procuration pour des animations simples basés sur les trames."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "[AnimatedTexture] is a resource format for frame-based animations, where "
 "multiple textures can be chained automatically with a predefined delay for "
@@ -5497,8 +5541,9 @@ msgstr ""
 "joué.\n"
 "[AnimatedTexture] nécessite présentement que les textures de toutes les "
 "trames ont la même taille, sinon ceux qui sont plus grands seront recadrés "
-"pour avoir la même taille que la texture le plus petit. De plus, ça ne "
-"supporte pas [AtlasTexture]. Chaque trame doit être une image distincte."
+"pour avoir la même taille que la texture le plus petit.\n"
+"[b]Note :[/b] Les AnimatedTexture ne peuvent provenir d'un [AtlasTexture]. "
+"Chaque trame doit être une [Texture] distincte."
 
 #: doc/classes/AnimatedTexture.xml
 msgid "Returns the given frame's delay value."
@@ -5539,7 +5584,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "Assigns a [Texture] to the given frame. Frame IDs start at 0, so the first "
 "frame has ID 0, and the last frame of the animation has ID [member frames] - "
@@ -5548,7 +5592,7 @@ msgid ""
 "in mind that only frames from 0 to [member frames] - 1 will be part of the "
 "animation."
 msgstr ""
-"Affecte une [Texture2D] à la trame donnée. Les identifiants de trames "
+"Affecte une [Texture] à la trame donnée. Les identifiants de trames "
 "commencent à 0, alors la première trame a l'identifiant 0, et la dernière "
 "trame a l'identifiant [member frames] - 1.\n"
 "Vous pouvez définir n'importe quel nombre de textures jusqu'à [constant "
@@ -5626,7 +5670,6 @@ msgid "Contains data used to animate everything in the engine."
 msgstr "Contient les données utilisées pour animer tous dans le moteur de jeu."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid ""
 "An Animation resource contains data used to animate everything in the "
 "engine. Animations are divided into tracks, and each track must be linked to "
@@ -5662,11 +5705,11 @@ msgstr ""
 "animation.track_insert_key(track_index, 0.0, 0)\n"
 "animation.track_insert_key(track_index, 0.5, 100)\n"
 "[/codeblock]\n"
-"Les animations sont seulement les contenants pour les données et doivent "
-"être ajoutés aux nœuds telle qu'un [AnimationPlayer] pour être lues. Il y a "
-"plusieurs types de pistes d'animation, chacun avec son propre ensemble de "
-"méthodes spécialisées. Voyez [enum TrackType] pour voir les types "
-"disponibles."
+"Les animations ne contiennent que des données et doivent être ajoutés à un "
+"nœud comme un [AnimationPlayer] ou un [AnimationTreePlayer] pour être lues. "
+"Il y a plusieurs types de pistes d'animation, chacun avec son propre "
+"ensemble de méthodes spécialisées. Voyez [enum TrackType] pour voir les "
+"types disponibles."
 
 #: doc/classes/Animation.xml
 msgid "Adds a track to the Animation."
@@ -6031,7 +6074,6 @@ msgid "Sets the value of an existing key."
 msgstr "Définit la valeur d'une clé."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid ""
 "Sets the path of a track. Paths must be valid scene-tree paths to a node and "
 "must be specified starting from the parent node of the node that will "
@@ -6109,7 +6151,6 @@ msgstr ""
 "le bouclage."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid ""
 "A flag indicating that the animation must loop. This is used for correct "
 "interpolation of animation cycles, and for hinting the player that it must "
@@ -7644,7 +7685,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTree.xml
-#, fuzzy
 msgid ""
 "The path to the Animation track used for root motion. Paths must be valid "
 "scene-tree paths to a node, and must be specified starting from the parent "
@@ -7657,13 +7697,16 @@ msgid ""
 "stay in place. See also [method get_root_motion_transform] and "
 "[RootMotionView]."
 msgstr ""
-"Définit le chemin d'une piste. Les chemins doivent êtres des chemins valides "
-"vers un nœud de l'arbre des scènes, et doivent êtres définis en partant du "
-"nœud parent du nœud qui reproduira l'animation. Les pistes qui contrôlent "
-"des propriétés ou des os doivent ajouter leur nom après le chemin, séparé "
-"par [code]\":\"[/code].\n"
-"Par exemple, [code]\"personnage/squelette:cheville\"[/code] or "
-"[code]\"personnage/maillage:transform/local\"[/code]."
+"Le chemin d'une piste d'Animation pour le mouvement racine. Les chemins "
+"doivent êtres des chemins valides vers un nœud de l'arbre des scènes, et "
+"doivent êtres définis en partant du nœud parent du nœud qui reproduira "
+"l'animation. Les pistes qui contrôlent des propriétés ou des os doivent "
+"ajouter leur nom après le chemin, séparé par [code]\":\"[/code]. Par "
+"exemple, [code]\"personnage/squelette:cheville\"[/code] or "
+"[code]\"personnage/maillage:transform/local\"[/code].\n"
+"Si la piste a un type [constant Animation.TYPE_TRANSFORM], la transformation "
+"sera annulée visuellement, et l'animation apparaitra fixe. Voir aussi "
+"[method get_root_motion_transform] et [RootMotionView]."
 
 #: doc/classes/AnimationTree.xml
 msgid "The root animation node of this [AnimationTree]. See [AnimationNode]."
@@ -7706,10 +7749,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Adds a [code]type[/code] node to the graph with name [code]id[/code]."
 msgstr ""
-"Retourne [code]true[/code] si la piste à l'index [code]idx[/code] est active."
+"Ajoute un nœud du [code]type[/code] au graphe avec le nom [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7816,12 +7858,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid ""
 "Connects node [code]id[/code] to [code]dst_id[/code] at the specified input "
 "slot."
 msgstr ""
-"Déplace l’élément de l’index [code]from_idx[/code] à [code]to_idx[/code]."
+"Connecte le nœud [code]id[/code] à [code]dst_id[/code] pour l'emplacement "
+"d'entrée specifié."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7873,9 +7915,10 @@ msgid "Renames a node in the graph."
 msgstr "Renomme un nœud du graphe."
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Sets the position of a node in the graph given its name and position."
-msgstr "Retourne la position du point à l'index [code]point[/code]."
+msgstr ""
+"Définit la position d'un nœud dans le graphe à partir de son nom et sa "
+"position."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -7899,16 +7942,18 @@ msgstr "Retourne la valeur d'une clé donnée dans une piste donnée."
 #: doc/classes/AnimationTreePlayer.xml
 msgid "Returns whether a OneShot node will auto restart given its name."
 msgstr ""
+"Retourne si un nœud OneShot redémarrera automatiquement à partir de son nom."
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Returns whether a OneShot node is active given its name."
-msgstr "Retourne le sommet à l’index donné."
+msgstr "Retourne si un nœud OneShot est actif à partir de son nom."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
 "Sets the autorestart property of a OneShot node given its name and value."
 msgstr ""
+"Définit la propriété de redémarrage automatique d'un nœud OneShot à partir "
+"de son nom et sa valeur."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7940,14 +7985,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Starts a OneShot node given its name."
-msgstr "Commence à jouer l'animation donnée."
+msgstr "Démarre un nœud OneShot suivant son nom."
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Stops the OneShot node with name [code]id[/code]."
-msgstr "Retourne le nom du nœud à [code]idx[/code]."
+msgstr "Arrête le nœud OneShot nommé [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7957,19 +8000,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Removes the animation node with name [code]id[/code]."
-msgstr "Supprime l’animation avec la touche [code]name[/code]."
+msgstr "Supprime le nœud d'animation nommé [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "Resets this [AnimationTreePlayer]."
 msgstr "Réinitialise cet [AnimationTreePlayer]."
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid ""
 "Returns the time scale value of the TimeScale node with name [code]id[/code]."
-msgstr "Retourne le nom du nœud à [code]idx[/code]."
+msgstr "Retourne l'échelle de temps du nœud TimeScale nommé [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -7990,13 +8031,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid ""
 "Deletes the input at [code]input_idx[/code] for the transition node with "
 "name [code]id[/code]."
 msgstr ""
-"Change la position de l'index de la piste [code]idx[/code] à celui définie "
-"par [code]to_idx[/code]."
+"Supprime l'entrée à la position [code]input_idx[/code] pour le nœud de "
+"transition nommé [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8043,11 +8083,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid ""
 "Resizes the number of inputs available for the transition node with name "
 "[code]id[/code]."
-msgstr "Retourne le nom du nœud à [code]idx[/code]."
+msgstr ""
+"Redimensionne le nombre d'entrée disponibles pour le nœud de transition "
+"nommé [code]id[/code]."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8939,7 +8980,6 @@ msgstr ""
 #: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
 #: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
 #: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
-#, fuzzy
 msgid ""
 "Searches the array in reverse order. Optionally, a start search index can be "
 "passed. If negative, the start index is considered relative to the end of "
@@ -8948,7 +8988,9 @@ msgid ""
 msgstr ""
 "Recherche dans le tableau dans l'ordre inversé. En option, la position de "
 "début de la recherche peut être spécifiée. Si négative, la position de début "
-"est considérée comme partant de la fin du tableau."
+"est considérée comme partant de la fin du tableau. Si la position de début "
+"ajustée est hors des limites du tableau, cette méthode cherchera depuis la "
+"fin du tableau."
 
 #: doc/classes/Array.xml
 msgid ""
@@ -9159,7 +9201,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
-msgid "Default value used for index_array_len when no indices are present."
+#, fuzzy
+msgid "Value used internally when no indices are present."
 msgstr ""
 "La valeur par défaut utilisée pour index_array_len quand il n'y pas d'indice."
 
@@ -9402,12 +9445,11 @@ msgstr ""
 "XRPositionalTracker.TrackerHand]."
 
 #: doc/classes/ARVRController.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the bound controller is active. ARVR systems "
 "attempt to track active controllers."
 msgstr ""
-"Retourne [code]true[/code] si le contrôleur lié est actif. Les systèmes XR "
+"Retourne [code]true[/code] si le contrôleur lié est actif. Les systèmes ARVR "
 "tentent de suivre les contrôleurs actifs."
 
 #: doc/classes/ARVRController.xml
@@ -10100,7 +10142,6 @@ msgid "Aligns child controls with the end (right or bottom) of the container."
 msgstr "Aligne les enfants avec le centre du conteneur."
 
 #: doc/classes/AStar.xml
-#, fuzzy
 msgid ""
 "An implementation of A* to find the shortest paths among connected points in "
 "space."
@@ -12121,11 +12162,12 @@ msgstr ""
 "distance, désactivant ainsi l'atténuation."
 
 #: doc/classes/AudioStreamPlayer3D.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], audio plays when the AudioStreamPlayer3D node is added "
 "to scene tree."
-msgstr "Si [code]true[/code], la lecture commence au chargement de la scène."
+msgstr ""
+"Si [code]true[/code], la lecture commence dès que le AudioStreamPlayer3D est "
+"ajouté à la scène."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "The bus on which this audio is playing."
@@ -12649,9 +12691,8 @@ msgid "Returns when the baker cannot save per-mesh textures to file."
 msgstr "Renvoie l'arc tangente des paramètres."
 
 #: doc/classes/BakedLightmap.xml
-#, fuzzy
 msgid "The size of the generated lightmaps is too large."
-msgstr "Taille du plan généré."
+msgstr "La taille de la lightmap générée est trop grande."
 
 #: doc/classes/BakedLightmap.xml
 msgid "Some mesh contains UV2 values outside the [code][0,1][/code] range."
@@ -12931,9 +12972,10 @@ msgid "2.5D Demo"
 msgstr "Démo 2.5D"
 
 #: doc/classes/Basis.xml
-#, fuzzy
 msgid "Constructs a pure rotation basis matrix from the given quaternion."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Quat] donné."
+msgstr ""
+"Construit la matrice d'une base de rotation seulement depuis le quaternion "
+"donné."
 
 #: doc/classes/Basis.xml
 msgid ""
@@ -13004,16 +13046,17 @@ msgid "Returns the inverse of the matrix."
 msgstr "Retourne l'inverse de la matrice."
 
 #: doc/classes/Basis.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this basis and [code]b[/code] are approximately "
 "equal, by calling [code]is_equal_approx[/code] on each component.\n"
 "[b]Note:[/b] For complicated reasons, the epsilon argument is always "
 "discarded. Don't use the epsilon argument, it does nothing."
 msgstr ""
-"Retourne [code]true[/code] si cette [AABB] et [code]aabb[/code] sont "
+"Retourne [code]true[/code] si cette base et [code]b[/code] sont "
 "approximativement égales, en appelant [method @GDScript.is_equal_approx] sur "
-"chaque composantes."
+"chaque composantes.\n"
+"[b]Note :[/b] Pour des raisons compliquées, l'argument epsilon est toujours "
+"ignoré. Ne l'utilisez pas, il ne sert à rien."
 
 #: doc/classes/Basis.xml
 msgid ""
@@ -13023,13 +13066,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Basis.xml
-#, fuzzy
 msgid ""
 "Introduce an additional rotation around the given axis by [code]angle[/code] "
 "(in radians). The axis must be a normalized vector."
 msgstr ""
-"Pivote ce vecteur autour de l'axe donné par [code]phi[/code] radians. L'axe "
-"donné doit être normalisé."
+"Ajoute une rotation supplémentaire autour de l'axe donné par [code]angle[/"
+"code] (en radians). L'axe doit être normalisé."
 
 #: doc/classes/Basis.xml
 msgid ""
@@ -13232,9 +13274,8 @@ msgstr ""
 "[code]path[/code]."
 
 #: doc/classes/BitmapFont.xml
-#, fuzzy
 msgid "Returns a kerning pair as a difference."
-msgstr "Renvoie une paire de kerning comme une différence."
+msgstr "Retourne une paire de kerning de différence."
 
 #: doc/classes/BitmapFont.xml
 msgid "Returns the font atlas texture at index [code]idx[/code]."
@@ -13473,13 +13514,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/BoxContainer.xml
-#, fuzzy
 msgid ""
 "The alignment of the container's children (must be one of [constant "
 "ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END])."
 msgstr ""
-"L’alignement des enfants du conteneur (doit être l’un des [constant "
-"ALIGN_BEGIN], [constant ALIGN_CENTER], ou [constant ALIGN_END])."
+"L'alignement des enfants du conteneur (doit être [constant ALIGN_BEGIN], "
+"[constant ALIGN_CENTER] ou [constant ALIGN_END])."
 
 #: doc/classes/BoxContainer.xml
 msgid "Aligns children with the beginning of the container."
@@ -13741,9 +13781,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera.xml
-#, fuzzy
 msgid "Returns the camera's RID from the [VisualServer]."
-msgstr "Retourne le RID de la caméra depuis le [RenderingServer]."
+msgstr "Retourne le RID de la caméra depuis le [VisualServer]."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -14316,9 +14355,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CameraFeed.xml
-#, fuzzy
 msgid "Returns the unique ID for this feed."
-msgstr "Retourne le nom de ce répertoire."
+msgstr "Retourne l'identifiant unique de ce flux."
 
 #: doc/classes/CameraFeed.xml
 #, fuzzy
@@ -14334,9 +14372,8 @@ msgid "If [code]true[/code], the feed is active."
 msgstr "Si [code]true[/code], le flux est actif."
 
 #: doc/classes/CameraFeed.xml
-#, fuzzy
 msgid "The transform applied to the camera's image."
-msgstr "L'image de la caméra du composant CbCr."
+msgstr "La transformation appliquée à l'image de la camera."
 
 #: doc/classes/CameraFeed.xml
 msgid "No image set for the feed."
@@ -14579,7 +14616,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-#, fuzzy
 msgid ""
 "Draws multiple disconnected lines with a uniform [code]color[/code]. When "
 "drawing large amounts of lines, this is faster than using individual [method "
@@ -14593,13 +14629,19 @@ msgid ""
 "antialiasing. 2D batching is also still supported with those antialiased "
 "lines."
 msgstr ""
-"Dessine des segments de ligne interconnectés avec une [code]width[/code] "
-"uniforme et une coloration segment par segment. Les couleurs attribuées aux "
-"segments de ligne correspondent par index entre [code]points[/code] et "
-"[code]colors[/code]."
+"Dessine des segments de ligne déconnectées avec color [code]width[/code] "
+"uniforme. Pour l'affichage de beaucoup de lignes, il est plus rapide de "
+"l'utiliser plutôt que faire plusieurs appels à [method draw_line]. Pour "
+"dessiner des lignes connectées, utilisez plutôt [method draw_polyline].\n"
+"[b]Note :[/b] [code]width[/code] and [code]antialiased[/code] ne sont "
+"actuellement pas implémentés et n'ont aucun effet. Pour corriger cela, "
+"installez le greffon [url=https://github.com/godot-extended-libraries/godot-"
+"antialiased-line2d]Antialiased Line2D[/url] et créez un nœud "
+"AntialiasedPolygon2D. Ce nœud utilise une texture avec différents niveaux de "
+"mipmap pour l'anti-crénelage. Le batching 2D est aussi supporté pour lignes "
+"avec anti-crénelage."
 
 #: doc/classes/CanvasItem.xml
-#, fuzzy
 msgid ""
 "Draws multiple disconnected lines with a uniform [code]width[/code] and "
 "segment-by-segment coloring. Colors assigned to line segments match by index "
@@ -14618,7 +14660,14 @@ msgstr ""
 "Dessine des segments de ligne interconnectés avec une [code]width[/code] "
 "uniforme et une coloration segment par segment. Les couleurs attribuées aux "
 "segments de ligne correspondent par index entre [code]points[/code] et "
-"[code]colors[/code]."
+"[code]colors[/code].\n"
+"[b]Note :[/b] Le fonctionnement interne peut provoquer des problèmes de "
+"rendu de l'anti-crénelage lors de l'affichage de polygones transparents voir "
+"peut ne pas fonctionner sur certaines plateformes. Pour corriger cela, "
+"installez le greffon [url=https://github.com/godot-extended-libraries/godot-"
+"antialiased-line2d]Antialiased Line2D[/url] et créez un nœud "
+"AntialiasedPolygon2D. Ce nœud utilise une texture avec différents niveaux de "
+"mipmap pour l'anti-crénelage."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -14656,7 +14705,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-#, fuzzy
 msgid ""
 "Draws interconnected line segments with a uniform [code]width[/code] and "
 "segment-by-segment coloring, and optional antialiasing. Colors assigned to "
@@ -14674,7 +14722,17 @@ msgstr ""
 "Dessine des segments de ligne interconnectés avec une [code]width[/code] "
 "uniforme et une coloration segment par segment. Les couleurs attribuées aux "
 "segments de ligne correspondent par index entre [code]points[/code] et "
-"[code]colors[/code]."
+"[code]colors[/code]. Pour l'affichage de beaucoup de lignes, il est plus "
+"rapide de l'utiliser plutôt que faire plusieurs appels à [method draw_line]. "
+"Pour dessiner des lignes déconnectées, utilisez plutôt [method "
+"draw_multiline_colors]. Voir aussi [method draw_polygon].\n"
+"[b]Note :[/b] Le fonctionnement interne peut provoquer des problèmes de "
+"rendu de l'anti-crénelage lors de l'affichage de polygones transparents voir "
+"peut ne pas fonctionner sur certaines plateformes. Pour corriger cela, "
+"installez le greffon [url=https://github.com/godot-extended-libraries/godot-"
+"antialiased-line2d]Antialiased Line2D[/url] et créez un nœud "
+"AntialiasedPolygon2D. Ce nœud utilise une texture avec différents niveaux de "
+"mipmap pour l'anti-crénelage."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -14779,10 +14837,9 @@ msgid "Returns the [RID] of the [World2D] canvas where this item is in."
 msgstr "Retourne le [RID] de la toile [World2D] où cet élément se trouve."
 
 #: doc/classes/CanvasItem.xml
-#, fuzzy
 msgid "Returns the canvas item RID used by [VisualServer] for this item."
 msgstr ""
-"Retourne l’élément de toile RID utilisé par [RenderingServer] pour cet "
+"Retourne le RID de l'élément de canevas utilisé par [VisualServer] pour cet "
 "élément."
 
 #: doc/classes/CanvasItem.xml
@@ -15316,7 +15373,6 @@ msgid "The color the character will be drawn with."
 msgstr "La couleur utilisée pour afficher le caractère."
 
 #: doc/classes/CharFXTransform.xml
-#, fuzzy
 msgid ""
 "The time elapsed since the [RichTextLabel] was added to the scene tree (in "
 "seconds). Time stops when the [RichTextLabel] is paused (see [member Node."
@@ -15324,11 +15380,11 @@ msgid ""
 "[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden."
 msgstr ""
 "Le temps écoulé depuis que le [RichTextLabel] a été ajouté à l'arbre des "
-"scène (en secondes). Le temps s’arrête lorsque le projet est en pause, à "
-"moins que le membre [member Node.pause_mode] du [RichTextLabel] soit réglé "
-"sur [constant Node.PAUSE_MODE_PROCESS].\n"
-"[b]Note :[/b] Le temps continue de s'écouler quand le [RichTextLabel] est "
-"caché."
+"scène (en secondes). Le temps s’arrête lorsque le projet est en pause (voir "
+"[member Node.pause_mode]). Le temps est réinitialisé quand le texte du "
+"[RichTextLabel] est changé.\n"
+"[b]Note :[/b] Le temps continue de s'écouler même quand le [RichTextLabel] "
+"est caché."
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
@@ -15735,11 +15791,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ClassDB.xml
-#, fuzzy
 msgid ""
 "Returns whether [code]class[/code] or its ancestry has an enum called "
 "[code]name[/code] or not."
-msgstr "Retourne si la [code]class[/code] spécifiée est disponible ou non."
+msgstr ""
+"Retourne si la [code]class[/code] ou ses parents ont une énumération nommée "
+"[code]name[/code] ou non."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -15911,22 +15968,23 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
-#, fuzzy
 msgid ""
 "Returns whether or not the specified [code]bit[/code] of the [member "
 "collision_layer] is set."
-msgstr "Retourne si la [code]class[/code] spécifiée est disponible ou non."
+msgstr ""
+"Retourne quand le [code]bit[/code] spécifié de [member collision_layer] est "
+"défini."
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
-#, fuzzy
 msgid ""
 "Returns whether or not the specified [code]bit[/code] of the [member "
 "collision_mask] is set."
-msgstr "Retourne si la [code]class[/code] spécifiée est disponible ou non."
+msgstr ""
+"Retourne quand le [code]bit[/code] spécifié de [member collision_mask] est "
+"défini."
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "Returns the object's [RID]."
 msgstr "Retourne le [RID] de l'objet."
 
@@ -15965,9 +16023,8 @@ msgid "Returns the [code]owner_id[/code] of the given shape."
 msgstr "Retourne le [code]owner_id[/code] de la forme spécifiée."
 
 #: doc/classes/CollisionObject.xml
-#, fuzzy
 msgid "Adds a [Shape] to the shape owner."
-msgstr "Ajoute un [Shape2D] au propriétaire de la forme."
+msgstr "Ajoute une [Shape2D] au propriétaire de la forme."
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid "Removes all shapes from the shape owner."
@@ -16289,13 +16346,12 @@ msgid "Physics introduction"
 msgstr "Introduction à la physique"
 
 #: doc/classes/CollisionShape.xml
-#, fuzzy
 msgid ""
 "Sets the collision shape's shape to the addition of all its convexed "
 "[MeshInstance] siblings geometry."
 msgstr ""
 "Définit la forme de la forme de collision à l’ajout de toutes ses géométries "
-"de frères et sœurs [MeshInstance3D] convexés ."
+"de frères et sœurs [MeshInstance3D] convexes ."
 
 #: doc/classes/CollisionShape.xml
 msgid ""
@@ -16331,7 +16387,7 @@ msgstr ""
 #: doc/classes/RectangleShape2D.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
 msgid "2D Kinematic Character Demo"
-msgstr ""
+msgstr "Démo de caractère cinétique 2D"
 
 #: doc/classes/CollisionShape2D.xml
 #, fuzzy
@@ -16341,7 +16397,6 @@ msgid ""
 msgstr "Une forme de collision désactivée n’a aucun effet dans le monde."
 
 #: doc/classes/CollisionShape2D.xml
-#, fuzzy
 msgid ""
 "Sets whether this collision shape should only detect collision on one side "
 "(top or bottom).\n"
@@ -16349,7 +16404,9 @@ msgid ""
 "child of an [Area2D] node."
 msgstr ""
 "Définit si cette forme de collision doit uniquement détecter la collision "
-"sur un côté (en haut ou en bas)."
+"sur un côté (en haut ou en bas).\n"
+"[b]Note :[/b] Cette propriété n'a aucun effet si cette [CollisionShape2D] "
+"est un enfant d'un nœud [Area2D]."
 
 #: doc/classes/CollisionShape2D.xml
 msgid ""
@@ -16362,9 +16419,9 @@ msgstr ""
 "collisionneurs qui entrent dans la forme à grande vitesse."
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid "Color in RGBA format using floats on the range of 0 to 1."
-msgstr "Couleur au format RGBA usant de floats sur la plage de 0 à 1."
+msgstr ""
+"Une couleur au format RGBA utilisant des flottants dans l'intervalle 0 à 1."
 
 #: doc/classes/Color.xml
 msgid ""
@@ -16409,6 +16466,15 @@ msgid ""
 "var c4 = Color(\"b2d90a\") # RGB format.\n"
 "[/codeblock]"
 msgstr ""
+"Construit une couleur à partir d'un code HTML hexadécimal au format ARGB ou "
+"RGB. Voir aussi [method @GDScript.ColorN].\n"
+"[codeblock]\n"
+"# Chaque couleur créé aura la même couleur RGBA(178, 217, 10, 255).\n"
+"var c1 = Color(\"#ffb2d90a\") # Au format ARGB avec \"#\".\n"
+"var c2 = Color(\"ffb2d90a\") # Au format ARGB.\n"
+"var c3 = Color(\"#b2d90a\") # Au format RGB avec \"#\".\n"
+"var c4 = Color(\"b2d90a\") # Au format RGB.\n"
+"[/codeblock]"
 
 #: doc/classes/Color.xml
 msgid ""
@@ -16425,7 +16491,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Constructs a color from RGB values, typically between 0 and 1. Alpha will be "
 "1.\n"
@@ -16433,14 +16498,13 @@ msgid ""
 "var color = Color(0.2, 1.0, 0.7) # Similar to Color8(51, 255, 178, 255)\n"
 "[/codeblock]"
 msgstr ""
-"Construit une couleur à partir d'un profil RVB en utilisant des valeurs "
-"entre 0 et 1. Alpha sera toujours 1.\n"
+"Construit une couleur à partir de valeurs RVB, entre 0 et 1. La valeur alpha "
+"sera toujours à 1.\n"
 "[codeblock]\n"
-"var c = Color(0.2, 1.0, 0.7) # Equivalent à RGBA(51, 255, 178, 255)\n"
+"var color = Color(0.2, 1.0, 0.7) # Equivalent à Color8(51, 255, 178, 255)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Constructs a color from RGBA values, typically between 0 and 1.\n"
 "[codeblock]\n"
@@ -16448,10 +16512,9 @@ msgid ""
 "204)\n"
 "[/codeblock]"
 msgstr ""
-"Construit une couleur à partir d'un profil RVB en utilisant des valeurs "
-"entre 0 et 1. Alpha sera toujours 1.\n"
+"Construit une couleur à partir de valeur RVB, entre 0 et 1.\n"
 "[codeblock]\n"
-"var c = Color(0.2, 1.0, 0.7) # Equivalent à RGBA(51, 255, 178, 255)\n"
+"var color = Color(0.2, 1.0, 0.7) # Équivalent à Color8(51, 255, 178, 255)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -16518,7 +16581,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color's grayscale representation.\n"
 "The gray value is calculated as [code](r + g + b) / 3[/code].\n"
@@ -16527,15 +16589,14 @@ msgid ""
 "var gray = c.gray() # A value of 0.466667\n"
 "[/codeblock]"
 msgstr ""
-"Retourne la couleur inversée [code](1 - r, 1 - g, 1 - b, a)[/code].\n"
+"Retourne la représentation en niveaux de gris.\n"
+"La valeur de gris est calculé avec [code](r + g + b) / 3[/code].\n"
 "[codeblock]\n"
-"var c = Color(0,3, 0,4, 0,9)\n"
-"var inverted_color = c.inverted () # Une couleur d'un RGBA (178, 153, 26, "
-"255)\n"
+"var c = Color(0.2, 0.45, 0.82)\n"
+"var gray = c.gray() # A value of 0.466667\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].\n"
 "[codeblock]\n"
@@ -16545,9 +16606,8 @@ msgid ""
 msgstr ""
 "Retourne la couleur inversée [code](1 - r, 1 - g, 1 - b, a)[/code].\n"
 "[codeblock]\n"
-"var c = Color(0,3, 0,4, 0,9)\n"
-"var inverted_color = c.inverted () # Une couleur d'un RGBA (178, 153, 26, "
-"255)\n"
+"var color = Color(0,3, 0,4, 0,9)\n"
+"var inverted_color = color.inverted () # Équivalent à Color(0.7, 0.6, 0.1)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -16597,7 +16657,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 32-bit integer in ABGR format (each byte "
 "represents a color channel). ABGR is the reversed version of the default "
@@ -16611,12 +16670,11 @@ msgstr ""
 "représente un composant du profil ABGR). ABGR est la version inversée du "
 "format par défaut.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_abgr32()) # Affiche 4281565439\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 64-bit integer in ABGR format (each word "
 "represents a color channel). ABGR is the reversed version of the default "
@@ -16626,16 +16684,15 @@ msgid ""
 "print(color.to_abgr64()) # Prints -225178692812801\n"
 "[/codeblock]"
 msgstr ""
-"Retourne l'entier 32 bits de la couleur au format ABGR (chaque octet "
+"Retourne l'entier 64 bits de la couleur au format ABGR (chaque mot "
 "représente un composant du profil ABGR). ABGR est la version inversée du "
 "format par défaut.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_abgr64()) # Affiche -225178692812801\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 32-bit integer in ARGB format (each byte "
 "represents a color channel). ARGB is more compatible with DirectX.\n"
@@ -16645,15 +16702,14 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "Retourne l'entier 32 bits de la couleur au format ABGR (chaque octet "
-"représente un composant du profil ABGR). ABGR est la version inversée du "
-"format par défaut.\n"
+"représente un composant du profil ABGR). ARGB est plus compatible avec "
+"DirectX.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_abgr32()) # Affiche 4281565439\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 64-bit integer in ARGB format (each word "
 "represents a color channel). ARGB is more compatible with DirectX.\n"
@@ -16662,12 +16718,12 @@ msgid ""
 "print(color.to_argb64()) # Prints -2147470541\n"
 "[/codeblock]"
 msgstr ""
-"Retourne l'entier 32 bits de la couleur au format ABGR (chaque octet "
-"représente un composant du profil ABGR). ABGR est la version inversée du "
-"format par défaut.\n"
+"Retourne l'entier 64 bits de la couleur au format ABGR (chaque mot "
+"représente un composant du profil ABGR). ABGR est plus compatible avec "
+"DirectX.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_abgr64()) # Affiche -2147470541\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -16684,7 +16740,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 32-bit integer in RGBA format (each byte "
 "represents a color channel). RGBA is Godot's default format.\n"
@@ -16693,16 +16748,15 @@ msgid ""
 "print(color.to_rgba32()) # Prints 4286526463\n"
 "[/codeblock]"
 msgstr ""
-"Retourne l'entier 32 bits de la couleur au format ABGR (chaque octet "
-"représente un composant du profil ABGR). ABGR est la version inversée du "
-"format par défaut.\n"
+"Retourne la couleur convertie en un entier 32 bits au format RGBA (chaque "
+"octet représente un composant). Le format RGBA est le format par défaut de "
+"Godot.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_rgba32()) # Imprime 4281565439\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color converted to a 64-bit integer in RGBA format (each word "
 "represents a color channel). RGBA is Godot's default format.\n"
@@ -16711,12 +16765,12 @@ msgid ""
 "print(color.to_rgba64()) # Prints -140736629309441\n"
 "[/codeblock]"
 msgstr ""
-"Retourne l'entier 32 bits de la couleur au format ABGR (chaque octet "
-"représente un composant du profil ABGR). ABGR est la version inversée du "
-"format par défaut.\n"
+"Retourne l'entier 64 bits de la couleur au format RGBA (chaque mot "
+"représente un composant du profil RGBA). RGBA est le format par défaut de "
+"Godot.\n"
 "[codeblock]\n"
-"var c = Color(1, 0.5, 0.2)\n"
-"print(c.to_abgr32()) # Imprime 4281565439\n"
+"var color = Color(1, 0.5, 0.2)\n"
+"print(color.to_rgba64()) # Imprime -140736629309441\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -17676,9 +17730,8 @@ msgstr ""
 "[ConcavePolygonShape2D]."
 
 #: doc/classes/ConeTwistJoint.xml
-#, fuzzy
 msgid "A twist joint between two 3D PhysicsBodies."
-msgstr "Une articulation de torsion entre deux corps 3D."
+msgstr "Une articulation de torsion entre deux PhysicsBodies 3D."
 
 #: doc/classes/ConeTwistJoint.xml
 msgid ""
@@ -17873,9 +17926,8 @@ msgstr ""
 "peuvent différer d'un programme à un autre."
 
 #: doc/classes/ConfigFile.xml
-#, fuzzy
 msgid "Removes the entire contents of the config."
-msgstr "Supprime le propriétaire de la forme donnée."
+msgstr "Supprime tout le contenu de la configuration."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -18354,12 +18406,11 @@ msgstr ""
 "prendre le focus."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Finds the previous (above in the tree) [Control] that can receive the focus."
 msgstr ""
-"Retourne le TreeItem précédent dans l'arbre ou un objet nul s'il n'y en a "
-"pas."
+"Retourne le [Control] précédent (au-dessus dans l'arbre) qui peut recevoir "
+"le focus."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -18537,7 +18588,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns the tooltip, which will appear when the cursor is resting over this "
 "control. See [member hint_tooltip]."
@@ -18573,14 +18623,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme [Color] "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_color_override]."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il y a une valeur locale définit pour la "
+"[Color] du thème pour le nom [code]name[/code] de ce nœud [Control].\n"
+"Voir [method add_color_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -18591,14 +18641,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme constant "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_constant_override]."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il y a une valeur locale définit pour la "
+"constante du thème pour le nom [code]name[/code] de ce nœud [Control].\n"
+"Voir [method add_constant_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -18609,46 +18659,48 @@ msgstr ""
 "focus_mode]."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a matching [Theme] in the tree that "
 "has a font item with the specified [code]name[/code] and [code]theme_type[/"
 "code].\n"
 "See [method get_color] for details."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il existe un [Theme] correspondant dans "
+"l’arborescence qui a une police nommée [code]name[/code] et de type "
+"[code]theme_type[/code] spécifiés.\n"
+"Voir [method get_color] pour les détails."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme [Font] "
 "with the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_font_override]."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il y a une valeur locale définit pour la [Font] "
+"du thème pour le nom [code]name[/code] de ce nœud [Control].\n"
+"Voir [method add_font_override]."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a matching [Theme] in the tree that "
 "has an icon item with the specified [code]name[/code] and [code]theme_type[/"
 "code].\n"
 "See [method get_color] for details."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il existe un [Theme] correspondant dans "
+"l’arborescence qui a une icône nommée [code]name[/code] et de type "
+"[code]theme_type[/code] spécifiés.\n"
+"Voir [method get_color] pour les détails."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if there is a local override for a theme icon with "
 "the specified [code]name[/code] in this [Control] node.\n"
 "See [method add_icon_override]."
 msgstr ""
-"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
-"existe, [code]false[/code] autrement."
+"Retourne [code]true[/code] s'il y a une valeur locale définit pour l'icône "
+"du thème pour le nom [code]name[/code] de ce nœud [Control].\n"
+"Voir [method add_icon_override]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -19284,10 +19336,9 @@ msgid "Emitted when the node's minimum size changes."
 msgstr "Émis quand la taille minimale du nœud change."
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "Emitted when a modal [Control] is closed. See [method show_modal]."
 msgstr ""
-"Émis lorsqu'un bouton personnalisé est pressé. Voir [method add_button]."
+"Émis quand un [Control] en mode modal est fermé. Voir [method show_modal]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -19412,16 +19463,20 @@ msgstr ""
 "Affiche le curseur en croix du système quand l'utilisateur survole ce nœud."
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
-"Show the system's wait mouse cursor, often an hourglass, when the user "
-"hovers the node."
-msgstr ""
-
-#: doc/classes/Control.xml
-msgid ""
-"Show the system's busy mouse cursor when the user hovers the node. Often an "
+"Show the system's wait mouse cursor when the user hovers the node. Often an "
 "hourglass."
 msgstr ""
+"Affiche le curseur en croix du système quand l'utilisateur survole ce nœud."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid ""
+"Show the system's busy mouse cursor when the user hovers the node. Often an "
+"arrow with a small hourglass."
+msgstr ""
+"Affiche le curseur en croix du système quand l'utilisateur survole ce nœud."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20110,11 +20165,8 @@ msgstr "Facteur d'aléatoire de la vélocité initiale."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/Particles.xml doc/classes/Particles2D.xml
-#, fuzzy
 msgid "The amount of time each particle will exist (in seconds)."
-msgstr ""
-"Le décalage dans la position avec laquelle le caractère va être affiché (en "
-"pixels)."
+msgstr "La durée que chaque particule existe (en secondes)."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -20664,13 +20716,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CryptoKey.xml
-#, fuzzy
 msgid ""
 "Return [code]true[/code] if this CryptoKey only has the public part, and not "
 "the private one."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
+"Retourne [code]true[/code] si cette CryptoKey ne contient que la partie "
+"publique, et non la partie privée."
 
 #: doc/classes/CryptoKey.xml
 msgid ""
@@ -20813,7 +20864,6 @@ msgid ""
 msgstr ""
 
 #: modules/csg/doc_classes/CSGMesh.xml
-#, fuzzy
 msgid "A CSG Mesh shape that uses a mesh resource."
 msgstr "Une forme de maillage CSG qui utilise une ressource de maillage."
 
@@ -21308,6 +21358,8 @@ msgstr "Enregistre le [CubeMap] sans aucune compression."
 #: doc/classes/CubeMap.xml
 msgid "Store the [CubeMap] with strong compression that reduces image quality."
 msgstr ""
+"Enregistre le [CubeMap] avec une forte compression qui réduit la qualité de "
+"l'image."
 
 #: doc/classes/CubeMap.xml
 msgid ""
@@ -22556,26 +22608,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Directory.xml
-#, fuzzy
 msgid ""
 "Returns whether the target directory exists. The argument can be relative to "
 "the current directory, or an absolute path."
 msgstr ""
-"Retourne si le fichier cible existe. L’argument peut être relatif au "
-"répertoire actuel ou à un chemin d’accès absolu.\n"
-"Si le [Directory] n’est pas ouvert, le chemin d’accès est relatif à "
-"[code]res://[/code]."
+"Retourne quand le dossier cible existe. L'argument peut être relatif au "
+"dossier actuel, ou un chemin absolu."
 
 #: doc/classes/Directory.xml
-#, fuzzy
 msgid ""
 "Returns whether the target file exists. The argument can be relative to the "
 "current directory, or an absolute path."
 msgstr ""
-"Retourne si le fichier cible existe. L’argument peut être relatif au "
-"répertoire actuel ou à un chemin d’accès absolu.\n"
-"Si le [Directory] n’est pas ouvert, le chemin d’accès est relatif à "
-"[code]res://[/code]."
+"Retourne quand le fichier cible existe. L'argument peut être relatif au "
+"dossier actuel, ou un chemin absolu."
 
 #: doc/classes/Directory.xml
 msgid ""
@@ -23502,7 +23548,8 @@ msgid "Returns the scan progress for 0 to 1 if the FS is being scanned."
 msgstr ""
 
 #: doc/classes/EditorFileSystem.xml
-msgid "Returns [code]true[/code] of the filesystem is being scanned."
+#, fuzzy
+msgid "Returns [code]true[/code] if the filesystem is being scanned."
 msgstr "Retourne [code]true[/code] si le système de fichier a été scanné."
 
 #: doc/classes/EditorFileSystem.xml
@@ -25527,13 +25574,12 @@ msgid "Returns the Spatial node associated with this gizmo."
 msgstr "Retourne le chemin d’accès au nœud associé à l’os spécifié."
 
 #: doc/classes/EditorSpatialGizmo.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the handle at index [code]index[/code] is "
 "highlighted by being hovered with the mouse."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"Retourne [code]true[/code] si la poignée à l'index [code]index[/code] est "
+"surlignée quand elle est survolée par le souris."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -25697,9 +25743,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSpinSlider.xml
-#, fuzzy
 msgid "Godot editor's control for editing numeric values."
-msgstr "Éditeur de script de l'éditeur Godot."
+msgstr "Le contrôle d'édition des valeurs numériques de l'éditeur Godot."
 
 #: doc/classes/EditorSpinSlider.xml
 msgid ""
@@ -25811,11 +25856,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
-#, fuzzy
 msgid ""
 "Returns an [Array] of [String]s, each containing the name of a remote "
 "configured in the VCS."
-msgstr "Retourne une représentation [String] de l'évènement."
+msgstr ""
+"Retourne un [Array] de [String], chacune contient le nom d'un dépôt distant "
+"configuré dans le VCS."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid "Returns the name of the underlying VCS provider."
@@ -26993,34 +27039,42 @@ msgstr "Qualité haute du flou de l'effet de profondeur (le plus lent)."
 #: doc/classes/Environment.xml
 msgid "No blur for the screen-space ambient occlusion effect (fastest)."
 msgstr ""
+"Aucun flou pour l'effet d'occlusion ambiante dans l'espace de l'écran (le "
+"plus rapide)."
 
 #: doc/classes/Environment.xml
 msgid "1×1 blur for the screen-space ambient occlusion effect."
 msgstr ""
+"Un flou 1x1 pour l'effet d'occlusion ambiante dans l'espace de l'écran."
 
 #: doc/classes/Environment.xml
 msgid "2×2 blur for the screen-space ambient occlusion effect."
 msgstr ""
+"Un flou 2x2 pour l'effet d'occlusion ambiante dans l'espace de l'écran."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "3×3 blur for the screen-space ambient occlusion effect (slowest)."
-msgstr "Le rayon d'occlusion ambiante de l'espace de l'écran primaire."
+msgstr ""
+"Un flou 3x3 pour l'effet d'occlusion ambiante dans l'espace de l'écran (le "
+"plus lent)."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "Low quality for the screen-space ambient occlusion effect (fastest)."
-msgstr "Qualité la plus basse de l’occlusion ambiante d’espace d’écran."
+msgstr ""
+"La qualité la plus basse de l’occlusion ambiante d’espace d’écran (le plus "
+"rapide)."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "Low quality for the screen-space ambient occlusion effect."
-msgstr "Qualité la plus basse de l’occlusion ambiante d’espace d’écran."
+msgstr ""
+"La qualité la plus basse pour l'effet d’occlusion ambiante dans l’espace de "
+"l’écran."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "Low quality for the screen-space ambient occlusion effect (slowest)."
-msgstr "Qualité la plus basse de l’occlusion ambiante d’espace d’écran."
+msgstr ""
+"La qualité la plus basse de l’occlusion ambiante d’espace d’écran (la plus "
+"lente)."
 
 #: doc/classes/Expression.xml
 msgid "A class that stores an expression you can execute."
@@ -27565,13 +27619,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/File.xml
-#, fuzzy
 msgid ""
 "Opens the file for read operations. The cursor is positioned at the "
 "beginning of the file."
 msgstr ""
-"Ouvre le fichier pour les opérations de lecture et d'écriture. Ne tronque "
-"pas le fichier."
+"Ouvre le fichier en lecture seule. Le curseur du fichier est placé au début "
+"du fichier."
 
 #: doc/classes/File.xml
 #, fuzzy
@@ -27591,14 +27644,13 @@ msgstr ""
 "pas le fichier. Le curseur est placé au début du fichier."
 
 #: doc/classes/File.xml
-#, fuzzy
 msgid ""
 "Opens the file for read and write operations. The file is created if it does "
 "not exist, and truncated if it does. The cursor is positioned at the "
 "beginning of the file."
 msgstr ""
-"Ouvre le fichier pour les opérations d’écriture. Créez-le si le fichier "
-"n’existe pas et tronquer s’il existe."
+"Ouvre le fichier en lecture et écriture. Le fichier est créé s'il n'existe "
+"pas, et est vidé sinon. Le curseur est positionné au début du fichier."
 
 #: doc/classes/File.xml
 msgid "Uses the [url=http://fastlz.org/]FastLZ[/url] compression method."
@@ -27941,10 +27993,49 @@ msgstr ""
 
 #: doc/classes/Font.xml
 msgid ""
+"Returns outline contours of the glyph as a [code]Dictionary[/code] with the "
+"following contents:\n"
+"[code]points[/code]         - [PoolVector3Array], containing outline points. "
+"[code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is "
+"the type of the point, using the [enum ContourPointTag] values.\n"
+"[code]contours[/code]       - [PoolIntArray], containing indices the end "
+"points of each contour.\n"
+"[code]orientation[/code]    - [bool], contour orientation. If [code]true[/"
+"code], clockwise contours must be filled."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
 "Returns the size of a character, optionally taking kerning into account if "
 "the next character is provided. Note that the height returned is the font "
 "height (see [method get_height]) and has no relation to the glyph height."
 msgstr ""
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns resource id of the cache texture containing the char."
+msgstr "Retourne l'identifiant OpenGL de l'image de cette texture."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the cache texture containing the char."
+msgstr "Retourne la position du contact sur le collisionneur."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns char offset from the baseline."
+msgstr "Retourne le décalage de la texture de la tuile."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the char."
+msgstr "Renvoie le sinus du paramètre."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns rectangle in the cache texture containing the char."
+msgstr ""
+"Retourne un rectangle englobant les tuiles utilisées (non vides) de la carte."
 
 #: doc/classes/Font.xml
 msgid "Returns the font descent (number of pixels below the baseline)."
@@ -27977,6 +28068,23 @@ msgstr "Retourne [code]true[/code] si la police a une bordure."
 msgid ""
 "After editing a font (changing size, ascent, char rects, etc.). Call this "
 "function to propagate changes to controls that might use it."
+msgstr ""
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Contour point is on the curve."
+msgstr "Supprime tous les points de la courbe."
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a conic "
+"(quadratic) Bézier arc."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a cubic "
+"Bézier arc."
 msgstr ""
 
 #: doc/classes/FuncRef.xml
@@ -29269,10 +29377,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GIProbe.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], ignores the sky contribution when calculating lighting."
-msgstr "Si [code]true[/code], permet le défilement horizontal."
+msgstr ""
+"Si [code]true[/code], ignore la contribution du ciel dans le calcul de la "
+"lumière."
 
 #: doc/classes/GIProbe.xml
 msgid ""
@@ -29507,13 +29616,12 @@ msgstr ""
 "de caractères donnée, ou [code]false[/code] le cas échéant."
 
 #: modules/mono/doc_classes/GodotSharp.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the Mono runtime is initialized, [code]false[/"
 "code] otherwise."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"Retourne [code]true[/code] si la runtime Mono est initialisée, ou "
+"[code]false[/code] sinon."
 
 #: modules/mono/doc_classes/GodotSharp.xml
 #, fuzzy
@@ -29571,9 +29679,8 @@ msgid "Returns the interpolated color specified by [code]offset[/code]."
 msgstr "Retourne la couleur interpolée spécifiée à [code]offset[/code]."
 
 #: doc/classes/Gradient.xml
-#, fuzzy
 msgid "Removes the color at the index [code]point[/code]."
-msgstr "Retourne la position du point à l'index [code]point[/code]."
+msgstr "Retire la couleur à l'index [code]point[/code]."
 
 #: doc/classes/Gradient.xml
 msgid "Sets the color of the ramp color at index [code]point[/code]."
@@ -29932,8 +30039,11 @@ msgid "Emitted when the user presses [code]Ctrl + C[/code]."
 msgstr "Émis quand l'utilisateur presse [code]Ctrl + C[/code]."
 
 #: doc/classes/GraphEdit.xml
-msgid "Emitted when a GraphNode is attempted to be removed from the GraphEdit."
-msgstr "Émis quand un GraphNode serait retiré d'un GraphEdit."
+msgid ""
+"Emitted when a GraphNode is attempted to be removed from the GraphEdit. "
+"Provides a list of node names to be removed (all selected nodes, excluding "
+"nodes without closing button)."
+msgstr ""
 
 #: doc/classes/GraphEdit.xml
 msgid ""
@@ -30093,14 +30203,12 @@ msgid "Returns the right (output) [Color] of the slot [code]idx[/code]."
 msgstr "Retourne le type du nœud à [code]idx[/code]."
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid "Returns the left (input) type of the slot [code]idx[/code]."
-msgstr "Retourne le type du nœud à [code]idx[/code]."
+msgstr "Retourne le type de gauche (entrée) de l'emplacement [code]idx[/code]."
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid "Returns the right (output) type of the slot [code]idx[/code]."
-msgstr "Retourne le type du nœud à [code]idx[/code]."
+msgstr "Retourne le type de droite (sortie) de l'emplacement [code]idx[/code]."
 
 #: doc/classes/GraphNode.xml
 msgid ""
@@ -30136,21 +30244,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid ""
 "Sets the [Color] of the left (input) side of the slot [code]idx[/code] to "
 "[code]color_left[/code]."
 msgstr ""
-"Définit la taille de l'[AABB] utilisé par le décalcomanie. L’AABB passe de "
-"[code]-extents[/code] à [code]extents[/code]."
+"Définit la [Color] du côté gauche (entrée) de l'emplacement [code]idx[/code] "
+"à [code]color_left[/code]."
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid ""
 "Sets the [Color] of the right (output) side of the slot [code]idx[/code] to "
 "[code]color_right[/code]."
 msgstr ""
-"Déplace l’élément de l’index [code]from_idx[/code] à [code]to_idx[/code]."
+"Définit la [Color] du côté droit (sortie) de l'emplacement [code]idx[/code] "
+"à [code]color_right[/code]."
 
 #: doc/classes/GraphNode.xml
 msgid ""
@@ -30167,20 +30274,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid ""
 "Sets the left (input) type of the slot [code]idx[/code] to [code]type_left[/"
 "code]."
 msgstr ""
-"Déplace l’élément de l’index [code]from_idx[/code] à [code]to_idx[/code]."
+"Définit le type gauche (entrée) de l'emplacement [code]idx[/code] avec "
+"[code]type_left[/code]."
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid ""
 "Sets the right (output) type of the slot [code]idx[/code] to "
 "[code]type_right[/code]."
 msgstr ""
-"Déplace l’élément de l’index [code]from_idx[/code] à [code]to_idx[/code]."
+"Définit le type droit (sortie) de l'emplacement [code]idx[/code] avec "
+"[code]type_right[/code]."
 
 #: doc/classes/GraphNode.xml
 msgid "If [code]true[/code], the GraphNode is a comment node."
@@ -30249,9 +30356,8 @@ msgstr ""
 "glisser la poignée de redimensionnement (voir [member resizable])."
 
 #: doc/classes/GraphNode.xml
-#, fuzzy
 msgid "Emitted when any GraphNode's slot is updated."
-msgstr "Émis lorsqu’un GraphNode est sélectionné."
+msgstr "Émis lorsqu’un emplacement du GraphNode est mis à jour."
 
 #: doc/classes/GraphNode.xml
 msgid "No overlay is shown."
@@ -30719,7 +30825,8 @@ msgid ""
 "[Generic6DOFJoint]."
 msgstr ""
 
-#: doc/classes/HingeJoint.xml doc/classes/SpriteBase3D.xml
+#: doc/classes/HingeJoint.xml doc/classes/Label3D.xml
+#: doc/classes/SpriteBase3D.xml
 msgid "Returns the value of the specified flag."
 msgstr "Retourne la valeur de l'option donnée."
 
@@ -32005,8 +32112,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum allowed size for response bodies."
-msgstr "La taille maximale le corps des réponses."
+msgid ""
+"Maximum allowed size for response bodies ([code]-1[/code] means no limit). "
+"When only small files are expected, this can be used to prevent disallow "
+"receiving files that are too large, preventing potential denial of service "
+"attacks."
+msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
@@ -32017,12 +32128,34 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "The file to download into. Will output any received file into it."
-msgstr "Le fichier dans lequel enregistrer le téléchargement."
+msgid ""
+"The file to download into. If set to a non-empty string, the request output "
+"will be written to the file located at the path. If a file already exists at "
+"the specified location, it will be overwritten as soon as body data begins "
+"to be received.\n"
+"[b]Note:[/b] Folders are not automatically created when the file is created. "
+"If [member download_file] points to a subfolder, it's recommended to create "
+"the necessary folders beforehand using [method Directory.make_dir_recursive] "
+"to ensure the file can be written."
+msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum number of allowed redirects."
+#, fuzzy
+msgid ""
+"Maximum number of allowed redirects. This is used to prevent endless "
+"redirect loops."
 msgstr "Nombre maximal de redirections autorisées."
+
+#: doc/classes/HTTPRequest.xml
+msgid ""
+"If set to a value greater than [code]0.0[/code], the HTTP request will time "
+"out after [code]timeout[/code] seconds have passed and the request is not "
+"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
+"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
+"application from getting stuck if the request fails to get a response in a "
+"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
+"the download from failing if it takes too much time."
+msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 msgid "If [code]true[/code], multithreading is used to improve performance."
@@ -32458,11 +32591,12 @@ msgid "Unlocks the data and prevents changes."
 msgstr "Déverrouille les données et évite les modifications."
 
 #: doc/classes/Image.xml
-#, fuzzy
 msgid ""
 "Holds all the image's color data in a given format. See [enum Format] "
 "constants."
-msgstr "Convertit le format de l’image. Voir les constantes [enum Format]."
+msgstr ""
+"Garde tous les données de couleur de l'image dans un format donné. Voir les "
+"constantes [enum Format]."
 
 #: doc/classes/Image.xml
 msgid "The maximal width allowed for [Image] resources."
@@ -33031,9 +33165,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ImageTexture.xml doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Resizes the texture to the specified dimensions."
-msgstr "Renvoie le texte associé à l’index spécifié."
+msgstr "Redimensionne la texture aux dimensions spécifiées."
 
 #: doc/classes/ImageTexture.xml
 msgid "The storage quality for [constant STORAGE_COMPRESS_LOSSY]."
@@ -33635,18 +33768,9 @@ msgstr ""
 "dessiner, ou pour les sélections."
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
-"This cursor shape denotes that the application is still usable during the "
-"operation."
-msgstr ""
-"Le curseur d'activité. Indique que l'application est occupée à exécuter une "
-"opération. La forme de ce curseur suggère que l'application est toujours "
-"utilisable durant cette opération en cours."
-
-#: doc/classes/Input.xml
-msgid ""
-"Busy cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application isn't usable during the "
 "operation (e.g. something is blocking its main thread)."
 msgstr ""
@@ -33654,6 +33778,17 @@ msgstr ""
 "une opération. La forme de ce curseur suggère que l'application n'est pas "
 "utilisable durant cette opération en cours (ex.: que le fil d'exécution "
 "principal est bloqué)."
+
+#: doc/classes/Input.xml
+#, fuzzy
+msgid ""
+"Busy cursor. Indicates that the application is busy performing an operation. "
+"This cursor shape denotes that the application is still usable during the "
+"operation."
+msgstr ""
+"Le curseur d'activité. Indique que l'application est occupée à exécuter une "
+"opération. La forme de ce curseur suggère que l'application est toujours "
+"utilisable durant cette opération en cours."
 
 #: doc/classes/Input.xml
 msgid "Drag cursor. Usually displayed when dragging something."
@@ -35697,13 +35832,13 @@ msgid "Kinematic character (2D)"
 msgstr "Caractère cinématique (2D)"
 
 #: doc/classes/KinematicBody.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the specified [code]axis[/code] is locked. See "
 "also [member move_lock_x], [member move_lock_y] and [member move_lock_z]."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"Retourne [code]true[/code] si l'axe [code]axis[/code] spécifié est "
+"verrouillé. Voir aussi [member move_lock_x], [member move_lock_y] et [member "
+"move_lock_z]."
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -35730,13 +35865,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody.xml
-#, fuzzy
 msgid ""
 "Returns a [KinematicCollision], which contains information about the latest "
 "collision that occurred during the last call to [method move_and_slide]."
 msgstr ""
-"Renvoie le nombre de fois où le corps est entré en collision et a changé de "
-"direction au cours du dernier appel vers [method move_and_slide]."
+"Retourne un [KinematicCollision], qui contient les information sur la "
+"dernière collision qui arrive au dernier appel de [method move_and_slide]."
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -35973,14 +36107,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
-#, fuzzy
 msgid ""
 "Returns a [KinematicCollision2D], which contains information about the "
 "latest collision that occurred during the last call to [method "
 "move_and_slide]."
 msgstr ""
-"Renvoie le nombre de fois où le corps est entré en collision et a changé de "
-"direction au cours du dernier appel vers [method move_and_slide]."
+"Retourne un [KinematicCollision2D], qui contient les information sur la "
+"dernière collision qui arrive au dernier appel de [method move_and_slide]."
 
 #: doc/classes/KinematicBody2D.xml
 msgid ""
@@ -36249,11 +36382,11 @@ msgid ""
 "screen. Useful to animate the text in a dialog box."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "The text to display on screen."
 msgstr "Le texte à afficher à l'écran."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "If [code]true[/code], all the text displays as UPPERCASE."
 msgstr "Si [code]true[/code], tous les textes seront en MAJUSCULE."
 
@@ -36269,35 +36402,35 @@ msgstr ""
 "Limite le nombre de caractères affichés. Mettez la valeur à -1 pour "
 "désactiver."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the left (default)."
 msgstr "Aligne les lignes à gauche (défaut)."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows centered."
 msgstr "Centre les lignes."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the right."
 msgstr "Aligne les lignes à droite."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Expand row whitespaces to fit the width."
 msgstr "Ajoute des espaces à la ligne pour remplir en largeur."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the top."
 msgstr "Aligne l’ensemble du texte en haut."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the center."
 msgstr "Aligne l'ensemble du texte au centre."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the bottom."
 msgstr "Aligne l’ensemble du texte vers le bas."
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text by spreading the rows."
 msgstr "Aligne tout le texte en étirant les lignes."
 
@@ -36340,6 +36473,216 @@ msgstr "[Font] utilisée pour le texte du [Label]."
 #: doc/classes/Label.xml
 msgid "Background [StyleBox] for the [Label]."
 msgstr "Le [StyleBox] d'arrière-plan pour le [Label]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Displays plain text in a 3D world."
+msgstr "Nœud de sprite en 2D dans un monde en 3D."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Label3D displays plain text in a 3D world. It gives you control over the "
+"horizontal and vertical alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Returns a [TriangleMesh] with the label's vertices following its current "
+"configuration (such as its [member pixel_size])."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the specified flag will be enabled. See [enum Label3D."
+"DrawFlags] for a list of flags."
+msgstr ""
+"Si [code]true[/code], active l'option donné. Voir [enum Flags] pour ces "
+"options."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for "
+"possible values."
+msgstr ""
+"Le mode d'orientation de la TileMap. Voir [enum Mode] pour les valeurs "
+"possibles."
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+msgid "Threshold at which the alpha scissor will discard values."
+msgstr "Le seuil à partir duquel le ciseau alpha ignorera les valeurs."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "If [code]true[/code], wraps the text to the [member width]."
+msgstr "Si [code]true[/code], cache la ligne à l'index spécifié."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"The billboard mode to use for the label. See [enum SpatialMaterial."
+"BillboardMode] for possible values."
+msgstr ""
+"La direction de remplissage. Voir [enum FillMode] pour les valeurs possibles."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], text can be seen from the back as well, if "
+"[code]false[/code], it is invisible when looking at it from behind."
+msgstr ""
+"Si [code]true[/code], la ligne sera verticale. Si [code]false[/code], elle "
+"sera horizontale."
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the label is rendered at the same size regardless of "
+"distance."
+msgstr ""
+"Si [code]true[/code], l'objet est affiché à la même taille indépendamment de "
+"sa distance à la caméra."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "[Font] used for the [Label3D]'s text."
+msgstr "[Font] utilisée pour le texte du [Label]."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center, right. Set "
+"it to one of the [enum Align] constants."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Vertical space between lines in multiline [Label3D]."
+msgstr "L'espace vertical entre les lignes en multiligne [Label]."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "Text [Color] of the [Label3D]."
+msgstr "La [Color] par défaut du texte du [Label]."
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"If [code]true[/code], depth testing is disabled and the object will be drawn "
+"in render order."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The text drawing offset (in pixels)."
+msgstr "Le décalage du dessin de la texture."
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The tint of [Font]'s outline."
+msgstr "La hauteur du cylindre."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Sets the render priority for the text outline. Higher priority objects will "
+"be sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "The size of one pixel's width on the label to scale it in 3D."
+msgstr "La taille d'un des pixels de la sprite pour définir sa taille en 3D."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Sets the render priority for the text. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the [Light] in the [Environment] has effects on the "
+"label."
+msgstr "Si [code]true[/code], ce [HTTPClient] a une réponse disponible."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Controls the text's vertical alignment. Supports top, center, bottom. Set it "
+"to one of the [enum VAlign] constants."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "Text width (in pixels), used for autowrap and fill alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "If set, lights in the environment affect the label."
+msgstr "Si [code]true[/code], ce [HTTPClient] a une réponse disponible."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"If set, text can be seen from the back as well. If not, the texture is "
+"invisible when looking at it from behind."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"Disables the depth test, so this object is drawn on top of all others. "
+"However, objects drawn after it in the draw order may cover it."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Label is scaled by depth so that it always appears the same size on screen."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+msgid "Represents the size of the [enum DrawFlags] enum."
+msgstr "Représente la taille de l'énumération [enum DrawFlags]."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode performs standard alpha blending. It can display translucent "
+"areas, but transparency sorting issues may be visible when multiple "
+"transparent materials are overlapping."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode only allows fully transparent or fully opaque pixels. This mode is "
+"also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].\n"
+"[b]Note:[/b] This mode might have issues with anti-aliased fonts and "
+"outlines, try adjusting [member alpha_scissor_threshold] or using SDF font.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode draws fully opaque pixels in the depth prepass. This is slower "
+"than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it "
+"allows displaying translucent areas and smooth edges while using proper "
+"sorting.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
+msgstr ""
 
 #: doc/classes/LargeTexture.xml
 msgid ""
@@ -39299,7 +39642,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MultiplayerAPI.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code] (or if the [member network_peer] has [member PacketPeer."
 "allow_object_decoding] set to [code]true[/code]), the MultiplayerAPI will "
@@ -39308,10 +39650,10 @@ msgid ""
 "Do not use this option if the serialized object comes from untrusted sources "
 "to avoid potential security threats such as remote code execution."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
+"Si [code]true[/code] (ou si [member network_peer] a [member PacketPeer."
+"allow_object_decoding] défini à [code]true[/code]), la MultiplayerAPI "
+"autorisera le codage et le décodage de l'objet pendant les RPC/RSET.\n"
+"[b]Avertissement :[/b] L'objet désérialisé peut contenir du code qui sera "
 "exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
 "sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
 "(exécution de code distant)."
@@ -39468,7 +39810,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Mutex.xml
-#, fuzzy
 msgid ""
 "Tries locking this [Mutex], but does not block. Returns [constant OK] on "
 "success, [constant ERR_BUSY] otherwise.\n"
@@ -39476,7 +39817,9 @@ msgid ""
 "ownership of the mutex."
 msgstr ""
 "Essaie de verrouiller ce [Mutex], mais ne le bloque pas. Retourne [constant "
-"OK] en cas de succès, [constant ERR_BUSY] dans le cas contraire."
+"OK] en cas de succès, [constant ERR_BUSY] sinon.\n"
+"[b]Note :[/b] Cette fonction retourne [constant OK] si le fil d'exécution "
+"est déjà associé à ce mutex."
 
 #: doc/classes/Mutex.xml
 msgid ""
@@ -39748,11 +40091,12 @@ msgid "Returns the map cell size."
 msgstr "Retourne la taille des cellules de la carte."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-#, fuzzy
 msgid ""
 "Returns the point closest to the provided [code]to_point[/code] on the "
 "navigation mesh surface."
-msgstr "Retourne la position du point à l'index [code]point[/code]."
+msgstr ""
+"Retourne le point le plus proche du point [code]to_point[/code] donné à la "
+"surface du maillage de la navigation."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
@@ -39873,6 +40217,11 @@ msgid ""
 "navigation path, it will return the origin of the agent's parent."
 msgstr ""
 
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [NavigationServer]."
+msgstr "Retourne le [RID] de la énième forme d'une zone."
+
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 #, fuzzy
 msgid ""
@@ -39888,11 +40237,12 @@ msgid ""
 msgstr "Renvoie [code]true[/code] si le chemin donné est filtré."
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the target location is reachable. The target "
 "location is set using [method set_target_location]."
-msgstr "Retourne [code]true[/code] si le vecteur est normalisé, et faux sinon."
+msgstr ""
+"Retourne [code]true[/code] si la position cible peut être atteinte. La "
+"position cible est définie via [method set_target_location]."
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
@@ -39923,6 +40273,16 @@ msgstr ""
 
 #: doc/classes/NavigationAgent.xml
 msgid "The agent height offset to match the navigation mesh height."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [NavigationServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector3 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
@@ -40030,9 +40390,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [Navigation2DServer]."
+msgstr "Retourne le [RID] de la énième forme d'une zone."
+
+#: doc/classes/NavigationAgent2D.xml
 msgid ""
 "Sets the [Navigation2D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation2D] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [Navigation2DServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector2 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -40838,8 +41213,9 @@ msgid ""
 msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
+#, fuzzy
 msgid ""
-"Enable or disable certificate verification when [member use_dtls] "
+"Enable or disable certificate verification when [member use_dtls] is "
 "[code]true[/code]."
 msgstr ""
 "Active ou désactive la vérification du certificat quand [member use_dtls] "
@@ -41265,7 +41641,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called when there is an input event. The input event propagates up through "
 "the node tree until a node consumes it.\n"
@@ -41280,20 +41655,22 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not an orphan)."
 msgstr ""
-"Appelé pendant l’étape de traitement physique de la boucle principale. Le "
-"traitement physique signifie que la fréquence d’images est synchronisée avec "
-"la physique, c’est-à-dire que la variable [code]delta[/code] doit être "
-"constante.\n"
-"Il est seulement appelé si le traitement physique est activé, ce qui est "
-"fait automatiquement si cette méthode est remplacée, et peut être basculé "
-"avec [method set_physics_process].\n"
-"Correspond à la notification [constant NOTIFICATION_PHYSICS_PROCESS] dans la "
-"[method Object._notification].\n"
-"[b]Remarque :[/b] Cette méthode n’est appelée que si le nœud est présent "
-"dans l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
+"Appelé quand il y a un événement d'entrée. Cet événement se propage le long "
+"de l'arborescence jusqu'à ce qu'un nœud le consomme.\n"
+"Ça n'est appelé que si le processus de traitement des entrées est activé, ce "
+"qui est fait automatiquement quand cette méthode est surchargée, et peut "
+"être activé par [method set_process_input].\n"
+"Pour consommer l'événement d'entrée et arrêter sa propagation vers les "
+"autres nœuds, la méthode [method SceneTree.set_input_as_handled] peut être "
+"appelée.\n"
+"Pour les entrées de jeu, les méthodes [method _unhandled_input] et [method "
+"_unhandled_key_input] sont généralement plus adaptées que [method _input] "
+"puisqu'elles permettent aux éléments d'interface d'intercepter les "
+"événements en premier.\n"
+"[b]Note :[/b] Cette méthode n'est seulement appelé si le nœud est présent "
+"dans l'arborescence (c-à-d n'est pas un orphelin)."
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called during the physics processing step of the main loop. Physics "
 "processing means that the frame rate is synced to the physics, i.e. the "
@@ -41310,17 +41687,16 @@ msgstr ""
 "Appelé pendant l’étape de traitement physique de la boucle principale. Le "
 "traitement physique signifie que la fréquence d’images est synchronisée avec "
 "la physique, c’est-à-dire que la variable [code]delta[/code] doit être "
-"constante.\n"
+"constante. [code]delta[/code] est en secondes.\n"
 "Il est seulement appelé si le traitement physique est activé, ce qui est "
 "fait automatiquement si cette méthode est remplacée, et peut être basculé "
 "avec [method set_physics_process].\n"
 "Correspond à la notification [constant NOTIFICATION_PHYSICS_PROCESS] dans la "
 "[method Object._notification].\n"
-"[b]Remarque :[/b] Cette méthode n’est appelée que si le nœud est présent "
-"dans l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
+"[b]Note :[/b] Cette méthode n’est appelée que si le nœud est présent dans "
+"l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called during the processing step of the main loop. Processing happens at "
 "every frame and as fast as possible, so the [code]delta[/code] time since "
@@ -41335,14 +41711,14 @@ msgstr ""
 "Appelé pendant l’étape de traitement physique de la boucle principale. Le "
 "traitement physique signifie que la fréquence d’images est synchronisée avec "
 "la physique, c’est-à-dire que la variable [code]delta[/code] doit être "
-"constante.\n"
+"constante. [code]delta[/code] est en secondes.\n"
 "Il est seulement appelé si le traitement physique est activé, ce qui est "
 "fait automatiquement si cette méthode est remplacée, et peut être basculé "
 "avec [method set_physics_process].\n"
 "Correspond à la notification [constant NOTIFICATION_PHYSICS_PROCESS] dans la "
 "[method Object._notification].\n"
-"[b]Remarque :[/b] Cette méthode n’est appelée que si le nœud est présent "
-"dans l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
+"[b]note :[/b] Cette méthode n’est appelée que si le nœud est présent dans "
+"l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
 
 #: doc/classes/Node.xml
 msgid ""
@@ -41363,7 +41739,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called when an [InputEvent] hasn't been consumed by [method _input] or any "
 "GUI [Control] item. The input event propagates up through the node tree "
@@ -41379,20 +41754,22 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not an orphan)."
 msgstr ""
-"Appelé pendant l’étape de traitement physique de la boucle principale. Le "
-"traitement physique signifie que la fréquence d’images est synchronisée avec "
-"la physique, c’est-à-dire que la variable [code]delta[/code] doit être "
-"constante.\n"
-"Il est seulement appelé si le traitement physique est activé, ce qui est "
-"fait automatiquement si cette méthode est remplacée, et peut être basculé "
-"avec [method set_physics_process].\n"
-"Correspond à la notification [constant NOTIFICATION_PHYSICS_PROCESS] dans la "
-"[method Object._notification].\n"
-"[b]Remarque :[/b] Cette méthode n’est appelée que si le nœud est présent "
-"dans l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
+"Appelé quand un [InputEventKey] n'a pas été traité par [method _input] ou "
+"n'importe quel élément [Control]. L'événement d'entrée se propage le long de "
+"l'arborescence jusqu'à ce qu'un nœud le consomme.\n"
+"Ça n'est appelé que si le processus de traitement des entrées est activé, ce "
+"qui est fait automatiquement quand cette méthode est surchargée, et peut "
+"être activé par [method set_process_unhandled_input].\n"
+"Pour consommer l'événement d'entrée et arrêter sa propagation vers les "
+"autres nœuds, la méthode [method SceneTree.set_input_as_handled] peut être "
+"appelée.\n"
+"Pour les entrées de jeu, cette méthode et [method _unhandled_key_input] sont "
+"généralement plus adaptées que [method _input] puisqu'elles permettent aux "
+"éléments d'interface d'intercepter les événements en premier.\n"
+"[b]Note :[/b] Cette méthode n'est seulement appelé si le nœud est présent "
+"dans l'arborescence (c-à-d n'est pas un orphelin)."
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called when an [InputEventKey] hasn't been consumed by [method _input] or "
 "any GUI [Control] item. The input event propagates up through the node tree "
@@ -41408,17 +41785,20 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not an orphan)."
 msgstr ""
-"Appelé pendant l’étape de traitement physique de la boucle principale. Le "
-"traitement physique signifie que la fréquence d’images est synchronisée avec "
-"la physique, c’est-à-dire que la variable [code]delta[/code] doit être "
-"constante.\n"
-"Il est seulement appelé si le traitement physique est activé, ce qui est "
-"fait automatiquement si cette méthode est remplacée, et peut être basculé "
-"avec [method set_physics_process].\n"
-"Correspond à la notification [constant NOTIFICATION_PHYSICS_PROCESS] dans la "
-"[method Object._notification].\n"
-"[b]Remarque :[/b] Cette méthode n’est appelée que si le nœud est présent "
-"dans l’arborescence de la scène (c.-à-d. s’il n’est pas orphelin)."
+"Appelé quand un [InputEventKey] n'a pas été traité par [method _input] ou "
+"n'importe quel élément [Control]. L'événement d'entrée se propage le long de "
+"l'arborescence jusqu'à ce qu'un nœud le consomme.\n"
+"Ça n'est appelé que si le processus de traitement des entrées est activé, ce "
+"qui est fait automatiquement quand cette méthode est surchargée, et peut "
+"être activé par [method set_process_unhandled_key_input].\n"
+"Pour consommer l'événement d'entrée et arrêter sa propagation vers les "
+"autres nœuds, la méthode [method SceneTree.set_input_as_handled] peut être "
+"appelée.\n"
+"Pour les entrées de jeu, cette méthode et [method _unhandled_input] sont "
+"généralement plus adaptées que [method _input] puisqu'elles permettent aux "
+"éléments d'interface d'intercepter les événements en premier.\n"
+"[b]Note :[/b] Cette méthode n'est seulement appelé si le nœud est présent "
+"dans l'arborescence (c-à-d n'est pas un orphelin)."
 
 #: doc/classes/Node.xml
 msgid ""
@@ -41633,12 +42013,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Returns the parent node of the current node, or [code]null[/code] if the "
 "node lacks a parent."
 msgstr ""
-"Retourne [code]true[/code] si la piste à l'index [code]idx[/code] est active."
+"Retourne le nœud parent du nœud actuel, ou [code]null[/code] si le nœud n'a "
+"pas de parent."
 
 #: doc/classes/Node.xml
 msgid ""
@@ -41743,7 +42123,7 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if the physics interpolated flag is set for this "
 "Node (see [member physics_interpolation_mode]).\n"
-"[b]Note:[/b] Interpolation will only be active is both the flag is set "
+"[b]Note:[/b] Interpolation will only be active if both the flag is set "
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
 msgstr ""
@@ -42899,6 +43279,10 @@ msgid ""
 "added as an [Array] of dictionaries, each containing [code]name: String[/"
 "code] and [code]type: int[/code] (see [enum Variant.Type]) entries."
 msgstr ""
+"Ajouter [code]signal[/code] personnalisé défini par l'utilisateur. Les "
+"arguments sont facultatifs, mais peuvent être ajoutés sous forme de [Array] "
+"de dictionnaires, chacun contenant les entrées [code]name: String[/code] et "
+"[code]type: int[/code] (voir [enum Variant.Type])."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -42913,6 +43297,16 @@ msgid ""
 "where you should use the same convention as in the C# source (typically "
 "PascalCase)."
 msgstr ""
+"Appelle la [code]method[/code] sur l'objet et retourne le résultat. Cette "
+"méthode supporte un nombre variable d'arguments, ces paramètres étant passés "
+"dans une liste séparé par une virgule. Exemple :\n"
+"[codeblock]\n"
+"call(\"set\", \"position\", Vector2(42.0, 0.0))\n"
+"[/codeblock]\n"
+"[b]Note :[/b] En C#, le nom de la méthode doit être spécifiée en snake_case "
+"si c'est une méthode définie par les nœuds Godot. Ça ne s'applique pas aux "
+"méthodes définies par l'utilisateur qui devraient toujours utiliser la même "
+"convention du langage C# (typiquement en PascalCase)."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -42937,6 +43331,13 @@ msgid ""
 "callv(\"set\", [ \"position\", Vector2(42.0, 0.0) ])\n"
 "[/codeblock]"
 msgstr ""
+"Appelle la [code]method[/code] sur l'objet et retourne le résultat. "
+"Contrairement à [method call], cette méthode ne supporte pas un nombre "
+"variable d'arguments mais s'attend à ce que tous les paramètres soient "
+"passés dans un seul [Array].\n"
+"[codeblock]\n"
+"callv(\"set\", [ \"position\", Vector2(42.0, 0.0) ])\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -42977,6 +43378,39 @@ msgid ""
 "level, weapon_type, damage])\n"
 "[/codeblock]"
 msgstr ""
+"Connecte un [code]signal[/code] à une [code]method[/code] d'un objet "
+"[code]target[/code]. Vous pouvez passer des paramètres [code]binds[/code] "
+"supplémentaires à l'appel sous forme de [Array]. Ces paramètres seront "
+"passés à la méthode après les autres paramètres utilisé lors de l'appel à "
+"[method emit_signal]. Utilisez [code]flags[/code] pour définir l'options, "
+"telles que définies par les constantes [enum ConnectFlags].\n"
+"Un [code]signal[/code] peut seulement être connecté à une seule "
+"[code]method[/code]. Il affichera une erreur s'il est déjà connecté, sauf si "
+"le signal à été connecté avec [constant CONNECT_REFERENCE_COUNTED]. Pour "
+"éviter cela, d'abord, utilisez [method is_connected] pour vérifier les "
+"connexions existantes.\n"
+"Si la cible [code]target[/code] est détruite durant la durée de vie du jeu, "
+"la connexion sera perdue.\n"
+"Exemples :\n"
+"[codeblock]\n"
+"connect(\"pressed\", self, \"_on_Button_pressed\") # Le signal pour le "
+"BaseButton\n"
+"connect(\"text_entered\", self, \"_on_LineEdit_text_entered\") # Le signal "
+"pour le LineEdit\n"
+"connect(\"hit\", self, \"_on_Player_hit\", [ weapon_type, damage ]) # Un "
+"signal défini par l'utilisateur\n"
+"[/codeblock]\n"
+"Un exemple de la relation entre [code]binds[/code] passé à [method connect] "
+"et les paramètres utilisé lors de l'appel à [method emit_signal] :\n"
+"[codeblock]\n"
+"connect(\"hit\", self, \"_on_Player_hit\", [ weapon_type, damage ]) # Les "
+"paramètres weapon_type et damage sont passés en dernier\n"
+"emit_signal(\"hit\", \"Dark lord\", 5) # Les paramètres \"Dark lord\" et 5 "
+"sont passés en premier\n"
+"func _on_Player_hit(hit_by, level, weapon_type, damage):\n"
+"    print(\"Hit by %s (lvl %d) with weapon %s for %d damage\" % [hit_by, "
+"level, weapon_type, damage])\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -43141,13 +43575,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if a connection exists for a given [code]signal[/"
 "code], [code]target[/code], and [code]method[/code]."
 msgstr ""
-"Retourne [code]true[/code] si l'[AABB] coupe le segment de droite entre "
-"[code]from[/code] et [code]to[/code]."
+"Retourne [code]true[/code] si une connexion existe pour le [code]signal[/"
+"code], la cible [code]target[/code], et la [code]method[/code] spécifiés."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -44635,13 +45068,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the [b]OK[/b] button should appear on the left "
 "and [b]Cancel[/b] on the right."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"Retourne [code]true[/code] si le bouton [b]OK[/b] doit apparaitre à gauche "
+"et le bouton [b]Annuler[/b] à droite."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -44675,11 +45107,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the window should always be on top of other "
 "windows."
-msgstr "Retourne [code]true[/code] si le vecteur est normalisé, et faux sinon."
+msgstr ""
+"Retourne [code]true[/code] si la fenêtre devrait toujours être au-dessus des "
+"autres fenêtres."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -45033,9 +45466,8 @@ msgid "The current tablet driver in use."
 msgstr "L'actuel pilote de tablette utilisé."
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "If [code]true[/code], vertical synchronization (Vsync) is enabled."
-msgstr "Si [code]true[/code], le filtrage est activé."
+msgstr "Si [code]true[/code], la synchronisation vertical (Vsync) est active."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -45519,7 +45951,6 @@ msgstr ""
 "[method get_var])."
 
 #: doc/classes/PacketPeer.xml
-#, fuzzy
 msgid ""
 "Gets a Variant. If [code]allow_objects[/code] (or [member "
 "allow_object_decoding]) is [code]true[/code], decoding objects is allowed.\n"
@@ -45527,10 +45958,10 @@ msgid ""
 "Do not use this option if the serialized object comes from untrusted sources "
 "to avoid potential security threats such as remote code execution."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
+"Obtient un Variant.. Lorsque [code]allow_objects[/code] (ou [member "
+"allow_object_decoding]) est défini à [code]true[/code], le déchiffrage des "
+"objets est autorisé.\n"
+"[b]Avertissement :[/b] L'objet désérialisé peut contenir du code qui sera "
 "exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
 "sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
 "(exécution de code distant)."
@@ -45551,7 +45982,6 @@ msgstr ""
 "est autorisé (et peut potentiellement inclure du code)."
 
 #: doc/classes/PacketPeer.xml
-#, fuzzy
 msgid ""
 "[i]Deprecated.[/i] Use [code]get_var[/code] and [code]put_var[/code] "
 "parameters instead.\n"
@@ -45561,11 +45991,12 @@ msgid ""
 "Do not use this option if the serialized object comes from untrusted sources "
 "to avoid potential security threats such as remote code execution."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
-"exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
+"[i]Obsolète.[/i] Utilisez plutôt les paramètres [code]get_var[/code] et "
+"[code]put_var[/code].\n"
+"Si [code]true[/code], le PacketPeer autorisera le codage et décodage de "
+"l'objet avec [method get_var] et [method put_var].\n"
+"[b]Avertissement :[/b] Les objets désérialisés peuvent contenir du code qui "
+"sera exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
 "sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
 "(exécution de code distant)."
 
@@ -45837,9 +46268,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PanoramaSky.xml
-#, fuzzy
 msgid "[Texture] to be applied to the PanoramaSky."
-msgstr "Renvoie l’espace affecté à la zone."
+msgstr "La [Texture] à appliquer au PanoramaSky."
 
 #: doc/classes/ParallaxBackground.xml
 msgid "A node used to create a parallax scrolling background."
@@ -47017,7 +47447,6 @@ msgstr "Si [code]true[/code], le corps est actuellement au repos (inactif)."
 
 #: doc/classes/Physics2DDirectBodyState.xml
 #: doc/classes/PhysicsDirectBodyState.xml
-#, fuzzy
 msgid "The timestep (delta) used for the simulation."
 msgstr "L'étape de temps (delta) utilisé pour la simulation."
 
@@ -47192,7 +47621,6 @@ msgid "Server interface for low-level 2D physics access."
 msgstr "L'interface du serveur pour l'accès à la physique 2D en bas niveau."
 
 #: doc/classes/Physics2DServer.xml
-#, fuzzy
 msgid ""
 "Physics2DServer is the server responsible for all 2D physics. It can create "
 "many kinds of physics objects, but does not insert them on the node tree."
@@ -48334,7 +48762,6 @@ msgid "Server interface for low-level physics access."
 msgstr "L'interface du serveur pour l'accès physique de bas niveau."
 
 #: doc/classes/PhysicsServer.xml
-#, fuzzy
 msgid ""
 "PhysicsServer is the server responsible for all 3D physics. It can create "
 "many kinds of physics objects, but does not insert them on the node tree."
@@ -48944,8 +49371,8 @@ msgid ""
 "If above 0, this value is the maximum value for an impulse that this Joint "
 "produces."
 msgstr ""
-"Si au-dessus de 0, cette valeur est la valeur maximale pour une impulsion "
-"que ce Joint3D met sur ses extrémités."
+"Retourne quand la mot clé [code]keyword[/code] spécifié a une couleur de "
+"défini ou non."
 
 #: doc/classes/PinJoint2D.xml
 #, fuzzy
@@ -49399,12 +49826,12 @@ msgstr ""
 #: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
 #: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
 #: doc/classes/PoolVector3Array.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the array contains the given value.\n"
 "[b]Note:[/b] This is equivalent to using the [code]in[/code] operator."
 msgstr ""
-"Retourne [code]true[/code] si l'objet contient la [code]method[/code] donnée."
+"Retourne [code]true[/code] si le tableau contient la valeur donnée.\n"
+"[b]Note :[/b] C'est équivalent à l'opérateur [code]in[/code]."
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -49599,11 +50026,12 @@ msgid "Appends a [PoolStringArray] at the end of this array."
 msgstr "Ajoute un [PoolStringArray] à la fin de ce tableau."
 
 #: doc/classes/PoolStringArray.xml
-#, fuzzy
 msgid ""
 "Returns a [String] with each element of the array joined with the given "
 "[code]delimiter[/code]."
-msgstr "Retourne le [WebSocketPeer] associé au [code]peer_id[/code] donné."
+msgstr ""
+"Retourne une [String] avec tous les éléments de ce tableau connectés par le "
+"[code]delimiter[/code] spécifié."
 
 #: doc/classes/PoolStringArray.xml
 msgid "Appends a string element at end of the array."
@@ -50004,9 +50432,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
+#, fuzzy
 msgid ""
-"Returns the tooltip associated with the specified index index [code]idx[/"
-"code]."
+"Returns the tooltip associated with the specified index [code]idx[/code]."
 msgstr "Retourne l'infobulle associée avec l'index [code]idx[/code] spécifié."
 
 #: doc/classes/PopupMenu.xml
@@ -50260,9 +50688,8 @@ msgid "[Font] used for the menu items."
 msgstr "La [Font] utilisée pour les éléments du menu."
 
 #: doc/classes/PopupMenu.xml
-#, fuzzy
 msgid "[Font] used for the labeled separator."
-msgstr "[Font] utilisée pour le texte du [Label]."
+msgstr "La [Font] utilisée pour le séparateur avec texte."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Texture] icon for the checked checkbox items."
@@ -50467,7 +50894,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PrimitiveMesh.xml
-#, fuzzy
 msgid "The current [Material] of the primitive mesh."
 msgstr "Le [Material] actuel du maillage primitif."
 
@@ -54059,9 +54485,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Quat.xml
-#, fuzzy
 msgid "Constructs a quaternion from the given [Basis]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Basis] donné."
+msgstr "Construit un quaternion à partir de la [Basis] donnée."
 
 #: doc/classes/Quat.xml
 msgid ""
@@ -54677,15 +55102,16 @@ msgid "2D axis-aligned bounding box."
 msgstr "Boîte de délimitation alignée sur l'axe."
 
 #: doc/classes/Rect2.xml
-#, fuzzy
 msgid ""
 "[Rect2] consists of a position, a size, and several utility functions. It is "
 "typically used for fast overlap tests.\n"
 "It uses floating-point coordinates.\n"
 "The 3D counterpart to [Rect2] is [AABB]."
 msgstr ""
-"Une AABB est constituée en une position, une taille, et plusieurs fonctions "
-"utilitaires. Principalement utilisée pour des tests de chevauchement rapides."
+"Le [Rect2] consiste en une position, une taille, et plusieurs fonctions "
+"utilitaires. C'est souvent utilisé pour les tests rapides de chevauchement.\n"
+"Il utilise des coordonnées à virgule.\n"
+"L'équivalent 3D du [Rect2] est le [AABB]."
 
 #: doc/classes/Rect2.xml
 msgid "Constructs a [Rect2] by position and size."
@@ -54985,8 +55411,8 @@ msgid ""
 "lighting is then controlled by the [code]interior_ambient_*[/code] "
 "properties."
 msgstr ""
-"Si [code]true[/code], les réflexions ignoreront la contribution du ciel. "
-"Équivalent à [member ReflectionProbe.interior]."
+"Retourne la profondeur de la texture. La profondeur est la 3ème dimension "
+"(généralement l'axe Z)."
 
 #: doc/classes/ReflectionProbe.xml
 msgid ""
@@ -56359,7 +56785,8 @@ msgid "The default text font."
 msgstr "La police par défaut du texte."
 
 #: doc/classes/RichTextLabel.xml
-msgid "The background The background used when the [RichTextLabel] is focused."
+#, fuzzy
+msgid "The background used when the [RichTextLabel] is focused."
 msgstr "L'arrière-plan utilisé quand le [RichTextLabel] a le focus."
 
 #: doc/classes/RichTextLabel.xml
@@ -57728,13 +58155,12 @@ msgid "Returns [code]true[/code] if the given group exists."
 msgstr "Retourne [code]true[/code] si le groupe donné existe."
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the most recent [InputEvent] was marked as "
 "handled with [method set_input_as_handled]."
 msgstr ""
-"Retourne [code]true[/code] si le corps est au plafond. Ne se met à jour que "
-"lors de l'appel de la [method move_and_slide]."
+"Retourne [code]true[/code] si le plus récent [InputEvent] a été marqué comme "
+"traité avec [method set_input_as_handled]."
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -57785,16 +58211,6 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"If [code]true[/code], the application automatically accepts quitting. "
-"Enabled by default.\n"
-"For mobile platforms, see [method set_quit_on_go_back]."
-msgstr ""
-"Si [code]true[/code], l'application accepte automatiquement de se fermer. "
-"Activé par défaut.\n"
-"Pour les plateformes mobiles, voir [method set_quit_on_go_back]."
-
-#: doc/classes/SceneTree.xml
-msgid ""
 "Sets the given [code]property[/code] to [code]value[/code] on all members of "
 "the given group."
 msgstr ""
@@ -57813,17 +58229,19 @@ msgstr "Marque le plus récent [InputEvent] comme consommé."
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"If [code]true[/code], the application quits automatically on going back (e."
-"g. on Android). Enabled by default.\n"
-"To handle 'Go Back' button when this option is disabled, use [constant "
-"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
-msgstr ""
-
-#: doc/classes/SceneTree.xml
-msgid ""
 "Configures screen stretching to the given [enum StretchMode], [enum "
 "StretchAspect], minimum size and [code]scale[/code]."
 msgstr ""
+
+#: doc/classes/SceneTree.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the application automatically accepts quitting.\n"
+"For mobile platforms, see [member quit_on_go_back]."
+msgstr ""
+"Si [code]true[/code], l'application accepte automatiquement de se fermer. "
+"Activé par défaut.\n"
+"Pour les plateformes mobiles, voir [method set_quit_on_go_back]."
 
 #: doc/classes/SceneTree.xml
 msgid "The current scene."
@@ -57890,6 +58308,14 @@ msgid ""
 "Although physics interpolation would normally be globally turned on and off "
 "using [member ProjectSettings.physics/common/physics_interpolation], this "
 "property allows control over interpolation at runtime."
+msgstr ""
+
+#: doc/classes/SceneTree.xml
+msgid ""
+"If [code]true[/code], the application quits automatically on going back (e."
+"g. on Android).\n"
+"To handle 'Go Back' button when this option is disabled, use [constant "
+"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -58467,6 +58893,35 @@ msgid ""
 "as_relative().from_current().set_trans(Tween.TRANS_EXPO)\n"
 "[/codeblock]"
 msgstr ""
+"Crée et ajoute un [PropertyTweener]. Cette méthode interpole une "
+"[code]property[/code] d'un [code]object[/code] entre une valeur initiale et "
+"[code]final_val[/code] durant la durée [code]duration[/code], en secondes. "
+"La valeur initiale par défaut est la valeur au début de l'interpolation du "
+"[PropertyTweener]. Par exemple :\n"
+"[codeblock]\n"
+"var tween = create_tween()\n"
+"tween.tween_property($Sprite, \"position\", Vector2(100, 200), 1)\n"
+"tween.tween_property($Sprite, \"position\", Vector2(200, 300), 1)\n"
+"[/codeblock]\n"
+"déplacera la sprite de sa position actuelle à la position (100, 200) puis "
+"ensuite à (200, 300). Si vous utilisez [method PropertyTweener.from] ou "
+"[method PropertyTweener.from_current], la position de départ sera celle "
+"spécifiée et non l'actuelle. Voir les autres méthodes de [PropertyTweener] "
+"pour connaitre les possibilités.\n"
+"[b]Note :[/b] Vous pouvez trouver les noms corrects des propriétés en "
+"survolant ces propriétés dans l'inspecteur de Godot. Vous pouvez aussi "
+"fournir un seul composant de cette propriété directement en utilisant "
+"[code]\"property:component\"[/code] (ex. [code]position:x[/code]), alors "
+"l'interpolation ne se fera que sur cet unique composant.\n"
+"Exemple : déplacer un objet deux fois depuis la même position vers "
+"différentes positions, avec différents types de transition.\n"
+"[codeblock]\n"
+"var tween = create_tween()\n"
+"tween.tween_property($Sprite, \"position\", Vector2.RIGHT * 300, 1)."
+"as_relative().set_trans(Tween.TRANS_SINE)\n"
+"tween.tween_property($Sprite, \"position\", Vector2.RIGHT * 300, 1)."
+"as_relative().from_current().set_trans(Tween.TRANS_EXPO)\n"
+"[/codeblock]"
 
 #: doc/classes/SceneTreeTween.xml
 msgid ""
@@ -60292,6 +60747,10 @@ msgstr ""
 "linéaire."
 
 #: doc/classes/SpatialMaterial.xml
+msgid "Enables signed distance field rendering shader."
+msgstr ""
+
+#: doc/classes/SpatialMaterial.xml
 msgid "If [code]true[/code], the object receives no ambient light."
 msgstr "Si [code]trye[/code], l'objet ne reçoit aucune lumière ambiante."
 
@@ -60315,12 +60774,6 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], l'objet est affiché à la même taille indépendamment de "
 "sa distance à la caméra."
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"If [code]true[/code], depth testing is disabled and the object will be drawn "
-"in render order."
-msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
@@ -60435,10 +60888,6 @@ msgid ""
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
 msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid "Threshold at which the alpha scissor will discard values."
-msgstr "Le seuil à partir duquel le ciseau alpha ignorera les valeurs."
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
@@ -60921,12 +61370,6 @@ msgstr ""
 msgid ""
 "Lighting is calculated per-vertex rather than per-pixel. This can be used to "
 "increase the speed of the shader at the cost of quality."
-msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"Disables the depth test, so this object is drawn on top of all others. "
-"However, objects drawn after it in the draw order may cover it."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -61620,6 +62063,18 @@ msgid "The size of one pixel's width on the sprite to scale it in 3D."
 msgstr "La taille d'un des pixels de la sprite pour définir sa taille en 3D."
 
 #: doc/classes/SpriteBase3D.xml
+msgid ""
+"Sets the render priority for the sprite. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/SpriteBase3D.xml
 #, fuzzy
 msgid ""
 "If [code]true[/code], the [Light] in the [Environment] has effects on the "
@@ -61649,8 +62104,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
-msgid "Represents the size of the [enum DrawFlags] enum."
-msgstr "Représente la taille de l'énumération [enum DrawFlags]."
+msgid ""
+"Sprite is scaled by depth so that it always appears the same size on screen."
+msgstr ""
 
 #: doc/classes/SpriteFrames.xml
 msgid "Sprite frame library for AnimatedSprite and AnimatedSprite3D."
@@ -62131,13 +62587,12 @@ msgid "Returns the status of the connection, see [enum Status]."
 msgstr "Retourne le status de la connexion, voir [enum Status]."
 
 #: doc/classes/StreamPeerTCP.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this peer is currently connected or is "
 "connecting to a host, [code]false[/code] otherwise."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"Renvoie [code]true[/code] si le pair est actuellement connecté ou se "
+"connecte à un hôte, ou [code]false[/code] sinon."
 
 #: doc/classes/StreamPeerTCP.xml
 msgid ""
@@ -63197,7 +63652,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/StyleBox.xml
-#, fuzzy
 msgid ""
 "Sets the default value of the specified [enum Margin] to given [code]offset[/"
 "code] in pixels."
@@ -63770,13 +64224,40 @@ msgid ""
 "OpenGL/Face-culling]winding order[/url] for front faces of triangle "
 "primitive modes."
 msgstr ""
+"Le [SurfaceTool] est utilisé pour construire un [Mesh] en spécifiant les "
+"attributs des sommets individuellement. Il peut être utilisé pour construire "
+"un [Mesh] depuis un script. Toutes les propriétés sauf les indices doivent "
+"être ajoutés avant l'appel à [method add_vertex]. Par exemple, pour ajouter "
+"une couleur et des coordonnées UV à un sommet :\n"
+"[codeblock]\n"
+"var st = SurfaceTool.new()\n"
+"st.begin(Mesh.PRIMITIVE_TRIANGLES)\n"
+"st.add_color(Color(1, 0, 0))\n"
+"st.add_uv(Vector2(0, 0))\n"
+"st.add_vertex(Vector3(0, 0, 0))\n"
+"[/codeblock]\n"
+"Le [SurfaceTool] ci-dessus contient maintenant un sommet d'un triangle qui a "
+"des coordonées UV et une [Color] spécifique. Si un autre sommet était ajouté "
+"sans appeler [method add_uv] ou [method add_color], alors les derniers "
+"valeurs seront utilisées.\n"
+"Les attributs des sommets doivent être passé [b]avant[/b] l'appel à [method "
+"add_vertex]. Sinon une erreur se produira lors de la finalisation de la "
+"création d'un maillage.\n"
+"De plus, les attributs utilisés avant le premier sommet ajouté déterminent "
+"le format du maillage. Par exemple, si vous n'ajoutez que les UV au premier "
+"sommet, vous ne pouvez pas ajouter de couleur pour les sommets suivants.\n"
+"Voir aussi [ArrayMesh], [ImmediateGeometry] et [MeshDataTool] pour la "
+"création procédurale de géométrie.\n"
+"[b]Note :[/b] Godot utilise le sens horaire [url=https://learnopengl.com/"
+"Advanced-OpenGL/Face-culling]pour le culling [/url] pour les faces avant "
+"dans les modes de création de triangles."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
 "Specifies an array of bones to use for the [i]next[/i] vertex. [code]bones[/"
 "code] must contain 4 integers."
 msgstr ""
-"Spécifie un tableau d'os à utiliser pour le [i]prochain[/i] sommet. "
+"Spécifie un tableau d'os à utiliser pour le sommet [i]suivant[/i]. "
 "[code]bones[/code] doit contenir 4 entiers."
 
 #: doc/classes/SurfaceTool.xml
@@ -63787,12 +64268,21 @@ msgid ""
 "[b]Note:[/b] The material must have [member SpatialMaterial."
 "vertex_color_use_as_albedo] enabled for the vertex color to be visible."
 msgstr ""
+"Spécifie un [Color] à utiliser pour le sommet [i]suivant[/i]. Si chaque "
+"sommet a besoin d'avoir cette information définie et que vous ne l'avez pas "
+"fournie pour le premier sommet, cette information peut ne jamais être "
+"utilisée.\n"
+"[b]Note :[/b] Le matériau doit avoir [member SpatialMaterial."
+"vertex_color_use_as_albedo] d'activé pour que les couleurs de sommets soient "
+"visibles."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
 "Adds an index to index array if you are using indexed vertices. Does not "
 "need to be called before adding vertices."
 msgstr ""
+"Ajoute une indice au tableau d'indices si vous utilisez des sommets indexés. "
+"Il n'est pas nécessaire de l'appeler avant d'ajouter des sommets."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -63800,6 +64290,10 @@ msgid ""
 "to have this information set and you fail to submit it for the first vertex, "
 "this information may not be used at all."
 msgstr ""
+"Spécifie une normale à utiliser pour le sommet [i]suivant[/i]. Si chaque "
+"sommet a besoin d'avoir cette information définie et que vous ne l'avez pas "
+"fournie pour le premier sommet, cette information peut ne jamais être "
+"utilisée."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -63814,6 +64308,10 @@ msgid ""
 "to have this information set and you fail to submit it for the first vertex, "
 "this information may not be used at all."
 msgstr ""
+"Spécifie une tangente à utiliser pour le sommet [i]suivant[/i]. Si chaque "
+"sommet a besoin d'avoir cette information définie et que vous ne l'avez pas "
+"fournie pour le premier sommet, cette information peut ne jamais être "
+"utilisée."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -63827,6 +64325,10 @@ msgid ""
 "every vertex needs to have this information set and you fail to submit it "
 "for the first vertex, this information may not be used at all."
 msgstr ""
+"Spécifie les coordonnées UV à utiliser pour le sommet [i]suivant[/i]. Si "
+"chaque sommet a besoin d'avoir cette information définie et que vous ne "
+"l'avez pas fournie pour le premier sommet, cette information peut ne jamais "
+"être utilisée."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -63834,6 +64336,10 @@ msgid ""
 "i] vertex. If every vertex needs to have this information set and you fail "
 "to submit it for the first vertex, this information may not be used at all."
 msgstr ""
+"Spécifie les coordonnées UV secondaires facultatives à utiliser pour le "
+"sommet [i]suivant[/i]. Si chaque sommet a besoin d'avoir cette information "
+"définie et que vous ne l'avez pas fournie pour le premier sommet, cette "
+"information peut ne jamais être utilisée."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -63850,6 +64356,10 @@ msgid ""
 "set and you fail to submit it for the first vertex, this information may not "
 "be used at all."
 msgstr ""
+"Spécifie les poids à utiliser pour le sommet [i]suivant[/i]. [code]weights[/"
+"code] doit contenir 4 valeurs. Si chaque sommet a besoin d'avoir cette "
+"information définie et que vous ne l'avez pas fournie pour le premier "
+"sommet, cette information peut ne jamais être utilisée."
 
 #: doc/classes/SurfaceTool.xml
 msgid ""
@@ -64020,12 +64530,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TabContainer.xml doc/classes/Tabs.xml
-#, fuzzy
 msgid ""
 "If [code]disabled[/code] is [code]true[/code], disables the tab at index "
 "[code]tab_idx[/code], making it non-interactable."
 msgstr ""
-"Retourne [code]true[/code] si la piste à l'index [code]idx[/code] est active."
+"Si [code]disabled[/code] est [code]true[/code], désactive l'onglet à l'index "
+"[code]tab_idx[/code], le rendant non-interactif."
 
 #: doc/classes/TabContainer.xml
 #, fuzzy
@@ -64626,11 +65136,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "Returns whether the specified [code]keyword[/code] has a color set to it or "
 "not."
-msgstr "Retourne si la [code]class[/code] spécifiée est disponible ou non."
+msgstr ""
+"Retourne quand la mot clé [code]keyword[/code] spécifié a une couleur de "
+"défini ou non."
 
 #: doc/classes/TextEdit.xml doc/classes/UndoRedo.xml
 msgid "Returns [code]true[/code] if a \"redo\" action is available."
@@ -65080,6 +65591,54 @@ msgid ""
 msgstr ""
 "Définit le [StyleBox] de ce [TextEdit] quand [member readonly] est activé."
 
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "Generate an [PrimitiveMesh] from the text."
+msgstr "Générer un [TriangleMesh] à partir du maillage."
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Generate an [PrimitiveMesh] from the text.\n"
+"TextMesh can be generated only when using dynamic fonts with vector glyph "
+"contours. Bitmap fonts (including bitmap data in the TrueType/OpenType "
+"containers, like color emoji fonts) are not supported.\n"
+"The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the "
+"height for the front face, 40% for the back face, 10% for the outer edges "
+"and 10% for the inner edges."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "Step (in pixels) used to approximate Bézier curves."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Depths of the mesh, if set to [code]0.0[/code] only front surface, is "
+"generated, and UV layout is changed to use full texture for the front face "
+"only."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "[Font] used for the [TextMesh]'s text."
+msgstr "[Font] utilisée pour le texte du [Label]."
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center and right. "
+"Set it to one of the [enum Align] constants."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "The size of one pixel's width on the text to scale it in 3D."
+msgstr "La taille d'un des pixels de la sprite pour définir sa taille en 3D."
+
+#: doc/classes/TextMesh.xml
+#, fuzzy
+msgid "The text to generate mesh from."
+msgstr "Le type à partir duquel obtenir la constante."
+
 #: doc/classes/Texture.xml
 msgid "Texture for 2D and 3D."
 msgstr "Texture pour 2D et 3D."
@@ -65395,11 +65954,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TextureLayered.xml
-#, fuzzy
 msgid ""
 "Returns the depth of the texture. Depth is the 3rd dimension (typically Z-"
 "axis)."
-msgstr "Renvoie le nombre de textures dans l’atlas BitmapFont."
+msgstr ""
+"Retourne la profondeur de la texture. La profondeur est la 3ème dimension "
+"(généralement l'axe Z)."
 
 #: doc/classes/TextureLayered.xml
 msgid ""
@@ -66641,7 +67201,6 @@ msgid "Returns the [enum BitmaskMode] of the autotile."
 msgstr "Retourne le [enum BitmaskMode] de l'autotile."
 
 #: doc/classes/TileSet.xml
-#, fuzzy
 msgid ""
 "Returns the subtile that's being used as an icon in an atlas/autotile given "
 "its coordinates.\n"
@@ -66649,11 +67208,12 @@ msgid ""
 "autotile's bitmask information is incomplete. It will also be used to "
 "represent it in the TileSet editor."
 msgstr ""
-"Renvoie le sous-titre qui est utilisé comme icône dans un atlas / autotile "
-"en fonction de ses coordonnées.\n"
-"Le sous-titre défini comme icône sera utilisé comme solution de repli "
+"Retourne la sous-tuile qui est utilisée comme icône dans un atlas / autotile "
+"suivant ses coordonnées.\n"
+"La sous-tuile définie comme icône sera utilisée comme solution de repli "
 "lorsque les informations du bitmask de l'atlas / autotile sont incomplètes. "
-"Il sera également utilisé pour le représenter dans l'éditeur TileSet."
+"Elle sera également utilisée pour sa représentation dans l'éditeur de "
+"TileSet."
 
 #: doc/classes/TileSet.xml
 msgid ""
@@ -67101,13 +67661,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Time.xml
-#, fuzzy
 msgid ""
 "Converts the given time to a dictionary of keys: [code]hour[/code], "
 "[code]minute[/code], and [code]second[/code]."
 msgstr ""
-"Retourne [code]true[/code] si l'[AABB] coupe le segment de droite entre "
-"[code]from[/code] et [code]to[/code]."
+"Convertit la temps donné en dictionnaire avec les clés : [code]hour[/code], "
+"[code]minute[/code], and [code]second[/code]."
 
 #: doc/classes/Time.xml
 msgid ""
@@ -67735,22 +68294,20 @@ msgid "Returns the scale."
 msgstr "Retourne l’échelle."
 
 #: doc/classes/Transform2D.xml
-#, fuzzy
 msgid ""
 "Returns a copy of the transform rotated by the given [code]angle[/code] (in "
 "radians), using matrix multiplication."
 msgstr ""
-"Fait pivoter le transform par l’angle donné (dans les radians), utilisant la "
-"multiplication de la matrice."
+"Retourne une copie de la transformation pivoté par [code]angle[/code] (en "
+"radians), en utilisant la multiplication de matrice."
 
 #: doc/classes/Transform2D.xml
-#, fuzzy
 msgid ""
 "Returns a copy of the transform scaled by the given [code]scale[/code] "
 "factor, using matrix multiplication."
 msgstr ""
-"Met à l'échelle le transform par le facteur d'échelle donné, en utilisant la "
-"multiplication matricielle."
+"Retourne une copie de la transformation mise à jour l'échelle par le facteur "
+"[code]scale[/code] spécifié, en utilisant la multiplication matricielle."
 
 #: doc/classes/Transform2D.xml
 msgid ""
@@ -68509,13 +69066,12 @@ msgstr ""
 "est préssé. Voir [enum JoyButtonList]."
 
 #: doc/classes/TreeItem.xml
-#, fuzzy
 msgid ""
 "Returns the button index if there is a button with id [code]id[/code] in "
 "column [code]column[/code], otherwise returns -1."
 msgstr ""
-"Rentourne [code]true[/code] (vrai) si le bouton d'index [code]button[/code] "
-"est préssé. Voir [enum JoyButtonList]."
+"Retourne l'index du bouton s'il y en a un l'identifiant [code]id[/code] dans "
+"la colonne [code]column[/code], ou -1 sinon."
 
 #: doc/classes/TreeItem.xml
 msgid "Returns the number of buttons in column [code]column[/code]."
@@ -69523,10 +70079,9 @@ msgid "Called when [method undo] or [method redo] was called."
 msgstr "Appelé quand [method undo] ou [method redo] sont appelés."
 
 #: doc/classes/UndoRedo.xml
-#, fuzzy
 msgid "Makes \"do\"/\"undo\" operations stay in separate actions."
 msgstr ""
-"Définit les opérations \"annuler\"/\"refaire\" utilisant des actions "
+"Fait que les opérations \"annuler\"/\"refaire\" utilisent des actions "
 "séparées."
 
 #: doc/classes/UndoRedo.xml
@@ -70261,9 +70816,8 @@ msgstr ""
 "code] sinon."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid "Returns the length (magnitude) of this vector."
-msgstr "Renvoie le reste de deux vecteurs."
+msgstr "Retourne la longueur (magnitude) de ce vecteur."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -70288,13 +70842,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/"
 "code] amount. Will not go past the final value."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]a[/code] et [code]b[/code] sont "
-"approximativement égaux l'un à l'autre."
+"Retourne un nouveau vecteur déplacé en direction de [code]to[/code] par la "
+"quantité [code]delta[/code]. Ne dépassera pas la valeur finale."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -70335,13 +70888,12 @@ msgstr ""
 "[method @GDScript.deg2rad]."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "Returns a new vector with all components rounded to the nearest integer, "
 "with halfway cases rounded away from zero."
 msgstr ""
-"Renvoie le vecteur avec tous les composants arrondis vers le bas (vers "
-"l’infini négatif)."
+"Retourne une nouveau vecteur avec tous ses composants arrondis à l'entier le "
+"plus proche, avec les demis arrondis à l'entier supérieur."
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -70523,13 +71075,12 @@ msgid "Returns this vector reflected from a plane defined by the given normal."
 msgstr ""
 
 #: doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "Rotates this vector around a given axis by [code]angle[/code] (in radians). "
 "The axis must be a normalized vector."
 msgstr ""
-"Pivote ce vecteur autour de l'axe donné par [code]phi[/code] radians. L'axe "
-"donné doit être normalisé."
+"Pivote ce vecteur autour de l'axe donné par [code]angle[/code] (en radians). "
+"L'axe donné doit être normalisé."
 
 #: doc/classes/Vector3.xml
 msgid ""
@@ -70937,13 +71488,14 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
-msgid "[VideoStream] resource for for video formats implemented via GDNative."
+#, fuzzy
+msgid "[VideoStream] resource for video formats implemented via GDNative."
 msgstr ""
 "La ressource [VideoStream] pour les formats vidéo implémentés via GDNative."
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
 msgid ""
-"[VideoStream] resource for for video formats implemented via GDNative.\n"
+"[VideoStream] resource for video formats implemented via GDNative.\n"
 "It can be used via [url=https://github.com/KidRigger/godot-"
 "videodecoder]godot-videodecoder[/url] which uses the [url=https://ffmpeg."
 "org]FFmpeg[/url] library."
@@ -71808,7 +72360,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisibilityNotifier.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the bounding box is on the screen.\n"
 "[b]Note:[/b] It takes one frame for the node's visibility to be assessed "
@@ -71816,10 +72367,10 @@ msgid ""
 "right after it is instantiated, even if it will be on screen in the draw "
 "pass."
 msgstr ""
-"Si [code]true[/code], la boîte bondissante est à l’écran.\n"
+"Si [code]true[/code], le rectangle de visibilité affiché à l’écran.\n"
 "[b]Note :[/b] Il faut un cadre pour que la visibilité du nœud soit évaluée "
 "une fois ajoutée à l’arbre de scène, de sorte que cette méthode reviendra "
-"[code]false[/code] juste après qu’il soit instantié, même s’il sera à "
+"[code]false[/code] juste après qu’il soit instancié, même s’il sera à "
 "l’écran dans le passage de tirage."
 
 #: doc/classes/VisibilityNotifier.xml
@@ -73833,7 +74384,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a camera and adds it to the VisualServer. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]camera_*[/code] "
@@ -73841,12 +74391,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une caméra et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]camera_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette caméra à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -73900,7 +74450,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a canvas and returns the assigned [RID]. It can be accessed with the "
 "RID that is returned. This RID will be used in all [code]canvas_*[/code] "
@@ -73908,13 +74457,11 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un canevas et retourne le [RID] qui lui est assigné. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]canvas_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer."
 
 #: doc/classes/VisualServer.xml
 msgid "Adds a circle command to the [CanvasItem]'s draw commands."
@@ -73997,7 +74544,6 @@ msgid "Clears the [CanvasItem] and removes all commands in it."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a new [CanvasItem] and returns its [RID]. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]canvas_item_*[/"
@@ -74005,13 +74551,11 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un nouveau [CanvasItem] et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]canvas_item_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -74107,7 +74651,6 @@ msgstr ""
 "précédemment assignée à cette instance."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a canvas light and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all "
@@ -74115,12 +74658,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un canevas de lumière et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]canvas_light_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce canevas de lumière à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -74131,7 +74674,6 @@ msgstr ""
 "précédemment assigné à cette instance."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a light occluder and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all "
@@ -74139,13 +74681,13 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un occulteur de lumière spot et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]canvas_light_ocluder_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce occulteur de lumière à une instance "
+"en utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
 msgid "Enables or disables light occluder."
@@ -74289,7 +74831,6 @@ msgid "Modulates all colors in the given canvas."
 msgstr "Module toutes les couleurs du canevas spécifié."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a directional light and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID can be used in most "
@@ -74299,13 +74840,14 @@ msgid ""
 "To place in a scene, attach this directional light to an instance using "
 "[method instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une lumière directionnelle et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]light_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette lumière directionnelle à une "
+"instance en utilisant la [method instance_set_base] utilisant le RID "
+"retourné."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -74316,7 +74858,6 @@ msgstr ""
 "utiliser [method force_draw]."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an environment and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all "
@@ -74324,12 +74865,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée un environnement et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]environment_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cet environnement à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -74492,7 +75033,6 @@ msgstr ""
 "Retourn l'identifiant de la texture blanche. En crée une si aucune n'existe."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a GI probe and adds it to the VisualServer. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]gi_probe_*[/"
@@ -74502,12 +75042,12 @@ msgid ""
 "To place in a scene, attach this GI probe to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une sonde GI et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]gi_probe_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette sonde GI à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -74687,7 +75227,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an immediate geometry and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -74697,13 +75236,14 @@ msgid ""
 "To place in a scene, attach this immediate geometry to an instance using "
 "[method instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une géométrie immédiate spot et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]immediate_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette géométrie immédiate à une "
+"instance en utilisant la [method instance_set_base] utilisant le RID "
+"retourné."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -74782,7 +75322,6 @@ msgstr ""
 "assigné à cette instance."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a visual instance and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -74793,16 +75332,17 @@ msgid ""
 "particles, meshes, and reflection probes need to be associated with an "
 "instance to be visible in the scenario using [method instance_set_base]."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée une lumière spot et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]light_*[/code] du VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Une instance est un moyen de placer un objet 3D dans un scénario. Les objets "
+"comme les particules, les maillages, et les sondes de réflexion doivent être "
+"associées à une instance pour être visible dans le scénario en utilisant "
+"[method instance_set_base]."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a visual instance, adds it to the VisualServer, and sets both base "
 "and scenario. It can be accessed with the RID that is returned. This RID "
@@ -74810,13 +75350,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une instance visuelle et l’ajoute au VisualServer, en définissant à la "
+"fois la base et le scénario. Il peut être consulté avec le RID qui est "
+"retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]instance_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer."
 
 #: doc/classes/VisualServer.xml
 msgid "Not implemented in Godot 3.x."
@@ -75058,7 +75597,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a lightmap capture and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -75068,13 +75606,13 @@ msgid ""
 "To place in a scene, attach this lightmap capture to an instance using "
 "[method instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une capture de lumière et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]lightmap_capture_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette capture de lumière à une instance "
+"en utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -75149,7 +75687,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an empty material and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -75157,11 +75694,11 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée un matériau vide et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]material_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
+"méthode statique [method free_rid] du VisualServer.\n"
 "Pour placer dans une scène, attachez cette lumière spot à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
@@ -75213,7 +75750,6 @@ msgid "Removes all surfaces from a mesh."
 msgstr "Enlève toutes les surfaces d’un maillage."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a new mesh and adds it to the VisualServer. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]mesh_*[/code] "
@@ -75223,12 +75759,12 @@ msgid ""
 "To place in a scene, attach this mesh to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée un nouveau maillage et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]mesh_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce maillage spot à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -75341,7 +75877,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a new multimesh on the VisualServer and returns an [RID] handle. "
 "This RID will be used in all [code]multimesh_*[/code] VisualServer "
@@ -75351,12 +75886,12 @@ msgid ""
 "To place in a scene, attach this multimesh to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un multimesh et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]multimesh_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce multimesh à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -75458,7 +75993,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a new omni light and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID can be used in most [code]light_*[/"
@@ -75468,16 +76002,15 @@ msgid ""
 "To place in a scene, attach this omni light to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée une lumière omni et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]light_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette lumière omni à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a particle system and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -75487,13 +76020,13 @@ msgid ""
 "To place in a scene, attach these particles to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un système de particules et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]particles_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce système de particules à une instance "
+"en utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -75608,13 +76141,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], particles will emit once and then stop. Equivalent to "
 "[member Particles.one_shot]."
 msgstr ""
-"Si [code]true[/code], les réflexions ignoreront la contribution du ciel. "
-"Équivalent à [member ReflectionProbe.interior]."
+"Si [code]true[/code], les particules sera émise une seule fois puis "
+"arrêtées. Équivalent à [member Particles.one_shot]."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -75651,7 +76183,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a reflection probe and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -75661,13 +76192,14 @@ msgid ""
 "To place in a scene, attach this reflection probe to an instance using "
 "[method instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une sonde de réflexions et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]reflection_probe_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette sonde de réflexions à une "
+"instance en utilisant la [method instance_set_base] utilisant le RID "
+"retourné."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -75765,7 +76297,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a scenario and adds it to the VisualServer. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]scenario_*[/"
@@ -75774,13 +76305,12 @@ msgid ""
 "VisualServer's [method free_rid] static method.\n"
 "The scenario is the 3D world that all the visual instances exist in."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un scénario et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]scenario_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer.\n"
+"Le scénario est le monde 3D où toutes les instances visuelles existent."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -75853,7 +76383,6 @@ msgid "Enables or disables occlusion culling."
 msgstr "Active ou désactive une lumière du canevas."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an empty shader and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all [code]shader_*[/"
@@ -75861,12 +76390,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un shader vide et l’ajoute au VisualServer. Il peut être consulté avec "
+"le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
+"fonctions [code]shader_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce shader vide à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -75876,7 +76405,7 @@ msgstr "Retourne le code d'un shader."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns a default texture from a shader searched by name."
-msgstr ""
+msgstr "Retourne la texture par défaut du shader à partir de son nom."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the parameters of a shader."
@@ -75914,7 +76443,6 @@ msgid "Sets the [Transform2D] for a specific bone of this skeleton."
 msgstr "Définit la [Transform2D] pour un os spécifique de ce squelette."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a skeleton and adds it to the VisualServer. It can be accessed with "
 "the RID that is returned. This RID will be used in all [code]skeleton_*[/"
@@ -75922,12 +76450,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un squelette et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]skeleton_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce squelette à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -75935,7 +76463,6 @@ msgid "Returns the number of bones allocated for this skeleton."
 msgstr "Retourne le nombre d'os alloués pour ce squelette."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an empty sky and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all [code]sky_*[/"
@@ -75943,12 +76470,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée un ciel vide et l’ajoute au VisualServer. Il peut être consulté avec le "
+"RID qui est retourné. Ce RID peut être utilisé dans la plupart des fonctions "
+"[code]sky_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez ce ciel vide à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
@@ -75956,7 +76483,6 @@ msgid "Sets a sky's texture."
 msgstr "Définit la texture du ciel."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a spot light and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID can be used in most [code]light_*[/"
@@ -75966,11 +76492,11 @@ msgid ""
 "To place in a scene, attach this spot light to an instance using [method "
 "instance_set_base] using the returned RID."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée une lumière spot et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]light_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
+"méthode statique [method free_rid] du VisualServer.\n"
 "Pour placer dans une scène, attachez cette lumière spot à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
@@ -75985,7 +76511,6 @@ msgid "Binds the texture to a texture slot."
 msgstr "Alignez le texte à gauche."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an empty texture and adds it to the VisualServer. It can be accessed "
 "with the RID that is returned. This RID will be used in all [code]texture_*[/"
@@ -75993,18 +76518,19 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
+"Crée une texture vide et l’ajoute au VisualServer. Il peut être consulté "
 "avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"fonctions [code]texture_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
+"méthode statique [method free_rid] du VisualServer.\n"
+"Pour placer dans une scène, attachez cette texture vide à une instance en "
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
 msgid ""
 "Creates a texture, allocates the space for an image, and fills in the image."
 msgstr ""
+"Crée une texture, alloue l'espace pour une image, et remplit avec l'image."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -76016,6 +76542,8 @@ msgid ""
 "Returns a copy of a texture's image unless it's a CubeMap, in which case it "
 "returns the [RID] of the image at one of the cubes sides."
 msgstr ""
+"Retourne une copie de l'image de la texture sauf si c'est une CubeMap, dans "
+"ce cas, le [RID] de l'image d'un des côtés est retourné."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the depth of the texture."
@@ -76043,9 +76571,9 @@ msgid "Returns the opengl id of the texture's image."
 msgstr "Retourne l'identifiant OpenGL de l'image de cette texture."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the type of the texture, can be any of the [enum TextureType]."
-msgstr "Retourne le type du nœud à [code]idx[/code]."
+msgstr ""
+"Retourne le type de texture, c'est l'une des valeurs de [enum TextureType]."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the texture's width."
@@ -76146,7 +76674,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates an empty viewport and adds it to the VisualServer. It can be "
 "accessed with the RID that is returned. This RID will be used in all "
@@ -76154,13 +76681,11 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
+"Crée une fenêtre d'affichage et l’ajoute au VisualServer. Il peut être "
+"consulté avec le RID qui est retourné. Ce RID peut être utilisé dans la "
+"plupart des fonctions [code]viewport_*[/code] VisualServer.\n"
 "Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"méthode statique [method free_rid] du VisualServer."
 
 #: doc/classes/VisualServer.xml
 msgid "Detaches the viewport from the screen."
@@ -78646,11 +79171,8 @@ msgid "Computes a [Transform] function within the visual shader graph."
 msgstr "Calcule une fonction [Transform] dans le graphique du shader visuel."
 
 #: doc/classes/VisualShaderNodeTransformFunc.xml
-#, fuzzy
 msgid "Computes an inverse or transpose function on the provided [Transform]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Transform] "
-"donnée."
+msgstr "Calcule la fonction inverse ou transposée de la [Transform] donnée."
 
 #: doc/classes/VisualShaderNodeTransformFunc.xml
 msgid "The function to be computed. See [enum Function] for options."
@@ -78670,13 +79192,12 @@ msgstr ""
 "Multiplie [Transform] par [Transform] dans le graphique du shader visuel."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml
-#, fuzzy
 msgid ""
 "A multiplication operation on two transforms (4x4 matrices), with support "
 "for different multiplication operators."
 msgstr ""
-"Une opération de multiplication sur deux transforms (matrices 4x4), avec "
-"support pour différents opérateurs de multiplication."
+"Une opération de multiplication sur deux transformations (des matrices de "
+"4x4), avec support pour différents opérateurs de multiplication."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml
 msgid ""
@@ -78687,14 +79208,16 @@ msgstr ""
 "Operator] pour les options."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml
-#, fuzzy
 msgid "Multiplies transform [code]a[/code] by the transform [code]b[/code]."
-msgstr "Multiplie le transform [code]a[/code] par le transform [code]b[/code]."
+msgstr ""
+"Multiplie la transformation [code]a[/code] par la transformation [code]b[/"
+"code]."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml
-#, fuzzy
 msgid "Multiplies transform [code]b[/code] by the transform [code]a[/code]."
-msgstr "Multiplie le transform [code]b[/code] par le transform [code]a[/code]."
+msgstr ""
+"Multiplie la transformation [code]b[/code] par la transformation [code]a[/"
+"code]."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml
 msgid ""
@@ -79911,9 +80434,8 @@ msgstr ""
 "plus de détails."
 
 #: modules/websocket/doc_classes/WebSocketMultiplayerPeer.xml
-#, fuzzy
 msgid "Base class for WebSocket server and client."
-msgstr "Classe de base pour le serveur WebSocket et le client."
+msgstr "Classe de base pour le serveur et le client WebSocket."
 
 #: modules/websocket/doc_classes/WebSocketMultiplayerPeer.xml
 msgid ""
@@ -80517,7 +81039,7 @@ msgid "Emitted when [member visibility_state] has changed."
 msgstr "Émis lorsque [member visibility_state] modifié."
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
-msgid "We don't know the the target ray mode."
+msgid "We don't know the target ray mode."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
