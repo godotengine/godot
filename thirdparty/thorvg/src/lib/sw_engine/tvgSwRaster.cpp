@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+#ifdef _WIN32
+    #include <malloc.h>
+#elif defined(__FreeBSD__)
+    #include <stdlib.h>
+#else
+    #include <alloca.h>
+#endif
+
 #include "tvgMath.h"
 #include "tvgRender.h"
 #include "tvgSwCommon.h"
