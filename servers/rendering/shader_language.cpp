@@ -5379,6 +5379,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			if (tk.type == TK_CURSOR) {
 				//do nothing
 			} else if (tk.type == TK_PERIOD) {
+#ifdef DEBUG_ENABLED
+				uint32_t prev_keyword_completion_context = keyword_completion_context;
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif
+
 				DataType dt = expr->get_datatype();
 				String st = expr->get_datatype_name();
 
@@ -5733,6 +5738,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 				}
 				expr = mn;
+
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = prev_keyword_completion_context;
+#endif
 
 				//todo
 				//member (period) has priority over any operator
