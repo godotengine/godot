@@ -347,12 +347,10 @@ void SpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 }
 
-Ref<SpatialMaterial> SpatialMaterial::materials_for_2d[SpatialMaterial::MAX_MATERIALS_FOR_2D];
+HashMap<uint64_t, Ref<SpatialMaterial>> SpatialMaterial::materials_for_2d;
 
 void SpatialMaterial::finish_shaders() {
-	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
-		materials_for_2d[i].unref();
-	}
+	materials_for_2d.clear();
 
 	memdelete(dirty_materials);
 	dirty_materials = nullptr;
@@ -813,7 +811,12 @@ void SpatialMaterial::_update_shader() {
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_SDF]) {
+		code += "\tconst float smoothing = 0.125;\n";
+		code += "\tfloat dist = albedo_tex.a;\n";
+		code += "\talbedo_tex.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);\n";
+		code += "\talbedo_tex.rgb = vec3(1.0);\n";
+	} else if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
 		code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
@@ -1728,32 +1731,41 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel(
 	return refraction_texture_channel;
 }
 
-RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
-	int version = 0;
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, bool p_no_depth_test, bool p_fixed_size, bool p_sdf) {
+	uint64_t hash = 0;
 	if (p_shaded) {
-		version = 1;
+		hash |= 1 << 0;
 	}
 	if (p_transparent) {
-		version |= 2;
+		hash |= 1 << 1;
 	}
 	if (p_cut_alpha) {
-		version |= 4;
+		hash |= 1 << 2;
 	}
 	if (p_opaque_prepass) {
-		version |= 8;
+		hash |= 1 << 3;
 	}
 	if (p_double_sided) {
-		version |= 16;
+		hash |= 1 << 4;
 	}
 	if (p_billboard) {
-		version |= 32;
+		hash |= 1 << 5;
 	}
 	if (p_billboard_y) {
-		version |= 64;
+		hash |= 1 << 6;
+	}
+	if (p_no_depth_test) {
+		hash |= 1 << 7;
+	}
+	if (p_fixed_size) {
+		hash |= 1 << 8;
+	}
+	if (p_sdf) {
+		hash |= 1 << 9;
 	}
 
-	if (materials_for_2d[version].is_valid()) {
-		return materials_for_2d[version]->get_rid();
+	if (materials_for_2d.has(hash)) {
+		return materials_for_2d[hash]->get_rid();
 	}
 
 	Ref<SpatialMaterial> material;
@@ -1766,16 +1778,19 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth_test);
+	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
+	material->set_flag(FLAG_ALBEDO_TEXTURE_SDF, p_sdf);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
-	materials_for_2d[version] = material;
+	materials_for_2d[hash] = material;
 	// flush before using so we can access the shader right away
 	flush_changes();
 
-	return materials_for_2d[version]->get_rid();
+	return materials_for_2d[hash]->get_rid();
 }
 
 void SpatialMaterial::set_on_top_of_alpha() {
@@ -2047,6 +2062,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_do_not_receive_shadows"), "set_flag", "get_flag", FLAG_DONT_RECEIVE_SHADOWS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_ensure_correct_normals"), "set_flag", "get_flag", FLAG_ENSURE_CORRECT_NORMALS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_albedo_tex_msdf"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_SDF);
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
@@ -2246,6 +2262,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_ENSURE_CORRECT_NORMALS);
 	BIND_ENUM_CONSTANT(FLAG_USE_SHADOW_TO_OPACITY);
+	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_SDF);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

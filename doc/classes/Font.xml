@@ -51,6 +51,51 @@
 				Returns the size of a character, optionally taking kerning into account if the next character is provided. Note that the height returned is the font height (see [method get_height]) and has no relation to the glyph height.
 			</description>
 		</method>
+		<method name="get_char_texture" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<argument index="2" name="outline" type="bool" default="false" />
+			<description>
+				Returns resource id of the cache texture containing the char.
+			</description>
+		</method>
+		<method name="get_char_texture_size" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<argument index="2" name="outline" type="bool" default="false" />
+			<description>
+				Returns size of the cache texture containing the char.
+			</description>
+		</method>
+		<method name="get_char_tx_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<argument index="2" name="outline" type="bool" default="false" />
+			<description>
+				Returns char offset from the baseline.
+			</description>
+		</method>
+		<method name="get_char_tx_size" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<argument index="2" name="outline" type="bool" default="false" />
+			<description>
+				Returns size of the char.
+			</description>
+		</method>
+		<method name="get_char_tx_uv_rect" qualifiers="const">
+			<return type="Rect2" />
+			<argument index="0" name="char" type="int" />
+			<argument index="1" name="next" type="int" default="0" />
+			<argument index="2" name="outline" type="bool" default="false" />
+			<description>
+				Returns rectangle in the cache texture containing the char.
+			</description>
+		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float" />
 			<description>

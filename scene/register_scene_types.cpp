@@ -190,6 +190,7 @@
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/interpolated_camera.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
@@ -441,6 +442,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();
 	ClassDB::register_class<AnimatedSprite3D>();
+	ClassDB::register_class<Label3D>();
 	ClassDB::register_virtual_class<Light>();
 	ClassDB::register_class<DirectionalLight>();
 	ClassDB::register_class<OmniLight>();
