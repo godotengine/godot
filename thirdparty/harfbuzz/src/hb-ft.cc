@@ -80,12 +80,12 @@
 
 struct hb_ft_font_t
 {
-  mutable hb_mutex_t lock;
-  FT_Face ft_face;
   int load_flags;
   bool symbol; /* Whether selected cmap is symbol cmap. */
   bool unref; /* Whether to destroy ft_face when done. */
 
+  mutable hb_mutex_t lock;
+  FT_Face ft_face;
   mutable int cached_x_scale;
   mutable hb_advance_cache_t advance_cache;
 };

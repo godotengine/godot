@@ -91,6 +91,10 @@ hb_map_is_empty (const hb_map_t *map);
 HB_EXTERN unsigned int
 hb_map_get_population (const hb_map_t *map);
 
+HB_EXTERN hb_bool_t
+hb_map_is_equal (const hb_map_t *map,
+		 const hb_map_t *other);
+
 HB_EXTERN void
 hb_map_set (hb_map_t       *map,
 	    hb_codepoint_t  key,

@@ -36,9 +36,8 @@ using namespace CFF;
 
 struct cff2_extents_param_t
 {
-  void init ()
+  cff2_extents_param_t ()
   {
-    path_open = false;
     min_x.set_int (INT_MAX);
     min_y.set_int (INT_MAX);
     max_x.set_int (INT_MIN);
@@ -57,22 +56,22 @@ struct cff2_extents_param_t
     if (pt.y > max_y) max_y = pt.y;
   }
 
-  bool  path_open;
+  bool  path_open = false;
   number_t min_x;
   number_t min_y;
   number_t max_x;
   number_t max_y;
 };
 
-struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_cs_interp_env_t, cff2_extents_param_t>
+struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_cs_interp_env_t<number_t>, cff2_extents_param_t>
 {
-  static void moveto (cff2_cs_interp_env_t &env, cff2_extents_param_t& param, const point_t &pt)
+  static void moveto (cff2_cs_interp_env_t<number_t> &env, cff2_extents_param_t& param, const point_t &pt)
   {
     param.end_path ();
     env.moveto (pt);
   }
 
-  static void line (cff2_cs_interp_env_t &env, cff2_extents_param_t& param, const point_t &pt1)
+  static void line (cff2_cs_interp_env_t<number_t> &env, cff2_extents_param_t& param, const point_t &pt1)
   {
     if (!param.is_path_open ())
     {
@@ -83,7 +82,7 @@ struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_
     param.update_bounds (env.get_pt ());
   }
 
-  static void curve (cff2_cs_interp_env_t &env, cff2_extents_param_t& param, const point_t &pt1, const point_t &pt2, const point_t &pt3)
+  static void curve (cff2_cs_interp_env_t<number_t> &env, cff2_extents_param_t& param, const point_t &pt1, const point_t &pt2, const point_t &pt3)
   {
     if (!param.is_path_open ())
     {
@@ -98,7 +97,7 @@ struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_
   }
 };
 
-struct cff2_cs_opset_extents_t : cff2_cs_opset_t<cff2_cs_opset_extents_t, cff2_extents_param_t, cff2_path_procs_extents_t> {};
+struct cff2_cs_opset_extents_t : cff2_cs_opset_t<cff2_cs_opset_extents_t, cff2_extents_param_t, number_t, cff2_path_procs_extents_t> {};
 
 bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
 					   hb_codepoint_t glyph,
@@ -112,11 +111,10 @@ bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 
   unsigned int fd = fdSelect->get_fd (glyph);
-  cff2_cs_interpreter_t<cff2_cs_opset_extents_t, cff2_extents_param_t> interp;
-  const byte_str_t str = (*charStrings)[glyph];
-  interp.env.init (str, *this, fd, font->coords, font->num_coords);
+  const hb_ubytes_t str = (*charStrings)[glyph];
+  cff2_cs_interp_env_t<number_t> env (str, *this, fd, font->coords, font->num_coords);
+  cff2_cs_interpreter_t<cff2_cs_opset_extents_t, cff2_extents_param_t, number_t> interp (env);
   cff2_extents_param_t  param;
-  param.init ();
   if (unlikely (!interp.interpret (param))) return false;
 
   if (param.min_x >= param.max_x)
@@ -169,28 +167,28 @@ struct cff2_path_param_t
   hb_font_t *font;
 };
 
-struct cff2_path_procs_path_t : path_procs_t<cff2_path_procs_path_t, cff2_cs_interp_env_t, cff2_path_param_t>
+struct cff2_path_procs_path_t : path_procs_t<cff2_path_procs_path_t, cff2_cs_interp_env_t<number_t>, cff2_path_param_t>
 {
-  static void moveto (cff2_cs_interp_env_t &env, cff2_path_param_t& param, const point_t &pt)
+  static void moveto (cff2_cs_interp_env_t<number_t> &env, cff2_path_param_t& param, const point_t &pt)
   {
     param.move_to (pt);
     env.moveto (pt);
   }
 
-  static void line (cff2_cs_interp_env_t &env, cff2_path_param_t& param, const point_t &pt1)
+  static void line (cff2_cs_interp_env_t<number_t> &env, cff2_path_param_t& param, const point_t &pt1)
   {
     param.line_to (pt1);
     env.moveto (pt1);
   }
 
-  static void curve (cff2_cs_interp_env_t &env, cff2_path_param_t& param, const point_t &pt1, const point_t &pt2, const point_t &pt3)
+  static void curve (cff2_cs_interp_env_t<number_t> &env, cff2_path_param_t& param, const point_t &pt1, const point_t &pt2, const point_t &pt3)
   {
     param.cubic_to (pt1, pt2, pt3);
     env.moveto (pt3);
   }
 };
 
-struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_param_t, cff2_path_procs_path_t> {};
+struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_param_t, number_t, cff2_path_procs_path_t> {};
 
 bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
 {
@@ -202,9 +200,9 @@ bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, h
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 
   unsigned int fd = fdSelect->get_fd (glyph);
-  cff2_cs_interpreter_t<cff2_cs_opset_path_t, cff2_path_param_t> interp;
-  const byte_str_t str = (*charStrings)[glyph];
-  interp.env.init (str, *this, fd, font->coords, font->num_coords);
+  const hb_ubytes_t str = (*charStrings)[glyph];
+  cff2_cs_interp_env_t<number_t> env (str, *this, fd, font->coords, font->num_coords);
+  cff2_cs_interpreter_t<cff2_cs_opset_path_t, cff2_path_param_t, number_t> interp (env);
   cff2_path_param_t param (font, draw_session);
   if (unlikely (!interp.interpret (param))) return false;
   return true;
