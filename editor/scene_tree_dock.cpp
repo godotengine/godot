@@ -59,10 +59,7 @@
 #endif // MODULE_REGEX_ENABLED
 
 void SceneTreeDock::_nodes_drag_begin() {
-	if (restore_script_editor_on_drag) {
-		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
-		restore_script_editor_on_drag = false;
-	}
+	pending_click_select = nullptr;
 }
 
 void SceneTreeDock::_quick_open() {
@@ -74,8 +71,9 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		restore_script_editor_on_drag = false; //lost chance
+	if (pending_click_select && mb.is_valid() && !mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
+		_push_item(pending_click_select);
+		pending_click_select = nullptr;
 	}
 }
 
@@ -1369,8 +1367,14 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 }
 
 void SceneTreeDock::_push_item(Object *p_object) {
-	if (!Input::get_singleton()->is_key_pressed(Key::ALT)) {
-		EditorNode::get_singleton()->push_item(p_object);
+	EditorNode::get_singleton()->push_item(p_object);
+}
+
+void SceneTreeDock::_handle_select(Node *p_node) {
+	if ((Input::get_singleton()->get_mouse_button_mask() & (MouseButton::MASK_LEFT | MouseButton::MASK_RIGHT)) != MouseButton::NONE) {
+		pending_click_select = p_node;
+	} else {
+		EditorNode::get_singleton()->push_item(p_node);
 	}
 }
 
@@ -1380,12 +1384,7 @@ void SceneTreeDock::_node_selected() {
 	if (!node) {
 		return;
 	}
-
-	if (ScriptEditor::get_singleton()->is_visible_in_tree()) {
-		restore_script_editor_on_drag = true;
-	}
-
-	_push_item(node);
+	_handle_select(node);
 }
 
 void SceneTreeDock::_node_renamed() {
@@ -2148,7 +2147,7 @@ void SceneTreeDock::_selection_changed() {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		_push_item(editor_selection->get_selection().begin()->key);
+		_handle_select(editor_selection->get_selection().begin()->key);
 	} else if (selection_size == 0) {
 		_push_item(nullptr);
 	}
