@@ -1757,6 +1757,7 @@ void OS_Windows::finalize() {
 	memdelete(input);
 	touch_state.clear();
 
+	icon.unref();
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
