@@ -38,6 +38,7 @@ import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
+import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
@@ -254,6 +255,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	public GodotIO io;
 	public GodotNetUtils netUtils;
+	public GodotTTS tts;
 
 	static SingletonBase[] singletons = new SingletonBase[MAX_SINGLETONS];
 	static int singleton_count = 0;
@@ -575,6 +577,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
 		netUtils = new GodotNetUtils(activity);
+		tts = new GodotTTS(activity);
 		Context context = getContext();
 		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
 		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
