@@ -108,7 +108,7 @@ int ViewportContainer::get_stretch_shrink() const {
 }
 
 void ViewportContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_RESIZED) {
+	if (p_what == NOTIFICATION_RESIZED || p_what == NOTIFICATION_READY) {
 		if (!stretch) {
 			return;
 		}
