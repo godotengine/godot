@@ -50,6 +50,7 @@ void Joint2D::_disconnect_signals() {
 void Joint2D::_body_exit_tree() {
 	_disconnect_signals();
 	_update_joint(true);
+	update_configuration_warnings();
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
@@ -64,7 +65,6 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer2D::get_singleton()->joint_clear(joint);
 		warning = String();
-		update_configuration_warnings();
 		return;
 	}
 
