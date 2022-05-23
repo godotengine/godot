@@ -16,12 +16,13 @@
 
         <service android:name=".GodotDownloaderService" />
 
-    </application>
+        <activity
+            android:name=".utils.ProcessPhoenix"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:process=":phoenix"
+            android:exported="false"
+            />
 
-    <instrumentation
-        android:name=".GodotInstrumentation"
-        android:icon="@mipmap/icon"
-        android:label="@string/godot_project_name_string"
-        android:targetPackage="org.godotengine.godot" />
+    </application>
 
 </manifest>

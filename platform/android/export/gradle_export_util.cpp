@@ -233,19 +233,6 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_xr_features;
 }
 
-String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
-	String package_name = p_preset->get("package/unique_name");
-	String manifest_instrumentation_text = vformat(
-			"    <instrumentation\n"
-			"        tools:node=\"replace\"\n"
-			"        android:name=\".GodotInstrumentation\"\n"
-			"        android:icon=\"@mipmap/icon\"\n"
-			"        android:label=\"@string/godot_project_name_string\"\n"
-			"        android:targetPackage=\"%s\" />\n",
-			package_name);
-	return manifest_instrumentation_text;
-}
-
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
 	bool uses_xr = xr_mode_index == XR_MODE_OVR || xr_mode_index == XR_MODE_OPENXR;
