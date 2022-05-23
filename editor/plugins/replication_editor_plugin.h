@@ -34,6 +34,10 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/scene_replication_config.h"
 
+#include "editor/editor_spin_slider.h"
+#include "editor/property_editor.h"
+#include "editor/property_selector.h"
+
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
 class Tree;
@@ -46,13 +50,22 @@ private:
 
 	AcceptDialog *error_dialog = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
-	Button *add_button = nullptr;
+	Button *add_pick_button = nullptr;
+	Button *add_from_path_button = nullptr;
 	LineEdit *np_line_edit = nullptr;
+
+	Label *drop_label = nullptr;
 
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
 	Tree *tree = nullptr;
 	bool keying = false;
+
+	PropertySelector *prop_selector = nullptr;
+	SceneTreeDialog *pick_node = nullptr;
+	NodePath adding_node_path;
+
+	Button *pin = nullptr;
 
 	Ref<Texture2D> _get_class_icon(const Node *p_node);
 
@@ -63,6 +76,19 @@ private:
 	void _update_config();
 	void _dialog_closed(bool p_confirmed);
 	void _add_property(const NodePath &p_property, bool p_spawn = true, bool p_sync = true);
+
+	void _pick_node_filter_text_changed(const String &p_newtext);
+	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
+	void _pick_node_filter_input(const Ref<InputEvent> &p_ie);
+	void _pick_node_selected(NodePath p_path);
+
+	void _pick_new_property();
+	void _pick_node_property_selected(String p_name);
+
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+	void _add_sync_property(String p_path);
 
 protected:
 	static void _bind_methods();
@@ -76,6 +102,7 @@ public:
 	MultiplayerSynchronizer *get_current() const { return current; }
 	void property_keyed(const String &p_property);
 
+	Button *get_pin() { return pin; }
 	ReplicationEditor();
 	~ReplicationEditor() {}
 };
@@ -84,11 +111,14 @@ class ReplicationEditorPlugin : public EditorPlugin {
 	GDCLASS(ReplicationEditorPlugin, EditorPlugin);
 
 private:
+	Button *button = nullptr;
 	ReplicationEditor *repl_editor = nullptr;
 
 	void _node_removed(Node *p_node);
 	void _keying_changed();
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+
+	void _pinned();
 
 protected:
 	void _notification(int p_what);
