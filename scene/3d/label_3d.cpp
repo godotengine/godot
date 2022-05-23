@@ -414,7 +414,7 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 		const_cast<Label3D *>(this)->regenerate_word_cache();
 	}
 
-	int font_h = font->get_height() + line_spacing;
+	float font_h = font->get_height() + line_spacing;
 	real_t space_w = font->get_char_size(' ').width;
 	float total_h = line_count * font_h;
 
@@ -640,7 +640,7 @@ void Label3D::_shape() {
 
 	// Generate surfaces and materials.
 
-	int font_h = font->get_height() + line_spacing;
+	float font_h = font->get_height() + line_spacing;
 	real_t space_w = font->get_char_size(' ').width;
 	float total_h = line_count * font_h;
 
