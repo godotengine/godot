@@ -910,6 +910,48 @@ void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_c
 		return;
 	}
 	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(p_new_class));
+	VisualShaderNode *prev_vsn = g->nodes[p_id].node.ptr();
+
+	// Update connection data.
+	for (int i = 0; i < vsn->get_output_port_count(); i++) {
+		if (i < prev_vsn->get_output_port_count()) {
+			if (prev_vsn->is_output_port_connected(i)) {
+				vsn->set_output_port_connected(i, true);
+			}
+
+			if (prev_vsn->is_output_port_expandable(i) && prev_vsn->_is_output_port_expanded(i) && vsn->is_output_port_expandable(i)) {
+				vsn->_set_output_port_expanded(i, true);
+
+				int component_count = 0;
+				switch (prev_vsn->get_output_port_type(i)) {
+					case VisualShaderNode::PORT_TYPE_VECTOR_2D:
+						component_count = 2;
+						break;
+					case VisualShaderNode::PORT_TYPE_VECTOR_3D:
+						component_count = 3;
+						break;
+					case VisualShaderNode::PORT_TYPE_VECTOR_4D:
+						component_count = 4;
+						break;
+					default:
+						break;
+				}
+
+				for (int j = 0; j < component_count; j++) {
+					int sub_port = i + 1 + j;
+
+					if (prev_vsn->is_output_port_connected(sub_port)) {
+						vsn->set_output_port_connected(sub_port, true);
+					}
+				}
+
+				i += component_count;
+			}
+		} else {
+			break;
+		}
+	}
+
 	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
 	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
