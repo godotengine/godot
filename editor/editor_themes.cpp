@@ -329,7 +329,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color(0.24, 0.23, 0.27);
 		preset_contrast = 0.25;
 	} else if (preset == "Grey") {
-		preset_accent_color = Color(0.72, 0.89, 1.0);
+		preset_accent_color = Color(0.44, 0.73, 0.98);
 		preset_base_color = Color(0.24, 0.24, 0.24);
 		preset_contrast = 0.2;
 	} else if (preset == "Light") {
