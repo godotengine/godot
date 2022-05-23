@@ -33,9 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
+#include "core/io/resource.h"
 #include "core/io/resource_format_binary.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
@@ -1555,7 +1555,7 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 String ResourceFormatLoaderText::get_attached_script_path(const String &p_path) const {
 	String type = ResourceLoader::get_resource_type(p_path);
 
-	if (!EditorFileSystem::_is_script_extendable_resource(type)) {
+	if (!Resource::is_script_extendable_resource(type)) {
 		return "";
 	}
 

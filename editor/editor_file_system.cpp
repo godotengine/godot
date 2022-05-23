@@ -953,7 +953,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 
-				if (EditorFileSystem::_is_script_extendable_resource(fi->type)) {
+				if (Resource::is_script_extendable_resource(fi->type)) {
 					fi->resource_script_path = ResourceLoader::get_attached_script_path(path);
 				}
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
@@ -1247,11 +1247,6 @@ void EditorFileSystem::scan_changes() {
 		// Because of multithreading, changes are applied in a check that occurs in the process loop.
 		// If the loop detects the multithread is done, then it applies the changes. See NOTIFICATION_PROCESS for more.
 	}
-}
-
-// We assume that only Resources can have attached scripts (excluding Scripts and PackedScenes, which still extend Resource).
-bool EditorFileSystem::_is_script_extendable_resource(const StringName &p_class) {
-	return ClassDB::is_parent_class(p_class, Resource::get_class_static()) && !ClassDB::is_parent_class(p_class, Script::get_class_static()) && !ClassDB::is_parent_class(p_class, PackedScene::get_class_static());
 }
 
 void EditorFileSystem::_notification(int p_what) {
