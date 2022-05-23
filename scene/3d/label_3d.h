@@ -96,6 +96,7 @@ private:
 
 	int font_size = 16;
 	Ref<Font> font_override;
+	mutable Ref<Font> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
 	Point2 lbl_offset;
 	int outline_render_priority = -1;
