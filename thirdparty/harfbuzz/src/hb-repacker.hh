@@ -49,6 +49,17 @@ struct graph_t
     unsigned end = 0;
     unsigned priority = 0;
 
+    friend void swap (vertex_t& a, vertex_t& b)
+    {
+      hb_swap (a.obj, b.obj);
+      hb_swap (a.distance, b.distance);
+      hb_swap (a.space, b.space);
+      hb_swap (a.parents, b.parents);
+      hb_swap (a.start, b.start);
+      hb_swap (a.end, b.end);
+      hb_swap (a.priority, b.priority);
+    }
+
     bool is_shared () const
     {
       return parents.length > 1;
@@ -148,6 +159,8 @@ struct graph_t
   {
     num_roots_for_space_.push (1);
     bool removed_nil = false;
+    vertices_.alloc (objects.length);
+    vertices_scratch_.alloc (objects.length);
     for (unsigned i = 0; i < objects.length; i++)
     {
       // TODO(grieger): check all links point to valid objects.
@@ -247,59 +260,6 @@ struct graph_t
   }
 
   /*
-   * Generates a new topological sorting of graph using Kahn's
-   * algorithm: https://en.wikipedia.org/wiki/Topological_sorting#Algorithms
-   */
-  void sort_kahn ()
-  {
-    positions_invalid = true;
-
-    if (vertices_.length <= 1) {
-      // Graph of 1 or less doesn't need sorting.
-      return;
-    }
-
-    hb_vector_t<unsigned> queue;
-    hb_vector_t<vertex_t> sorted_graph;
-    if (unlikely (!check_success (sorted_graph.resize (vertices_.length)))) return;
-    hb_vector_t<unsigned> id_map;
-    if (unlikely (!check_success (id_map.resize (vertices_.length)))) return;
-
-    hb_vector_t<unsigned> removed_edges;
-    if (unlikely (!check_success (removed_edges.resize (vertices_.length)))) return;
-    update_parents ();
-
-    queue.push (root_idx ());
-    int new_id = vertices_.length - 1;
-
-    while (!queue.in_error () && queue.length)
-    {
-      unsigned next_id = queue[0];
-      queue.remove (0);
-
-      vertex_t& next = vertices_[next_id];
-      sorted_graph[new_id] = next;
-      id_map[next_id] = new_id--;
-
-      for (const auto& link : next.obj.all_links ()) {
-        removed_edges[link.objidx]++;
-        if (!(vertices_[link.objidx].incoming_edges () - removed_edges[link.objidx]))
-          queue.push (link.objidx);
-      }
-    }
-
-    check_success (!queue.in_error ());
-    check_success (!sorted_graph.in_error ());
-    if (!check_success (new_id == -1))
-      print_orphaned_nodes ();
-
-    remap_all_obj_indices (id_map, &sorted_graph);
-
-    hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini ();
-  }
-
-  /*
    * Generates a new topological sorting of graph ordered by the shortest
    * distance to each node.
    */
@@ -315,7 +275,7 @@ struct graph_t
     update_distances ();
 
     hb_priority_queue_t queue;
-    hb_vector_t<vertex_t> sorted_graph;
+    hb_vector_t<vertex_t> &sorted_graph = vertices_scratch_;
     if (unlikely (!check_success (sorted_graph.resize (vertices_.length)))) return;
     hb_vector_t<unsigned> id_map;
     if (unlikely (!check_success (id_map.resize (vertices_.length)))) return;
@@ -331,8 +291,9 @@ struct graph_t
     {
       unsigned next_id = queue.pop_minimum().second;
 
-      vertex_t& next = vertices_[next_id];
-      sorted_graph[new_id] = next;
+      hb_swap (sorted_graph[new_id], vertices_[next_id]);
+      const vertex_t& next = sorted_graph[new_id];
+
       id_map[next_id] = new_id--;
 
       for (const auto& link : next.obj.all_links ()) {
@@ -356,7 +317,6 @@ struct graph_t
     remap_all_obj_indices (id_map, &sorted_graph);
 
     hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini ();
   }
 
   /*
@@ -568,12 +528,10 @@ struct graph_t
     // The last object is the root of the graph, so swap back the root to the end.
     // The root's obj idx does change, however since it's root nothing else refers to it.
     // all other obj idx's will be unaffected.
-    vertex_t root = vertices_[vertices_.length - 2];
-    vertices_[clone_idx] = *clone;
-    vertices_[vertices_.length - 1] = root;
+    hb_swap (vertices_[vertices_.length - 2], *clone);
 
     // Since the root moved, update the parents arrays of all children on the root.
-    for (const auto& l : root.obj.all_links ())
+    for (const auto& l : root ().obj.all_links ())
       vertices_[l.objidx].remap_parent (root_idx () - 1, root_idx ());
 
     return clone_idx;
@@ -1090,6 +1048,7 @@ struct graph_t
  public:
   // TODO(garretrieger): make private, will need to move most of offset overflow code into graph.
   hb_vector_t<vertex_t> vertices_;
+  hb_vector_t<vertex_t> vertices_scratch_;
  private:
   bool parents_invalid;
   bool distance_invalid;
@@ -1217,7 +1176,6 @@ hb_resolve_overflows (const T& packed,
   // Kahn sort is ~twice as fast as shortest distance sort and works for many fonts
   // so try it first to save time.
   graph_t sorted_graph (packed);
-  sorted_graph.sort_kahn ();
   if (!sorted_graph.will_overflow ())
   {
     return sorted_graph.serialize ();
