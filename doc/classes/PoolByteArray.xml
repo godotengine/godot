@@ -5,7 +5,20 @@
 	</brief_description>
 	<description>
 		An array specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory.
-		[b]Note:[/b] This type is passed by value and not by reference.
+		[b]Note:[/b] This type is passed by value and not by reference. This means that when [i]mutating[/i] a class property of type [PoolByteArray] or mutating a [PoolByteArray] within an [Array] or [Dictionary], changes will be lost:
+		[codeblock]
+		var array = [PoolByteArray()]
+		array[0].push_back(123)
+		print(array)  # [[]] (empty PoolByteArray within an empty Array)
+		[/codeblock]
+		Instead, the entire [PoolByteArray] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
+		[codeblock]
+		var array = [PoolByteArray()]
+		var pool_array = array[0]
+		pool_array.push_back(123)
+		array[0] = pool_array
+		print(array)  # [[123]] (PoolByteArray with 1 element inside an Array)
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
