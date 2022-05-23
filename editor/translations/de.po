@@ -273,14 +273,8 @@ msgstr "Multithread-Warteschlangengröße (KB)"
 msgid "Function"
 msgstr "Funktion"
 
-#: core/image.cpp core/packed_data_container.cpp
-#: modules/minimp3/audio_stream_mp3.cpp
-#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
-#: modules/visual_script/visual_script.cpp scene/2d/polygon_2d.cpp
+#: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/resources/audio_stream_sample.cpp scene/resources/bit_map.cpp
-#: scene/resources/concave_polygon_shape.cpp scene/resources/curve.cpp
-#: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
 msgid "Data"
 msgstr "Daten"
 
@@ -595,13 +589,15 @@ msgid "Project Settings Override"
 msgstr "Projekteinstellungsüberbrückung"
 
 #: core/project_settings.cpp core/resource.cpp
-#: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_plugin_settings.cpp editor/editor_profiler.cpp
+#: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
+#: editor/editor_help_search.cpp editor/editor_plugin_settings.cpp
+#: editor/editor_profiler.cpp editor/plugins/tile_set_editor_plugin.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
 #: modules/gdnative/nativescript/nativescript.cpp
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #: platform/osx/export/export.cpp scene/2d/area_2d.cpp scene/3d/area.cpp
-#: scene/main/node.cpp
+#: scene/3d/skeleton.cpp scene/main/node.cpp scene/resources/mesh_library.cpp
+#: scene/resources/skin.cpp
 msgid "Name"
 msgstr "Name"
 
@@ -650,7 +646,7 @@ msgstr "Anzeige"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
-#: scene/gui/text_edit.cpp scene/resources/texture.cpp
+#: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
 msgstr "Breite"
 
@@ -779,7 +775,8 @@ msgstr "UI Ende"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 #: servers/physics/space_sw.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
-#: servers/physics_2d/space_2d_sw.cpp
+#: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 msgid "Physics"
 msgstr "Physik"
 
@@ -789,7 +786,7 @@ msgstr "Physik"
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
-#: servers/physics/space_sw.cpp
+#: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
 msgstr "3D"
 
@@ -819,9 +816,8 @@ msgstr "Am Rendern"
 msgid "Quality"
 msgstr "Qualität"
 
-#: core/project_settings.cpp scene/animation/animation_tree.cpp
-#: scene/gui/file_dialog.cpp scene/main/scene_tree.cpp
-#: servers/visual_server.cpp
+#: core/project_settings.cpp scene/gui/file_dialog.cpp
+#: scene/main/scene_tree.cpp servers/visual_server.cpp
 msgid "Filters"
 msgstr "Filter"
 
@@ -940,10 +936,6 @@ msgstr "Pfad"
 msgid "Source Code"
 msgstr "Quellcode"
 
-#: core/translation.cpp
-msgid "Messages"
-msgstr "Nachrichten"
-
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "Gebietsschema"
@@ -1009,7 +1001,8 @@ msgstr "Canvaspolygonindex-Puffergröße (KB)"
 #: scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
-#: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
+#: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
+#: servers/visual_server.cpp
 msgid "2D"
 msgstr "2D"
 
@@ -1058,13 +1051,14 @@ msgstr "Max Anzahl an Lichtern pro Objekt"
 msgid "Subsurface Scattering"
 msgstr "Subsurface-Streuung"
 
-#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_node.cpp
 #: modules/gridmap/grid_map.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/node_2d.cpp scene/2d/parallax_layer.cpp scene/2d/polygon_2d.cpp
 #: scene/2d/remote_transform_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
+#: scene/3d/remote_transform.cpp scene/3d/spatial.cpp
+#: scene/animation/animation_blend_tree.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
 msgid "Scale"
@@ -1157,6 +1151,94 @@ msgstr "Schlüsselbildwert ändern"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Aufruf ändern"
+
+#: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
+#: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Frame"
+msgstr "Frame"
+
+#: editor/animation_track_editor.cpp editor/editor_profiler.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#: scene/resources/particles_material.cpp servers/visual_server.cpp
+msgid "Time"
+msgstr "Zeit"
+
+#: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
+#: platform/osx/export/export.cpp
+msgid "Location"
+msgstr "Ort"
+
+#: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
+#: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
+#: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
+msgid "Rotation"
+msgstr "Rotation"
+
+#: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
+msgid "Value"
+msgstr "Wert"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Arg Count"
+msgstr "Anzahl"
+
+#: editor/animation_track_editor.cpp main/main.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
+msgid "Args"
+msgstr "Argumente"
+
+#: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
+#: modules/gltf/gltf_light.cpp modules/visual_script/visual_script_nodes.cpp
+#: scene/3d/physics_body.cpp scene/resources/visual_shader_nodes.cpp
+msgid "Type"
+msgstr "Art"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In Handle"
+msgstr "Wähle Griff"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out Handle"
+msgstr "Wähle Griff"
+
+#: editor/animation_track_editor.cpp
+#: editor/import/resource_importer_texture.cpp
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+msgid "Stream"
+msgstr "Stream"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start Offset"
+msgstr "Port-Versatz"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End Offset"
+msgstr "H Versatz"
+
+#: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_scene.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/sprite.cpp scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
+#: scene/animation/animation_blend_tree.cpp
+#: scene/resources/particles_material.cpp
+msgid "Animation"
+msgstr "Animation"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing"
+msgstr "Glätten Ein-Aus"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1352,16 +1434,6 @@ msgstr "Spur entfernen"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Editors"
 msgstr "Editoren"
-
-#: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#: editor/import/resource_importer_scene.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
-#: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
-#: scene/2d/sprite.cpp scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
-#: scene/animation/animation_blend_tree.cpp
-#: scene/resources/particles_material.cpp
-msgid "Animation"
-msgstr "Animation"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 msgid "Confirm Insert Track"
@@ -2820,7 +2892,7 @@ msgid "Script Editor"
 msgstr "Skript Editor"
 
 #: editor/editor_feature_profile.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Asset Library"
 msgstr "Bestandsbibliothek (AssetLib)"
 
@@ -3108,11 +3180,11 @@ msgstr "Darstellungsmodus"
 #: editor/import/resource_importer_texture.cpp
 #: editor/import/resource_importer_wav.cpp main/main.cpp
 #: modules/csg/csg_shape.cpp modules/visual_script/visual_script_nodes.cpp
-#: modules/visual_script/visual_script_yield_nodes.cpp scene/2d/light_2d.cpp
-#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
+#: scene/2d/light_2d.cpp scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/light.cpp scene/3d/physics_body.cpp
 #: scene/gui/control.cpp scene/gui/file_dialog.cpp
 #: scene/resources/environment.cpp scene/resources/material.cpp
+#: scene/resources/visual_shader.cpp
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Mode"
 msgstr "Modus"
@@ -3243,7 +3315,7 @@ msgstr "Fehlende importierte Dateien reimportieren"
 
 #: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
-#: scene/resources/style_box.cpp
+#: scene/resources/style_box.cpp scene/resources/texture.cpp
 msgid "Top"
 msgstr "Oben"
 
@@ -3440,11 +3512,12 @@ msgstr "Bezeichner"
 msgid "Read Only"
 msgstr "Nur Lesezugriff"
 
-#: editor/editor_inspector.cpp
+#: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
 msgid "Checkable"
 msgstr "Auswählbar"
 
-#: editor/editor_inspector.cpp scene/resources/default_theme/default_theme.cpp
+#: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Checked"
 msgstr "Ausgewählt"
 
@@ -4904,12 +4977,6 @@ msgstr ""
 msgid "Frame #:"
 msgstr "Bild #:"
 
-#: editor/editor_profiler.cpp scene/2d/cpu_particles_2d.cpp
-#: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#: scene/resources/particles_material.cpp servers/visual_server.cpp
-msgid "Time"
-msgstr "Zeit"
-
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Aufrufe"
@@ -5295,7 +5362,8 @@ msgstr "Farbton von Subressourcen"
 msgid "Color Theme"
 msgstr "Farbthema"
 
-#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
+#: editor/editor_settings.cpp scene/3d/label_3d.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr "Zeilenzwischenraum"
 
@@ -5323,13 +5391,6 @@ msgstr "Typsichere Zeilen hervorheben"
 #: editor/editor_settings.cpp
 msgid "Indent"
 msgstr "Einrücken"
-
-#: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_light.cpp
-#: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
-#: scene/resources/visual_shader_nodes.cpp
-msgid "Type"
-msgstr "Art"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -6754,9 +6815,9 @@ msgstr "Kein BPTC falls RGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#: scene/resources/texture.cpp
+#: scene/resources/texture.cpp scene/resources/visual_shader.cpp
 msgid "Flags"
 msgstr "Flags"
 
@@ -6899,10 +6960,6 @@ msgstr "Alte Namen verwenden"
 msgid "Materials"
 msgstr "Materialien"
 
-#: editor/import/resource_importer_scene.cpp platform/osx/export/export.cpp
-msgid "Location"
-msgstr "Ort"
-
 #: editor/import/resource_importer_scene.cpp
 msgid "Keep On Reimport"
 msgstr "Bei Neuimport behalten"
@@ -6951,17 +7008,18 @@ msgstr "Eigene Spuren behalten"
 msgid "Optimizer"
 msgstr "Optimierer"
 
-#: editor/import/resource_importer_scene.cpp main/main.cpp
+#: editor/import/resource_importer_scene.cpp
+#: editor/plugins/item_list_editor_plugin.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
 #: scene/2d/navigation_polygon.cpp scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp
 #: scene/2d/y_sort.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/interpolated_camera.cpp
 #: scene/3d/light.cpp scene/3d/navigation_mesh_instance.cpp
-#: scene/3d/physics_joint.cpp scene/3d/ray_cast.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_edit.cpp scene/gui/rich_text_label.cpp
-#: scene/resources/curve.cpp scene/resources/environment.cpp
-#: scene/resources/material.cpp
+#: scene/3d/physics_joint.cpp scene/3d/ray_cast.cpp scene/3d/skeleton.cpp
+#: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
+#: scene/gui/rich_text_label.cpp scene/resources/curve.cpp
+#: scene/resources/environment.cpp scene/resources/material.cpp
 msgid "Enabled"
 msgstr "Aktiviert"
 
@@ -7054,7 +7112,8 @@ msgstr "HDR-Modus"
 msgid "BPTC LDR"
 msgstr "BPTC LDR"
 
-#: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
+#: editor/import/resource_importer_texture.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
 msgid "Normal Map"
@@ -7083,12 +7142,6 @@ msgstr "Farben invertieren"
 #: editor/import/resource_importer_texture.cpp
 msgid "Normal Map Invert Y"
 msgstr "Y der Normal-Map invertieren"
-
-#: editor/import/resource_importer_texture.cpp
-#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
-msgid "Stream"
-msgstr "Stream"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Size Limit"
@@ -7851,7 +7904,8 @@ msgstr "Zukunft"
 
 #: editor/plugins/animation_player_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/3d/collision_polygon.cpp scene/main/scene_tree.cpp
-#: scene/resources/material.cpp servers/audio/effects/audio_effect_phaser.cpp
+#: scene/resources/material.cpp scene/resources/primitive_meshes.cpp
+#: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Depth"
 msgstr "Tiefe"
 
@@ -8033,7 +8087,7 @@ msgid "Fade Out (s):"
 msgstr "Ausblenden (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: scene/resources/style_box.cpp
+#: scene/resources/style_box.cpp scene/resources/visual_shader.cpp
 msgid "Blend"
 msgstr "Blenden"
 
@@ -8441,7 +8495,7 @@ msgid "Select lightmap bake file:"
 msgstr "Lightmap-Bake-Datei auswählen:"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/resources/mesh_library.cpp
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -9313,13 +9367,36 @@ msgstr "Gradient Füllpunkte vertauschen"
 msgid "Toggle Grid Snap"
 msgstr "Gittereinrasten umschalten"
 
+#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
+#: scene/3d/label_3d.cpp scene/gui/button.cpp scene/gui/dialogs.cpp
+#: scene/gui/label.cpp scene/gui/line_edit.cpp scene/gui/link_button.cpp
+#: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
+#: scene/resources/primitive_meshes.cpp
+msgid "Text"
+msgstr "Text"
+
+#: editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#: scene/gui/button.cpp scene/gui/item_list.cpp
+msgid "Icon"
+msgstr "Symbol"
+
+#: editor/plugins/item_list_editor_plugin.cpp
+#, fuzzy
+msgid "ID"
+msgstr "IOD"
+
+#: editor/plugins/item_list_editor_plugin.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Separator"
+msgstr "Trenner"
+
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
 msgstr "Element %d"
 
-#: editor/plugins/item_list_editor_plugin.cpp scene/gui/item_list.cpp
-#: scene/gui/menu_button.cpp scene/gui/option_button.cpp
-#: scene/gui/popup_menu.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 msgid "Items"
 msgstr "Elemente"
 
@@ -9427,7 +9504,8 @@ msgstr "Umriss erzeugen"
 #: editor/plugins/mesh_instance_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_mesh.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/mesh_instance.cpp scene/resources/multimesh.cpp
+#: scene/3d/mesh_instance.cpp scene/resources/mesh_library.cpp
+#: scene/resources/multimesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Mesh"
 msgstr "Mesh"
@@ -9983,12 +10061,11 @@ msgstr "UV"
 msgid "Points"
 msgstr "Punkte"
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/navigation_polygon.cpp
-#: scene/2d/polygon_2d.cpp scene/resources/navigation_mesh.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
 msgid "Polygons"
 msgstr "Polygone"
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/3d/skeleton.cpp
 msgid "Bones"
 msgstr "Knochen"
 
@@ -10069,8 +10146,6 @@ msgid "Grid Settings"
 msgstr "Gittereinstellungen"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
-#: scene/animation/animation_blend_space_1d.cpp
-#: scene/animation/animation_blend_space_2d.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Snap"
 msgstr "Einrasten"
@@ -10329,8 +10404,6 @@ msgid "Previous Script"
 msgstr "Vorheriges Skript"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: modules/gdnative/videodecoder/video_stream_gdnative.cpp
-#: modules/theora/video_stream_theora.cpp modules/webm/video_stream_webm.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "File"
 msgstr "Datei"
@@ -10561,7 +10634,8 @@ msgid "Convert Case"
 msgstr "Groß-/Kleinschreibung ändern"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-#: scene/gui/label.cpp
+#: scene/3d/label_3d.cpp scene/gui/label.cpp
+#: scene/resources/primitive_meshes.cpp
 msgid "Uppercase"
 msgstr "Großbuchstaben"
 
@@ -12083,7 +12157,7 @@ msgstr "Umschaltknopf"
 msgid "Disabled Button"
 msgstr "Deaktivierter Knopf"
 
-#: editor/plugins/theme_editor_preview.cpp
+#: editor/plugins/theme_editor_preview.cpp scene/resources/mesh_library.cpp
 msgid "Item"
 msgstr "Element"
 
@@ -12396,12 +12470,6 @@ msgstr "Bitmaske"
 msgid "Priority"
 msgstr "Priorität"
 
-#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
-#: platform/osx/export/export.cpp platform/windows/export/export.cpp
-#: scene/gui/button.cpp scene/gui/item_list.cpp
-msgid "Icon"
-msgstr "Symbol"
-
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/node_2d.cpp
 msgid "Z Index"
 msgstr "Z-Index"
@@ -12666,6 +12734,136 @@ msgstr "Occlusion-Polygon erzeugen"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "Diese Eigenschaft kann nicht geändert werden."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Options"
+msgstr "Einrasteinstellungen"
+
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/animated_sprite.cpp
+#: scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/parallax_background.cpp scene/2d/parallax_layer.cpp
+#: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
+#: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
+#: scene/main/canvas_layer.cpp scene/resources/material.cpp
+#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+msgid "Offset"
+msgstr "Versatz"
+
+#: editor/plugins/tile_set_editor_plugin.cpp editor/rename_dialog.cpp
+#: scene/gui/range.cpp scene/resources/animation.cpp
+#: scene/resources/visual_shader_nodes.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Step"
+msgstr "Schritt"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Separation"
+msgstr "Trennung"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Tile"
+msgstr "Ausgewählt"
+
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
+#: scene/2d/multimesh_instance_2d.cpp scene/2d/particles_2d.cpp
+#: scene/2d/polygon_2d.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/texture_rect.cpp
+#: scene/resources/material.cpp scene/resources/sky.cpp
+#: scene/resources/style_box.cpp scene/resources/visual_shader_nodes.cpp
+msgid "Texture"
+msgstr "Textur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tex Offset"
+msgstr "Titelversatz"
+
+#: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
+#: scene/3d/mesh_instance.cpp scene/resources/primitive_meshes.cpp
+msgid "Material"
+msgstr "Material"
+
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/canvas_item.cpp
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/style_box.cpp
+msgid "Modulate"
+msgstr "Modulierung"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Mode"
+msgstr "Modus umschalten"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Autotile Bitmask Mode"
+msgstr "Bitmaskenmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Subtile Size"
+msgstr "Umrissgröße"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Subtile Spacing"
+msgstr "Zeilenzwischenraum"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Offset"
+msgstr "Occluder-Loch"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation Offset"
+msgstr "Navigationsgefühl"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Shape Offset"
+msgstr "Grundversatz"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Shape Transform"
+msgstr "Transformation"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Collision"
+msgstr "Kollisionen verwenden"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Collision One Way"
+msgstr "Nur Auswahl"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Collision One Way Margin"
+msgstr "BVH-Kollisionsspielraum"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Navigation"
+msgstr "Navigation sichtbar"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Selected Occlusion"
+msgstr "Ausgewählt Fokus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tileset Script"
+msgstr "Skript filtern"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -13808,7 +14006,7 @@ msgstr ""
 "Falls aktiviert wird diese Vorlage beim Soforteinsatz verwendet.\n"
 "Nur eine Vorlage pro Plattform kann für den Soforteinsatz aktiviert werden."
 
-#: editor/project_export.cpp scene/main/resource_preloader.cpp
+#: editor/project_export.cpp
 msgid "Resources"
 msgstr "Ressourcen"
 
@@ -13867,12 +14065,6 @@ msgstr "Skript"
 #: editor/project_export.cpp
 msgid "GDScript Export Mode:"
 msgstr "GDScript-Exportmodus:"
-
-#: editor/project_export.cpp scene/gui/button.cpp scene/gui/dialogs.cpp
-#: scene/gui/label.cpp scene/gui/line_edit.cpp scene/gui/link_button.cpp
-#: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
-msgid "Text"
-msgstr "Text"
 
 #: editor/project_export.cpp
 msgid "Compiled Bytecode (Faster Loading)"
@@ -14116,6 +14308,18 @@ msgstr "Fehlendes Projekt"
 msgid "Error: Project is missing on the filesystem."
 msgstr "Fehler: Projekt ist nicht im Dateisystem vorhanden."
 
+#: editor/project_manager.cpp editor/scene_tree_dock.cpp
+msgid "Local"
+msgstr "Lokal"
+
+#: editor/project_manager.cpp
+msgid "Local Projects"
+msgstr "Lokale Projekte"
+
+#: editor/project_manager.cpp
+msgid "Asset Library Projects"
+msgstr "Nutzerinhalte-Projekte"
+
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
 msgstr "Projekt in ‚%s‘ kann nicht geöffnet werden."
@@ -14238,10 +14442,6 @@ msgid "Project Manager"
 msgstr "Projektverwaltung"
 
 #: editor/project_manager.cpp
-msgid "Local Projects"
-msgstr "Lokale Projekte"
-
-#: editor/project_manager.cpp
 msgid "Loading, please wait..."
 msgstr "Projekte werden geladen, bitte warten..."
 
@@ -14288,10 +14488,6 @@ msgstr "Fehlende entfernen"
 #: editor/project_manager.cpp
 msgid "About"
 msgstr "Über"
-
-#: editor/project_manager.cpp
-msgid "Asset Library Projects"
-msgstr "Nutzerinhalte-Projekte"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -14643,7 +14839,8 @@ msgstr "Sprachen:"
 msgid "AutoLoad"
 msgstr "Autoload"
 
-#: editor/project_settings_editor.cpp
+#: editor/project_settings_editor.cpp platform/android/export/export_plugin.cpp
+#: platform/iphone/export/export.cpp
 msgid "Plugins"
 msgstr "Erweiterungen"
 
@@ -14771,12 +14968,6 @@ msgstr ""
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
 msgstr "Anfangswert für Zähler"
-
-#: editor/rename_dialog.cpp scene/gui/range.cpp scene/resources/animation.cpp
-#: scene/resources/visual_shader_nodes.cpp servers/physics_2d_server.cpp
-#: servers/physics_server.cpp
-msgid "Step"
-msgstr "Schritt"
 
 #: editor/rename_dialog.cpp
 msgid "Amount by which counter is incremented for each node"
@@ -15237,10 +15428,6 @@ msgstr ""
 "gestellt werden."
 
 #: editor/scene_tree_dock.cpp
-msgid "Local"
-msgstr "Lokal"
-
-#: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Vererbung wirklich lösen? (Lässt sich nicht rückgängig machen!)"
 
@@ -15591,11 +15778,6 @@ msgstr "Netzwerk-Profiler"
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr "Monitor"
-
-#: editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
-msgid "Value"
-msgstr "Wert"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
@@ -16175,10 +16357,6 @@ msgstr "Auf Debugger warten"
 msgid "Wait Timeout"
 msgstr "Maximale Wartezeit"
 
-#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
-msgid "Args"
-msgstr "Argumente"
-
 #: main/main.cpp
 msgid "Runtime"
 msgstr "Laufzeitumgebung"
@@ -16204,11 +16382,11 @@ msgstr "Verhältnis"
 msgid "Shrink"
 msgstr "Verkleinern"
 
-#: main/main.cpp
+#: main/main.cpp scene/main/scene_tree.cpp
 msgid "Auto Accept Quit"
 msgstr "Automatisches Beendenakzeptieren"
 
-#: main/main.cpp
+#: main/main.cpp scene/main/scene_tree.cpp
 msgid "Quit On Go Back"
 msgstr "Beenden bei Zurück"
 
@@ -16273,11 +16451,6 @@ msgstr "Kollisionsmaske"
 #: modules/csg/csg_shape.cpp
 msgid "Invert Faces"
 msgstr "Oberflächen invertieren"
-
-#: modules/csg/csg_shape.cpp scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
-#: scene/resources/primitive_meshes.cpp
-msgid "Material"
-msgstr "Material"
 
 #: modules/csg/csg_shape.cpp scene/2d/navigation_agent_2d.cpp
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_agent.cpp
@@ -16710,7 +16883,7 @@ msgstr "Mischgewichte"
 msgid "Instance Materials"
 msgstr "Instanzmaterialien"
 
-#: modules/gltf/gltf_node.cpp
+#: modules/gltf/gltf_node.cpp scene/3d/skeleton.cpp
 msgid "Parent"
 msgstr "Eltern"
 
@@ -16725,12 +16898,6 @@ msgstr "Skin"
 #: modules/gltf/gltf_node.cpp scene/3d/spatial.cpp
 msgid "Translation"
 msgstr "Übersetzung"
-
-#: modules/gltf/gltf_node.cpp scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
-#: scene/3d/spatial.cpp scene/gui/control.cpp scene/main/canvas_layer.cpp
-msgid "Rotation"
-msgstr "Rotation"
 
 #: modules/gltf/gltf_node.cpp
 msgid "Children"
@@ -16838,7 +17005,6 @@ msgstr "Wurzel-Nodes"
 
 #: modules/gltf/gltf_state.cpp scene/2d/particles_2d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_progress.cpp
-#: scene/resources/font.cpp
 msgid "Textures"
 msgstr "Texturen"
 
@@ -16866,7 +17032,7 @@ msgstr "Skelette"
 msgid "Skeleton To Node"
 msgstr "Skelett zu Node"
 
-#: modules/gltf/gltf_state.cpp scene/2d/animated_sprite.cpp
+#: modules/gltf/gltf_state.cpp
 msgid "Animations"
 msgstr "Animationen"
 
@@ -17290,10 +17456,6 @@ msgstr "IGD-Unsere-Adresse"
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Status"
 msgstr "IGD-Status"
-
-#: modules/visual_script/visual_script.cpp scene/resources/visual_shader.cpp
-msgid "Default Input Values"
-msgstr "Standard Eingabewerte"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -17769,10 +17931,6 @@ msgid "Node Path"
 msgstr "Node-Pfad"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Argument Cache"
-msgstr "Parametercache"
-
-#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Use Default Args"
 msgstr "Default-Argumente verwenden"
 
@@ -17825,10 +17983,6 @@ msgid "Set Mode"
 msgstr "Modus festlegen"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Type Cache"
-msgstr "Typcache"
-
-#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Assign Op"
 msgstr "Op zuweisen"
 
@@ -17847,7 +18001,8 @@ msgid "Base object is not a Node!"
 msgstr "Basis-Objekt ist kein Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Path does not lead Node!"
+#, fuzzy
+msgid "Path does not lead to Node!"
 msgstr "Pfad führt nicht zu einem Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -17862,7 +18017,7 @@ msgstr "%s emittieren"
 msgid "Compose Array"
 msgstr "Array zusammenstellen"
 
-#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/resources/material.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Operator"
 msgstr "Operator"
@@ -17966,10 +18121,6 @@ msgid "Construct %s"
 msgstr "%s konstruieren"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "Constructor"
-msgstr "Konstruktor"
-
-#: modules/visual_script/visual_script_nodes.cpp
 msgid "Get Local Var"
 msgstr "Lokale Variable erhalten"
 
@@ -17984,10 +18135,6 @@ msgstr "Aktion %s"
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Deconstruct %s"
 msgstr "Zerlege %s"
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "Elem Cache"
-msgstr "Elementecache"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -18150,6 +18297,23 @@ msgid "Shutdown ADB On Exit"
 msgstr "ADB beim Beenden herunterfahren"
 
 #: platform/android/export/export_plugin.cpp
+msgid "Launcher Icons"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Main 192 X 192"
+msgstr "iPhone 120 X 120"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Adaptive Foreground 432 X 432"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "Adaptive Background 432 X 432"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr "Paketname fehlt."
 
@@ -18182,6 +18346,11 @@ msgstr "Einen Build verwenden"
 msgid "Export Format"
 msgstr "Exportformat"
 
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Architectures"
+msgstr "Architektur"
+
 #: platform/android/export/export_plugin.cpp
 msgid "Keystore"
 msgstr "Schlüsselspeicher"
@@ -18210,7 +18379,7 @@ msgstr "Ein-Klick-Deploy"
 msgid "Clear Previous Install"
 msgstr "Vorherige Installation löschen"
 
-#: platform/android/export/export_plugin.cpp scene/resources/shader.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr "Code"
 
@@ -18673,6 +18842,70 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "Das Zeichen ‚%s‘ ist in Bezeichnern nicht gestattet."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Landscape Launch Screens"
+msgstr "Startbildschirm Storyboard verwenden"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 2436 X 1125"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 2208 X 1242"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPad 1024 X 768"
+msgstr "iPad 76 X 76"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPad 2048 X 1536"
+msgstr "iPad 152 X 152"
+
+#: platform/iphone/export/export.cpp
+msgid "Portrait Launch Screens"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 640 X 960"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 640 X 1136"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 750 X 1334"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 1125 X 2436"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPad 768 X 1024"
+msgstr "iPad 76 X 76"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPad 1536 X 2048"
+msgstr "iPad 152 X 152"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "iPhone 1242 X 2208"
+msgstr "iPhone 120 X 120"
+
+#: platform/iphone/export/export.cpp
 msgid "App Store Team ID"
 msgstr "AppStore TeamID"
 
@@ -18737,7 +18970,7 @@ msgstr "Zugriff auf WLan"
 msgid "Push Notifications"
 msgstr "Pushnachrichten"
 
-#: platform/iphone/export/export.cpp scene/3d/baked_lightmap.cpp
+#: platform/iphone/export/export.cpp
 msgid "User Data"
 msgstr "Nutzerdaten"
 
@@ -19713,11 +19946,6 @@ msgstr ""
 "Eine SpriteFrames-Ressource muss in der ‚Frames‘-Eigenschaft erstellt oder "
 "gesetzt werden, damit AnimatedSprite Einzelbilder darstellen kann."
 
-#: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
-#: scene/resources/default_theme/default_theme.cpp
-msgid "Frame"
-msgstr "Frame"
-
 #: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Speed Scale"
@@ -19732,18 +19960,6 @@ msgstr "Wird abgespielt"
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 msgid "Centered"
 msgstr "Zentriert"
-
-#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp
-#: scene/2d/parallax_background.cpp scene/2d/parallax_layer.cpp
-#: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/path.cpp scene/3d/physics_body.cpp
-#: scene/3d/sprite_3d.cpp scene/gui/graph_node.cpp
-#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
-#: scene/resources/material.cpp scene/resources/particles_material.cpp
-#: scene/resources/style_box.cpp
-msgid "Offset"
-msgstr "Versatz"
 
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_rect.cpp
@@ -19816,8 +20032,7 @@ msgid "Pitch Scale"
 msgstr "Tonhöhenskalierung"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/animation/animation_player.cpp scene/audio/audio_stream_player.cpp
-#: scene/gui/video_player.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
 msgid "Autoplay"
 msgstr "Automatisches Abspielen"
 
@@ -19858,7 +20073,8 @@ msgstr "Anker Modus"
 msgid "Rotating"
 msgstr "Rotierend"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/2d/listener_2d.cpp scene/3d/camera.cpp
+#: scene/3d/listener.cpp scene/animation/animation_blend_tree.cpp
 msgid "Current"
 msgstr "Aktuell"
 
@@ -19881,17 +20097,18 @@ msgid "Limit"
 msgstr "Limit"
 
 #: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
-#: scene/resources/style_box.cpp
+#: scene/resources/style_box.cpp scene/resources/texture.cpp
 msgid "Left"
 msgstr "Links"
 
 #: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
-#: scene/resources/style_box.cpp
+#: scene/resources/style_box.cpp scene/resources/texture.cpp
 msgid "Right"
 msgstr "Rechts"
 
 #: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/style_box.cpp
+#: scene/resources/texture.cpp
 msgid "Bottom"
 msgstr "Unten"
 
@@ -19939,8 +20156,8 @@ msgstr "Grenzen zeichnen"
 msgid "Draw Drag Margin"
 msgstr "Ziehbegrenzungen zeichnen"
 
-#: scene/2d/canvas_item.cpp scene/animation/animation_blend_space_2d.cpp
-#: scene/resources/environment.cpp scene/resources/material.cpp
+#: scene/2d/canvas_item.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp
 msgid "Blend Mode"
 msgstr "Mischmodus"
 
@@ -19973,11 +20190,6 @@ msgstr "Sichtbarkeit"
 msgid "Visible"
 msgstr "Sichtbar"
 
-#: scene/2d/canvas_item.cpp scene/3d/sprite_3d.cpp
-#: scene/resources/style_box.cpp
-msgid "Modulate"
-msgstr "Modulierung"
-
 #: scene/2d/canvas_item.cpp
 msgid "Self Modulate"
 msgstr "Selbst-Modulieren"
@@ -19998,10 +20210,6 @@ msgstr "Lichtblende"
 #: scene/2d/canvas_item.cpp
 msgid "Use Parent Material"
 msgstr "Benutze Eltern Material"
-
-#: scene/2d/canvas_item.cpp
-msgid "Toplevel"
-msgstr "Höchste Ebene"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -20174,16 +20382,6 @@ msgstr "Lokale Koordination"
 msgid "Draw Order"
 msgstr "Zeichenreihenfolge"
 
-#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp scene/2d/line_2d.cpp
-#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
-#: scene/2d/particles_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/gui/nine_patch_rect.cpp
-#: scene/gui/texture_rect.cpp scene/resources/material.cpp
-#: scene/resources/sky.cpp scene/resources/style_box.cpp
-#: scene/resources/visual_shader_nodes.cpp
-msgid "Texture"
-msgstr "Textur"
-
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 msgid "Emission Shape"
@@ -20275,8 +20473,9 @@ msgid "Tangential Accel"
 msgstr "Tangentiale Beschleunigung"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/joints_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/physics_joint.cpp
-#: scene/3d/vehicle_body.cpp scene/resources/particles_material.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/physics_body.cpp
+#: scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
+#: scene/resources/particles_material.cpp
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Damping"
 msgstr "Dämpfung"
@@ -20397,7 +20596,7 @@ msgid "Node B"
 msgstr "Node B"
 
 #: scene/2d/joints_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/3d/light.cpp scene/3d/physics_joint.cpp
+#: scene/3d/light.cpp scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
 #: scene/resources/environment.cpp
 msgid "Bias"
 msgstr "Tendenz"
@@ -20406,7 +20605,7 @@ msgstr "Tendenz"
 msgid "Disable Collision"
 msgstr "Kollisionen deaktivieren"
 
-#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp
+#: scene/2d/joints_2d.cpp scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
 msgid "Softness"
 msgstr "Weichheit"
 
@@ -20444,7 +20643,8 @@ msgid "Texture Scale"
 msgstr "Texturskalierung"
 
 #: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/3d/light.cpp scene/resources/environment.cpp scene/resources/sky.cpp
+#: scene/3d/light.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp scene/resources/sky.cpp
 msgid "Energy"
 msgstr "Energie"
 
@@ -20562,7 +20762,7 @@ msgstr "Kantengeglättet"
 msgid "Multimesh"
 msgstr "Multimesh"
 
-#: scene/2d/navigation_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/2d/navigation_2d.cpp scene/3d/baked_lightmap.cpp
 #: scene/3d/navigation.cpp scene/animation/root_motion_view.cpp
 #: scene/resources/world_2d.cpp servers/physics_2d/physics_2d_server_sw.cpp
 msgid "Cell Size"
@@ -20596,8 +20796,15 @@ msgstr "Max Geschw"
 msgid "Path Max Distance"
 msgstr "Max Pfad-Distanz"
 
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance Enabled"
+msgstr "Verstecken aktiviert"
+
 #: scene/2d/navigation_agent_2d.cpp
-msgid "The NavigationAgent2D can be used only under a Node2D node."
+#, fuzzy
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
 msgstr "NavigationAgent2D kann nur unter einem Node2D-Node genutzt werden."
 
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_obstacle.cpp
@@ -20611,14 +20818,6 @@ msgid ""
 msgstr ""
 "Der einzige Zweck eines NavigationObstacle2D ist es, Kollisionsvermeidung "
 "für ein Node2D-Objekt bereitzustellen."
-
-#: scene/2d/navigation_polygon.cpp scene/resources/navigation_mesh.cpp
-msgid "Vertices"
-msgstr "Vertizes"
-
-#: scene/2d/navigation_polygon.cpp
-msgid "Outlines"
-msgstr "Umrisse"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -21002,7 +21201,7 @@ msgstr "Fern-Pfad"
 msgid "Use Global Coordinates"
 msgstr "Globale Koordinaten verwenden"
 
-#: scene/2d/skeleton_2d.cpp
+#: scene/2d/skeleton_2d.cpp scene/3d/skeleton.cpp
 msgid "Rest"
 msgstr "Ruhelage"
 
@@ -21262,25 +21461,9 @@ msgid "Tracking"
 msgstr "Nachverfolgen"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Bounds"
-msgstr "Grenzen"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Cell Space Transform"
-msgstr "Zellraum-Transform"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Cell Subdiv"
-msgstr "Zellen Unterteilung"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 #: scene/3d/reflection_probe.cpp
 msgid "Interior"
 msgstr "Innenbereich"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Octree"
-msgstr "Octree"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
@@ -21384,7 +21567,7 @@ msgstr "Bildpfad"
 msgid "Light Data"
 msgstr "Lichtdaten"
 
-#: scene/3d/bone_attachment.cpp
+#: scene/3d/bone_attachment.cpp scene/3d/physics_body.cpp
 msgid "Bone Name"
 msgstr "Knochenname"
 
@@ -21563,22 +21746,6 @@ msgid "Autoplace Priority"
 msgstr "Priorität des Autosetzens"
 
 #: scene/3d/gi_probe.cpp
-msgid "To Cell Xform"
-msgstr "zu Zellentransform"
-
-#: scene/3d/gi_probe.cpp
-msgid "Dynamic Data"
-msgstr "Dynamische Daten"
-
-#: scene/3d/gi_probe.cpp
-msgid "Dynamic Range"
-msgstr "Dynamischer Bereich"
-
-#: scene/3d/gi_probe.cpp scene/3d/light.cpp
-msgid "Normal Bias"
-msgstr "Normalentendenz"
-
-#: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Plotte Mesh"
 
@@ -21608,6 +21775,80 @@ msgstr ""
 msgid "Subdiv"
 msgstr "Unterteilung"
 
+#: scene/3d/gi_probe.cpp
+msgid "Dynamic Range"
+msgstr "Dynamischer Bereich"
+
+#: scene/3d/gi_probe.cpp scene/3d/light.cpp
+msgid "Normal Bias"
+msgstr "Normalentendenz"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/primitive_meshes.cpp
+msgid "Pixel Size"
+msgstr "Pixelgröße"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
+msgid "Billboard"
+msgstr "Plakatwand"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
+msgid "Shaded"
+msgstr "Schattiert"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
+msgid "Double Sided"
+msgstr "Doppelseitig"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/material.cpp
+msgid "No Depth Test"
+msgstr "Kein Tiefentest"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/material.cpp
+msgid "Fixed Size"
+msgstr "Feste Größe"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
+msgid "Alpha Cut"
+msgstr "Alphaschnitt"
+
+#: scene/3d/label_3d.cpp scene/resources/material.cpp
+msgid "Alpha Scissor Threshold"
+msgstr "Alphascherenschwelle"
+
+#: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/material.cpp
+msgid "Render Priority"
+msgstr "Render-Priorität"
+
+#: scene/3d/label_3d.cpp
+#, fuzzy
+msgid "Outline Render Priority"
+msgstr "Render-Priorität"
+
+#: scene/3d/label_3d.cpp
+#, fuzzy
+msgid "Outline Modulate"
+msgstr "Schriftumrissmodulierung"
+
+#: scene/3d/label_3d.cpp scene/resources/default_theme/default_theme.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/primitive_meshes.cpp
+msgid "Font"
+msgstr "Schriftart"
+
+#: scene/3d/label_3d.cpp scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Horizontal Alignment"
+msgstr "Horizontal aktiviert"
+
+#: scene/3d/label_3d.cpp
+#, fuzzy
+msgid "Vertical Alignment"
+msgstr "Ausrichtung"
+
+#: scene/3d/label_3d.cpp scene/gui/dialogs.cpp scene/gui/label.cpp
+msgid "Autowrap"
+msgstr "Autoumbrechen"
+
 #: scene/3d/light.cpp
 msgid "Indirect Energy"
 msgstr "Indirekte Energie"
@@ -21616,7 +21857,8 @@ msgstr "Indirekte Energie"
 msgid "Negative"
 msgstr "Negativ"
 
-#: scene/3d/light.cpp
+#: scene/3d/light.cpp scene/resources/material.cpp
+#: scene/resources/visual_shader.cpp
 msgid "Specular"
 msgstr "Spiegelnd"
 
@@ -21711,7 +21953,9 @@ msgid "Ignore Y"
 msgstr "Y ignorieren"
 
 #: scene/3d/navigation_agent.cpp
-msgid "The NavigationAgent can be used only under a spatial node."
+#, fuzzy
+msgid ""
+"The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr "NavigationAgent kann nur unter einem Spatial-Node genutzt werden."
 
 #: scene/3d/navigation_mesh_instance.cpp
@@ -21722,7 +21966,7 @@ msgstr ""
 "NavigationMeshInstance muss ein Unterobjekt erster oder zweiter Ordnung "
 "eines Navigation-Nodes sein. Es liefert nur Navigationsinformationen."
 
-#: scene/3d/navigation_mesh_instance.cpp
+#: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 #, fuzzy
 msgid "NavMesh"
 msgstr "NavMesh backen"
@@ -21864,16 +22108,172 @@ msgid "Motion Z"
 msgstr "Z Bewegung"
 
 #: scene/3d/physics_body.cpp
-msgid "Move Lock X"
-msgstr "X Sperre bewegen"
+#, fuzzy
+msgid "Joint Constraints"
+msgstr "Konstanten"
+
+#: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
+msgid "Impulse Clamp"
+msgstr "Impulsabklemmen"
+
+#: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
+msgid "Swing Span"
+msgstr "Schwungbereich"
+
+#: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
+msgid "Twist Span"
+msgstr "Verdrehungsbereich"
+
+#: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
+#: scene/3d/vehicle_body.cpp
+msgid "Relaxation"
+msgstr "Entspannung"
 
 #: scene/3d/physics_body.cpp
-msgid "Move Lock Y"
-msgstr "Y Sperre bewegen"
+#, fuzzy
+msgid "Angular Limit Enabled"
+msgstr "Winkelgrenze X"
 
 #: scene/3d/physics_body.cpp
-msgid "Move Lock Z"
-msgstr "Z Sperre bewegen"
+#, fuzzy
+msgid "Angular Limit Upper"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Lower"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Bias"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Softness"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Relaxation"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Upper"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Lower"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Softness"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Restitution"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Damping"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Restitution"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Limit Damping"
+msgstr "Winkelgrenze X"
+
+#: scene/3d/physics_body.cpp
+msgid "X"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+msgid "Y"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+msgid "Z"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Limit Enabled"
+msgstr "Lineargrenze X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Spring Enabled"
+msgstr "Linearfeder X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Spring Stiffness"
+msgstr "Lineare Steifheit"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Spring Damping"
+msgstr "Linearfeder X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Equilibrium Point"
+msgstr "Gleichgewichts Punkt"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Restitution"
+msgstr "Rückbildung"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Damping"
+msgstr "Lineare Dämpfung"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Restitution"
+msgstr "Rückbildung"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Damping"
+msgstr "Dämpfung nach Winkel"
+
+#: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
+msgid "ERP"
+msgstr "ERP"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Spring Enabled"
+msgstr "Winkelfeder X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Spring Stiffness"
+msgstr "Winkelgebiet-Steifheit"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Spring Damping"
+msgstr "Winkelfeder X"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Equilibrium Point"
+msgstr "Gleichgewichts Punkt"
 
 #: scene/3d/physics_body.cpp
 msgid "Body Offset"
@@ -21912,10 +22312,6 @@ msgid "Params"
 msgstr "Parameter"
 
 #: scene/3d/physics_joint.cpp
-msgid "Impulse Clamp"
-msgstr "Impulsabklemmen"
-
-#: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
 msgstr "Winkelgrenze"
 
@@ -21926,10 +22322,6 @@ msgstr "Obergrenze"
 #: scene/3d/physics_joint.cpp
 msgid "Lower"
 msgstr "Untergrenze"
-
-#: scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
-msgid "Relaxation"
-msgstr "Entspannung"
 
 #: scene/3d/physics_joint.cpp
 msgid "Motor"
@@ -21984,14 +22376,6 @@ msgid "Angular Ortho"
 msgstr "Winkel-Ortho"
 
 #: scene/3d/physics_joint.cpp
-msgid "Swing Span"
-msgstr "Schwungbereich"
-
-#: scene/3d/physics_joint.cpp
-msgid "Twist Span"
-msgstr "Verdrehungsbereich"
-
-#: scene/3d/physics_joint.cpp
 msgid "Linear Limit X"
 msgstr "Lineargrenze X"
 
@@ -22014,10 +22398,6 @@ msgstr "Gleichgewichts Punkt"
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit X"
 msgstr "Winkelgrenze X"
-
-#: scene/3d/physics_joint.cpp
-msgid "ERP"
-msgstr "ERP"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Motor X"
@@ -22229,8 +22609,9 @@ msgstr "Es darf nur ein RoomManager im Szenenbaum vorhanden sein."
 msgid "Main"
 msgstr "Haupt"
 
-#: scene/3d/room_manager.cpp scene/animation/animation_player.cpp
-#: scene/animation/animation_tree.cpp scene/animation/animation_tree_player.cpp
+#: scene/3d/room_manager.cpp scene/animation/animation_blend_tree.cpp
+#: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
+#: scene/animation/animation_tree_player.cpp
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Active"
 msgstr "Aktiv"
@@ -22342,6 +22723,35 @@ msgstr ""
 "Stellen Sie sicher, dass alle Räume Geometrie oder manuelle Begrenzungen "
 "enthalten."
 
+#: scene/3d/skeleton.cpp scene/resources/skin.cpp
+#, fuzzy
+msgid "Pose"
+msgstr "Pose kopieren"
+
+#: scene/3d/skeleton.cpp
+#, fuzzy
+msgid "Bound Children"
+msgstr "Kinder"
+
+#: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Pinned Points"
+msgstr "%s angeheftet"
+
+#: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Attachments"
+msgstr "Anpassungen"
+
+#: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Point Index"
+msgstr "Index lesen"
+
+#: scene/3d/soft_body.cpp
+msgid "Spatial Attachment Path"
+msgstr ""
+
 #: scene/3d/soft_body.cpp
 msgid "Physics Enabled"
 msgstr "Physik aktiviert"
@@ -22421,29 +22831,9 @@ msgstr "Federlänge"
 msgid "Opacity"
 msgstr "Deckkraft"
 
-#: scene/3d/sprite_3d.cpp
-msgid "Pixel Size"
-msgstr "Pixelgröße"
-
-#: scene/3d/sprite_3d.cpp
-msgid "Billboard"
-msgstr "Plakatwand"
-
 #: scene/3d/sprite_3d.cpp scene/resources/material.cpp
 msgid "Transparent"
 msgstr "Transparent"
-
-#: scene/3d/sprite_3d.cpp
-msgid "Shaded"
-msgstr "Schattiert"
-
-#: scene/3d/sprite_3d.cpp
-msgid "Double Sided"
-msgstr "Doppelseitig"
-
-#: scene/3d/sprite_3d.cpp
-msgid "Alpha Cut"
-msgstr "Alphaschnitt"
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -22587,36 +22977,6 @@ msgstr ""
 "einfügen oder Hintergrundmodus der Environment-Instanz umstellen auf Canvas "
 "(für 2D-Szenen)."
 
-#: scene/animation/animation_blend_space_1d.cpp
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "Min Space"
-msgstr "Min Raum"
-
-#: scene/animation/animation_blend_space_1d.cpp
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "Max Space"
-msgstr "Max Raum"
-
-#: scene/animation/animation_blend_space_1d.cpp
-msgid "Value Label"
-msgstr "Wertebezeichner"
-
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "Auto Triangles"
-msgstr "Automatische Dreiecke"
-
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "Triangles"
-msgstr "Dreiecke"
-
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "X Label"
-msgstr "X Beschriftung"
-
-#: scene/animation/animation_blend_space_2d.cpp
-msgid "Y Label"
-msgstr "Y Beschriftung"
-
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "In BlendTree-Node ‚%s‘, Animation nicht gefunden: ‚%s‘"
@@ -22646,12 +23006,29 @@ msgid "Autorestart"
 msgstr "Auto-Neustarten"
 
 #: scene/animation/animation_blend_tree.cpp
-msgid "Autorestart Delay"
-msgstr "Auto-Neustarten-Verzögerung"
+#, fuzzy
+msgid "Delay"
+msgstr "Verzögerung (ms)"
 
 #: scene/animation/animation_blend_tree.cpp
-msgid "Autorestart Random Delay"
+#, fuzzy
+msgid "Random Delay"
 msgstr "Auto-Neustarten zufällige Verzögerung"
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Add Amount"
+msgstr "Menge"
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Blend Amount"
+msgstr "Skalierungsbetrag"
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Seek Position"
+msgstr "Streamposition"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Input Count"
@@ -22661,10 +23038,6 @@ msgstr "Eingabezähler"
 #: scene/animation/animation_node_state_machine.cpp
 msgid "Xfade Time"
 msgstr "Überblendzeit"
-
-#: scene/animation/animation_blend_tree.cpp scene/resources/visual_shader.cpp
-msgid "Graph Offset"
-msgstr "Graphversatz"
 
 #: scene/animation/animation_node_state_machine.cpp
 msgid "Switch Mode"
@@ -22725,10 +23098,6 @@ msgstr "Ungültige Animation: ‚%s‘."
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nichts ist mit dem Eingang ‚%s‘ von Node ‚%s‘ verbunden."
-
-#: scene/animation/animation_tree.cpp
-msgid "Filter Enabled"
-msgstr "Filter aktiviert"
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
@@ -23058,10 +23427,6 @@ msgstr "Dialog"
 #: scene/gui/dialogs.cpp
 msgid "Hide On OK"
 msgstr "Verstecke bei OK"
-
-#: scene/gui/dialogs.cpp scene/gui/label.cpp
-msgid "Autowrap"
-msgstr "Autoumbrechen"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -23632,7 +23997,7 @@ msgstr "Fortschritt Versatz"
 msgid "Fill Mode"
 msgstr "Füllmodus"
 
-#: scene/gui/texture_progress.cpp
+#: scene/gui/texture_progress.cpp scene/resources/material.cpp
 msgid "Tint"
 msgstr "Färbung"
 
@@ -23760,10 +24125,6 @@ msgid "Editor Description"
 msgstr "Editorbeschreibung"
 
 #: scene/main/node.cpp
-msgid "Import Path"
-msgstr "Importpfad"
-
-#: scene/main/node.cpp
 msgid "Pause Mode"
 msgstr "Pausiermodus"
 
@@ -23775,11 +24136,6 @@ msgstr "Physikinterpolation"
 #: scene/main/node.cpp
 msgid "Display Folded"
 msgstr "Eingeklappt anzeigen"
-
-#: scene/main/node.cpp
-#, fuzzy
-msgid "Unique Name In Owner"
-msgstr "Eindeutiger Name"
 
 #: scene/main/node.cpp
 msgid "Filename"
@@ -23829,7 +24185,8 @@ msgstr "Wurzel"
 msgid "Multiplayer Poll"
 msgstr "Mehrspielerrundfrage"
 
-#: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
+#: scene/main/scene_tree.cpp scene/resources/mesh_library.cpp
+#: scene/resources/shape_2d.cpp
 msgid "Shapes"
 msgstr "Formen"
 
@@ -24120,11 +24477,6 @@ msgid "Panel"
 msgstr "Leiste"
 
 #: scene/resources/default_theme/default_theme.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Font"
-msgstr "Schriftart"
-
-#: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color"
 msgstr "Schriftfarbe"
 
@@ -24403,10 +24755,6 @@ msgid "Panel Disabled"
 msgstr "Leiste deaktiviert"
 
 #: scene/resources/default_theme/default_theme.cpp
-msgid "Separator"
-msgstr "Trenner"
-
-#: scene/resources/default_theme/default_theme.cpp
 msgid "Labeled Separator Left"
 msgstr "Benannter Trenner Links"
 
@@ -24450,10 +24798,6 @@ msgstr "Kommentarfokus"
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Breakpoint"
 msgstr "Haltepunkt"
-
-#: scene/resources/default_theme/default_theme.cpp
-msgid "Separation"
-msgstr "Trennung"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Resizer"
@@ -25084,14 +25428,6 @@ msgid "Color Correction"
 msgstr "Farbkorrektur"
 
 #: scene/resources/font.cpp
-msgid "Chars"
-msgstr "Zeichen"
-
-#: scene/resources/font.cpp
-msgid "Kernings"
-msgstr "Kerning"
-
-#: scene/resources/font.cpp
 msgid "Ascent"
 msgstr "Anstieg"
 
@@ -25125,10 +25461,6 @@ msgid "D"
 msgstr "D"
 
 #: scene/resources/material.cpp
-msgid "Render Priority"
-msgstr "Render-Priorität"
-
-#: scene/resources/material.cpp
 msgid "Next Pass"
 msgstr "Nächster Durchlauf"
 
@@ -25145,20 +25477,12 @@ msgid "Vertex Lighting"
 msgstr "Vertexbeleuchtung"
 
 #: scene/resources/material.cpp
-msgid "No Depth Test"
-msgstr "Kein Tiefentest"
-
-#: scene/resources/material.cpp
 msgid "Use Point Size"
 msgstr "Punktgröße verwenden"
 
 #: scene/resources/material.cpp
 msgid "World Triplanar"
 msgstr "Welt triplanar"
-
-#: scene/resources/material.cpp
-msgid "Fixed Size"
-msgstr "Feste Größe"
 
 #: scene/resources/material.cpp
 msgid "Albedo Tex Force sRGB"
@@ -25175,6 +25499,11 @@ msgstr "Umgebungslicht deaktivieren"
 #: scene/resources/material.cpp
 msgid "Ensure Correct Normals"
 msgstr "Korrekte Normalen sicherstellen"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Albedo Tex MSDF"
+msgstr "Albedo Texturen erzwingen sRGB"
 
 #: scene/resources/material.cpp
 msgid "Vertex Color"
@@ -25233,10 +25562,6 @@ msgid "Use Alpha Scissor"
 msgstr "Alphaschere verwenden"
 
 #: scene/resources/material.cpp
-msgid "Alpha Scissor Threshold"
-msgstr "Alphascherenschwelle"
-
-#: scene/resources/material.cpp
 msgid "Particles Anim"
 msgstr "Partikelanimation"
 
@@ -25257,44 +25582,16 @@ msgid "Metallic"
 msgstr "Metallisch"
 
 #: scene/resources/material.cpp
-msgid "Metallic Specular"
-msgstr "Metallisch Glanz"
-
-#: scene/resources/material.cpp
-msgid "Metallic Texture"
-msgstr "Metallisch Textur"
-
-#: scene/resources/material.cpp
-msgid "Metallic Texture Channel"
-msgstr "Metallisch Textur-Kanal"
-
-#: scene/resources/material.cpp
-msgid "Roughness Texture"
-msgstr "Rauheit Textur"
-
-#: scene/resources/material.cpp
-msgid "Roughness Texture Channel"
-msgstr "Rauheit Textur-Kanal"
+msgid "Texture Channel"
+msgstr "Texturkanal"
 
 #: scene/resources/material.cpp
 msgid "Emission"
 msgstr "Emission"
 
 #: scene/resources/material.cpp
-msgid "Emission Energy"
-msgstr "Emissionsenergie"
-
-#: scene/resources/material.cpp
-msgid "Emission Operator"
-msgstr "Emissionsoperator"
-
-#: scene/resources/material.cpp
-msgid "Emission On UV2"
-msgstr "Emission auf UV2"
-
-#: scene/resources/material.cpp
-msgid "Emission Texture"
-msgstr "Emissionstextur"
+msgid "On UV2"
+msgstr "Auf UV2"
 
 #: scene/resources/material.cpp
 msgid "NormalMap"
@@ -25305,44 +25602,24 @@ msgid "Rim"
 msgstr "Umrandung"
 
 #: scene/resources/material.cpp
-msgid "Rim Tint"
-msgstr "Randtönung"
-
-#: scene/resources/material.cpp
-msgid "Rim Texture"
-msgstr "Randtextur"
-
-#: scene/resources/material.cpp
 msgid "Clearcoat"
 msgstr "Klarlack"
 
 #: scene/resources/material.cpp
-msgid "Clearcoat Gloss"
-msgstr "Klarlackglanz"
-
-#: scene/resources/material.cpp
-msgid "Clearcoat Texture"
-msgstr "Klarlacktextur"
+msgid "Gloss"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Anisotropy"
 msgstr "Anisotropie"
 
 #: scene/resources/material.cpp
-msgid "Anisotropy Flowmap"
-msgstr "Anisotropie-Flussdiagramm"
+msgid "Flowmap"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Ambient Occlusion"
 msgstr "Umgebungsverdeckung"
-
-#: scene/resources/material.cpp
-msgid "On UV2"
-msgstr "Auf UV2"
-
-#: scene/resources/material.cpp
-msgid "Texture Channel"
-msgstr "Texturkanal"
 
 #: scene/resources/material.cpp
 msgid "Deep Parallax"
@@ -25371,10 +25648,6 @@ msgstr "Volumenstreuung"
 #: scene/resources/material.cpp
 msgid "Transmission"
 msgstr "Übertragung"
-
-#: scene/resources/material.cpp
-msgid "Transmission Texture"
-msgstr "Übertragungstextur"
 
 #: scene/resources/material.cpp
 msgid "Refraction"
@@ -25420,13 +25693,19 @@ msgstr "Async-Modus"
 msgid "Lightmap Size Hint"
 msgstr "Lightmap-Größenhinweis"
 
-#: scene/resources/mesh.cpp
-msgid "Blend Shape Mode"
-msgstr "Mischform-Modus"
-
 #: scene/resources/mesh.cpp scene/resources/primitive_meshes.cpp
 msgid "Custom AABB"
 msgstr "Eigenes AABB"
+
+#: scene/resources/mesh_library.cpp
+#, fuzzy
+msgid "Mesh Transform"
+msgstr "Transformation"
+
+#: scene/resources/mesh_library.cpp
+#, fuzzy
+msgid "NavMesh Transform"
+msgstr "Leinwand-Transform"
 
 #: scene/resources/multimesh.cpp
 msgid "Color Format"
@@ -25447,22 +25726,6 @@ msgstr "Instanzanzahl"
 #: scene/resources/multimesh.cpp
 msgid "Visible Instance Count"
 msgstr "Sichtbare Instanzen Anzahl"
-
-#: scene/resources/multimesh.cpp
-msgid "Transform Array"
-msgstr "Transform-Array"
-
-#: scene/resources/multimesh.cpp
-msgid "Transform 2D Array"
-msgstr "Transform-2D-Array"
-
-#: scene/resources/multimesh.cpp
-msgid "Color Array"
-msgstr "Farb-Array"
-
-#: scene/resources/multimesh.cpp
-msgid "Custom Data Array"
-msgstr "Eigene-Daten-Array"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Sample Partition Type"
@@ -25636,6 +25899,11 @@ msgstr "Links nach rechts"
 msgid "Is Hemisphere"
 msgstr "Ist Halbkugel"
 
+#: scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Curve Step"
+msgstr "Kurve"
+
 #: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
 msgid "Slips On Slope"
 msgstr "Rutscht bei Schräge"
@@ -25644,13 +25912,24 @@ msgstr "Rutscht bei Schräge"
 msgid "A"
 msgstr "A"
 
-#: scene/resources/shader.cpp
-msgid "Custom Defines"
-msgstr "Eigene Definitionen"
-
 #: scene/resources/shape_2d.cpp
 msgid "Custom Solver Bias"
 msgstr "Eigenen Bias für Löser"
+
+#: scene/resources/skin.cpp
+#, fuzzy
+msgid "Bind Count"
+msgstr "Punktanzahl"
+
+#: scene/resources/skin.cpp
+#, fuzzy
+msgid "Bind"
+msgstr "Zuordnung"
+
+#: scene/resources/skin.cpp
+#, fuzzy
+msgid "Bone"
+msgstr "Knochen"
 
 #: scene/resources/sky.cpp
 msgid "Radiance Size"
@@ -25721,10 +26000,6 @@ msgid "Anti Aliasing"
 msgstr "Kantenglättung"
 
 #: scene/resources/style_box.cpp
-msgid "Anti Aliasing Size"
-msgstr "Größe der Kantenglättung"
-
-#: scene/resources/style_box.cpp
 msgid "Grow Begin"
 msgstr "Wachstumsanfang"
 
@@ -25745,6 +26020,21 @@ msgid "Image Size"
 msgstr "Bildgröße"
 
 #: scene/resources/texture.cpp
+#, fuzzy
+msgid "Side"
+msgstr "Seiten"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Front"
+msgstr "Sicht von vorne"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Back"
+msgstr "Zurück"
+
+#: scene/resources/texture.cpp
 msgid "Storage Mode"
 msgstr "Speichermodus"
 
@@ -25753,12 +26043,14 @@ msgid "Lossy Storage Quality"
 msgstr "Verlustbehaftete Speicherqualität"
 
 #: scene/resources/texture.cpp
-msgid "Fill From"
+#, fuzzy
+msgid "From"
 msgstr "Füllen ab"
 
 #: scene/resources/texture.cpp
-msgid "Fill To"
-msgstr "Füllen bis"
+#, fuzzy
+msgid "To"
+msgstr "Oben"
 
 #: scene/resources/texture.cpp
 msgid "Base"
@@ -25790,8 +26082,29 @@ msgid "Output Port For Preview"
 msgstr "Ausgabeschnittstelle für Vorschau"
 
 #: scene/resources/visual_shader.cpp
-msgid "Initialized"
-msgstr "Initialisiert"
+#, fuzzy
+msgid "Depth Draw"
+msgstr "Tiefenzeichenmodus"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Cull"
+msgstr "Aushöhlungsmodus"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Diffuse"
+msgstr "Diffuse Bild"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Async"
+msgstr "Async-Modus"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Modes"
+msgstr "Modus"
 
 #: scene/resources/visual_shader.cpp
 msgid "Input Name"
@@ -26196,6 +26509,11 @@ msgstr "Sicherer Anteil der Kollision"
 msgid "Collision Unsafe Fraction"
 msgstr "Unsicherer Anteil der Kollision"
 
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Physics Engine"
+msgstr "Physik aktiviert"
+
 #: servers/physics_server.cpp
 msgid "Center Of Mass"
 msgstr "Schwerpunkt"
@@ -26209,16 +26527,18 @@ msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varyings dürfen nicht in Funktion ‚%s‘ zugewiesen werden."
 
 #: servers/visual/shader_language.cpp
+#, fuzzy
 msgid ""
-"Varyings which assigned in 'vertex' function may not be reassigned in "
+"Varyings which were assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr ""
 "Varyings, welche in der ‚vertex‘-Funktion zugewiesen wurden, können nicht "
 "erneut in der ‚fragment‘- oder ‚light‘-Funktion zugewiesen werden."
 
 #: servers/visual/shader_language.cpp
+#, fuzzy
 msgid ""
-"Varyings which assigned in 'fragment' function may not be reassigned in "
+"Varyings which were assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
 msgstr ""
 "Varyings, welche in der ‚fragment‘-Funktion zugewiesen wurden, können nicht "
