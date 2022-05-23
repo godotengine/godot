@@ -100,6 +100,7 @@ public:
 	void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
+	String get_attached_script_path(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 
 	ResourceLoaderBinary() {}
@@ -113,6 +114,7 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
+	virtual String get_attached_script_path(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 };

@@ -953,9 +953,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 
-				if (Resource::is_script_extendable_resource(fi->type)) {
-					fi->resource_script_path = ResourceLoader::get_attached_script_path(path);
-				}
+				fi->resource_script_path = ResourceLoader::get_attached_script_path(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
 				fi->modified_time = mt;

@@ -63,12 +63,10 @@ Ref<Texture2D> FileSystemDock::_get_file_icon(bool p_is_valid, String p_file_typ
 	if (!p_is_valid) {
 		return get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	}
-	if (Resource::is_script_extendable_resource(p_file_type)) {
-		// Fetches the resourse icon using the EditorNode's script icon cache and EditorFileSystemDirectory's FileInfo cache.
-		String resource_script_name = p_dir->get_file_resource_script_class_name(p_file_index);
-		if (!resource_script_name.is_empty()) {
-			return EditorNode::get_singleton()->get_class_icon(resource_script_name);
-		}
+	// Fetches the resourse icon using the EditorNode's script icon cache and EditorFileSystemDirectory's FileInfo cache.
+	String resource_script_name = p_dir->get_file_resource_script_class_name(p_file_index);
+	if (!resource_script_name.is_empty()) {
+		return EditorNode::get_singleton()->get_class_icon(resource_script_name);
 	}
 	if (has_theme_icon(p_file_type, SNAME("EditorIcons"))) {
 		return get_theme_icon(p_file_type, SNAME("EditorIcons"));

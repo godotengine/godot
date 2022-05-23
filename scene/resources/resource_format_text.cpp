@@ -1417,9 +1417,12 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	return ResourceUID::INVALID_ID;
 }
 
-// Please call ResourceLoaderText::open() before calling this.
 // Returns empty string if the attached script could not be fetched.
 String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
+	// Opening itself is pattern is also seen in resource_format_binary.cpp.
+	// It makes it convenient to not have to call open before this method.
+	open(p_f);
+
 	f = p_f;
 	stream.f = f;
 
@@ -1583,7 +1586,6 @@ String ResourceFormatLoaderText::get_attached_script_path(const String &p_path) 
 	}
 
 	ResourceLoaderText loader;
-	loader.open(f);
 	return loader.get_attached_script_path(f);
 }
 
