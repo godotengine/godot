@@ -251,7 +251,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 19;
+			uint64_t flags : 20;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 3;
@@ -264,6 +264,7 @@ private:
 			uint64_t emission_op : 1;
 			uint64_t texture_metallic : 1;
 			uint64_t texture_roughness : 1;
+			//uint64_t reserved : 6;
 		};
 
 		uint64_t key;
