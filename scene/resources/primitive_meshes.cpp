@@ -2010,7 +2010,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	}
 
 	if (p_size == 0) {
-		// If empty, add single trinagle to suppress errors.
+		// If empty, add single triangle to suppress errors.
 		vertices.push_back(Vector3());
 		normals.push_back(Vector3());
 		uvs.push_back(Vector2());

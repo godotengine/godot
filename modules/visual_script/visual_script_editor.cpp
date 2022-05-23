@@ -3197,7 +3197,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 			undo_redo->add_do_method(script.ptr(), "data_connect", func, p_from.to_int(), from_port, p_to.to_int(), to_port);
 			undo_redo->add_undo_method(script.ptr(), "data_disconnect", func, p_from.to_int(), from_port, p_to.to_int(), to_port);
 		} else {
-			// this is noice
+			// this is nice
 			undo_redo->add_do_method(script.ptr(), "data_connect", func, p_from.to_int(), from_port, conv_node, 0);
 			undo_redo->add_do_method(script.ptr(), "data_connect", func, conv_node, 0, p_to.to_int(), to_port);
 			// I don't think this is needed but gonna leave it here for now... until I need to finalise it all

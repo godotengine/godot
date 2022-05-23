@@ -45,7 +45,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	enum {
 		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
-		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertial" values.
+		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertical" values.
 		PARAM_SIZE, // Keep "Size" values.
 	};
 	int dominant_param = PARAM_FRAME_COUNT;
