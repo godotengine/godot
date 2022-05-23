@@ -807,7 +807,6 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	}
 
 	manifest_text += _get_xr_features_tag(p_preset);
-	manifest_text += _get_instrumentation_tag(p_preset);
 	manifest_text += _get_application_tag(p_preset, _has_storage_permission(perms));
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
@@ -967,10 +966,6 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "application" && attrname == "hasFragileUserData") {
 						encode_uint32(retain_data_on_uninstall, &p_manifest.write[iofs + 16]);
-					}
-
-					if (tname == "instrumentation" && attrname == "targetPackage") {
-						string_table.write[attr_value] = get_package_name(package_name);
 					}
 
 					if (tname == "activity" && attrname == "screenOrientation") {
