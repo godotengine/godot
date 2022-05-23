@@ -31,6 +31,7 @@
 #ifndef PRIMITIVE_MESHES_H
 #define PRIMITIVE_MESHES_H
 
+#include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
@@ -363,5 +364,101 @@ protected:
 public:
 	PointMesh();
 };
+
+/**
+	Text...
+*/
+
+class TextMesh : public PrimitiveMesh {
+	GDCLASS(TextMesh, PrimitiveMesh);
+
+public:
+	enum Align {
+
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	};
+
+private:
+	struct ContourPoint {
+		Vector2 point;
+		bool sharp = false;
+
+		ContourPoint(){};
+		ContourPoint(const Vector2 &p_pt, bool p_sharp) {
+			point = p_pt;
+			sharp = p_sharp;
+		};
+	};
+	struct ContourInfo {
+		real_t length = 0.0;
+		bool ccw = true;
+		ContourInfo(){};
+		ContourInfo(real_t p_len, bool p_ccw) {
+			length = p_len;
+			ccw = p_ccw;
+		}
+	};
+	struct GlyphMeshData {
+		Vector<Vector2> triangles;
+		Vector<Vector<ContourPoint>> contours;
+		Vector<ContourInfo> contours_info;
+		Vector2 min_p = Vector2(INFINITY, INFINITY);
+		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+	};
+	mutable HashMap<uint32_t, GlyphMeshData> cache;
+
+	String text;
+	String xl_text;
+
+	Ref<Font> font_override;
+
+	Align horizontal_alignment = ALIGN_CENTER;
+	bool uppercase = false;
+
+	real_t depth = 0.05;
+	real_t pixel_size = 0.01;
+	real_t curve_step = 0.5;
+
+	mutable bool dirty_cache = true;
+
+	void _generate_glyph_mesh_data(uint32_t p_utf32_char, const Ref<Font> &p_font, CharType p_char, CharType p_next) const;
+	void _font_changed();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void _create_mesh_array(Array &p_arr) const;
+
+public:
+	TextMesh();
+	~TextMesh();
+
+	void set_horizontal_alignment(Align p_alignment);
+	Align get_horizontal_alignment() const;
+
+	void set_text(const String &p_string);
+	String get_text() const;
+
+	void set_font(const Ref<Font> &p_font);
+	Ref<Font> get_font() const;
+	Ref<Font> _get_font_or_default() const;
+
+	void set_uppercase(bool p_uppercase);
+	bool is_uppercase() const;
+
+	void set_depth(real_t p_depth);
+	real_t get_depth() const;
+
+	void set_curve_step(real_t p_step);
+	real_t get_curve_step() const;
+
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
+};
+
+VARIANT_ENUM_CAST(TextMesh::Align);
 
 #endif
