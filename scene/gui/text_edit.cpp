@@ -2459,7 +2459,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 		// Get a list with the indices of the word bounds of the given text line.
 		const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
 		if (words.is_empty() || column <= words[0]) {
-			// If "words" is empty, meaning no words are left, we can remove everything until the begining of the line.
+			// If "words" is empty, meaning no words are left, we can remove everything until the beginning of the line.
 			column = 0;
 		} else {
 			// Otherwise search for the first word break that is smaller than the index from we're currentlu deleteing
