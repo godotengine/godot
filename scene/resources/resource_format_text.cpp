@@ -1556,8 +1556,7 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 }
 
 String ResourceFormatLoaderText::get_attached_script_path(const String &p_path) const {
-	String type = ResourceLoader::get_resource_type(p_path);
-
+	String type = get_resource_type(p_path);
 	if (!Resource::is_script_extendable_resource(type)) {
 		return "";
 	}

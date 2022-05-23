@@ -868,13 +868,17 @@ String ResourceLoaderBinary::get_unicode_string() {
 String ResourceLoaderBinary::get_attached_script_path(Ref<FileAccess> p_f) {
 	open(p_f, false, true);
 	if (error) {
-		return;
+		return "";
 	}
 	int main_resource_idx = internal_resources.size() - 1;
-	//internal_resources[main_resource_idx].path
-	// TODO NOW:
-	// - Implement resource parsing for binary format
-	// - Write custom parsing for "script = "
+	String path = internal_resources[main_resource_idx].path;
+
+	for (const ExtResource &E : external_resources) {
+		if (E.type == Script::get_class_static())
+			return E.path;
+	}
+
+	return "";
 }
 
 void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
@@ -1133,8 +1137,13 @@ bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderBinary::get_attached_script_path(const String &p_path) const {
+	String type = get_resource_type(p_path);
+	if (!Resource::is_script_extendable_resource(type)) {
+		return "";
+	}
+
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
