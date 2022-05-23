@@ -19,6 +19,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_property" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="path" type="NodePath" />
+			<description>
+			</description>
+		</method>
 		<method name="property_get_index" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="path" type="NodePath" />

@@ -33,6 +33,7 @@
 
 #include "scene/main/node.h"
 
+#include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/scene_replication_config.h"
@@ -46,7 +47,13 @@ public:
 	};
 
 private:
-	TypedArray<PackedScene> spawnable_scenes;
+	struct SpawnableScene {
+		String path;
+		Ref<PackedScene> cache;
+	};
+
+	LocalVector<SpawnableScene> spawnable_scenes;
+
 	HashSet<ResourceUID::ID> spawnable_ids;
 	NodePath spawn_path;
 
@@ -71,14 +78,26 @@ private:
 	void _node_exit(ObjectID p_id);
 	void _node_ready(ObjectID p_id);
 
+	Vector<String> _get_spawnable_scenes() const;
+	void _set_spawnable_scenes(const Vector<String> &p_scenes);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+#ifdef TOOLS_ENABLED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+#endif
 public:
 	Node *get_spawn_node() const { return spawn_node.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_node)) : nullptr; }
-	TypedArray<PackedScene> get_spawnable_scenes();
-	void set_spawnable_scenes(TypedArray<PackedScene> p_scenes);
+
+	void add_spawnable_scene(const String &p_path);
+	int get_spawnable_scene_count() const;
+	String get_spawnable_scene(int p_idx) const;
+	void clear_spawnable_scenes();
+
 	NodePath get_spawn_path() const;
 	void set_spawn_path(const NodePath &p_path);
 	uint32_t get_spawn_limit() const { return spawn_limit; }
@@ -87,8 +106,8 @@ public:
 	void set_auto_spawning(bool p_enabled);
 
 	const Variant get_spawn_argument(const ObjectID &p_id) const;
-	int get_spawn_id(const ObjectID &p_id) const;
-	int get_scene_id(const String &p_path) const;
+	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;
+	int find_spawnable_scene_index_from_path(const String &p_path) const;
 	Node *spawn(const Variant &p_data = Variant());
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);

@@ -35,12 +35,106 @@
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
-void MultiplayerSpawner::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("spawn", "data"), &MultiplayerSpawner::spawn, DEFVAL(Variant()));
+#ifdef TOOLS_ENABLED
+/* This is editor only */
+bool MultiplayerSpawner::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "_spawnable_scene_count") {
+		spawnable_scenes.resize(p_value);
+		notify_property_list_changed();
+		return true;
+	} else {
+		String ns = p_name;
+		if (ns.begins_with("scenes/")) {
+			uint32_t index = ns.get_slicec('/', 1).to_int();
+			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
+			spawnable_scenes[index].path = p_value;
+			return true;
+		}
+	}
+	return false;
+}
 
-	ClassDB::bind_method(D_METHOD("get_spawnable_scenes"), &MultiplayerSpawner::get_spawnable_scenes);
-	ClassDB::bind_method(D_METHOD("set_spawnable_scenes", "scenes"), &MultiplayerSpawner::set_spawnable_scenes);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "replication", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_spawnable_scenes", "get_spawnable_scenes");
+bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "_spawnable_scene_count") {
+		r_ret = spawnable_scenes.size();
+		return true;
+	} else {
+		String ns = p_name;
+		if (ns.begins_with("scenes/")) {
+			uint32_t index = ns.get_slicec('/', 1).to_int();
+			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
+			r_ret = spawnable_scenes[index].path;
+			return true;
+		}
+	}
+	return false;
+}
+
+void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::INT, "_spawnable_scene_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Scenes,scenes/"));
+	List<String> exts;
+	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &exts);
+	String ext_hint;
+	for (const String &E : exts) {
+		if (!ext_hint.is_empty()) {
+			ext_hint += ",";
+		}
+		ext_hint += "*." + E;
+	}
+	for (uint32_t i = 0; i < spawnable_scenes.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, "scenes/" + itos(i), PROPERTY_HINT_FILE, ext_hint, PROPERTY_USAGE_EDITOR));
+	}
+}
+#endif
+void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
+	SpawnableScene sc;
+	sc.path = p_path;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		ERR_FAIL_COND(!FileAccess::exists(p_path));
+	} else {
+		sc.cache = ResourceLoader::load(p_path);
+		ERR_FAIL_COND_MSG(sc.cache.is_null(), "Invalid spawnable scene: " + p_path);
+	}
+	spawnable_scenes.push_back(sc);
+}
+int MultiplayerSpawner::get_spawnable_scene_count() const {
+	return spawnable_scenes.size();
+}
+String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
+	return spawnable_scenes[p_idx].path;
+}
+void MultiplayerSpawner::clear_spawnable_scenes() {
+	spawnable_scenes.clear();
+}
+
+Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
+	Vector<String> ss;
+	ss.resize(spawnable_scenes.size());
+	for (int i = 0; i < ss.size(); i++) {
+		ss.write[i] = spawnable_scenes[i].path;
+	}
+	return ss;
+}
+
+void MultiplayerSpawner::_set_spawnable_scenes(const Vector<String> &p_scenes) {
+	clear_spawnable_scenes();
+	for (int i = 0; i < p_scenes.size(); i++) {
+		add_spawnable_scene(p_scenes[i]);
+	}
+}
+
+void MultiplayerSpawner::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_spawnable_scene", "path"), &MultiplayerSpawner::add_spawnable_scene);
+	ClassDB::bind_method(D_METHOD("get_spawnable_scene_count"), &MultiplayerSpawner::get_spawnable_scene_count);
+	ClassDB::bind_method(D_METHOD("get_spawnable_scene", "path"), &MultiplayerSpawner::get_spawnable_scene);
+	ClassDB::bind_method(D_METHOD("clear_spawnable_scenes"), &MultiplayerSpawner::clear_spawnable_scenes);
+
+	ClassDB::bind_method(D_METHOD("_get_spawnable_scenes"), &MultiplayerSpawner::_get_spawnable_scenes);
+	ClassDB::bind_method(D_METHOD("_set_spawnable_scenes", "scenes"), &MultiplayerSpawner::_set_spawnable_scenes);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_spawnable_scenes", PROPERTY_HINT_NONE, "", (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL)), "_set_spawnable_scenes", "_get_spawnable_scenes");
+
+	ClassDB::bind_method(D_METHOD("spawn", "data"), &MultiplayerSpawner::spawn, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("get_spawn_path"), &MultiplayerSpawner::get_spawn_path);
 	ClassDB::bind_method(D_METHOD("set_spawn_path", "path"), &MultiplayerSpawner::set_spawn_path);
@@ -118,7 +212,7 @@ void MultiplayerSpawner::_node_added(Node *p_node) {
 	if (!parent || p_node->get_parent() != parent) {
 		return;
 	}
-	int id = get_scene_id(p_node->get_scene_file_path());
+	int id = find_spawnable_scene_index_from_path(p_node->get_scene_file_path());
 	if (id == INVALID_ID) {
 		return;
 	}
@@ -134,14 +228,6 @@ void MultiplayerSpawner::set_auto_spawning(bool p_enabled) {
 
 bool MultiplayerSpawner::is_auto_spawning() const {
 	return auto_spawn;
-}
-
-TypedArray<PackedScene> MultiplayerSpawner::get_spawnable_scenes() {
-	return spawnable_scenes;
-}
-
-void MultiplayerSpawner::set_spawnable_scenes(TypedArray<PackedScene> p_scenes) {
-	spawnable_scenes = p_scenes;
 }
 
 NodePath MultiplayerSpawner::get_spawn_path() const {
@@ -175,18 +261,16 @@ void MultiplayerSpawner::_node_exit(ObjectID p_id) {
 	}
 }
 
-int MultiplayerSpawner::get_scene_id(const String &p_scene) const {
-	for (int i = 0; i < spawnable_scenes.size(); i++) {
-		Ref<PackedScene> ps = spawnable_scenes[i];
-		ERR_CONTINUE(ps.is_null());
-		if (ps->get_path() == p_scene) {
+int MultiplayerSpawner::find_spawnable_scene_index_from_path(const String &p_scene) const {
+	for (uint32_t i = 0; i < spawnable_scenes.size(); i++) {
+		if (spawnable_scenes[i].path == p_scene) {
 			return i;
 		}
 	}
 	return INVALID_ID;
 }
 
-int MultiplayerSpawner::get_spawn_id(const ObjectID &p_id) const {
+int MultiplayerSpawner::find_spawnable_scene_index_from_object(const ObjectID &p_id) const {
 	const SpawnInfo *info = tracked_nodes.getptr(p_id);
 	return info ? info->id : INVALID_ID;
 }
@@ -198,8 +282,8 @@ const Variant MultiplayerSpawner::get_spawn_argument(const ObjectID &p_id) const
 
 Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	ERR_FAIL_INDEX_V(p_id, spawnable_scenes.size(), nullptr);
-	Ref<PackedScene> scene = spawnable_scenes[p_id];
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_id, spawnable_scenes.size(), nullptr);
+	Ref<PackedScene> scene = spawnable_scenes[p_id].cache;
 	ERR_FAIL_COND_V(scene.is_null(), nullptr);
 	return scene->instantiate();
 }
