@@ -35,6 +35,8 @@ while IFS= read -rd '' f; do
                 continue 2
             elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper"* ]]; then
                 continue 2
+            elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix"* ]]; then
+                continue 2
             fi
             python misc/scripts/copyright_headers.py "$f"
             continue 2

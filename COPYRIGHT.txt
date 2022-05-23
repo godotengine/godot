@@ -86,6 +86,11 @@ Comment: The Android Open Source Project
 Copyright: 2002, Google Inc.
 License: Apache-2.0
 
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
 Files: ./platform/android/power_android.cpp
  ./platform/osx/power_osx.cpp
  ./platform/windows/power_windows.cpp
