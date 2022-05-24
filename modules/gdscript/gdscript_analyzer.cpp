@@ -1160,8 +1160,16 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 		}
 	} else {
-		GDScriptParser::DataType return_type = resolve_datatype(p_function->return_type);
-		p_function->set_datatype(return_type);
+		if (p_function->return_type != nullptr) {
+			p_function->set_datatype(resolve_datatype(p_function->return_type));
+		} else {
+			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
+			// It's not "undetected" to not mix up with unknown functions.
+			GDScriptParser::DataType return_type;
+			return_type.type_source = GDScriptParser::DataType::INFERRED;
+			return_type.kind = GDScriptParser::DataType::VARIANT;
+			p_function->set_datatype(return_type);
+		}
 
 #ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
@@ -1231,7 +1239,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	GDScriptParser::DataType return_type = p_function->body->get_datatype();
 
-	if (p_function->get_datatype().has_no_type() && return_type.is_set()) {
+	if (!p_function->get_datatype().is_hard_type() && return_type.is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
 		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
@@ -2057,7 +2065,8 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 	p_await->set_datatype(awaiting_type);
 
 #ifdef DEBUG_ENABLED
-	if (!awaiting_type.is_coroutine && awaiting_type.builtin_type != Variant::SIGNAL) {
+	awaiting_type = p_await->to_await->get_datatype();
+	if (!(awaiting_type.has_no_type() || awaiting_type.is_coroutine || awaiting_type.builtin_type == Variant::SIGNAL)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif
