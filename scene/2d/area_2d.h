@@ -64,6 +64,9 @@ private:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
+	void _emit_exited(const StringName &p_signal, Object* p_obj);
+	void _emit_shape_exited(const StringName &p_signal, const RID& p_rid, Object* p_obj, int p_shape, int p_self_shape);
+
 	struct ShapePair {
 		int body_shape;
 		int area_shape;

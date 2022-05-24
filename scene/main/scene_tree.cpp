@@ -785,6 +785,10 @@ void SceneTree::finish() {
 	tweens.clear();
 }
 
+bool SceneTree::is_quitting() const {
+	return _quit;
+}
+
 void SceneTree::quit(int p_exit_code) {
 	if (p_exit_code >= 0) {
 		// Override the exit code if a positive argument is given (the default is `-1`).

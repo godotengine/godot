@@ -324,6 +324,7 @@ public:
 	bool is_quit_on_go_back() const;
 	void set_quit_on_go_back(bool p_enable);
 
+	bool is_quitting() const;
 	void quit(int p_exit_code = -1);
 
 	void set_input_as_handled();
