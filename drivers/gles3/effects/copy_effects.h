@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_loader_gles3.h                                               */
+/*  copy_effects.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_LOADER_OPENGL_H
-#define TEXTURE_LOADER_OPENGL_H
+#ifndef COPY_GL_H
+#define COPY_GL_H
 
 #ifdef GLES3_ENABLED
 
-#include "core/io/resource_loader.h"
-#include "scene/resources/texture.h"
+#include "../shaders/copy.glsl.gen.h"
 
-class ResourceFormatGLES2Texture : public ResourceFormatLoader {
+namespace GLES3 {
+
+class CopyEffects {
+private:
+	struct Copy {
+		CopyShaderGLES3 shader;
+		RID shader_version;
+	} copy;
+
+	static CopyEffects *singleton;
+
+	// Use for full-screen effects. Slightly more efficient than screen_quad as this eliminates pixel overdraw along the diagonal.
+	GLuint screen_triangle = 0;
+	GLuint screen_triangle_array = 0;
+
+	// Use for rect-based effects.
+	GLuint quad = 0;
+	GLuint quad_array = 0;
+
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	static CopyEffects *get_singleton();
 
-	virtual ~ResourceFormatGLES2Texture() {}
+	CopyEffects();
+	~CopyEffects();
+
+	// These functions assume that a framebuffer and texture are bound already. They only manage the shader, uniforms, and vertex array.
+	void copy_to_rect(const Rect2i &p_rect);
+	void copy_screen();
+	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
+	void set_color(const Color &p_color, const Rect2i &p_region);
 };
 
-#endif // GLES3_ENABLED
+} //namespace GLES3
 
-#endif // TEXTURE_LOADER_OPENGL_H
+#endif // GLES3_ENABLED
+#endif // !COPY_GL_H

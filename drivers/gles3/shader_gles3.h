@@ -31,6 +31,7 @@
 #ifndef SHADER_OPENGL_H
 #define SHADER_OPENGL_H
 
+#include "core/math/camera_matrix.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"

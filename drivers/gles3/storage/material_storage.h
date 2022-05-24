@@ -42,8 +42,6 @@
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
 
-#include "drivers/gles3/shaders/copy.glsl.gen.h"
-
 #include "../shaders/canvas.glsl.gen.h"
 #include "../shaders/cubemap_filter.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
@@ -52,18 +50,6 @@
 namespace GLES3 {
 
 /* Shader Structs */
-
-struct Shaders {
-	CanvasShaderGLES3 canvas_shader;
-	SkyShaderGLES3 sky_shader;
-	SceneShaderGLES3 scene_shader;
-	CubemapFilterShaderGLES3 cubemap_filter_shader;
-
-	ShaderCompiler compiler_canvas;
-	ShaderCompiler compiler_scene;
-	ShaderCompiler compiler_particles;
-	ShaderCompiler compiler_sky;
-};
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
@@ -159,8 +145,8 @@ struct CanvasShaderData : public ShaderData {
 
 	bool valid;
 	RID version;
-	//PipelineVariants pipeline_variants;
 	String path;
+	BlendMode blend_mode = BLEND_MODE_MIX;
 
 	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -467,7 +453,17 @@ public:
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
-	Shaders shaders;
+	struct Shaders {
+		CanvasShaderGLES3 canvas_shader;
+		SkyShaderGLES3 sky_shader;
+		SceneShaderGLES3 scene_shader;
+		CubemapFilterShaderGLES3 cubemap_filter_shader;
+
+		ShaderCompiler compiler_canvas;
+		ShaderCompiler compiler_scene;
+		ShaderCompiler compiler_particles;
+		ShaderCompiler compiler_sky;
+	} shaders;
 
 	/* GLOBAL VARIABLE API */
 

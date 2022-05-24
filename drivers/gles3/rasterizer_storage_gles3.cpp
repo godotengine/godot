@@ -225,7 +225,7 @@ RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 
 	glGenRenderbuffers(1, &cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, config->depth_buffer_internalformat, cls->size, cls->height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, cls->size, cls->height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 
 	glGenTextures(1, &cls->distance);
@@ -453,11 +453,8 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 	if (p_feature == "bptc") {
 		return config->bptc_supported;
 	}
-	if (p_feature == "etc") {
-		return config->etc_supported;
-	}
 
-	if (p_feature == "etc2") {
+	if (p_feature == "etc" || p_feature == "etc2") {
 		return config->etc2_supported;
 	}
 
@@ -619,9 +616,6 @@ void RasterizerStorageGLES3::initialize() {
 void RasterizerStorageGLES3::finalize() {
 }
 
-void RasterizerStorageGLES3::_copy_screen() {
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
 void RasterizerStorageGLES3::update_memory_info() {
 }
 
