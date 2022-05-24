@@ -47,14 +47,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	config.instantiate();
 
 	Error err = config->load(p_path);
+	ERR_FAIL_COND_MSG(err, "Failed to load GDExtension file: " + p_path);
 
-	if (err != OK) {
-		return;
-	}
-
-	if (!config->has_section_key("configuration", "entry_symbol")) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!config->has_section_key("configuration", "entry_symbol"), "Failed to export GDExtension file, missing entry symbol: " + p_path);
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
 
@@ -62,6 +57,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 
 	config->get_section_keys("libraries", &libraries);
 
+	bool could_export = false;
 	for (const String &E : libraries) {
 		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
@@ -101,13 +97,23 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 				String linker_flags = "-Wl,-U,_" + entry_symbol;
 				add_ios_linker_flags(linker_flags);
 			}
+			could_export = true;
 			break;
 		}
 	}
+	if (!could_export) {
+		Vector<String> tags;
+		for (const String &E : p_features) {
+			tags.append(E);
+		}
+		ERR_FAIL_MSG(vformat("Couldn't export extension: %s. No suitable library found for export flags: %s", p_path, String(", ").join(tags)));
+	}
 
 	List<String> dependencies;
+	if (config->has_section("dependencies")) {
+		config->get_section_keys("dependencies", &dependencies);
+	}
 
-	config->get_section_keys("dependencies", &dependencies);
 	for (const String &E : libraries) {
 		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
