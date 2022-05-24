@@ -245,4 +245,86 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 #define callable_mp(I, M) create_custom_callable_function_pointer(I, M)
 #endif
 
+// STATIC VERSIONS
+
+template <class... P>
+class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
+	struct Data {
+		void (*method)(P...);
+	} data;
+
+public:
+	virtual ObjectID get_object() const {
+		return ObjectID();
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
+		r_return_value = Variant();
+	}
+
+	CallableCustomStaticMethodPointer(void (*p_method)(P...)) {
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		data.method = p_method;
+		_setup((uint32_t *)&data, sizeof(Data));
+	}
+};
+
+template <class T, class... P>
+Callable create_custom_callable_static_function_pointer(
+#ifdef DEBUG_METHODS_ENABLED
+		const char *p_func_text,
+#endif
+		void (*p_method)(P...)) {
+	typedef CallableCustomStaticMethodPointer<P...> CCMP; // Messes with memnew otherwise.
+	CCMP *ccmp = memnew(CCMP(p_method));
+#ifdef DEBUG_METHODS_ENABLED
+	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
+#endif
+	return Callable(ccmp);
+}
+
+template <class R, class... P>
+class CallableCustomStaticMethodPointerRet : public CallableCustomMethodPointerBase {
+	struct Data {
+		R(*method)
+		(P...);
+	} data;
+
+public:
+	virtual ObjectID get_object() const {
+		return ObjectID();
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+		call_with_variant_args_static_ret(data.method, p_arguments, p_argcount, r_return_value, r_call_error);
+	}
+
+	CallableCustomStaticMethodPointerRet(R (*p_method)(P...)) {
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		data.method = p_method;
+		_setup((uint32_t *)&data, sizeof(Data));
+	}
+};
+
+template <class R, class... P>
+Callable create_custom_callable_static_function_pointer(
+#ifdef DEBUG_METHODS_ENABLED
+		const char *p_func_text,
+#endif
+		R (*p_method)(P...)) {
+	typedef CallableCustomStaticMethodPointerRet<R, P...> CCMP; // Messes with memnew otherwise.
+	CCMP *ccmp = memnew(CCMP(p_method));
+#ifdef DEBUG_METHODS_ENABLED
+	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
+#endif
+	return Callable(ccmp);
+}
+
+#ifdef DEBUG_METHODS_ENABLED
+#define callable_mp_static(M) create_custom_callable_static_function_pointer(#M, M)
+#else
+#define callable_mp_static(M) create_custom_callable_static_function_pointer(M)
+#endif
+
 #endif // CALLABLE_METHOD_POINTER_H
