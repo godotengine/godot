@@ -745,10 +745,10 @@ BoxMesh::BoxMesh() {}
 */
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
-	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings);
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom);
 }
 
-void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings) {
+void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings, bool cap_top, bool cap_bottom) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
@@ -806,7 +806,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	};
 
 	// add top
-	if (top_radius > 0.0) {
+	if (cap_top && top_radius > 0.0) {
 		y = height * 0.5;
 
 		thisrow = point;
@@ -842,7 +842,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	};
 
 	// add bottom
-	if (bottom_radius > 0.0) {
+	if (cap_bottom && bottom_radius > 0.0) {
 		y = height * -0.5;
 
 		thisrow = point;
@@ -897,11 +897,19 @@ void CylinderMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CylinderMesh::set_rings);
 	ClassDB::bind_method(D_METHOD("get_rings"), &CylinderMesh::get_rings);
 
+	ClassDB::bind_method(D_METHOD("set_cap_top", "cap_top"), &CylinderMesh::set_cap_top);
+	ClassDB::bind_method(D_METHOD("is_cap_top"), &CylinderMesh::is_cap_top);
+
+	ClassDB::bind_method(D_METHOD("set_cap_bottom", "cap_bottom"), &CylinderMesh::set_cap_bottom);
+	ClassDB::bind_method(D_METHOD("is_cap_bottom"), &CylinderMesh::is_cap_bottom);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 }
 
 void CylinderMesh::set_top_radius(const float p_radius) {
@@ -947,6 +955,24 @@ void CylinderMesh::set_rings(const int p_rings) {
 
 int CylinderMesh::get_rings() const {
 	return rings;
+}
+
+void CylinderMesh::set_cap_top(bool p_cap_top) {
+	cap_top = p_cap_top;
+	_request_update();
+}
+
+bool CylinderMesh::is_cap_top() const {
+	return cap_top;
+}
+
+void CylinderMesh::set_cap_bottom(bool p_cap_bottom) {
+	cap_bottom = p_cap_bottom;
+	_request_update();
+}
+
+bool CylinderMesh::is_cap_bottom() const {
+	return cap_bottom;
 }
 
 CylinderMesh::CylinderMesh() {}
