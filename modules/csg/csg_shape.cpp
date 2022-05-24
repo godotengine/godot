@@ -30,6 +30,7 @@
 
 #include "csg_shape.h"
 
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
@@ -1803,6 +1804,93 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		} break;
 	}
+
+	// Interpolation, initialize variables and set_up
+	bool flipped_faces = flip_faces;
+	bool do_interpolation = false;
+	Vector<Point2> shape_polygon2 = shape_polygon;
+	Vector<Point2> median_polygon;
+	Vector<Point2> modified_polygon;
+	Vector<Point2> previous_shape_polygon;
+	float current_interpolation = 1.0;
+	float previous_interpolation = 1.0;
+	Vector<Point2> depth_points;
+	bool try_angle_simplify = false;
+	Vector2 previous_shape_simplify_dir = Vector2(0, 0);
+
+	if (interpolation) {
+		if (!interpolate_curve.is_null() && polygon2.size() == shape_sides) {
+			do_interpolation = true;
+			median_polygon = shape_polygon;
+			shape_polygon2 = polygon2;
+
+			if (Triangulate::get_area(shape_polygon2) > 0) {
+				shape_polygon2.reverse();
+			}
+
+			float p = 2.0;
+			for (int j = 0; j < shape_sides; j++) {
+				if (polygon[j] != polygon2[j]) {
+					p = 1.0;
+					break;
+				}
+			}
+			current_interpolation = interpolate_curve->sample(0);
+			switch (mode) {
+				case MODE_DEPTH: {
+					int nb_points = interpolate_curve->get_point_count();
+					if (nb_points > 0) {
+						Point2 points = interpolate_curve->get_point_position(nb_points - 1);
+						if (points.x == 1.0) {
+							nb_points -= 1;
+						}
+						points = interpolate_curve->get_point_position(0);
+
+						if (points.x > 0 && points.x < 1) {
+							depth_points.push_back(Point2(points.x, points.y));
+						} else {
+							nb_points -= 1;
+						}
+						if (nb_points > 0) {
+							for (int j = 1; j <= nb_points; j++) {
+								depth_points.push_back(interpolate_curve->get_point_position(j));
+							}
+						}
+					}
+					depth_points.push_back(Point2(1.0, interpolate_curve->sample(1.0)));
+					extrusions = depth_points.size();
+				} break;
+				case MODE_SPIN: {
+					if (spin_fix_neg == SPIN_FIX_NEG_INVERT_FACES) {
+						if (current_interpolation < -1.0) {
+							flipped_faces = !flip_faces;
+						}
+					} else if (spin_fix_neg == SPIN_FIX_NEG_REMOVE_FACES) {
+						bool rm_neg = true;
+						if (interpolate_curve->sample(0) < -1) {
+							rm_neg = false;
+							flipped_faces = !flip_faces;
+						}
+						for (int j = 1; j < spin_sides; j++) {
+							float pos = interpolate_curve->sample((float)j / (float)spin_sides);
+							if ((rm_neg == true && pos < -1) || (rm_neg == false && pos > -1)) {
+								extrusions = j - 1;
+								break;
+							}
+						}
+					}
+				} break;
+				case MODE_PATH:
+					break;
+			}
+			for (int j = 0; j < shape_sides; j++) {
+				modified_polygon.push_back(Vector2(shape_polygon2[j].x * p - median_polygon[j].x, shape_polygon2[j].y * p - median_polygon[j].y));
+				shape_polygon.set(j, Vector2(median_polygon[j].x + modified_polygon[j].x * current_interpolation, median_polygon[j].y + modified_polygon[j].y * current_interpolation));
+			}
+			shape_polygon2 = shape_polygon;
+		}
+	}
+
 	int face_count = extrusions * extrusion_face_count + end_count * shape_face_count;
 
 	// Initialize variables used to create the mesh.
@@ -1897,7 +1985,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = false;
 				materialsw[face] = material;
-				invertw[face] = flip_faces;
+				invertw[face] = flipped_faces;
 				face++;
 			}
 		}
@@ -1913,7 +2001,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			switch (mode) {
 				case MODE_DEPTH: {
-					current_xform.translate_local(Vector3(0, 0, -depth));
+					if (do_interpolation) {
+						float previous_depth = 0;
+						if (x0 > 0) {
+							previous_depth = depth_points[x0 - 1].x;
+						}
+						current_xform.translate_local(Vector3(0, 0, -((depth_points[x0].x - previous_depth) * depth)));
+					} else {
+						current_xform.translate_local(Vector3(0, 0, -depth));
+					}
 				} break;
 				case MODE_SPIN: {
 					current_xform.rotate(Vector3(0, 1, 0), spin_step);
@@ -1939,14 +2035,24 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					Vector3 current_dir = (current_point - previous_point).normalized();
 
 					// If the angles are similar, remove the previous face and replace it with this one.
-					if (path_simplify_angle > 0.0 && x0 > 0 && previous_simplify_dir.dot(current_dir) > angle_simplify_dot) {
-						faces_combined += 1;
-						previous_xform = previous_previous_xform;
-						face -= extrusion_face_count;
-						faces_removed += extrusion_face_count;
-					} else {
-						faces_combined = 0;
-						previous_simplify_dir = current_dir;
+					if (path_simplify_angle > 0.0) {
+						if (do_interpolation) {
+							previous_shape_polygon = shape_polygon;
+						}
+						if (x0 > 0 && previous_simplify_dir.dot(current_dir) > angle_simplify_dot) {
+							if (do_interpolation) {
+								try_angle_simplify = true;
+							} else {
+								faces_combined += 1;
+								previous_xform = previous_previous_xform;
+								face -= extrusion_face_count;
+								faces_removed += extrusion_face_count;
+							}
+						} else {
+							faces_combined = 0;
+							previous_simplify_dir = current_dir;
+							try_angle_simplify = false;
+						}
 					}
 
 					switch (path_rotation) {
@@ -1965,6 +2071,61 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				} break;
 			}
 
+			if (do_interpolation) {
+				previous_interpolation = current_interpolation;
+				shape_polygon = shape_polygon2;
+
+				switch (mode) {
+					case MODE_DEPTH: {
+						current_interpolation = depth_points[x0].y;
+					} break;
+					case MODE_SPIN: {
+						current_interpolation = interpolate_curve->sample((float)(x0 + 1) / (float)spin_sides);
+
+						// Avoid inverted faces when is passing between negative and positive
+						if (spin_fix_neg != SPIN_FIX_NEG_OFF) {
+							flipped_faces = flip_faces;
+							if (x0 == 0) {
+								if (current_interpolation < -1.0) {
+									flipped_faces = !flip_faces;
+								}
+							} else if (previous_interpolation <= -1.0 && current_interpolation < -1.0) {
+								flipped_faces = !flip_faces;
+							} else if (previous_interpolation < -1.0 && current_interpolation > -1.0) {
+								current_interpolation = -1.0;
+								flipped_faces = !flip_faces;
+							} else if (previous_interpolation > -1.0 && current_interpolation < -1.0) {
+								current_interpolation = -1.0;
+							}
+						}
+					} break;
+					case MODE_PATH: {
+						if (x0 == extrusions - 1 && path_joined) {
+							current_interpolation = interpolate_curve->sample(0);
+						} else {
+							current_interpolation = interpolate_curve->sample((float)(x0 + 1) / (float)extrusions);
+						}
+					} break;
+				}
+				for (int j = 0; j < shape_sides; j++) {
+					// A + (B - A) * t
+					shape_polygon2.set(j, Vector2(median_polygon[j].x + modified_polygon[j].x * current_interpolation, median_polygon[j].y + modified_polygon[j].y * current_interpolation));
+				}
+				if (try_angle_simplify) {
+					Vector2 current_shape = (Vector2((float)(x0) / (float)extrusions, current_interpolation) - Vector2((float)(x0 - 1) / (float)extrusions, previous_interpolation)).normalized();
+					if (previous_interpolation == current_interpolation || previous_shape_simplify_dir.dot(current_shape) > angle_simplify_dot) {
+						faces_combined += 1;
+						previous_xform = previous_previous_xform;
+						face -= extrusion_face_count;
+						faces_removed += extrusion_face_count;
+						shape_polygon = previous_shape_polygon;
+					} else {
+						faces_combined = 0;
+						previous_shape_simplify_dir = current_shape;
+					}
+				}
+			}
+
 			double u0 = (x0 - faces_combined) * u_step;
 			double u1 = ((x0 + 1) * u_step);
 			if (mode == MODE_PATH && !path_continuous_u) {
@@ -1980,8 +2141,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				Vector3 v[4] = {
 					previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
-					current_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
-					current_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
+					current_xform.xform(Vector3(shape_polygon2[y0].x, shape_polygon2[y0].y, 0)),
+					current_xform.xform(Vector3(shape_polygon2[y1].x, shape_polygon2[y1].y, 0)),
 					previous_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
 				};
 
@@ -2002,7 +2163,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				uvsw[face * 3 + 2] = u[2];
 
 				smoothw[face] = smooth_faces;
-				invertw[face] = flip_faces;
+				invertw[face] = flipped_faces;
 				materialsw[face] = material;
 
 				face++;
@@ -2017,7 +2178,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				uvsw[face * 3 + 2] = u[0];
 
 				smoothw[face] = smooth_faces;
-				invertw[face] = flip_faces;
+				invertw[face] = flipped_faces;
 				materialsw[face] = material;
 
 				face++;
@@ -2029,7 +2190,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
 				for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
 					int index = shape_faces[face_idx * 3 + face_vertex_idx];
-					Point2 p = shape_polygon[index];
+					Point2 p = shape_polygon2[index];
 					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
 					// Use the x-inverted ride side of the bottom half of the y-inverted texture.
@@ -2042,7 +2203,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = false;
 				materialsw[face] = material;
-				invertw[face] = flip_faces;
+				invertw[face] = flipped_faces;
 				face++;
 			}
 		}
@@ -2111,6 +2272,9 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spin_sides", "spin_sides"), &CSGPolygon3D::set_spin_sides);
 	ClassDB::bind_method(D_METHOD("get_spin_sides"), &CSGPolygon3D::get_spin_sides);
 
+	ClassDB::bind_method(D_METHOD("set_spin_fix_neg", "spin_fix_neg"), &CSGPolygon3D::set_spin_fix_neg);
+	ClassDB::bind_method(D_METHOD("get_spin_fix_neg"), &CSGPolygon3D::get_spin_fix_neg);
+
 	ClassDB::bind_method(D_METHOD("set_path_node", "path"), &CSGPolygon3D::set_path_node);
 	ClassDB::bind_method(D_METHOD("get_path_node"), &CSGPolygon3D::get_path_node);
 
@@ -2144,6 +2308,15 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
 
+	ClassDB::bind_method(D_METHOD("set_interpolation", "enable"), &CSGPolygon3D::set_interpolation);
+	ClassDB::bind_method(D_METHOD("is_interpolation"), &CSGPolygon3D::is_interpolation);
+
+	ClassDB::bind_method(D_METHOD("set_polygon2", "polygon2"), &CSGPolygon3D::set_polygon2);
+	ClassDB::bind_method(D_METHOD("get_polygon2"), &CSGPolygon3D::get_polygon2);
+
+	ClassDB::bind_method(D_METHOD("set_interpolate_curve", "interpolate_curve"), &CSGPolygon3D::set_interpolate_curve);
+	ClassDB::bind_method(D_METHOD("get_interpolate_curve"), &CSGPolygon3D::get_interpolate_curve);
+
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon3D::_has_editable_3d_polygon_no_depth);
 
@@ -2152,6 +2325,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.01,100.0,0.01,or_greater,exp,suffix:m"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_fix_neg", PROPERTY_HINT_ENUM, "Off,Invert Faces,Remove Faces"), "set_spin_fix_neg", "get_spin_fix_neg");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_interval_type", PROPERTY_HINT_ENUM, "Distance,Subdivide"), "set_path_interval_type", "get_path_interval_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
@@ -2162,11 +2336,18 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,suffix:m"), "set_path_u_distance", "get_path_u_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolation"), "set_interpolation", "is_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon2"), "set_polygon2", "get_polygon2");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "interpolate_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_interpolate_curve", "get_interpolate_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
 	BIND_ENUM_CONSTANT(MODE_SPIN);
 	BIND_ENUM_CONSTANT(MODE_PATH);
+
+	BIND_ENUM_CONSTANT(SPIN_FIX_NEG_OFF);
+	BIND_ENUM_CONSTANT(SPIN_FIX_NEG_INVERT_FACES);
+	BIND_ENUM_CONSTANT(SPIN_FIX_NEG_REMOVE_FACES);
 
 	BIND_ENUM_CONSTANT(PATH_ROTATION_POLYGON);
 	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH);
@@ -2243,6 +2424,18 @@ void CSGPolygon3D::set_spin_sides(int p_spin_sides) {
 	spin_sides = p_spin_sides;
 	_make_dirty();
 	update_gizmos();
+}
+
+void CSGPolygon3D::set_spin_fix_neg(SpinFixNeg p_spin_fix_neg) {
+	spin_fix_neg = p_spin_fix_neg;
+	if (interpolation) {
+		_make_dirty();
+		update_gizmos();
+	}
+}
+
+CSGPolygon3D::SpinFixNeg CSGPolygon3D::get_spin_fix_neg() const {
+	return spin_fix_neg;
 }
 
 int CSGPolygon3D::get_spin_sides() const {
@@ -2328,6 +2521,45 @@ bool CSGPolygon3D::get_smooth_faces() const {
 	return smooth_faces;
 }
 
+void CSGPolygon3D::set_interpolation(bool p_enable) {
+	interpolation = p_enable;
+	if (polygon2.size() == 0) {
+		polygon2 = polygon;
+	}
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGPolygon3D::is_interpolation() const {
+	return interpolation;
+}
+
+void CSGPolygon3D::set_polygon2(const Vector<Vector2> &p_polygon2) {
+	polygon2 = p_polygon2;
+	_make_dirty();
+	update_gizmos();
+}
+
+Vector<Vector2> CSGPolygon3D::get_polygon2() const {
+	return polygon2;
+}
+
+void CSGPolygon3D::set_interpolate_curve(const Ref<Curve> &p_interpolate_curve) {
+	if (interpolate_curve.is_valid()) {
+		interpolate_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CSGPolygon3D::_interpolate_curve_changed));
+	}
+	interpolate_curve = p_interpolate_curve;
+	if (interpolate_curve.is_valid()) {
+		interpolate_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CSGPolygon3D::_interpolate_curve_changed));
+	}
+	_make_dirty();
+	update_gizmos();
+}
+
+Ref<Curve> CSGPolygon3D::get_interpolate_curve() const {
+	return interpolate_curve;
+}
+
 void CSGPolygon3D::set_material(const Ref<Material> &p_material) {
 	material = p_material;
 	_make_dirty();
@@ -2345,6 +2577,13 @@ bool CSGPolygon3D::_has_editable_3d_polygon_no_depth() const {
 	return true;
 }
 
+void CSGPolygon3D::_interpolate_curve_changed() {
+	if (interpolation) {
+		_make_dirty();
+		update_gizmos();
+	}
+}
+
 CSGPolygon3D::CSGPolygon3D() {
 	// defaults
 	mode = MODE_DEPTH;
@@ -2355,6 +2594,7 @@ CSGPolygon3D::CSGPolygon3D() {
 	depth = 1.0;
 	spin_degrees = 360;
 	spin_sides = 8;
+	spin_fix_neg = SPIN_FIX_NEG_OFF;
 	smooth_faces = false;
 	path_interval_type = PATH_INTERVAL_DISTANCE;
 	path_interval = 1.0;
@@ -2365,4 +2605,5 @@ CSGPolygon3D::CSGPolygon3D() {
 	path_u_distance = 1.0;
 	path_joined = false;
 	path = nullptr;
+	interpolation = false;
 }
