@@ -303,17 +303,23 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 }
 
 void AnimationPlayerEditor::_animation_new() {
-	name_dialog_op = TOOL_NEW_ANIM;
-	name_title->set_text(TTR("New Animation Name:"));
-
 	int count = 1;
 	String base = TTR("New Anim");
+	String current_library_name = "";
+	if (animation->has_selectable_items()) {
+		String current_animation_name = animation->get_item_text(animation->get_selected());
+		Ref<Animation> current_animation = player->get_animation(current_animation_name);
+		if (current_animation.is_valid()) {
+			current_library_name = player->find_animation_library(current_animation);
+		}
+	}
+	String attempt_prefix = (current_library_name == "") ? "" : current_library_name + "/";
 	while (true) {
 		String attempt = base;
 		if (count > 1) {
 			attempt += " (" + itos(count) + ")";
 		}
-		if (player->has_animation(attempt)) {
+		if (player->has_animation(attempt_prefix + attempt)) {
 			count++;
 			continue;
 		}
@@ -321,22 +327,13 @@ void AnimationPlayerEditor::_animation_new() {
 		break;
 	}
 
-	List<StringName> libraries;
-	player->get_animation_library_list(&libraries);
-	library->clear();
-	for (const StringName &K : libraries) {
-		library->add_item((K == StringName()) ? String(TTR("[Global]")) : String(K));
-		library->set_item_metadata(0, String(K));
-	}
+	_update_name_dialog_library_dropdown();
 
-	if (libraries.size() > 1) {
-		library->show();
-	} else {
-		library->hide();
-	}
-
-	name->set_text(base);
+	name_dialog_op = TOOL_NEW_ANIM;
+	name_dialog->set_title(TTR("Create New Animation"));
 	name_dialog->popup_centered(Size2(300, 90));
+	name_title->set_text(TTR("New Animation Name:"));
+	name->set_text(base);
 	name->select_all();
 	name->grab_focus();
 }
@@ -348,6 +345,12 @@ void AnimationPlayerEditor::_animation_rename() {
 	int selected = animation->get_selected();
 	String selected_name = animation->get_item_text(selected);
 
+	// Remove library prefix if present.
+	if (selected_name.contains("/")) {
+		selected_name = selected_name.get_slice("/", 1);
+	}
+
+	name_dialog->set_title(TTR("Rename Animation"));
 	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
 	name_dialog_op = TOOL_RENAME_ANIM;
@@ -375,6 +378,10 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	Ref<AnimationLibrary> al = player->get_animation_library(player->find_animation_library(anim));
 	ERR_FAIL_COND(al.is_null());
 
+	// For names of form lib_name/anim_name, remove library name prefix.
+	if (current.contains("/")) {
+		current = current.get_slice("/", 1);
+	}
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -438,8 +445,14 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (player->has_animation(new_name)) {
-		error_dialog->set_text(TTR("Animation name already exists!"));
+	String test_name_prefix = "";
+	if (library->is_visible() && library->get_selected_id() != -1) {
+		test_name_prefix = library->get_item_metadata(library->get_selected_id());
+		test_name_prefix += (test_name_prefix != "") ? "/" : "";
+	}
+
+	if (player->has_animation(test_name_prefix + new_name)) {
+		error_dialog->set_text(vformat(TTR("Animation '%s' already exists!")));
 		error_dialog->popup_centered();
 		return;
 	}
@@ -452,6 +465,13 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			Ref<AnimationLibrary> al = player->get_animation_library(player->find_animation_library(anim));
 			ERR_FAIL_COND(al.is_null());
 
+			// Extract library prefix if present.
+			String new_library_prefix = "";
+			if (current.contains("/")) {
+				new_library_prefix = current.get_slice("/", 0) + "/";
+				current = current.get_slice("/", 1);
+			}
+
 			undo_redo->create_action(TTR("Rename Animation"));
 			undo_redo->add_do_method(al.ptr(), "rename_animation", current, new_name);
 			undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
@@ -461,19 +481,25 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
 			undo_redo->commit_action();
 
-			_select_anim_by_name(new_name);
+			_select_anim_by_name(new_library_prefix + new_name);
 		} break;
 
 		case TOOL_NEW_ANIM: {
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
-
+			String library_name;
 			Ref<AnimationLibrary> al;
 			if (library->is_visible()) {
-				al = player->get_animation_library(library->get_item_metadata(library->get_selected()));
+				library_name = library->get_item_metadata(library->get_selected());
+				// It's possible that [Global] was selected, but doesn't exist yet.
+				if (player->has_animation_library(library_name)) {
+					al = player->get_animation_library(library_name);
+				}
+
 			} else {
 				if (player->has_animation_library("")) {
 					al = player->get_animation_library("");
+					library_name = "";
 				}
 			}
 
@@ -484,6 +510,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				al.instantiate();
 				lib_added = true;
 				undo_redo->add_do_method(player, "add_animation_library", "", al);
+				library_name = "";
 			}
 
 			undo_redo->add_do_method(al.ptr(), "add_animation", new_name, new_anim);
@@ -499,7 +526,11 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			}
 			undo_redo->commit_action();
 
-			_select_anim_by_name(new_name);
+			if (library_name != "") {
+				library_name = library_name + "/";
+			}
+			_select_anim_by_name(library_name + new_name);
+
 		} break;
 
 		case TOOL_DUPLICATE_ANIM: {
@@ -509,17 +540,44 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			Ref<Animation> new_anim = _animation_clone(anim);
 			new_anim->set_name(new_name);
 
-			Ref<AnimationLibrary> library = player->get_animation_library(player->find_animation_library(anim));
+			String library_name;
+			Ref<AnimationLibrary> al;
+			if (library->is_visible()) {
+				library_name = library->get_item_metadata(library->get_selected());
+				// It's possible that [Global] was selected, but doesn't exist yet.
+				if (player->has_animation_library(library_name)) {
+					al = player->get_animation_library(library_name);
+				}
+			} else {
+				if (player->has_animation_library("")) {
+					al = player->get_animation_library("");
+					library_name = "";
+				}
+			}
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
-			undo_redo->add_do_method(library.ptr(), "add_animation", new_name, new_anim);
-			undo_redo->add_undo_method(library.ptr(), "remove_animation", new_name);
-			undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
+
+			bool lib_added = false;
+			if (al.is_null()) {
+				al.instantiate();
+				lib_added = true;
+				undo_redo->add_do_method(player, "add_animation_library", "", al);
+				library_name = "";
+			}
+
+			undo_redo->add_do_method(al.ptr(), "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(al.ptr(), "remove_animation", new_name);
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			if (lib_added) {
+				undo_redo->add_undo_method(player, "remove_animation_library", "");
+			}
 			undo_redo->commit_action();
 
-			_select_anim_by_name(new_name);
+			if (library_name != "") {
+				library_name = library_name + "/";
+			}
+			_select_anim_by_name(library_name + new_name);
 		} break;
 	}
 
@@ -851,6 +909,47 @@ void AnimationPlayerEditor::_update_animation_list_icons() {
 	}
 }
 
+void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
+	StringName current_library_name = StringName();
+	if (animation->has_selectable_items()) {
+		String current_animation_name = animation->get_item_text(animation->get_selected());
+		Ref<Animation> current_animation = player->get_animation(current_animation_name);
+		if (current_animation.is_valid()) {
+			current_library_name = player->find_animation_library(current_animation);
+		}
+	}
+
+	List<StringName> libraries;
+	player->get_animation_library_list(&libraries);
+	library->clear();
+
+	// When [Global] isn't present, but other libraries are, add option of creating [Global].
+	int index_offset = 0;
+	if (!player->has_animation_library(StringName())) {
+		library->add_item(String(TTR("[Global] (create)")));
+		library->set_item_metadata(0, "");
+		index_offset = 1;
+	}
+
+	int current_lib_id = index_offset; // Don't default to [Global] if it doesn't exist yet.
+	for (int i = 0; i < libraries.size(); i++) {
+		StringName library_name = libraries[i];
+		library->add_item((library_name == StringName()) ? String(TTR("[Global]")) : String(library_name));
+		library->set_item_metadata(i + index_offset, String(library_name));
+		// Default to duplicating into same library.
+		if (library_name == current_library_name) {
+			current_lib_id = i + index_offset;
+		}
+	}
+
+	if (library->get_item_count() > 1) {
+		library->select(current_lib_id);
+		library->show();
+	} else {
+		library->hide();
+	}
+}
+
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
@@ -946,9 +1045,17 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		new_name = new_name + " (copy)";
 	}
 
-	name_title->set_text(TTR("New Animation Name:"));
-	name->set_text(new_name);
+	if (new_name.contains("/")) {
+		// Discard library prefix.
+		new_name = new_name.get_slice("/", 1);
+	}
+
+	_update_name_dialog_library_dropdown();
+
 	name_dialog_op = TOOL_DUPLICATE_ANIM;
+	name_dialog->set_title("Duplicate Animation");
+	name_title->set_text(TTR("Duplicated Animation Name:"));
+	name->set_text(new_name);
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
