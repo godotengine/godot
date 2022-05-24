@@ -728,6 +728,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 
+	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
+
+	theme->set_type_variation("InspectorActionButton", "Button");
+	Color color_inspector_action = dark_color_1.lerp(mono_color, 0.12);
+	color_inspector_action.a = 0.5;
+	Ref<StyleBoxFlat> style_inspector_action = style_widget->duplicate();
+	style_inspector_action->set_bg_color(color_inspector_action);
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("normal", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_hover->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("hover", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_pressed->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("pressed", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_disabled->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("disabled", "InspectorActionButton", style_inspector_action);
+	theme->set_constant("h_separation", "InspectorActionButton", ACTION_BUTTON_EXTRA_MARGIN);
+
 	// Variation for Editor Log filter buttons
 	theme->set_type_variation("EditorLogFilterButton", "Button");
 	// When pressed, don't tint the icons with the accent color, just leave them normal.
