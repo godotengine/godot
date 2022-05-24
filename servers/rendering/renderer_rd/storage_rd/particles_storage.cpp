@@ -540,11 +540,8 @@ void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_tran
 		_particles_allocate_emission_buffer(particles);
 	}
 
-	if (particles->inactive) {
-		//in case it was inactive, make active again
-		particles->inactive = false;
-		particles->inactive_time = 0;
-	}
+	particles->inactive = false;
+	particles->inactive_time = 0;
 
 	int32_t idx = particles->emission_buffer->particle_count;
 	if (idx < particles->emission_buffer->particle_max) {
