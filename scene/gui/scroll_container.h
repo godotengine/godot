@@ -70,6 +70,7 @@ protected:
 
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _gui_focus_changed(Control *p_control);
+	void _update_dimensions();
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
