@@ -357,4 +357,8 @@ void main() {
 #endif
 
 	gl_FragColor = color;
+
+#ifdef DISABLE_ALPHA
+	gl_FragColor.a = 1.0;
+#endif
 }

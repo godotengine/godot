@@ -489,4 +489,8 @@ void main() {
 #endif
 
 	frag_color = color;
+
+#ifdef DISABLE_ALPHA
+	frag_color.a = 1.0;
+#endif
 }
