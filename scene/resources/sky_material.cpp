@@ -250,14 +250,14 @@ void ProceduralSkyMaterial::_update_shader() {
 
 shader_type sky;
 
-uniform vec4 sky_top_color : hint_color = vec4(0.385, 0.454, 0.55, 1.0);
-uniform vec4 sky_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
+uniform vec4 sky_top_color : source_color = vec4(0.385, 0.454, 0.55, 1.0);
+uniform vec4 sky_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float sky_curve : hint_range(0, 1) = 0.15;
 uniform float sky_energy = 1.0;
-uniform sampler2D sky_cover : hint_black_albedo;
-uniform vec4 sky_cover_modulate : hint_color = vec4(1.0, 1.0, 1.0, 1.0);
-uniform vec4 ground_bottom_color : hint_color = vec4(0.2, 0.169, 0.133, 1.0);
-uniform vec4 ground_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
+uniform sampler2D sky_cover : source_color, hint_default_black;
+uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 ground_bottom_color : source_color = vec4(0.2, 0.169, 0.133, 1.0);
+uniform vec4 ground_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float ground_curve : hint_range(0, 1) = 0.02;
 uniform float ground_energy = 1.0;
 uniform float sun_angle_max = 30.0;
@@ -434,7 +434,7 @@ void PanoramaSkyMaterial::_update_shader() {
 
 shader_type sky;
 
-uniform sampler2D source_panorama : %s, hint_black_albedo;
+uniform sampler2D source_panorama : %s, source_color, hint_default_black;
 
 void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
@@ -646,18 +646,18 @@ void PhysicalSkyMaterial::_update_shader() {
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
-uniform vec4 rayleigh_color : hint_color = vec4(0.3, 0.405, 0.6, 1.0);
+uniform vec4 rayleigh_color : source_color = vec4(0.3, 0.405, 0.6, 1.0);
 uniform float mie : hint_range(0, 1) = 0.005;
 uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
-uniform vec4 mie_color : hint_color = vec4(0.69, 0.729, 0.812, 1.0);
+uniform vec4 mie_color : source_color = vec4(0.69, 0.729, 0.812, 1.0);
 
 uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
-uniform vec4 ground_color : hint_color = vec4(0.1, 0.07, 0.034, 1.0);
+uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 0.1;
 uniform float dither_strength : hint_range(0, 10) = 1.0;
 
-uniform sampler2D night_sky : hint_black_albedo;
+uniform sampler2D night_sky : source_color, hint_default_black;
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 

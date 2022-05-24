@@ -955,7 +955,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
 			} else {
@@ -1090,8 +1090,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_USAMPLER2D:
 				case ShaderLanguage::TYPE_SAMPLER2D: {
 					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							rd_texture = texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
@@ -1111,8 +1110,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 
 				case ShaderLanguage::TYPE_SAMPLERCUBE: {
 					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							rd_texture = texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 						} break;
 						default: {
@@ -1152,7 +1150,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				p_textures[k++] = rd_texture;
 			}
 		} else {
-			bool srgb = p_use_linear_color && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO);
+			bool srgb = p_use_linear_color && p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR;
 
 			for (int j = 0; j < textures.size(); j++) {
 				Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);

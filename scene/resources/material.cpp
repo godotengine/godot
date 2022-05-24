@@ -631,8 +631,8 @@ void BaseMaterial3D::_update_shader() {
 
 	code += ";\n";
 
-	code += "uniform vec4 albedo : hint_color;\n";
-	code += "uniform sampler2D texture_albedo : hint_albedo," + texfilter_str + ";\n";
+	code += "uniform vec4 albedo : source_color;\n";
+	code += "uniform sampler2D texture_albedo : source_color," + texfilter_str + ";\n";
 	if (grow_enabled) {
 		code += "uniform float grow;\n";
 	}
@@ -669,7 +669,7 @@ void BaseMaterial3D::_update_shader() {
 	//TODO ALL HINTS
 	if (!orm) {
 		code += "uniform float roughness : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_metallic : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_metallic : hint_default_white," + texfilter_str + ";\n";
 		code += "uniform vec4 metallic_texture_channel;\n";
 		switch (roughness_texture_channel) {
 			case TEXTURE_CHANNEL_RED: {
@@ -704,8 +704,8 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (features[FEATURE_EMISSION]) {
-		code += "uniform sampler2D texture_emission : hint_black_albedo," + texfilter_str + ";\n";
-		code += "uniform vec4 emission : hint_color;\n";
+		code += "uniform sampler2D texture_emission : source_color, hint_default_black," + texfilter_str + ";\n";
+		code += "uniform vec4 emission : source_color;\n";
 		code += "uniform float emission_energy;\n";
 	}
 
@@ -722,48 +722,48 @@ void BaseMaterial3D::_update_shader() {
 	if (features[FEATURE_RIM]) {
 		code += "uniform float rim : hint_range(0,1);\n";
 		code += "uniform float rim_tint : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_rim : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_rim : hint_default_white," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_CLEARCOAT]) {
 		code += "uniform float clearcoat : hint_range(0,1);\n";
 		code += "uniform float clearcoat_roughness : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_clearcoat : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_clearcoat : hint_default_white," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_ANISOTROPY]) {
 		code += "uniform float anisotropy_ratio : hint_range(0,256);\n";
 		code += "uniform sampler2D texture_flowmap : hint_anisotropy," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
-		code += "uniform sampler2D texture_ambient_occlusion : hint_white, " + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_ambient_occlusion : hint_default_white, " + texfilter_str + ";\n";
 		code += "uniform vec4 ao_texture_channel;\n";
 		code += "uniform float ao_light_affect;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
-		code += "uniform sampler2D texture_detail_albedo : hint_albedo," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_detail_albedo : source_color," + texfilter_str + ";\n";
 		code += "uniform sampler2D texture_detail_normal : hint_normal," + texfilter_str + ";\n";
-		code += "uniform sampler2D texture_detail_mask : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_detail_mask : hint_default_white," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 		code += "uniform float subsurface_scattering_strength : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_subsurface_scattering : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_subsurface_scattering : hint_default_white," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
-		code += "uniform vec4 transmittance_color : hint_color;\n";
+		code += "uniform vec4 transmittance_color : source_color;\n";
 		code += "uniform float transmittance_depth;\n";
-		code += "uniform sampler2D texture_subsurface_transmittance : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_subsurface_transmittance : hint_default_white," + texfilter_str + ";\n";
 		code += "uniform float transmittance_boost;\n";
 	}
 
 	if (features[FEATURE_BACKLIGHT]) {
-		code += "uniform vec4 backlight : hint_color;\n";
-		code += "uniform sampler2D texture_backlight : hint_black," + texfilter_str + ";\n";
+		code += "uniform vec4 backlight : source_color;\n";
+		code += "uniform sampler2D texture_backlight : hint_default_black," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING]) {
-		code += "uniform sampler2D texture_heightmap : hint_black," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_heightmap : hint_default_black," + texfilter_str + ";\n";
 		code += "uniform float heightmap_scale;\n";
 		code += "uniform int heightmap_min_layers;\n";
 		code += "uniform int heightmap_max_layers;\n";

@@ -197,14 +197,14 @@ void ParticlesMaterial::_update_shader() {
 			code += "uniform vec3 emission_box_extents;\n";
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
+			code += "uniform sampler2D emission_texture_normal : hint_default_black;\n";
 			[[fallthrough]];
 		}
 		case EMISSION_SHAPE_POINTS: {
-			code += "uniform sampler2D emission_texture_points : hint_black;\n";
+			code += "uniform sampler2D emission_texture_points : hint_default_black;\n";
 			code += "uniform int emission_texture_point_count;\n";
 			if (emission_color_texture.is_valid()) {
-				code += "uniform sampler2D emission_texture_color : hint_white;\n";
+				code += "uniform sampler2D emission_texture_color : hint_default_white;\n";
 			}
 		} break;
 		case EMISSION_SHAPE_RING: {
@@ -228,7 +228,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
 
-	code += "uniform vec4 color_value : hint_color;\n";
+	code += "uniform vec4 color_value : source_color;\n";
 
 	code += "uniform vec3 gravity;\n";
 
