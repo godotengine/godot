@@ -1062,7 +1062,6 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 }
 
 Variant Object::get_meta(const String &p_name, const Variant &p_default) const {
-	ERR_FAIL_COND_V(!metadata.has(p_name), Variant());
 	if (!metadata.has(p_name)) {
 		if (p_default != Variant()) {
 			return p_default;
