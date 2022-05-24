@@ -1793,18 +1793,18 @@ void TextMesh::_generate_glyph_mesh_data(uint32_t p_utf32_char, const Ref<Font> 
 	//Decompose and triangulate.
 	List<TriangulatorPoly> out_poly;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) {
-		ERR_FAIL_MSG("Convex decomposing failed!");
+		ERR_FAIL_MSG("Convex decomposing failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 	}
 	List<TriangulatorPoly> out_tris;
 	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 		if (tpart.Triangulate_OPT(&(I->get()), &out_tris) == 0) {
-			ERR_FAIL_MSG("Triangulation failed!");
+			ERR_FAIL_MSG("Triangulation failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 		}
 	}
 
 	for (List<TriangulatorPoly>::Element *I = out_tris.front(); I; I = I->next()) {
 		TriangulatorPoly &tp = I->get();
-		ERR_FAIL_COND(tp.GetNumPoints() != 3); // Trianges only.
+		ERR_FAIL_COND(tp.GetNumPoints() != 3); // Triangles only.
 
 		for (int i = 0; i < 3; i++) {
 			gl_data.triangles.push_back(Vector2(tp.GetPoint(i).x, tp.GetPoint(i).y));
