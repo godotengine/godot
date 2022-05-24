@@ -98,7 +98,6 @@ private:
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
 	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
-	TabContainer *dock_vbc;
 	VBoxContainer *version_commit_dock;
 	Tree *staged_files;
 	Tree *unstaged_files;

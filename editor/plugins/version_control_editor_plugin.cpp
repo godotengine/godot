@@ -410,7 +410,10 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 
 	int total_changes = status_files.size();
 	String commit_tab_title = TTR("Commit") + (total_changes > 0 ? " (" + itos(total_changes) + ")" : "");
-	dock_vbc->set_tab_title(version_commit_dock->get_index(), commit_tab_title);
+	TabContainer *dock_vbc = Object::cast_to<TabContainer>(version_commit_dock->get_parent_control());
+	if (dock_vbc) {
+		dock_vbc->set_tab_title(version_commit_dock->get_index(), commit_tab_title);
+	}
 }
 
 void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change) {
@@ -932,7 +935,7 @@ void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent>
 
 void VersionControlEditorPlugin::register_editor() {
 	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
-	dock_vbc = (TabContainer *)version_commit_dock->get_parent_control();
+	TabContainer *dock_vbc = Object::cast_to<TabContainer>(version_commit_dock->get_parent_control());
 	dock_vbc->set_tab_title(version_commit_dock->get_index(), TTR("Commit"));
 
 	ToolButton *vc = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Version Control"), version_control_dock);
