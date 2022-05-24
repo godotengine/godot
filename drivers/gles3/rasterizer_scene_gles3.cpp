@@ -4001,6 +4001,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		}
 	}
 
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::DISABLE_ALPHA, !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]);
 	state.tonemap_shader.bind();
 
@@ -4064,6 +4065,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_BCS, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_COLOR_CORRECTION, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::DISABLE_ALPHA, false);
 }
 
 bool RasterizerSceneGLES3::_element_needs_directional_add(RenderList::Element *e) {
