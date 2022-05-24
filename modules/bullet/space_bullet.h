@@ -91,6 +91,35 @@ class SpaceBullet : public RIDBullet {
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
 
+public:
+	/// IMPORTANT NOTE: These members are public to expose some bullet
+	/// physics internal functionalities that are not supported or exposed
+	/// through the `PhysicsServer`.
+	///
+	/// One example is the unofficial module `godot-kinematic-body`:
+	/// https://github.com/AndreaCatania/godot-kinematic-body/blob/3.x/kinematic_object_3d.cpp
+	///
+	/// # How it works
+	/// To access these members from a module, the first step is to cast the
+	/// `PhysicsServer` to `BulletPhysicsServer`. This step is necessary
+	/// to have access to the `space_owner` (which is a storage that holds
+	/// the `SpaceBullet` objects).
+	/// ```c++
+	/// BulletPhysicsServer* bullet_physics_singleton = static_cast<BulletPhysicsServer *>(PhysicsServer::get_singleton());
+	/// SpaceBullet* space = bullet_physics_singleton->get_space_owner()->getornull(get_world()->get_space());
+	/// ```
+	//
+	/// Once you have access to the space, you can access the members and
+	/// execute bullet physics commands:
+	/// ```c++
+	/// space->dynamicsWorld->convexSweepTest(
+	///	p_shape,
+	///	btTransform(btMatrix3x3::getIdentity(), p_position),
+	///	btTransform(btMatrix3x3::getIdentity(), p_position + p_motion),
+	///	result,
+	///	p_margin);
+	/// ```
+
 	btBroadphaseInterface *broadphase;
 	btDefaultCollisionConfiguration *collisionConfiguration;
 	btCollisionDispatcher *dispatcher;
@@ -194,6 +223,7 @@ private:
 	void check_ghost_overlaps();
 	void check_body_collision();
 
+public:
 	struct RecoverResult {
 		bool hasPenetration;
 		btVector3 normal;
@@ -213,6 +243,7 @@ private:
 				local_shape_most_recovered(0) {}
 	};
 
+private:
 	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr, const Set<RID> &p_exclude = Set<RID>());
 	/// This is an API that recover a kinematic object from penetration
 	/// This allow only Convex Convex test and it always use GJK algorithm, With this API we don't benefit of Bullet special accelerated functions
