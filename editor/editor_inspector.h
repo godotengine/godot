@@ -75,6 +75,7 @@ private:
 	int property_usage;
 
 	bool read_only = false;
+	bool label_transparent = false;
 	bool checkable = false;
 	bool checked = false;
 	bool draw_warning = false;
@@ -141,6 +142,9 @@ public:
 
 	void set_read_only(bool p_read_only);
 	bool is_read_only() const;
+
+	void set_label_transparent(bool p_label_transparent);
+	bool is_label_transparent() const;
 
 	Object *get_edited_object();
 	StringName get_edited_property();
@@ -460,6 +464,7 @@ class EditorInspector : public ScrollContainer {
 	bool sub_inspector = false;
 	bool wide_editors = false;
 	bool deletable_properties = false;
+	bool has_feature_tag_overrides = false;
 
 	float refresh_countdown;
 	bool update_tree_pending = false;
@@ -581,6 +586,7 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
+	void set_has_feature_tag_overrides(bool p_enabled);
 	void set_property_clipboard(const Variant &p_value);
 	Variant get_property_clipboard() const;
 
