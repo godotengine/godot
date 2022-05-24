@@ -194,7 +194,7 @@ void VersionControlEditorPlugin::_set_up() {
 	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized.");
 
 	_refresh_stage_area();
-	_refresh_commit_list();
+	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
 	_refresh_branch_list();
 	_refresh_remote_list();
 }
@@ -240,7 +240,7 @@ String VersionControlEditorPlugin::_get_date_string_from(int64_t p_unix_timestam
 			Time::get_singleton()->get_offset_string_from_offset_minutes(p_offset_minutes));
 }
 
-void VersionControlEditorPlugin::_refresh_commit_list() {
+void VersionControlEditorPlugin::_refresh_commit_list(int p_index) {
 	CHECK_PLUGIN_INITIALIZED();
 
 	commit_list->get_root()->clear_children();
@@ -307,7 +307,7 @@ void VersionControlEditorPlugin::_commit() {
 	commit_message->set_text("");
 
 	_refresh_stage_area();
-	_refresh_commit_list();
+	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
 	_refresh_branch_list();
 	_clear_diff();
 }
@@ -322,7 +322,7 @@ void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 	ScriptEditor::get_singleton()->reload_scripts();
 
 	_refresh_branch_list();
-	_refresh_commit_list();
+	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
 	_refresh_stage_area();
 	_clear_diff();
 
@@ -474,7 +474,7 @@ void VersionControlEditorPlugin::_pull() {
 	EditorVCSInterface::get_singleton()->pull(remote_select->get_selected_metadata());
 	_refresh_stage_area();
 	_refresh_branch_list();
-	_refresh_commit_list();
+	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
 	_clear_diff();
 	_update_opened_tabs();
 }
@@ -1280,10 +1280,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_size_button->add_item("10");
 	commit_list_size_button->set_item_metadata(0, 10);
 	commit_list_size_button->add_item("20");
-	commit_list_size_button->set_item_metadata(0, 20);
+	commit_list_size_button->set_item_metadata(1, 20);
 	commit_list_size_button->add_item("30");
-	commit_list_size_button->set_item_metadata(0, 30);
-	commit_list_size_button->connect("pressed", this, "_refresh_commit_list");
+	commit_list_size_button->set_item_metadata(2, 30);
+	commit_list_size_button->connect("item_selected", this, "_refresh_commit_list");
 	commit_list_hbc->add_child(commit_list_size_button);
 
 	commit_list = memnew(Tree);
