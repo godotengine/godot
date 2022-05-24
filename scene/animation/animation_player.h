@@ -388,8 +388,6 @@ public:
 	bool can_apply_reset() const;
 #endif
 
-	TypedArray<String> get_configuration_warnings() const override;
-
 	AnimationPlayer();
 	~AnimationPlayer();
 };

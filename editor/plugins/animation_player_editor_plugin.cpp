@@ -452,7 +452,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	}
 
 	if (player->has_animation(test_name_prefix + new_name)) {
-		error_dialog->set_text(vformat(TTR("Animation '%s' already exists!")));
+		error_dialog->set_text(vformat(TTR("Animation '%s' already exists!"), test_name_prefix + new_name));
 		error_dialog->popup_centered();
 		return;
 	}

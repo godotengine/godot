@@ -1240,8 +1240,6 @@ void AnimationPlayer::_animation_set_cache_update() {
 
 void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
 	_animation_set_cache_update();
-
-	update_configuration_warnings();
 }
 
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
@@ -1265,8 +1263,6 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 		blend_times.erase(to_erase.front()->get());
 		to_erase.pop_front();
 	}
-
-	update_configuration_warnings();
 }
 
 void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
@@ -1317,7 +1313,6 @@ void AnimationPlayer::_animation_renamed(const StringName &p_name, const StringN
 	_animation_set_cache_update();
 
 	_rename_animation(from_name, to_name);
-	update_configuration_warnings();
 }
 
 Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library) {
@@ -1353,7 +1348,6 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 
 	notify_property_list_changed();
 
-	update_configuration_warnings();
 	return OK;
 }
 
@@ -1383,7 +1377,6 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 	_animation_set_cache_update();
 
 	notify_property_list_changed();
-	update_configuration_warnings();
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
@@ -1467,19 +1460,6 @@ void AnimationPlayer::get_animation_library_list(List<StringName> *p_libraries) 
 	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
 		p_libraries->push_back(animation_libraries[i].name);
 	}
-}
-
-TypedArray<String> AnimationPlayer::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
-
-	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
-		for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
-			if (animation_set.has(K.key) && animation_set[K.key].animation_library != animation_libraries[i].name) {
-				warnings.push_back(vformat(RTR("Animation '%s' in library '%s' is unused because another animation with the same name exists in library '%s'."), K.key, animation_libraries[i].name, animation_set[K.key].animation_library));
-			}
-		}
-	}
-	return warnings;
 }
 
 bool AnimationPlayer::has_animation(const StringName &p_name) const {
