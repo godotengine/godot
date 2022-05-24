@@ -970,7 +970,7 @@ Array GridMap::get_meshes() const {
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
-		meshes.push_back(xform);
+		meshes.push_back(xform * mesh_library->get_item_mesh_transform(id));
 		meshes.push_back(mesh);
 	}
 
