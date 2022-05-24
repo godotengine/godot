@@ -205,11 +205,13 @@ public:
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 
+public:
 	friend class EditorInspector;
 	struct AddedEditor {
 		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
+		bool add_to_end = false;
 	};
 
 	List<AddedEditor> added_editors;
@@ -226,7 +228,7 @@ protected:
 
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
