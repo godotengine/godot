@@ -868,7 +868,11 @@ void ActionMapEditor::_action_edited() {
 	}
 }
 
-void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_id) {
+void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	ItemButton option = (ItemButton)p_id;
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
@@ -926,7 +930,7 @@ void ActionMapEditor::_tree_item_activated() {
 		return;
 	}
 
-	_tree_button_pressed(item, 2, BUTTON_EDIT_EVENT);
+	_tree_button_pressed(item, 2, BUTTON_EDIT_EVENT, MouseButton::LEFT);
 }
 
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
@@ -1249,7 +1253,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited));
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
-	action_tree->connect("button_pressed", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
+	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
 
 	action_tree->set_drag_forwarding(this);

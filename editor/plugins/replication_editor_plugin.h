@@ -71,7 +71,7 @@ private:
 
 	void _add_pressed();
 	void _tree_item_edited();
-	void _tree_button_pressed(Object *p_item, int p_column, int p_id);
+	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _update_checked(const NodePath &p_prop, int p_column, bool p_checked);
 	void _update_config();
 	void _dialog_closed(bool p_confirmed);

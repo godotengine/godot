@@ -353,10 +353,11 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="button_pressed">
+		<signal name="button_clicked">
 			<argument index="0" name="item" type="TreeItem" />
 			<argument index="1" name="column" type="int" />
 			<argument index="2" name="id" type="int" />
+			<argument index="3" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
@@ -379,22 +380,23 @@
 				Emitted when a column's title is pressed.
 			</description>
 		</signal>
+		<signal name="custom_item_clicked">
+			<argument index="0" name="mouse_button_index" type="int" />
+			<description>
+				Emitted when an item with [constant TreeItem.CELL_MODE_CUSTOM] is clicked with a mouse button.
+			</description>
+		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool" />
 			<description>
 				Emitted when a cell with the [constant TreeItem.CELL_MODE_CUSTOM] is clicked to be edited.
 			</description>
 		</signal>
-		<signal name="empty_rmb">
+		<signal name="empty_clicked">
 			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="mouse_button_index" type="int" />
 			<description>
-				Emitted when the right mouse button is pressed in the empty space of the tree.
-			</description>
-		</signal>
-		<signal name="empty_tree_rmb_selected">
-			<argument index="0" name="position" type="Vector2" />
-			<description>
-				Emitted when the right mouse button is pressed if right mouse button selection is active and the tree is empty.
+				Emitted when a mouse button is clicked in the empty space of the tree.
 			</description>
 		</signal>
 		<signal name="item_activated">
@@ -423,15 +425,11 @@
 				Emitted when an item is edited.
 			</description>
 		</signal>
-		<signal name="item_rmb_edited">
-			<description>
-				Emitted when an item is edited using the right mouse button.
-			</description>
-		</signal>
-		<signal name="item_rmb_selected">
+		<signal name="item_mouse_selected">
 			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="mouse_button_index" type="int" />
 			<description>
-				Emitted when an item is selected with the right mouse button.
+				Emitted when an item is selected with a mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">

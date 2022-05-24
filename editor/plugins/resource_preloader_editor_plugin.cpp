@@ -213,7 +213,11 @@ void ResourcePreloaderEditor::_update_library() {
 	//player->add_resource("default",resource);
 }
 
-void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
 
@@ -359,7 +363,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	add_child(file);
 
 	tree = memnew(Tree);
-	tree->connect("button_pressed", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
 	tree->set_columns(2);
 	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_clip_content(0, true);

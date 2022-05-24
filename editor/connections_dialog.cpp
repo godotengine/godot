@@ -864,7 +864,11 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 	}
 }
 
-void ConnectionsDock::_rmb_pressed(Vector2 p_position) {
+void ConnectionsDock::_rmb_pressed(Vector2 p_position, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = tree->get_selected();
 
 	if (!item) {
@@ -1166,7 +1170,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
-	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
+	tree->connect("item_mouse_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 

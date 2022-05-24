@@ -547,7 +547,11 @@ void DynamicFontImportSettings::_variation_selected() {
 	}
 }
 
-void DynamicFontImportSettings::_variation_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_variation_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *vars_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(vars_item);
 
@@ -832,7 +836,11 @@ void DynamicFontImportSettings::_lang_add_item(const String &p_locale) {
 	lang_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *lang_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(lang_item);
 
@@ -864,7 +872,11 @@ void DynamicFontImportSettings::_ot_add_item(int p_option) {
 	ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_ot_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_ot_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ot_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(ot_item);
 
@@ -891,7 +903,11 @@ void DynamicFontImportSettings::_script_add_item(int p_option) {
 	script_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_script_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_script_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *script_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(script_item);
 
@@ -1487,7 +1503,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	vars_list->set_column_expand(1, false);
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->connect("item_selected", callable_mp(this, &DynamicFontImportSettings::_variation_selected));
-	vars_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_variation_remove));
+	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_variation_remove));
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	inspector_vars = memnew(EditorInspector);
@@ -1639,7 +1655,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	lang_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	lang_list->set_column_expand(2, false);
 	lang_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	lang_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_lang_remove));
+	lang_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_lang_remove));
 	lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *hb_script = memnew(HBoxContainer);
@@ -1667,7 +1683,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	script_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	script_list->set_column_expand(2, false);
 	script_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	script_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_script_remove));
+	script_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_script_remove));
 	script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *hb_ot = memnew(HBoxContainer);
@@ -1695,7 +1711,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	ot_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	ot_list->set_column_expand(2, false);
 	ot_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	ot_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_remove));
+	ot_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_ot_remove));
 	ot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	// Common

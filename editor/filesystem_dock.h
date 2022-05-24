@@ -258,10 +258,10 @@ private:
 	void _file_sort_popup(int p_id);
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
-	void _tree_rmb_select(const Vector2 &p_pos);
-	void _tree_rmb_empty(const Vector2 &p_pos);
+	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
 
 	struct FileInfo {

@@ -232,7 +232,7 @@ ReplicationEditor::ReplicationEditor() {
 	tree->set_column_expand(2, false);
 	tree->set_column_expand(3, false);
 	tree->create_item();
-	tree->connect("button_pressed", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
 	tree->connect("item_edited", callable_mp(this, &ReplicationEditor::_tree_item_edited));
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(tree);
@@ -387,7 +387,11 @@ void ReplicationEditor::_tree_item_edited() {
 	undo_redo->commit_action();
 }
 
-void ReplicationEditor::_tree_button_pressed(Object *p_item, int p_column, int p_id) {
+void ReplicationEditor::_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;

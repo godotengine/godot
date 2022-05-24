@@ -1287,7 +1287,11 @@ void ThemeItemEditorDialog::_edited_type_selected() {
 	_update_edit_item_tree(selected_type);
 }
 
-void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1461,7 +1465,11 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	}
 }
 
-void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1909,7 +1917,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
-	edit_type_list->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
+	edit_type_list->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
 	edit_add_type_label->set_text(TTR("Add Type:"));
@@ -2011,7 +2019,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);
 	edit_items_vb->add_child(edit_items_tree);
-	edit_items_tree->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
+	edit_items_tree->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
 
 	edit_items_message = memnew(Label);
 	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);

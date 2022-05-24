@@ -1440,7 +1440,11 @@ void VisualScriptEditor::_deselect_input_names() {
 	}
 }
 
-void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button) {
+void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	TreeItem *root = members->get_root();
@@ -4343,7 +4347,11 @@ void VisualScriptEditor::_get_ends(int p_node, const List<VisualScript::Sequence
 	}
 }
 
-void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
+void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *ti = members->get_selected();
 	ERR_FAIL_COND(!ti);
 
@@ -4544,11 +4552,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	members_section->add_margin_child(TTR("Members:"), members, true);
 	members->set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 	members->set_hide_root(true);
-	members->connect("button_pressed", callable_mp(this, &VisualScriptEditor::_member_button));
+	members->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_member_button));
 	members->connect("item_edited", callable_mp(this, &VisualScriptEditor::_member_edited));
 	members->connect("cell_selected", callable_mp(this, &VisualScriptEditor::_member_selected), varray(), CONNECT_DEFERRED);
 	members->connect("gui_input", callable_mp(this, &VisualScriptEditor::_members_gui_input));
-	members->connect("item_rmb_selected", callable_mp(this, &VisualScriptEditor::_member_rmb_selected));
+	members->connect("item_mouse_selected", callable_mp(this, &VisualScriptEditor::_member_rmb_selected));
 	members->set_allow_rmb_select(true);
 	members->set_allow_reselect(true);
 	members->set_hide_folding(true);

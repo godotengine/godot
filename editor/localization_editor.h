@@ -61,21 +61,21 @@ class LocalizationEditor : public VBoxContainer {
 
 	void _translation_file_open();
 	void _translation_add(const PackedStringArray &p_paths);
-	void _translation_delete(Object *p_item, int p_column, int p_button);
+	void _translation_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 
 	void _translation_res_file_open();
 	void _translation_res_add(const PackedStringArray &p_paths);
-	void _translation_res_delete(Object *p_item, int p_column, int p_button);
+	void _translation_res_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _translation_res_select();
 	void _translation_res_option_file_open();
 	void _translation_res_option_add(const PackedStringArray &p_paths);
 	void _translation_res_option_changed();
-	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
+	void _translation_res_option_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _translation_res_option_popup(bool p_arrow_clicked);
 	void _translation_res_option_selected(const String &p_locale);
 
 	void _pot_add(const PackedStringArray &p_paths);
-	void _pot_delete(Object *p_item, int p_column, int p_button);
+	void _pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _pot_file_open();
 	void _pot_generate_open();
 	void _pot_generate(const String &p_file);

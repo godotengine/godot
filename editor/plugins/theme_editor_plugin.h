@@ -249,10 +249,10 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _dialog_about_to_show();
 	void _update_edit_types();
 	void _edited_type_selected();
-	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id);
+	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _update_edit_item_tree(String p_item_type);
-	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
+	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _add_theme_type(const String &p_new_text);
 	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
