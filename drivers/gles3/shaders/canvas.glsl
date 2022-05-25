@@ -5,6 +5,7 @@ mode_quad =
 mode_ninepatch = #define USE_NINEPATCH
 mode_primitive = #define USE_PRIMITIVE
 mode_attributes = #define USE_ATTRIBUTES
+mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 #[specializations]
 
@@ -19,6 +20,15 @@ layout(location = 4) in vec2 uv_attrib;
 
 layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
+
+#ifdef USE_INSTANCING
+
+layout(location = 5) in highp vec4 instance_xform0;
+layout(location = 6) in highp vec4 instance_xform1;
+layout(location = 7) in lowp vec4 instance_color;
+layout(location = 8) in highp vec4 instance_custom_data;
+
+#endif
 
 #endif
 
@@ -77,13 +87,21 @@ void main() {
 	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
-
+#ifdef USE_INSTANCING
+	draw_data_instance = 0;
+#endif
 	vec2 vertex = vertex_attrib;
 	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
 	vec4 bone_weights = weight_attrib;
+
+#ifdef USE_INSTANCING
+	color *= instance_color;
+	instance_custom = instance_custom_data;
+#endif
+
 #else
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
@@ -98,81 +116,10 @@ void main() {
 
 	mat4 model_matrix = mat4(vec4(draw_data[draw_data_instance].world_x, 0.0, 0.0), vec4(draw_data[draw_data_instance].world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data[draw_data_instance].world_ofs, 0.0, 1.0));
 
-	// MultiMeshes don't batch, so always read from draw_data[0]
-	uint instancing = draw_data[0].flags & FLAGS_INSTANCING_MASK;
+#ifdef USE_INSTANCING
+	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
+#endif // USE_INSTANCING
 
-#ifdef USE_ATTRIBUTES
-/*
-	if (instancing > 1) {
-		// trails
-
-		uint stride = 2 + 1 + 1; //particles always uses this format
-
-		uint trail_size = instancing;
-
-		uint offset = trail_size * stride * gl_InstanceID;
-
-		vec4 pcolor;
-		vec2 new_vertex;
-		{
-			uint boffset = offset + bone_attrib.x * stride;
-			new_vertex = (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.x;
-			pcolor = transforms.data[boffset + 2] * weight_attrib.x;
-		}
-		if (weight_attrib.y > 0.001) {
-			uint boffset = offset + bone_attrib.y * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.y;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.y;
-		}
-		if (weight_attrib.z > 0.001) {
-			uint boffset = offset + bone_attrib.z * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.z;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.z;
-		}
-		if (weight_attrib.w > 0.001) {
-			uint boffset = offset + bone_attrib.w * stride;
-			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.w;
-			pcolor += transforms.data[boffset + 2] * weight_attrib.w;
-		}
-
-		instance_custom = transforms.data[offset + 3];
-
-		vertex = new_vertex;
-		color *= pcolor;
-	} else*/
-#endif // USE_ATTRIBUTES
-/*
-	{
-		if (instancing == 1) {
-			uint stride = 2;
-			{
-				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
-					stride += 1;
-				}
-				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-					stride += 1;
-				}
-			}
-
-			uint offset = stride * gl_InstanceID;
-
-			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-			offset += 2;
-
-			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
-				color *= transforms.data[offset];
-				offset += 1;
-			}
-
-			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-				instance_custom = transforms.data[offset];
-			}
-
-			matrix = transpose(matrix);
-			model_matrix = model_matrix * matrix;
-		}
-	}
-*/
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	if (bool(draw_data[draw_data_instance].flags & FLAGS_USING_PARTICLES)) {
 		//scale by texture size
