@@ -1522,10 +1522,22 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant) {
 	GDScriptParser::DataType type;
 
+	GDScriptParser::DataType explicit_type;
+	if (p_constant->datatype_specifier != nullptr) {
+		explicit_type = resolve_datatype(p_constant->datatype_specifier);
+		explicit_type.is_meta_type = false;
+	}
+
 	if (p_constant->initializer != nullptr) {
 		reduce_expression(p_constant->initializer);
 		if (p_constant->initializer->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer));
+			GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer);
+			const_fold_array(array);
+
+			// Can only infer typed array if it has elements.
+			if (array->elements.size() > 0 || (p_constant->datatype_specifier != nullptr && explicit_type.has_container_element_type())) {
+				update_array_literal_element_type(explicit_type, array);
+			}
 		} else if (p_constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_constant->initializer));
 		}
@@ -1544,8 +1556,6 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	}
 
 	if (p_constant->datatype_specifier != nullptr) {
-		GDScriptParser::DataType explicit_type = resolve_datatype(p_constant->datatype_specifier);
-		explicit_type.is_meta_type = false;
 		if (!is_type_compatible(explicit_type, type)) {
 			push_error(vformat(R"(Assigned value for constant "%s" has type %s which is not compatible with defined type %s.)", p_constant->identifier->name, type.to_string(), explicit_type.to_string()), p_constant->initializer);
 #ifdef DEBUG_ENABLED
