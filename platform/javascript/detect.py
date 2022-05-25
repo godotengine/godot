@@ -48,11 +48,6 @@ def get_flags():
     return [
         ("tools", False),
         ("builtin_pcre2_with_jit", False),
-        # Disabling the mbedtls module reduces file size.
-        # The module has little use due to the limited networking functionality
-        # in this platform. For the available networking methods, the browser
-        # manages TLS.
-        ("module_mbedtls_enabled", False),
         ("vulkan", False),
     ]
 
