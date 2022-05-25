@@ -252,6 +252,7 @@ public:
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer = false);
 	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index);
 	void _render_batch(uint32_t &p_max_index);
+	void _bind_instance_data_buffer(uint32_t p_max_index);
 	void _allocate_instance_data_buffer();
 
 	void set_time(double p_time);

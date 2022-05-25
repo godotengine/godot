@@ -722,6 +722,18 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
 		if (!attribs[i].enabled) {
+			glDisableVertexAttribArray(i);
+			if (s->format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+				if (i == RS::ARRAY_COLOR) {
+					glVertexAttrib4f(i, 1, 1, 1, 1);
+				} else if (i == RS::ARRAY_TEX_UV) {
+					glVertexAttrib2f(i, 1, 1);
+				} else if (i == RS::ARRAY_BONES) {
+					glVertexAttrib4f(i, 1, 1, 1, 1);
+				} else if (i == RS::ARRAY_WEIGHTS) {
+					glVertexAttrib4f(i, 1, 1, 1, 1);
+				}
+			}
 			continue;
 		}
 		if (i <= RS::ARRAY_TANGENT) {
@@ -941,7 +953,6 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
 	multimesh->buffer_set = false;
 
-	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = Vector<float>();
 	multimesh->aabb = AABB();
 	multimesh->aabb_dirty = false;
