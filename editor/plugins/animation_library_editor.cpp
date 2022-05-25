@@ -75,12 +75,16 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
 	} else {
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-		if (p_name == "") {
-			add_library_validate->set_text(TTR("Global library will be created."));
+		if (adding_animation) {
+			add_library_validate->set_text(TTR("Animation name is valid."));
 		} else {
-			add_library_validate->set_text(TTR("Library name is valid."));
+			if (p_name == "") {
+				add_library_validate->set_text(TTR("Global library will be created."));
+			} else {
+				add_library_validate->set_text(TTR("Library name is valid."));
+			}
 		}
+		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		add_library_dialog->get_ok_button()->set_disabled(false);
 	}
 }
@@ -469,7 +473,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				int attempt = 1;
 				while (al->has_animation(name)) {
 					attempt++;
-					name = base_name + " " + itos(attempt);
+					name = base_name + " (" + itos(attempt) + ")";
 				}
 
 				UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
@@ -673,7 +677,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
-	tree->connect("button_pressed", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);

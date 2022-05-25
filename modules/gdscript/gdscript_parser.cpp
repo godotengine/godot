@@ -100,10 +100,8 @@ void GDScriptParser::cleanup() {
 }
 
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
-	List<StringName> keys;
-	valid_annotations.get_key_list(&keys);
-	for (const StringName &E : keys) {
-		r_annotations->push_back(valid_annotations[E].info);
+	for (const KeyValue<StringName, AnnotationInfo> &E : valid_annotations) {
+		r_annotations->push_back(E.value.info);
 	}
 }
 
@@ -1626,6 +1624,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::AWAIT:
 						// Fine.
 						break;
+					case Node::LAMBDA:
+						// Standalone lambdas can't be used, so make this an error.
+						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
+						break;
 					default:
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 				}
@@ -1810,7 +1812,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 #ifdef DEBUG_ENABLED
 	bool all_have_return = true;
 	bool have_wildcard = false;
-	bool wildcard_has_return = false;
 	bool have_wildcard_without_continue = false;
 #endif
 
@@ -1828,9 +1829,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 		if (branch->has_wildcard) {
 			have_wildcard = true;
-			if (branch->block->has_return) {
-				wildcard_has_return = true;
-			}
 			if (!branch->block->has_continue) {
 				have_wildcard_without_continue = true;
 			}
@@ -1845,7 +1843,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
 #ifdef DEBUG_ENABLED
-	if (wildcard_has_return || (all_have_return && have_wildcard)) {
+	if (all_have_return && have_wildcard) {
 		current_suite->has_return = true;
 	}
 #endif
@@ -1863,7 +1861,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		if (pattern == nullptr) {
 			continue;
 		}
-		if (pattern->pattern_type == PatternNode::PT_BIND) {
+		if (pattern->binds.size() > 0) {
 			has_bind = true;
 		}
 		if (branch->patterns.size() > 0 && has_bind) {
@@ -1894,11 +1892,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (branch->patterns.size() > 0) {
-		List<StringName> binds;
-		branch->patterns[0]->binds.get_key_list(&binds);
-
-		for (const StringName &E : binds) {
-			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
+		for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
+			SuiteNode::Local local(E.value, current_function);
+			local.type = SuiteNode::Local::PATTERN_BIND;
 			suite->add_local(local);
 		}
 	}
@@ -2107,7 +2103,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL)) {
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || (previous_operand->type == Node::LAMBDA && lambda_ended)) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -2319,6 +2315,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_MODULO;
 			operation->variant_op = Variant::OP_MODULE;
 			break;
+		case GDScriptTokenizer::Token::STAR_STAR:
+			operation->operation = BinaryOpNode::OP_POWER;
+			operation->variant_op = Variant::OP_POWER;
+			break;
 		case GDScriptTokenizer::Token::LESS_LESS:
 			operation->operation = BinaryOpNode::OP_BIT_LEFT_SHIFT;
 			operation->variant_op = Variant::OP_SHIFT_LEFT;
@@ -2481,6 +2481,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		case GDScriptTokenizer::Token::STAR_EQUAL:
 			assignment->operation = AssignmentNode::OP_MULTIPLICATION;
 			assignment->variant_op = Variant::OP_MULTIPLY;
+			break;
+		case GDScriptTokenizer::Token::STAR_STAR_EQUAL:
+			assignment->operation = AssignmentNode::OP_POWER;
+			assignment->variant_op = Variant::OP_POWER;
 			break;
 		case GDScriptTokenizer::Token::SLASH_EQUAL:
 			assignment->operation = AssignmentNode::OP_DIVISION;
@@ -2922,6 +2926,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	current_function = function;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
+	body->parent_function = current_function;
+	body->parent_block = current_suite;
+
 	SuiteNode *previous_suite = current_suite;
 	current_suite = body;
 
@@ -3049,7 +3056,7 @@ bool GDScriptParser::has_comment(int p_line) {
 }
 
 String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	ERR_FAIL_COND_V(!comments.has(p_line), String());
 
 	if (p_single_line) {
@@ -3101,7 +3108,7 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 }
 
 void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	if (!comments.has(p_line)) {
 		return;
 	}
@@ -3134,24 +3141,23 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 		String title, link; // For tutorials.
 		String doc_line = comments[line++].comment.trim_prefix("##");
-		String striped_line = doc_line.strip_edges();
+		String stripped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (striped_line.begins_with("@desc:") && p_desc.is_empty()) {
+		if (stripped_line.is_empty() && mode == BRIEF && !p_brief.is_empty()) {
 			mode = DESC;
-			striped_line = striped_line.trim_prefix("@desc:");
-			in_codeblock = _in_codeblock(doc_line, in_codeblock);
+			continue;
 
-		} else if (striped_line.begins_with("@tutorial")) {
+		} else if (stripped_line.begins_with("@tutorial")) {
 			int begin_scan = String("@tutorial").length();
-			if (begin_scan >= striped_line.length()) {
+			if (begin_scan >= stripped_line.length()) {
 				continue; // invalid syntax.
 			}
 
-			if (striped_line[begin_scan] == ':') { // No title.
+			if (stripped_line[begin_scan] == ':') { // No title.
 				// Syntax: ## @tutorial: https://godotengine.org/ // The title argument is optional.
 				title = "";
-				link = striped_line.trim_prefix("@tutorial:").strip_edges();
+				link = stripped_line.trim_prefix("@tutorial:").strip_edges();
 
 			} else {
 				/* Syntax:
@@ -3159,35 +3165,35 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				 *             ^ open           ^ close   ^ colon   ^ url
 				 */
 				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
-				while (open_bracket_pos < striped_line.length() && (striped_line[open_bracket_pos] == ' ' || striped_line[open_bracket_pos] == '\t')) {
+				while (open_bracket_pos < stripped_line.length() && (stripped_line[open_bracket_pos] == ' ' || stripped_line[open_bracket_pos] == '\t')) {
 					open_bracket_pos++;
 				}
-				if (open_bracket_pos == striped_line.length() || striped_line[open_bracket_pos++] != '(') {
+				if (open_bracket_pos == stripped_line.length() || stripped_line[open_bracket_pos++] != '(') {
 					continue; // invalid syntax.
 				}
 				close_bracket_pos = open_bracket_pos;
-				while (close_bracket_pos < striped_line.length() && striped_line[close_bracket_pos] != ')') {
+				while (close_bracket_pos < stripped_line.length() && stripped_line[close_bracket_pos] != ')') {
 					close_bracket_pos++;
 				}
-				if (close_bracket_pos == striped_line.length()) {
+				if (close_bracket_pos == stripped_line.length()) {
 					continue; // invalid syntax.
 				}
 
 				int colon_pos = close_bracket_pos + 1;
-				while (colon_pos < striped_line.length() && (striped_line[colon_pos] == ' ' || striped_line[colon_pos] == '\t')) {
+				while (colon_pos < stripped_line.length() && (stripped_line[colon_pos] == ' ' || stripped_line[colon_pos] == '\t')) {
 					colon_pos++;
 				}
-				if (colon_pos == striped_line.length() || striped_line[colon_pos++] != ':') {
+				if (colon_pos == stripped_line.length() || stripped_line[colon_pos++] != ':') {
 					continue; // invalid syntax.
 				}
 
-				title = striped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
-				link = striped_line.substr(colon_pos).strip_edges();
+				title = stripped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
+				link = stripped_line.substr(colon_pos).strip_edges();
 			}
 
 			mode = TUTORIALS;
 			in_codeblock = false;
-		} else if (striped_line.is_empty()) {
+		} else if (stripped_line.is_empty()) {
 			continue;
 		} else {
 			// Tutorial docs are single line, we need a @tag after it.
@@ -3207,7 +3213,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 			}
 			doc_line = doc_line.substr(i);
 		} else {
-			doc_line = striped_line;
+			doc_line = stripped_line;
 		}
 		String line_join = (in_codeblock) ? "\n" : " ";
 
@@ -3264,6 +3270,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // PLUS,
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // MINUS,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER }, // STAR_STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
 		// Assignment
@@ -3271,6 +3278,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PLUS_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // MINUS_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_STAR_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // SLASH_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PERCENT_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // LESS_LESS_EQUAL,
@@ -3555,14 +3563,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint = PROPERTY_HINT_ENUM;
 
 				String enum_hint_string;
-				for (OrderedHashMap<StringName, int>::Element E = export_type.enum_values.front(); E; E = E.next()) {
-					enum_hint_string += E.key().operator String().capitalize().xml_escape();
-					enum_hint_string += ":";
-					enum_hint_string += String::num_int64(E.value()).xml_escape();
-
-					if (E.next()) {
+				bool first = true;
+				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
+					if (!first) {
 						enum_hint_string += ",";
+					} else {
+						first = false;
 					}
+					enum_hint_string += E.key.operator String().capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E.value).xml_escape();
 				}
 
 				variable->export_info.hint_string = enum_hint_string;
@@ -3895,6 +3905,9 @@ void GDScriptParser::TreePrinter::print_assignment(AssignmentNode *p_assignment)
 		case AssignmentNode::OP_MODULO:
 			push_text("%");
 			break;
+		case AssignmentNode::OP_POWER:
+			push_text("**");
+			break;
 		case AssignmentNode::OP_BIT_SHIFT_LEFT:
 			push_text("<<");
 			break;
@@ -3942,6 +3955,9 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 			break;
 		case BinaryOpNode::OP_MODULO:
 			push_text(" % ");
+			break;
+		case BinaryOpNode::OP_POWER:
+			push_text(" ** ");
 			break;
 		case BinaryOpNode::OP_BIT_LEFT_SHIFT:
 			push_text(" << ");

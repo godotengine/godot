@@ -43,7 +43,7 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-static Error _parse_material_library(const String &p_path, Map<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
+static Error _parse_material_library(const String &p_path, HashMap<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
@@ -219,7 +219,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	Vector<Vector2> uvs;
 	String name;
 
-	Map<String, Map<String, Ref<StandardMaterial3D>>> material_map;
+	HashMap<String, HashMap<String, Ref<StandardMaterial3D>>> material_map;
 
 	Ref<SurfaceTool> surf_tool = memnew(SurfaceTool);
 	surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -402,7 +402,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
-				Map<String, Ref<StandardMaterial3D>> lib;
+				HashMap<String, Ref<StandardMaterial3D>> lib;
 				String lib_path = current_material_library;
 				if (lib_path.is_relative_path()) {
 					lib_path = p_path.get_base_dir().plus_file(current_material_library);
@@ -422,7 +422,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	return OK;
 }
 
-Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	List<Ref<Mesh>> meshes;
 
 	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
@@ -505,11 +505,11 @@ void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }
 
-bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
-Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	List<Ref<Mesh>> meshes;
 
 	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);

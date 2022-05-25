@@ -60,11 +60,11 @@ Size2 Button::get_minimum_size() const {
 			}
 		}
 	}
-
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
-
-	minsize.height = MAX(font_height, minsize.height);
+	if (!xl_text.is_empty()) {
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		minsize.height = MAX(font_height, minsize.height);
+	}
 
 	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }
@@ -258,7 +258,8 @@ void Button::_notification(int p_what) {
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant(SNAME("h_separation")) + icon_ofs_region;
+					int icon_text_separation = text.is_empty() ? 0 : get_theme_constant(SNAME("h_separation"));
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}

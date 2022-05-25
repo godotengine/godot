@@ -261,7 +261,7 @@ struct WorkspaceEdit {
 	/**
 	 * Holds changes to existing resources.
 	 */
-	Map<String, Vector<TextEdit>> changes;
+	HashMap<String, Vector<TextEdit>> changes;
 
 	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
 		if (changes.has(uri)) {
@@ -293,8 +293,8 @@ struct WorkspaceEdit {
 	}
 
 	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
-		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
-			Vector<TextEdit> edit_list = E->value();
+		if (HashMap<String, Vector<TextEdit>>::Iterator E = changes.find(uri)) {
+			Vector<TextEdit> edit_list = E->value;
 			for (int i = 0; i < edit_list.size(); ++i) {
 				TextEdit edit = edit_list[i];
 				if (edit.range.start.character == start_character) {
@@ -310,8 +310,8 @@ struct WorkspaceEdit {
 		new_edit.range.end.line = line;
 		new_edit.range.end.character = end_character;
 
-		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
-			E->value().push_back(new_edit);
+		if (HashMap<String, Vector<TextEdit>>::Iterator E = changes.find(uri)) {
+			E->value.push_back(new_edit);
 		} else {
 			Vector<TextEdit> edit_list;
 			edit_list.push_back(new_edit);

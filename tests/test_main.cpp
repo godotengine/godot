@@ -59,10 +59,11 @@
 #include "tests/core/string/test_string.h"
 #include "tests/core/string/test_translation.h"
 #include "tests/core/templates/test_command_queue.h"
+#include "tests/core/templates/test_hash_map.h"
+#include "tests/core/templates/test_hash_set.h"
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_ordered_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_vector.h"
 #include "tests/core/test_crypto.h"
@@ -105,9 +106,9 @@ int test_main(int argc, char *argv[]) {
 
 	// Run custom test tools.
 	if (test_commands) {
-		for (Map<String, TestFunc>::Element *E = test_commands->front(); E; E = E->next()) {
-			if (args.find(E->key())) {
-				const TestFunc &test_func = E->get();
+		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {
+			if (args.find(E.key)) {
+				const TestFunc &test_func = E.value;
 				test_func();
 				run_tests = false;
 				break;

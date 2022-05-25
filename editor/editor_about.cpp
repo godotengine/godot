@@ -161,7 +161,7 @@ EditorAbout::EditorAbout() {
 
 	TabContainer *tc = memnew(TabContainer);
 	tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
@@ -196,6 +196,7 @@ EditorAbout::EditorAbout() {
 	// License
 
 	_license_text = memnew(RichTextLabel);
+	_license_text->set_threaded(true);
 	_license_text->set_name(TTR("License"));
 	_license_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_license_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -272,6 +273,7 @@ EditorAbout::EditorAbout() {
 	tpl_hbc->add_child(_tpl_tree);
 
 	_tpl_text = memnew(RichTextLabel);
+	_tpl_text->set_threaded(true);
 	_tpl_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);

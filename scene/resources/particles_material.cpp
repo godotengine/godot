@@ -34,7 +34,7 @@
 
 Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
-Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
+HashMap<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData, ParticlesMaterial::MaterialKey> ParticlesMaterial::shader_map;
 ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = nullptr;
 
 void ParticlesMaterial::init_shaders() {
@@ -197,14 +197,14 @@ void ParticlesMaterial::_update_shader() {
 			code += "uniform vec3 emission_box_extents;\n";
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
+			code += "uniform sampler2D emission_texture_normal : hint_default_black;\n";
 			[[fallthrough]];
 		}
 		case EMISSION_SHAPE_POINTS: {
-			code += "uniform sampler2D emission_texture_points : hint_black;\n";
+			code += "uniform sampler2D emission_texture_points : hint_default_black;\n";
 			code += "uniform int emission_texture_point_count;\n";
 			if (emission_color_texture.is_valid()) {
-				code += "uniform sampler2D emission_texture_color : hint_white;\n";
+				code += "uniform sampler2D emission_texture_color : hint_default_white;\n";
 			}
 		} break;
 		case EMISSION_SHAPE_RING: {
@@ -228,7 +228,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
 
-	code += "uniform vec4 color_value : hint_color;\n";
+	code += "uniform vec4 color_value : source_color;\n";
 
 	code += "uniform vec3 gravity;\n";
 
@@ -722,11 +722,9 @@ void ParticlesMaterial::_update_shader() {
 				code += "	if (DELTA >= interval_rem) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_COLLISION: {
-				//not implemented yet
 				code += "	if (COLLIDED) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				//not implemented yet
 				code += "	float unit_delta = DELTA/LIFETIME;\n";
 				code += "	float end_time = CUSTOM.w * 0.95;\n"; // if we do at the end we might miss it, as it can just get deactivated by emitter
 				code += "	if (CUSTOM.y < end_time && (CUSTOM.y + unit_delta) >= end_time) emit_count = sub_emitter_amount_at_end;\n";
@@ -1473,7 +1471,7 @@ void ParticlesMaterial::_bind_methods() {
 
 	ADD_GROUP("Sub Emitter", "sub_emitter_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_mode", PROPERTY_HINT_ENUM, "Disabled,Constant,At End,At Collision"), "set_sub_emitter_mode", "get_sub_emitter_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:Hz"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_end", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_end", "get_sub_emitter_amount_at_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sub_emitter_keep_velocity"), "set_sub_emitter_keep_velocity", "get_sub_emitter_keep_velocity");
 

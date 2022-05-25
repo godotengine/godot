@@ -38,7 +38,7 @@
 
 class MissingResource : public Resource {
 	GDCLASS(MissingResource, Resource)
-	OrderedHashMap<StringName, Variant> properties;
+	HashMap<StringName, Variant> properties;
 
 	String original_class;
 	bool recording_properties = false;

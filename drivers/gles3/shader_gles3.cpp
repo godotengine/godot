@@ -171,6 +171,15 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	}
 	builder.append("\n"); //make sure defines begin at newline
 
+	// Default to highp precision unless specified otherwise.
+	builder.append("precision highp float;\n");
+	builder.append("precision highp int;\n");
+#ifndef GLES_OVER_GL
+	builder.append("precision highp sampler2D;\n");
+	builder.append("precision highp samplerCube;\n");
+	builder.append("precision highp sampler2DArray;\n");
+#endif
+
 	for (uint32_t i = 0; i < p_template.chunks.size(); i++) {
 		const StageTemplate::Chunk &chunk = p_template.chunks[i];
 		switch (chunk.type) {
@@ -576,7 +585,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	}
 }
 
-void ShaderGLES3::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize) {
+void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize) {
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 
@@ -664,7 +673,7 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_image_units);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {

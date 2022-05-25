@@ -33,7 +33,7 @@
 
 #include "core/io/packet_peer.h"
 
-#define WRTC_IN_BUF "network/limits/webrtc/max_channel_in_buffer_kb"
+#define WRTC_IN_BUF PNAME("network/limits/webrtc/max_channel_in_buffer_kb")
 
 class WebRTCDataChannel : public PacketPeer {
 	GDCLASS(WebRTCDataChannel, PacketPeer);

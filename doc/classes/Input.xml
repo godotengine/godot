@@ -428,10 +428,10 @@
 			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Wait cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application is still usable during the operation.
+			Wait cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application isn't usable during the operation (e.g. something is blocking its main thread).
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application isn't usable during the operation (e.g. something is blocking its main thread).
+			Busy cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application is still usable during the operation.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.

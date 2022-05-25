@@ -55,7 +55,7 @@ String ResourceImporterBMFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -63,7 +63,7 @@ void ResourceImporterBMFont::get_import_options(const String &p_path, List<Impor
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }
 
-Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing BMFont font from: " + p_source_file);
 
 	Ref<FontData> font;

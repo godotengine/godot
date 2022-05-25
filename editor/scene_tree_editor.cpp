@@ -49,7 +49,11 @@ Node *SceneTreeEditor::get_scene_node() {
 	return get_tree()->get_edited_scene_root();
 }
 
-void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	if (connect_to_script_mode) {
 		return; //don't do anything in this mode
 	}
@@ -279,15 +283,26 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 			Array arr;
 			arr.push_back(num_connections);
 			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
-			msg_temp += " ";
+			if (num_groups >= 1) {
+				msg_temp += "\n";
+			}
 		}
 		if (num_groups >= 1) {
-			Array arr;
-			arr.push_back(num_groups);
-			msg_temp += TTRN("Node is in one group.", "Node is in {num} groups.", num_groups).format(arr, "{num}");
+			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+
+			List<GroupInfo> groups;
+			p_node->get_groups(&groups);
+			for (const GroupInfo &E : groups) {
+				if (E.persistent) {
+					msg_temp += String::utf8("•  ") + String(E.name) + "\n";
+				}
+			}
 		}
 		if (num_connections >= 1 || num_groups >= 1) {
-			msg_temp += "\n" + TTR("Click to show signals dock.");
+			if (num_groups < 1) {
+				msg_temp += "\n";
+			}
+			msg_temp += TTR("Click to show signals dock.");
 		}
 
 		Ref<Texture2D> icon_temp;
@@ -863,7 +878,7 @@ Node *SceneTreeEditor::get_selected() {
 	return selected;
 }
 
-void SceneTreeEditor::set_marked(const Set<Node *> &p_marked, bool p_selectable, bool p_children_selectable) {
+void SceneTreeEditor::set_marked(const HashSet<Node *> &p_marked, bool p_selectable, bool p_children_selectable) {
 	if (tree_dirty) {
 		_update_tree();
 	}
@@ -874,7 +889,7 @@ void SceneTreeEditor::set_marked(const Set<Node *> &p_marked, bool p_selectable,
 }
 
 void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_children_selectable) {
-	Set<Node *> s;
+	HashSet<Node *> s;
 	if (p_marked) {
 		s.insert(p_marked);
 	}
@@ -1155,7 +1170,17 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	}
 }
 
-void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
+void SceneTreeEditor::_empty_clicked(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+	_rmb_select(p_pos);
+}
+
+void SceneTreeEditor::_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	emit_signal(SNAME("rmb_pressed"), tree->get_screen_position() + p_pos);
 }
 
@@ -1240,14 +1265,14 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->set_drag_forwarding(this);
 	if (p_can_rename) {
 		tree->set_allow_rmb_select(true);
-		tree->connect("item_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
-		tree->connect("empty_tree_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
+		tree->connect("item_mouse_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
+		tree->connect("empty_clicked", callable_mp(this, &SceneTreeEditor::_empty_clicked));
 	}
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
-	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
 
 	error = memnew(AcceptDialog);

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy

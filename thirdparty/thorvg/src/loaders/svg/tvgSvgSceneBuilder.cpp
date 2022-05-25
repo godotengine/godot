@@ -576,15 +576,17 @@ static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, c
     if (node->node.use.symbol) {
         auto symbol = node->node.use.symbol->node.symbol;
 
-        auto width = symbol.w;
+        auto width = (symbol.hasWidth ? symbol.w : vBox.w);
         if (node->node.use.isWidthSet) width = node->node.use.w;
-        auto height = symbol.h;
+        auto height = (symbol.hasHeight ? symbol.h : vBox.h);;
         if (node->node.use.isHeightSet) height = node->node.use.h;
+        auto vw = (symbol.hasViewBox ? symbol.vw : width);
+        auto vh = (symbol.hasViewBox ? symbol.vh : height);
 
         Matrix mViewBox = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-        if ((!mathEqual(width, symbol.vw) || !mathEqual(height, symbol.vh)) && symbol.vw > 0 && symbol.vh > 0) {
-            auto sx = width / symbol.vw;
-            auto sy = height / symbol.vh;
+        if ((!mathEqual(width, vw) || !mathEqual(height, vh)) && vw > 0 && vh > 0) {
+            auto sx = width / vw;
+            auto sy = height / vh;
             if (symbol.preserveAspect) {
                 if (sx < sy) sy = sx;
                 else sx = sy;
@@ -592,8 +594,8 @@ static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, c
 
             auto tvx = symbol.vx * sx;
             auto tvy = symbol.vy * sy;
-            auto tvw = symbol.vw * sx;
-            auto tvh = symbol.vh * sy;
+            auto tvw = vw * sx;
+            auto tvh = vh * sy;
             tvy -= (symbol.h - tvh) * 0.5f;
             tvx -= (symbol.w - tvw) * 0.5f;
             mViewBox = {sx, 0, -tvx, 0, sy, -tvy, 0, 0, 1};

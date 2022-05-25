@@ -53,7 +53,7 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	if (pinned.is_empty()) {
 		return Array();
 	}
-	Set<StringName> storable_properties;
+	HashSet<StringName> storable_properties;
 	p_node->get_storable_properties(storable_properties);
 	int i = 0;
 	do {
@@ -106,12 +106,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
-	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
+	HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
 
 	for (int i = 0; i < nc; i++) {
 		const NodeData &n = nd[i];
 
 		Node *parent = nullptr;
+		String old_parent_path;
 
 		if (i > 0) {
 			ERR_FAIL_COND_V_MSG(n.parent == -1, nullptr, vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
@@ -119,6 +120,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
 				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instancing: '" + get_path() + "'.").ascii().get_data());
+				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace("/", "@");
+				nparent = ret_nodes[0];
 			}
 #endif
 			parent = nparent;
@@ -254,10 +257,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								if (res->is_local_to_scene()) {
-									Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.find(res);
+									HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
 
 									if (E) {
-										value = E->get();
+										value = E->value;
 									} else {
 										Node *base = i == 0 ? node : ret_nodes[0];
 
@@ -330,6 +333,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						node->_set_name_nocheck(snames[n.name]);
 					}
 				}
+			}
+
+			if (!old_parent_path.is_empty()) {
+				node->_set_name_nocheck(old_parent_path + "@" + node->get_name());
 			}
 
 			if (n.owner >= 0) {
@@ -423,7 +430,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	return ret_nodes[0];
 }
 
-static int _nm_get_string(const String &p_string, Map<StringName, int> &name_map) {
+static int _nm_get_string(const String &p_string, HashMap<StringName, int> &name_map) {
 	if (name_map.has(p_string)) {
 		return name_map[p_string];
 	}
@@ -443,7 +450,7 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int, Varia
 	return idx;
 }
 
-Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
+Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
@@ -537,7 +544,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		Variant value = p_node->get(name);
 
 		if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
-			// Was this missing resource overriden? If so do not save the old value.
+			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
@@ -606,7 +613,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	if (states_stack.is_empty() && !is_editable_instance) {
 		//this node is not part of an instancing process, so save the type
 		if (missing_node != nullptr) {
-			// Its a missing node (type non existant on load).
+			// It's a missing node (type non existent on load).
 			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
 		} else {
 			nd.type = _nm_get_string(p_node->get_class(), name_map);
@@ -665,7 +672,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	return OK;
 }
 
-Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
+Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
 	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
 		return OK;
 	}
@@ -872,10 +879,10 @@ Error SceneState::pack(Node *p_scene) {
 
 	Node *scene = p_scene;
 
-	Map<StringName, int> name_map;
+	HashMap<StringName, int> name_map;
 	HashMap<Variant, int, VariantHasher, VariantComparator> variant_map;
-	Map<Node *, int> node_map;
-	Map<Node *, int> nodepath_map;
+	HashMap<Node *, int> node_map;
+	HashMap<Node *, int> nodepath_map;
 
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
@@ -906,10 +913,10 @@ Error SceneState::pack(Node *p_scene) {
 	}
 
 	variants.resize(variant_map.size());
-	const Variant *K = nullptr;
-	while ((K = variant_map.next(K))) {
-		int idx = variant_map[*K];
-		variants.write[idx] = *K;
+
+	for (const KeyValue<Variant, int> &E : variant_map) {
+		int idx = E.value;
+		variants.write[idx] = E.key;
 	}
 
 	node_paths.resize(nodepath_map.size());

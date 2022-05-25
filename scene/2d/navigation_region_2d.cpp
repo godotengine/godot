@@ -302,19 +302,19 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	polygons.clear();
 	vertices.clear();
 
-	Map<Vector2, int> points;
+	HashMap<Vector2, int> points;
 	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 		TPPLPoly &tp = I->get();
 
 		struct Polygon p;
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
-			Map<Vector2, int>::Element *E = points.find(tp[i]);
+			HashMap<Vector2, int>::Iterator E = points.find(tp[i]);
 			if (!E) {
 				E = points.insert(tp[i], vertices.size());
 				vertices.push_back(tp[i]);
 			}
-			p.indices.push_back(E->get());
+			p.indices.push_back(E->value);
 		}
 
 		polygons.push_back(p);
@@ -508,6 +508,9 @@ Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
 void NavigationRegion2D::_navpoly_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		update();
+	}
+	if (navpoly.is_valid()) {
+		NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
 	}
 }
 void NavigationRegion2D::_map_changed(RID p_map) {

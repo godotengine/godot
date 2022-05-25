@@ -229,20 +229,19 @@ void ShaderGlobalsOverride::_activate() {
 		active = true;
 		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
 
-		const StringName *K = nullptr;
-		while ((K = overrides.next(K))) {
-			Override *o = overrides.getptr(*K);
+		for (const KeyValue<StringName, Override> &E : overrides) {
+			const Override *o = &E.value;
 			if (o->in_use && o->override.get_type() != Variant::NIL) {
 				if (o->override.get_type() == Variant::OBJECT) {
 					RID tex_rid = o->override;
-					RS::get_singleton()->global_variable_set_override(*K, tex_rid);
+					RS::get_singleton()->global_variable_set_override(E.key, tex_rid);
 				} else {
-					RS::get_singleton()->global_variable_set_override(*K, o->override);
+					RS::get_singleton()->global_variable_set_override(E.key, o->override);
 				}
 			}
-		}
 
-		update_configuration_warnings(); //may have activated
+			update_configuration_warnings(); //may have activated
+		}
 	}
 }
 
@@ -256,18 +255,17 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 		case Node3D::NOTIFICATION_EXIT_TREE: {
 			if (active) {
 				//remove overrides
-				const StringName *K = nullptr;
-				while ((K = overrides.next(K))) {
-					Override *o = overrides.getptr(*K);
+				for (const KeyValue<StringName, Override> &E : overrides) {
+					const Override *o = &E.value;
 					if (o->in_use) {
-						RS::get_singleton()->global_variable_set_override(*K, Variant());
+						RS::get_singleton()->global_variable_set_override(E.key, Variant());
 					}
 				}
 			}
 
 			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
 			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-			get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
 			active = false;
 		} break;
 	}

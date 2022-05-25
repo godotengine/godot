@@ -11,9 +11,6 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="dither_strength" type="float" setter="set_dither_strength" getter="get_dither_strength" default="1.0">
-			The amount of dithering to use. Dithering helps reduce banding that appears from the smooth changes in color in the sky. Use the lowest value possible for your given sky settings, as higher amounts may add fuzziness to the sky.
-		</member>
 		<member name="exposure" type="float" setter="set_exposure" getter="get_exposure" default="0.1">
 			Sets the exposure of the sky. Higher exposure values make the entire sky brighter.
 		</member>
@@ -43,6 +40,9 @@
 		</member>
 		<member name="turbidity" type="float" setter="set_turbidity" getter="get_turbidity" default="10.0">
 			Sets the thickness of the atmosphere. High turbidity creates a foggy-looking atmosphere, while a low turbidity results in a clearer atmosphere.
+		</member>
+		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="get_use_debanding" default="true">
+			If [code]true[/code], enables debanding. Debanding adds a small amount of noise which helps reduce banding that appears from the smooth changes in color in the sky.
 		</member>
 	</members>
 </class>

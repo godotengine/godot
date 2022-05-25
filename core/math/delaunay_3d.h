@@ -323,7 +323,6 @@ public:
 				E = N;
 			}
 
-			uint32_t good_triangles = 0;
 			for (uint32_t j = 0; j < triangles.size(); j++) {
 				if (triangles[j].bad) {
 					continue;
@@ -360,11 +359,8 @@ public:
 						}
 					}
 				}
-
-				good_triangles++;
 			}
 
-			//print_line("at point " + itos(i) + "/" + itos(point_count) + " simplices added " + itos(good_triangles) + "/" + itos(simplex_list.size()) + " - triangles: " + itos(triangles.size()));
 			triangles.clear();
 			triangles_inserted.clear();
 		}

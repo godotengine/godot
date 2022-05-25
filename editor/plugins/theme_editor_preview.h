@@ -38,6 +38,8 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/theme.h"
 
+class ColorPickerButton;
+
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
@@ -86,6 +88,11 @@ public:
 
 class DefaultThemeEditorPreview : public ThemeEditorPreview {
 	GDCLASS(DefaultThemeEditorPreview, ThemeEditorPreview);
+
+	ColorPickerButton *test_color_picker_button = nullptr;
+
+protected:
+	void _notification(int p_what);
 
 public:
 	DefaultThemeEditorPreview();

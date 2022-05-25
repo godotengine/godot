@@ -22,6 +22,8 @@
 #ifndef _TVG_LZW_H_
 #define _TVG_LZW_H_
 
+#include <cstdint>
+
 namespace tvg
 {
     uint8_t* lzwEncode(const uint8_t* uncompressed, uint32_t uncompressedSizeBytes, uint32_t* compressedSizeBytes, uint32_t* compressedSizeBits);

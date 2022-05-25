@@ -37,11 +37,10 @@
 #include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/set.h"
 #include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
@@ -511,12 +510,12 @@ private:
 #ifdef TOOLS_ENABLED
 	bool _edited = false;
 	uint32_t _edited_version = 0;
-	Set<String> editor_section_folding;
+	HashSet<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
 	Variant script; // Reference does not exist yet, store it in a Variant.
-	OrderedHashMap<StringName, Variant> metadata;
-	HashMap<StringName, OrderedHashMap<StringName, Variant>::Element> metadata_properties;
+	HashMap<StringName, Variant> metadata;
+	HashMap<StringName, Variant *> metadata_properties;
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr = nullptr;
 
@@ -816,7 +815,7 @@ public:
 #ifdef TOOLS_ENABLED
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
-	const Set<String> &editor_get_section_folding() const { return editor_section_folding; }
+	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }
 	void editor_clear_section_folding() { editor_section_folding.clear(); }
 
 #endif

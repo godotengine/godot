@@ -73,7 +73,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 
 	} else {
 		if (!values.has(p_section)) {
-			values[p_section] = OrderedHashMap<String, Variant>();
+			values[p_section] = HashMap<String, Variant>();
 		}
 
 		values[p_section][p_key] = p_value;
@@ -102,16 +102,16 @@ bool ConfigFile::has_section_key(const String &p_section, const String &p_key) c
 }
 
 void ConfigFile::get_sections(List<String> *r_sections) const {
-	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::ConstElement E = values.front(); E; E = E.next()) {
-		r_sections->push_back(E.key());
+	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
+		r_sections->push_back(E.key);
 	}
 }
 
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 
-	for (OrderedHashMap<String, Variant>::ConstElement E = values[p_section].front(); E; E = E.next()) {
-		r_keys->push_back(E.key());
+	for (const KeyValue<String, Variant> &E : values[p_section]) {
+		r_keys->push_back(E.key);
 	}
 }
 
@@ -174,18 +174,21 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 }
 
 Error ConfigFile::_internal_save(Ref<FileAccess> file) {
-	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::Element E = values.front(); E; E = E.next()) {
-		if (E != values.front()) {
+	bool first = true;
+	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
+		if (first) {
+			first = false;
+		} else {
 			file->store_string("\n");
 		}
-		if (!E.key().is_empty()) {
-			file->store_string("[" + E.key() + "]\n\n");
+		if (!E.key.is_empty()) {
+			file->store_string("[" + E.key + "]\n\n");
 		}
 
-		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
+		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.get(), vstr);
-			file->store_string(F.key().property_name_encode() + "=" + vstr + "\n");
+			VariantWriter::write_to_string(F.value, vstr);
+			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 

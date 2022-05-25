@@ -32,6 +32,7 @@
 
 #include "texture_storage.h"
 #include "config.h"
+#include "drivers/gles3/effects/copy_effects.h"
 
 using namespace GLES3;
 
@@ -55,15 +56,14 @@ TextureStorage::TextureStorage() {
 
 	system_fbo = 0;
 
-	frame.current_rt = nullptr;
-
 	{ //create default textures
 		{ // White Textures
 
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1, 1, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_WHITE] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_WHITE], image);
@@ -92,8 +92,9 @@ TextureStorage::TextureStorage() {
 		{ // black
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_BLACK] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
@@ -117,8 +118,9 @@ TextureStorage::TextureStorage() {
 		{
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0.5, 0.5, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_NORMAL] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_NORMAL], image);
@@ -127,8 +129,9 @@ TextureStorage::TextureStorage() {
 		{
 			Ref<Image> image;
 			image.instantiate();
-			image->create(4, 4, false, Image::FORMAT_RGBA8);
+			image->create(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1.0, 0.5, 1, 1));
+			image->generate_mipmaps();
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_ANISO] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_ANISO], image);
@@ -189,18 +192,7 @@ TextureStorage::~TextureStorage() {
 	}
 }
 
-void TextureStorage::set_main_thread_id(Thread::ID p_id) {
-	_main_thread_id = p_id;
-}
-
-bool TextureStorage::_is_main_thread() {
-	//#if defined DEBUG_ENABLED && defined TOOLS_ENABLED
-	// must be called from main thread in OpenGL
-	bool is_main_thread = _main_thread_id == Thread::get_caller_id();
-	//#endif
-	return is_main_thread;
-}
-
+//TODO, move back to storage
 bool TextureStorage::can_create_resources_async() const {
 	return false;
 }
@@ -254,7 +246,7 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 
 /* Texture API */
 
-Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
+Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
 	Config *config = Config::get_singleton();
 	r_gl_format = 0;
 	Ref<Image> image = p_image;
@@ -302,14 +294,12 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			r_gl_internal_format = GL_RGB8;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			//r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA8: {
 			r_gl_format = GL_RGBA;
 			r_gl_internal_format = GL_RGBA8;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			//r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA4444: {
@@ -318,12 +308,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
 
 		} break;
-			//case Image::FORMAT_RGBA5551: {
-			//	r_gl_internal_format = GL_RGB5_A1;
-			//	r_gl_format = GL_RGBA;
-			//	r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
-			//
-			//} break;
 		case Image::FORMAT_RF: {
 			r_gl_internal_format = GL_R32F;
 			r_gl_format = GL_RED;
@@ -383,8 +367,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -395,8 +377,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -407,8 +387,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -419,7 +397,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -440,8 +417,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -466,19 +441,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				need_decompress = true;
 			}
 		} break;
-		case Image::FORMAT_ETC: {
-			if (config->etc_supported) {
-				r_gl_internal_format = _EXT_ETC1_RGB8_OES;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-
-			} else {
-				need_decompress = true;
-			}
-
-		} break;
-		/*
 		case Image::FORMAT_ETC2_R11: {
 			if (config->etc2_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_R11_EAC;
@@ -523,13 +485,13 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				need_decompress = true;
 			}
 		} break;
+		case Image::FORMAT_ETC:
 		case Image::FORMAT_ETC2_RGB8: {
 			if (config->etc2_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGB8_ETC2;
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -541,7 +503,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -553,15 +514,13 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
 			}
 		} break;
-		*/
 		default: {
-			ERR_FAIL_V(Ref<Image>());
+			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
 		}
 	}
 
@@ -644,10 +603,14 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	Texture texture;
 	texture.width = p_image->get_width();
 	texture.height = p_image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = p_image->get_mipmap_count();
 	texture.format = p_image->get_format();
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
-	texture.image_cache_2d = p_image; //TODO, remove this once texture_2d_get is implemented
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	//texture.total_data_size = p_image->get_image_data_size(); // verify that this returns size in bytes
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	texture_owner.initialize_rid(p_texture, texture);
@@ -740,49 +703,66 @@ void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 }
 
 Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Ref<Image>());
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture, Ref<Image>());
 
 #ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
-		return tex->image_cache_2d;
+	if (texture->image_cache_2d.is_valid() && !texture->is_render_target) {
+		return texture->image_cache_2d;
 	}
 #endif
 
-	/*
-#ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid()) {
-		return tex->image_cache_2d;
+#ifdef GLES_OVER_GL
+	// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
+	Vector<uint8_t> data;
+
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
+
+	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+	uint8_t *w = data.ptrw();
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glBindTexture(texture->target, texture->tex_id);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+	for (int i = 0; i < texture->mipmaps; i++) {
+		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
+
+		if (texture->compressed) {
+			glPixelStorei(GL_PACK_ALIGNMENT, 4);
+			glGetCompressedTexImage(texture->target, i, &w[ofs]);
+
+		} else {
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &w[ofs]);
+		}
 	}
-#endif
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+
+	data.resize(data_size);
+
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
 	Ref<Image> image;
-	image.instance();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	ERR_FAIL_COND_V(image->empty(), Ref<Image>());
-	if (tex->format != tex->validated_format) {
-		image->convert(tex->format);
+	image.instantiate();
+	image->create(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (texture->format != texture->real_format) {
+		image->convert(texture->format);
 	}
+#else
+	// Support for Web and Mobile will come later.
+	Ref<Image> image;
+#endif
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		tex->image_cache_2d = image;
+	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
+		texture->image_cache_2d = image;
 	}
 #endif
-*/
 
-	/*
-	#ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
-			tex->image_cache_2d = image;
-		}
-	#endif
-	*/
-
-	//	return image;
-
-	return Ref<Image>();
+	return image;
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
@@ -866,11 +846,6 @@ void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RS::TextureDe
 }
 
 void TextureStorage::texture_set_detect_srgb_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
-	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
-
-	texture->detect_srgb = p_callback;
-	texture->detect_srgb_ud = p_userdata;
 }
 
 void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
@@ -953,8 +928,8 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 	// print_line("texture_set_data width " + itos (p_image->get_width()) + " height " + itos(p_image->get_height()));
 
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), 0, real_format, format, internal_format, type, compressed, texture->resize_to_po2);
-
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
+	ERR_FAIL_COND(img.is_null());
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
 			ERR_PRINT("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
@@ -1040,139 +1015,12 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 
 	texture->stored_cube_sides |= (1 << p_layer);
 
-	//if ((texture->flags & TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != RenderingDevice::TEXTURE_TYPE_CUBE || texture->stored_cube_sides == (1 << 6) - 1)) {
-	//generate mipmaps if they were requested and the image does not contain them
-	//	glGenerateMipmap(texture->target);
-	//}
-
 	texture->mipmaps = mipmaps;
 }
 
 void TextureStorage::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer) {
 	ERR_PRINT("Not implemented yet, sorry :(");
 }
-
-/*
-Ref<Image> TextureStorage::texture_get_data(RID p_texture, int p_layer) const {
-	Texture *texture = texture_owner.get_or_null(p_texture);
-
-	ERR_FAIL_COND_V(!texture, Ref<Image>());
-	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
-	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
-
-
-#ifdef GLES_OVER_GL
-
-	Image::Format real_format;
-	GLenum gl_format;
-	GLenum gl_internal_format;
-	GLenum gl_type;
-	bool compressed;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, false);
-
-	PoolVector<uint8_t> data;
-
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1);
-
-	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
-	PoolVector<uint8_t>::Write wb = data.write();
-
-	glActiveTexture(GL_TEXTURE0);
-
-	glBindTexture(texture->target, texture->tex_id);
-
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-	for (int i = 0; i < texture->mipmaps; i++) {
-		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, real_format, i);
-
-		if (texture->compressed) {
-			glPixelStorei(GL_PACK_ALIGNMENT, 4);
-			glGetCompressedTexImage(texture->target, i, &wb[ofs]);
-		} else {
-			glPixelStorei(GL_PACK_ALIGNMENT, 1);
-			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &wb[ofs]);
-		}
-	}
-
-	wb.release();
-
-	data.resize(data_size);
-
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, real_format, data));
-
-	return Ref<Image>(img);
-#else
-
-	Image::Format real_format;
-	GLenum gl_format;
-	GLenum gl_internal_format;
-	GLenum gl_type;
-	bool compressed;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, texture->resize_to_po2);
-
-	PoolVector<uint8_t> data;
-
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
-
-	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
-	PoolVector<uint8_t>::Write wb = data.write();
-
-	GLuint temp_framebuffer;
-	glGenFramebuffers(1, &temp_framebuffer);
-
-	GLuint temp_color_texture;
-	glGenTextures(1, &temp_color_texture);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
-
-	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
-
-	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture->tex_id);
-
-	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
-
-	shaders.copy.bind();
-
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	bind_quad_array();
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &wb[0]);
-
-	glDeleteTextures(1, &temp_color_texture);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &temp_framebuffer);
-
-	wb.release();
-
-	data.resize(data_size);
-
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data));
-	if (!texture->compressed) {
-		img->convert(real_format);
-	}
-
-	return Ref<Image>(img);
-
-#endif
-}
-*/
 
 Image::Format TextureStorage::texture_get_format(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
@@ -1271,32 +1119,6 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 
 GLuint TextureStorage::system_fbo = 0;
 
-void TextureStorage::_set_current_render_target(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-
-	if (rt) {
-		if (rt->allocate_is_dirty) {
-			rt->allocate_is_dirty = false;
-			//_clear_render_target(rt);
-			//_update_render_target(rt);
-		}
-
-		frame.current_rt = rt;
-		ERR_FAIL_COND(!rt);
-
-		glViewport(rt->position.x, rt->position.y, rt->size.x, rt->size.y);
-
-		_dims.rt_width = rt->size.x;
-		_dims.rt_height = rt->size.y;
-		_dims.win_width = rt->size.x;
-		_dims.win_height = rt->size.y;
-
-	} else {
-		frame.current_rt = nullptr;
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-	}
-}
-
 void TextureStorage::_update_render_target(RenderTarget *rt) {
 	// do not allocate a render target with no size
 	if (rt->size.x <= 0 || rt->size.y <= 0) {
@@ -1304,13 +1126,14 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	}
 
 	// do not allocate a render target that is attached to the screen
-	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
+	if (rt->direct_to_screen) {
 		rt->fbo = system_fbo;
 		return;
 	}
 
-	rt->color_internal_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? GL_RGBA8 : GL_RGB10_A2;
+	rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
 	rt->color_format = GL_RGBA;
+	rt->color_type = rt->is_transparent ? GL_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
 	rt->image_format = Image::FORMAT_RGBA8;
 
 	glDisable(GL_SCISSOR_TEST);
@@ -1357,6 +1180,9 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		}
 
 		texture->format = rt->image_format;
+		texture->real_format = rt->image_format;
+		texture->type = Texture::TYPE_2D;
+		texture->target = GL_TEXTURE_2D;
 		texture->gl_format_cache = rt->color_format;
 		texture->gl_type_cache = GL_UNSIGNED_BYTE;
 		texture->gl_internal_format_cache = rt->color_internal_format;
@@ -1370,87 +1196,64 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+}
 
+void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
+	ERR_FAIL_COND_MSG(rt->backbuffer_fbo != 0, "Cannot allocate RenderTarget backbuffer: already initialized.");
+	ERR_FAIL_COND(rt->direct_to_screen);
 	// Allocate mipmap chains for full screen blur
-	if (rt->size.x >= 2 && rt->size.y >= 2) {
-		for (int i = 0; i < 2; i++) {
-			ERR_FAIL_COND(rt->mip_maps[i].sizes.size());
-			int w = rt->size.x;
-			int h = rt->size.y;
+	// Limit mipmaps so smallest is 32x32 to avoid unnecessary framebuffer switches
+	int count = MAX(1, Image::get_image_required_mipmaps(rt->size.x, rt->size.y, Image::FORMAT_RGBA8) - 4);
+	if (rt->size.x > 40 && rt->size.y > 40) {
+		GLsizei width = rt->size.x;
+		GLsizei height = rt->size.y;
 
-			if (i > 0) {
-				w >>= 1;
-				h >>= 1;
-			}
+		rt->mipmap_count = count;
 
-			int level = 0;
-			GLsizei width = w;
-			GLsizei height = h;
+		glGenTextures(1, &rt->backbuffer);
+		glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
 
-			while (true) {
-				RenderTarget::MipMaps::Size mm;
-				mm.width = w;
-				mm.height = h;
-				rt->mip_maps[i].sizes.push_back(mm);
-
-				w >>= 1;
-				h >>= 1;
-
-				if (w < 2 || h < 2) {
-					break;
-				}
-
-				level++;
-			}
-
-			glGenTextures(1, &rt->mip_maps[i].color);
-			glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].color);
-
-			for (int l = 0; l < level + 1; l++) {
-				glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
-				width = MAX(1, (width / 2));
-				height = MAX(1, (height / 2));
-			}
-#ifdef GLES_OVER_GL
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
-#endif
-
-			for (int j = 0; j < rt->mip_maps[i].sizes.size(); j++) {
-				RenderTarget::MipMaps::Size &mm = rt->mip_maps[i].sizes.write[j];
-
-				glGenFramebuffers(1, &mm.fbo);
-				bind_framebuffer(mm.fbo);
-
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->mip_maps[i].color, j);
-
-				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-				if (status != GL_FRAMEBUFFER_COMPLETE) {
-					WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
-					bind_framebuffer_system();
-					return;
-				}
-
-				glClearColor(1.0, 0.0, 1.0, 0.0);
-				glClear(GL_COLOR_BUFFER_BIT);
-			}
-
-			rt->mip_maps[i].levels = level;
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		for (int l = 0; l < count; l++) {
+			glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
+			width = MAX(1, (width / 2));
+			height = MAX(1, (height / 2));
 		}
-		rt->mip_maps_allocated = true;
-	}
 
-	bind_framebuffer_system();
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+
+		glGenFramebuffers(1, &rt->backbuffer_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
+			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+			return;
+		}
+
+		// Initialize all levels to opaque Magenta.
+		for (int j = 0; j < count; j++) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
+			glClearColor(1.0, 0.0, 1.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
 }
 
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
-	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
+	if (rt->direct_to_screen) {
 		return;
 	}
 
@@ -1486,17 +1289,11 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	tex->height = 0;
 	tex->active = false;
 
-	for (int i = 0; i < 2; i++) {
-		if (rt->mip_maps[i].sizes.size()) {
-			for (int j = 0; j < rt->mip_maps[i].sizes.size(); j++) {
-				glDeleteFramebuffers(1, &rt->mip_maps[i].sizes[j].fbo);
-			}
-
-			glDeleteTextures(1, &rt->mip_maps[i].color);
-			rt->mip_maps[i].sizes.clear();
-			rt->mip_maps[i].levels = 0;
-			rt->mip_maps[i].color = 0;
-		}
+	if (rt->backbuffer_fbo != 0) {
+		glDeleteFramebuffers(1, &rt->backbuffer_fbo);
+		glDeleteTextures(1, &rt->backbuffer);
+		rt->backbuffer = 0;
+		rt->backbuffer_fbo = 0;
 	}
 }
 
@@ -1505,9 +1302,6 @@ RID TextureStorage::render_target_create() {
 	//render_target.was_used = false;
 	render_target.clear_requested = false;
 
-	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
-		render_target.flags[i] = false;
-	}
 	Texture t;
 	t.active = true;
 	t.render_target = &render_target;
@@ -1550,9 +1344,6 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 
 	rt->size = Size2i(p_width, p_height);
 
-	// print_line("render_target_set_size " + itos(p_render_target.get_id()) + ", w " + itos(p_width) + " h " + itos(p_height));
-
-	rt->allocate_is_dirty = true;
 	_update_render_target(rt);
 }
 
@@ -1624,7 +1415,6 @@ void TextureStorage::render_target_set_external_texture(RID p_render_target, uns
 			t->gl_format_cache = 0;
 			t->gl_internal_format_cache = 0;
 			t->gl_type_cache = 0;
-			t->srgb = false;
 			t->total_data_size = 0;
 			t->mipmaps = 1;
 			t->active = true;
@@ -1670,29 +1460,28 @@ void TextureStorage::render_target_set_external_texture(RID p_render_target, uns
 	}
 }
 
-void TextureStorage::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
+void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
+	rt->is_transparent = p_transparent;
+
+	_clear_render_target(rt);
+	_update_render_target(rt);
+}
+
+void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_direct_to_screen == rt->direct_to_screen) {
+		return;
+	}
 	// When setting DIRECT_TO_SCREEN, you need to clear before the value is set, but allocate after as
 	// those functions change how they operate depending on the value of DIRECT_TO_SCREEN
-	if (p_flag == RENDER_TARGET_DIRECT_TO_SCREEN && p_value != rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
-		_clear_render_target(rt);
-		rt->flags[p_flag] = p_value;
-		_update_render_target(rt);
-	}
-
-	rt->flags[p_flag] = p_value;
-
-	switch (p_flag) {
-		case RENDER_TARGET_TRANSPARENT: {
-			//must reset for these formats
-			_clear_render_target(rt);
-			_update_render_target(rt);
-		} break;
-		default: {
-		}
-	}
+	_clear_render_target(rt);
+	rt->direct_to_screen = p_direct_to_screen;
+	_update_render_target(rt);
 }
 
 bool TextureStorage::render_target_was_used(RID p_render_target) {
@@ -1752,6 +1541,87 @@ Rect2i TextureStorage::render_target_get_sdf_rect(RID p_render_target) const {
 }
 
 void TextureStorage::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
+}
+
+void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+
+	if (rt->backbuffer_fbo == 0) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	glDisable(GL_BLEND);
+	//single texture copy for backbuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+	GLES3::CopyEffects::get_singleton()->copy_screen();
+
+	if (p_gen_mipmaps) {
+		GLES3::CopyEffects::get_singleton()->bilinear_blur(rt->backbuffer, rt->mipmap_count, region);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+	}
+
+	glEnable(GL_BLEND); // 2D almost always uses blend.
+}
+
+void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+
+	if (rt->backbuffer_fbo == 0) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		// Just do a full screen clear;
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+		glClearColor(p_color.r, p_color.g, p_color.b, p_color.a);
+		glClear(GL_COLOR_BUFFER_BIT);
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+		GLES3::CopyEffects::get_singleton()->set_color(p_color, region);
+	}
+}
+
+void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (rt->backbuffer_fbo == 0) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	GLES3::CopyEffects::get_singleton()->bilinear_blur(rt->backbuffer, rt->mipmap_count, region);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 }
 
 #endif // GLES3_ENABLED

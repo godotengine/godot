@@ -190,13 +190,11 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"OUT",
 	"INOUT",
 	"RENDER_MODE",
-	"HINT_WHITE_TEXTURE",
-	"HINT_BLACK_TEXTURE",
+	"SOURCE_COLOR",
+	"HINT_DEFAULT_WHITE_TEXTURE",
+	"HINT_DEFAULT_BLACK_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
 	"HINT_ANISOTROPY_TEXTURE",
-	"HINT_ALBEDO_TEXTURE",
-	"HINT_BLACK_ALBEDO_TEXTURE",
-	"HINT_COLOR",
 	"HINT_RANGE",
 	"HINT_INSTANCE_INDEX",
 	"FILTER_NEAREST",
@@ -344,17 +342,15 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	// hints
 
+	{ TK_HINT_SOURCE_COLOR, "source_color", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_RANGE, "hint_range", CF_UNSPECIFIED, {}, {} },
-	{ TK_HINT_COLOR, "hint_color", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_INSTANCE_INDEX, "instance_index", CF_UNSPECIFIED, {}, {} },
 
 	// sampler hints
 
-	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo", CF_UNSPECIFIED, {}, {} },
-	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_NORMAL_TEXTURE, "hint_normal", CF_UNSPECIFIED, {}, {} },
-	{ TK_HINT_WHITE_TEXTURE, "hint_white", CF_UNSPECIFIED, {}, {} },
-	{ TK_HINT_BLACK_TEXTURE, "hint_black", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_DEFAULT_WHITE_TEXTURE, "hint_default_white", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_DEFAULT_BLACK_TEXTURE, "hint_default_black", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_R, "hint_roughness_r", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_G, "hint_roughness_g", CF_UNSPECIFIED, {}, {} },
@@ -3421,17 +3417,7 @@ bool ShaderLanguage::is_float_type(DataType p_type) {
 	}
 }
 bool ShaderLanguage::is_sampler_type(DataType p_type) {
-	return p_type == TYPE_SAMPLER2D ||
-			p_type == TYPE_ISAMPLER2D ||
-			p_type == TYPE_USAMPLER2D ||
-			p_type == TYPE_SAMPLER2DARRAY ||
-			p_type == TYPE_ISAMPLER2DARRAY ||
-			p_type == TYPE_USAMPLER2DARRAY ||
-			p_type == TYPE_SAMPLER3D ||
-			p_type == TYPE_ISAMPLER3D ||
-			p_type == TYPE_USAMPLER3D ||
-			p_type == TYPE_SAMPLERCUBE ||
-			p_type == TYPE_SAMPLERCUBEARRAY;
+	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }
 
 Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
@@ -3618,7 +3604,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 						PackedColorArray array = PackedColorArray();
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
@@ -3632,7 +3618,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 						value = Variant(array);
 					}
 				} else {
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real));
 					} else {
 						value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
@@ -3643,7 +3629,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 						PackedColorArray array = PackedColorArray();
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real, p_value[i + 3].real));
@@ -3660,7 +3646,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 						value = Variant(array);
 					}
 				} else {
-					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					} else {
 						value = Variant(Quaternion(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
@@ -3842,14 +3828,14 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC3:
 			if (p_uniform.array_size > 0) {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
 					pi.type = Variant::PACKED_COLOR_ARRAY;
 				} else {
 					pi.type = Variant::PACKED_VECTOR3_ARRAY;
 				}
 			} else {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
 					pi.type = Variant::COLOR;
 				} else {
@@ -3859,13 +3845,13 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
 			if (p_uniform.array_size > 0) {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.type = Variant::PACKED_COLOR_ARRAY;
 				} else {
 					pi.type = Variant::PACKED_FLOAT32_ARRAY;
 				}
 			} else {
-				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.type = Variant::COLOR;
 				} else {
 					pi.type = Variant::QUATERNION;
@@ -4019,7 +4005,7 @@ uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 }
 
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
-	Set<String> kws;
+	HashSet<String> kws;
 
 	int idx = 0;
 
@@ -4036,8 +4022,8 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 		idx++;
 	}
 
-	for (Set<String>::Element *E = kws.front(); E; E = E->next()) {
-		r_keywords->push_back(E->get());
+	for (const String &E : kws) {
+		r_keywords->push_back(E);
 	}
 }
 
@@ -4056,7 +4042,7 @@ bool ShaderLanguage::is_control_flow_keyword(String p_keyword) {
 }
 
 void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
-	Set<String> kws;
+	HashSet<String> kws;
 
 	int idx = 0;
 
@@ -4066,8 +4052,8 @@ void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
 		idx++;
 	}
 
-	for (Set<String>::Element *E = kws.front(); E; E = E->next()) {
-		r_keywords->push_back(E->get());
+	for (const String &E : kws) {
+		r_keywords->push_back(E);
 	}
 }
 
@@ -4340,9 +4326,9 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
-				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
-					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_uniform_settings(E.key, F->get(), p_filter, p_repeat)) {
+				for (KeyValue<StringName, HashSet<int>> &E : arg->tex_argument_connect) {
+					for (const int &F : E.value) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat)) {
 							return false;
 						}
 					}
@@ -4374,9 +4360,9 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 				arg->tex_builtin_check = true;
 				arg->tex_builtin = p_builtin;
 
-				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
-					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_builtin_reference(E.key, F->get(), p_builtin)) {
+				for (KeyValue<StringName, HashSet<int>> &E : arg->tex_argument_connect) {
+					for (const int &F : E.value) {
+						if (!_propagate_function_call_sampler_builtin_reference(E.key, F, p_builtin)) {
 							return false;
 						}
 					}
@@ -5096,7 +5082,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											for (int j = 0; j < base_function->arguments.size(); j++) {
 												if (base_function->arguments[j].name == varname) {
 													if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
-														base_function->arguments.write[j].tex_argument_connect[call_function->name] = Set<int>();
+														base_function->arguments.write[j].tex_argument_connect[call_function->name] = HashSet<int>();
 													}
 													base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
 													found = true;
@@ -5379,6 +5365,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			if (tk.type == TK_CURSOR) {
 				//do nothing
 			} else if (tk.type == TK_PERIOD) {
+#ifdef DEBUG_ENABLED
+				uint32_t prev_keyword_completion_context = keyword_completion_context;
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif
+
 				DataType dt = expr->get_datatype();
 				String st = expr->get_datatype_name();
 
@@ -5419,9 +5410,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				StringName member_struct_name = "";
 				int array_size = 0;
 
-				Set<char> position_symbols;
-				Set<char> color_symbols;
-				Set<char> texture_symbols;
+				RBSet<char> position_symbols;
+				RBSet<char> color_symbols;
+				RBSet<char> texture_symbols;
 
 				bool mix_error = false;
 
@@ -5733,6 +5724,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 				}
 				expr = mn;
+
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = prev_keyword_completion_context;
+#endif
 
 				//todo
 				//member (period) has priority over any operator
@@ -6648,7 +6643,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						StringName func_name = parent_function->name;
 
 						if (!used_local_vars.has(func_name)) {
-							used_local_vars.insert(func_name, Map<StringName, Usage>());
+							used_local_vars.insert(func_name, HashMap<StringName, Usage>());
 						}
 
 						used_local_vars[func_name].insert(name, Usage(tk_line));
@@ -7062,7 +7057,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					_set_tkpos(pos);
 					continue;
 				} else {
-					Set<int> constants;
+					HashSet<int> constants;
 					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
 						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
 						if (flow) {
@@ -7565,15 +7560,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 	return OK;
 }
 
-String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) const {
+String ShaderLanguage::_get_shader_type_list(const HashSet<String> &p_shader_types) const {
 	// Return a list of shader types as an human-readable string
 	String valid_types;
-	for (const Set<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
+	for (const String &E : p_shader_types) {
 		if (!valid_types.is_empty()) {
 			valid_types += ", ";
 		}
 
-		valid_types += "'" + E->get() + "'";
+		valid_types += "'" + E + "'";
 	}
 
 	return valid_types;
@@ -7639,7 +7634,7 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
 	Token tk = _get_token();
 	TkPos prev_pos;
 	Token next;
@@ -7699,7 +7694,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	stages = &p_functions;
 	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 
-	Map<String, String> defined_modes;
+	HashMap<String, String> defined_modes;
 
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
@@ -7790,7 +7785,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				st.shader_struct = st_node;
 
 				int member_count = 0;
-				Set<String> member_names;
+				HashSet<String> member_names;
 
 				while (true) { // variables list
 #ifdef DEBUG_ENABLED
@@ -8240,16 +8235,16 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							}
 
 							if (uniform2.array_size > 0) {
-								if (tk.type != TK_HINT_COLOR) {
+								if (tk.type != TK_HINT_SOURCE_COLOR) {
 									_set_error(RTR("This hint is not supported for uniform arrays."));
 									return ERR_PARSE_ERROR;
 								}
 							}
 
-							if (tk.type == TK_HINT_WHITE_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_WHITE;
-							} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_BLACK;
+							if (tk.type == TK_HINT_DEFAULT_WHITE_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_DEFAULT_WHITE;
+							} else if (tk.type == TK_HINT_DEFAULT_BLACK_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_DEFAULT_BLACK;
 							} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
 							} else if (tk.type == TK_HINT_ROUGHNESS_NORMAL_TEXTURE) {
@@ -8266,16 +8261,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
 							} else if (tk.type == TK_HINT_ANISOTROPY_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_ANISOTROPY;
-							} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ALBEDO;
-							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
-							} else if (tk.type == TK_HINT_COLOR) {
-								if (type != TYPE_VEC3 && type != TYPE_VEC4) {
-									_set_error(vformat(RTR("Color hint is for '%s' or '%s' only."), "vec3", "vec4"));
+							} else if (tk.type == TK_HINT_SOURCE_COLOR) {
+								if (type != TYPE_VEC3 && type != TYPE_VEC4 && type <= TYPE_MAT4) {
+									_set_error(vformat(RTR("Source color hint is for '%s', '%s' or sampler types only."), "vec3", "vec4"));
 									return ERR_PARSE_ERROR;
 								}
-								uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
+								uniform2.hint = ShaderNode::Uniform::HINT_SOURCE_COLOR;
 							} else if (tk.type == TK_HINT_RANGE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_RANGE;
 								if (type != TYPE_FLOAT && type != TYPE_INT) {
@@ -8409,7 +8400,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.repeat = REPEAT_ENABLE;
 							}
 
-							if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
+							if (uniform2.hint == ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+								if (type != TYPE_VEC3 && type != TYPE_VEC4 && !is_sampler_type(type)) {
+									_set_error(vformat(RTR("This hint is only for '%s', '%s' or sampler types."), "vec3", "vec4"));
+									return ERR_PARSE_ERROR;
+								}
+							} else if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
 							}
@@ -9234,7 +9230,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	return OK;
 }
 
-bool ShaderLanguage::has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name) {
+bool ShaderLanguage::has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name) {
 	for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : p_functions) {
 		if (E.value.built_ins.has(p_name)) {
 			return true;
@@ -9376,19 +9372,19 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 void ShaderLanguage::_check_warning_accums() {
-	for (const KeyValue<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *> &E : warnings_check_map2) {
-		for (Map<StringName, Map<StringName, Usage>>::Element *T = (*E.value).front(); T; T = T->next()) {
-			for (const KeyValue<StringName, Usage> &U : T->get()) {
+	for (const KeyValue<ShaderWarning::Code, HashMap<StringName, HashMap<StringName, Usage>> *> &E : warnings_check_map2) {
+		for (const KeyValue<StringName, HashMap<StringName, Usage>> &T : *E.value) {
+			for (const KeyValue<StringName, Usage> &U : T.value) {
 				if (!U.value.used) {
 					_add_warning(E.key, U.value.decl_line, U.key);
 				}
 			}
 		}
 	}
-	for (const KeyValue<ShaderWarning::Code, Map<StringName, Usage> *> &E : warnings_check_map) {
-		for (const Map<StringName, Usage>::Element *U = (*E.value).front(); U; U = U->next()) {
-			if (!U->get().used) {
-				_add_warning(E.key, U->get().decl_line, U->key());
+	for (const KeyValue<ShaderWarning::Code, HashMap<StringName, Usage> *> &E : warnings_check_map) {
+		for (const KeyValue<StringName, Usage> &U : (*E.value)) {
+			if (!U.value.used) {
+				_add_warning(E.key, U.value.decl_line, U.key);
 			}
 		}
 	}
@@ -9546,7 +9542,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_IDENTIFIER:
 		case COMPLETION_FUNCTION_CALL: {
 			bool comp_ident = completion_type == COMPLETION_IDENTIFIER;
-			Map<String, ScriptLanguage::CodeCompletionKind> matches;
+			HashMap<String, ScriptLanguage::CodeCompletionKind> matches;
 			StringName skip_function;
 			BlockNode *block = completion_block;
 
@@ -9793,7 +9789,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				int idx2 = 0;
-				Set<int> out_args;
+				HashSet<int> out_args;
 				while (builtin_func_out_args[idx2].name != nullptr) {
 					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
 						for (int i = 0; i < BuiltinFuncOutArgs::MAX_ARGS; i++) {
@@ -9913,7 +9909,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_HINT: {
 			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
-				ScriptLanguage::CodeCompletionOption option("hint_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
@@ -9935,10 +9931,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("filter_nearest");
 					options.push_back("filter_nearest_mipmap");
 					options.push_back("filter_nearest_mipmap_anisotropic");
-					options.push_back("hint_albedo");
 					options.push_back("hint_anisotropy");
-					options.push_back("hint_black");
-					options.push_back("hint_black_albedo");
+					options.push_back("hint_default_black");
+					options.push_back("hint_default_white");
 					options.push_back("hint_normal");
 					options.push_back("hint_roughness_a");
 					options.push_back("hint_roughness_b");
@@ -9946,7 +9941,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("hint_roughness_gray");
 					options.push_back("hint_roughness_normal");
 					options.push_back("hint_roughness_r");
-					options.push_back("hint_white");
+					options.push_back("source_color");
 					options.push_back("repeat_enable");
 					options.push_back("repeat_disable");
 				}

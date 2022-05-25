@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for CJK writing system (body).
  *
- * Copyright (C) 2006-2021 by
+ * Copyright (C) 2006-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -843,7 +843,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Direction  major_dir     = axis->major_dir;
     AF_Segment    seg1, seg2;
     FT_Pos        len_threshold;
@@ -1005,7 +1005,7 @@
     AF_CJKAxis    laxis  = &((AF_CJKMetrics)hints->metrics)->axis[dim];
 
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;
 
     FT_Fixed      scale;
@@ -1153,7 +1153,7 @@
      */
     {
       AF_Edge  edges      = axis->edges;
-      AF_Edge  edge_limit = edges + axis->num_edges;
+      AF_Edge  edge_limit = FT_OFFSET( edges, axis->num_edges );
       AF_Edge  edge;
 
 
@@ -1291,7 +1291,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edge       = axis->edges;
-    AF_Edge       edge_limit = edge + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edge, axis->num_edges );
     AF_CJKAxis    cjk        = &metrics->axis[dim];
     FT_Fixed      scale      = cjk->scale;
     FT_Pos        best_dist0;  /* initial threshold */
@@ -1798,7 +1798,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     FT_PtrDist    n_edges;
     AF_Edge       edge;
     AF_Edge       anchor   = NULL;
@@ -2177,7 +2177,7 @@
   {
     AF_AxisHints  axis       = & hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     AF_Edge       edge;
     FT_Bool       snapping;
 

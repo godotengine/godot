@@ -128,7 +128,7 @@ void RotatedFileLogger::clear_old_backups() {
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	Set<String> backups;
+	HashSet<String> backups;
 	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
@@ -137,12 +137,12 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > max_backups) {
+	if (backups.size() > (uint32_t)max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (Set<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
-			da->remove(E->get());
+		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
+			da->remove(*E);
 		}
 	}
 }
@@ -172,7 +172,7 @@ void RotatedFileLogger::rotate_file() {
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
-	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefor can't be registered in ObjectDB.
+	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
 }
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :

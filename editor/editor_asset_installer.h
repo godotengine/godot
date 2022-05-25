@@ -41,7 +41,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	String package_path;
 	String asset_name;
 	AcceptDialog *error = nullptr;
-	Map<String, TreeItem *> status_map;
+	HashMap<String, TreeItem *> status_map;
 	bool updating = false;
 	void _item_edited();
 	void _check_propagated_to_item(Object *p_obj, int column);

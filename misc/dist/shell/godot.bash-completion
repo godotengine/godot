@@ -64,7 +64,7 @@ _complete_godot_options() {
 --breakpoints
 --profiling
 --gpu-profile
---vk-layers
+--gpu-validation
 --gpu-abort
 --remote-debug
 --debug-collisions

@@ -32,7 +32,7 @@
 #define DOC_DATA_H
 
 #include "core/io/xml_parser.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 struct ScriptMemberInfo {
@@ -161,7 +161,7 @@ public:
 		Vector<MethodDoc> operators;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
-		Map<String, String> enums;
+		HashMap<String, String> enums;
 		Vector<PropertyDoc> properties;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;

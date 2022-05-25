@@ -92,6 +92,24 @@ public:
 };
 
 template <class R, class A, class B>
+class OperatorEvaluatorPow {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = R(Math::pow((double)a, (double)b));
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = R(Math::pow((double)*VariantGetInternalPtr<A>::get_ptr(left), (double)*VariantGetInternalPtr<B>::get_ptr(right)));
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(R(Math::pow((double)PtrToArg<A>::convert(left), (double)PtrToArg<B>::convert(right))), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
 class OperatorEvaluatorXForm {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {

@@ -42,7 +42,7 @@ class SceneState : public RefCounted {
 	Vector<NodePath> node_paths;
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
-	mutable Map<int, int> base_scene_node_remap;
+	mutable HashMap<int, int> base_scene_node_remap;
 
 	int base_scene_idx = -1;
 
@@ -83,8 +83,8 @@ class SceneState : public RefCounted {
 
 	Vector<ConnectionData> connections;
 
-	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map);
-	Error _parse_connections(Node *p_owner, Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map);
+	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 
 	String path;
 
@@ -225,7 +225,9 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 #ifdef TOOLS_ENABLED
-	virtual void set_last_modified_time(uint64_t p_time) override { state->set_last_modified_time(p_time); }
+	virtual void set_last_modified_time(uint64_t p_time) override {
+		state->set_last_modified_time(p_time);
+	}
 
 #endif
 	Ref<SceneState> get_state() const;

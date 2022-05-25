@@ -281,7 +281,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				active.set();
 				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-				Map<StringName, Vector<AudioFrame>> bus_map;
+				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
@@ -387,7 +387,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
 
-	Set<Camera3D *> cameras = world_3d->get_cameras();
+	HashSet<Camera3D *> cameras = world_3d->get_cameras();
 	cameras.insert(get_viewport()->get_camera_3d());
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
@@ -466,7 +466,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
 		}
 
-		Map<StringName, Vector<AudioFrame>> bus_volumes;
+		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
 		if (area) {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus
@@ -854,24 +854,24 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1,degrees"), "set_emission_angle", "get_emission_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_filter_attenuation_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_emission_angle_filter_attenuation_db", "get_emission_angle_filter_attenuation_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_filter_attenuation_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), "set_emission_angle_filter_attenuation_db", "get_emission_angle_filter_attenuation_db");
 	ADD_GROUP("Attenuation Filter", "attenuation_filter_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_attenuation_filter_db", "get_attenuation_filter_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), "set_attenuation_filter_db", "get_attenuation_filter_db");
 	ADD_GROUP("Doppler", "doppler_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 

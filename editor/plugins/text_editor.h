@@ -92,7 +92,7 @@ protected:
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _prepare_edit_menu();
 
-	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
+	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
 	void _load_theme_settings();
 

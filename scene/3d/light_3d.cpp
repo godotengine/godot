@@ -281,7 +281,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_projector", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_projector", "get_projector");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01,radians"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI/SDFGI only)"), "set_bake_mode", "get_bake_mode");
@@ -539,7 +539,7 @@ TypedArray<String> SpotLight3D::get_configuration_warnings() const {
 
 void SpotLight3D::_bind_methods() {
 	ADD_GROUP("Spot", "spot_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_range", PROPERTY_HINT_RANGE, "0,4096,0.1,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_range", PROPERTY_HINT_RANGE, "0,4096,0.1,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_param", "get_param", PARAM_SPOT_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_SPOT_ATTENUATION);

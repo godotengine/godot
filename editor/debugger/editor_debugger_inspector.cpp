@@ -146,7 +146,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	debugObj->prop_list.clear();
 	int new_props_added = 0;
-	Set<String> changed;
+	HashSet<String> changed;
 	for (int i = 0; i < obj.properties.size(); i++) {
 		PropertyInfo &pinfo = obj.properties[i].first;
 		Variant &var = obj.properties[i].second;
@@ -193,8 +193,8 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
-		for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
-			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E->get());
+		for (const String &E : changed) {
+			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E);
 		}
 	} else {
 		//full update, because props were added or removed
@@ -276,8 +276,8 @@ void EditorDebuggerInspector::clear_stack_variables() {
 }
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
-	for (Map<StringName, Variant>::Element *E = variables->prop_values.front(); E; E = E->next()) {
-		String v = E->key().operator String();
+	for (KeyValue<StringName, Variant> &E : variables->prop_values) {
+		String v = E.key.operator String();
 		if (v.get_slice("/", 1) == p_var) {
 			return variables->get_variant(v);
 		}

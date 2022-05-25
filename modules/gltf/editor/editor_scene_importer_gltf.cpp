@@ -35,7 +35,6 @@
 #include "../gltf_document.h"
 #include "../gltf_state.h"
 
-#include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
 uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
@@ -48,7 +47,7 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 }
 
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
-		const Map<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	Ref<GLTFDocument> doc;
 	doc.instantiate();

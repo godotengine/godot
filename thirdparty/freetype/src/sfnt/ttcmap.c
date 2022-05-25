@@ -4,7 +4,7 @@
  *
  *   TrueType character mapping table (cmap) support (body).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -465,7 +465,7 @@
     if ( subheader )
     {
       FT_Byte*  p   = subheader;
-      FT_UInt   idx = (FT_UInt)(char_code & 0xFF);
+      FT_UInt   idx = (FT_UInt)( char_code & 0xFF );
       FT_UInt   start, count;
       FT_Int    delta;
       FT_UInt   offset;

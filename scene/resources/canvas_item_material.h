@@ -63,8 +63,11 @@ private:
 
 		uint32_t key = 0;
 
-		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
+		static uint32_t hash(const MaterialKey &p_key) {
+			return hash_djb2_one_32(p_key.key);
+		}
+		bool operator==(const MaterialKey &p_key) const {
+			return key == p_key.key;
 		}
 	};
 
@@ -81,7 +84,7 @@ private:
 		int users = 0;
 	};
 
-	static Map<MaterialKey, ShaderData> shader_map;
+	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 
 	MaterialKey current_key;
 

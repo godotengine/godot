@@ -63,7 +63,7 @@ class JavaClass : public RefCounted {
 		ARG_TYPE_MASK = (1 << 16) - 1
 	};
 
-	Map<StringName, Variant> constant_map;
+	RBMap<StringName, Variant> constant_map;
 
 	struct MethodInfo {
 		bool _static = false;
@@ -174,7 +174,7 @@ class JavaClass : public RefCounted {
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
 
 	friend class JavaClassWrapper;
-	Map<StringName, List<MethodInfo>> methods;
+	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
 #endif
 
@@ -207,7 +207,7 @@ class JavaClassWrapper : public Object {
 	GDCLASS(JavaClassWrapper, Object);
 
 #ifdef ANDROID_ENABLED
-	Map<String, Ref<JavaClass>> class_cache;
+	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
 	jclass activityClass;
 	jmethodID findClass;

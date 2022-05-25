@@ -1447,6 +1447,20 @@ TEST_CASE("[String] validate_node_name") {
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
 }
 
+TEST_CASE("[String] validate_identifier") {
+	String empty_string;
+	CHECK(empty_string.validate_identifier() == "_");
+
+	String numeric_only = "12345";
+	CHECK(numeric_only.validate_identifier() == "_2345");
+
+	String name_with_spaces = "Name with spaces";
+	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");
+
+	String name_with_invalid_chars = String::utf8("Invalid characters:@*#&世界");
+	CHECK(name_with_invalid_chars.validate_identifier() == "Invalid_characters_______");
+}
+
 TEST_CASE("[String] Variant indexed get") {
 	Variant s = String("abcd");
 	bool valid = false;

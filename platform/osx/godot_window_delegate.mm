@@ -58,7 +58,7 @@
 
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
 	while (wd.transient_children.size()) {
-		ds->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
+		ds->window_set_transient(*wd.transient_children.begin(), DisplayServerOSX::INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {

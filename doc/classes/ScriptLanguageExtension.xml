@@ -372,11 +372,13 @@
 		</constant>
 		<constant name="LOOKUP_RESULT_CLASS_METHOD" value="4" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_ENUM" value="5" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_CLASS_SIGNAL" value="5" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="6" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_CLASS_ENUM" value="6" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_MAX" value="7" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="7" enum="LookupResultType">
+		</constant>
+		<constant name="LOOKUP_RESULT_MAX" value="8" enum="LookupResultType">
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
 			The option is local to the location of the code completion query - e.g. a local variable.

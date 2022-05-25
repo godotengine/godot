@@ -33,6 +33,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/string/translation.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -963,7 +964,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 			int delimiter = line.find(" ");
 			String type = line.substr(0, delimiter);
 			int pos = delimiter + 1;
-			Map<String, String> keys;
+			HashMap<String, String> keys;
 
 			while (pos < line.size() && line[pos] == ' ') {
 				pos++;

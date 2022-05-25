@@ -120,7 +120,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
-	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek);
+	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 
@@ -152,7 +152,7 @@ private:
 		Vector2 position;
 	};
 
-	Map<StringName, State> states;
+	HashMap<StringName, State> states;
 
 	struct Transition {
 		StringName from;
@@ -226,7 +226,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

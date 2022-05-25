@@ -37,7 +37,7 @@
 #include "core/math/vector2.h"
 #include "core/os/memory.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
 #include "servers/xr/xr_pose.h"
@@ -73,7 +73,7 @@ private:
 	uint32_t num_supported_extensions = 0;
 	XrExtensionProperties *supported_extensions = nullptr;
 	Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
-	Vector<const char *> enabled_extensions;
+	Vector<CharString> enabled_extensions;
 
 	bool ext_hp_mixed_reality_available = false;
 	bool ext_samsung_odyssey_available = false;
@@ -132,7 +132,7 @@ private:
 
 	bool load_layer_properties();
 	bool load_supported_extensions();
-	bool is_extension_supported(const char *p_extension) const;
+	bool is_extension_supported(const String &p_extension) const;
 
 	// instance
 	bool create_instance();

@@ -378,7 +378,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
 	void _insert_track(bool p_create_reset, bool p_create_beziers);
 
-	void _root_removed(Node *p_root);
+	void _root_removed();
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
@@ -410,7 +410,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		float pos = 0;
 	};
 
-	Map<SelectedKey, KeyInfo> selection;
+	RBMap<SelectedKey, KeyInfo> selection;
 
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
@@ -478,10 +478,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
-		Animation::TrackType track_type = Animation::TrackType::TYPE_ANIMATION;
-		Animation::InterpolationType interp_type = Animation::InterpolationType::INTERPOLATION_CUBIC;
-		Animation::UpdateMode update_mode = Animation::UpdateMode::UPDATE_CAPTURE;
-		Animation::LoopMode loop_mode = Animation::LoopMode::LOOP_LINEAR;
+		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
+		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC;
+		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
+		Animation::LoopMode loop_mode = Animation::LOOP_LINEAR;
 		bool loop_wrap = false;
 		bool enabled = false;
 

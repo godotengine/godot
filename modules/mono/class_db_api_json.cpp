@@ -40,17 +40,12 @@
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;
 
-	List<StringName> names;
+	List<StringName> class_list;
+	ClassDB::get_class_list(&class_list);
+	// Must be alphabetically sorted for hash to compute.
+	class_list.sort_custom<StringName::AlphCompare>();
 
-	const StringName *k = nullptr;
-
-	while ((k = ClassDB::classes.next(k))) {
-		names.push_back(*k);
-	}
-	//must be alphabetically sorted for hash to compute
-	names.sort_custom<StringName::AlphCompare>();
-
-	for (const StringName &E : names) {
+	for (const StringName &E : class_list) {
 		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
 		ERR_FAIL_COND(!t);
 		if (t->api != p_api || !t->exposed) {
@@ -66,10 +61,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->method_map.next(k))) {
-				String name = k->operator String();
+			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+				String name = F.key.operator String();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -77,7 +70,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 					continue; // Ignore non-virtual methods that start with an underscore
 				}
 
-				snames.push_back(*k);
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -131,10 +124,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->constant_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, int> &F : t->constant_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -158,10 +149,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->signal_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -193,10 +182,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->property_setget.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, ClassDB::PropertySetGet> &F : t->property_setget) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();

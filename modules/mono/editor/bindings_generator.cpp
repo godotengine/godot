@@ -604,14 +604,14 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
 	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
 
-	const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
+	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
 
 	if (!enum_match && search_cname != p_target_cname) {
 		enum_match = enum_types.find(p_target_cname);
 	}
 
 	if (enum_match) {
-		const TypeInterface &target_enum_itype = enum_match->value();
+		const TypeInterface &target_enum_itype = enum_match->value;
 
 		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 		p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
@@ -1078,8 +1078,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		compile_items.push_back(output_file);
 	}
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		const TypeInterface &itype = E.get();
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
 
 		if (itype.api_type == ClassDB::API_EDITOR) {
 			continue;
@@ -1187,8 +1187,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	Vector<String> compile_items;
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		const TypeInterface &itype = E.get();
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
 
 		if (itype.api_type != ClassDB::API_EDITOR) {
 			continue;
@@ -1573,9 +1573,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	const TypeInterface *current_type = &p_itype;
 	while (!setter && current_type->base_name != StringName()) {
-		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
-		current_type = &base_match.get();
+		current_type = &base_match->value;
 		setter = current_type->find_method_by_name(p_iprop.setter);
 	}
 
@@ -1584,9 +1584,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	current_type = &p_itype;
 	while (!getter && current_type->base_name != StringName()) {
-		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
-		current_type = &base_match.get();
+		current_type = &base_match->value;
 		getter = current_type->find_method_by_name(p_iprop.getter);
 	}
 
@@ -1938,10 +1938,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			return OK; // Won't increment method bind count
 		}
 
-		const Map<const MethodInterface *, const InternalCall *>::Element *match = method_icalls_map.find(&p_imethod);
+		HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = method_icalls_map.find(&p_imethod);
 		ERR_FAIL_NULL_V(match, ERR_BUG);
 
-		const InternalCall *im_icall = match->value();
+		const InternalCall *im_icall = match->value;
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
 		im_call += ".";
@@ -2096,8 +2096,8 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	generated_icall_funcs.clear();
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element type_elem = obj_types.front(); type_elem; type_elem = type_elem.next()) {
-		const TypeInterface &itype = type_elem.get();
+	for (const KeyValue<StringName, TypeInterface> &type_elem : obj_types) {
+		const TypeInterface &itype = type_elem.value;
 
 		bool is_derived_type = itype.base_name != StringName();
 
@@ -2322,10 +2322,10 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		i++;
 	}
 
-	const Map<const MethodInterface *, const InternalCall *>::Element *match = method_icalls_map.find(&p_imethod);
+	HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = method_icalls_map.find(&p_imethod);
 	ERR_FAIL_NULL_V(match, ERR_BUG);
 
-	const InternalCall *im_icall = match->value();
+	const InternalCall *im_icall = match->value;
 	String icall_method = im_icall->name;
 
 	if (!generated_icall_funcs.find(im_icall)) {
@@ -2468,29 +2468,29 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(const TypeReference &p_typeref) {
-	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator builtin_type_match = builtin_types.find(p_typeref.cname);
 
 	if (builtin_type_match) {
-		return &builtin_type_match->get();
+		return &builtin_type_match->value;
 	}
 
-	const OrderedHashMap<StringName, TypeInterface>::Element obj_type_match = obj_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator obj_type_match = obj_types.find(p_typeref.cname);
 
 	if (obj_type_match) {
-		return &obj_type_match.get();
+		return &obj_type_match->value;
 	}
 
 	if (p_typeref.is_enum) {
-		const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(p_typeref.cname);
+		HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(p_typeref.cname);
 
 		if (enum_match) {
-			return &enum_match->get();
+			return &enum_match->value;
 		}
 
 		// Enum not found. Most likely because none of its constants were bound, so it's empty. That's fine. Use int instead.
-		const Map<StringName, TypeInterface>::Element *int_match = builtin_types.find(name_cache.type_int);
+		HashMap<StringName, TypeInterface>::ConstIterator int_match = builtin_types.find(name_cache.type_int);
 		ERR_FAIL_NULL_V(int_match, nullptr);
-		return &int_match->get();
+		return &int_match->value;
 	}
 
 	return nullptr;
@@ -2505,16 +2505,16 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 
 	ERR_PRINT(String() + "Type not found. Creating placeholder: '" + p_typeref.cname.operator String() + "'.");
 
-	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_typeref.cname);
+	HashMap<StringName, TypeInterface>::ConstIterator match = placeholder_types.find(p_typeref.cname);
 
 	if (match) {
-		return &match->get();
+		return &match->value;
 	}
 
 	TypeInterface placeholder;
 	TypeInterface::create_placeholder_type(placeholder, p_typeref.cname);
 
-	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
+	return &placeholder_types.insert(placeholder.cname, placeholder)->value;
 }
 
 StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
@@ -2708,7 +2708,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(type_cname, &property_list, true);
 
-		Map<StringName, StringName> accessor_methods;
+		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
@@ -2903,9 +2903,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.proxy_name += "_";
 			}
 
-			Map<StringName, StringName>::Element *accessor = accessor_methods.find(imethod.cname);
+			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value());
+				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value);
 
 				// We only deprecate an accessor method if it's in the same class as the property. It's easier this way, but also
 				// we don't know if an accessor method in a different class could have other purposes, so better leave those untouched.
@@ -2942,12 +2942,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		// Populate signals
 
 		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
-		const StringName *k = nullptr;
 
-		while ((k = signal_map.next(k))) {
+		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = signal_map.get(*k);
+			const MethodInfo &method_info = E.value;
 
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
@@ -3024,10 +3023,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
 		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
-		k = nullptr;
 
-		while ((k = enum_map.next(k))) {
-			StringName enum_proxy_cname = *k;
+		for (const KeyValue<StringName, List<StringName>> &E : enum_map) {
+			StringName enum_proxy_cname = E.key;
 			String enum_proxy_name = enum_proxy_cname.operator String();
 			if (itype.find_property_by_proxy_name(enum_proxy_cname)) {
 				// We have several conflicts between enums and PascalCase properties,
@@ -3036,7 +3034,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
 			EnumInterface ienum(enum_proxy_cname);
-			const List<StringName> &enum_constants = enum_map.get(*k);
+			const List<StringName> &enum_constants = E.value;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
 				int *value = class_info->constant_map.getptr(constant_cname);
@@ -3066,7 +3064,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(*k);
+			enum_itype.name = itype.name + "." + String(E.key);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -3596,11 +3594,11 @@ void BindingsGenerator::_populate_global_constants() {
 	int global_constants_count = CoreConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
-		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
+		HashMap<String, DocData::ClassDoc>::Iterator match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
 
 		CRASH_COND_MSG(!match, "Could not find '@GlobalScope' in DocData.");
 
-		const DocData::ClassDoc &global_scope_doc = match->value();
+		const DocData::ClassDoc &global_scope_doc = match->value;
 
 		for (int i = 0; i < global_constants_count; i++) {
 			String constant_name = CoreConstants::get_global_constant_name(i);
@@ -3715,8 +3713,8 @@ void BindingsGenerator::_initialize() {
 	core_custom_icalls.clear();
 	editor_custom_icalls.clear();
 
-	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
-		_generate_method_icalls(E.get());
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		_generate_method_icalls(E.value);
 	}
 
 	initialized = true;

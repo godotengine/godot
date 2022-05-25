@@ -37,6 +37,9 @@
 void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationAgent2D::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationAgent2D::get_avoidance_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
@@ -75,13 +78,14 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_target_desired_distance", "get_target_desired_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_dist", PROPERTY_HINT_RANGE, "0.1,100000,0.01"), "set_neighbor_dist", "get_neighbor_dist");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:px"), "set_target_desired_distance", "get_target_desired_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01,suffix:px"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_dist", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px"), "set_neighbor_dist", "get_neighbor_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,1"), "set_max_neighbors", "get_max_neighbors");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_time_horizon", "get_time_horizon");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01"), "set_max_speed", "get_max_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1"), "set_path_max_distance", "get_path_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:s"), "set_time_horizon", "get_time_horizon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px/s"), "set_max_speed", "get_max_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1,suffix:px"), "set_path_max_distance", "get_path_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
@@ -97,9 +101,29 @@ void NavigationAgent2D::_notification(int p_what) {
 			if (agent_parent != nullptr) {
 				// place agent on navigation map first or else the RVO agent callback creation fails silently later
 				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
-				NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+				set_avoidance_enabled(avoidance_enabled);
 			}
 			set_physics_process_internal(true);
+		} break;
+
+		case NOTIFICATION_PAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			if (agent_parent && !agent_parent->can_process()) {
+				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -128,6 +152,19 @@ NavigationAgent2D::NavigationAgent2D() {
 NavigationAgent2D::~NavigationAgent2D() {
 	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
+	avoidance_enabled = p_enabled;
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+	} else {
+		NavigationServer2D::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	}
+}
+
+bool NavigationAgent2D::get_avoidance_enabled() const {
+	return avoidance_enabled;
 }
 
 void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
@@ -248,7 +285,7 @@ TypedArray<String> NavigationAgent2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		warnings.push_back(RTR("The NavigationAgent2D can be used only under a Node2D node."));
+		warnings.push_back(RTR("The NavigationAgent2D can be used only under a Node2D inheriting parent node."));
 	}
 
 	return warnings;

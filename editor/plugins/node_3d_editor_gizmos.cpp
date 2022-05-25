@@ -2993,10 +2993,15 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
-	create_material("shape_material", gizmo_color);
-	gizmo_color.a = 0.15;
-	create_material("shape_material_internal", gizmo_color);
+	Color gizmo_color_attractor = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_attractor", Color(1, 0.7, 0.5));
+	create_material("shape_material_attractor", gizmo_color_attractor);
+	gizmo_color_attractor.a = 0.15;
+	create_material("shape_material_attractor_internal", gizmo_color_attractor);
+
+	Color gizmo_color_collision = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	create_material("shape_material_collision", gizmo_color_collision);
+	gizmo_color_collision.a = 0.15;
+	create_material("shape_material_collision_internal", gizmo_color_collision);
 
 	create_handle_material("handles");
 }
@@ -3122,12 +3127,17 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	const Ref<Material> material =
-			get_material("shape_material", p_gizmo);
-	const Ref<Material> material_internal =
-			get_material("shape_material_internal", p_gizmo);
+	Ref<Material> material;
+	Ref<Material> material_internal;
+	if (Object::cast_to<GPUParticlesAttractor3D>(cs)) {
+		material = get_material("shape_material_attractor", p_gizmo);
+		material_internal = get_material("shape_material_attractor_internal", p_gizmo);
+	} else {
+		material = get_material("shape_material_collision", p_gizmo);
+		material_internal = get_material("shape_material_collision_internal", p_gizmo);
+	}
 
-	Ref<Material> handles_material = get_material("handles");
+	const Ref<Material> handles_material = get_material("handles");
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(cs) || Object::cast_to<GPUParticlesAttractorSphere3D>(cs)) {
 		float r = cs->call("get_radius");
@@ -3789,7 +3799,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Set<Vector2i> lines_found;
+	HashSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
 	if (points.size() == 0) {
@@ -4755,7 +4765,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
-	Map<_EdgeKey, bool> edge_map;
+	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
 	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
@@ -4773,10 +4783,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					SWAP(ek.from, ek.to);
 				}
 
-				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
+				HashMap<_EdgeKey, bool, _EdgeKey>::Iterator F = edge_map.find(ek);
 
 				if (F) {
-					F->get() = false;
+					F->value = false;
 
 				} else {
 					edge_map[ek] = true;

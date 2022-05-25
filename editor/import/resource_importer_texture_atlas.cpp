@@ -59,7 +59,7 @@ String ResourceImporterTextureAtlas::get_resource_type() const {
 	return "Texture2D";
 }
 
-bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -82,7 +82,7 @@ String ResourceImporterTextureAtlas::get_option_group_file() const {
 	return "atlas_file";
 }
 
-Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* If this happens, it's because the atlas_file field was not filled, so just import a broken texture */
 
 	//use an xpm because it's size independent, the editor images are vector and size dependent
@@ -188,7 +188,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	}
 }
 
-Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) {
+Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) {
 	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
@@ -197,10 +197,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	pack_data_files.resize(p_source_file_options.size());
 
 	int idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
-		const String &source = E->key();
-		const Map<StringName, Variant> &options = E->get();
+		const String &source = E.key;
+		const HashMap<StringName, Variant> &options = E.value;
 
 		Ref<Image> image;
 		image.instantiate();
@@ -271,6 +271,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				pack_data.chart_vertices.push_back(polygons[j]);
 			}
 		}
+		idx++;
 	}
 
 	//pack the charts
@@ -318,7 +319,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//save the images
 	idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
 
 		Ref<Texture2D> texture;
@@ -394,8 +395,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			//mesh
 		}
 
-		String save_path = p_base_paths[E->key()] + ".res";
+		String save_path = p_base_paths[E.key] + ".res";
 		ResourceSaver::save(save_path, texture);
+		idx++;
 	}
 
 	return OK;

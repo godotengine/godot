@@ -180,7 +180,7 @@ void Node3D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
 			}
 #endif
 		} break;
@@ -418,7 +418,7 @@ void Node3D::update_gizmos() {
 	}
 
 	if (data.gizmos.is_empty()) {
-		get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
 		return;
 	}
 	if (data.gizmos_dirty) {
@@ -436,7 +436,7 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-		get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_set_subgizmo_selection, this, p_gizmo, p_id, p_transform);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_set_subgizmo_selection, this, p_gizmo, p_id, p_transform);
 	}
 #endif
 }
@@ -452,7 +452,7 @@ void Node3D::clear_subgizmo_selection() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-		get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_clear_subgizmo_selection, this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_clear_subgizmo_selection, this);
 	}
 #endif
 }
@@ -977,10 +977,9 @@ void Node3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZXY);
 	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZYX);
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_greater,or_lesser,noslider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "quaternion", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_quaternion", "get_quaternion");

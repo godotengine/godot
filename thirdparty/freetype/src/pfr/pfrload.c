@@ -4,7 +4,7 @@
  *
  *   FreeType PFR loader (body).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -993,7 +993,7 @@
 
       PFR_CHECK_SIZE( count * Size );
 
-      if ( FT_NEW_ARRAY( phy_font->chars, count ) )
+      if ( FT_QNEW_ARRAY( phy_font->chars, count ) )
         goto Fail;
 
       for ( n = 0; n < count; n++ )

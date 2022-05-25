@@ -592,7 +592,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		bake_cells.write[p_idx].albedo[2] = 0;
 
 		float alpha_average = 0;
-		int children_found = 0;
 
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
@@ -603,8 +602,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 
 			_fixup_plot(child, p_level + 1);
 			alpha_average += bake_cells[child].alpha;
-
-			children_found++;
 		}
 
 		bake_cells.write[p_idx].alpha = alpha_average / 8.0;

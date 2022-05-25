@@ -356,6 +356,8 @@ void RenameDialog::_update_substitute() {
 }
 
 void RenameDialog::_post_popup() {
+	ConfirmationDialog::_post_popup();
+
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	preview_node = nullptr;
 

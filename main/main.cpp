@@ -342,9 +342,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -b, --breakpoints                            Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                                  Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --gpu-profile                                Show a GPU profile of the tasks that took the most time during frame rendering.\n");
-	OS::get_singleton()->print("  --vk-layers                                  Enable Vulkan validation layers for debugging.\n");
+	OS::get_singleton()->print("  --gpu-validation                             Enable graphics API validation layers for debugging.\n");
 #if DEBUG_ENABLED
-	OS::get_singleton()->print("  --gpu-abort                                  Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
+	OS::get_singleton()->print("  --gpu-abort                                  Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED)
@@ -641,6 +641,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool found_project = false;
 #endif
 
+	String default_renderer = "";
+	String renderer_hints = "";
+
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
 		packed_data = memnew(PackedData);
@@ -828,7 +831,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--vk-layers") {
+		} else if (I->get() == "--gpu-validation") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED
 		} else if (I->get() == "--gpu-abort") {
@@ -1306,14 +1309,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
-	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
 
 	// this list is hard coded, which makes it more difficult to add new backends.
 	// can potentially be changed to more of a plugin system at a later date.
+
+	// Start with Vulkan, which will be the default if enabled.
+#ifdef VULKAN_ENABLED
+	renderer_hints = "vulkan";
+#endif
+
+	// And OpenGL3 next, or first if Vulkan is disabled.
+#ifdef GLES3_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "opengl3";
+#endif
+	if (renderer_hints.is_empty()) {
+		ERR_PRINT("No rendering driver available.");
+	}
+
+	default_renderer = renderer_hints.get_slice(",", 0);
+	GLOBAL_DEF_RST("rendering/driver/driver_name", default_renderer);
+
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
+					PROPERTY_HINT_ENUM, renderer_hints));
 
 	// if not set on the command line
 	if (rendering_driver.is_empty()) {
@@ -1327,35 +1349,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
-
-	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width",
-			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
-					PROPERTY_HINT_RANGE,
-					"0,7680,1,or_greater")); // 8K resolution
-
-	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
-			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
-					PROPERTY_HINT_RANGE,
-					"0,4320,1,or_greater")); // 8K resolution
-
-	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
-	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
-	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
-	GLOBAL_DEF("display/window/size/always_on_top", false);
-	GLOBAL_DEF("display/window/size/window_width_override", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_width_override",
-			PropertyInfo(Variant::INT,
-					"display/window/size/window_width_override",
-					PROPERTY_HINT_RANGE,
-					"0,7680,1,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/window_height_override", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
-			PropertyInfo(Variant::INT,
-					"display/window/size/window_height_override",
-					PROPERTY_HINT_RANGE,
-					"0,4320,1,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -1513,7 +1506,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
 
 	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head mounted,Handheld"));
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"));
 
 	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
 	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
@@ -2156,8 +2149,8 @@ bool Main::start() {
 		doc.generate(doc_base);
 
 		DocTools docsrc;
-		Map<String, String> doc_data_classes;
-		Set<String> checked_paths;
+		HashMap<String, String> doc_data_classes;
+		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -2196,10 +2189,10 @@ bool Main::start() {
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 
-		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
-			print_line("Erasing old docs at: " + E->get());
-			err = DocTools::erase_classes(E->get());
-			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));
+		for (const String &E : checked_paths) {
+			print_line("Erasing old docs at: " + E);
+			err = DocTools::erase_classes(E);
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E + ": " + itos(err));
 		}
 
 		print_line("Generating new docs...");
@@ -2329,11 +2322,11 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
-				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
-				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-					const ProjectSettings::AutoloadInfo &info = E.get();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 
 					if (info.is_singleton) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -2344,8 +2337,8 @@ bool Main::start() {
 
 				//second pass, load into global constants
 				List<Node *> to_add;
-				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-					const ProjectSettings::AutoloadInfo &info = E.get();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 
 					Ref<Resource> res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
@@ -2641,6 +2634,7 @@ bool Main::start() {
 
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
+uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
@@ -2781,12 +2775,17 @@ bool Main::iteration() {
 	Engine::get_singleton()->_process_frames++;
 
 	if (frame > 1000000) {
-		if (editor || project_manager) {
-			if (print_fps) {
-				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		// Wait a few seconds before printing FPS, as FPS reporting just after the engine has started is inaccurate.
+		if (hide_print_fps_attempts == 0) {
+			if (editor || project_manager) {
+				if (print_fps) {
+					print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+				}
+			} else if (print_fps || GLOBAL_GET("debug/settings/stdout/print_fps")) {
+				print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 			}
-		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		} else {
+			hide_print_fps_attempts--;
 		}
 
 		Engine::get_singleton()->_fps = frames;

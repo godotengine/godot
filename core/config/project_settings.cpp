@@ -331,7 +331,7 @@ struct _VCSort {
 void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -360,8 +360,8 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-		String prop_info_name = E->get().name;
+	for (const _VCSort &E : vclist) {
+		String prop_info_name = E.name;
 		int dot = prop_info_name.find(".");
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
@@ -369,11 +369,11 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		if (custom_prop_info.has(prop_info_name)) {
 			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E->get().name;
-			pi.usage = E->get().flags;
+			pi.name = E.name;
+			pi.usage = E.flags;
 			p_list->push_back(pi);
 		} else {
-			p_list->push_back(PropertyInfo(E->get().type, E->get().name, PROPERTY_HINT_NONE, "", E->get().flags));
+			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
 		}
 	}
 }
@@ -764,7 +764,7 @@ Error ProjectSettings::save() {
 	return error;
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
@@ -800,19 +800,20 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		for (String &key : E->get()) {
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+	for (const KeyValue<String, List<String>> &E : props) {
+		for (const String &key : E.value) {
+			String k = key;
+			if (!E.key.is_empty()) {
+				k = E.key + "/" + k;
 			}
 			Variant value;
-			if (p_custom.has(key)) {
-				value = p_custom[key];
+			if (p_custom.has(k)) {
+				value = p_custom[k];
 			} else {
-				value = get(key);
+				value = get(k);
 			}
 
-			file->store_pascal_string(key);
+			file->store_pascal_string(k);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
@@ -831,7 +832,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -852,18 +853,18 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	}
 	file->store_string("\n");
 
-	for (const Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		if (E != props.front()) {
+	for (const KeyValue<String, List<String>> &E : props) {
+		if (E.key != props.begin()->key) {
 			file->store_string("\n");
 		}
 
-		if (!E->key().is_empty()) {
-			file->store_string("[" + E->key() + "]\n\n");
+		if (!E.key.is_empty()) {
+			file->store_string("[" + E.key + "]\n\n");
 		}
-		for (const String &F : E->get()) {
+		for (const String &F : E.value) {
 			String key = F;
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+			if (!E.key.is_empty()) {
+				key = E.key + "/" + key;
 			}
 			Variant value;
 			if (p_custom.has(key)) {
@@ -917,7 +918,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	project_features = _trim_to_supported_features(project_features);
 	set_setting("application/config/features", project_features);
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	if (p_merge_with_current) {
 		for (const KeyValue<StringName, VariantContainer> &G : props) {
@@ -946,21 +947,21 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 	for (const KeyValue<String, Variant> &E : p_custom) {
 		// Lookup global prop to store in the same order
-		Map<StringName, VariantContainer>::Element *global_prop = props.find(E.key);
+		RBMap<StringName, VariantContainer>::Iterator global_prop = props.find(E.key);
 
 		_VCSort vc;
 		vc.name = E.key;
-		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
+		vc.order = global_prop ? global_prop->value.order : 0xFFFFFFF;
 		vc.type = E.value.get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String>> props;
+	RBMap<String, List<String>> props;
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-		String category = E->get().name;
-		String name = E->get().name;
+	for (const _VCSort &E : vclist) {
+		String category = E.name;
+		String name = E.name;
 
 		int div = category.find("/");
 
@@ -1051,7 +1052,7 @@ void ProjectSettings::set_custom_property_info(const String &p_prop, const Prope
 	custom_prop_info[p_prop].name = p_prop;
 }
 
-const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
+const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
 	return custom_prop_info;
 }
 
@@ -1091,7 +1092,7 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
-OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
+const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_autoload_list() const {
 	return autoloads;
 }
 
@@ -1135,13 +1136,13 @@ void ProjectSettings::_bind_methods() {
 
 void ProjectSettings::_add_builtin_input_map() {
 	if (InputMap::get_singleton()) {
-		OrderedHashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+		HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
 
-		for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		for (KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 			Array events;
 
 			// Convert list of input events into array
-			for (List<Ref<InputEvent>>::Element *I = E.get().front(); I; I = I->next()) {
+			for (List<Ref<InputEvent>>::Element *I = E.value.front(); I; I = I->next()) {
 				events.push_back(I->get());
 			}
 
@@ -1149,7 +1150,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			action["deadzone"] = Variant(0.5f);
 			action["events"] = events;
 
-			String action_name = "input/" + E.key();
+			String action_name = "input/" + E.key;
 			GLOBAL_DEF(action_name, action);
 			input_presets.push_back(action_name);
 		}
@@ -1175,6 +1176,22 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
+
+	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
+	custom_prop_info["display/window/size/viewport_width"] = PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"); // 8K resolution
+
+	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
+	custom_prop_info["display/window/size/viewport_height"] = PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"); // 8K resolution
+
+	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
+	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
+	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
+	GLOBAL_DEF("display/window/size/always_on_top", false);
+	GLOBAL_DEF("display/window/size/window_width_override", 0);
+	custom_prop_info["display/window/size/window_width_override"] = PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"); // 8K resolution
+	GLOBAL_DEF("display/window/size/window_height_override", 0);
+	custom_prop_info["display/window/size/window_height_override"] = PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"); // 8K resolution
+
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 

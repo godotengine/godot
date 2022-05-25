@@ -853,6 +853,8 @@ _FORCE_INLINE_ void TextServerFallback::_font_clear_cache(FontDataFallback *p_fo
 }
 
 RID TextServerFallback::create_font() {
+	_THREAD_SAFE_METHOD_
+
 	FontDataFallback *fd = memnew(FontDataFallback);
 
 	return font_owner.make_rid(fd);
@@ -1334,6 +1336,11 @@ void TextServerFallback::font_set_scale(const RID &p_font_rid, int64_t p_size, d
 	Vector2i size = _get_size(fd, p_size);
 
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->face) {
+		return; // Do not override scale for dynamic fonts, it's calculated automatically.
+	}
+#endif
 	fd->cache[size]->scale = p_scale;
 }
 
@@ -1528,9 +1535,8 @@ Array TextServerFallback::font_get_glyph_list(const RID &p_font_rid, const Vecto
 
 	Array ret;
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	const int32_t *E = nullptr;
-	while ((E = gl.next(E))) {
-		ret.push_back(*E);
+	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -1832,13 +1838,22 @@ Dictionary TextServerFallback::font_get_glyph_contours(const RID &p_font_rid, in
 	int error = FT_Load_Glyph(fd->cache[size]->face, FT_Get_Char_Index(fd->cache[size]->face, index), FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
 	ERR_FAIL_COND_V(error, Dictionary());
 
-	double h = fd->cache[size]->ascent;
+	if (fd->embolden != 0.f) {
+		FT_Pos strength = fd->embolden * p_size * 4; // 26.6 fractional units (1 / 64).
+		FT_Outline_Embolden(&fd->cache[size]->face->glyph->outline, strength);
+	}
+
+	if (fd->transform != Transform2D()) {
+		FT_Matrix mat = { FT_Fixed(fd->transform[0][0] * 65536), FT_Fixed(fd->transform[0][1] * 65536), FT_Fixed(fd->transform[1][0] * 65536), FT_Fixed(fd->transform[1][1] * 65536) }; // 16.16 fractional units (1 / 65536).
+		FT_Outline_Transform(&fd->cache[size]->face->glyph->outline, &mat);
+	}
+
 	double scale = (1.0 / 64.0) / fd->cache[size]->oversampling * fd->cache[size]->scale;
 	if (fd->msdf) {
 		scale = scale * (double)p_size / (double)fd->msdf_source_size;
 	}
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_points; i++) {
-		points.push_back(Vector3(fd->cache[size]->face->glyph->outline.points[i].x * scale, h - fd->cache[size]->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fd->cache[size]->face->glyph->outline.tags[i])));
+		points.push_back(Vector3(fd->cache[size]->face->glyph->outline.points[i].x * scale, -fd->cache[size]->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fd->cache[size]->face->glyph->outline.tags[i])));
 	}
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_contours; i++) {
 		contours.push_back(fd->cache[size]->face->glyph->outline.contours[i]);
@@ -1913,7 +1928,7 @@ Vector2 TextServerFallback::font_get_kerning(const RID &p_font_rid, int64_t p_si
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
 
-	const Map<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
+	const HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> &kern = fd->cache[size]->kerning_map;
 
 	if (kern.has(p_glyph_pair)) {
 		if (fd->msdf) {
@@ -1953,7 +1968,7 @@ bool TextServerFallback::font_has_char(const RID &p_font_rid, int64_t p_char) co
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), false);
 	}
-	FontDataForSizeFallback *at_size = fd->cache.front()->get();
+	FontDataForSizeFallback *at_size = fd->cache.begin()->value;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (at_size && at_size->face) {
@@ -1971,7 +1986,7 @@ String TextServerFallback::font_get_supported_chars(const RID &p_font_rid) const
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), String());
 	}
-	FontDataForSizeFallback *at_size = fd->cache.front()->get();
+	FontDataForSizeFallback *at_size = fd->cache.begin()->value;
 
 	String chars;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -1989,9 +2004,8 @@ String TextServerFallback::font_get_supported_chars(const RID &p_font_rid) const
 #endif
 	if (at_size) {
 		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
-		const int32_t *E = nullptr;
-		while ((E = gl.next(E))) {
-			chars = chars + String::chr(*E);
+		for (const KeyValue<int32_t, FontGlyph> &E : gl) {
+			chars = chars + String::chr(E.key);
 		}
 	}
 	return chars;
@@ -2417,6 +2431,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 
 RID TextServerFallback::create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+
 	ShapedTextDataFallback *sd = memnew(ShapedTextDataFallback);
 	sd->direction = p_direction;
 	sd->orientation = p_orientation;
@@ -2795,6 +2810,8 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 }
 
 RID TextServerFallback::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {
+	_THREAD_SAFE_METHOD_
+
 	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
 

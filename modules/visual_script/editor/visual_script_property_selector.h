@@ -179,15 +179,15 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
-	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	HashMap<String, ClassMatch> matches;
+	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
-	Map<String, TreeItem *> class_items;
+	HashMap<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 
-	Map<String, DocData::ClassDoc> combined_docs;
+	HashMap<String, DocData::ClassDoc> combined_docs;
 	List<String> vs_nodes;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);

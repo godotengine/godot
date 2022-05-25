@@ -82,11 +82,6 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
-	enum RenderMainThreadMode {
-		RENDER_MAIN_THREAD_ONLY,
-		RENDER_ANY_THREAD,
-	};
-
 protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
@@ -94,7 +89,6 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
-	RenderMainThreadMode _render_main_thread_mode = RENDER_ANY_THREAD;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -258,8 +252,6 @@ public:
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
-	RenderMainThreadMode get_render_main_thread_mode() const { return _render_main_thread_mode; }
-	void set_render_main_thread_mode(RenderMainThreadMode p_thread_mode) { _render_main_thread_mode = p_thread_mode; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;

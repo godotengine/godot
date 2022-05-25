@@ -303,7 +303,11 @@ void GroupDialog::_load_groups(Node *p_current) {
 	}
 }
 
-void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id) {
+void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
@@ -453,7 +457,7 @@ GroupDialog::GroupDialog() {
 	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	groups->add_theme_constant_override("draw_guides", 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
-	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_modify_group_pressed));
+	groups->connect("button_clicked", callable_mp(this, &GroupDialog::_modify_group_pressed));
 	groups->connect("item_edited", callable_mp(this, &GroupDialog::_group_renamed));
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
@@ -600,7 +604,11 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->commit_action();
 }
 
-void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
+void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	if (!node) {
 		return;
 	}
@@ -735,7 +743,7 @@ GroupsEditor::GroupsEditor() {
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
-	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_modify_group));
+	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->add_theme_constant_override("draw_guides", 1);
 	add_theme_constant_override("separation", 3 * EDSCALE);
 

@@ -39,7 +39,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 #include "gdscript_cache.h"
@@ -132,7 +132,7 @@ public:
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
-		OrderedHashMap<StringName, int> enum_values; // For enums.
+		HashMap<StringName, int> enum_values; // For enums.
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
@@ -360,6 +360,7 @@ public:
 			OP_MULTIPLICATION,
 			OP_DIVISION,
 			OP_MODULO,
+			OP_POWER,
 			OP_BIT_SHIFT_LEFT,
 			OP_BIT_SHIFT_RIGHT,
 			OP_BIT_AND,
@@ -393,6 +394,7 @@ public:
 			OP_MULTIPLICATION,
 			OP_DIVISION,
 			OP_MODULO,
+			OP_POWER,
 			OP_BIT_LEFT_SHIFT,
 			OP_BIT_RIGHT_SHIFT,
 			OP_BIT_AND,
@@ -800,7 +802,7 @@ public:
 		FunctionNode *function = nullptr;
 		FunctionNode *parent_function = nullptr;
 		Vector<IdentifierNode *> captures;
-		Map<StringName, int> captures_indices;
+		HashMap<StringName, int> captures_indices;
 		bool use_self = false;
 
 		bool has_name() const {
@@ -1203,9 +1205,9 @@ private:
 	List<ParserError> errors;
 #ifdef DEBUG_ENABLED
 	List<GDScriptWarning> warnings;
-	Set<String> ignored_warnings;
-	Set<uint32_t> ignored_warning_codes;
-	Set<int> unsafe_lines;
+	HashSet<String> ignored_warnings;
+	HashSet<uint32_t> ignored_warning_codes;
+	HashSet<int> unsafe_lines;
 #endif
 
 	GDScriptTokenizer tokenizer;
@@ -1263,6 +1265,7 @@ private:
 		PREC_FACTOR,
 		PREC_SIGN,
 		PREC_BIT_NOT,
+		PREC_POWER,
 		PREC_TYPE_TEST,
 		PREC_AWAIT,
 		PREC_CALL,
@@ -1416,7 +1419,7 @@ public:
 	}
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const Set<int> &get_unsafe_lines() const { return unsafe_lines; }
+	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
 #endif
 

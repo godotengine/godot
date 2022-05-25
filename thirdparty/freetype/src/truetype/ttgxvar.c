@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader
  *
- * Copyright (C) 2004-2021 by
+ * Copyright (C) 2004-2022 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -151,9 +151,7 @@
     FT_UInt    i, j;
     FT_UShort  first;
     FT_Memory  memory = stream->memory;
-    FT_Error   error  = FT_Err_Ok;
-
-    FT_UNUSED( error );
+    FT_Error   error;
 
 
     *point_cnt = 0;
@@ -266,9 +264,7 @@
     FT_UInt    i, j;
     FT_UInt    bytes_used;
     FT_Memory  memory = stream->memory;
-    FT_Error   error  = FT_Err_Ok;
-
-    FT_UNUSED( error );
+    FT_Error   error;
 
 
     if ( FT_QNEW_ARRAY( deltas, delta_cnt ) )
@@ -361,13 +357,11 @@
     FT_Memory       memory = stream->memory;
     GX_Blend        blend  = face->blend;
     GX_AVarSegment  segment;
-    FT_Error        error = FT_Err_Ok;
+    FT_Error        error;
     FT_Long         version;
     FT_Long         axisCount;
     FT_Int          i, j;
     FT_ULong        table_len;
-
-    FT_UNUSED( error );
 
 
     FT_TRACE2(( "AVAR " ));
@@ -421,7 +415,6 @@
           FT_FREE( blend->avar_segment[j].correspondence );
 
         FT_FREE( blend->avar_segment );
-        blend->avar_segment = NULL;
         goto Exit;
       }
 
@@ -2753,7 +2746,6 @@
         /* The cvt table has been loaded already; every time we change the */
         /* blend we may need to reload and remodify the cvt table.         */
         FT_FREE( face->cvt );
-        face->cvt = NULL;
 
         error = tt_face_load_cvt( face, face->root.stream );
         break;
@@ -2772,7 +2764,6 @@
 
     /* enforce recomputation of the PostScript name; */
     FT_FREE( face->postscript_name );
-    face->postscript_name = NULL;
 
   Exit:
     return error;
@@ -3476,6 +3467,7 @@
       }
       else
       {
+        localpoints = NULL;
         points      = sharedpoints;
         point_count = spoint_count;
       }

@@ -469,8 +469,8 @@ void Label3D::_shape() {
 	aabb = AABB();
 
 	// Clear materials.
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 
@@ -599,20 +599,20 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM)) * pixel_size;
 	}
 
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E->get().mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E->get().mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E->get().mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E->get().mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E->get().mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E->get().indices;
+		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
 
 		RS::SurfaceData sd;
 		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
 
-		sd.material = E->get().material;
+		sd.material = E.value.material;
 
 		RS::get_singleton()->mesh_add_surface(mesh, sd);
 	}
@@ -788,6 +788,11 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	if (theme_font.is_valid()) {
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font.unref();
+	}
+
 	if (font_override.is_valid() && font_override->get_data_count() > 0) {
 		return font_override;
 	}
@@ -799,7 +804,12 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (const StringName &E : theme_types) {
 			if (Theme::get_project_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+				}
+				return f;
 			}
 		}
 	}
@@ -811,13 +821,23 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (const StringName &E : theme_types) {
 			if (Theme::get_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+				}
+				return f;
 			}
 		}
 	}
 
 	// If they don't exist, use any type to return the default/empty value.
-	return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	if (f.is_valid()) {
+		theme_font = f;
+		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+	}
+	return f;
 }
 
 void Label3D::set_font_size(int p_size) {
@@ -1003,8 +1023,8 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	RenderingServer::get_singleton()->free(mesh);
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (KeyValue<uint64_t, SurfaceData> E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 }

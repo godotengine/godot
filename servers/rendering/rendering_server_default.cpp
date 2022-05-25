@@ -179,10 +179,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
 
 			float print_threshold = 0.01;
-			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
-				double time = E.value() / double(print_frame_profile_frame_count);
+			for (const KeyValue<String, float> &E : print_gpu_profile_task_time) {
+				double time = E.value / double(print_frame_profile_frame_count);
 				if (time > print_threshold) {
-					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
+					print_line("\t-" + E.key + ": " + rtos(time) + "ms");
 				}
 			}
 			print_gpu_profile_task_time.clear();
@@ -321,11 +321,7 @@ void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 }
 
 bool RenderingServerDefault::is_low_end() const {
-	// FIXME: Commented out when rebasing vulkan branch on master,
-	// causes a crash, it seems rasterizer is not initialized yet the
-	// first time it's called.
-	//return RSG::rasterizer->is_low_end();
-	return false;
+	return RendererCompositor::is_low_end();
 }
 
 void RenderingServerDefault::_thread_exit() {

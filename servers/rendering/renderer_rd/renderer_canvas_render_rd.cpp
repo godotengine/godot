@@ -2160,14 +2160,14 @@ void RendererCanvasRenderRD::CanvasShaderData::set_default_texture_param(const S
 		}
 	} else {
 		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = Map<int, RID>();
+			default_texture_params[p_name] = HashMap<int, RID>();
 		}
 		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 
 void RendererCanvasRenderRD::CanvasShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
-	Map<int, StringName> order;
+	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
@@ -2246,7 +2246,7 @@ RendererRD::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
 	return shader_data;
 }
 
-bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);

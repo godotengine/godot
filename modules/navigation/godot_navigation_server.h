@@ -105,8 +105,12 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override;
 
+	virtual Array map_get_regions(RID p_map) const override;
+	virtual Array map_get_agents(RID p_map) const override;
+
 	virtual RID region_create() const override;
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
+	virtual RID region_get_map(RID p_region) const override;
 	COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers);
 	virtual uint32_t region_get_layers(RID p_region) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
@@ -118,6 +122,7 @@ public:
 
 	virtual RID agent_create() const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
+	virtual RID agent_get_map(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time);

@@ -64,7 +64,8 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	}
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
 	// Replace characters not allowed (or risky) in Windows file names with safe characters.
@@ -122,7 +123,7 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 
 void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zipFile p_zip) {
 	Ref<DirAccess> dir = DirAccess::open(p_path);
-	if (!dir) {
+	if (dir.is_null()) {
 		WARN_PRINT("Unable to open directory for zipping: " + p_path);
 		return;
 	}

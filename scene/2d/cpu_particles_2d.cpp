@@ -1282,14 +1282,14 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Drawing", "");
 	// No visibility_rect property contrarily to Particles2D, it's updated automatically.
@@ -1305,7 +1305,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles2D::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &CPUParticles2D::get_direction);
 
-	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles2D::set_spread);
+	ClassDB::bind_method(D_METHOD("set_spread", "spread"), &CPUParticles2D::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles2D::get_spread);
 
 	ClassDB::bind_method(D_METHOD("set_param_min", "param", "value"), &CPUParticles2D::set_param_min);
@@ -1363,7 +1363,7 @@ void CPUParticles2D::_bind_methods() {
 
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,suffix:px"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents"), "set_emission_rect_extents", "get_emission_rect_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
@@ -1374,10 +1374,10 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_GROUP("Gravity", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity", PROPERTY_HINT_NONE, U"suffix:px/s\u00B2"), "set_gravity", "get_gravity");
 	ADD_GROUP("Initial Velocity", "initial_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_INITIAL_LINEAR_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_INITIAL_LINEAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater,suffix:px/s"), "set_param_min", "get_param_min", PARAM_INITIAL_LINEAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater,suffix:px/s"), "set_param_max", "get_param_max", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_GROUP("Angular Velocity", "angular_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_min", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_ANGULAR_VELOCITY);

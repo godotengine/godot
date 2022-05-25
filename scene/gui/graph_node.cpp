@@ -93,11 +93,13 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 		si.color_right = p_value;
 	} else if (what == "right_icon") {
 		si.custom_slot_right = p_value;
+	} else if (what == "draw_stylebox") {
+		si.draw_stylebox = p_value;
 	} else {
 		return false;
 	}
 
-	set_slot(idx, si.enable_left, si.type_left, si.color_left, si.enable_right, si.type_right, si.color_right, si.custom_slot_left, si.custom_slot_right);
+	set_slot(idx, si.enable_left, si.type_left, si.color_left, si.enable_right, si.type_right, si.color_right, si.custom_slot_left, si.custom_slot_right, si.draw_stylebox);
 	update();
 	return true;
 }
@@ -144,6 +146,8 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = si.color_right;
 	} else if (what == "right_icon") {
 		r_ret = si.custom_slot_right;
+	} else if (what == "draw_stylebox") {
+		r_ret = si.draw_stylebox;
 	} else {
 		return false;
 	}
@@ -175,7 +179,7 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, base + "right_type"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, base + "right_color"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-
+		p_list->push_back(PropertyInfo(Variant::BOOL, base + "draw_stylebox"));
 		idx++;
 	}
 }
@@ -185,6 +189,7 @@ void GraphNode::_resort() {
 
 	Size2i new_size = get_size();
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("frame"));
+	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
 
 	int sep = get_theme_constant(SNAME("separation"));
 
@@ -193,7 +198,7 @@ void GraphNode::_resort() {
 	int stretch_min = 0;
 	int stretch_avail = 0;
 	float stretch_ratio_total = 0;
-	Map<Control *, _MinSizeCache> min_size_cache;
+	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -204,7 +209,7 @@ void GraphNode::_resort() {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = c->get_combined_minimum_size() + (slot_info[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
 		_MinSizeCache msc;
 
 		stretch_min += size.height;
@@ -312,7 +317,9 @@ void GraphNode::_resort() {
 
 		int size = to - from;
 
-		Rect2 rect(sb->get_margin(SIDE_LEFT), from, w, size);
+		float margin = sb->get_margin(SIDE_LEFT) + (slot_info[i].draw_stylebox ? sb_slot->get_margin(SIDE_LEFT) : 0);
+		float width = w - (slot_info[i].draw_stylebox ? sb_slot->get_minimum_size().x : 0);
+		Rect2 rect(margin, from, width, size);
 
 		fit_child_in_rect(c, rect);
 		cache_y.push_back(from - sb->get_margin(SIDE_TOP) + size * 0.5);
@@ -351,14 +358,14 @@ void GraphNode::_notification(int p_what) {
 			Ref<StyleBox> sb;
 
 			if (comment) {
-				sb = get_theme_stylebox(selected ? "comment_focus" : "comment");
+				sb = get_theme_stylebox(selected ? SNAME("comment_focus") : SNAME("comment"));
 
 			} else {
-				sb = get_theme_stylebox(selected ? "selected_frame" : "frame");
+				sb = get_theme_stylebox(selected ? SNAME("selected_frame") : SNAME("frame"));
 			}
 
-			//sb=sb->duplicate();
-			//sb->call("set_modulate",modulate);
+			Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
+
 			Ref<Texture2D> port = get_theme_icon(SNAME("port"));
 			Ref<Texture2D> close = get_theme_icon(SNAME("close"));
 			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
@@ -389,13 +396,9 @@ void GraphNode::_notification(int p_what) {
 
 			int w = get_size().width - sb->get_minimum_size().x;
 
-			if (show_close) {
-				w -= close->get_width();
-			}
-
 			title_buf->draw(get_canvas_item(), Point2(sb->get_margin(SIDE_LEFT) + title_h_offset, -title_buf->get_size().y + title_offset), title_color);
 			if (show_close) {
-				Vector2 cpos = Point2(w + sb->get_margin(SIDE_LEFT) + close_h_offset, -close->get_height() + close_offset);
+				Vector2 cpos = Point2(w + sb->get_margin(SIDE_LEFT) + close_h_offset - close->get_width(), -close->get_height() + close_offset);
 				draw_texture(close, cpos, close_color);
 				close_rect.position = cpos;
 				close_rect.size = close->get_size();
@@ -411,7 +414,7 @@ void GraphNode::_notification(int p_what) {
 					continue;
 				}
 				const Slot &s = slot_info[E.key];
-				//left
+				// Left port.
 				if (s.enable_left) {
 					Ref<Texture2D> p = port;
 					if (s.custom_slot_left.is_valid()) {
@@ -419,12 +422,22 @@ void GraphNode::_notification(int p_what) {
 					}
 					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
 				}
+				// Right port.
 				if (s.enable_right) {
 					Ref<Texture2D> p = port;
 					if (s.custom_slot_right.is_valid()) {
 						p = s.custom_slot_right;
 					}
 					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
+				}
+
+				// Draw slot stylebox.
+				if (s.draw_stylebox) {
+					Control *c = Object::cast_to<Control>(get_child(E.key));
+					Rect2 c_rect = c->get_rect();
+					c_rect.position.x = sb->get_margin(SIDE_LEFT);
+					c_rect.size.width = w;
+					draw_style_box(sb_slot, c_rect);
 				}
 			}
 
@@ -482,7 +495,7 @@ void GraphNode::_validate_property(PropertyInfo &property) const {
 }
 #endif
 
-void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
+void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
 
 	if (!p_enable_left && p_type_left == 0 && p_color_left == Color(1, 1, 1, 1) &&
@@ -501,6 +514,7 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 	s.color_right = p_color_right;
 	s.custom_slot_left = p_custom_left;
 	s.custom_slot_right = p_custom_right;
+	s.draw_stylebox = p_draw_stylebox;
 	slot_info[p_idx] = s;
 	update();
 	connpos_dirty = true;
@@ -622,16 +636,39 @@ Color GraphNode::get_slot_color_right(int p_idx) const {
 	return slot_info[p_idx].color_right;
 }
 
+bool GraphNode::is_slot_draw_stylebox(int p_idx) const {
+	if (!slot_info.has(p_idx)) {
+		return false;
+	}
+	return slot_info[p_idx].draw_stylebox;
+}
+
+void GraphNode::set_slot_draw_stylebox(int p_idx, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set draw_stylebox for the slot with p_idx (%d) lesser than zero.", p_idx));
+
+	slot_info[p_idx].draw_stylebox = p_enable;
+	update();
+	connpos_dirty = true;
+
+	emit_signal(SNAME("slot_updated"), p_idx);
+}
+
 Size2 GraphNode::get_minimum_size() const {
-	int sep = get_theme_constant(SNAME("separation"));
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("frame"));
+	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
+
+	int sep = get_theme_constant(SNAME("separation"));
+	int title_h_offset = get_theme_constant(SNAME("title_h_offset"));
+
 	bool first = true;
 
 	Size2 minsize;
-	minsize.x = title_buf->get_size().x;
+	minsize.x = title_buf->get_size().x + title_h_offset;
 	if (show_close) {
+		int close_h_offset = get_theme_constant(SNAME("close_h_offset"));
 		Ref<Texture2D> close = get_theme_icon(SNAME("close"));
-		minsize.x += sep + close->get_width();
+		//TODO: Remove this magic number after GraphNode rework.
+		minsize.x += 12 + close->get_width() + close_h_offset;
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -644,6 +681,9 @@ Size2 GraphNode::get_minimum_size() const {
 		}
 
 		Size2i size = c->get_combined_minimum_size();
+		if (slot_info.has(i)) {
+			size += slot_info[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
+		}
 
 		minsize.y += size.y;
 		minsize.x = MAX(minsize.x, size.x);
@@ -989,7 +1029,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &GraphNode::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &GraphNode::get_language);
 
-	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right", "enable"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("clear_slot", "idx"), &GraphNode::clear_slot);
 	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
 
@@ -1010,6 +1050,9 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_slot_color_right", "idx", "color_right"), &GraphNode::set_slot_color_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "idx"), &GraphNode::get_slot_color_right);
+
+	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "idx"), &GraphNode::is_slot_draw_stylebox);
+	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "idx", "draw_stylebox"), &GraphNode::set_slot_draw_stylebox);
 
 	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphNode::set_position_offset);
 	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphNode::get_position_offset);

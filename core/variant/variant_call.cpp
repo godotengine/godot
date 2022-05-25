@@ -919,11 +919,11 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		Map<StringName, int> value;
+		HashMap<StringName, int> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
-		Map<StringName, Variant> variant_value;
+		HashMap<StringName, Variant> variant_value;
 #ifdef DEBUG_ENABLED
 		List<StringName> variant_value_ordered;
 #endif
@@ -1281,14 +1281,14 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	Map<StringName, int>::Element *E = cd.value.find(p_value);
+	HashMap<StringName, int>::Iterator E = cd.value.find(p_value);
 	if (!E) {
-		Map<StringName, Variant>::Element *F = cd.variant_value.find(p_value);
+		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return F->get();
+			return F->value;
 		} else {
 			return -1;
 		}
@@ -1297,7 +1297,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 		*r_valid = true;
 	}
 
-	return E->get();
+	return E->value;
 }
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -1873,6 +1873,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, sort, sarray(), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
+	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedByteArray, count, sarray("value"), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
@@ -1935,6 +1938,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, sort, sarray(), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
+	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt32Array, count, sarray("value"), varray());
 
 	/* Int64 Array */
 
@@ -1955,6 +1961,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, sort, sarray(), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
+	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt64Array, count, sarray("value"), varray());
 
 	/* Float32 Array */
 
@@ -1975,6 +1984,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat32Array, count, sarray("value"), varray());
 
 	/* Float64 Array */
 
@@ -1995,6 +2007,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat64Array, count, sarray("value"), varray());
 
 	/* String Array */
 
@@ -2015,6 +2030,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
+	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedStringArray, count, sarray("value"), varray());
 
 	/* Vector2 Array */
 
@@ -2035,6 +2053,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, sort, sarray(), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
+	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector2Array, count, sarray("value"), varray());
 
 	/* Vector3 Array */
 
@@ -2055,6 +2076,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, sort, sarray(), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
+	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector3Array, count, sarray("value"), varray());
 
 	/* Color Array */
 
@@ -2075,6 +2099,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, sort, sarray(), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
+	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedColorArray, count, sarray("value"), varray());
 
 	/* Register constants */
 

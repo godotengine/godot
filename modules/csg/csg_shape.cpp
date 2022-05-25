@@ -682,7 +682,7 @@ CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_ver
 		int ic = invert.size();
 		bool *w = invert.ptrw();
 		for (int i = 0; i < ic; i++) {
-			w[i] = invert_faces;
+			w[i] = flip_faces;
 		}
 	}
 	brush->build_from_faces(p_vertices, p_uv, p_smooth, p_materials, invert);
@@ -691,28 +691,28 @@ CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_ver
 }
 
 void CSGPrimitive3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_invert_faces", "invert_faces"), &CSGPrimitive3D::set_invert_faces);
-	ClassDB::bind_method(D_METHOD("is_inverting_faces"), &CSGPrimitive3D::is_inverting_faces);
+	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
+	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_faces"), "set_invert_faces", "is_inverting_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 }
 
-void CSGPrimitive3D::set_invert_faces(bool p_invert) {
-	if (invert_faces == p_invert) {
+void CSGPrimitive3D::set_flip_faces(bool p_invert) {
+	if (flip_faces == p_invert) {
 		return;
 	}
 
-	invert_faces = p_invert;
+	flip_faces = p_invert;
 
 	_make_dirty();
 }
 
-bool CSGPrimitive3D::is_inverting_faces() {
-	return invert_faces;
+bool CSGPrimitive3D::get_flip_faces() {
+	return flip_faces;
 }
 
 CSGPrimitive3D::CSGPrimitive3D() {
-	invert_faces = false;
+	flip_faces = false;
 }
 
 /////////////////////
@@ -921,7 +921,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 	int face_count = rings * radial_segments * 2 - radial_segments * 2;
 
-	bool invert_val = is_inverting_faces();
+	bool invert_val = get_flip_faces();
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;
@@ -1052,7 +1052,7 @@ void CSGSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGSphere3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGSphere3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1125,7 +1125,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 	int face_count = 12; //it's a cube..
 
-	bool invert_val = is_inverting_faces();
+	bool invert_val = get_flip_faces();
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;
@@ -1225,7 +1225,7 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
@@ -1258,7 +1258,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 	int face_count = sides * (cone ? 1 : 2) + sides + (cone ? 0 : sides);
 
-	bool invert_val = is_inverting_faces();
+	bool invert_val = get_flip_faces();
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;
@@ -1405,8 +1405,8 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1503,7 +1503,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 	int face_count = ring_sides * sides * 2;
 
-	bool invert_val = is_inverting_faces();
+	bool invert_val = get_flip_faces();
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;
@@ -1630,8 +1630,8 @@ void CSGTorus3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGTorus3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGTorus3D::get_smooth_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_inner_radius", "get_inner_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_outer_radius", "get_outer_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_inner_radius", "get_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_outer_radius", "get_outer_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_sides", "get_ring_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1881,7 +1881,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = false;
 				materialsw[face] = material;
-				invertw[face] = invert_faces;
+				invertw[face] = flip_faces;
 				face++;
 			}
 		}
@@ -1986,7 +1986,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				uvsw[face * 3 + 2] = u[2];
 
 				smoothw[face] = smooth_faces;
-				invertw[face] = invert_faces;
+				invertw[face] = flip_faces;
 				materialsw[face] = material;
 
 				face++;
@@ -2001,7 +2001,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				uvsw[face * 3 + 2] = u[0];
 
 				smoothw[face] = smooth_faces;
-				invertw[face] = invert_faces;
+				invertw[face] = flip_faces;
 				materialsw[face] = material;
 
 				face++;
@@ -2026,7 +2026,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = false;
 				materialsw[face] = material;
-				invertw[face] = invert_faces;
+				invertw[face] = flip_faces;
 				face++;
 			}
 		}

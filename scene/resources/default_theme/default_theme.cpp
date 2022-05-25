@@ -605,7 +605,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("file", "FileDialog", icons["file"]);
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
+	theme->set_color("files_disabled", "FileDialog", Color(1, 1, 1, 0.25));
 
 	// Popup
 
@@ -686,6 +686,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	graphnode_breakpoint->set_border_color(Color(0.9, 0.29, 0.3));
 	Ref<StyleBoxFlat> graphnode_position = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
 	graphnode_position->set_border_color(Color(0.98, 0.89, 0.27));
+	Ref<StyleBoxEmpty> graphnode_slot = make_empty_stylebox(0, 0, 0, 0);
 
 	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
 	theme->set_stylebox("selected_frame", "GraphNode", graphnode_selected);
@@ -693,6 +694,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("comment_focus", "GraphNode", graphnode_comment_selected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
 	theme->set_stylebox("position", "GraphNode", graphnode_position);
+	theme->set_stylebox("slot", "GraphNode", graphnode_slot);
 
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("close", "GraphNode", icons["close"]);
@@ -704,6 +706,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "GraphNode", 2 * scale);
 	theme->set_constant("title_offset", "GraphNode", 26 * scale);
 	theme->set_constant("close_offset", "GraphNode", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphNode", 22 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
 
 	// Tree
@@ -1066,6 +1069,7 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		bold_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			// Try to match OpenSans ExtraBold.
 			data->set_embolden(1.2);
 			bold_font->add_data(data);
 		}
@@ -1073,15 +1077,17 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		bold_italics_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			// Try to match OpenSans ExtraBold Italic.
 			data->set_embolden(1.2);
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 			bold_italics_font->add_data(data);
 		}
 
 		italics_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			// Try to match OpenSans Italic.
+			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 			italics_font->add_data(data);
 		}
 	}

@@ -478,7 +478,7 @@
 		<member name="indent_automatic" type="bool" setter="set_auto_indent_enabled" getter="is_auto_indent_enabled" default="false">
 			Sets whether automatic indent are enabled, this will add an extra indent if a prefix or brace is found.
 		</member>
-		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;(&quot;, &quot;:&quot;, &quot;[&quot;, &quot;{&quot;]">
+		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;:&quot;, &quot;{&quot;, &quot;[&quot;, &quot;(&quot;]">
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">

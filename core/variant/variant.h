@@ -473,6 +473,7 @@ public:
 		OP_NEGATE,
 		OP_POSITIVE,
 		OP_MODULE,
+		OP_POWER,
 		//bitwise
 		OP_SHIFT_LEFT,
 		OP_SHIFT_RIGHT,
