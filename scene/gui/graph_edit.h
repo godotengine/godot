@@ -34,6 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/graph_node_comment.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
@@ -47,6 +48,7 @@ class GraphEditFilter : public Control {
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
 	GraphEdit *ge = nullptr;
+
 	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
@@ -58,9 +60,9 @@ class GraphEditMinimap : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditFilter;
+
 	GraphEdit *ge = nullptr;
 
-protected:
 public:
 	GraphEditMinimap(GraphEdit *p_edit);
 
@@ -109,6 +111,35 @@ public:
 	};
 
 private:
+	enum SET_OPERATIONS {
+		IS_EQUAL,
+		IS_SUBSET,
+		DIFFERENCE,
+		UNION,
+	};
+
+	struct ConnType {
+		union {
+			struct {
+				uint32_t type_a;
+				uint32_t type_b;
+			};
+			uint64_t key = 0;
+		};
+
+		static uint32_t hash(const ConnType &p_conn) {
+			return hash_one_uint64(p_conn.key);
+		}
+		bool operator==(const ConnType &p_type) const {
+			return key == p_type.key;
+		}
+
+		ConnType(uint32_t a = 0, uint32_t b = 0) {
+			type_a = a;
+			type_b = b;
+		}
+	};
+
 	Label *zoom_label = nullptr;
 	Button *zoom_minus = nullptr;
 	Button *zoom_reset = nullptr;
@@ -129,11 +160,10 @@ private:
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
-	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool connecting = false;
+
+	//TODO: @Geometror Rename to connection?
 	String connecting_from;
 	bool connecting_out = false;
 	int connecting_index = 0;
@@ -159,41 +189,61 @@ private:
 	float zoom_min = 0.0;
 	float zoom_max = 0.0;
 
-	void _zoom_minus();
-	void _zoom_reset();
-	void _zoom_plus();
-	void _update_zoom_label();
-
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	List<GraphNode *> previous_selected;
+	List<BaseGraphNode *> prev_selected;
 
 	bool setting_scroll_ofs = false;
 	bool right_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
+	bool arranging_graph = false;
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
 	bool lines_antialiased = true;
 
+	HBoxContainer *zoom_hb = nullptr;
+	Control *connections_layer = nullptr;
+	GraphEditFilter *top_layer = nullptr;
+	GraphEditMinimap *minimap = nullptr;
+
+	HashSet<ConnType, ConnType> valid_connection_types;
+	HashSet<int> valid_left_disconnect_types;
+	HashSet<int> valid_right_disconnect_types;
+
+	// This separates the children in two layers to ensure the order
+	// of both background nodes (e.g comment nodes) and foreground nodes.
+	int background_nodes_separator_idx = 0;
+
+	HashMap<StringName, Vector<BaseGraphNode *>> comment_enclosed_nodes;
+
+	Vector<Rect2> debug_rects;
+
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+	void _update_zoom_label();
+
 	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
 	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
 	void _graph_node_raised(Node *p_gn);
+	void _graph_node_resized(Vector2 p_new_minsize, Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
 	void _graph_node_slot_updated(int p_index, Node *p_gn);
 
 	void _update_scroll();
+	void _update_scroll_offset();
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
-
-	Control *connections_layer = nullptr;
-	GraphEditFilter *top_layer = nullptr;
-	GraphEditMinimap *minimap = nullptr;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
 	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
@@ -202,45 +252,14 @@ private:
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
+	void _background_node_layer_draw();
 	void _minimap_draw();
-	void _update_scroll_offset();
 
 	Array _get_connection_list() const;
 
-	bool lines_on_bg = false;
-
-	struct ConnType {
-		union {
-			struct {
-				uint32_t type_a;
-				uint32_t type_b;
-			};
-			uint64_t key = 0;
-		};
-
-		static uint32_t hash(const ConnType &p_conn) {
-			return hash_one_uint64(p_conn.key);
-		}
-		bool operator==(const ConnType &p_type) const {
-			return key == p_type.key;
-		}
-
-		ConnType(uint32_t a = 0, uint32_t b = 0) {
-			type_a = a;
-			type_b = b;
-		}
-	};
-
-	HashSet<ConnType, ConnType> valid_connection_types;
-	HashSet<int> valid_left_disconnect_types;
-	HashSet<int> valid_right_disconnect_types;
-
-	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
-	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
-	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
-	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
-
-	HBoxContainer *zoom_hb = nullptr;
+	void _update_comment_enclosed_nodes_list(GraphNodeComment *p_node, HashMap<StringName, Vector<BaseGraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNodeComment *p_node, HashMap<StringName, Vector<BaseGraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNodeComment *p_node, HashMap<StringName, Vector<BaseGraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -251,15 +270,6 @@ private:
 	void _minimap_toggled();
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
-
-	bool arranging_graph = false;
-
-	enum SET_OPERATIONS {
-		IS_EQUAL,
-		IS_SUBSET,
-		DIFFERENCE,
-		UNION,
-	};
 
 	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
 	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
@@ -281,6 +291,8 @@ protected:
 	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
 
 public:
+	void _reorder_comment_nodes(GraphNodeComment *p_node);
+
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);

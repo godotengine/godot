@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BaseGraphNode" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_opentype_features">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_position_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="set_opentype_feature">
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_position_offset">
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector2" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
+		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
+		</member>
+		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
+		</member>
+		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+		</member>
+	</members>
+	<signals>
+		<signal name="close_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="dragged">
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<description>
+			</description>
+		</signal>
+		<signal name="position_offset_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="raise_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="resize_request">
+			<argument index="0" name="new_minsize" type="Vector2" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

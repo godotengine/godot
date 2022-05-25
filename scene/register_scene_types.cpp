@@ -406,7 +406,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
+	GDREGISTER_CLASS(BaseGraphNode);
 	GDREGISTER_CLASS(GraphNode);
+	GDREGISTER_CLASS(GraphNodeComment);
 	GDREGISTER_CLASS(GraphEdit);
 
 	OS::get_singleton()->yield(); // may take time to init

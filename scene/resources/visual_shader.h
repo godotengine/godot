@@ -638,6 +638,8 @@ class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
 protected:
 	String title = "Comment";
 	String description = "";
+	bool tint_color_enabled = false;
+	Color tint_color = Color(0.4, 0.8, 0.4);
 
 protected:
 	static void _bind_methods();
@@ -660,6 +662,12 @@ public:
 
 	void set_description(const String &p_description);
 	String get_description() const;
+
+	void set_tint_color_enabled(bool p_enable);
+	bool is_tint_color_enabled() const;
+
+	void set_tint_color(const Color &p_color);
+	Color get_tint_color() const;
 
 	VisualShaderNodeComment();
 };

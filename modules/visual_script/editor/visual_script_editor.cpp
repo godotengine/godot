@@ -600,7 +600,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 	} else {
 		for (int i = 0; i < graph->get_child_count(); i++) {
-			if (Object::cast_to<GraphNode>(graph->get_child(i))) {
+			if (Object::cast_to<BaseGraphNode>(graph->get_child(i))) {
 				memdelete(graph->get_child(i));
 				i--;
 			}
@@ -668,16 +668,30 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 		Ref<VisualScriptNode> node = script->get_node(E);
+		bool is_comment = Object::cast_to<VisualScriptComment>(node.ptr());
 		Vector2 pos = script->get_node_position(E);
 
-		GraphNode *gnode = memnew(GraphNode);
+		BaseGraphNode *gnode;
+		if (is_comment) {
+			gnode = memnew(GraphNodeComment);
+
+			Ref<VisualScriptComment> vsc = node;
+			gnode->set_resizable(true);
+			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
+			gnode->connect("resize_request", callable_mp(this, &VisualScriptEditor::_comment_node_resized), varray(E));
+		} else {
+			gnode = memnew(GraphNode);
+
+			GraphNode *gnode_n = Object::cast_to<GraphNode>(gnode);
+			if (error_line == E) {
+				gnode_n->set_overlay(GraphNode::OVERLAY_POSITION);
+			} else if (node->is_breakpoint()) {
+				gnode_n->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
+			}
+		}
+
 		gnode->set_title(node->get_caption());
 		gnode->set_position_offset(pos * EDSCALE);
-		if (error_line == E) {
-			gnode->set_overlay(GraphNode::OVERLAY_POSITION);
-		} else if (node->is_breakpoint()) {
-			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
-		}
 
 		gnode->set_meta("__vnode", node);
 		gnode->set_name(itos(E));
@@ -733,19 +747,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			}
 		}
 
-		if (Object::cast_to<VisualScriptComment>(node.ptr())) {
-			Ref<VisualScriptComment> vsc = node;
-			gnode->set_comment(true);
-			gnode->set_resizable(true);
-			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
-			gnode->connect("resize_request", callable_mp(this, &VisualScriptEditor::_comment_node_resized), varray(E));
-		}
-
 		if (node_styles.has(node->get_category())) {
 			Ref<StyleBoxFlat> sbf = node_styles[node->get_category()];
-			if (gnode->is_comment()) {
-				sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox(SNAME("comment"), SNAME("GraphNode"));
-			}
 
 			Color c = sbf->get_border_color();
 			c = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
@@ -759,222 +762,222 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		const Color mono_color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
 
-		int slot_idx = 0;
+		if (!is_comment) {
+			GraphNode *graph_node = Object::cast_to<GraphNode>(gnode);
 
-		bool single_seq_output = node->get_output_sequence_port_count() == 1 && node->get_output_sequence_port_text(0) == String();
-		if ((node->has_input_sequence_port() || single_seq_output) || has_gnode_text) {
-			// IF has_gnode_text is true BUT we have no sequence ports to draw (in here),
-			// we still draw the disabled default ones to shift up the slots by one,
-			// so the slots DON'T start with the content text.
+			int slot_idx = 0;
 
-			// IF has_gnode_text is false, but we DO want to draw default sequence ports,
-			// we draw a dummy text to take up the position of the sequence nodes, so all the other ports are still aligned correctly.
-			if (!has_gnode_text) {
-				Label *dummy = memnew(Label);
-				dummy->set_text(" ");
-				gnode->add_child(dummy);
+			bool single_seq_output = node->get_output_sequence_port_count() == 1 && node->get_output_sequence_port_text(0) == String();
+			if ((node->has_input_sequence_port() || single_seq_output) || has_gnode_text) {
+				// IF has_gnode_text is true BUT we have no sequence ports to draw (in here),
+				// we still draw the disabled default ones to shift up the slots by one,
+				// so the slots DON'T start with the content text.
+
+				// IF has_gnode_text is false, but we DO want to draw default sequence ports,
+				// we draw a dummy text to take up the position of the sequence nodes, so all the other ports are still aligned correctly.
+				if (!has_gnode_text) {
+					Label *dummy = memnew(Label);
+					dummy->set_text(" ");
+					graph_node->add_child(dummy);
+				}
+				graph_node->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
+				slot_idx++;
 			}
-			gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
-			slot_idx++;
-		}
 
-		int mixed_seq_ports = 0;
+			int mixed_seq_ports = 0;
 
-		if (!single_seq_output) {
-			if (node->has_mixed_input_and_sequence_ports()) {
-				mixed_seq_ports = node->get_output_sequence_port_count();
-			} else {
-				for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
-					Label *text2 = memnew(Label);
-					text2->set_text(node->get_output_sequence_port_text(i));
-					text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-					gnode->add_child(text2);
-					gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
-					slot_idx++;
+			if (!single_seq_output) {
+				if (node->has_mixed_input_and_sequence_ports()) {
+					mixed_seq_ports = node->get_output_sequence_port_count();
+				} else {
+					for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
+						Label *text2 = memnew(Label);
+						text2->set_text(node->get_output_sequence_port_text(i));
+						text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+						graph_node->add_child(text2);
+						graph_node->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
+						slot_idx++;
+					}
 				}
 			}
-		}
 
-		for (int i = 0; i < MAX(node->get_output_value_port_count(), MAX(mixed_seq_ports, node->get_input_value_port_count())); i++) {
-			bool left_ok = false;
-			Variant::Type left_type = Variant::NIL;
-			String left_name;
+			for (int i = 0; i < MAX(node->get_output_value_port_count(), MAX(mixed_seq_ports, node->get_input_value_port_count())); i++) {
+				bool left_ok = false;
+				Variant::Type left_type = Variant::NIL;
+				String left_name;
 
-			if (i < node->get_input_value_port_count()) {
-				PropertyInfo pi = node->get_input_value_port_info(i);
-				left_ok = true;
-				left_type = pi.type;
-				left_name = pi.name;
-			}
-
-			bool right_ok = false;
-			Variant::Type right_type = Variant::NIL;
-			String right_name;
-
-			if (i >= mixed_seq_ports && i < node->get_output_value_port_count() + mixed_seq_ports) {
-				PropertyInfo pi = node->get_output_value_port_info(i - mixed_seq_ports);
-				right_ok = true;
-				right_type = pi.type;
-				right_name = pi.name;
-			}
-			VBoxContainer *vbc = memnew(VBoxContainer);
-			HBoxContainer *hbc = memnew(HBoxContainer);
-			HBoxContainer *hbc2 = memnew(HBoxContainer);
-			vbc->add_child(hbc);
-			vbc->add_child(hbc2);
-			if (left_ok) {
-				Ref<Texture2D> t;
-				if (left_type >= 0 && left_type < Variant::VARIANT_MAX) {
-					t = type_icons[left_type];
-				}
-				if (t.is_valid()) {
-					TextureRect *tf = memnew(TextureRect);
-					tf->set_texture(t);
-					tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-					hbc->add_child(tf);
+				if (i < node->get_input_value_port_count()) {
+					PropertyInfo pi = node->get_input_value_port_info(i);
+					left_ok = true;
+					left_type = pi.type;
+					left_name = pi.name;
 				}
 
-				if (is_vslist) {
-					if (nd_list->is_input_port_name_editable()) {
-						LineEdit *name_box = memnew(LineEdit);
-						hbc->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
-						name_box->set_text(left_name);
-						name_box->set_expand_to_text_length_enabled(true);
-						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
-						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, true));
+				bool right_ok = false;
+				Variant::Type right_type = Variant::NIL;
+				String right_name;
+
+				if (i >= mixed_seq_ports && i < node->get_output_value_port_count() + mixed_seq_ports) {
+					PropertyInfo pi = node->get_output_value_port_info(i - mixed_seq_ports);
+					right_ok = true;
+					right_type = pi.type;
+					right_name = pi.name;
+				}
+				VBoxContainer *vbc = memnew(VBoxContainer);
+				HBoxContainer *hbc = memnew(HBoxContainer);
+				HBoxContainer *hbc2 = memnew(HBoxContainer);
+				vbc->add_child(hbc);
+				vbc->add_child(hbc2);
+				if (left_ok) {
+					Ref<Texture2D> t;
+					if (left_type >= 0 && left_type < Variant::VARIANT_MAX) {
+						t = type_icons[left_type];
+					}
+					if (t.is_valid()) {
+						TextureRect *tf = memnew(TextureRect);
+						tf->set_texture(t);
+						tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+						hbc->add_child(tf);
+					}
+
+					if (is_vslist) {
+						if (nd_list->is_input_port_name_editable()) {
+							LineEdit *name_box = memnew(LineEdit);
+							hbc->add_child(name_box);
+							name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+							name_box->set_text(left_name);
+							name_box->set_expand_to_text_length_enabled(true);
+							name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
+							name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, true));
+						} else {
+							hbc->add_child(memnew(Label(left_name)));
+						}
+
+						if (nd_list->is_input_port_type_editable()) {
+							OptionButton *opbtn = memnew(OptionButton);
+							for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
+								opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
+							}
+							opbtn->select(left_type);
+							opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+							hbc->add_child(opbtn);
+							opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, true), CONNECT_DEFERRED);
+						}
+
+						Button *rmbtn = memnew(Button);
+						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+						hbc->add_child(rmbtn);
+						rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E, i), CONNECT_DEFERRED);
 					} else {
 						hbc->add_child(memnew(Label(left_name)));
 					}
 
-					if (nd_list->is_input_port_type_editable()) {
-						OptionButton *opbtn = memnew(OptionButton);
-						for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
-							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
+					if (left_type != Variant::NIL && !script->is_input_value_port_connected(E, i)) {
+						PropertyInfo pi = node->get_input_value_port_info(i);
+						Button *button = memnew(Button);
+						Variant value = node->get_default_input_value(i);
+						if (value.get_type() != left_type) {
+							//different type? for now convert
+							//not the same, reconvert
+							Callable::CallError ce;
+							const Variant *existingp = &value;
+							Variant::construct(left_type, value, &existingp, 1, ce);
 						}
-						opbtn->select(left_type);
-						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-						hbc->add_child(opbtn);
-						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, true), CONNECT_DEFERRED);
-					}
 
-					Button *rmbtn = memnew(Button);
-					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E, i), CONNECT_DEFERRED);
+						if (left_type == Variant::COLOR) {
+							button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
+							button->connect("draw", callable_mp(this, &VisualScriptEditor::_draw_color_over_button), varray(button, value));
+						} else if (left_type == Variant::OBJECT && Ref<Resource>(value).is_valid()) {
+							Ref<Resource> res = value;
+							Array arr;
+							arr.push_back(button->get_instance_id());
+							arr.push_back(String(value));
+							EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_button_resource_previewed", arr);
+
+						} else if (pi.type == Variant::INT && pi.hint == PROPERTY_HINT_ENUM) {
+							button->set_text(pi.hint_string.get_slice(",", value));
+						} else {
+							button->set_text(value);
+						}
+						button->connect("pressed", callable_mp(this, &VisualScriptEditor::_default_value_edited), varray(button, E, i));
+						hbc2->add_child(button);
+					}
 				} else {
-					hbc->add_child(memnew(Label(left_name)));
+					Control *c = memnew(Control);
+					c->set_custom_minimum_size(Size2(10, 0) * EDSCALE);
+					hbc->add_child(c);
 				}
 
-				if (left_type != Variant::NIL && !script->is_input_value_port_connected(E, i)) {
-					PropertyInfo pi = node->get_input_value_port_info(i);
-					Button *button = memnew(Button);
-					Variant value = node->get_default_input_value(i);
-					if (value.get_type() != left_type) {
-						//different type? for now convert
-						//not the same, reconvert
-						Callable::CallError ce;
-						const Variant *existingp = &value;
-						Variant::construct(left_type, value, &existingp, 1, ce);
-					}
+				hbc->add_spacer();
+				hbc2->add_spacer();
 
-					if (left_type == Variant::COLOR) {
-						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-						button->connect("draw", callable_mp(this, &VisualScriptEditor::_draw_color_over_button), varray(button, value));
-					} else if (left_type == Variant::OBJECT && Ref<Resource>(value).is_valid()) {
-						Ref<Resource> res = value;
-						Array arr;
-						arr.push_back(button->get_instance_id());
-						arr.push_back(String(value));
-						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_button_resource_previewed", arr);
-
-					} else if (pi.type == Variant::INT && pi.hint == PROPERTY_HINT_ENUM) {
-						button->set_text(pi.hint_string.get_slice(",", value));
-					} else {
-						button->set_text(value);
-					}
-					button->connect("pressed", callable_mp(this, &VisualScriptEditor::_default_value_edited), varray(button, E, i));
-					hbc2->add_child(button);
+				if (i < mixed_seq_ports) {
+					Label *text2 = memnew(Label);
+					text2->set_text(node->get_output_sequence_port_text(i));
+					text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+					hbc->add_child(text2);
 				}
-			} else {
-				Control *c = memnew(Control);
-				c->set_custom_minimum_size(Size2(10, 0) * EDSCALE);
-				hbc->add_child(c);
-			}
 
-			hbc->add_spacer();
-			hbc2->add_spacer();
+				if (right_ok) {
+					if (is_vslist) {
+						Button *rmbtn = memnew(Button);
+						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+						hbc->add_child(rmbtn);
+						rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E, i), CONNECT_DEFERRED);
 
-			if (i < mixed_seq_ports) {
-				Label *text2 = memnew(Label);
-				text2->set_text(node->get_output_sequence_port_text(i));
-				text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-				hbc->add_child(text2);
-			}
-
-			if (right_ok) {
-				if (is_vslist) {
-					Button *rmbtn = memnew(Button);
-					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E, i), CONNECT_DEFERRED);
-
-					if (nd_list->is_output_port_type_editable()) {
-						OptionButton *opbtn = memnew(OptionButton);
-						for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
-							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
+						if (nd_list->is_output_port_type_editable()) {
+							OptionButton *opbtn = memnew(OptionButton);
+							for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
+								opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
+							}
+							opbtn->select(right_type);
+							opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+							hbc->add_child(opbtn);
+							opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, false), CONNECT_DEFERRED);
 						}
-						opbtn->select(right_type);
-						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-						hbc->add_child(opbtn);
-						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E, i, false), CONNECT_DEFERRED);
-					}
 
-					if (nd_list->is_output_port_name_editable()) {
-						LineEdit *name_box = memnew(LineEdit);
-						hbc->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
-						name_box->set_text(right_name);
-						name_box->set_expand_to_text_length_enabled(true);
-						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
-						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, false));
+						if (nd_list->is_output_port_name_editable()) {
+							LineEdit *name_box = memnew(LineEdit);
+							hbc->add_child(name_box);
+							name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+							name_box->set_text(right_name);
+							name_box->set_expand_to_text_length_enabled(true);
+							name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E));
+							name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E, i, false));
+						} else {
+							hbc->add_child(memnew(Label(right_name)));
+						}
 					} else {
 						hbc->add_child(memnew(Label(right_name)));
 					}
+
+					Ref<Texture2D> t;
+					if (right_type >= 0 && right_type < Variant::VARIANT_MAX) {
+						t = type_icons[right_type];
+					}
+					if (t.is_valid()) {
+						TextureRect *tf = memnew(TextureRect);
+						tf->set_texture(t);
+						tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+						hbc->add_child(tf);
+					}
+				}
+
+				graph_node->add_child(vbc);
+
+				bool dark_theme = get_theme_constant(SNAME("dark_theme"), SNAME("Editor"));
+				if (i < mixed_seq_ports) {
+					graph_node->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture2D>(), seq_port);
 				} else {
-					hbc->add_child(memnew(Label(right_name)));
+					graph_node->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), right_ok, right_type, _color_from_type(right_type, dark_theme));
 				}
 
-				Ref<Texture2D> t;
-				if (right_type >= 0 && right_type < Variant::VARIANT_MAX) {
-					t = type_icons[right_type];
-				}
-				if (t.is_valid()) {
-					TextureRect *tf = memnew(TextureRect);
-					tf->set_texture(t);
-					tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-					hbc->add_child(tf);
-				}
+				slot_idx++;
 			}
-
-			gnode->add_child(vbc);
-
-			bool dark_theme = get_theme_constant(SNAME("dark_theme"), SNAME("Editor"));
-			if (i < mixed_seq_ports) {
-				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture2D>(), seq_port);
-			} else {
-				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), right_ok, right_type, _color_from_type(right_type, dark_theme));
-			}
-
-			slot_idx++;
-		}
-		graph->add_child(gnode);
-		gnode->set_theme(vstheme);
-		if (gnode->is_comment()) {
-			graph->move_child(gnode, 0);
+			graph->add_child(graph_node);
+			graph_node->set_theme(vstheme);
 		}
 	}
-
 	_update_graph_connections();
 
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
@@ -1725,7 +1728,7 @@ void VisualScriptEditor::_on_nodes_copy() {
 	clipboard->sequence_connections.clear();
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected()) {
 				int id = gn->get_name().operator String().to_int();
@@ -1833,7 +1836,7 @@ void VisualScriptEditor::_on_nodes_paste() {
 	undo_redo->commit_action();
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gn) {
 			int id = gn->get_name().operator String().to_int();
 			gn->set_selected(to_select.has(id));
@@ -1847,7 +1850,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 	List<int> to_erase;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
 				to_erase.push_back(gn->get_name().operator String().to_int());
@@ -1895,7 +1898,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	RBSet<int> to_duplicate;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
 				int id = gn->get_name().operator String().to_int();
@@ -1950,7 +1953,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	undo_redo->commit_action();
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gn) {
 			int id = gn->get_name().operator String().to_int();
 			gn->set_selected(to_select.has(id));
@@ -1990,7 +1993,7 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		bool is_empty_selection = true;
 
 		for (int i = 0; i < graph->get_child_count(); i++) {
-			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 			if (gn && gn->is_selected()) {
 				is_empty_selection = false;
 				break;
@@ -2715,11 +2718,11 @@ void VisualScriptEditor::set_edit_state(const Variant &p_state) {
 
 void VisualScriptEditor::_center_on_node(int p_id) {
 	Node *n = graph->get_node(itos(p_id));
-	GraphNode *gn = Object::cast_to<GraphNode>(n);
+	BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(n);
 
 	// Clear selection.
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gnd = Object::cast_to<GraphNode>(graph->get_child(i));
+		BaseGraphNode *gnd = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 		if (gnd) {
 			gnd->set_selected(false);
 		}
@@ -2938,8 +2941,8 @@ void VisualScriptEditor::_move_node(int p_id, const Vector2 &p_to) {
 
 	Node *node = graph->get_node(itos(p_id));
 
-	if (Object::cast_to<GraphNode>(node)) {
-		Object::cast_to<GraphNode>(node)->set_position_offset(p_to);
+	if (Object::cast_to<BaseGraphNode>(node)) {
+		Object::cast_to<BaseGraphNode>(node)->set_position_offset(p_to);
 	}
 
 	script->set_node_position(p_id, p_to / EDSCALE);
@@ -3153,7 +3156,7 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 
 void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos) {
 	Node *node = graph->get_node(p_from);
-	GraphNode *gn = Object::cast_to<GraphNode>(node);
+	BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(node);
 	if (!gn) {
 		return;
 	}
@@ -3971,11 +3974,11 @@ void VisualScriptEditor::_notification(int p_what) {
 			}
 
 			for (const KeyValue<StringName, Color> &E : node_colors) {
-				const Ref<StyleBoxFlat> sb = tm->get_stylebox(SNAME("frame"), SNAME("GraphNode"));
+				const Ref<StyleBoxFlat> sb = tm->get_stylebox(SNAME("frame"), SNAME("BaseGraphNode"));
 
 				if (!sb.is_null()) {
 					Ref<StyleBoxFlat> frame_style = sb->duplicate();
-					// Adjust the border color to be close to the GraphNode's background color.
+					// Adjust the border color to be close to the BaseGraphNode's background color.
 					// This keeps the node's title area from being too distracting.
 					Color color = dark_theme ? E.value.darkened(0.75) : E.value.lightened(0.75);
 					color.a = 0.9;
@@ -4019,7 +4022,7 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 	}
 
 	Node *node = graph->get_node(itos(p_node));
-	GraphNode *gn = Object::cast_to<GraphNode>(node);
+	BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(node);
 	if (!gn) {
 		return;
 	}
@@ -4057,7 +4060,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case EDIT_TOGGLE_BREAKPOINT: {
 			List<String> reselect;
 			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+				BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 				if (gn) {
 					if (gn->is_selected()) {
 						int id = String(gn->get_name()).to_int();
@@ -4073,7 +4076,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			_update_graph();
 
 			for (const String &E : reselect) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(E));
+				BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_node(E));
 				gn->set_selected(true);
 			}
 
@@ -4099,7 +4102,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			HashMap<int, Ref<VisualScriptNode>> nodes;
 			RBSet<int> selections;
 			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+				BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(i));
 				if (gn) {
 					if (gn->is_selected()) {
 						int id = String(gn->get_name()).to_int();
@@ -4310,7 +4313,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			// Make sure all Nodes get marked for selection so that they can be moved together.
 			selections.insert(fn_id);
 			for (int k = 0; k < graph->get_child_count(); k++) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(k));
+				BaseGraphNode *gn = Object::cast_to<BaseGraphNode>(graph->get_child(k));
 				if (gn) {
 					int id = gn->get_name().operator String().to_int();
 					gn->set_selected(selections.has(id));

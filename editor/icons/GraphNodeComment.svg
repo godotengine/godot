@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="16"
+   viewBox="0 0 16 16"
+   width="16"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="GraphNodeComment.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="true"
+     inkscape:zoom="39.730563"
+     inkscape:cx="8.5073046"
+     inkscape:cy="4.215898"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g4-8"
+     inkscape:snap-intersection-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-global="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid926" />
+  </sodipodi:namedview>
+  <g
+     transform="translate(0,-1036.4)"
+     id="g4">
+    <g
+       transform="translate(0,5e-5)"
+       id="g4-1">
+      <g
+         transform="translate(0,-5e-5)"
+         id="g4-8">
+        <path
+           id="path2"
+           d="M 3,1 C 1.8954305,1 1,1.8954305 1,3 1.0005537,3.7139771 1.3816774,4.3734803 2,4.7304688 V 11.271484 C 1.3822951,11.628115 1.001267,12.286738 1,13 1,14.104569 1.8954305,15 3,15 4.1045695,15 5,14.104569 5,13 4.9994463,12.286023 4.6183226,11.626519 4,11.269531 V 5.4140625 L 6.3847656,7.7988281 A 1.8741523,2.3489828 0 0 1 7.765625,6.3515625 L 5.4140625,4 H 11.271484 C 11.628115,4.6177049 12.286738,4.998733 13,5 14.104569,5 15,4.1045695 15,3 15,1.8954305 14.104569,1 13,1 12.286023,1.0005537 11.626519,1.3816774 11.269531,2 H 4.7285156 C 4.371885,1.3822951 3.7132623,1.001267 3,1 Z"
+           transform="translate(0,1036.4)"
+           style="fill:#8eef97;fill-opacity:1" />
+        <path
+           id="rect1142"
+           style="fill:#8eef97;fill-opacity:1;stroke-width:15.1181;stroke-linecap:round;stroke-linejoin:round;stroke-dashoffset:16.5;paint-order:stroke markers fill"
+           d="M 8,6 C 6.892,6 6,6.8920135 6,8 v 5 c 0,1.107986 0.892,2 2,2 h 5 c 1.108,0 2,-0.892014 2,-2 V 8 C 15,6.8920135 14.108,6 13,6 Z m 0,1 h 5 c 0.554,0 1,0.4392255 1,0.984375 v 0.03125 C 14,8.5607745 13.554,9 13,9 H 8 C 7.446,9 7,8.5607745 7,8.015625 V 7.984375 C 7,7.4392255 7.446,7 8,7 Z m 0,3 h 2 c 0.554,0 1,0.439225 1,0.984375 v 0.03125 C 11,11.560775 10.554,12 10,12 H 8 C 7.446,12 7,11.560775 7,11.015625 v -0.03125 C 7,10.439225 7.446,10 8,10 Z"
+           transform="translate(0,1036.4)" />
+      </g>
+    </g>
+  </g>
+</svg>
