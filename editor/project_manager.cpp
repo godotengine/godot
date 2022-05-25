@@ -2773,6 +2773,9 @@ ProjectManager::ProjectManager() {
 		center_box->add_child(settings_hb);
 	}
 
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+#ifndef JAVASCRIPT_ENABLED
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Asset Library Projects"));
@@ -2781,6 +2784,7 @@ ProjectManager::ProjectManager() {
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+#endif
 
 	{
 		// Dialogs
