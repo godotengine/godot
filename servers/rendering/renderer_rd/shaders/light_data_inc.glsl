@@ -37,15 +37,24 @@ struct LightData { //this structure needs to be as packed as possible
 struct ReflectionData {
 	highp vec3 box_extents;
 	mediump float index;
+
 	highp vec3 box_offset;
 	uint mask;
+
 	mediump vec3 ambient; // ambient color
 	mediump float intensity;
+
+	mediump float inv_fade_start;
 	bool exterior;
 	bool box_project;
 	uint ambient_mode;
+
 	float exposure_normalization;
-	//0-8 is intensity,8-9 is ambient, mode
+	float pad0;
+	float pad1;
+	float pad2;
+
+	// 0-8 is intensity, 8-9 is ambient, mode
 	highp mat4 local_matrix; // up to here for spot and omni, rest is for directional
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
 };

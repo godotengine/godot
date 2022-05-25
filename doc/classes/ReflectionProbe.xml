@@ -34,6 +34,9 @@
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
 		</member>
+		<member name="fade_start" type="float" setter="set_fade_start" getter="get_fade_start" default="0.5">
+			The percentage of the distance from the origin at which reflections will start fading to other reflection sources (such as other [ReflectionProbe]s or the environment sky reflections). Higher values make the [ReflectionProbe] more visible, with more aggressive fading in the corners. If you have trouble with sky reflections being visible in partially indoor areas, increase [member fade_start].
+		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
 			Defines the reflection intensity. Intensity modulates the strength of the reflection.
 		</member>
