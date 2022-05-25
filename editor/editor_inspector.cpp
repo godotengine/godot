@@ -1589,7 +1589,7 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 			break;
 		case OPTION_MOVE_DOWN:
 			if (popup_array_index_pressed < count - 1) {
-				_move_element(popup_array_index_pressed, popup_array_index_pressed + 2);
+				_move_element(popup_array_index_pressed, popup_array_index_pressed + 1);
 			}
 			break;
 		case OPTION_NEW_BEFORE:
@@ -2155,12 +2155,13 @@ Variant EditorInspectorArray::get_drag_data_fw(const Point2 &p_point, Control *p
 void EditorInspectorArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary dict = p_data;
 
-	int to_drop = dict["index"];
-	int drop_position = _drop_position();
-	if (drop_position < 0) {
-		return;
+	int current_index = dict["index"];
+	int target_index = begin_array_index + _drop_position();
+	if (target_index > current_index) {
+		// The current element will be removed, so shift the target down.
+		--target_index;
 	}
-	_move_element(to_drop, begin_array_index + drop_position);
+	_move_element(current_index, target_index);
 }
 
 bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {

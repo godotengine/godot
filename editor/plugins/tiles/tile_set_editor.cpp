@@ -477,7 +477,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	} else {
 		// Moving.
 		begin = MIN(p_from_index, p_to_pos);
-		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
+		end = MIN(MAX(p_from_index, p_to_pos), end);
 	}
 
 #define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));

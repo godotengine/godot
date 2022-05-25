@@ -580,14 +580,14 @@ void TileMap::add_layer(int p_to_pos) {
 
 void TileMap::move_layer(int p_layer, int p_to_pos) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+	ERR_FAIL_INDEX(p_to_pos, (int)layers.size());
 
 	// Clear before shuffling layers.
 	_clear_internals();
 
 	TileMapLayer tl = layers[p_layer];
+	layers.remove_at(p_layer);
 	layers.insert(p_to_pos, tl);
-	layers.remove_at(p_to_pos < p_layer ? p_layer + 1 : p_layer);
 	_recreate_internals();
 	notify_property_list_changed();
 
