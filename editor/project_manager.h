@@ -53,7 +53,7 @@ class ProjectManager : public Control {
 	Button *run_btn;
 	Button *about_btn;
 
-	EditorAssetLibrary *asset_library;
+	EditorAssetLibrary *asset_library = nullptr;
 
 	ProjectListFilter *project_filter;
 	ProjectListFilter *project_order_filter;
@@ -71,7 +71,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
-	ConfirmationDialog *open_templates;
+	ConfirmationDialog *open_templates = nullptr;
 	EditorAbout *about;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
