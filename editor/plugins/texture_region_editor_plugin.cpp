@@ -1141,8 +1141,7 @@ void EditorInspectorPluginTextureRegion::_region_edit(Object *p_object) {
 bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if ((p_type == Variant::RECT2 || p_type == Variant::RECT2I)) {
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
-			Button *button = memnew(Button);
-			button->set_text(TTR("Edit Region"));
+			Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Region"));
 			button->set_icon(texture_region_editor->get_theme_icon(SNAME("RegionEdit"), SNAME("EditorIcons")));
 			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit), varray(p_object));
 			add_property_editor(p_path, button, true);
