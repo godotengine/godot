@@ -680,8 +680,8 @@ public:
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
-	Map<StringName, Callable> captures;
-	Map<StringName, Ref<EngineProfiler>> profilers;
+	HashMap<StringName, Callable> captures;
+	HashMap<StringName, Ref<EngineProfiler>> profilers;
 
 protected:
 	static void _bind_methods();

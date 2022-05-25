@@ -50,7 +50,7 @@ enum FilterOption {
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
-	Map<String, Ref<Texture2D>> icon_type_cache;
+	HashMap<String, Ref<Texture2D>> icon_type_cache;
 	void _build_icon_type_cache(Ref<Theme> p_theme);
 
 	static ProjectManager *singleton;
@@ -70,6 +70,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
+	HBoxContainer *local_projects_hb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	EditorFileDialog *scan_dir = nullptr;

@@ -38,18 +38,11 @@
  */
 struct hb_priority_queue_t
 {
-  HB_DELETE_COPY_ASSIGN (hb_priority_queue_t);
-  hb_priority_queue_t ()  { init (); }
-  ~hb_priority_queue_t () { fini (); }
-
  private:
   typedef hb_pair_t<int64_t, unsigned> item_t;
   hb_vector_t<item_t> heap;
 
  public:
-  void init () { heap.init (); }
-
-  void fini () { heap.fini (); }
 
   void reset () { heap.resize (0); }
 
@@ -58,14 +51,17 @@ struct hb_priority_queue_t
   void insert (int64_t priority, unsigned value)
   {
     heap.push (item_t (priority, value));
+    if (unlikely (heap.in_error ())) return;
     bubble_up (heap.length - 1);
   }
 
   item_t pop_minimum ()
   {
-    item_t result = heap[0];
+    assert (!is_empty ());
 
-    heap[0] = heap[heap.length - 1];
+    item_t result = heap.arrayZ[0];
+
+    heap.arrayZ[0] = heap.arrayZ[heap.length - 1];
     heap.shrink (heap.length - 1);
     bubble_down (0);
 
@@ -104,6 +100,8 @@ struct hb_priority_queue_t
 
   void bubble_down (unsigned index)
   {
+    assert (index <= heap.length);
+
     unsigned left = left_child (index);
     unsigned right = right_child (index);
 
@@ -113,11 +111,11 @@ struct hb_priority_queue_t
       return;
 
     bool has_right = right < heap.length;
-    if (heap[index].first <= heap[left].first
-        && (!has_right || heap[index].first <= heap[right].first))
+    if (heap.arrayZ[index].first <= heap.arrayZ[left].first
+        && (!has_right || heap[index].first <= heap.arrayZ[right].first))
       return;
 
-    if (!has_right || heap[left].first < heap[right].first)
+    if (!has_right || heap.arrayZ[left].first < heap.arrayZ[right].first)
     {
       swap (index, left);
       bubble_down (left);
@@ -130,10 +128,12 @@ struct hb_priority_queue_t
 
   void bubble_up (unsigned index)
   {
+    assert (index <= heap.length);
+
     if (index == 0) return;
 
     unsigned parent_index = parent (index);
-    if (heap[parent_index].first <= heap[index].first)
+    if (heap.arrayZ[parent_index].first <= heap.arrayZ[index].first)
       return;
 
     swap (index, parent_index);
@@ -142,9 +142,9 @@ struct hb_priority_queue_t
 
   void swap (unsigned a, unsigned b)
   {
-    item_t temp = heap[a];
-    heap[a] = heap[b];
-    heap[b] = temp;
+    assert (a <= heap.length);
+    assert (b <= heap.length);
+    hb_swap (heap.arrayZ[a], heap.arrayZ[b]);
   }
 };
 

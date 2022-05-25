@@ -350,7 +350,6 @@ void AudioStreamOGGVorbis::maybe_update_info() {
 	vorbis_info_init(&info);
 	vorbis_comment_init(&comment);
 
-	int packet_count = 0;
 	Ref<OGGPacketSequencePlayback> packet_sequence_playback = packet_sequence->instance_playback();
 
 	for (int i = 0; i < 3; i++) {
@@ -369,8 +368,6 @@ void AudioStreamOGGVorbis::maybe_update_info() {
 
 		err = vorbis_synthesis_headerin(&info, &comment, packet);
 		ERR_FAIL_COND_MSG(err != 0, "Error parsing header packet " + itos(i) + ": " + itos(err));
-
-		packet_count++;
 	}
 
 	packet_sequence->set_sampling_rate(info.rate);

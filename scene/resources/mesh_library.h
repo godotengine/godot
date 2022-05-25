@@ -32,7 +32,7 @@
 #define MESH_LIBRARY_H
 
 #include "core/io/resource.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "shape_3d.h"
@@ -56,7 +56,7 @@ public:
 		Ref<NavigationMesh> navmesh;
 	};
 
-	Map<int, Item> item_map;
+	RBMap<int, Item> item_map;
 
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;

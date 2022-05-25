@@ -108,11 +108,15 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::CLASS: {
-			// Locate class by constructing the path to it and following that path
+			// Locate class by constructing the path to it and following that path.
 			GDScriptParser::ClassNode *class_type = p_datatype.class_type;
 			if (class_type) {
-				const bool is_inner_by_path = (!main_script->path.is_empty()) && (class_type->fqcn.split("::")[0] == main_script->path);
-				const bool is_inner_by_name = (!main_script->name.is_empty()) && (class_type->fqcn.split("::")[0] == main_script->name);
+				result.kind = GDScriptDataType::GDSCRIPT;
+				result.builtin_type = p_datatype.builtin_type;
+
+				String class_name = class_type->fqcn.split("::")[0];
+				const bool is_inner_by_path = (!main_script->path.is_empty()) && (class_name == main_script->path);
+				const bool is_inner_by_name = (!main_script->name.is_empty()) && (class_name == main_script->name);
 				if (is_inner_by_path || is_inner_by_name) {
 					// Local class.
 					List<StringName> names;
@@ -131,16 +135,41 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						script = script->subclasses[names.back()->get()];
 						names.pop_back();
 					}
-					result.kind = GDScriptDataType::GDSCRIPT;
 					result.script_type = script.ptr();
 					result.native_type = script->get_instance_base_type();
-					result.builtin_type = p_datatype.builtin_type;
 				} else {
-					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					// Inner class.
+					PackedStringArray classes = class_type->fqcn.split("::");
+					if (!classes.is_empty()) {
+						for (GDScript *script : parsed_classes) {
+							// Checking of inheritance structure of inner class to find a correct script link.
+							if (script->name == classes[classes.size() - 1]) {
+								PackedStringArray classes2 = script->fully_qualified_name.split("::");
+								bool valid = true;
+								if (classes.size() != classes2.size()) {
+									valid = false;
+								} else {
+									for (int i = 0; i < classes.size(); i++) {
+										if (classes[i] != classes2[i]) {
+											valid = false;
+											break;
+										}
+									}
+								}
+								if (!valid) {
+									continue;
+								}
+								result.script_type_ref = Ref<GDScript>(script);
+								break;
+							}
+						}
+					}
+					if (result.script_type_ref.is_null()) {
+						result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					}
+
 					result.script_type = result.script_type_ref.ptr();
 					result.native_type = p_datatype.native_type;
-					result.builtin_type = p_datatype.builtin_type;
 				}
 			}
 		} break;
@@ -336,7 +365,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 				// If it's an autoload singleton, we postpone to load it at runtime.
 				// This is so one autoload doesn't try to load another before it's compiled.
-				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 				if (autoloads.has(identifier) && autoloads[identifier].is_singleton) {
 					GDScriptCodeGenerator::Address global = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype()));
 					int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
@@ -703,10 +732,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			} else if (subscript->is_attribute) {
 				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 					GDScriptParser::IdentifierNode *identifier = subscript->attribute;
-					const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(identifier->name);
+					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
 
 #ifdef DEBUG_ENABLED
-					if (MI && MI->get().getter == codegen.function_name) {
+					if (MI && MI->value.getter == codegen.function_name) {
 						String n = identifier->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in getter.", identifier);
 						r_error = ERR_COMPILATION_FAILED;
@@ -714,11 +743,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 #endif
 
-					if (MI && MI->get().getter == "") {
+					if (MI && MI->value.getter == "") {
 						// Remove result temp as we don't need it.
 						gen->pop_temporary();
 						// Faster than indexing self (as if no self. had been used).
-						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->get().index, _gdtype_from_datatype(subscript->get_datatype()));
+						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->value.index, _gdtype_from_datatype(subscript->get_datatype()));
 					}
 				}
 
@@ -894,8 +923,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(assignment->assignee);
 #ifdef DEBUG_ENABLED
 				if (subscript->is_attribute && subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
-					const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(subscript->attribute->name);
-					if (MI && MI->get().setter == codegen.function_name) {
+					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
+					if (MI && MI->value.setter == codegen.function_name) {
 						String n = subscript->attribute->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
 						r_error = ERR_COMPILATION_FAILED;
@@ -2500,8 +2529,8 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 	//validate instances if keeping state
 
 	if (p_keep_state) {
-		for (Set<Object *>::Element *E = p_script->instances.front(); E;) {
-			Set<Object *>::Element *N = E->next();
+		for (RBSet<Object *>::Element *E = p_script->instances.front(); E;) {
+			RBSet<Object *>::Element *N = E->next();
 
 			ScriptInstance *si = E->get()->get_script_instance();
 			if (si->is_placeholder()) {
@@ -2563,7 +2592,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 }
 
 void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
-	Map<StringName, Ref<GDScript>> old_subclasses;
+	HashMap<StringName, Ref<GDScript>> old_subclasses;
 
 	if (p_keep_state) {
 		old_subclasses = p_script->subclasses;

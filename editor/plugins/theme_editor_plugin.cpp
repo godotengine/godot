@@ -1287,7 +1287,11 @@ void ThemeItemEditorDialog::_edited_type_selected() {
 	_update_edit_item_tree(selected_type);
 }
 
-void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1461,7 +1465,11 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	}
 }
 
-void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1909,7 +1917,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
-	edit_type_list->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
+	edit_type_list->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
 	edit_add_type_label->set_text(TTR("Add Type:"));
@@ -2011,7 +2019,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);
 	edit_items_vb->add_child(edit_items_tree);
-	edit_items_tree->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
+	edit_items_tree->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
 
 	edit_items_message = memnew(Label);
 	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -2339,8 +2347,8 @@ void ThemeTypeEditor::_update_type_list_debounced() {
 	update_debounce_timer->start();
 }
 
-OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
-	OrderedHashMap<StringName, bool> items;
+HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
+	HashMap<StringName, bool> items;
 	List<StringName> names;
 
 	if (include_default) {
@@ -2367,12 +2375,12 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 	}
 
 	List<StringName> keys;
-	for (OrderedHashMap<StringName, bool>::Element E = items.front(); E; E = E.next()) {
-		keys.push_back(E.key());
+	for (const KeyValue<StringName, bool> &E : items) {
+		keys.push_back(E.key);
 	}
 	keys.sort_custom<StringName::AlphCompare>();
 
-	OrderedHashMap<StringName, bool> ordered_items;
+	HashMap<StringName, bool> ordered_items;
 	for (const StringName &E : keys) {
 		ordered_items[E] = items[E];
 	}
@@ -2464,18 +2472,18 @@ void ThemeTypeEditor::_update_type_items() {
 			color_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = color_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key(), E.get());
+		HashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
+		for (const KeyValue<StringName, bool> &E : color_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key, E.value);
 			ColorPickerButton *item_editor = memnew(ColorPickerButton);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_pick_color(edited_theme->get_color(E.key(), edited_type));
-				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_pick_color(edited_theme->get_color(E.key, edited_type));
+				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed), varray(E.key));
 			} else {
-				item_editor->set_pick_color(Theme::get_default()->get_color(E.key(), edited_type));
+				item_editor->set_pick_color(Theme::get_default()->get_color(E.key, edited_type));
 				item_editor->set_disabled(true);
 			}
 
@@ -2492,9 +2500,9 @@ void ThemeTypeEditor::_update_type_items() {
 			constant_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = constant_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key(), E.get());
+		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
+		for (const KeyValue<StringName, bool> &E : constant_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
@@ -2504,11 +2512,11 @@ void ThemeTypeEditor::_update_type_items() {
 			item_editor->set_allow_greater(true);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_value(edited_theme->get_constant(E.key(), edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
+				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed), varray(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_constant(E.key(), edited_type));
+				item_editor->set_value(Theme::get_default()->get_constant(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2525,25 +2533,25 @@ void ThemeTypeEditor::_update_type_items() {
 			font_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = font_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key(), E.get());
+		HashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
+		for (const KeyValue<StringName, bool> &E : font_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Font");
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				if (edited_theme->has_font(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_font(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_font(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_font(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed), varray(E.key));
 			} else {
-				if (Theme::get_default()->has_font(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key(), edited_type));
+				if (Theme::get_default()->has_font(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -2563,9 +2571,9 @@ void ThemeTypeEditor::_update_type_items() {
 			font_size_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = font_size_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key(), E.get());
+		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
+		for (const KeyValue<StringName, bool> &E : font_size_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
@@ -2575,11 +2583,11 @@ void ThemeTypeEditor::_update_type_items() {
 			item_editor->set_allow_greater(true);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_value(edited_theme->get_font_size(E.key(), edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
+				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed), varray(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_font_size(E.key(), edited_type));
+				item_editor->set_value(Theme::get_default()->get_font_size(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2596,25 +2604,25 @@ void ThemeTypeEditor::_update_type_items() {
 			icon_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = icon_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key(), E.get());
+		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
+		for (const KeyValue<StringName, bool> &E : icon_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Texture2D");
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				if (edited_theme->has_icon(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_icon(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_icon(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_icon(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed), varray(E.key));
 			} else {
-				if (Theme::get_default()->has_icon(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key(), edited_type));
+				if (Theme::get_default()->has_icon(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -2664,26 +2672,26 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(memnew(HSeparator));
 		}
 
-		OrderedHashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = stylebox_items.front(); E; E = E.next()) {
-			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key()) {
+		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
+		for (const KeyValue<StringName, bool> &E : stylebox_items) {
+			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key) {
 				continue;
 			}
 
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, E.key(), E.get());
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_stretch_ratio(1.5);
 			item_editor->set_base_type("StyleBox");
 
-			if (E.get()) {
-				if (edited_theme->has_stylebox(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_stylebox(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(E.key));
 
 				Button *pin_leader_button = memnew(Button);
 				pin_leader_button->set_flat(true);
@@ -2691,10 +2699,10 @@ void ThemeTypeEditor::_update_type_items() {
 				pin_leader_button->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
 				pin_leader_button->set_tooltip(TTR("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
 				item_control->add_child(pin_leader_button);
-				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed), varray(item_editor, E.key()));
+				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed), varray(item_editor, E.key));
 			} else {
-				if (Theme::get_default()->has_stylebox(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key(), edited_type));
+				if (Theme::get_default()->has_stylebox(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key, edited_type));
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
@@ -3211,11 +3219,13 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->get_stylebox_list(edited_type, &names);
 	List<Ref<StyleBox>> styleboxes;
 	for (const StringName &E : names) {
-		if (E == leading_stylebox.item_name) {
+		Ref<StyleBox> sb = edited_theme->get_stylebox(E, edited_type);
+
+		// Avoid itself, stylebox can be shared between items.
+		if (sb == leading_stylebox.stylebox) {
 			continue;
 		}
 
-		Ref<StyleBox> sb = edited_theme->get_stylebox(E, edited_type);
 		if (sb->get_class() == leading_stylebox.stylebox->get_class()) {
 			styleboxes.push_back(sb);
 		}

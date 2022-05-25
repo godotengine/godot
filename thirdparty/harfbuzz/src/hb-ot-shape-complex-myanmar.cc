@@ -105,8 +105,7 @@ setup_masks_myanmar (const hb_ot_shape_plan_t *plan HB_UNUSED,
   HB_BUFFER_ALLOCATE_VAR (buffer, myanmar_category);
   HB_BUFFER_ALLOCATE_VAR (buffer, myanmar_position);
 
-  /* We cannot setup masks here.  We save information about characters
-   * and setup masks later on in a pause-callback. */
+  /* No masks, we just save information about characters. */
 
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;

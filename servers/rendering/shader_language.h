@@ -35,7 +35,7 @@
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -160,8 +160,8 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
-		TK_HINT_WHITE_TEXTURE,
-		TK_HINT_BLACK_TEXTURE,
+		TK_HINT_DEFAULT_WHITE_TEXTURE,
+		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_R,
@@ -170,9 +170,7 @@ public:
 		TK_HINT_ROUGHNESS_A,
 		TK_HINT_ROUGHNESS_GRAY,
 		TK_HINT_ANISOTROPY_TEXTURE,
-		TK_HINT_ALBEDO_TEXTURE,
-		TK_HINT_BLACK_ALBEDO_TEXTURE,
-		TK_HINT_COLOR,
+		TK_HINT_SOURCE_COLOR,
 		TK_HINT_RANGE,
 		TK_HINT_INSTANCE_INDEX,
 		TK_FILTER_NEAREST,
@@ -503,7 +501,7 @@ public:
 		BlockNode *parent_block = nullptr;
 
 		enum BlockType {
-			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_STANDARD,
 			BLOCK_TYPE_FOR_INIT,
 			BLOCK_TYPE_FOR_CONDITION,
 			BLOCK_TYPE_FOR_EXPRESSION,
@@ -512,7 +510,7 @@ public:
 			BLOCK_TYPE_DEFAULT,
 		};
 
-		int block_type = BLOCK_TYPE_STANDART;
+		int block_type = BLOCK_TYPE_STANDARD;
 		SubClassTag block_tag = SubClassTag::TAG_GLOBAL;
 
 		struct Variable {
@@ -525,7 +523,7 @@ public:
 			ConstantNode::Value value;
 		};
 
-		Map<StringName, Variable> variables;
+		HashMap<StringName, Variable> variables;
 		List<Node *> statements;
 		bool single_statement = false;
 		bool use_comma_between_statements = false;
@@ -589,7 +587,7 @@ public:
 			bool is_const;
 			int array_size;
 
-			Map<StringName, Set<int>> tex_argument_connect;
+			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
 
 		StringName name;
@@ -622,7 +620,7 @@ public:
 		struct Function {
 			StringName name;
 			FunctionNode *function = nullptr;
-			Set<StringName> uses_function;
+			HashSet<StringName> uses_function;
 			bool callable;
 		};
 
@@ -653,10 +651,8 @@ public:
 		struct Uniform {
 			enum Hint {
 				HINT_NONE,
-				HINT_COLOR,
 				HINT_RANGE,
-				HINT_ALBEDO,
-				HINT_BLACK_ALBEDO,
+				HINT_SOURCE_COLOR,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
 				HINT_ROUGHNESS_R,
@@ -664,8 +660,8 @@ public:
 				HINT_ROUGHNESS_B,
 				HINT_ROUGHNESS_A,
 				HINT_ROUGHNESS_GRAY,
-				HINT_BLACK,
-				HINT_WHITE,
+				HINT_DEFAULT_BLACK,
+				HINT_DEFAULT_WHITE,
 				HINT_ANISOTROPY,
 				HINT_MAX
 			};
@@ -697,10 +693,10 @@ public:
 			}
 		};
 
-		Map<StringName, Constant> constants;
-		Map<StringName, Varying> varyings;
-		Map<StringName, Uniform> uniforms;
-		Map<StringName, Struct> structs;
+		HashMap<StringName, Constant> constants;
+		HashMap<StringName, Varying> varyings;
+		HashMap<StringName, Uniform> uniforms;
+		HashMap<StringName, Struct> structs;
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
@@ -857,13 +853,13 @@ public:
 	};
 
 	struct FunctionInfo {
-		Map<StringName, BuiltInInfo> built_ins;
-		Map<StringName, StageFunctionInfo> stage_functions;
+		HashMap<StringName, BuiltInInfo> built_ins;
+		HashMap<StringName, StageFunctionInfo> stage_functions;
 
 		bool can_discard = false;
 		bool main_function = false;
 	};
-	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
+	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
 	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
 
@@ -893,15 +889,15 @@ private:
 		}
 	};
 
-	Map<StringName, Usage> used_constants;
-	Map<StringName, Usage> used_varyings;
-	Map<StringName, Usage> used_uniforms;
-	Map<StringName, Usage> used_functions;
-	Map<StringName, Usage> used_structs;
-	Map<ShaderWarning::Code, Map<StringName, Usage> *> warnings_check_map;
+	HashMap<StringName, Usage> used_constants;
+	HashMap<StringName, Usage> used_varyings;
+	HashMap<StringName, Usage> used_uniforms;
+	HashMap<StringName, Usage> used_functions;
+	HashMap<StringName, Usage> used_structs;
+	HashMap<ShaderWarning::Code, HashMap<StringName, Usage> *> warnings_check_map;
 
-	Map<StringName, Map<StringName, Usage>> used_local_vars;
-	Map<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *> warnings_check_map2;
+	HashMap<StringName, HashMap<StringName, Usage>> used_local_vars;
+	HashMap<ShaderWarning::Code, HashMap<StringName, HashMap<StringName, Usage>> *> warnings_check_map2;
 
 	List<ShaderWarning> warnings;
 
@@ -1039,7 +1035,7 @@ private:
 	uint32_t keyword_completion_context;
 #endif // DEBUG_ENABLED
 
-	const Map<StringName, FunctionInfo> *stages = nullptr;
+	const HashMap<StringName, FunctionInfo> *stages = nullptr;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
@@ -1068,10 +1064,10 @@ private:
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
-	String _get_shader_type_list(const Set<String> &p_shader_types) const;
+	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1094,10 +1090,10 @@ public:
 	static String get_shader_type(const String &p_code);
 
 	struct ShaderCompileInfo {
-		Map<StringName, FunctionInfo> functions;
+		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
-		Set<String> shader_types;
+		HashSet<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
 	};
 

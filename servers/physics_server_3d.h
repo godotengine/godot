@@ -133,7 +133,7 @@ public:
 	struct RayParameters {
 		Vector3 from;
 		Vector3 to;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -165,7 +165,7 @@ public:
 
 	struct PointParameters {
 		Vector3 position;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -179,7 +179,7 @@ public:
 		Transform3D transform;
 		Vector3 motion;
 		real_t margin = 0.0;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -520,8 +520,9 @@ public:
 		real_t margin = 0.001;
 		int max_collisions = 1;
 		bool collide_separation_ray = false;
-		Set<RID> exclude_bodies;
-		Set<ObjectID> exclude_objects;
+		HashSet<RID> exclude_bodies;
+		HashSet<ObjectID> exclude_objects;
+		bool recovery_as_collision = false;
 
 		MotionParameters() {}
 
@@ -941,6 +942,9 @@ public:
 
 	Array get_exclude_objects() const;
 	void set_exclude_objects(const Array &p_exclude);
+
+	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
+	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
 };
 
 class PhysicsTestMotionResult3D : public RefCounted {

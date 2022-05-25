@@ -214,7 +214,7 @@ void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Decal::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Decal::get_cull_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_extents", "get_extents");
 	ADD_GROUP("Textures", "texture_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_NORMAL);
@@ -232,8 +232,8 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin"), "set_distance_fade_begin", "get_distance_fade_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length"), "set_distance_fade_length", "get_distance_fade_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_NONE, "suffix:m"), "set_distance_fade_begin", "get_distance_fade_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_NONE, "suffix:m"), "set_distance_fade_length", "get_distance_fade_length");
 	ADD_GROUP("Cull Mask", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 

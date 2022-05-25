@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2021 by
+ * Copyright (C) 2017-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -212,16 +212,14 @@ FT_BEGIN_HEADER
    * @description:
    *   While FreeType's TrueType driver doesn't expose API functions by
    *   itself, it is possible to control its behaviour with @FT_Property_Set
-   *   and @FT_Property_Get.  The following lists the available properties
-   *   together with the necessary macros and structures.
+   *   and @FT_Property_Get.
    *
-   *   The TrueType driver's module name is 'truetype'.
+   *   The TrueType driver's module name is 'truetype'; a single property
+   *   @interpreter-version is available, as documented in the @properties
+   *   section.
    *
-   *   A single property @interpreter-version is available, as documented in
-   *   the @properties section.
-   *
-   *   We start with a list of definitions, kindly provided by Greg
-   *   Hitchcock.
+   *   To help understand the differences between interpreter versions, we
+   *   introduce a list of definitions, kindly provided by Greg Hitchcock.
    *
    *   _Bi-Level Rendering_
    *
@@ -296,6 +294,31 @@ FT_BEGIN_HEADER
    *   (Not to be confused with 'natural widths'.)  This mode removes all the
    *   exceptions in the TrueType interpreter when running with ClearType.
    *   Any issues on widths would still apply, though.
+   *
+   */
+
+
+  /**************************************************************************
+   *
+   * @section:
+   *   ot_svg_driver
+   *
+   * @title:
+   *   The SVG driver
+   *
+   * @abstract:
+   *   Controlling the external rendering of OT-SVG glyphs.
+   *
+   * @description:
+   *   By default, FreeType can only load the 'SVG~' table of OpenType fonts
+   *   if configuration macro `FT_CONFIG_OPTION_SVG` is defined.  To make it
+   *   render SVG glyphs, an external SVG rendering library is needed.  All
+   *   details on the interface between FreeType and the external library
+   *   via function hooks can be found in section @svg_fonts.
+   *
+   *   The OT-SVG driver's module name is 'ot-svg'; it supports a single
+   *   property called @svg-hooks, documented below in the @properties
+   *   section.
    *
    */
 
@@ -795,6 +818,40 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.5
+   */
+
+
+  /**************************************************************************
+   *
+   * @property:
+   *   svg-hooks
+   *
+   * @description:
+   *   Set up the interface between FreeType and an extern SVG rendering
+   *   library like 'librsvg'.  All details on the function hooks can be
+   *   found in section @svg_fonts.
+   *
+   * @example:
+   *   The following example code expects that the four hook functions
+   *   `svg_*` are defined elsewhere.  Error handling is omitted, too.
+   *
+   *   ```
+   *     FT_Library  library;
+   *     SVG_RendererHooks  hooks = {
+   *                          (SVG_Lib_Init_Func)svg_init,
+   *                          (SVG_Lib_Free_Func)svg_free,
+   *                          (SVG_Lib_Render_Func)svg_render,
+   *                          (SVG_Lib_Preset_Slot_Func)svg_preset_slot };
+   *
+   *
+   *     FT_Init_FreeType( &library );
+   *
+   *     FT_Property_Set( library, "ot-svg",
+   *                               "svg-hooks", &hooks );
+   *   ```
+   *
+   * @since:
+   *   2.12
    */
 
 

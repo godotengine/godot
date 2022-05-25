@@ -301,7 +301,8 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	AppxPackager packager;
 	packager.init(fa_pack);
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step("Creating package...", 0)) {
 		return ERR_SKIP;
@@ -498,7 +499,7 @@ void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
 	r_features->push_back("uwp");
 }
 
-void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
 EditorExportPlatformUWP::EditorExportPlatformUWP() {

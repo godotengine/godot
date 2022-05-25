@@ -56,13 +56,11 @@ PhysicsBody2D::~PhysicsBody2D() {
 
 Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p_test_only, real_t p_margin) {
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
 	PhysicsServer2D::MotionResult result;
 
-	bool collided = move_and_collide(parameters, result, p_test_only);
-
-	// Don't report collision when the whole motion is done.
-	if (collided && result.collision_safe_fraction < 1) {
+	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -143,15 +141,9 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distan
 	}
 
 	PhysicsServer2D::MotionParameters parameters(p_from, p_distance, p_margin);
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
-
-	if (colliding) {
-		// Don't report collision when the whole motion is done.
-		return (r->collision_safe_fraction < 1.0);
-	} else {
-		return false;
-	}
+	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -339,17 +331,17 @@ void RigidDynamicBody2D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!node);
 
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+	ERR_FAIL_COND(E->value.in_scene);
 
 	contact_monitor->locked = true;
 
-	E->get().in_scene = true;
+	E->value.in_scene = true;
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -360,17 +352,17 @@ void RigidDynamicBody2D::_body_exit_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene = false;
+	ERR_FAIL_COND(!E->value.in_scene);
+	E->value.in_scene = false;
 
 	contact_monitor->locked = true;
 
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+	for (int i = 0; i < E->value.shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -384,45 +376,45 @@ void RigidDynamicBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p
 	Node *node = Object::cast_to<Node>(obj);
 
 	ERR_FAIL_COND(!contact_monitor);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(objid);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
 
 	if (body_in) {
 		if (!E) {
 			E = contact_monitor->body_map.insert(objid, BodyState());
-			E->get().rid = p_body;
-			//E->get().rc=0;
-			E->get().in_scene = node && node->is_inside_tree();
+			E->value.rid = p_body;
+			//E->value.rc=0;
+			E->value.in_scene = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree), make_binds(objid));
 				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree), make_binds(objid));
-				if (E->get().in_scene) {
+				if (E->value.in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
 			}
 
-			//E->get().rc++;
+			//E->value.rc++;
 		}
 
 		if (node) {
-			E->get().shapes.insert(ShapePair(p_body_shape, p_local_shape));
+			E->value.shapes.insert(ShapePair(p_body_shape, p_local_shape));
 		}
 
-		if (E->get().in_scene) {
+		if (E->value.in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
-		//E->get().rc--;
+		//E->value.rc--;
 
 		if (node) {
-			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
+			E->value.shapes.erase(ShapePair(p_body_shape, p_local_shape));
 		}
 
-		bool in_scene = E->get().in_scene;
+		bool in_scene = E->value.in_scene;
 
-		if (E->get().shapes.is_empty()) {
+		if (E->value.shapes.is_empty()) {
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree));
@@ -431,7 +423,7 @@ void RigidDynamicBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p
 				}
 			}
 
-			contact_monitor->body_map.erase(E);
+			contact_monitor->body_map.remove(E);
 		}
 		if (node && in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
@@ -494,7 +486,7 @@ void RigidDynamicBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) 
 			int local_shape = p_state->get_contact_local_shape(i);
 			int shape = p_state->get_contact_collider_shape(i);
 
-			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
+			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(obj);
 			if (!E) {
 				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
@@ -505,7 +497,7 @@ void RigidDynamicBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) 
 			}
 
 			ShapePair sp(shape, local_shape);
-			int idx = E->get().shapes.find(sp);
+			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
 				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
@@ -515,7 +507,7 @@ void RigidDynamicBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) 
 				continue;
 			}
 
-			E->get().shapes[idx].tagged = true;
+			E->value.shapes[idx].tagged = true;
 		}
 
 		//put the ones to remove
@@ -1022,10 +1014,10 @@ void RigidDynamicBody2D::_bind_methods() {
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater,exp"), "set_inertia", "get_inertia");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5px\u00B2"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater,suffix:px"), "set_center_of_mass", "get_center_of_mass");
 	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
@@ -1039,16 +1031,16 @@ void RigidDynamicBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "freeze"), "set_freeze_enabled", "is_freeze_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
 	ADD_GROUP("Linear", "linear_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "suffix:rad/s"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_GROUP("Constant Forces", "constant_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant_force"), "set_constant_force", "get_constant_force");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant_torque"), "set_constant_torque", "get_constant_torque");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant_force", PROPERTY_HINT_NONE, U"suffix:kg\u22C5px/s\u00B2"), "set_constant_force", "get_constant_force");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant_torque", PROPERTY_HINT_NONE, U"suffix:kg\u22C5px\u00B2/s\u00B2/rad"), "set_constant_torque", "get_constant_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
@@ -1145,6 +1137,7 @@ bool CharacterBody2D::move_and_slide() {
 
 	if (!current_platform_velocity.is_equal_approx(Vector2())) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
 			parameters.exclude_objects.insert(platform_object_id);
@@ -1203,6 +1196,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		Vector2 prev_position = parameters.from.columns[2];
 
@@ -1359,6 +1353,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer2D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1405,6 +1400,7 @@ void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
@@ -1440,6 +1436,7 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
@@ -1755,7 +1752,7 @@ void CharacterBody2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Floating", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
@@ -1769,7 +1766,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:px"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
 	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);

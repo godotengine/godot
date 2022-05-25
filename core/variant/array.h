@@ -125,6 +125,10 @@ public:
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+
+	void set_read_only(bool p_enable);
+	bool is_read_only() const;
+
 	Array(const Array &p_from);
 	Array();
 	~Array();

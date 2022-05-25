@@ -249,7 +249,7 @@ String ProjectSettingsEditor::_get_setting_name() const {
 }
 
 void ProjectSettingsEditor::_add_feature_overrides() {
-	Set<String> presets;
+	HashSet<String> presets;
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
@@ -292,8 +292,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
 	int id = 1;
-	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
-		feature_box->add_item(E->get(), id++);
+	for (const String &E : presets) {
+		feature_box->add_item(E, id++);
 	}
 }
 
@@ -420,7 +420,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	Variant target_value = ps->get(target_name);
 
 	List<PropertyInfo> props;
-	OrderedHashMap<String, Variant> action_values;
+	HashMap<String, Variant> action_values;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	undo_redo->create_action(TTR("Update Input Action Order"));
@@ -437,9 +437,9 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);
 	}
 
-	for (OrderedHashMap<String, Variant>::Element E = action_values.front(); E; E = E.next()) {
-		String name = E.key();
-		Variant value = E.get();
+	for (const KeyValue<String, Variant> &E : action_values) {
+		String name = E.key;
+		const Variant &value = E.value;
 
 		if (name == target_name) {
 			if (p_before) {

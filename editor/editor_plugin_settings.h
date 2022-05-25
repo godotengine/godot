@@ -45,14 +45,12 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
-	Button *create_plugin = nullptr;
-	Button *update_list = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
 
 	void _plugin_activity_changed();
 	void _create_clicked();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	static Vector<String> _get_plugins(const String &p_dir);
 

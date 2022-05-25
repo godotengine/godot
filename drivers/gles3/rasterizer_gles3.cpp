@@ -210,6 +210,9 @@ RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+		// or we need to actually test for this situation before constructing this.
 		return;
 	}
 #endif
@@ -265,13 +268,10 @@ RasterizerGLES3::RasterizerGLES3() {
 	mesh_storage = memnew(GLES3::MeshStorage);
 	particles_storage = memnew(GLES3::ParticlesStorage);
 	light_storage = memnew(GLES3::LightStorage);
+	copy_effects = memnew(GLES3::CopyEffects);
 	storage = memnew(RasterizerStorageGLES3);
 	canvas = memnew(RasterizerCanvasGLES3(storage));
 	scene = memnew(RasterizerSceneGLES3(storage));
-
-	texture_storage->set_main_thread_id(Thread::get_caller_id());
-	// make sure the OS knows to only access the renderer from the main thread
-	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
@@ -282,12 +282,14 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-	ERR_FAIL_COND(texture_storage->frame.current_rt);
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	// TODO: do we need a keep 3d linear option?
+
+	// Make sure we are drawing to the right context.
+	DisplayServer::get_singleton()->gl_window_make_current(p_screen);
 
 	if (rt->external.fbo != 0) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
@@ -296,16 +298,14 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	// Flip content upside down to correct for coordinates.
 	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 // is this p_screen useless in a multi window environment?
 void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	// do this once off for all blits
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	// All blits are going to the system framebuffer, so just bind once.
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-
-	texture_storage->frame.current_rt = nullptr;
 
 	for (int i = 0; i < p_amount; i++) {
 		const BlitToScreen &blit = p_render_targets[i];
@@ -336,8 +336,6 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	}
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	canvas->canvas_begin();
-
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
 
@@ -365,7 +363,6 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	canvas->canvas_end();
 
 	texture_storage->texture_free(texture);
 

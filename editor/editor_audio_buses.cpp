@@ -739,7 +739,11 @@ void EditorAudioBus::_delete_effect_pressed(int p_option) {
 	ur->commit_action();
 }
 
-void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
+void EditorAudioBus::_effect_rmb(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = effects->get_selected();
 	if (!item) {
 		return;
@@ -897,7 +901,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	effects->set_drag_forwarding(this);
-	effects->connect("item_rmb_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
+	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);

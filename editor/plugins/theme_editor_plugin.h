@@ -73,7 +73,7 @@ class ThemeItemImportTree : public VBoxContainer {
 		SELECT_IMPORT_FULL,
 	};
 
-	Map<ThemeItem, ItemCheckedState> selected_items;
+	RBMap<ThemeItem, ItemCheckedState> selected_items;
 
 	LineEdit *import_items_filter = nullptr;
 
@@ -249,10 +249,10 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _dialog_about_to_show();
 	void _update_edit_types();
 	void _edited_type_selected();
-	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id);
+	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _update_edit_item_tree(String p_item_type);
-	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
+	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _add_theme_type(const String &p_new_text);
 	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
@@ -363,7 +363,7 @@ class ThemeTypeEditor : public MarginContainer {
 	VBoxContainer *_create_item_list(Theme::DataType p_data_type);
 	void _update_type_list();
 	void _update_type_list_debounced();
-	OrderedHashMap<StringName, bool> _get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default);
+	HashMap<StringName, bool> _get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default);
 	HBoxContainer *_create_property_control(Theme::DataType p_data_type, String p_item_name, bool p_editable);
 	void _add_focusable(Control *p_control);
 	void _update_type_items();

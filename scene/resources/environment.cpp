@@ -1096,7 +1096,6 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	static const char *high_end_prefixes[] = {
 		"auto_exposure_",
-		"tonemap_",
 		"ssr_",
 		"ssao_",
 		nullptr
@@ -1179,7 +1178,7 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation"), "set_sky_rotation", "get_sky_rotation");
 
 	// Ambient light

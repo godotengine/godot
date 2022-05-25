@@ -206,7 +206,6 @@ class ScriptEditor : public PanelContainer {
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
-		FILE_TOOL_RELOAD,
 		FILE_TOOL_RELOAD_SOFT,
 		SEARCH_IN_FILES,
 		REPLACE_IN_FILES,
@@ -415,7 +414,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
-	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used);
+	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
 
 	void _tree_changed();
 
@@ -455,7 +454,7 @@ class ScriptEditor : public PanelContainer {
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
 
-	Set<String> textfile_extensions;
+	HashSet<String> textfile_extensions;
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 

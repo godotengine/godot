@@ -254,22 +254,24 @@ void GodotArea3D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-				if (E->get().state == 0) { // Nothing happened
-					Map<BodyKey, BodyState>::Element *next = E->next();
-					monitored_bodies.erase(E);
+			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
+				if (E->value.state == 0) { // Nothing happened
+					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					++next;
+					monitored_bodies.remove(E);
 					E = next;
 					continue;
 				}
 
-				res[0] = E->get().state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
-				res[1] = E->key().rid;
-				res[2] = E->key().instance_id;
-				res[3] = E->key().body_shape;
-				res[4] = E->key().area_shape;
+				res[0] = E->value.state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
+				res[1] = E->key.rid;
+				res[2] = E->key.instance_id;
+				res[3] = E->key.body_shape;
+				res[4] = E->key.area_shape;
 
-				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_bodies.erase(E);
+				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				++next;
+				monitored_bodies.remove(E);
 				E = next;
 
 				Callable::CallError ce;
@@ -290,22 +292,24 @@ void GodotArea3D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-				if (E->get().state == 0) { // Nothing happened
-					Map<BodyKey, BodyState>::Element *next = E->next();
-					monitored_areas.erase(E);
+			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
+				if (E->value.state == 0) { // Nothing happened
+					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					++next;
+					monitored_areas.remove(E);
 					E = next;
 					continue;
 				}
 
-				res[0] = E->get().state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
-				res[1] = E->key().rid;
-				res[2] = E->key().instance_id;
-				res[3] = E->key().body_shape;
-				res[4] = E->key().area_shape;
+				res[0] = E->value.state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
+				res[1] = E->key.rid;
+				res[2] = E->key.instance_id;
+				res[3] = E->key.body_shape;
+				res[4] = E->key.area_shape;
 
-				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_areas.erase(E);
+				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				++next;
+				monitored_areas.remove(E);
 				E = next;
 
 				Callable::CallError ce;

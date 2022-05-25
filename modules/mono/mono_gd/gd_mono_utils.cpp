@@ -70,7 +70,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	void *data = CSharpLanguage::get_instance_binding(unmanaged);
 	ERR_FAIL_NULL_V(data, nullptr);
-	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, nullptr);
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;

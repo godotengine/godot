@@ -1179,7 +1179,7 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 		GodotShape2D *shape = shape_owner.get_or_null(p_rid);
 
 		while (shape->get_owners().size()) {
-			GodotShapeOwner2D *so = shape->get_owners().front()->key();
+			GodotShapeOwner2D *so = shape->get_owners().begin()->key;
 			so->remove_shape(shape);
 		}
 
@@ -1212,7 +1212,7 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 		GodotSpace2D *space = space_owner.get_or_null(p_rid);
 
 		while (space->get_objects().size()) {
-			GodotCollisionObject2D *co = static_cast<GodotCollisionObject2D *>(space->get_objects().front()->get());
+			GodotCollisionObject2D *co = static_cast<GodotCollisionObject2D *>(*space->get_objects().begin());
 			co->set_space(nullptr);
 		}
 
@@ -1250,11 +1250,11 @@ void GodotPhysicsServer2D::step(real_t p_step) {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-	for (Set<const GodotSpace2D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step(const_cast<GodotSpace2D *>(E->get()), p_step);
-		island_count += E->get()->get_island_count();
-		active_objects += E->get()->get_active_objects();
-		collision_pairs += E->get()->get_collision_pairs();
+	for (const GodotSpace2D *E : active_spaces) {
+		stepper->step(const_cast<GodotSpace2D *>(E), p_step);
+		island_count += E->get_island_count();
+		active_objects += E->get_active_objects();
+		collision_pairs += E->get_collision_pairs();
 	}
 }
 
@@ -1271,8 +1271,8 @@ void GodotPhysicsServer2D::flush_queries() {
 
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
-	for (Set<const GodotSpace2D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		GodotSpace2D *space = const_cast<GodotSpace2D *>(E->get());
+	for (const GodotSpace2D *E : active_spaces) {
+		GodotSpace2D *space = const_cast<GodotSpace2D *>(E);
 		space->call_queries();
 	}
 
@@ -1292,9 +1292,9 @@ void GodotPhysicsServer2D::flush_queries() {
 			total_time[i] = 0;
 		}
 
-		for (Set<const GodotSpace2D *>::Element *E = active_spaces.front(); E; E = E->next()) {
+		for (const GodotSpace2D *E : active_spaces) {
 			for (int i = 0; i < GodotSpace2D::ELAPSED_TIME_MAX; i++) {
-				total_time[i] += E->get()->get_elapsed_time(GodotSpace2D::ElapsedTime(i));
+				total_time[i] += E->get_elapsed_time(GodotSpace2D::ElapsedTime(i));
 			}
 		}
 

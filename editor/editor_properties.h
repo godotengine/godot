@@ -667,7 +667,7 @@ class EditorPropertyColor : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;

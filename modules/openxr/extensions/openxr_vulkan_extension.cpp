@@ -33,6 +33,7 @@
 #include "../extensions/openxr_vulkan_extension.h"
 #include "../openxr_api.h"
 #include "../openxr_util.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -450,11 +451,9 @@ bool OpenXRVulkanExtension::copy_render_target_to_image(RID p_from_render_target
 	ERR_FAIL_COND_V(fb.is_null(), false);
 
 	// Our vulkan extension can only be used in conjunction with our vulkan renderer.
-	// We need access to the effects object in order to have access to our copy logic.
-	// Breaking all the rules but there is no nice way to do this.
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL_V(effects, false);
-	effects->copy_to_fb_rect(source_image, fb, Rect2i(), false, false, false, false, depth_image, data->is_multiview);
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+	ERR_FAIL_NULL_V(copy_effects, false);
+	copy_effects->copy_to_fb_rect(source_image, fb, Rect2i(), false, false, false, false, depth_image, data->is_multiview);
 
 	return true;
 }

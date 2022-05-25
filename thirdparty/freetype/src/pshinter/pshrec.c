@@ -4,7 +4,7 @@
  *
  *   FreeType PostScript hints recorder (body).
  *
- * Copyright (C) 2001-2021 by
+ * Copyright (C) 2001-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -63,16 +63,14 @@
   {
     FT_UInt   old_max = table->max_hints;
     FT_UInt   new_max = count;
-    FT_Error  error   = FT_Err_Ok;
+    FT_Error  error;
 
 
-    if ( new_max > old_max )
-    {
-      /* try to grow the table */
-      new_max = FT_PAD_CEIL( new_max, 8 );
-      if ( !FT_RENEW_ARRAY( table->hints, old_max, new_max ) )
-        table->max_hints = new_max;
-    }
+    /* try to grow the table */
+    new_max = FT_PAD_CEIL( new_max, 8 );
+    if ( !FT_QRENEW_ARRAY( table->hints, old_max, new_max ) )
+      table->max_hints = new_max;
+
     return error;
   }
 
@@ -90,17 +88,14 @@
     count = table->num_hints;
     count++;
 
-    if ( count >= table->max_hints )
+    if ( count > table->max_hints )
     {
       error = ps_hint_table_ensure( table, count, memory );
       if ( error )
         goto Exit;
     }
 
-    hint        = table->hints + count - 1;
-    hint->pos   = 0;
-    hint->len   = 0;
-    hint->flags = 0;
+    hint = table->hints + count - 1;  /* initialized upstream */
 
     table->num_hints = count;
 
@@ -136,14 +131,15 @@
                   FT_UInt    count,
                   FT_Memory  memory )
   {
-    FT_UInt   old_max = ( mask->max_bits + 7 ) >> 3;
-    FT_UInt   new_max = ( count          + 7 ) >> 3;
+    FT_UInt   old_max = mask->max_bits >> 3;
+    FT_UInt   new_max = ( count + 7 ) >> 3;
     FT_Error  error   = FT_Err_Ok;
 
 
     if ( new_max > old_max )
     {
       new_max = FT_PAD_CEIL( new_max, 8 );
+      /* added bytes are zeroed here */
       if ( !FT_RENEW_ARRAY( mask->bytes, old_max, new_max ) )
         mask->max_bits = new_max * 8;
     }
@@ -154,28 +150,12 @@
   /* test a bit value in a given mask */
   static FT_Int
   ps_mask_test_bit( PS_Mask  mask,
-                    FT_Int   idx )
+                    FT_UInt  idx )
   {
-    if ( (FT_UInt)idx >= mask->num_bits )
+    if ( idx >= mask->num_bits )
       return 0;
 
     return mask->bytes[idx >> 3] & ( 0x80 >> ( idx & 7 ) );
-  }
-
-
-  /* clear a given bit */
-  static void
-  ps_mask_clear_bit( PS_Mask  mask,
-                     FT_UInt  idx )
-  {
-    FT_Byte*  p;
-
-
-    if ( idx >= mask->num_bits )
-      return;
-
-    p    = mask->bytes + ( idx >> 3 );
-    p[0] = (FT_Byte)( p[0] & ~( 0x80 >> ( idx & 7 ) ) );
   }
 
 
@@ -269,6 +249,10 @@
     mask             = table->masks + count - 1;
     mask->num_bits   = 0;
     mask->end_point  = 0;
+    /* reused mask must be cleared */
+    if ( mask->max_bits )
+      FT_MEM_ZERO( mask->bytes, mask->max_bits >> 3 );
+
     table->num_masks = count;
 
   Exit:
@@ -426,7 +410,7 @@
       PS_Mask  mask2  = table->masks + index2;
       FT_UInt  count1 = mask1->num_bits;
       FT_UInt  count2 = mask2->num_bits;
-      FT_Int   delta;
+      FT_UInt  delta;
 
 
       if ( count2 > 0 )
@@ -437,15 +421,14 @@
 
 
         /* if "count2" is greater than "count1", we need to grow the */
-        /* first bitset, and clear the highest bits                  */
+        /* first bitset                                              */
         if ( count2 > count1 )
         {
           error = ps_mask_ensure( mask1, count2, memory );
           if ( error )
             goto Exit;
 
-          for ( pos = count1; pos < count2; pos++ )
-            ps_mask_clear_bit( mask1, pos );
+          mask1->num_bits = count2;
         }
 
         /* merge (unite) the bitsets */
@@ -467,7 +450,7 @@
       mask2->end_point = 0;
 
       /* number of masks to move */
-      delta = (FT_Int)( table->num_masks - 1 - index2 );
+      delta = table->num_masks - 1 - index2;
       if ( delta > 0 )
       {
         /* move to end of table for reuse */
@@ -476,7 +459,7 @@
 
         ft_memmove( mask2,
                     mask2 + 1,
-                    (FT_UInt)delta * sizeof ( PS_MaskRec ) );
+                    delta * sizeof ( PS_MaskRec ) );
 
         mask2[delta] = dummy;
       }
@@ -647,7 +630,7 @@
                            FT_Int        pos,
                            FT_Int        len,
                            FT_Memory     memory,
-                           FT_Int       *aindex )
+                           FT_UInt      *aindex )
   {
     FT_Error  error = FT_Err_Ok;
     FT_UInt   flags = 0;
@@ -664,9 +647,6 @@
       }
       len = 0;
     }
-
-    if ( aindex )
-      *aindex = -1;
 
     /* now, lookup stem in the current hints table */
     {
@@ -704,7 +684,7 @@
         goto Exit;
 
       if ( aindex )
-        *aindex = (FT_Int)idx;
+        *aindex = idx;
     }
 
   Exit:
@@ -715,9 +695,9 @@
   /* add a "hstem3/vstem3" counter to our dimension table */
   static FT_Error
   ps_dimension_add_counter( PS_Dimension  dim,
-                            FT_Int        hint1,
-                            FT_Int        hint2,
-                            FT_Int        hint3,
+                            FT_UInt       hint1,
+                            FT_UInt       hint2,
+                            FT_UInt       hint3,
                             FT_Memory     memory )
   {
     FT_Error  error   = FT_Err_Ok;
@@ -744,26 +724,17 @@
     }
 
     /* now, set the bits for our hints in the counter mask */
-    if ( hint1 >= 0 )
-    {
-      error = ps_mask_set_bit( counter, (FT_UInt)hint1, memory );
-      if ( error )
-        goto Exit;
-    }
+    error = ps_mask_set_bit( counter, hint1, memory );
+    if ( error )
+      goto Exit;
 
-    if ( hint2 >= 0 )
-    {
-      error = ps_mask_set_bit( counter, (FT_UInt)hint2, memory );
-      if ( error )
-        goto Exit;
-    }
+    error = ps_mask_set_bit( counter, hint2, memory );
+    if ( error )
+      goto Exit;
 
-    if ( hint3 >= 0 )
-    {
-      error = ps_mask_set_bit( counter, (FT_UInt)hint3, memory );
-      if ( error )
-        goto Exit;
-    }
+    error = ps_mask_set_bit( counter, hint3, memory );
+    if ( error )
+      goto Exit;
 
   Exit:
     return error;
@@ -892,7 +863,7 @@
       PS_Dimension  dim;
       FT_Memory     memory = hints->memory;
       FT_Int        count;
-      FT_Int        idx[3];
+      FT_UInt       idx[3];
 
 
       /* limit "dimension" to 0..1 */

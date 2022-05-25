@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
-	Map<String, String> dep_rename;
+	HashMap<String, String> dep_rename;
 	dep_rename[replacing] = p_path;
 
 	ResourceLoader::rename_dependencies(editing, dep_rename);
@@ -49,7 +49,10 @@ void DependencyEditor::_searched(const String &p_path) {
 	_update_file();
 }
 
-void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
+void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	replacing = ti->get_text(1);
 
@@ -64,7 +67,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->popup_file_dialog();
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates) {
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fix_and_find(efsd->get_subdir(i), candidates);
 	}
@@ -121,12 +124,12 @@ void DependencyEditor::_fix_all() {
 		return;
 	}
 
-	Map<String, Map<String, String>> candidates;
+	HashMap<String, HashMap<String, String>> candidates;
 
 	for (const String &E : missing) {
 		String base = E.get_file();
 		if (!candidates.has(base)) {
-			candidates[base] = Map<String, String>();
+			candidates[base] = HashMap<String, String>();
 		}
 
 		candidates[base][E] = "";
@@ -134,9 +137,9 @@ void DependencyEditor::_fix_all() {
 
 	_fix_and_find(EditorFileSystem::get_singleton()->get_filesystem(), candidates);
 
-	Map<String, String> remaps;
+	HashMap<String, String> remaps;
 
-	for (KeyValue<String, Map<String, String>> &E : candidates) {
+	for (KeyValue<String, HashMap<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
 			if (!F.value.is_empty()) {
 				remaps[F.key] = F.value;
@@ -242,7 +245,7 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_clip_content(1, true);
 	tree->set_column_expand_ratio(1, 1);
 	tree->set_hide_root(true);
-	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
+	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
@@ -414,7 +417,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	owners->clear();
 	owners->create_item(); // root
 
-	Map<String, TreeItem *> tree_items;
+	HashMap<String, TreeItem *> tree_items;
 	for (int i = 0; i < p_removed.size(); i++) {
 		RemovedDependency rd = p_removed[i];
 
@@ -761,7 +764,10 @@ void OrphanResourcesDialog::_delete_confirm() {
 	refresh();
 }
 
-void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id) {
+void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String path = ti->get_metadata(0);
@@ -796,5 +802,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	files->connect("button_pressed", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
+	files->connect("button_clicked", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
 }

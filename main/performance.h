@@ -32,7 +32,7 @@
 #define PERFORMANCE_H
 
 #include "core/object/class_db.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
@@ -58,7 +58,7 @@ class Performance : public Object {
 		Variant call(bool &r_error, String &r_error_message);
 	};
 
-	OrderedHashMap<StringName, MonitorCall> _monitor_map;
+	HashMap<StringName, MonitorCall> _monitor_map;
 	uint64_t _monitor_modification_time;
 
 public:

@@ -679,7 +679,7 @@ void main() {
 
 	float normal_map_depth = 1.0;
 
-	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size + scene_data.screen_pixel_size * 0.5; //account for center
+	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
 
 	float sss_strength = 0.0;
 

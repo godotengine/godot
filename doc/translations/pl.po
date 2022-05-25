@@ -22,12 +22,14 @@
 # lewando54 <lewando54@gmail.com>, 2022.
 # Katarzyna Twardowska <katarina.twardowska@gmail.com>, 2022.
 # Mateusz Zdrzałek <matjozohd@gmail.com>, 2022.
+# Pixel Zone - Godot Engine Tutorials <karoltomaszewskimusic@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-21 22:22+0000\n"
-"Last-Translator: Mateusz Zdrzałek <matjozohd@gmail.com>\n"
+"PO-Revision-Date: 2022-05-15 20:00+0000\n"
+"Last-Translator: Pixel Zone - Godot Engine Tutorials "
+"<karoltomaszewskimusic@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pl/>\n"
 "Language: pl\n"
@@ -36,7 +38,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -258,7 +260,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Asserts that the [code]condition[/code] is [code]true[/code]. If the "
 "[code]condition[/code] is [code]false[/code], an error is generated. When "
@@ -518,6 +519,23 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Porównuje dwie wartości, sprawdzając ich rzeczywistą zawartość, przechodząc "
+"do dowolnej „tablicy” lub „słownika” aż do najgłębszego poziomu.\n"
+"Można to porównać do [code]==[/code] na kilka sposobów:\n"
+"— Dla [kod]null[/code], [kod]int[/code], [code]float[/code], [code]String[/"
+"code], [code]Object[/code] i [code] RID[/code] zarówno [code]deep_equal[/"
+"code], jak i [code]==[/code] działają tak samo.\n"
+"— W przypadku [code]Słownik[/code] [code]==[/code] uwzględnia równość wtedy "
+"i tylko wtedy, gdy obie zmienne wskazują ten sam [code]Słownik[/code], bez "
+"rekurencji lub świadomości zawartość w ogóle.\n"
+"— W przypadku [kod]Tablica[/kod] [kod]==[/kod] uwzględnia równość wtedy i "
+"tylko wtedy, gdy każdy element w pierwszej [kod]Tablica[/kod] jest równy "
+"swojemu odpowiednikowi w drugiej [ kod]Tablica[/kod], jak mówi sam [kod]==[/"
+"kod]. Oznacza to, że [code]==[/code] jest rekursywny w [code]Tablicy[/code], "
+"ale nie w [code]Słowniku[/code].\n"
+"Krótko mówiąc, za każdym razem, gdy potencjalnie zaangażowany jest "
+"[code]Słownik[/code], jeśli chcesz prawdziwego porównania uwzględniającego "
+"zawartość, musisz użyć [code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1379,11 +1397,12 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Random range, any floating point value between [code]from[/code] and "
-"[code]to[/code].\n"
+"Returns a random floating point value between [code]from[/code] and "
+"[code]to[/code] (both endpoints inclusive).\n"
 "[codeblock]\n"
 "prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code]."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1427,37 +1446,36 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Returns an array with the given range. Range can be 1 argument [code]N[/"
-"code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], "
-"[code]final - 1[/code]) or three arguments ([code]initial[/code], "
-"[code]final - 1[/code], [code]increment[/code]). Returns an empty array if "
-"the range isn't valid (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, "
-"5, 1)[/code]).\n"
-"Returns an array with the given range. [code]range()[/code] can have 1 "
-"argument N ([code]0[/code] to [code]N - 1[/code]), two arguments "
-"([code]initial[/code], [code]final - 1[/code]) or three arguments "
-"([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). "
-"[code]increment[/code] can be negative. If [code]increment[/code] is "
-"negative, [code]final - 1[/code] will become [code]final + 1[/code]. Also, "
-"the initial value must be greater than the final value for the loop to run.\n"
+"Returns an array with the given range. [method range] can be called in three "
+"ways:\n"
+"[code]range(n: int)[/code]: Starts from 0, increases by steps of 1, and "
+"stops [i]before[/i] [code]n[/code]. The argument [code]n[/code] is "
+"[b]exclusive[/b].\n"
+"[code]range(b: int, n: int)[/code]: Starts from [code]b[/code], increases by "
+"steps of 1, and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/"
+"code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], "
+"respectively.\n"
+"[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], "
+"increases/decreases by steps of [code]s[/code], and stops [i]before[/i] "
+"[code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are "
+"[b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/"
+"code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is "
+"[code]0[/code], an error message is printed.\n"
+"[method range] converts all arguments to [int] before processing.\n"
+"[b]Note:[/b] Returns an empty array if no value meets the value constraint "
+"(e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).\n"
+"Examples:\n"
 "[codeblock]\n"
-"print(range(4))\n"
-"print(range(2, 5))\n"
-"print(range(0, 6, 2))\n"
-"[/codeblock]\n"
-"Output:\n"
-"[codeblock]\n"
-"[0, 1, 2, 3]\n"
-"[2, 3, 4]\n"
-"[0, 2, 4]\n"
+"print(range(4))        # Prints [0, 1, 2, 3]\n"
+"print(range(2, 5))     # Prints [2, 3, 4]\n"
+"print(range(0, 6, 2))  # Prints [0, 2, 4]\n"
+"print(range(4, 1, -1)) # Prints [4, 3, 2]\n"
 "[/codeblock]\n"
 "To iterate over an [Array] backwards, use:\n"
 "[codeblock]\n"
 "var array = [3, 6, 9]\n"
-"var i := array.size() - 1\n"
-"while i >= 0:\n"
-"    print(array[i])\n"
-"    i -= 1\n"
+"for i in range(array.size(), 0, -1):\n"
+"    print(array[i - 1])\n"
 "[/codeblock]\n"
 "Output:\n"
 "[codeblock]\n"
@@ -4583,17 +4601,24 @@ msgid "Maximum value for the mode enum."
 msgstr ""
 
 #: doc/classes/AnimatedSprite.xml
-msgid "Sprite node that can use multiple textures for animation."
+msgid ""
+"Sprite node that contains multiple textures as frames to play for animation."
 msgstr ""
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
-"Animations are created using a [SpriteFrames] resource, which can be "
-"configured in the editor via the SpriteFrames panel.\n"
-"[b]Note:[/b] You can associate a set of normal maps by creating additional "
-"[SpriteFrames] resources with a [code]_normal[/code] suffix. For example, "
-"having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/"
-"code] will make it so the [code]run[/code] animation uses the normal map."
+"[AnimatedSprite] is similar to the [Sprite] node, except it carries multiple "
+"textures as animation frames. Animations are created using a [SpriteFrames] "
+"resource, which allows you to import image files (or a folder containing "
+"said files) to provide the animation frames for the sprite. The "
+"[SpriteFrames] resource can be configured in the editor via the SpriteFrames "
+"bottom panel.\n"
+"[b]Note:[/b] You can associate a set of normal or specular maps by creating "
+"additional [SpriteFrames] resources with a [code]_normal[/code] or "
+"[code]_specular[/code] suffix. For example, having 3 [SpriteFrames] "
+"resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/"
+"code] will make it so the [code]run[/code] animation uses normal and "
+"specular maps."
 msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/AnimationPlayer.xml
@@ -4621,9 +4646,9 @@ msgstr ""
 msgid "Stops the current animation (does not reset the frame counter)."
 msgstr ""
 
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
+#: doc/classes/AnimatedSprite.xml
 msgid ""
-"The current animation from the [code]frames[/code] resource. If this value "
+"The current animation from the [member frames] resource. If this value "
 "changes, the [code]frame[/code] counter is reset."
 msgstr ""
 
@@ -4647,8 +4672,11 @@ msgstr ""
 msgid "The displayed animation frame's index."
 msgstr ""
 
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
-msgid "The [SpriteFrames] resource containing the animation(s)."
+#: doc/classes/AnimatedSprite.xml
+msgid ""
+"The [SpriteFrames] resource containing the animation(s). Allows you the "
+"option to load, edit, clear, make unique and save the states of the "
+"[SpriteFrames] resource."
 msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Sprite.xml
@@ -4698,6 +4726,16 @@ msgstr ""
 msgid ""
 "Plays the animation named [code]anim[/code]. If no [code]anim[/code] is "
 "provided, the current animation is played."
+msgstr ""
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid ""
+"The current animation from the [code]frames[/code] resource. If this value "
+"changes, the [code]frame[/code] counter is reset."
+msgstr ""
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid "The [SpriteFrames] resource containing the animation(s)."
 msgstr ""
 
 #: doc/classes/AnimatedTexture.xml
@@ -5216,11 +5254,11 @@ msgstr ""
 msgid "No interpolation (nearest value)."
 msgstr ""
 
-#: doc/classes/Animation.xml
+#: doc/classes/Animation.xml doc/classes/Gradient.xml
 msgid "Linear interpolation."
 msgstr ""
 
-#: doc/classes/Animation.xml
+#: doc/classes/Animation.xml doc/classes/Gradient.xml
 msgid "Cubic interpolation."
 msgstr ""
 
@@ -6257,7 +6295,10 @@ msgid ""
 "Seeks the animation to the [code]seconds[/code] point in time (in seconds). "
 "If [code]update[/code] is [code]true[/code], the animation updates too, "
 "otherwise it updates at process time. Events between the current frame and "
-"[code]seconds[/code] are skipped."
+"[code]seconds[/code] are skipped.\n"
+"[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal "
+"animation_finished]. If you want to skip animation and emit the signal, use "
+"[method advance]."
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
@@ -7454,7 +7495,10 @@ msgid ""
 "[code]0[/code]."
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid "Returns the number of times an element is in the array."
 msgstr ""
 
@@ -7499,10 +7543,14 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid ""
 "Searches the array for a value and returns its index or [code]-1[/code] if "
-"not found. Optionally, the initial search index can be passed."
+"not found. Optionally, the initial search index can be passed. Returns "
+"[code]-1[/code] if [code]from[/code] is out of bounds."
 msgstr ""
 
 #: doc/classes/Array.xml
@@ -7640,11 +7688,15 @@ msgid ""
 "[code]null[/code]."
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid ""
 "Searches the array in reverse order. Optionally, a start search index can be "
 "passed. If negative, the start index is considered relative to the end of "
-"the array."
+"the array. If the adjusted start index is out of bounds, this method "
+"searches from the end of the array."
 msgstr ""
 
 #: doc/classes/Array.xml
@@ -7854,7 +7906,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
-msgid "Default value used for index_array_len when no indices are present."
+msgid "Value used internally when no indices are present."
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
@@ -8779,7 +8831,7 @@ msgstr ""
 msgid ""
 "Adds a new point at the given position with the given identifier. The "
 "[code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must "
-"be 1 or larger.\n"
+"be 0.0 or greater.\n"
 "The [code]weight_scale[/code] is multiplied by the result of [method "
 "_compute_cost] when determining the overall cost of traveling across a "
 "segment from a neighboring point to this point. Thus, all else being equal, "
@@ -9001,7 +9053,7 @@ msgstr ""
 msgid ""
 "Adds a new point at the given position with the given identifier. The "
 "[code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must "
-"be 1 or larger.\n"
+"be 0.0 or greater.\n"
 "The [code]weight_scale[/code] is multiplied by the result of [method "
 "_compute_cost] when determining the overall cost of traveling across a "
 "segment from a neighboring point to this point. Thus, all else being equal, "
@@ -12116,17 +12168,17 @@ msgstr ""
 #: doc/classes/Camera.xml
 msgid ""
 "Returns a normal vector in world space, that is the result of projecting a "
-"point on the [Viewport] rectangle by the camera projection. This is useful "
-"for casting rays in the form of (origin, normal) for object intersection or "
-"picking."
+"point on the [Viewport] rectangle by the inverse camera projection. This is "
+"useful for casting rays in the form of (origin, normal) for object "
+"intersection or picking."
 msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
 "Returns a 3D position in world space, that is the result of projecting a "
-"point on the [Viewport] rectangle by the camera projection. This is useful "
-"for casting rays in the form of (origin, normal) for object intersection or "
-"picking."
+"point on the [Viewport] rectangle by the inverse camera projection. This is "
+"useful for casting rays in the form of (origin, normal) for object "
+"intersection or picking."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -14081,7 +14133,6 @@ msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "Returns the object's [RID]."
 msgstr ""
 
@@ -14387,7 +14438,9 @@ msgstr ""
 #: doc/classes/CollisionPolygon2D.xml
 msgid ""
 "If [code]true[/code], only edges that face up, relative to "
-"[CollisionPolygon2D]'s rotation, will collide with other objects."
+"[CollisionPolygon2D]'s rotation, will collide with other objects.\n"
+"[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a "
+"child of an [Area2D] node."
 msgstr ""
 
 #: doc/classes/CollisionPolygon2D.xml
@@ -14483,7 +14536,9 @@ msgstr ""
 #: doc/classes/CollisionShape2D.xml
 msgid ""
 "Sets whether this collision shape should only detect collision on one side "
-"(top or bottom)."
+"(top or bottom).\n"
+"[b]Note:[/b] This property has no effect if this [CollisionShape2D] is a "
+"child of an [Area2D] node."
 msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
@@ -17159,14 +17214,14 @@ msgstr ""
 
 #: doc/classes/Control.xml
 msgid ""
-"Show the system's wait mouse cursor, often an hourglass, when the user "
-"hovers the node."
+"Show the system's wait mouse cursor when the user hovers the node. Often an "
+"hourglass."
 msgstr ""
 
 #: doc/classes/Control.xml
 msgid ""
 "Show the system's busy mouse cursor when the user hovers the node. Often an "
-"hourglass."
+"arrow with a small hourglass."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -20848,8 +20903,11 @@ msgid "Returns the scan progress for 0 to 1 if the FS is being scanned."
 msgstr ""
 
 #: doc/classes/EditorFileSystem.xml
-msgid "Returns [code]true[/code] of the filesystem is being scanned."
+#, fuzzy
+msgid "Returns [code]true[/code] if the filesystem is being scanned."
 msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
 
 #: doc/classes/EditorFileSystem.xml
 msgid "Scan the filesystem for changes."
@@ -22909,6 +22967,13 @@ msgid ""
 "same behavior."
 msgstr ""
 
+#: doc/classes/EditorSpinSlider.xml
+#, fuzzy
+msgid "If [code]true[/code], the slider is hidden."
+msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
+
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
 "Version Control System (VCS) interface, which reads and writes to the local "
@@ -24926,9 +24991,46 @@ msgstr ""
 
 #: doc/classes/Font.xml
 msgid ""
+"Returns outline contours of the glyph as a [code]Dictionary[/code] with the "
+"following contents:\n"
+"[code]points[/code]         - [PoolVector3Array], containing outline points. "
+"[code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is "
+"the type of the point, using the [enum ContourPointTag] values.\n"
+"[code]contours[/code]       - [PoolIntArray], containing indices the end "
+"points of each contour.\n"
+"[code]orientation[/code]    - [bool], contour orientation. If [code]true[/"
+"code], clockwise contours must be filled."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
 "Returns the size of a character, optionally taking kerning into account if "
 "the next character is provided. Note that the height returned is the font "
 "height (see [method get_height]) and has no relation to the glyph height."
+msgstr ""
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns resource id of the cache texture containing the char."
+msgstr "Zwraca resztę z dwóch wektorów."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the cache texture containing the char."
+msgstr "Zwraca sinus parametru."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns char offset from the baseline."
+msgstr "Zwraca cosinus parametru."
+
+#: doc/classes/Font.xml
+#, fuzzy
+msgid "Returns size of the char."
+msgstr "Zwraca sinus parametru."
+
+#: doc/classes/Font.xml
+msgid "Returns rectangle in the cache texture containing the char."
 msgstr ""
 
 #: doc/classes/Font.xml
@@ -24960,6 +25062,22 @@ msgstr ""
 msgid ""
 "After editing a font (changing size, ascent, char rects, etc.). Call this "
 "function to propagate changes to controls that might use it."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid "Contour point is on the curve."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a conic "
+"(quadratic) Bézier arc."
+msgstr ""
+
+#: doc/classes/Font.xml
+msgid ""
+"Contour point isn't on the curve, but serves as a control point for a cubic "
+"Bézier arc."
 msgstr ""
 
 #: doc/classes/FuncRef.xml
@@ -26500,7 +26618,20 @@ msgid "Gradient's colors returned as a [PoolColorArray]."
 msgstr ""
 
 #: doc/classes/Gradient.xml
+msgid ""
+"Defines how the colors between points of the gradient are interpolated. See "
+"[enum InterpolationMode] for available modes."
+msgstr ""
+
+#: doc/classes/Gradient.xml
 msgid "Gradient's offsets returned as a [PoolRealArray]."
+msgstr ""
+
+#: doc/classes/Gradient.xml
+msgid ""
+"Constant interpolation, color changes abruptly at each point and stays "
+"uniform between. This might cause visible aliasing when used for a gradient "
+"texture in some cases."
 msgstr ""
 
 #: doc/classes/GradientTexture.xml
@@ -26813,7 +26944,10 @@ msgid "Emitted when the user presses [code]Ctrl + C[/code]."
 msgstr ""
 
 #: doc/classes/GraphEdit.xml
-msgid "Emitted when a GraphNode is attempted to be removed from the GraphEdit."
+msgid ""
+"Emitted when a GraphNode is attempted to be removed from the GraphEdit. "
+"Provides a list of node names to be removed (all selected nodes, excluding "
+"nodes without closing button)."
 msgstr ""
 
 #: doc/classes/GraphEdit.xml
@@ -27561,7 +27695,8 @@ msgid ""
 "[Generic6DOFJoint]."
 msgstr ""
 
-#: doc/classes/HingeJoint.xml doc/classes/SpriteBase3D.xml
+#: doc/classes/HingeJoint.xml doc/classes/Label3D.xml
+#: doc/classes/SpriteBase3D.xml
 msgid "Returns the value of the specified flag."
 msgstr ""
 
@@ -28726,7 +28861,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum allowed size for response bodies."
+msgid ""
+"Maximum allowed size for response bodies ([code]-1[/code] means no limit). "
+"When only small files are expected, this can be used to prevent disallow "
+"receiving files that are too large, preventing potential denial of service "
+"attacks."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
@@ -28738,11 +28877,32 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "The file to download into. Will output any received file into it."
+msgid ""
+"The file to download into. If set to a non-empty string, the request output "
+"will be written to the file located at the path. If a file already exists at "
+"the specified location, it will be overwritten as soon as body data begins "
+"to be received.\n"
+"[b]Note:[/b] Folders are not automatically created when the file is created. "
+"If [member download_file] points to a subfolder, it's recommended to create "
+"the necessary folders beforehand using [method Directory.make_dir_recursive] "
+"to ensure the file can be written."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-msgid "Maximum number of allowed redirects."
+msgid ""
+"Maximum number of allowed redirects. This is used to prevent endless "
+"redirect loops."
+msgstr ""
+
+#: doc/classes/HTTPRequest.xml
+msgid ""
+"If set to a value greater than [code]0.0[/code], the HTTP request will time "
+"out after [code]timeout[/code] seconds have passed and the request is not "
+"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
+"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
+"application from getting stuck if the request fails to get a response in a "
+"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
+"the download from failing if it takes too much time."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
@@ -30214,15 +30374,15 @@ msgstr ""
 #: doc/classes/Input.xml
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
-"This cursor shape denotes that the application is still usable during the "
-"operation."
+"This cursor shape denotes that the application isn't usable during the "
+"operation (e.g. something is blocking its main thread)."
 msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
 "Busy cursor. Indicates that the application is busy performing an operation. "
-"This cursor shape denotes that the application isn't usable during the "
-"operation (e.g. something is blocking its main thread)."
+"This cursor shape denotes that the application is still usable during the "
+"operation."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -32600,11 +32760,11 @@ msgid ""
 "screen. Useful to animate the text in a dialog box."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "The text to display on screen."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "If [code]true[/code], all the text displays as UPPERCASE."
 msgstr ""
 
@@ -32618,35 +32778,35 @@ msgstr ""
 msgid "Restricts the number of characters to display. Set to -1 to disable."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the left (default)."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows centered."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml doc/classes/TextMesh.xml
 msgid "Align rows to the right."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Expand row whitespaces to fit the width."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the top."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the center."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text to the bottom."
 msgstr ""
 
-#: doc/classes/Label.xml
+#: doc/classes/Label.xml doc/classes/Label3D.xml
 msgid "Align the whole text by spreading the rows."
 msgstr ""
 
@@ -32686,6 +32846,204 @@ msgstr ""
 
 #: doc/classes/Label.xml
 msgid "Background [StyleBox] for the [Label]."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "Displays plain text in a 3D world."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Label3D displays plain text in a 3D world. It gives you control over the "
+"horizontal and vertical alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Returns a [TriangleMesh] with the label's vertices following its current "
+"configuration (such as its [member pixel_size])."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the specified flag will be enabled. See [enum Label3D."
+"DrawFlags] for a list of flags."
+msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for "
+"possible values."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+msgid "Threshold at which the alpha scissor will discard values."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid "If [code]true[/code], wraps the text to the [member width]."
+msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"The billboard mode to use for the label. See [enum SpatialMaterial."
+"BillboardMode] for possible values."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"If [code]true[/code], text can be seen from the back as well, if "
+"[code]false[/code], it is invisible when looking at it from behind."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the label is rendered at the same size regardless of "
+"distance."
+msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
+
+#: doc/classes/Label3D.xml
+msgid "[Font] used for the [Label3D]'s text."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center, right. Set "
+"it to one of the [enum Align] constants."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "Vertical space between lines in multiline [Label3D]."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "Text [Color] of the [Label3D]."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"If [code]true[/code], depth testing is disabled and the object will be drawn "
+"in render order."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "The text drawing offset (in pixels)."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "The tint of [Font]'s outline."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Sets the render priority for the text outline. Higher priority objects will "
+"be sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "The size of one pixel's width on the label to scale it in 3D."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Sets the render priority for the text. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the [Light] in the [Environment] has effects on the "
+"label."
+msgstr ""
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Controls the text's vertical alignment. Supports top, center, bottom. Set it "
+"to one of the [enum VAlign] constants."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "Text width (in pixels), used for autowrap and fill alignment."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid "If set, lights in the environment affect the label."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"If set, text can be seen from the back as well. If not, the texture is "
+"invisible when looking at it from behind."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
+#: doc/classes/SpriteBase3D.xml
+msgid ""
+"Disables the depth test, so this object is drawn on top of all others. "
+"However, objects drawn after it in the draw order may cover it."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"Label is scaled by depth so that it always appears the same size on screen."
+msgstr ""
+
+#: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
+msgid "Represents the size of the [enum DrawFlags] enum."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode performs standard alpha blending. It can display translucent "
+"areas, but transparency sorting issues may be visible when multiple "
+"transparent materials are overlapping."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode only allows fully transparent or fully opaque pixels. This mode is "
+"also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].\n"
+"[b]Note:[/b] This mode might have issues with anti-aliased fonts and "
+"outlines, try adjusting [member alpha_scissor_threshold] or using SDF font.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
+msgstr ""
+
+#: doc/classes/Label3D.xml
+msgid ""
+"This mode draws fully opaque pixels in the depth prepass. This is slower "
+"than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it "
+"allows displaying translucent areas and smooth edges while using proper "
+"sorting.\n"
+"[b]Note:[/b] When using text with overlapping glyphs (e.g., cursive "
+"scripts), this mode might have transparency sorting issues between the main "
+"text and the outline."
 msgstr ""
 
 #: doc/classes/LargeTexture.xml
@@ -35058,13 +35416,13 @@ msgid ""
 "interpolating. By default there's no delay."
 msgstr ""
 
-#: doc/classes/MethodTweener.xml
+#: doc/classes/MethodTweener.xml doc/classes/PropertyTweener.xml
 msgid ""
 "Sets the type of used easing from [enum Tween.EaseType]. If not set, the "
 "default easing is used from the [SceneTreeTween] that contains this Tweener."
 msgstr ""
 
-#: doc/classes/MethodTweener.xml
+#: doc/classes/MethodTweener.xml doc/classes/PropertyTweener.xml
 msgid ""
 "Sets the type of used transition from [enum Tween.TransitionType]. If not "
 "set, the default transition is used from the [SceneTreeTween] that contains "
@@ -35777,6 +36135,12 @@ msgid "Creates the agent."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the navigation map [RID] the requested [code]agent[/code] is "
+"currently assigned to."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns [code]true[/code] if the map got changed the previous frame."
 msgstr ""
@@ -35849,6 +36213,12 @@ msgid "Create a new map."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns all navigation agents [RID]s that are currently assigned to the "
+"requested navigation [code]map[/code]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns the map cell size."
 msgstr "Zwraca arcus sinus parametru."
@@ -35876,6 +36246,12 @@ msgid "Returns the navigation path to reach the destination from the origin."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns all navigation regions [RID]s that are currently assigned to the "
+"requested navigation [code]map[/code]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns [code]true[/code] if the map is active."
 msgstr ""
@@ -35898,6 +36274,12 @@ msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Creates a new region."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the navigation map [RID] the requested [code]region[/code] is "
+"currently assigned to."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
@@ -35967,6 +36349,11 @@ msgid ""
 "navigation path, it will return the origin of the agent's parent."
 msgstr ""
 
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [NavigationServer]."
+msgstr "Zwraca sinus parametru."
+
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
 "Returns the user-defined target location (set with [method "
@@ -36020,6 +36407,16 @@ msgstr ""
 
 #: doc/classes/NavigationAgent.xml
 msgid "The agent height offset to match the navigation mesh height."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [NavigationServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector3 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
@@ -36124,9 +36521,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "Returns the [RID] of this agent on the [Navigation2DServer]."
+msgstr "Zwraca sinus parametru."
+
+#: doc/classes/NavigationAgent2D.xml
 msgid ""
 "Sets the [Navigation2D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation2D] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"If [code]true[/code] the agent is registered for an RVO avoidance callback "
+"on the [Navigation2DServer]. When [method set_velocity] is used and the "
+"processing is completed a [code]safe_velocity[/code] Vector2 is received "
+"with a signal connection to [signal velocity_computed]. Avoidance processing "
+"with many registered agents has a significant performance cost and should "
+"only be enabled on agents that currently require it."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36389,18 +36801,59 @@ msgid "Represents the size of the [enum SourceGeometryMode] enum."
 msgstr ""
 
 #: doc/classes/NavigationMeshGenerator.xml
-msgid "This class is responsible for creating and clearing navigation meshes."
+msgid "Helper class for creating and clearing navigation meshes."
 msgstr ""
 
 #: doc/classes/NavigationMeshGenerator.xml
 msgid ""
-"Bakes the navigation mesh. This will allow you to use pathfinding with the "
-"navigation system."
+"This class is responsible for creating and clearing 3D navigation meshes "
+"used as [NavigationMesh] resources inside [NavigationMeshInstance]. The "
+"[NavigationMeshGenerator] has very limited to no use for 2D as the "
+"navigation mesh baking process expects 3D node types and 3D source geometry "
+"to parse.\n"
+"The entire navigation mesh baking is best done in a separate thread as the "
+"voxelization, collision tests and mesh optimization steps involved are very "
+"performance and time hungry operations.\n"
+"Navigation mesh baking happens in multiple steps and the result depends on "
+"3D source geometry and properties of the [NavigationMesh] resource. In the "
+"first step, starting from a root node and depending on [NavigationMesh] "
+"properties all valid 3D source geometry nodes are collected from the "
+"[SceneTree]. Second, all collected nodes are parsed for their relevant 3D "
+"geometry data and a combined 3D mesh is build. Due to the many different "
+"types of parsable objects, from normal [MeshInstance]s to [CSGShape]s or "
+"various [CollisionObject]s, some operations to collect geometry data can "
+"trigger [VisualServer] and [PhysicsServer] synchronizations. Server "
+"synchronization can have a negative effect on baking time or framerate as it "
+"often involves [Mutex] locking for thread security. Many parsable objects "
+"and the continuous synchronization with other threaded Servers can increase "
+"the baking time significantly. On the other hand only a few but very large "
+"and complex objects will take some time to prepare for the Servers which can "
+"noticeably stall the next frame render. As a general rule the total amount "
+"of parsable objects and their individual size and complexity should be "
+"balanced to avoid framerate issues or very long baking times. The combined "
+"mesh is then passed to the Recast Navigation Object to test the source "
+"geometry for walkable terrain suitable to [NavigationMesh] agent properties "
+"by creating a voxel world around the meshes bounding area.\n"
+"The finalized navigation mesh is then returned and stored inside the "
+"[NavigationMesh] for use as a resource inside [NavigationMeshInstance] nodes."
 msgstr ""
 
 #: doc/classes/NavigationMeshGenerator.xml
-msgid "Clears the navigation mesh."
+msgid ""
+"Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child "
+"nodes under the provided [code]root_node[/code] or a specific group of nodes "
+"for potential source geometry. The parse behavior can be controlled with the "
+"[member NavigationMesh.geometry/parsed_geometry_type] and [member "
+"NavigationMesh.geometry/source_geometry_mode] properties on the "
+"[NavigationMesh] resource."
 msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+#, fuzzy
+msgid ""
+"Removes all polygons and vertices from the provided [code]nav_mesh[/code] "
+"resource."
+msgstr "Liczy iloczyn wektorowy tego wektora oraz [code]with[/code]."
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid "An instance of a [NavigationMesh]."
@@ -36420,7 +36873,10 @@ msgid ""
 "thread is useful because navigation baking is not a cheap operation. When it "
 "is completed, it automatically sets the new [NavigationMesh]. Please note "
 "that baking on separate thread may be very slow if geometry is parsed from "
-"meshes as async access to each mesh involves heavy synchronization."
+"meshes as async access to each mesh involves heavy synchronization. Also, "
+"please note that baking on a separate thread is automatically disabled on "
+"operating systems that cannot use threads (such as HTML5 with threads "
+"disabled)."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
@@ -36467,6 +36923,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationObstacle.xml
+#, fuzzy
+msgid "Returns the [RID] of this obstacle on the [NavigationServer]."
+msgstr "Zwraca sinus parametru."
+
+#: doc/classes/NavigationObstacle.xml
 msgid ""
 "Sets the [Navigation] node used by the obstacle. Useful when you don't want "
 "to make the obstacle a child of a [Navigation] node."
@@ -36501,6 +36962,11 @@ msgid ""
 "Returns the [Navigation2D] node that the obstacle is using for its "
 "navigation system."
 msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+#, fuzzy
+msgid "Returns the [RID] of this obstacle on the [Navigation2DServer]."
+msgstr "Zwraca sinus parametru."
 
 #: doc/classes/NavigationObstacle2D.xml
 msgid ""
@@ -36865,7 +37331,7 @@ msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
-"Enable or disable certificate verification when [member use_dtls] "
+"Enable or disable certificate verification when [member use_dtls] is "
 "[code]true[/code]."
 msgstr ""
 
@@ -37691,16 +38157,16 @@ msgstr ""
 #: doc/classes/Node.xml
 msgid ""
 "Returns [code]true[/code] if the physics interpolated flag is set for this "
-"Node (see [method set_physics_interpolated]).\n"
-"[b]Note:[/b] Interpolation will only be active is both the flag is set "
+"Node (see [member physics_interpolation_mode]).\n"
+"[b]Note:[/b] Interpolation will only be active if both the flag is set "
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
 msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
-"Returns [code]true[/code] if physics interpolation is enabled (see [method "
-"set_physics_interpolated]) [b]and[/b] enabled in the [SceneTree].\n"
+"Returns [code]true[/code] if physics interpolation is enabled (see [member "
+"physics_interpolation_mode]) [b]and[/b] enabled in the [SceneTree].\n"
 "This is a convenience version of [method is_physics_interpolated] that also "
 "checks whether physics interpolation is enabled globally.\n"
 "See [member SceneTree.physics_interpolation] and [member ProjectSettings."
@@ -37994,14 +38460,6 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
-"Enables or disables physics interpolation per node, offering a finer grain "
-"of control than turning physics interpolation on and off globally.\n"
-"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
-"interpolation can sometimes give superior results."
-msgstr ""
-
-#: doc/classes/Node.xml
-msgid ""
 "Enables or disables physics (i.e. fixed framerate) processing. When a node "
 "is being processed, it will receive a [constant "
 "NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine."
@@ -38130,6 +38588,15 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Pause mode. How the node will behave if the [SceneTree] is paused."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Allows enabling or disabling physics interpolation per node, offering a "
+"finer grain of control than turning physics interpolation on and off "
+"globally.\n"
+"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
+"interpolation can sometimes give superior results."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -38292,6 +38759,24 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Continue to process regardless of the [SceneTree] pause state."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Inherits physics interpolation mode from the node's parent. For the root "
+"node, it is equivalent to [constant PHYSICS_INTERPOLATION_MODE_ON]. Default."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Turn off physics interpolation in this node and children set to [constant "
+"PHYSICS_INTERPOLATION_MODE_INHERIT]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Turn on physics interpolation in this node and children set to [constant "
+"PHYSICS_INTERPOLATION_MODE_INHERIT]."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -39536,7 +40021,7 @@ msgstr "Liczy iloczyn wektorowy tego wektora oraz [code]b[/code]."
 
 #: doc/classes/OptionButton.xml
 msgid ""
-"Returns the ID of the selected item, or [code]0[/code] if no item is "
+"Returns the ID of the selected item, or [code]-1[/code] if no item is "
 "selected."
 msgstr ""
 
@@ -39558,7 +40043,8 @@ msgstr ""
 #: doc/classes/OptionButton.xml
 msgid ""
 "Selects an item by index and makes it the current item. This will work even "
-"if the item is disabled."
+"if the item is disabled.\n"
+"Passing [code]-1[/code] as the index deselects any currently selected item."
 msgstr ""
 
 #: doc/classes/OptionButton.xml
@@ -44932,6 +45418,15 @@ msgid ""
 "should always be preferred."
 msgstr ""
 
+#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
+#: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
+#: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
+#: doc/classes/PoolVector3Array.xml
+msgid ""
+"Returns [code]true[/code] if the array contains the given value.\n"
+"[b]Note:[/b] This is equivalent to using the [code]in[/code] operator."
+msgstr ""
+
 #: doc/classes/PoolByteArray.xml
 msgid ""
 "Returns a hexadecimal representation of this array as a [String].\n"
@@ -45486,10 +45981,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
+#, fuzzy
 msgid ""
-"Returns the tooltip associated with the specified index index [code]idx[/"
-"code]."
-msgstr ""
+"Returns the tooltip associated with the specified index [code]idx[/code]."
+msgstr "Liczy iloczyn wektorowy tego wektora oraz [code]b[/code]."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
@@ -45723,6 +46218,10 @@ msgstr ""
 
 #: doc/classes/PopupMenu.xml
 msgid "[Font] used for the menu items."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml
+msgid "[Font] used for the labeled separator."
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
@@ -49172,19 +49671,6 @@ msgid ""
 "interpolating. By default there's no delay."
 msgstr ""
 
-#: doc/classes/PropertyTweener.xml
-msgid ""
-"Sets the type of used easing from [enum Tween.EaseType]. If not set, the "
-"default easing is used from the [Tween] that contains this Tweener."
-msgstr ""
-
-#: doc/classes/PropertyTweener.xml
-msgid ""
-"Sets the type of used transition from [enum Tween.TransitionType]. If not "
-"set, the default transition is used from the [Tween] that contains this "
-"Tweener."
-msgstr ""
-
 #: doc/classes/ProximityGroup.xml
 msgid "General-purpose 3D proximity detection node."
 msgstr ""
@@ -51479,7 +51965,7 @@ msgid "The default text font."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
-msgid "The background The background used when the [RichTextLabel] is focused."
+msgid "The background used when the [RichTextLabel] is focused."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
@@ -52855,13 +53341,6 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"If [code]true[/code], the application automatically accepts quitting. "
-"Enabled by default.\n"
-"For mobile platforms, see [method set_quit_on_go_back]."
-msgstr ""
-
-#: doc/classes/SceneTree.xml
-msgid ""
 "Sets the given [code]property[/code] to [code]value[/code] on all members of "
 "the given group."
 msgstr ""
@@ -52878,16 +53357,14 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"If [code]true[/code], the application quits automatically on going back (e."
-"g. on Android). Enabled by default.\n"
-"To handle 'Go Back' button when this option is disabled, use [constant "
-"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
+"Configures screen stretching to the given [enum StretchMode], [enum "
+"StretchAspect], minimum size and [code]scale[/code]."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
-"Configures screen stretching to the given [enum StretchMode], [enum "
-"StretchAspect], minimum size and [code]scale[/code]."
+"If [code]true[/code], the application automatically accepts quitting.\n"
+"For mobile platforms, see [member quit_on_go_back]."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -52951,6 +53428,14 @@ msgid ""
 "Although physics interpolation would normally be globally turned on and off "
 "using [member ProjectSettings.physics/common/physics_interpolation], this "
 "property allows control over interpolation at runtime."
+msgstr ""
+
+#: doc/classes/SceneTree.xml
+msgid ""
+"If [code]true[/code], the application quits automatically on going back (e."
+"g. on Android).\n"
+"To handle 'Go Back' button when this option is disabled, use [constant "
+"MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -54027,8 +54512,15 @@ msgstr ""
 
 #: doc/classes/Shape2D.xml
 msgid ""
-"Returns a list of the points where this shape touches another. If there are "
-"no collisions the list is empty.\n"
+"Returns a list of contact point pairs where this shape touches another.\n"
+"If there are no collisions, the returned list is empty. Otherwise, the "
+"returned list contains contact points arranged in pairs, with entries "
+"alternating between points on the boundary of this shape and points on the "
+"boundary of [code]with_shape[/code].\n"
+"A collision pair A, B can be used to calculate the collision normal with "
+"[code](B - A).normalized()[/code], and the collision depth with [code](B - "
+"A).length()[/code]. This information is typically used to separate shapes, "
+"particularly in collision solvers.\n"
 "This method needs the transformation matrix for this shape "
 "([code]local_xform[/code]), the shape to check collisions with "
 "([code]with_shape[/code]), and the transformation matrix of that shape "
@@ -54049,8 +54541,16 @@ msgstr ""
 
 #: doc/classes/Shape2D.xml
 msgid ""
-"Returns a list of the points where this shape would touch another, if a "
-"given movement was applied. If there are no collisions the list is empty.\n"
+"Returns a list of contact point pairs where this shape would touch another, "
+"if a given movement was applied.\n"
+"If there would be no collisions, the returned list is empty. Otherwise, the "
+"returned list contains contact points arranged in pairs, with entries "
+"alternating between points on the boundary of this shape and points on the "
+"boundary of [code]with_shape[/code].\n"
+"A collision pair A, B can be used to calculate the collision normal with "
+"[code](B - A).normalized()[/code], and the collision depth with [code](B - "
+"A).length()[/code]. This information is typically used to separate shapes, "
+"particularly in collision solvers.\n"
 "This method needs the transformation matrix for this shape "
 "([code]local_xform[/code]), the movement to test on this shape "
 "([code]local_motion[/code]), the shape to check collisions with "
@@ -55247,6 +55747,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
+msgid "Enables signed distance field rendering shader."
+msgstr ""
+
+#: doc/classes/SpatialMaterial.xml
 msgid "If [code]true[/code], the object receives no ambient light."
 msgstr ""
 
@@ -55267,12 +55771,6 @@ msgstr ""
 msgid ""
 "If [code]true[/code], the object is rendered at the same size regardless of "
 "distance."
-msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"If [code]true[/code], depth testing is disabled and the object will be drawn "
-"in render order."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -55387,10 +55885,6 @@ msgid ""
 "See [url=http://wiki.polycount.com/wiki/"
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
-msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid "Threshold at which the alpha scissor will discard values."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -55848,12 +56342,6 @@ msgstr ""
 msgid ""
 "Lighting is calculated per-vertex rather than per-pixel. This can be used to "
 "increase the speed of the shader at the cost of quality."
-msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-msgid ""
-"Disables the depth test, so this object is drawn on top of all others. "
-"However, objects drawn after it in the draw order may cover it."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -56507,6 +56995,18 @@ msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
 msgid ""
+"Sets the render priority for the sprite. Higher priority objects will be "
+"sorted in front of lower priority objects.\n"
+"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"ALPHA_CUT_DISABLED] (default value).\n"
+"[b]Note:[/b] This only applies to sorting of transparent objects. This will "
+"not impact how transparent objects are sorted relative to opaque objects. "
+"This is because opaque objects are not sorted, while transparent objects are "
+"sorted from back to front (subject to priority)."
+msgstr ""
+
+#: doc/classes/SpriteBase3D.xml
+msgid ""
 "If [code]true[/code], the [Light] in the [Environment] has effects on the "
 "sprite."
 msgstr ""
@@ -56534,7 +57034,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
-msgid "Represents the size of the [enum DrawFlags] enum."
+msgid ""
+"Sprite is scaled by depth so that it always appears the same size on screen."
 msgstr ""
 
 #: doc/classes/SpriteFrames.xml
@@ -59671,6 +60172,50 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid ""
 "Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "Generate an [PrimitiveMesh] from the text."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Generate an [PrimitiveMesh] from the text.\n"
+"TextMesh can be generated only when using dynamic fonts with vector glyph "
+"contours. Bitmap fonts (including bitmap data in the TrueType/OpenType "
+"containers, like color emoji fonts) are not supported.\n"
+"The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the "
+"height for the front face, 40% for the back face, 10% for the outer edges "
+"and 10% for the inner edges."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "Step (in pixels) used to approximate Bézier curves."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Depths of the mesh, if set to [code]0.0[/code] only front surface, is "
+"generated, and UV layout is changed to use full texture for the front face "
+"only."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "[Font] used for the [TextMesh]'s text."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid ""
+"Controls the text's horizontal alignment. Supports left, center and right. "
+"Set it to one of the [enum Align] constants."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "The size of one pixel's width on the text to scale it in 3D."
+msgstr ""
+
+#: doc/classes/TextMesh.xml
+msgid "The text to generate mesh from."
 msgstr ""
 
 #: doc/classes/Texture.xml
@@ -65059,12 +65604,12 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
-msgid "[VideoStream] resource for for video formats implemented via GDNative."
+msgid "[VideoStream] resource for video formats implemented via GDNative."
 msgstr ""
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
 msgid ""
-"[VideoStream] resource for for video formats implemented via GDNative.\n"
+"[VideoStream] resource for video formats implemented via GDNative.\n"
 "It can be used via [url=https://github.com/KidRigger/godot-"
 "videodecoder]godot-videodecoder[/url] which uses the [url=https://ffmpeg."
 "org]FFmpeg[/url] library."
@@ -73786,7 +74331,7 @@ msgid "Emitted when [member visibility_state] has changed."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
-msgid "We don't know the the target ray mode."
+msgid "We don't know the target ray mode."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml

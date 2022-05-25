@@ -52,7 +52,7 @@ public:
 	bool is_mode_2d() const;
 
 	Vector<StringName> get_editable_properties() const override;
-	virtual Map<StringName, String> get_editable_properties_names() const override;
+	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	bool is_show_prop_names() const override;
 
 	VisualShaderNodeParticleEmitter();
@@ -153,7 +153,7 @@ public:
 	int get_surface_index() const;
 
 	Vector<StringName> get_editable_properties() const override;
-	Map<StringName, String> get_editable_properties_names() const override;
+	HashMap<StringName, String> get_editable_properties_names() const override;
 	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 
 	VisualShaderNodeParticleMeshEmitter();

@@ -4,7 +4,7 @@
  *
  *   Type 1 font loader (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1530,8 +1530,8 @@
 
       /* we use a T1_Table to store our charnames */
       loader->num_chars = encode->num_chars = array_size;
-      if ( FT_NEW_ARRAY( encode->char_index, array_size )     ||
-           FT_NEW_ARRAY( encode->char_name,  array_size )     ||
+      if ( FT_QNEW_ARRAY( encode->char_index, array_size )    ||
+           FT_QNEW_ARRAY( encode->char_name,  array_size )    ||
            FT_SET_ERROR( psaux->ps_table_funcs->init(
                            char_table, array_size, memory ) ) )
       {
@@ -1772,7 +1772,7 @@
 
       if ( !loader->subrs_hash )
       {
-        if ( FT_NEW( loader->subrs_hash ) )
+        if ( FT_QNEW( loader->subrs_hash ) )
           goto Fail;
 
         error = ft_hash_num_init( loader->subrs_hash, memory );
@@ -2057,9 +2057,9 @@
         name_table->elements[n][len] = '\0';
 
         /* record index of /.notdef */
-        if ( *cur == '.'                                              &&
+        if ( *cur == '.'                                                &&
              ft_strcmp( ".notdef",
-                        (const char*)(name_table->elements[n]) ) == 0 )
+                        (const char*)( name_table->elements[n] ) ) == 0 )
         {
           notdef_index = n;
           notdef_found = 1;
@@ -2331,8 +2331,8 @@
       /* in valid Type 1 fonts we don't see `RD' or `-|' directly */
       /* since those tokens are handled by parse_subrs and        */
       /* parse_charstrings                                        */
-      else if ( *cur == 'R' && cur + 6 < limit && *(cur + 1) == 'D' &&
-                have_integer )
+      else if ( *cur == 'R' && cur + 6 < limit && *( cur + 1 ) == 'D' &&
+                have_integer                                          )
       {
         FT_ULong  s;
         FT_Byte*  b;
@@ -2344,8 +2344,8 @@
         have_integer = 0;
       }
 
-      else if ( *cur == '-' && cur + 6 < limit && *(cur + 1) == '|' &&
-                have_integer )
+      else if ( *cur == '-' && cur + 6 < limit && *( cur + 1 ) == '|' &&
+                have_integer                                          )
       {
         FT_ULong  s;
         FT_Byte*  b;

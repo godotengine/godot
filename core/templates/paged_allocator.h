@@ -50,6 +50,10 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
+	enum {
+		DEFAULT_PAGE_SIZE = 4096
+	};
+
 	template <class... Args>
 	T *alloc(const Args &&...p_args) {
 		if (thread_safe) {
@@ -121,7 +125,9 @@ public:
 		page_shift = get_shift_from_power_of_2(page_size);
 	}
 
-	PagedAllocator(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
+	// Power of 2 recommended because of alignment with OS page sizes.
+	// Even if element is bigger, it's still a multiple and gets rounded to amount of pages.
+	PagedAllocator(uint32_t p_page_size = DEFAULT_PAGE_SIZE) {
 		configure(p_page_size);
 	}
 

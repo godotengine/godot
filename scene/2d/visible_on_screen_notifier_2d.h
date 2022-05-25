@@ -37,7 +37,7 @@ class Viewport;
 class VisibleOnScreenNotifier2D : public Node2D {
 	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
 
-	Set<Viewport *> viewports;
+	HashSet<Viewport *> viewports;
 
 	Rect2 rect;
 

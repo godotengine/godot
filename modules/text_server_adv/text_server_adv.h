@@ -67,7 +67,6 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/map.hpp>
 #include <godot_cpp/templates/rid_owner.hpp>
 #include <godot_cpp/templates/set.hpp>
 #include <godot_cpp/templates/thread_work_pool.hpp>
@@ -78,6 +77,7 @@ using namespace godot;
 #else
 // Headers for building as built-in module.
 
+#include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
@@ -126,15 +126,15 @@ class TextServerAdvanced : public TextServerExtension {
 	_THREAD_SAFE_CLASS_
 
 	struct NumSystemData {
-		Set<StringName> lang;
+		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
 		String exp;
 	};
 
 	Vector<NumSystemData> num_systems;
-	Map<StringName, int32_t> feature_sets;
-	Map<int32_t, StringName> feature_sets_inv;
+	HashMap<StringName, int32_t> feature_sets;
+	HashMap<int32_t, StringName> feature_sets_inv;
 
 	void _insert_num_systems_lang();
 	void _insert_feature_sets();
@@ -191,8 +191,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
-		Map<Vector2i, Vector2> kerning_map;
-
+		HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> kerning_map;
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -233,17 +232,17 @@ class TextServerAdvanced : public TextServerExtension {
 		String font_name;
 		String style_name;
 
-		Map<Vector2i, FontDataForSizeAdvanced *> cache;
+		HashMap<Vector2i, FontDataForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
-		Set<uint32_t> supported_scripts;
+		HashSet<uint32_t> supported_scripts;
 		Dictionary supported_features;
 		Dictionary supported_varaitions;
 		Dictionary feature_overrides;
 
 		// Language/script support override.
-		Map<String, bool> language_support_overrides;
-		Map<String, bool> script_support_overrides;
+		HashMap<String, bool> language_support_overrides;
+		HashMap<String, bool> script_support_overrides;
 
 		PackedByteArray data;
 		const uint8_t *data_ptr;
@@ -334,7 +333,7 @@ class TextServerAdvanced : public TextServerExtension {
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 		};
-		Map<Variant, EmbeddedObject> objects;
+		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.

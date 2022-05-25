@@ -175,8 +175,8 @@ bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("size"), PROPERTY_HINT_NONE, ""));
 }
 
 void ImageTexture::create_from_image(const Ref<Image> &p_image) {

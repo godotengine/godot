@@ -47,7 +47,7 @@ void PluginConfigDialog::_clear_fields() {
 }
 
 void PluginConfigDialog::_on_confirmed() {
-	String path = "res://addons/" + subfolder_edit->get_text();
+	String path = "res://addons/" + _get_subfolder();
 
 	if (!_edit_mode) {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -56,32 +56,35 @@ void PluginConfigDialog::_on_confirmed() {
 		}
 	}
 
+	int lang_idx = script_option_edit->get_selected();
+	String ext = ScriptServer::get_language(lang_idx)->get_extension();
+	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
+	if (script_name.get_extension().is_empty()) {
+		script_name += "." + ext;
+	}
+	String script_path = path.plus_file(script_name);
+
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	cf->set_value("plugin", "name", name_edit->get_text());
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
 	cf->set_value("plugin", "version", version_edit->get_text());
-	cf->set_value("plugin", "script", script_edit->get_text());
+	cf->set_value("plugin", "script", script_name);
 
 	cf->save(path.plus_file("plugin.cfg"));
 
 	if (!_edit_mode) {
-		int lang_idx = script_option_edit->get_selected();
-		String lang_name = ScriptServer::get_language(lang_idx)->get_name();
-
-		Ref<Script> script;
-		String script_path = path.plus_file(script_edit->get_text());
-		String class_name = script_path.get_file().get_basename();
+		String class_name = script_name.get_basename();
 		String template_content = "";
 		Vector<ScriptLanguage::ScriptTemplate> templates = ScriptServer::get_language(lang_idx)->get_built_in_templates("EditorPlugin");
-		if (templates.size() > 0) {
-			template_content = templates.get(0).content;
+		if (!templates.is_empty()) {
+			template_content = templates[0].content;
 		}
-		script = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
+		Ref<Script> script = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
 		script->set_path(script_path);
 		ResourceSaver::save(script_path, script);
 
-		emit_signal(SNAME("plugin_ready"), script.operator->(), active_edit->is_pressed() ? _to_absolute_plugin_path(subfolder_edit->get_text()) : "");
+		emit_signal(SNAME("plugin_ready"), script.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
 	} else {
 		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}
@@ -119,27 +122,18 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 		name_validation->set_texture(invalid_icon);
 		name_validation->set_tooltip(TTR("Plugin name cannot be blank."));
 	}
-	if (script_edit->get_text().get_extension() != ext) {
+	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		is_valid = false;
 		script_validation->set_texture(invalid_icon);
 		script_validation->set_tooltip(vformat(TTR("Script extension must match chosen language extension (.%s)."), ext));
 	}
-	if (script_edit->get_text().get_basename().is_empty()) {
+	if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
 		is_valid = false;
-		script_validation->set_texture(invalid_icon);
-		script_validation->set_tooltip(TTR("Script name cannot be blank."));
-	}
-	if (subfolder_edit->get_text().is_empty()) {
-		is_valid = false;
-		subfolder_validation->set_texture(invalid_icon);
-		subfolder_validation->set_tooltip(TTR("Subfolder cannot be blank."));
-	} else if (!subfolder_edit->get_text().is_valid_filename()) {
 		subfolder_validation->set_texture(invalid_icon);
 		subfolder_validation->set_tooltip(TTR("Subfolder name is not a valid folder name."));
 	} else {
-		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		String path = "res://addons/" + subfolder_edit->get_text();
-		if (dir->dir_exists(path) && !_edit_mode) { // Only show this error if in "create" mode.
+		String path = "res://addons/" + _get_subfolder();
+		if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
 			is_valid = false;
 			subfolder_validation->set_texture(invalid_icon);
 			subfolder_validation->set_tooltip(TTR("Subfolder cannot be one which already exists."));
@@ -147,6 +141,10 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	}
 
 	get_ok_button()->set_disabled(!is_valid);
+}
+
+String PluginConfigDialog::_get_subfolder() {
+	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().replace(" ", "_").to_lower() : subfolder_edit->get_text();
 }
 
 String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {
@@ -225,6 +223,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Plugin Name
 	Label *name_lb = memnew(Label);
 	name_lb->set_text(TTR("Plugin Name:"));
+	name_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(name_lb);
 
 	name_validation = memnew(TextureRect);
@@ -239,6 +238,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Subfolder
 	Label *subfolder_lb = memnew(Label);
 	subfolder_lb->set_text(TTR("Subfolder:"));
+	subfolder_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(subfolder_lb);
 
 	subfolder_validation = memnew(TextureRect);
@@ -253,6 +253,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Description
 	Label *desc_lb = memnew(Label);
 	desc_lb->set_text(TTR("Description:"));
+	desc_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(desc_lb);
 
 	Control *desc_spacer = memnew(Control);
@@ -266,6 +267,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Author
 	Label *author_lb = memnew(Label);
 	author_lb->set_text(TTR("Author:"));
+	author_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(author_lb);
 
 	Control *author_spacer = memnew(Control);
@@ -278,6 +280,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Version
 	Label *version_lb = memnew(Label);
 	version_lb->set_text(TTR("Version:"));
+	version_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(version_lb);
 
 	Control *version_spacer = memnew(Control);
@@ -290,6 +293,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Language dropdown
 	Label *script_option_lb = memnew(Label);
 	script_option_lb->set_text(TTR("Language:"));
+	script_option_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_option_lb);
 
 	Control *script_opt_spacer = memnew(Control);
@@ -311,6 +315,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// Plugin Script Name
 	Label *script_lb = memnew(Label);
 	script_lb->set_text(TTR("Script Name:"));
+	script_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_lb);
 
 	script_validation = memnew(TextureRect);
@@ -326,6 +331,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
 	Label *active_lb = memnew(Label);
 	active_lb->set_text(TTR("Activate now?"));
+	active_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(active_lb);
 
 	Control *active_spacer = memnew(Control);

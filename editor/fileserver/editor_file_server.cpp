@@ -46,7 +46,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 		cd->efs->to_wait.insert(cd->thread);
 	}
 	while (cd->files.size()) {
-		cd->files.erase(cd->files.front());
+		cd->files.remove(cd->files.begin());
 	}
 	memdelete(cd);
 }
@@ -282,7 +282,7 @@ void EditorFileServer::_thread_start(void *s) {
 
 		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
-			Thread *w = self->to_wait.front()->get();
+			Thread *w = *self->to_wait.begin();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
 			w->wait_to_finish();

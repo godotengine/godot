@@ -38,8 +38,8 @@
 #include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "scene/resources/material.h"
 
@@ -139,8 +139,8 @@ struct CSGBrushOperation {
 
 		Vector<Vector3> points;
 		Vector<Face> faces;
-		Map<Ref<Material>, int> materials;
-		Map<Vector3, int> vertex_map;
+		HashMap<Ref<Material>, int> materials;
+		HashMap<Vector3, int> vertex_map;
 		OAHashMap<VertexKey, int, VertexKeyHash> snap_cache;
 		float vertex_snap = 0.0;
 
@@ -184,8 +184,8 @@ struct CSGBrushOperation {
 	};
 
 	struct Build2DFaceCollection {
-		Map<int, Build2DFaces> build2DFacesA;
-		Map<int, Build2DFaces> build2DFacesB;
+		HashMap<int, Build2DFaces> build2DFacesA;
+		HashMap<int, Build2DFaces> build2DFacesB;
 	};
 
 	void update_faces(const CSGBrush &p_brush_a, const int p_face_idx_a, const CSGBrush &p_brush_b, const int p_face_idx_b, Build2DFaceCollection &p_collection, float p_vertex_snap);

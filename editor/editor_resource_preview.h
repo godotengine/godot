@@ -81,11 +81,6 @@ class EditorResourcePreview : public Node {
 	SafeFlag exit;
 	SafeFlag exited;
 
-	// when running from GLES, we want to run the previews
-	// in the main thread using an update, rather than create
-	// a separate thread
-	bool _mainthread_only = false;
-
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
@@ -96,7 +91,7 @@ class EditorResourcePreview : public Node {
 
 	int order;
 
-	Map<String, Item> cache;
+	HashMap<String, Item> cache;
 
 	void _preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base);
@@ -124,9 +119,6 @@ public:
 
 	void start();
 	void stop();
-
-	// for single threaded mode
-	void update();
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

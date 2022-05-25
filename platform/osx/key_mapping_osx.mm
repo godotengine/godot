@@ -30,8 +30,8 @@
 
 #include "key_mapping_osx.h"
 
-#include <Carbon/Carbon.h>
-#include <Cocoa/Cocoa.h>
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
 
 bool KeyMappingOSX::is_numpad_key(unsigned int key) {
 	static const unsigned int table[] = {

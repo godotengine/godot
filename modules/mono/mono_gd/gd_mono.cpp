@@ -1167,9 +1167,8 @@ GDMonoClass *GDMono::get_class(MonoClass *p_raw_class) {
 	int32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		GDMonoAssembly *assembly = domain_assemblies.get(*k);
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		GDMonoAssembly *assembly = E.value;
 		if (assembly->get_image() == image) {
 			GDMonoClass *klass = assembly->get_class(p_raw_class);
 			if (klass) {
@@ -1190,9 +1189,8 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 	int32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		GDMonoAssembly *assembly = domain_assemblies.get(*k);
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		GDMonoAssembly *assembly = E.value;
 		klass = assembly->get_class(p_namespace, p_name);
 		if (klass) {
 			return klass;
@@ -1205,9 +1203,8 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 void GDMono::_domain_assemblies_cleanup(int32_t p_domain_id) {
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[p_domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		memdelete(domain_assemblies.get(*k));
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		memdelete(E.value);
 	}
 
 	assemblies.erase(p_domain_id);
@@ -1298,13 +1295,11 @@ GDMono::~GDMono() {
 		// Leave the rest to 'mono_jit_cleanup'
 #endif
 
-		const int32_t *k = nullptr;
-		while ((k = assemblies.next(k))) {
-			HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies.get(*k);
+		for (const KeyValue<int32_t, HashMap<String, GDMonoAssembly *>> &E : assemblies) {
+			const HashMap<String, GDMonoAssembly *> &domain_assemblies = E.value;
 
-			const String *kk = nullptr;
-			while ((kk = domain_assemblies.next(kk))) {
-				memdelete(domain_assemblies.get(*kk));
+			for (const KeyValue<String, GDMonoAssembly *> &F : domain_assemblies) {
+				memdelete(F.value);
 			}
 		}
 		assemblies.clear();

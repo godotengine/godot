@@ -83,7 +83,7 @@ private:
 		RID material;
 	};
 
-	Map<uint64_t, SurfaceData> surfaces;
+	HashMap<uint64_t, SurfaceData> surfaces;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
@@ -96,6 +96,7 @@ private:
 
 	int font_size = 16;
 	Ref<Font> font_override;
+	mutable Ref<Font> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
 	Point2 lbl_offset;
 	int outline_render_priority = -1;

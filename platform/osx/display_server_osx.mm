@@ -45,12 +45,12 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
-#include <Carbon/Carbon.h>
-#include <Cocoa/Cocoa.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/IOKitLib.h>
-#include <IOKit/hid/IOHIDKeys.h>
-#include <IOKit/hid/IOHIDLib.h>
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#import <IOKit/IOCFPlugIn.h>
+#import <IOKit/IOKitLib.h>
+#import <IOKit/hid/IOHIDKeys.h>
+#import <IOKit/hid/IOHIDLib.h>
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -146,7 +146,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
 		}
 
-		CALayer *layer = [wd.window_view layer];
+		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			layer.contentsScale = scale;
 		}
@@ -174,7 +174,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 	wd.size.width = contentRect.size.width * scale;
 	wd.size.height = contentRect.size.height * scale;
 
-	CALayer *layer = [wd.window_view layer];
+	CALayer *layer = [(NSView *)wd.window_view layer];
 	if (layer) {
 		layer.contentsScale = scale;
 	}
@@ -209,16 +209,16 @@ void DisplayServerOSX::_update_window_style(WindowData p_wd) {
 
 	if (borderless_full) {
 		// If the window covers up the screen set the level to above the main menu and hide on deactivate.
-		[p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
-		[p_wd.window_object setHidesOnDeactivate:YES];
+		[(NSWindow *)p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
+		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
 		if (p_wd.on_top && !p_wd.fullscreen) {
-			[p_wd.window_object setLevel:NSFloatingWindowLevel];
+			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
-			[p_wd.window_object setLevel:NSNormalWindowLevel];
+			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
-		[p_wd.window_object setHidesOnDeactivate:NO];
+		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:NO];
 	}
 }
 
@@ -234,7 +234,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			[wd.window_object setBackgroundColor:[NSColor clearColor]];
 			[wd.window_object setOpaque:NO];
 			[wd.window_object setHasShadow:NO];
-			CALayer *layer = [wd.window_view layer];
+			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
 				[layer setBackgroundColor:[NSColor clearColor].CGColor];
 				[layer setOpaque:NO];
@@ -249,7 +249,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
 			[wd.window_object setOpaque:YES];
 			[wd.window_object setHasShadow:YES];
-			CALayer *layer = [wd.window_view layer];
+			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
 				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
 				[layer setOpaque:YES];
@@ -1071,9 +1071,9 @@ String DisplayServerOSX::global_menu_get_item_submenu(const String &p_menu_root,
 		if (menu_item) {
 			const NSMenu *sub_menu = [menu_item submenu];
 			if (sub_menu) {
-				for (Map<String, NSMenu *>::Element *E = submenu.front(); E; E = E->next()) {
-					if (E->get() == sub_menu) {
-						return E->key();
+				for (const KeyValue<String, NSMenu *> &E : submenu) {
+					if (E.value == sub_menu) {
+						return E.key;
 					}
 				}
 			}
@@ -1901,8 +1901,8 @@ Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<int> ret;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -2256,7 +2256,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			[wd.window_object setLevel:NSNormalWindowLevel];
+			[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
 			_set_window_per_pixel_transparency_enabled(true, p_window);
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
@@ -2380,9 +2380,9 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 				return;
 			}
 			if (p_enabled) {
-				[wd.window_object setLevel:NSFloatingWindowLevel];
+				[(NSWindow *)wd.window_object setLevel:NSFloatingWindowLevel];
 			} else {
-				[wd.window_object setLevel:NSNormalWindowLevel];
+				[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
 			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
@@ -2423,7 +2423,7 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			if (wd.fullscreen) {
 				return wd.on_top;
 			} else {
-				return [wd.window_object level] == NSFloatingWindowLevel;
+				return [(NSWindow *)wd.window_object level] == NSFloatingWindowLevel;
 			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
@@ -2468,8 +2468,8 @@ bool DisplayServerOSX::window_can_draw(WindowID p_window) const {
 bool DisplayServerOSX::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (window_get_mode(E->key()) != WINDOW_MODE_MINIMIZED) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) {
 			return true;
 		}
 	}
@@ -2505,9 +2505,9 @@ DisplayServer::WindowID DisplayServerOSX::get_window_at_screen_position(const Po
 	position /= screen_get_max_scale();
 
 	NSInteger wnum = [NSWindow windowNumberAtPoint:NSMakePoint(position.x, position.y) belowWindowWithWindowNumber:0 /*topmost*/];
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if ([E->get().window_object windowNumber] == wnum) {
-			return E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if ([E.value.window_object windowNumber] == wnum) {
+			return E.key;
 		}
 	}
 	return INVALID_WINDOW_ID;
@@ -2678,10 +2678,10 @@ void DisplayServerOSX::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
 				cursor_set_shape(p_shape);
 				return;
 			}
@@ -2886,8 +2886,8 @@ void DisplayServerOSX::process_events() {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		WindowData &wd = E->get();
+	for (KeyValue<WindowID, WindowData> &E : windows) {
+		WindowData &wd = E.value;
 		if (wd.mpath.size() > 0) {
 			update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 			if (Geometry2D::is_point_in_polygon(wd.mouse_pos, wd.mpath)) {
@@ -3266,11 +3266,11 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 DisplayServerOSX::~DisplayServerOSX() {
 	// Destroy all windows.
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E;) {
-		Map<WindowID, WindowData>::Element *F = E;
-		E = E->next();
-		[F->get().window_object setContentView:nil];
-		[F->get().window_object close];
+	for (HashMap<WindowID, WindowData>::Iterator E = windows.begin(); E;) {
+		HashMap<WindowID, WindowData>::Iterator F = E;
+		++E;
+		[F->value.window_object setContentView:nil];
+		[F->value.window_object close];
 	}
 
 	// Destroy drivers.

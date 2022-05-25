@@ -106,7 +106,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID color_only_fb;
 		RID specular_only_fb;
 		int width, height;
-		Map<uint32_t, RID> color_framebuffers;
+		HashMap<uint32_t, RID> color_framebuffers;
 		uint32_t view_count;
 
 		RID render_sdfgi_uniform_set;
@@ -396,7 +396,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	void _fill_instance_data(RenderListType p_render_list, int *p_render_info = nullptr, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_using_sdfgi = false, bool p_using_opaque_gi = false, bool p_append = false);
 
-	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
+	HashMap<Size2i, RID> sdfgi_framebuffer_size_cache;
 
 	struct GeometryInstanceData;
 	struct GeometryInstanceForwardClustered;

@@ -33,7 +33,8 @@
 #include "core/config/project_settings.h"
 
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
 	if (!pkg) {
@@ -92,7 +93,7 @@ Error EditorExportPlatformJavaScript::_write_or_error(const uint8_t *p_content, 
 	return OK;
 }
 
-void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_replaces, Vector<uint8_t> &r_template) {
+void EditorExportPlatformJavaScript::_replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(r_template.ptr()), r_template.size());
 	String out;
 	Vector<String> lines = str_template.split("\n");
@@ -144,7 +145,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	// Replaces HTML string
 	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
-	Map<String, String> replaces;
+	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
 	replaces["$GODOT_PROJECT_NAME"] = ProjectSettings::get_singleton()->get_setting("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
@@ -195,7 +196,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	const ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	Map<String, String> replaces;
+	HashMap<String, String> replaces;
 	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
 	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";

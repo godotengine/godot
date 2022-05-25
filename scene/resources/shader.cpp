@@ -100,7 +100,7 @@ RID Shader::get_rid() const {
 void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
 		if (!default_textures.has(p_param)) {
-			default_textures[p_param] = Map<int, Ref<Texture2D>>();
+			default_textures[p_param] = HashMap<int, Ref<Texture2D>>();
 		}
 		default_textures[p_param][p_index] = p_texture;
 		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid(), p_index);
@@ -126,7 +126,7 @@ Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param, int 
 }
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
-	for (const KeyValue<StringName, Map<int, Ref<Texture2D>>> &E : default_textures) {
+	for (const KeyValue<StringName, HashMap<int, Ref<Texture2D>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
 }

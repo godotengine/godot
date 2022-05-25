@@ -953,6 +953,8 @@ struct glyf
       glyf_table.destroy ();
     }
 
+    bool has_data () const { return num_glyphs; }
+
     protected:
     template<typename T>
     bool get_points (hb_font_t *font, hb_codepoint_t gid, T consumer) const

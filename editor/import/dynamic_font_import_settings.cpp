@@ -45,8 +45,8 @@ class DynamicFontImportSettingsData : public RefCounted {
 	GDCLASS(DynamicFontImportSettingsData, RefCounted)
 	friend class DynamicFontImportSettings;
 
-	Map<StringName, Variant> settings;
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> settings;
+	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	DynamicFontImportSettings *owner = nullptr;
 
@@ -547,7 +547,11 @@ void DynamicFontImportSettings::_variation_selected() {
 	}
 }
 
-void DynamicFontImportSettings::_variation_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_variation_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *vars_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(vars_item);
 
@@ -581,10 +585,10 @@ void DynamicFontImportSettings::_variations_validate() {
 		for (TreeItem *vars_item_b = vars_list_root->get_first_child(); vars_item_b; vars_item_b = vars_item_b->get_next()) {
 			if (vars_item_b != vars_item_a) {
 				bool match = true;
-				for (Map<StringName, Variant>::Element *E = import_variation_data_a->settings.front(); E; E = E->next()) {
+				for (const KeyValue<StringName, Variant> &E : import_variation_data_a->settings) {
 					Ref<DynamicFontImportSettingsData> import_variation_data_b = vars_item_b->get_metadata(0);
 					ERR_FAIL_NULL(import_variation_data_b);
-					match = match && (import_variation_data_b->settings[E->key()] == E->get());
+					match = match && (import_variation_data_b->settings[E.key] == E.value);
 				}
 				if (match) {
 					warn = TTR("Warning: Multiple configurations have identical settings. Duplicates will be ignored.");
@@ -832,7 +836,11 @@ void DynamicFontImportSettings::_lang_add_item(const String &p_locale) {
 	lang_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *lang_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(lang_item);
 
@@ -864,7 +872,11 @@ void DynamicFontImportSettings::_ot_add_item(int p_option) {
 	ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_ot_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_ot_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ot_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(ot_item);
 
@@ -891,7 +903,11 @@ void DynamicFontImportSettings::_script_add_item(int p_option) {
 	script_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
-void DynamicFontImportSettings::_script_remove(Object *p_item, int p_column, int p_id) {
+void DynamicFontImportSettings::_script_remove(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *script_item = (TreeItem *)p_item;
 	ERR_FAIL_NULL(script_item);
 
@@ -927,7 +943,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 }
 
 void DynamicFontImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	HashMap<StringName, Variant> main_settings;
 
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
@@ -950,11 +966,11 @@ void DynamicFontImportSettings::_re_import() {
 
 		String name = vars_item->get_text(0);
 		variation += ("name=" + name);
-		for (Map<StringName, Variant>::Element *E = import_variation_data->settings.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
 			if (!variation.is_empty()) {
 				variation += ",";
 			}
-			variation += (String(E->key()) + "=" + String(E->get()));
+			variation += (String(E.key) + "=" + String(E.value));
 		}
 		variations.push_back(variation);
 	}
@@ -991,7 +1007,7 @@ void DynamicFontImportSettings::_re_import() {
 	if (!selected_chars.is_empty()) {
 		Vector<String> ranges;
 		char32_t start = selected_chars.front()->get();
-		for (Set<char32_t>::Element *E = selected_chars.front()->next(); E; E = E->next()) {
+		for (RBSet<char32_t>::Element *E = selected_chars.front()->next(); E; E = E->next()) {
 			if (E->prev() && ((E->prev()->get() + 1) != E->get())) {
 				ranges.push_back(String("0x") + String::num_int64(start, 16) + String("-0x") + String::num_int64(E->prev()->get(), 16));
 				start = E->get();
@@ -1004,7 +1020,7 @@ void DynamicFontImportSettings::_re_import() {
 	if (!selected_glyphs.is_empty()) {
 		Vector<String> ranges;
 		int32_t start = selected_glyphs.front()->get();
-		for (Set<int32_t>::Element *E = selected_glyphs.front()->next(); E; E = E->next()) {
+		for (RBSet<int32_t>::Element *E = selected_glyphs.front()->next(); E; E = E->next()) {
 			if (E->prev() && ((E->prev()->get() + 1) != E->get())) {
 				ranges.push_back(String("0x") + String::num_int64(start, 16) + String("-0x") + String::num_int64(E->prev()->get(), 16));
 				start = E->get();
@@ -1024,8 +1040,8 @@ void DynamicFontImportSettings::_re_import() {
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("Import settings:");
-		for (Map<StringName, Variant>::Element *E = main_settings.front(); E; E = E->next()) {
-			print_line(String("    ") + String(E->key()).utf8().get_data() + " == " + String(E->get()).utf8().get_data());
+		for (const KeyValue<StringName, Variant> &E : main_settings) {
+			print_line(String("    ") + String(E.key).utf8().get_data() + " == " + String(E.value).utf8().get_data());
 		}
 	}
 
@@ -1487,7 +1503,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	vars_list->set_column_expand(1, false);
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->connect("item_selected", callable_mp(this, &DynamicFontImportSettings::_variation_selected));
-	vars_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_variation_remove));
+	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_variation_remove));
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	inspector_vars = memnew(EditorInspector);
@@ -1639,7 +1655,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	lang_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	lang_list->set_column_expand(2, false);
 	lang_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	lang_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_lang_remove));
+	lang_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_lang_remove));
 	lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *hb_script = memnew(HBoxContainer);
@@ -1667,7 +1683,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	script_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	script_list->set_column_expand(2, false);
 	script_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	script_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_script_remove));
+	script_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_script_remove));
 	script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *hb_ot = memnew(HBoxContainer);
@@ -1695,7 +1711,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	ot_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	ot_list->set_column_expand(2, false);
 	ot_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
-	ot_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_remove));
+	ot_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_ot_remove));
 	ot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	// Common

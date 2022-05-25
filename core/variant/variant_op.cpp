@@ -361,6 +361,11 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorStringModT<PackedVector3Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_VECTOR3_ARRAY);
 	register_op<OperatorEvaluatorStringModT<PackedColorArray>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_COLOR_ARRAY);
 
+	register_op<OperatorEvaluatorPow<int64_t, int64_t, int64_t>>(Variant::OP_POWER, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorPow<double, int64_t, double>>(Variant::OP_POWER, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorPow<double, double, double>>(Variant::OP_POWER, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorPow<double, double, int64_t>>(Variant::OP_POWER, Variant::FLOAT, Variant::INT);
+
 	register_op<OperatorEvaluatorNeg<int64_t, int64_t>>(Variant::OP_NEGATE, Variant::INT, Variant::NIL);
 	register_op<OperatorEvaluatorNeg<double, double>>(Variant::OP_NEGATE, Variant::FLOAT, Variant::NIL);
 	register_op<OperatorEvaluatorNeg<Vector2, Vector2>>(Variant::OP_NEGATE, Variant::VECTOR2, Variant::NIL);
@@ -929,6 +934,7 @@ static const char *_op_names[Variant::OP_MAX] = {
 	"unary-",
 	"unary+",
 	"%",
+	"**",
 	"<<",
 	">>",
 	"&",

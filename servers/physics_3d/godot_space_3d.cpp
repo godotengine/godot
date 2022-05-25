@@ -906,7 +906,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	}
 
 	bool collided = false;
-	if (recovered || (safe < 1)) {
+	if ((p_parameters.recovery_as_collision && recovered) || (safe < 1)) {
 		if (safe >= 1) {
 			best_shape = -1; //no best shape with cast, reset to -1
 		}
@@ -1096,7 +1096,7 @@ void GodotSpace3D::remove_object(GodotCollisionObject3D *p_object) {
 	objects.erase(p_object);
 }
 
-const Set<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
+const HashSet<GodotCollisionObject3D *> &GodotSpace3D::get_objects() const {
 	return objects;
 }
 

@@ -49,7 +49,7 @@ class TTS_Android {
 	static jmethodID _resume_speaking;
 	static jmethodID _stop_speaking;
 
-	static Map<int, Char16String> ids;
+	static HashMap<int, Char16String> ids;
 
 public:
 	static void setup(jobject p_tts);

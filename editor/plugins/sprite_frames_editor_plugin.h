@@ -50,7 +50,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	enum {
 		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
-		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertial" values.
+		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertical" values.
 		PARAM_SIZE, // Keep "Size" values.
 	};
 	int dominant_param = PARAM_FRAME_COUNT;
@@ -103,8 +103,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
 	EditorFileDialog *file_split_sheet = nullptr;
-	Set<int> frames_selected;
-	Set<int> frames_toggled_by_mouse_hover;
+	HashSet<int> frames_selected;
+	HashSet<int> frames_toggled_by_mouse_hover;
 	int last_frame_selected = 0;
 
 	float scale_ratio;

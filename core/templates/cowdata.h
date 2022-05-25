@@ -183,6 +183,8 @@ public:
 	}
 
 	int find(const T &p_val, int p_from = 0) const;
+	int rfind(const T &p_val, int p_from = -1) const;
+	int count(const T &p_val) const;
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
@@ -347,6 +349,36 @@ int CowData<T>::find(const T &p_val, int p_from) const {
 	}
 
 	return ret;
+}
+
+template <class T>
+int CowData<T>::rfind(const T &p_val, int p_from) const {
+	const int s = size();
+
+	if (p_from < 0) {
+		p_from = s + p_from;
+	}
+	if (p_from < 0 || p_from >= s) {
+		p_from = s - 1;
+	}
+
+	for (int i = p_from; i >= 0; i--) {
+		if (get(i) == p_val) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+template <class T>
+int CowData<T>::count(const T &p_val) const {
+	int amount = 0;
+	for (int i = 0; i < size(); i++) {
+		if (get(i) == p_val) {
+			amount++;
+		}
+	}
+	return amount;
 }
 
 template <class T>

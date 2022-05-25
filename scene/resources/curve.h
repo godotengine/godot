@@ -76,6 +76,8 @@ public:
 
 	int get_point_count() const { return _points.size(); }
 
+	void set_point_count(int p_count);
+
 	int add_point(Vector2 p_position,
 			real_t left_tangent = 0,
 			real_t right_tangent = 0,
@@ -126,6 +128,10 @@ public:
 
 	void ensure_default_setup(real_t p_min, real_t p_max);
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 protected:
 	static void _bind_methods();
 
@@ -164,19 +170,26 @@ class Curve2D : public Resource {
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
+	void mark_dirty();
+
 	void _bake() const;
 
 	real_t bake_interval = 5.0;
 
-	void _bake_segment2d(Map<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 protected:
 	static void _bind_methods();
 
 public:
 	int get_point_count() const;
+	void set_point_count(int p_count);
 	void add_point(const Vector2 &p_position, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
 	void set_point_position(int p_index, const Vector2 &p_position);
 	Vector2 get_point_position(int p_index) const;
@@ -228,20 +241,27 @@ class Curve3D : public Resource {
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
+	void mark_dirty();
+
 	void _bake() const;
 
 	real_t bake_interval = 0.2;
 	bool up_vector_enabled = true;
 
-	void _bake_segment3d(Map<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 protected:
 	static void _bind_methods();
 
 public:
 	int get_point_count() const;
+	void set_point_count(int p_count);
 	void add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
 	void set_point_position(int p_index, const Vector3 &p_position);
 	Vector3 get_point_position(int p_index) const;

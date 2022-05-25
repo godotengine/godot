@@ -39,6 +39,19 @@
 #include "servers/rendering/shader_language.h"
 
 void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
+	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_base)) {
+		GLES3::Mesh *mesh = GLES3::MeshStorage::get_singleton()->get_mesh(p_base);
+		p_instance->update_dependency(&mesh->dependency);
+	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_base)) {
+		GLES3::MultiMesh *multimesh = GLES3::MeshStorage::get_singleton()->get_multimesh(p_base);
+		p_instance->update_dependency(&multimesh->dependency);
+		if (multimesh->mesh.is_valid()) {
+			base_update_dependency(multimesh->mesh, p_instance);
+		}
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_base)) {
+		GLES3::Light *l = GLES3::LightStorage::get_singleton()->get_light(p_base);
+		p_instance->update_dependency(&l->dependency);
+	}
 }
 
 /* VOXEL GI API */
@@ -212,7 +225,7 @@ RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 
 	glGenRenderbuffers(1, &cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, config->depth_buffer_internalformat, cls->size, cls->height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, cls->size, cls->height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 
 	glGenTextures(1, &cls->distance);
@@ -342,25 +355,14 @@ void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder,
 */
 
 RS::InstanceType RasterizerStorageGLES3::get_base_type(RID p_rid) const {
-	return RS::INSTANCE_NONE;
-
-	/*
-	if (mesh_owner.owns(p_rid)) {
+	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
 		return RS::INSTANCE_MESH;
-	} else if (light_owner.owns(p_rid)) {
-		return RS::INSTANCE_LIGHT;
-	} else if (multimesh_owner.owns(p_rid)) {
+	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
 		return RS::INSTANCE_MULTIMESH;
-	} else if (immediate_owner.owns(p_rid)) {
-		return RS::INSTANCE_IMMEDIATE;
-	} else if (reflection_probe_owner.owns(p_rid)) {
-		return RS::INSTANCE_REFLECTION_PROBE;
-	} else if (lightmap_capture_data_owner.owns(p_rid)) {
-		return RS::INSTANCE_LIGHTMAP_CAPTURE;
-	} else {
-		return RS::INSTANCE_NONE;
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
+		return RS::INSTANCE_LIGHT;
 	}
-*/
+	return RS::INSTANCE_NONE;
 }
 
 bool RasterizerStorageGLES3::free(RID p_rid) {
@@ -379,89 +381,23 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 	} else if (GLES3::MaterialStorage::get_singleton()->owns_material(p_rid)) {
 		GLES3::MaterialStorage::get_singleton()->material_free(p_rid);
 		return true;
+	} else if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
+		GLES3::MeshStorage::get_singleton()->mesh_free(p_rid);
+		return true;
+	} else if (GLES3::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
+		GLES3::MeshStorage::get_singleton()->multimesh_free(p_rid);
+		return true;
+	} else if (GLES3::MeshStorage::get_singleton()->owns_mesh_instance(p_rid)) {
+		GLES3::MeshStorage::get_singleton()->mesh_instance_free(p_rid);
+		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_light(p_rid)) {
+		GLES3::LightStorage::get_singleton()->light_free(p_rid);
+		return true;
 	} else {
 		return false;
 	}
 	/*
-	} else if (skeleton_owner.owns(p_rid)) {
-		Skeleton *s = skeleton_owner.get_or_null(p_rid);
-
-		if (s->update_list.in_list()) {
-			skeleton_update_list.remove(&s->update_list);
-		}
-
-		for (Set<InstanceBaseDependency *>::Element *E = s->instances.front(); E; E = E->next()) {
-			E->get()->skeleton = RID();
-		}
-
-		skeleton_allocate(p_rid, 0, false);
-
-		if (s->tex_id) {
-			glDeleteTextures(1, &s->tex_id);
-		}
-
-		skeleton_owner.free(p_rid);
-		memdelete(s);
-
-		return true;
-	} else if (mesh_owner.owns(p_rid)) {
-		Mesh *mesh = mesh_owner.get_or_null(p_rid);
-
-		mesh->instance_remove_deps();
-		mesh_clear(p_rid);
-
-		while (mesh->multimeshes.first()) {
-			MultiMesh *multimesh = mesh->multimeshes.first()->self();
-			multimesh->mesh = RID();
-			multimesh->dirty_aabb = true;
-
-			mesh->multimeshes.remove(mesh->multimeshes.first());
-
-			if (!multimesh->update_list.in_list()) {
-				multimesh_update_list.add(&multimesh->update_list);
-			}
-		}
-
-		mesh_owner.free(p_rid);
-		memdelete(mesh);
-
-		return true;
-	} else if (multimesh_owner.owns(p_rid)) {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_rid);
-		multimesh->instance_remove_deps();
-
-		if (multimesh->mesh.is_valid()) {
-			Mesh *mesh = mesh_owner.get_or_null(multimesh->mesh);
-			if (mesh) {
-				mesh->multimeshes.remove(&multimesh->mesh_list);
-			}
-		}
-
-		multimesh_allocate(p_rid, 0, RS::MULTIMESH_TRANSFORM_3D, RS::MULTIMESH_COLOR_NONE);
-
-		_update_dirty_multimeshes();
-
-		multimesh_owner.free(p_rid);
-		memdelete(multimesh);
-
-		return true;
-	} else if (immediate_owner.owns(p_rid)) {
-		Immediate *im = immediate_owner.get_or_null(p_rid);
-		im->instance_remove_deps();
-
-		immediate_owner.free(p_rid);
-		memdelete(im);
-
-		return true;
-	} else if (light_owner.owns(p_rid)) {
-		Light *light = light_owner.get_or_null(p_rid);
-		light->instance_remove_deps();
-
-		light_owner.free(p_rid);
-		memdelete(light);
-
-		return true;
-	} else if (reflection_probe_owner.owns(p_rid)) {
+	  else if (reflection_probe_owner.owns(p_rid)) {
 		// delete the texture
 		ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
 		reflection_probe->instance_remove_deps();
@@ -517,11 +453,8 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 	if (p_feature == "bptc") {
 		return config->bptc_supported;
 	}
-	if (p_feature == "etc") {
-		return config->etc_supported;
-	}
 
-	if (p_feature == "etc2") {
+	if (p_feature == "etc" || p_feature == "etc2") {
 		return config->etc2_supported;
 	}
 
@@ -683,9 +616,6 @@ void RasterizerStorageGLES3::initialize() {
 void RasterizerStorageGLES3::finalize() {
 }
 
-void RasterizerStorageGLES3::_copy_screen() {
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
 void RasterizerStorageGLES3::update_memory_info() {
 }
 

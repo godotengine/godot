@@ -149,12 +149,12 @@ Error ResourceUID::save_to_cache() {
 
 	cache_entries = 0;
 
-	for (OrderedHashMap<ID, Cache>::Element E = unique_ids.front(); E; E = E.next()) {
-		f->store_64(E.key());
-		uint32_t s = E.get().cs.length();
+	for (KeyValue<ID, Cache> &E : unique_ids) {
+		f->store_64(E.key);
+		uint32_t s = E.value.cs.length();
 		f->store_32(s);
-		f->store_buffer((const uint8_t *)E.get().cs.ptr(), s);
-		E.get().saved_to_cache = true;
+		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
+		E.value.saved_to_cache = true;
 		cache_entries++;
 	}
 
@@ -202,8 +202,8 @@ Error ResourceUID::update_cache() {
 	MutexLock l(mutex);
 
 	Ref<FileAccess> f;
-	for (OrderedHashMap<ID, Cache>::Element E = unique_ids.front(); E; E = E.next()) {
-		if (!E.get().saved_to_cache) {
+	for (KeyValue<ID, Cache> &E : unique_ids) {
+		if (!E.value.saved_to_cache) {
 			if (f.is_null()) {
 				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); //append
 				if (f.is_null()) {
@@ -211,11 +211,11 @@ Error ResourceUID::update_cache() {
 				}
 				f->seek_end();
 			}
-			f->store_64(E.key());
-			uint32_t s = E.get().cs.length();
+			f->store_64(E.key);
+			uint32_t s = E.value.cs.length();
 			f->store_32(s);
-			f->store_buffer((const uint8_t *)E.get().cs.ptr(), s);
-			E.get().saved_to_cache = true;
+			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
+			E.value.saved_to_cache = true;
 			cache_entries++;
 		}
 	}

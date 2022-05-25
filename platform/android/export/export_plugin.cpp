@@ -207,9 +207,9 @@ static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash
 static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
 
 static const int icon_densities_count = 6;
-static const char *launcher_icon_option = "launcher_icons/main_192x192";
-static const char *launcher_adaptive_icon_foreground_option = "launcher_icons/adaptive_foreground_432x432";
-static const char *launcher_adaptive_icon_background_option = "launcher_icons/adaptive_background_432x432";
+static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
+static const char *launcher_adaptive_icon_foreground_option = PNAME("launcher_icons/adaptive_foreground_432x432");
+static const char *launcher_adaptive_icon_background_option = PNAME("launcher_icons/adaptive_background_432x432");
 
 static const LauncherIcon launcher_icons[icon_densities_count] = {
 	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
@@ -807,7 +807,6 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	}
 
 	manifest_text += _get_xr_features_tag(p_preset);
-	manifest_text += _get_instrumentation_tag(p_preset);
 	manifest_text += _get_application_tag(p_preset, _has_storage_permission(perms));
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
@@ -967,10 +966,6 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "application" && attrname == "hasFragileUserData") {
 						encode_uint32(retain_data_on_uninstall, &p_manifest.write[iofs + 16]);
-					}
-
-					if (tname == "instrumentation" && attrname == "targetPackage") {
-						string_table.write[attr_value] = get_package_name(package_name);
 					}
 
 					if (tname == "activity" && attrname == "screenOrientation") {
@@ -1697,7 +1692,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
 	for (int i = 0; i < plugins_configs.size(); i++) {
 		print_verbose("Found Android plugin " + plugins_configs[i].name);
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), plugins_configs[i].name)), false));
 	}
 	plugins_changed.clear();
 
@@ -1707,7 +1702,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 		// All Android devices supporting Vulkan run 64-bit Android,
 		// so there is usually no point in exporting for 32-bit Android.
 		const bool is_default = abi == "arm64-v8a";
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), abi)), is_default));
 	}
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"), ""));
@@ -1758,7 +1753,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	const char **perms = android_perms;
 	while (*perms) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "permissions/" + String(*perms).to_lower()), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("permissions"), String(*perms).to_lower())), false));
 		perms++;
 	}
 }
@@ -2775,7 +2770,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return ERR_FILE_BAD_PATH;
 	}
 
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating APK..."), 0)) {
 		return ERR_SKIP;
@@ -2789,7 +2785,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	int ret = unzGoToFirstFile(pkg);
 
-	zlib_filefunc_def io2 = zipio_create_io();
+	Ref<FileAccess> io2_fa;
+	zlib_filefunc_def io2 = zipio_create_io(&io2_fa);
 
 	String tmp_unaligned_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
@@ -2985,7 +2982,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	ret = unzGoToFirstFile(tmp_unaligned);
 
-	io2 = zipio_create_io();
+	io2 = zipio_create_io(&io2_fa);
 	zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 	// Take files from the unaligned APK and write them out to the aligned one
@@ -3065,7 +3062,7 @@ void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features
 	r_features->push_back("android");
 }
 
-void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {

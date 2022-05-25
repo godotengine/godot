@@ -122,7 +122,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 
 		const Vector3 *r = p_faces.ptr();
 		Triangle *w = triangles.ptrw();
-		Map<Vector3, int> db;
+		HashMap<Vector3, int> db;
 
 		for (int i = 0; i < fc; i++) {
 			Triangle &f = w[i];
@@ -131,9 +131,9 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 			for (int j = 0; j < 3; j++) {
 				int vidx = -1;
 				Vector3 vs = v[j].snapped(Vector3(0.0001, 0.0001, 0.0001));
-				Map<Vector3, int>::Element *E = db.find(vs);
+				HashMap<Vector3, int>::Iterator E = db.find(vs);
 				if (E) {
-					vidx = E->get();
+					vidx = E->value;
 				} else {
 					vidx = db.size();
 					db[vs] = vidx;

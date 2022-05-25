@@ -124,6 +124,7 @@ private:
 	Vector<Cell> cells;
 
 	bool collapsed = false; // won't show children
+	bool visible = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
@@ -209,6 +210,9 @@ private:
 	void _propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal);
 	void _propagate_check_through_parents(int p_column, bool p_emit_signal);
 
+	TreeItem *_get_prev_visible(bool p_wrap = false);
+	TreeItem *_get_next_visible(bool p_wrap = false);
+
 public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -273,6 +277,9 @@ public:
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
 
+	void set_visible(bool p_visible);
+	bool is_visible();
+
 	void uncollapse_tree();
 
 	void set_custom_minimum_height(int p_height);
@@ -335,6 +342,7 @@ public:
 	TreeItem *get_next_visible(bool p_wrap = false);
 
 	TreeItem *get_child(int p_idx);
+	int get_visible_child_count();
 	int get_child_count();
 	Array get_children();
 	int get_index();
@@ -466,7 +474,7 @@ private:
 
 	void _notification(int p_what);
 
-	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
+	void item_edited(int p_column, TreeItem *p_item, MouseButton p_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);

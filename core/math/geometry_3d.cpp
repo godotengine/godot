@@ -36,7 +36,7 @@
 #include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::MeshData::optimize_vertices() {
-	Map<int, int> vtx_remap;
+	HashMap<int, int> vtx_remap;
 
 	for (int i = 0; i < faces.size(); i++) {
 		for (int j = 0; j < faces[i].indices.size(); j++) {

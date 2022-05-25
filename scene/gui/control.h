@@ -190,6 +190,7 @@ private:
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
 
@@ -216,12 +217,12 @@ private:
 		NodePath focus_prev;
 
 		bool bulk_theme_override = false;
-		HashMap<StringName, Ref<Texture2D>> icon_override;
-		HashMap<StringName, Ref<StyleBox>> style_override;
-		HashMap<StringName, Ref<Font>> font_override;
-		HashMap<StringName, int> font_size_override;
-		HashMap<StringName, Color> color_override;
-		HashMap<StringName, int> constant_override;
+		Theme::ThemeIconMap icon_override;
+		Theme::ThemeStyleMap style_override;
+		Theme::ThemeFontMap font_override;
+		Theme::ThemeFontSizeMap font_size_override;
+		Theme::ThemeColorMap color_override;
+		Theme::ThemeConstantMap constant_override;
 
 	} data;
 
@@ -467,6 +468,9 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+
+	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
+	bool is_force_pass_scroll_events() const;
 
 	/* SKINNING */
 

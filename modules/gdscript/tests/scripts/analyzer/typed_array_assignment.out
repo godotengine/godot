@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Assigned value for constant "arr" has type Array[String] which is not compatible with defined type Array[int].

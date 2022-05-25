@@ -50,6 +50,7 @@ void Joint2D::_disconnect_signals() {
 void Joint2D::_body_exit_tree() {
 	_disconnect_signals();
 	_update_joint(true);
+	update_configuration_warnings();
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
@@ -64,7 +65,6 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer2D::get_singleton()->joint_clear(joint);
 		warning = String();
-		update_configuration_warnings();
 		return;
 	}
 
@@ -343,8 +343,8 @@ void GrooveJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initial_offset", "offset"), &GrooveJoint2D::set_initial_offset);
 	ClassDB::bind_method(D_METHOD("get_initial_offset"), &GrooveJoint2D::get_initial_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_initial_offset", "get_initial_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_initial_offset", "get_initial_offset");
 }
 
 GrooveJoint2D::GrooveJoint2D() {
@@ -440,8 +440,8 @@ void DampedSpringJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_damping", "damping"), &DampedSpringJoint2D::set_damping);
 	ClassDB::bind_method(D_METHOD("get_damping"), &DampedSpringJoint2D::get_damping);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp"), "set_rest_length", "get_rest_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp,suffix:px"), "set_rest_length", "get_rest_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stiffness", PROPERTY_HINT_RANGE, "0.1,64,0.1,exp"), "set_stiffness", "get_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0.01,16,0.01,exp"), "set_damping", "get_damping");
 }

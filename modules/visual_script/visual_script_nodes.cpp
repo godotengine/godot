@@ -3416,7 +3416,7 @@ VisualScriptConstructor::VisualScriptConstructor() {
 	type = Variant::NIL;
 }
 
-static Map<String, Pair<Variant::Type, MethodInfo>> constructor_map;
+static HashMap<String, Pair<Variant::Type, MethodInfo>> constructor_map;
 
 static Ref<VisualScriptNode> create_constructor_node(const String &p_name) {
 	ERR_FAIL_COND_V(!constructor_map.has(p_name), Ref<VisualScriptNode>());

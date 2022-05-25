@@ -151,15 +151,15 @@ void AStar3D::connect_points(int p_id, int p_with_id, bool bidirectional) {
 		s.direction = Segment::BIDIRECTIONAL;
 	}
 
-	Set<Segment>::Element *element = segments.find(s);
-	if (element != nullptr) {
-		s.direction |= element->get().direction;
+	HashSet<Segment, Segment>::Iterator element = segments.find(s);
+	if (element) {
+		s.direction |= element->direction;
 		if (s.direction == Segment::BIDIRECTIONAL) {
 			// Both are neighbours of each other now
 			a->unlinked_neighbours.remove(b->id);
 			b->unlinked_neighbours.remove(a->id);
 		}
-		segments.erase(element);
+		segments.remove(element);
 	}
 
 	segments.insert(s);
@@ -177,16 +177,16 @@ void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	Segment s(p_id, p_with_id);
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
 
-	Set<Segment>::Element *element = segments.find(s);
-	if (element != nullptr) {
+	HashSet<Segment, Segment>::Iterator element = segments.find(s);
+	if (element) {
 		// s is the new segment
 		// Erase the directions to be removed
-		s.direction = (element->get().direction & ~remove_direction);
+		s.direction = (element->direction & ~remove_direction);
 
 		a->neighbours.remove(b->id);
 		if (bidirectional) {
 			b->neighbours.remove(a->id);
-			if (element->get().direction != Segment::BIDIRECTIONAL) {
+			if (element->direction != Segment::BIDIRECTIONAL) {
 				a->unlinked_neighbours.remove(b->id);
 				b->unlinked_neighbours.remove(a->id);
 			}
@@ -198,7 +198,7 @@ void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 			}
 		}
 
-		segments.erase(element);
+		segments.remove(element);
 		if (s.direction != Segment::NONE) {
 			segments.insert(s);
 		}
@@ -235,10 +235,10 @@ Vector<int> AStar3D::get_point_connections(int p_id) {
 
 bool AStar3D::are_points_connected(int p_id, int p_with_id, bool bidirectional) const {
 	Segment s(p_id, p_with_id);
-	const Set<Segment>::Element *element = segments.find(s);
+	const HashSet<Segment, Segment>::Iterator element = segments.find(s);
 
-	return element != nullptr &&
-			(bidirectional || (element->get().direction & s.direction) == s.direction);
+	return element &&
+			(bidirectional || (element->direction & s.direction) == s.direction);
 }
 
 void AStar3D::clear() {
@@ -293,10 +293,10 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	real_t closest_dist = 1e20;
 	Vector3 closest_point;
 
-	for (const Set<Segment>::Element *E = segments.front(); E; E = E->next()) {
+	for (const Segment &E : segments) {
 		Point *from_point = nullptr, *to_point = nullptr;
-		points.lookup(E->get().u, from_point);
-		points.lookup(E->get().v, to_point);
+		points.lookup(E.u, from_point);
+		points.lookup(E.v, to_point);
 
 		if (!(from_point->enabled && to_point->enabled)) {
 			continue;

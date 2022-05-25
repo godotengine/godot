@@ -117,7 +117,7 @@ private:
 
 	mutable String tooltip_text;
 
-	Map<StringName, Variant> cache;
+	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
 	void _update_pin_flags();
@@ -205,11 +205,13 @@ public:
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 
+public:
 	friend class EditorInspector;
 	struct AddedEditor {
 		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
+		bool add_to_end = false;
 	};
 
 	List<AddedEditor> added_editors;
@@ -226,7 +228,7 @@ protected:
 
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -435,9 +437,9 @@ class EditorInspector : public ScrollContainer {
 	VBoxContainer *main_vbox = nullptr;
 
 	//map use to cache the instantiated editors
-	Map<StringName, List<EditorProperty *>> editor_property_map;
+	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	Set<StringName> pending;
+	HashSet<StringName> pending;
 
 	void _clear();
 	Object *object = nullptr;
@@ -468,11 +470,11 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
-	Map<StringName, String> class_descr_cache;
-	Set<StringName> restart_request_props;
+	HashMap<StringName, HashMap<StringName, String>> descr_cache;
+	HashMap<StringName, String> class_descr_cache;
+	HashSet<StringName> restart_request_props;
 
-	Map<ObjectID, int> scroll_cache;
+	HashMap<ObjectID, int> scroll_cache;
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
@@ -496,7 +498,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _node_removed(Node *p_node);
 
-	Map<StringName, int> per_array_page;
+	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
 
 	void _changed_callback();

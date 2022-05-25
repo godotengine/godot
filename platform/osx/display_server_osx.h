@@ -45,10 +45,11 @@
 #include "platform/osx/vulkan_context_osx.h"
 #endif // VULKAN_ENABLED
 
-#include <AppKit/AppKit.h>
-#include <AppKit/NSCursor.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreVideo/CoreVideo.h>
+#import <AppKit/AppKit.h>
+#import <AppKit/NSCursor.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreVideo/CoreVideo.h>
+#import <Foundation/Foundation.h>
 
 #undef BitMap
 #undef CursorShape
@@ -96,7 +97,7 @@ public:
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		bool exclusive = false;
-		Set<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		bool layered_window = false;
 		bool fullscreen = false;
@@ -124,7 +125,7 @@ private:
 
 	NSMenu *apple_menu = nullptr;
 	NSMenu *dock_menu = nullptr;
-	Map<String, NSMenu *> submenu;
+	HashMap<String, NSMenu *> submenu;
 
 	struct WarpEvent {
 		NSTimeInterval timestamp;
@@ -166,9 +167,9 @@ private:
 
 	CursorShape cursor_shape = CURSOR_ARROW;
 	NSCursor *cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant>> cursors_cache;
+	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
-	Map<WindowID, WindowData> windows;
+	HashMap<WindowID, WindowData> windows;
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);

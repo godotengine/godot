@@ -244,9 +244,9 @@ const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape
 		case DisplayServer::CURSOR_CROSS:
 			return "crosshair";
 		case DisplayServer::CURSOR_WAIT:
-			return "progress";
-		case DisplayServer::CURSOR_BUSY:
 			return "wait";
+		case DisplayServer::CURSOR_BUSY:
+			return "progress";
 		case DisplayServer::CURSOR_DRAG:
 			return "grab";
 		case DisplayServer::CURSOR_CAN_DROP:
@@ -326,8 +326,8 @@ void DisplayServerJavaScript::tts_resume() {
 }
 
 void DisplayServerJavaScript::tts_stop() {
-	for (Map<int, CharString>::Element *E = utterance_ids.front(); E; E = E->next()) {
-		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E->key());
+	for (const KeyValue<int, CharString> &E : utterance_ids) {
+		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	utterance_ids.clear();
 	godot_js_tts_stop();

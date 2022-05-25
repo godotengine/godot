@@ -39,6 +39,12 @@ struct hb_bimap_t
     back_map.reset ();
   }
 
+  void resize (unsigned pop)
+  {
+    forw_map.resize (pop);
+    back_map.resize (pop);
+  }
+
   bool in_error () const { return forw_map.in_error () || back_map.in_error (); }
 
   void set (hb_codepoint_t lhs, hb_codepoint_t rhs)

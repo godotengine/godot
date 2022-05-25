@@ -45,7 +45,7 @@ class NativeExtension : public Resource {
 		ObjectNativeExtension native_extension;
 	};
 
-	Map<StringName, Extension> extension_classes;
+	HashMap<StringName, Extension> extension_classes;
 
 	static void _register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	static void _register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);

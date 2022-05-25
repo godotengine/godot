@@ -101,7 +101,7 @@ bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) c
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
-			disabled_properties[p_class] = Set<StringName>();
+			disabled_properties[p_class] = HashSet<StringName>();
 		}
 
 		disabled_properties[p_class].insert(p_property);
@@ -166,24 +166,24 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Dictionary data;
 	data["type"] = "feature_profile";
 	Array dis_classes;
-	for (Set<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
-		dis_classes.push_back(String(E->get()));
+	for (const StringName &E : disabled_classes) {
+		dis_classes.push_back(String(E));
 	}
 	dis_classes.sort();
 	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
-	for (Set<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
-		dis_editors.push_back(String(E->get()));
+	for (const StringName &E : disabled_editors) {
+		dis_editors.push_back(String(E));
 	}
 	dis_editors.sort();
 	data["disabled_editors"] = dis_editors;
 
 	Array dis_props;
 
-	for (KeyValue<StringName, Set<StringName>> &E : disabled_properties) {
-		for (Set<StringName>::Element *F = E.value.front(); F; F = F->next()) {
-			dis_props.push_back(String(E.key) + ":" + String(F->get()));
+	for (KeyValue<StringName, HashSet<StringName>> &E : disabled_properties) {
+		for (const StringName &F : E.value) {
+			dis_props.push_back(String(E.key) + ":" + String(F));
 		}
 	}
 
@@ -556,9 +556,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		String class_description;
 
 		DocTools *dd = EditorHelp::get_doc_data();
-		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_name);
+		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
 		if (E) {
-			class_description = DTR(E->get().brief_description);
+			class_description = DTR(E->value.brief_description);
 		}
 
 		description_bit->set_text(class_description);

@@ -179,6 +179,8 @@ struct top_dict_opset_t : dict_opset_t
 template <typename OPSET, typename PARAM, typename ENV=num_interp_env_t>
 struct dict_interpreter_t : interpreter_t<ENV>
 {
+  dict_interpreter_t (ENV& env_) : interpreter_t<ENV> (env_) {}
+
   bool interpret (PARAM& param)
   {
     param.init ();

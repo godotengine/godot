@@ -77,6 +77,9 @@ private:
 	bool pass = false;
 	bool text_changed_dirty = false;
 
+	bool alt_start = false;
+	uint32_t alt_code = 0;
+
 	String undo_text;
 	String text;
 	String placeholder;

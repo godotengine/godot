@@ -1,5 +1,5 @@
 diff --git a/thirdparty/meshoptimizer/simplifier.cpp b/thirdparty/meshoptimizer/simplifier.cpp
-index 0f10ebef4b..cf5db4e119 100644
+index e384046ffe..ccc99edb1a 100644
 --- a/thirdparty/meshoptimizer/simplifier.cpp
 +++ b/thirdparty/meshoptimizer/simplifier.cpp
 @@ -20,7 +20,7 @@

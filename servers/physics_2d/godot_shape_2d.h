@@ -50,7 +50,7 @@ class GodotShape2D {
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
-	Map<GodotShapeOwner2D *, int> owners;
+	HashMap<GodotShapeOwner2D *, int> owners;
 
 protected:
 	void configure(const Rect2 &p_aabb);
@@ -86,7 +86,7 @@ public:
 	void add_owner(GodotShapeOwner2D *p_owner);
 	void remove_owner(GodotShapeOwner2D *p_owner);
 	bool is_owner(GodotShapeOwner2D *p_owner) const;
-	const Map<GodotShapeOwner2D *, int> &get_owners() const;
+	const HashMap<GodotShapeOwner2D *, int> &get_owners() const;
 
 	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_xform, Vector2 *r_supports, int &r_amount) const {
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);

@@ -35,7 +35,7 @@
 
 class SphereShape3D : public Shape3D {
 	GDCLASS(SphereShape3D, Shape3D);
-	float radius = 1.0f;
+	float radius = 0.5f;
 
 protected:
 	static void _bind_methods();

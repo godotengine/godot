@@ -32,6 +32,7 @@
 
 #include "light_storage.h"
 #include "config.h"
+#include "texture_storage.h"
 
 using namespace GLES3;
 
@@ -51,122 +52,284 @@ LightStorage::~LightStorage() {
 
 /* Light API */
 
+void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
+	Light light;
+	light.type = p_type;
+
+	light.param[RS::LIGHT_PARAM_ENERGY] = 1.0;
+	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
+	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
+	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
+	light.param[RS::LIGHT_PARAM_ATTENUATION] = 1.0;
+	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
+	light.param[RS::LIGHT_PARAM_SPOT_ATTENUATION] = 1.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
+	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
+	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
+	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
+	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
+	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
+	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 0.1;
+	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+
+	light_owner.initialize_rid(p_light, light);
+}
+
 RID LightStorage::directional_light_allocate() {
-	return RID();
+	return light_owner.allocate_rid();
 }
 
 void LightStorage::directional_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_DIRECTIONAL);
 }
 
 RID LightStorage::omni_light_allocate() {
-	return RID();
+	return light_owner.allocate_rid();
 }
 
 void LightStorage::omni_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_OMNI);
 }
 
 RID LightStorage::spot_light_allocate() {
-	return RID();
+	return light_owner.allocate_rid();
 }
 
 void LightStorage::spot_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_SPOT);
 }
 
 void LightStorage::light_free(RID p_rid) {
+	light_set_projector(p_rid, RID()); //clear projector
+
+	// delete the texture
+	Light *light = light_owner.get_or_null(p_rid);
+	light->dependency.deleted_notify(p_rid);
+	light_owner.free(p_rid);
 }
 
 void LightStorage::light_set_color(RID p_light, const Color &p_color) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->color = p_color;
 }
 
 void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_value) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+	ERR_FAIL_INDEX(p_param, RS::LIGHT_PARAM_MAX);
+
+	if (light->param[p_param] == p_value) {
+		return;
+	}
+
+	switch (p_param) {
+		case RS::LIGHT_PARAM_RANGE:
+		case RS::LIGHT_PARAM_SPOT_ANGLE:
+		case RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
+		case RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
+		case RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
+		case RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
+		case RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
+		case RS::LIGHT_PARAM_SHADOW_BIAS: {
+			light->version++;
+			light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+		} break;
+		case RS::LIGHT_PARAM_SIZE: {
+			if ((light->param[p_param] > CMP_EPSILON) != (p_value > CMP_EPSILON)) {
+				//changing from no size to size and the opposite
+				light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+			}
+		} break;
+		default: {
+		}
+	}
+
+	light->param[p_param] = p_value;
 }
 
 void LightStorage::light_set_shadow(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+	light->shadow = p_enabled;
+
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_projector(RID p_light, RID p_texture) {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	if (light->projector == p_texture) {
+		return;
+	}
+
+	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+	}
+
+	light->projector = p_texture;
+
+	if (light->type != RS::LIGHT_DIRECTIONAL) {
+		if (light->projector.is_valid()) {
+			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+		}
+		light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+	}
 }
 
 void LightStorage::light_set_negative(RID p_light, bool p_enable) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->negative = p_enable;
 }
 
 void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->cull_mask = p_mask;
+
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->distance_fade = p_enabled;
+	light->distance_fade_begin = p_begin;
+	light->distance_fade_shadow = p_shadow;
+	light->distance_fade_length = p_length;
 }
 
 void LightStorage::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->reverse_cull = p_enabled;
+
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
-}
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
 
-void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
+	light->bake_mode = p_bake_mode;
+
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
-}
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
 
-void LightStorage::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
-}
+	light->omni_shadow_mode = p_mode;
 
-void LightStorage::light_directional_set_blend_splits(RID p_light, bool p_enable) {
-}
-
-bool LightStorage::light_directional_get_blend_splits(RID p_light) const {
-	return false;
-}
-
-void LightStorage::light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) {
-}
-
-RS::LightDirectionalSkyMode LightStorage::light_directional_get_sky_mode(RID p_light) const {
-	return RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
-}
-
-RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(RID p_light) {
-	return RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
 RS::LightOmniShadowMode LightStorage::light_omni_get_shadow_mode(RID p_light) {
-	return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_OMNI_SHADOW_CUBE);
+
+	return light->omni_shadow_mode;
 }
 
-bool LightStorage::light_has_shadow(RID p_light) const {
-	return false;
+void LightStorage::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_shadow_mode = p_mode;
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
-bool LightStorage::light_has_projector(RID p_light) const {
-	return false;
+void LightStorage::light_directional_set_blend_splits(RID p_light, bool p_enable) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_blend_splits = p_enable;
+	light->version++;
+	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
 }
 
-RS::LightType LightStorage::light_get_type(RID p_light) const {
-	return RS::LIGHT_OMNI;
+bool LightStorage::light_directional_get_blend_splits(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, false);
+
+	return light->directional_blend_splits;
 }
 
-AABB LightStorage::light_get_aabb(RID p_light) const {
-	return AABB();
+void LightStorage::light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_sky_mode = p_mode;
 }
 
-float LightStorage::light_get_param(RID p_light, RS::LightParam p_param) {
-	return 0.0;
+RS::LightDirectionalSkyMode LightStorage::light_directional_get_sky_mode(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
+
+	return light->directional_sky_mode;
 }
 
-Color LightStorage::light_get_color(RID p_light) {
-	return Color();
+RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(RID p_light) {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
+
+	return light->directional_shadow_mode;
 }
 
 RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
-	return RS::LIGHT_BAKE_DISABLED;
-}
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_BAKE_DISABLED);
 
-uint32_t LightStorage::light_get_max_sdfgi_cascade(RID p_light) {
-	return 0;
+	return light->bake_mode;
 }
 
 uint64_t LightStorage::light_get_version(RID p_light) const {
-	return 0;
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, 0);
+
+	return light->version;
+}
+
+AABB LightStorage::light_get_aabb(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, AABB());
+
+	switch (light->type) {
+		case RS::LIGHT_SPOT: {
+			float len = light->param[RS::LIGHT_PARAM_RANGE];
+			float size = Math::tan(Math::deg2rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
+		};
+		case RS::LIGHT_OMNI: {
+			float r = light->param[RS::LIGHT_PARAM_RANGE];
+			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+		};
+		case RS::LIGHT_DIRECTIONAL: {
+			return AABB();
+		};
+	}
+
+	ERR_FAIL_V(AABB());
 }
 
 /* PROBE API */

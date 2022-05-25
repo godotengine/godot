@@ -33,7 +33,7 @@
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
 

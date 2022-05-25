@@ -75,28 +75,9 @@ ToneMapper::ToneMapper() {
 			}
 		}
 	}
-
-	// TODO maybe centralise this in mesh_storage?
-	{ //create index array for copy shaders
-		Vector<uint8_t> pv;
-		pv.resize(6 * 4);
-		{
-			uint8_t *w = pv.ptrw();
-			int *p32 = (int *)w;
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
-		}
-		index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
-		index_array = RD::get_singleton()->index_array_create(index_buffer, 0, 6);
-	}
 }
 
 ToneMapper::~ToneMapper() {
-	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	tonemap.shader.version_free(tonemap.shader_version);
 }
 
@@ -154,11 +135,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-	RD::Uniform u_source_color;
-	u_source_color.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	u_source_color.binding = 0;
-	u_source_color.append_id(default_sampler);
-	u_source_color.append_id(p_source_color);
+	RD::Uniform u_source_color(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_color }));
 
 	RD::Uniform u_exposure_texture;
 	u_exposure_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
@@ -193,7 +170,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_exposure_texture), 1);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 2, u_glow_texture, u_glow_map), 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 3, u_color_correction_texture), 3);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -273,7 +250,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 1, u_exposure_texture), 1); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 2, u_glow_texture, u_glow_map), 2); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 3, u_color_correction_texture), 3);
-	RD::get_singleton()->draw_list_bind_index_array(p_subpass_draw_list, index_array);
+	RD::get_singleton()->draw_list_bind_index_array(p_subpass_draw_list, material_storage->get_quad_index_array());
 
 	RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
 	RD::get_singleton()->draw_list_draw(p_subpass_draw_list, true);

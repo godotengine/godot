@@ -112,7 +112,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	virtual void _shapes_changed() override;
 	Transform3D new_transform;
 
-	Map<GodotConstraint3D *, int> constraint_map;
+	HashMap<GodotConstraint3D *, int> constraint_map;
 
 	Vector<AreaCMP> areas;
 
@@ -196,7 +196,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraint_map.erase(p_constraint); }
-	const Map<GodotConstraint3D *, int> &get_constraint_map() const { return constraint_map; }
+	const HashMap<GodotConstraint3D *, int> &get_constraint_map() const { return constraint_map; }
 	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }

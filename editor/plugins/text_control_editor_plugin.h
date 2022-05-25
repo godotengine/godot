@@ -52,7 +52,7 @@ class TextControlEditor : public HBoxContainer {
 		FONT_INFO_ID = 100,
 	};
 
-	Map<String, Map<String, String>> fonts;
+	HashMap<String, HashMap<String, String>> fonts;
 
 	OptionButton *font_list = nullptr;
 	SpinBox *font_size_list = nullptr;
