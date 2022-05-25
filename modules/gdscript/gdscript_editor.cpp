@@ -3227,6 +3227,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			is_function = true;
 			[[fallthrough]];
 		}
+		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			GDScriptParser::DataType base_type;
