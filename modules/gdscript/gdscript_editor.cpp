@@ -3155,7 +3155,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 }
 
 ::Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
-	// Before parsing, try the usual stuff
+	// Before parsing, try the usual stuff.
 	if (ClassDB::class_exists(p_symbol)) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
 		r_result.class_name = p_symbol;
@@ -3171,7 +3171,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		}
 	}
 
-	if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+	// Need special checks for assert and preload as they are technically
+	// keywords, so are not registered in GDScriptUtilityFunctions.
+	if (GDScriptUtilityFunctions::function_exists(p_symbol) || "assert" == p_symbol || "preload" == p_symbol) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;
