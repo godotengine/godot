@@ -6,7 +6,6 @@
 	<description>
 		The CryptoKey class represents a cryptographic key. Keys can be loaded and saved like any other [Resource].
 		They can be used to generate a self-signed [X509Certificate] via [method Crypto.generate_self_signed_certificate] and as private key in [method StreamPeerSSL.accept_stream] along with the appropriate certificate.
-		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>

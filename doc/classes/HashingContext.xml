@@ -27,7 +27,6 @@
 		    # Print the result as hex string and array.
 		    printt(res.hex_encode(), Array(res))
 		[/codeblock]
-		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
