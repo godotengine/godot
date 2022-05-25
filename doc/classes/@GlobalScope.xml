@@ -2640,8 +2640,8 @@
 		<constant name="RPC_MODE_ANY_PEER" value="1" enum="RPCMode">
 			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
 		</constant>
-		<constant name="RPC_MODE_AUTH" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(auth)[/code] annotation. See [method Node.set_multiplayer_authority].
+		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(authority)[/code] annotation. See [method Node.set_multiplayer_authority].
 		</constant>
 		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
 			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always consider whether the order matters.
