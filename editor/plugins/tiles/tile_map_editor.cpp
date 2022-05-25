@@ -571,14 +571,14 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 			case DRAG_TYPE_PAINT: {
 				HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing);
 				for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
-					if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
-						continue;
-					}
 					Vector2i coords = E.key;
 					if (!drag_modified.has(coords)) {
 						drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
+						if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
+							continue;
+						}
+						tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 					}
-					tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 				}
 				_fix_invalid_tiles_in_tile_map_selection();
 			} break;
@@ -588,14 +588,14 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 					if (!drag_modified.has(line[i])) {
 						HashMap<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
 						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
-							if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
-								continue;
-							}
 							Vector2i coords = E.key;
 							if (!drag_modified.has(coords)) {
 								drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
+								if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
+									continue;
+								}
+								tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 							}
-							tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 						}
 					}
 				}
@@ -684,14 +684,14 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 								if (!drag_modified.has(line[i])) {
 									HashMap<Vector2i, TileMapCell> to_draw = _draw_bucket_fill(line[i], bucket_contiguous_checkbox->is_pressed(), drag_erasing);
 									for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
-										if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
-											continue;
-										}
 										Vector2i coords = E.key;
 										if (!drag_modified.has(coords)) {
 											drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
+											if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
+												continue;
+											}
+											tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 										}
-										tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 									}
 								}
 							}
@@ -2141,7 +2141,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scatter_controls_container = memnew(HBoxContainer);
 
 	scatter_label = memnew(Label);
-	scatter_label->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	scatter_label->set_tooltip_text(TTR("Modifies the chance of painting nothing instead of a randomly selected tile."));
 	scatter_label->set_text(TTR("Scattering:"));
 	scatter_controls_container->add_child(scatter_label);
 
@@ -2149,7 +2149,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scatter_spinbox->set_min(0.0);
 	scatter_spinbox->set_max(1000);
 	scatter_spinbox->set_step(0.001);
-	scatter_spinbox->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	scatter_spinbox->set_tooltip_text(TTR("Modifies the chance of painting nothing instead of a randomly selected tile."));
 	scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 4);
 	scatter_spinbox->connect("value_changed", callable_mp(this, &TileMapEditorTilesPlugin::_on_scattering_spinbox_changed));
 	scatter_controls_container->add_child(scatter_spinbox);
