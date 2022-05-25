@@ -1938,6 +1938,7 @@ void EditorInspectorArray::_setup() {
 		// Move button.
 		ae.move_texture_rect = memnew(TextureRect);
 		ae.move_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		ae.move_texture_rect->set_default_cursor_shape(Control::CURSOR_MOVE);
 		if (is_inside_tree()) {
 			ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 		}
