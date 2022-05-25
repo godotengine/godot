@@ -75,7 +75,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 		};
 	};
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
 	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
 	interfaces.remove_at(idx);
@@ -99,7 +99,7 @@ Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, nullptr);
+	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
 	return interfaces[idx];
 }
 
