@@ -86,6 +86,7 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 #endif
+
 void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
 	sc.path = p_path;
@@ -97,12 +98,21 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	}
 	spawnable_scenes.push_back(sc);
 }
+
 int MultiplayerSpawner::get_spawnable_scene_count() const {
+	if (spawnable_scenes.is_empty()) {
+		return 0;
+	}
 	return spawnable_scenes.size();
 }
+
 String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
+	if (spawnable_scenes.is_empty()) {
+		return String();
+	}
 	return spawnable_scenes[p_idx].path;
 }
+
 void MultiplayerSpawner::clear_spawnable_scenes() {
 	spawnable_scenes.clear();
 }
