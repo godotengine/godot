@@ -5398,10 +5398,14 @@ void OccluderSpatialGizmo::redraw() {
 	const OccluderShapePolygon *occ_poly = get_occluder_shape_poly();
 	if (occ_poly) {
 		// main poly
-		_redraw_poly(false, occ_poly->_poly_pts_local, occ_poly->_poly_pts_local_raw);
+		if (occ_poly->_poly_pts_local_raw.size()) {
+			_redraw_poly(false, occ_poly->_poly_pts_local, occ_poly->_poly_pts_local_raw);
+		}
 
 		// hole
-		_redraw_poly(true, occ_poly->_hole_pts_local, occ_poly->_hole_pts_local_raw);
+		if (occ_poly->_hole_pts_local_raw.size()) {
+			_redraw_poly(true, occ_poly->_hole_pts_local, occ_poly->_hole_pts_local_raw);
+		}
 	}
 }
 
