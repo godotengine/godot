@@ -2593,6 +2593,9 @@ ProjectManager::ProjectManager() {
 	about_btn->connect("pressed", this, "_show_about");
 	tree_vb->add_child(about_btn);
 
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+#ifndef JAVASCRIPT_ENABLED
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Asset Library Projects"));
@@ -2601,6 +2604,7 @@ ProjectManager::ProjectManager() {
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+#endif
 
 	HBoxContainer *settings_hb = memnew(HBoxContainer);
 	settings_hb->set_alignment(BoxContainer::ALIGN_END);
