@@ -3512,6 +3512,9 @@ Multiplayer::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_memb
 	if (p_member->has_attribute(CACHED_CLASS(AuthorityAttribute))) {
 		return Multiplayer::RPC_MODE_AUTHORITY;
 	}
+	if (p_member->has_attribute(CACHED_CLASS(ServerAttribute))) {
+		return Multiplayer::RPC_MODE_SERVER;
+	}
 
 	return Multiplayer::RPC_MODE_DISABLED;
 }

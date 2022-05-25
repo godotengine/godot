@@ -113,6 +113,9 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, Multiplayer::RPCMode mode, int 
 		case Multiplayer::RPC_MODE_AUTHORITY: {
 			return !p_node->is_multiplayer_authority() && p_remote_id == p_node->get_multiplayer_authority();
 		} break;
+		case Multiplayer::RPC_MODE_SERVER: {
+			return p_remote_id == 1;
+		} break;
 	}
 
 	return false;
