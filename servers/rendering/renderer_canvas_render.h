@@ -31,8 +31,6 @@
 #ifndef RENDERINGSERVERCANVASRENDER_H
 #define RENDERINGSERVERCANVASRENDER_H
 
-#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_storage.h"
 
 class RendererCanvasRender {
