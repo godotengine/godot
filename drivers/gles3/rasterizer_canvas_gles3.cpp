@@ -583,7 +583,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				state.instance_data_array[r_index].dst_rect[1] = dst_rect.position.y;
 				state.instance_data_array[r_index].dst_rect[2] = dst_rect.size.width;
 				state.instance_data_array[r_index].dst_rect[3] = dst_rect.size.height;
-				//_render_batch(r_index);
+
 				r_index++;
 				if (r_index >= state.max_instances_per_batch - 1) {
 					_render_batch(r_index);
@@ -591,18 +591,18 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
-				/*
 				const Item::CommandNinePatch *np = static_cast<const Item::CommandNinePatch *>(c);
 
-				//bind pipeline
-				{
-					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_NINEPATCH].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
-					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+				if (np->texture != state.current_tex || state.current_primitive_points != 0 || state.current_command != Item::Command::TYPE_NINEPATCH) {
+					_render_batch(r_index);
+
+					state.current_primitive_points = 0;
+					state.current_command = Item::Command::TYPE_NINEPATCH;
 				}
 
 				//bind textures
-
-				_bind_canvas_texture(p_draw_list, np->texture, current_filter, current_repeat, index);
+				_bind_canvas_texture(np->texture, current_filter, current_repeat, r_index);
+				GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_NINEPATCH);
 
 				Rect2 src_rect;
 				Rect2 dst_rect(np->rect.position.x, np->rect.position.y, np->rect.size.x, np->rect.size.y);
@@ -649,14 +649,14 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				state.instance_data_array[r_index].ninepatch_margins[2] = np->margin[SIDE_RIGHT];
 				state.instance_data_array[r_index].ninepatch_margins[3] = np->margin[SIDE_BOTTOM];
 
-				RD::get_singleton()->draw_list_set_state.instance_data_array[r_index](p_draw_list, &state.instance_data_array[r_index], sizeof(PushConstant));
-				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
-				RD::get_singleton()->draw_list_draw(p_draw_list, true);
+				r_index++;
+				if (r_index >= state.max_instances_per_batch - 1) {
+					_render_batch(r_index);
+				}
 
 				// Restore if overridden.
 				state.instance_data_array[r_index].color_texture_pixel_size[0] = state.current_pixel_size.x;
 				state.instance_data_array[r_index].color_texture_pixel_size[1] = state.current_pixel_size.y;
-*/
 			} break;
 
 			case Item::Command::TYPE_POLYGON: {
