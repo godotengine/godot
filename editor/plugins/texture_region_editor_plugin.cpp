@@ -83,6 +83,7 @@ void TextureRegionEditor::_region_draw() {
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
+	edit_draw->draw_rect(Rect2(Point2(), base_tex->get_size()), Color(0.5, 0.5, 0.5, 0.5), false);
 	edit_draw->draw_texture(base_tex, Point2());
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
@@ -233,6 +234,14 @@ void TextureRegionEditor::_region_draw() {
 	vscroll->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
 
 	updating_scroll = false;
+
+	if (request_center && hscroll->get_min() < 0) {
+		hscroll->set_value((hscroll->get_min() + hscroll->get_max() - hscroll->get_page()) / 2);
+		vscroll->set_value((vscroll->get_min() + vscroll->get_max() - vscroll->get_page()) / 2);
+		// This ensures that the view is updated correctly.
+		callable_bind(callable_mp(this, &TextureRegionEditor::_pan_callback), Vector2(1, 0)).call_deferred(nullptr, 0);
+		request_center = false;
+	}
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
 		float margins[4] = { 0 };
@@ -922,7 +931,8 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
-	popup_centered_ratio();
+	popup_centered_ratio(0.5);
+	request_center = true;
 }
 
 void TextureRegionEditor::_texture_changed() {
