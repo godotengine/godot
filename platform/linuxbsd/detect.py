@@ -65,6 +65,7 @@ def get_opts():
     return [
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_lld", "Use the LLD linker", False),
+        BoolVariable("use_mold", "Use the mold linker", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
@@ -156,6 +157,33 @@ def configure(env):
         else:
             print("Using LLD with GCC is not supported yet. Try compiling with 'use_llvm=yes'.")
             sys.exit(255)
+
+    if env["use_mold"]:
+        if env["use_llvm"]:
+            env.Append(LINKFLAGS=["-fuse-ld=mold"])
+        else:
+            # Using mold with GCC is only supported on GCC version 12.1
+            # We need to check for compatible versions
+            build_root = env["BUILD_ROOT"]
+            sys.path.insert(0, build_root)
+            import methods
+
+            cc_version = methods.get_compiler_version(env) or {
+                "major": None,
+                "minor": None,
+            }
+            sys.path.remove(build_root)
+            sys.modules.pop("methods")
+
+            cc_version_int = {
+                "major": int(cc_version["major"] or -1),
+                "minor": int(cc_version["minor"] or -1),
+            }
+            if cc_version_int["major"] >= 12 and cc_version_int["minor"] >= 1:
+                env.Append(LINKFLAGS=["-fuse-ld=mold"])
+            else:
+                print("Using mold with GCC is only supported on GCC versions >= 12.1.0")
+                sys.exit(255)
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])

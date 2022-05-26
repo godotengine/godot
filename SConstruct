@@ -467,6 +467,9 @@ if selected_platform in platform_list:
         if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
             env[f[0]] = f[1]
 
+    # This is needed for absolute imports referencing the project root
+    env["BUILD_ROOT"] = Dir("#").abspath
+
     # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
 
@@ -493,19 +496,22 @@ if selected_platform in platform_list:
         "metadata2": None,
         "date": None,
     }
-    cc_version_major = int(cc_version["major"] or -1)
-    cc_version_minor = int(cc_version["minor"] or -1)
+
     cc_version_metadata1 = cc_version["metadata1"] or ""
+    cc_version_int = {
+        "major": int(cc_version["major"] or -1),
+        "minor": int(cc_version["minor"] or -1),
+    }
 
     if methods.using_gcc(env):
-        if cc_version_major == -1:
+        if cc_version_int["major"] == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
             )
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        elif cc_version_major == 8 and cc_version_minor < 4:
+        elif cc_version_int["major"] == 8 and cc_version_int["minor"] < 4:
             print(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
@@ -513,7 +519,7 @@ if selected_platform in platform_list:
                 "to the SCons command line."
             )
             Exit(255)
-        elif cc_version_major < 7:
+        elif cc_version_int["major"] < 7:
             print(
                 "Detected GCC version older than 7, which does not fully support "
                 "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
@@ -530,7 +536,7 @@ if selected_platform in platform_list:
             )
             Exit(255)
     elif methods.using_clang(env):
-        if cc_version_major == -1:
+        if cc_version_int["major"] == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
@@ -539,19 +545,19 @@ if selected_platform in platform_list:
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
         elif env["platform"] == "osx" or env["platform"] == "iphone":
             vanilla = methods.is_vanilla_clang(env)
-            if vanilla and cc_version_major < 6:
+            if vanilla and cc_version_int["major"] < 6:
                 print(
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
                 Exit(255)
-            elif not vanilla and cc_version_major < 10:
+            elif not vanilla and cc_version_int["major"] < 10:
                 print(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
                 Exit(255)
-        elif cc_version_major < 6:
+        elif cc_version_int["major"] < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
@@ -600,7 +606,7 @@ if selected_platform in platform_list:
                 )
                 # -Wnoexcept was removed temporarily due to GH-36325.
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
-                if cc_version_major >= 9:
+                if cc_version_int["major"] >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
@@ -616,9 +622,9 @@ if selected_platform in platform_list:
             # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
             if methods.using_gcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
-                if cc_version_major == 7:  # Bogus warning fixed in 8+.
+                if cc_version_int["major"] == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
-                if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+                if cc_version_int["major"] >= 12:  # False positives in our error macros, see GH-58747.
                     env.Append(CCFLAGS=["-Wno-error=return-type"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
