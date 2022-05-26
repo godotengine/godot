@@ -157,6 +157,12 @@ void gd_mono_debug_init() {
 	}
 
 #ifdef TOOLS_ENABLED
+	// Define debugger_agent settings even if we end up ignoring the current values. This makes sure
+	// they show up in Editor Settings.
+	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
+	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
+	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
+
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().empty() ||
 			Main::is_project_manager()) {
@@ -166,10 +172,6 @@ void gd_mono_debug_init() {
 
 	if (da_args.length() == 0) {
 		// Use project settings defaults for the editor player
-
-		int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
-		bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-		int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 
 		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
 				",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
