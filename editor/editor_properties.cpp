@@ -156,6 +156,7 @@ void EditorPropertyMultilineText::_bind_methods() {
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_constant_override("separation", 0);
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
@@ -2346,6 +2347,7 @@ void EditorPropertyNodePath::_bind_methods() {
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
+	hbc->add_constant_override("separation", 0);
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);

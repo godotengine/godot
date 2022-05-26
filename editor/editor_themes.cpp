@@ -744,14 +744,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 		sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(si_base_color, 0.08), 2, 0, 2, 2);
 
-		sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
-		sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
-		sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
-		sub_inspector_bg->set_border_width(MARGIN_TOP, 2);
-		sub_inspector_bg->set_default_margin(MARGIN_LEFT, 3);
-		sub_inspector_bg->set_default_margin(MARGIN_RIGHT, 3);
-		sub_inspector_bg->set_default_margin(MARGIN_BOTTOM, 10);
-		sub_inspector_bg->set_default_margin(MARGIN_TOP, 5);
+		sub_inspector_bg->set_border_width_all(2);
+		sub_inspector_bg->set_default_margin(MARGIN_LEFT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(MARGIN_RIGHT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(MARGIN_BOTTOM, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(MARGIN_TOP, 4 * EDSCALE);
 		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
 		sub_inspector_bg->set_draw_center(true);
 

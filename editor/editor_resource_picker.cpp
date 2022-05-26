@@ -864,6 +864,8 @@ EditorResourcePicker::EditorResourcePicker() {
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", this, "_edit_menu_cbk");
 	edit_menu->connect("popup_hide", edit_button, "set_pressed", varray(false));
+
+	add_constant_override("separation", 0);
 }
 
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {
