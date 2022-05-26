@@ -3971,16 +3971,15 @@ TreeItem *Tree::get_last_item() const {
 	return last;
 }
 
-void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_mouse_index) {
+void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index) {
 	edited_item = p_item;
 	edited_col = p_column;
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		edited_item->cells.write[p_column].dirty = true;
 	}
-	if (p_mouse_index == MouseButton::NONE) {
-		emit_signal(SNAME("item_edited"));
-	} else {
-		emit_signal(SNAME("custom_item_clicked"), p_mouse_index);
+	emit_signal(SNAME("item_edited"));
+	if (p_custom_mouse_index != MouseButton::NONE) {
+		emit_signal(SNAME("custom_item_clicked"), p_custom_mouse_index);
 	}
 }
 
