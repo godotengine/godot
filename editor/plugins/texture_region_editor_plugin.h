@@ -71,10 +71,10 @@ class TextureRegionEditor : public AcceptDialog {
 	UndoRedo *undo_redo = nullptr;
 
 	Vector2 draw_ofs;
-	float draw_zoom;
-	bool updating_scroll;
+	float draw_zoom = 0.0;
+	bool updating_scroll = false;
 
-	int snap_mode;
+	int snap_mode = 0;
 	Vector2 snap_offset;
 	Vector2 snap_step;
 	Vector2 snap_separation;
@@ -88,15 +88,16 @@ class TextureRegionEditor : public AcceptDialog {
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin = 0.0f;
-	int edited_margin;
+	int edited_margin = 0;
 	HashMap<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
-	bool autoslice_is_dirty;
+	bool autoslice_is_dirty = false;
 
-	bool drag;
+	bool drag = false;
 	bool creating = false;
 	Vector2 drag_from;
-	int drag_index;
+	int drag_index = 0;
+	bool request_center = false;
 
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
