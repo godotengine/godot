@@ -107,7 +107,7 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
-void preregister_server_types() {
+void register_server_types() {
 	shader_types = memnew(ShaderTypes);
 
 	GDREGISTER_CLASS(TextServerManager);
@@ -119,9 +119,7 @@ void preregister_server_types() {
 	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
-}
 
-void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
