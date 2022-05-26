@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace Godot
 {
     /// <summary>
-    /// Extension methods to manipulate strings.
+    /// 操作字符串的扩展方法。
     /// </summary>
     public static class StringExtensions
     {
@@ -65,13 +65,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// If the string is a path to a file, return the path to the file without the extension.
+        /// 如果字符串是文件路径，则返回不带扩展名的文件路径。
         /// </summary>
         /// <seealso cref="Extension(string)"/>
         /// <seealso cref="GetBaseDir(string)"/>
         /// <seealso cref="GetFile(string)"/>
-        /// <param name="instance">The path to a file.</param>
-        /// <returns>The path to the file without the extension.</returns>
+        /// <param name="instance">文件路径</param>
+        /// <returns>不带扩展名的文件路径。</returns>
         public static string BaseName(this string instance)
         {
             int index = instance.LastIndexOf('.');
@@ -83,22 +83,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the strings begins
-        /// with the given string <paramref name="text"/>.
+        /// 如果字符串开始，则返回 <see langword="true"/>
+        /// 使用给定的字符串 <paramref name="text"/>。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="text">The beginning string.</param>
-        /// <returns>If the string begins with the given string.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="text">开始字符串。</param>
+        /// <returns>如果字符串以给定字符串开头。</returns>
         public static bool BeginsWith(this string instance, string text)
         {
             return instance.StartsWith(text);
         }
 
         /// <summary>
-        /// Returns the bigrams (pairs of consecutive letters) of this string.
+        /// 返回此字符串的二元组（连续字母对）。
         /// </summary>
-        /// <param name="instance">The string that will be used.</param>
-        /// <returns>The bigrams of this string.</returns>
+        /// <param name="instance">将使用的字符串。</param>
+        /// <returns>这个字符串的二元组。</returns>
         public static string[] Bigrams(this string instance)
         {
             string[] b = new string[instance.Length - 1];
@@ -112,12 +112,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string containing a binary number into an integer.
-        /// Binary strings can either be prefixed with <c>0b</c> or not,
-        /// and they can also start with a <c>-</c> before the optional prefix.
+        /// 将包含二进制数的字符串转换为整数。
+        /// 二进制字符串可以以 <c>0b</c> 为前缀，也可以不加前缀，
+        /// 并且它们也可以在可选前缀之前以 <c>-</c> 开头。
         /// </summary>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The converted string.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>转换后的字符串。</returns>
         public static int BinToInt(this string instance)
         {
             if (instance.Length == 0)
@@ -142,14 +142,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the amount of substrings <paramref name="what"/> in the string.
+        /// 返回字符串中子字符串 <paramref name="what"/> 的数量。
         /// </summary>
-        /// <param name="instance">The string where the substring will be searched.</param>
-        /// <param name="what">The substring that will be counted.</param>
-        /// <param name="caseSensitive">If the search is case sensitive.</param>
-        /// <param name="from">Index to start searching from.</param>
-        /// <param name="to">Index to stop searching at.</param>
-        /// <returns>Amount of substrings in the string.</returns>
+        /// <param name="instance">要搜索子字符串的字符串。</param>
+        /// <param name="what">将被计算的子字符串。</param>
+        /// <param name="caseSensitive">如果搜索区分大小写。</param>
+        /// <param name="from">开始搜索的索引。</param>
+        /// <param name="to">停止搜索的索引。</param>
+        /// <returns>字符串中子串的数量。</returns>
         public static int Count(this string instance, string what, bool caseSensitive = true, int from = 0, int to = 0)
         {
             if (what.Length == 0)
@@ -208,10 +208,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the string with special characters escaped using the C language standard.
+        /// 返回使用 C 语言标准转义的特殊字符的字符串副本。
         /// </summary>
-        /// <param name="instance">The string to escape.</param>
-        /// <returns>The escaped string.</returns>
+        /// <param name="instance">要转义的字符串。</param>
+        /// <returns>转义的字符串。</returns>
         public static string CEscape(this string instance)
         {
             var sb = new StringBuilder(string.Copy(instance));
@@ -232,11 +232,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the string with escaped characters replaced by their meanings
-        /// according to the C language standard.
+        /// 返回字符串的副本，其中转义字符替换为它们的含义
+        /// 根据 C 语言标准。
         /// </summary>
-        /// <param name="instance">The string to unescape.</param>
-        /// <returns>The unescaped string.</returns>
+        /// <param name="instance">要取消转义的字符串。</param>
+        /// <returns>未转义的字符串。</returns>
         public static string CUnescape(this string instance)
         {
             var sb = new StringBuilder(string.Copy(instance));
@@ -257,13 +257,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Changes the case of some letters. Replace underscores with spaces, convert all letters
-        /// to lowercase then capitalize first and every letter following the space character.
-        /// For <c>capitalize camelCase mixed_with_underscores</c> it will return
-        /// <c>Capitalize Camelcase Mixed With Underscores</c>.
+        /// 改变一些字母的大小写。 用空格替换下划线，转换所有字母
+        /// 小写然后大写第一个和空格字符后面的每个字母。
+        /// 对于 <c>capitalize camelCase mixed_with_underscores</c> 它将返回
+        /// <c>大写 Camelcase 与下划线混合</c>.
         /// </summary>
-        /// <param name="instance">The string to capitalize.</param>
-        /// <returns>The capitalized string.</returns>
+        /// <param name="instance">要大写的字符串。</param>
+        /// <returns>大写字符串。</returns>
         public static string Capitalize(this string instance)
         {
             string aux = instance.CamelcaseToUnderscore(true).Replace("_", " ").Trim();
@@ -330,27 +330,27 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// 与另一个字符串进行区分大小写的比较，如果小于则返回-1，如果相等则返回0，如果大于则+1。
         /// </summary>
         /// <seealso cref="NocasecmpTo(string, string)"/>
         /// <seealso cref="CompareTo(string, string, bool)"/>
-        /// <param name="instance">The string to compare.</param>
-        /// <param name="to">The other string to compare.</param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <param name="instance">要比较的字符串。</param>
+        /// <param name="to">要比较的另一个字符串。</param>
+        /// <returns>-1 如果小于，0 如果相等，+1 如果大于。</returns>
         public static int CasecmpTo(this string instance, string to)
         {
             return instance.CompareTo(to, caseSensitive: true);
         }
 
         /// <summary>
-        /// Performs a comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// 与另一个字符串进行比较，小于返回-1，相等返回0，大于返回+1。
         /// </summary>
-        /// <param name="instance">The string to compare.</param>
-        /// <param name="to">The other string to compare.</param>
+        /// <param name="instance">要比较的字符串。</param>
+        /// <param name="to">要比较的另一个字符串。</param>
         /// <param name="caseSensitive">
-        /// If <see langword="true"/>, the comparison will be case sensitive.
+        /// 如果<see langword="true"/>，比较区分大小写。
         /// </param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <returns>-1 如果小于，0 如果相等，+1 如果大于。</returns>
         public static int CompareTo(this string instance, string to, bool caseSensitive = true)
         {
             if (instance.Empty())
@@ -403,7 +403,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the string is empty.
+        /// 如果字符串为空，则返回 <see langword="true"/>。
         /// </summary>
         public static bool Empty(this string instance)
         {
@@ -411,32 +411,32 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the strings ends
-        /// with the given string <paramref name="text"/>.
+        /// 如果字符串结束，则返回 <see langword="true"/>
+        /// 使用给定的字符串 <paramref name="text"/>。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="text">The ending string.</param>
-        /// <returns>If the string ends with the given string.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="text">结束字符串。</param>
+        /// <returns>如果字符串以给定的字符串结尾。</returns>
         public static bool EndsWith(this string instance, string text)
         {
             return instance.EndsWith(text);
         }
 
         /// <summary>
-        /// Erase <paramref name="chars"/> characters from the string starting from <paramref name="pos"/>.
+        /// 从 <paramref name="pos"/> 开始的字符串中删除 <paramref name="chars"/> 字符。
         /// </summary>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="pos">Starting position from which to erase.</param>
-        /// <param name="chars">Amount of characters to erase.</param>
+        /// <param name="instance">要修改的字符串。</param>
+        /// <param name="pos">擦除的起始位置。</param>
+        /// <param name="chars">要擦除的字符数。</param>
         public static void Erase(this StringBuilder instance, int pos, int chars)
         {
             instance.Remove(pos, chars);
         }
 
         /// <summary>
-        /// Returns the extension without the leading period character (<c>.</c>)
-        /// if the string is a valid file name or path. If the string does not contain
-        /// an extension, returns an empty string instead.
+        /// 返回没有前导句点字符的扩展名 (<c>.</c>)
+        /// 如果字符串是有效的文件名或路径。 如果字符串不包含
+        /// 一个扩展，而是返回一个空字符串。
         /// </summary>
         /// <example>
         /// <code>
@@ -453,8 +453,8 @@ namespace Godot
         /// <seealso cref="BaseName(string)"/>
         /// <seealso cref="GetBaseDir(string)"/>
         /// <seealso cref="GetFile(string)"/>
-        /// <param name="instance">The path to a file.</param>
-        /// <returns>The extension of the file or an empty string.</returns>
+        /// <param name="instance">文件的路径.</param>
+        /// <returns>文件的扩展名或空字符串。</returns>
         public static string Extension(this string instance)
         {
             int pos = instance.FindLast(".");
@@ -466,34 +466,34 @@ namespace Godot
         }
 
         /// <summary>
-        /// Find the first occurrence of a substring. Optionally, the search starting position can be passed.
+        /// 查找第一次出现的子字符串。 可选地，可以传递搜索起始位置。
         /// </summary>
-        /// <seealso cref="Find(string, char, int, bool)"/>
+         /// <seealso cref="Find(string, char, int, bool)"/>
         /// <seealso cref="FindLast(string, string, bool)"/>
         /// <seealso cref="FindLast(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="from">The search starting position.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要查找的子字符串。</param>
+        /// <param name="from">搜索起始位置。</param>
+        /// <param name="caseSensitive">如果<see langword="true"/>，搜索区分大小写。</param>
+        /// <returns>子字符串的起始位置，如果没有找到则为-1。</returns>
         public static int Find(this string instance, string what, int from = 0, bool caseSensitive = true)
         {
             return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Find the first occurrence of a char. Optionally, the search starting position can be passed.
+        /// 查找第一次出现的字符。 可选地，可以传递搜索起始位置。
         /// </summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="FindLast(string, string, bool)"/>
         /// <seealso cref="FindLast(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="from">The search starting position.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The first instance of the char, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要查找的子字符串。</param>
+        /// <param name="from">搜索起始位置。</param>
+        /// <param name="caseSensitive">如果<see langword="true"/>，搜索区分大小写。</param>
+        /// <returns>char的第一个实例，如果没有找到则为-1。</returns>
         public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
         {
             // TODO: Could be more efficient if we get a char version of `IndexOf`.
@@ -501,60 +501,60 @@ namespace Godot
             return instance.IndexOf(what.ToString(), from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Find the last occurrence of a substring.</summary>
+        /// <summary>查找子字符串的最后一次出现.</summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="Find(string, char, int, bool)"/>
         /// <seealso cref="FindLast(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要查找的子字符串。</param>
+        /// <param name="caseSensitive">如果<see langword="true"/>，搜索区分大小写。</param>
+        /// <returns>子字符串的起始位置，如果没有找到则为-1。</returns>
         public static int FindLast(this string instance, string what, bool caseSensitive = true)
         {
             return instance.FindLast(what, instance.Length - 1, caseSensitive);
         }
 
-        /// <summary>Find the last occurrence of a substring specifying the search starting position.</summary>
+        /// <summary>查找指定搜索起始位置的子字符串的最后一次出现.</summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="Find(string, char, int, bool)"/>
         /// <seealso cref="FindLast(string, string, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="from">The search starting position.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要查找的子字符串。</param>
+        /// <param name="from">搜索起始位置。</param>
+        /// <param name="caseSensitive">如果<see langword="true"/>，搜索区分大小写。</param>
+        /// <returns>子字符串的起始位置，如果没有找到则为-1。</returns>
         public static int FindLast(this string instance, string what, int from, bool caseSensitive = true)
         {
             return instance.LastIndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Find the first occurrence of a substring but search as case-insensitive.
-        /// Optionally, the search starting position can be passed.
+        /// 查找第一次出现的子字符串，但不区分大小写。
+        /// 可选地，可以传递搜索起始位置。
         /// </summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="Find(string, char, int, bool)"/>
         /// <seealso cref="FindLast(string, string, bool)"/>
         /// <seealso cref="FindLast(string, string, int, bool)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="from">The search starting position.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要查找的子字符串。</param>
+        /// <param name="from">搜索起始位置。</param>
+        /// <returns>子字符串的起始位置，如果没有找到则为-1。</returns>
         public static int FindN(this string instance, string what, int from = 0)
         {
             return instance.IndexOf(what, from, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// If the string is a path to a file, return the base directory.
+        /// 如果字符串是文件路径，则返回基目录。
         /// </summary>
         /// <seealso cref="BaseName(string)"/>
         /// <seealso cref="Extension(string)"/>
         /// <seealso cref="GetFile(string)"/>
-        /// <param name="instance">The path to a file.</param>
-        /// <returns>The base directory.</returns>
+        /// <param name="instance">文件路径</param>
+        /// <returns>基本目录。</returns>
         public static string GetBaseDir(this string instance)
         {
             int basepos = instance.Find("://");
@@ -590,13 +590,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// If the string is a path to a file, return the file and ignore the base directory.
+        /// 如果字符串是文件的路径，则返回文件并忽略基目录。
         /// </summary>
         /// <seealso cref="BaseName(string)"/>
         /// <seealso cref="Extension(string)"/>
         /// <seealso cref="GetBaseDir(string)"/>
-        /// <param name="instance">The path to a file.</param>
-        /// <returns>The file name.</returns>
+        /// <param name="instance">文件路径</param>
+        /// <returns>文件名。</returns>
         public static string GetFile(this string instance)
         {
             int sep = Mathf.Max(instance.FindLast("/"), instance.FindLast("\\"));
@@ -608,39 +608,39 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts the given byte array of ASCII encoded text to a string.
-        /// Faster alternative to <see cref="GetStringFromUTF8"/> if the
-        /// content is ASCII-only. Unlike the UTF-8 function this function
-        /// maps every byte to a character in the array. Multibyte sequences
-        /// will not be interpreted correctly. For parsing user input always
-        /// use <see cref="GetStringFromUTF8"/>.
+        /// 将给定的 ASCII 编码文本字节数组转换为字符串。
+        /// <see cref="GetStringFromUTF8"/> 如果
+        /// 内容仅为 ASCII。 与 UTF-8 函数不同，此函数
+        /// 将每个字节映射到数组中的一个字符。 多字节序列
+        /// 将无法正确解释。 始终解析用户输入
+        /// 使用 <see cref="GetStringFromUTF8"/>。
         /// </summary>
-        /// <param name="bytes">A byte array of ASCII characters (on the range of 0-127).</param>
-        /// <returns>A string created from the bytes.</returns>
+        /// <param name="bytes">ASCII 字符的字节数组（范围为 0-127）。</param>
+        /// <returns>从字节创建的字符串。</returns>
         public static string GetStringFromASCII(this byte[] bytes)
         {
             return Encoding.ASCII.GetString(bytes);
         }
 
         /// <summary>
-        /// Converts the given byte array of UTF-8 encoded text to a string.
-        /// Slower than <see cref="GetStringFromASCII"/> but supports UTF-8
-        /// encoded data. Use this function if you are unsure about the
-        /// source of the data. For user input this function
-        /// should always be preferred.
+        /// 将给定的 UTF-8 编码文本字节数组转换为字符串。
+        /// 比 <see cref="GetStringFromASCII"/> 慢，但支持 UTF-8
+        /// 编码数据。 如果您不确定
+        /// 数据来源。 对于用户输入此功能
+        /// 应该始终是首选。
         /// </summary>
-        /// <param name="bytes">A byte array of UTF-8 characters (a character may take up multiple bytes).</param>
-        /// <returns>A string created from the bytes.</returns>
+        /// <param name="bytes">一个UTF-8字符的字节数组（一个字符可能占用多个字节）。</param>
+        /// <returns>从字节创建的字符串。</returns>
         public static string GetStringFromUTF8(this byte[] bytes)
         {
             return Encoding.UTF8.GetString(bytes);
         }
 
         /// <summary>
-        /// Hash the string and return a 32 bits unsigned integer.
+        /// 散列字符串并返回一个 32 位无符号整数。
         /// </summary>
-        /// <param name="instance">The string to hash.</param>
-        /// <returns>The calculated hash of the string.</returns>
+        /// <param name="instance">要散列的字符串。</param>
+        /// <returns>计算得到的字符串哈希值。</returns>
         public static uint Hash(this string instance)
         {
             uint hash = 5381;
@@ -654,10 +654,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a hexadecimal representation of this byte as a string.
+        /// 以字符串形式返回此字节的十六进制表示。
         /// </summary>
-        /// <param name="b">The byte to encode.</param>
-        /// <returns>The hexadecimal representation of this byte.</returns>
+        /// <param name="b">要编码的字节。</param>
+        /// <returns>这个字节的十六进制表示。</returns>
         internal static string HexEncode(this byte b)
         {
             string ret = string.Empty;
@@ -684,10 +684,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a hexadecimal representation of this byte array as a string.
+        /// 以字符串形式返回此字节数组的十六进制表示。
         /// </summary>
-        /// <param name="bytes">The byte array to encode.</param>
-        /// <returns>The hexadecimal representation of this byte array.</returns>
+        /// <param name="bytes">要编码的字节数组。</param>
+        /// <returns>这个字节数组的十六进制表示。</returns>
         public static string HexEncode(this byte[] bytes)
         {
             string ret = string.Empty;
@@ -701,12 +701,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string containing a hexadecimal number into an integer.
-        /// Hexadecimal strings can either be prefixed with <c>0x</c> or not,
-        /// and they can also start with a <c>-</c> before the optional prefix.
+        /// 将包含十六进制数的字符串转换为整数。
+        /// 十六进制字符串可以加前缀<c>0x</c>，也可以不加前缀，
+        /// 并且它们也可以在可选前缀之前以 <c>-</c> 开头。
         /// </summary>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The converted string.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>转换后的字符串。</returns>
         public static int HexToInt(this string instance)
         {
             if (instance.Length == 0)
@@ -731,14 +731,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Inserts a substring at a given position.
+        /// 在给定位置插入子字符串。
         /// </summary>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="pos">Position at which to insert the substring.</param>
-        /// <param name="what">Substring to insert.</param>
+        /// <param name="instance">要修改的字符串。</param>
+        /// <param name="pos">插入子串的位置。</param>
+        /// <param name="what">要插入的子字符串</param>
         /// <returns>
-        /// The string with <paramref name="what"/> inserted at the given
-        /// position <paramref name="pos"/>.
+        /// 在给定位置插入 <paramref name="what"/> 的字符串
+        /// 位置 <paramref name="pos"/>.
         /// </returns>
         public static string Insert(this string instance, int pos, string what)
         {
@@ -746,13 +746,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the string is a path to a file or
-        /// directory and its starting point is explicitly defined. This includes
-        /// <c>res://</c>, <c>user://</c>, <c>C:\</c>, <c>/</c>, etc.
+        /// 如果字符串是文件的路径，则返回 <see langword="true"/>
+        /// 目录和它的起点是明确定义的。 这包括
+        /// <c>res://</c>、<c>user://</c>、<c>C:\</c>、<c>/</c>等
         /// </summary>
         /// <seealso cref="IsRelPath(string)"/>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string is an absolute path.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串是绝对路径。</returns>
         public static bool IsAbsPath(this string instance)
         {
             if (string.IsNullOrEmpty(instance))
@@ -764,27 +764,27 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the string is a path to a file or
-        /// directory and its starting point is implicitly defined within the
-        /// context it is being used. The starting point may refer to the current
-        /// directory (<c>./</c>), or the current <see cref="Node"/>.
+        /// 如果字符串是文件的路径，则返回 <see langword="true"/>
+        /// 目录及其起点在
+        /// 正在使用的上下文。 起点可参考当前
+        /// 目录 (<c>./</c>)，或当前 <see cref="Node"/>。
         /// </summary>
         /// <seealso cref="IsAbsPath(string)"/>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string is a relative path.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串是相对路径。</returns>
         public static bool IsRelPath(this string instance)
         {
             return !IsAbsPath(instance);
         }
 
         /// <summary>
-        /// Check whether this string is a subsequence of the given string.
+        /// 检查这个字符串是否是给定字符串的子序列。
         /// </summary>
         /// <seealso cref="IsSubsequenceOfI(string, string)"/>
-        /// <param name="instance">The subsequence to search.</param>
-        /// <param name="text">The string that contains the subsequence.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the check is case sensitive.</param>
-        /// <returns>If the string is a subsequence of the given string.</returns>
+        /// <param name="instance">要搜索的子序列。</param>
+        /// <param name="text">包含子序列的字符串。</param>
+        /// <param name="caseSensitive">如果<see langword="true"/>，检查区分大小写。</param>
+        /// <returns>如果字符串是给定字符串的子序列。</returns>
         public static bool IsSubsequenceOf(this string instance, string text, bool caseSensitive = true)
         {
             int len = instance.Length;
@@ -826,22 +826,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether this string is a subsequence of the given string, ignoring case differences.
+        /// 检查这个字符串是否是给定字符串的子序列，忽略大小写差异。
         /// </summary>
         /// <seealso cref="IsSubsequenceOf(string, string, bool)"/>
-        /// <param name="instance">The subsequence to search.</param>
-        /// <param name="text">The string that contains the subsequence.</param>
-        /// <returns>If the string is a subsequence of the given string.</returns>
+        /// <param name="instance">要搜索的子序列。</param>
+        /// <param name="text">包含子序列的字符串。</param>
+        /// <returns>如果字符串是给定字符串的子序列。</returns>
         public static bool IsSubsequenceOfI(this string instance, string text)
         {
             return instance.IsSubsequenceOf(text, caseSensitive: false);
         }
 
         /// <summary>
-        /// Check whether the string contains a valid <see langword="float"/>.
+        /// 检查字符串是否包含有效的<see langword="float"/>。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string contains a valid floating point number.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串包含一个有效的浮点数。</returns>
         public static bool IsValidFloat(this string instance)
         {
             float f;
@@ -849,22 +849,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether the string contains a valid color in HTML notation.
+        /// 检查字符串是否包含 HTML 表示法中的有效颜色。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string contains a valid HTML color.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串包含有效的 HTML 颜色。</returns>
         public static bool IsValidHtmlColor(this string instance)
         {
             return Color.HtmlIsValid(instance);
         }
 
         /// <summary>
-        /// Check whether the string is a valid identifier. As is common in
-        /// programming languages, a valid identifier may contain only letters,
-        /// digits and underscores (_) and the first character may not be a digit.
+        /// 检查字符串是否为有效标识符。 正如在
+        /// 编程语言，一个有效的标识符只能包含字母，
+        /// 数字和下划线 (_) 并且第一个字符可能不是数字。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string contains a valid identifier.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串包含一个有效的标识符。</returns>
         public static bool IsValidIdentifier(this string instance)
         {
             int len = instance.Length;
@@ -893,10 +893,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether the string contains a valid integer.
+        /// 检查字符串是否包含有效整数。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string contains a valid integer.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串包含一个有效的整数。</returns>
         public static bool IsValidInteger(this string instance)
         {
             int f;
@@ -904,10 +904,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether the string contains a valid IP address.
+        /// 检查字符串是否包含有效的 IP 地址。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>If the string contains a valid IP address.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>如果字符串包含有效的IP地址。</returns>
         public static bool IsValidIPAddress(this string instance)
         {
             // TODO: Support IPv6 addresses
@@ -931,10 +931,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the string with special characters escaped using the JSON standard.
+        /// 返回使用 JSON 标准转义的特殊字符的字符串副本。
         /// </summary>
-        /// <param name="instance">The string to escape.</param>
-        /// <returns>The escaped string.</returns>
+        /// <param name="instance">要转义的字符串。</param>
+        /// <returns>转义的字符串。</returns>
         public static string JSONEscape(this string instance)
         {
             var sb = new StringBuilder(string.Copy(instance));
@@ -952,12 +952,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns an amount of characters from the left of the string.
+        /// 返回字符串左边的字符数。
         /// </summary>
         /// <seealso cref="Right(string, int)"/>
-        /// <param name="instance">The original string.</param>
-        /// <param name="pos">The position in the string where the left side ends.</param>
-        /// <returns>The left side of the string from the given position.</returns>
+        /// <param name="instance">原始字符串。</param>
+        /// <param name="pos">字符串中左边结束的位置。</param>
+        /// <returns>从给定位置开始的字符串左侧。</returns>
         public static string Left(this string instance, int pos)
         {
             if (pos <= 0)
@@ -970,22 +970,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the length of the string in characters.
+        /// 返回字符串的长度（以字符为单位）。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>The length of the string.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <returns>字符串的长度。</returns>
         public static int Length(this string instance)
         {
             return instance.Length;
         }
 
         /// <summary>
-        /// Returns a copy of the string with characters removed from the left.
+        /// 返回字符串的副本，其中删除了左侧的字符。
         /// </summary>
         /// <seealso cref="RStrip(string, string)"/>
-        /// <param name="instance">The string to remove characters from.</param>
-        /// <param name="chars">The characters to be removed.</param>
-        /// <returns>A copy of the string with characters removed from the left.</returns>
+        /// <param name="instance">要从中删除字符的字符串。</param>
+        /// <param name="chars">要删除的字符。</param>
+        /// <returns>从左边删除字符的字符串副本。</returns>
         public static string LStrip(this string instance, string chars)
         {
             int len = instance.Length;
@@ -1008,15 +1008,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Do a simple expression match, where '*' matches zero or more
-        /// arbitrary characters and '?' matches any single character except '.'.
+        /// 做一个简单的表达式匹配，其中 '*' 匹配零个或多个
+        /// 任意字符和'?' 匹配除 '.' 之外的任何单个字符。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="expr">Expression to check.</param>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="expr">要检查的表达式。</param>
         /// <param name="caseSensitive">
-        /// If <see langword="true"/>, the check will be case sensitive.
-        /// </param>
-        /// <returns>If the expression has any matches.</returns>
+        /// 如果 <see langword="true"/>，检查将区分大小写。
+        /// </参数>
+        /// <returns>如果表达式有任何匹配项。</returns>
         private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
         {
             // case '\0':
@@ -1039,16 +1039,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Do a simple case sensitive expression match, using ? and * wildcards
-        /// (see <see cref="ExprMatch(string, string, bool)"/>).
+        /// 做一个简单的区分大小写的表达式匹配，使用 ? 和 * 通配符
+        ///（参见 <see cref="ExprMatch(string, string, bool)"/>）。
         /// </summary>
         /// <seealso cref="MatchN(string, string)"/>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="expr">Expression to check.</param>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="expr">要检查的表达式。</param>
         /// <param name="caseSensitive">
-        /// If <see langword="true"/>, the check will be case sensitive.
+        /// 如果 <see langword="true"/>，检查将区分大小写。
         /// </param>
-        /// <returns>If the expression has any matches.</returns>
+        /// <returns>如果表达式有任何匹配项。</returns>
         public static bool Match(this string instance, string expr, bool caseSensitive = true)
         {
             if (instance.Length == 0 || expr.Length == 0)
@@ -1058,13 +1058,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Do a simple case insensitive expression match, using ? and * wildcards
-        /// (see <see cref="ExprMatch(string, string, bool)"/>).
+        /// 做一个简单的不区分大小写的表达式匹配，使用 ? 和 * 通配符
+        ///（参见 <see cref="ExprMatch(string, string, bool)"/>）。
         /// </summary>
         /// <seealso cref="Match(string, string, bool)"/>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="expr">Expression to check.</param>
-        /// <returns>If the expression has any matches.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="expr">要检查的表达式。</param>
+        /// <returns>如果表达式有任何匹配项。</returns>
         public static bool MatchN(this string instance, string expr)
         {
             if (instance.Length == 0 || expr.Length == 0)
@@ -1074,7 +1074,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the MD5 hash of the string as an array of bytes.
+        /// 以字节数组的形式返回字符串的 MD5 哈希值。
         /// </summary>
         /// <seealso cref="MD5Text(string)"/>
         /// <param name="instance">The string to hash.</param>
@@ -1088,11 +1088,11 @@ namespace Godot
         internal static extern byte[] godot_icall_String_md5_buffer(string str);
 
         /// <summary>
-        /// Returns the MD5 hash of the string as a string.
+        /// 将字符串的 MD5 哈希作为字符串返回。
         /// </summary>
         /// <seealso cref="MD5Buffer(string)"/>
-        /// <param name="instance">The string to hash.</param>
-        /// <returns>The MD5 hash of the string.</returns>
+        /// <param name="instance">要散列的字符串。</param>
+        /// <returns>字符串的 MD5 哈希值。</returns>
         public static string MD5Text(this string instance)
         {
             return godot_icall_String_md5_text(instance);
@@ -1102,37 +1102,37 @@ namespace Godot
         internal static extern string godot_icall_String_md5_text(string str);
 
         /// <summary>
-        /// Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// 与另一个字符串进行不区分大小写的比较，如果小于则返回-1，如果相等则返回0，如果大于则+1。
         /// </summary>
         /// <seealso cref="CasecmpTo(string, string)"/>
         /// <seealso cref="CompareTo(string, string, bool)"/>
-        /// <param name="instance">The string to compare.</param>
-        /// <param name="to">The other string to compare.</param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <param name="instance">要比较的字符串。</param>
+        /// <param name="to">要比较的另一个字符串。</param>
+        /// <returns>-1 如果小于，0 如果相等，+1 如果大于。</returns>
         public static int NocasecmpTo(this string instance, string to)
         {
             return instance.CompareTo(to, caseSensitive: false);
         }
 
         /// <summary>
-        /// Returns the character code at position <paramref name="at"/>.
+        /// 返回位置 <paramref name="at"/> 处的字符代码。
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="at">The position int the string for the character to check.</param>
-        /// <returns>The character code.</returns>
+        /// <param name="instance">要检查的字符串。</param>
+        /// <param name="at">要检查的字符在字符串中的位置。</param>
+        /// <returns>字符代码。</returns>
         public static int OrdAt(this string instance, int at)
         {
             return instance[at];
         }
 
         /// <summary>
-        /// Format a number to have an exact number of <paramref name="digits"/>
-        /// after the decimal point.
+        /// 将数字格式化为具有确切数字的 <paramref name="digits"/>
+        /// 小数点后。
         /// </summary>
         /// <seealso cref="PadZeros(string, int)"/>
-        /// <param name="instance">The string to pad.</param>
-        /// <param name="digits">Amount of digits after the decimal point.</param>
-        /// <returns>The string padded with zeroes.</returns>
+        /// <param name="instance">要填充的字符串。</param>
+        /// <param name="digits">小数点后的位数。</param>
+        /// <returns>用零填充的字符串。</returns>
         public static string PadDecimals(this string instance, int digits)
         {
             int c = instance.Find(".");
@@ -1167,13 +1167,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Format a number to have an exact number of <paramref name="digits"/>
-        /// before the decimal point.
+        /// 将数字格式化为具有确切数字的 <paramref name="digits"/>
+        /// 小数点前。
         /// </summary>
         /// <seealso cref="PadDecimals(string, int)"/>
-        /// <param name="instance">The string to pad.</param>
-        /// <param name="digits">Amount of digits before the decimal point.</param>
-        /// <returns>The string padded with zeroes.</returns>
+        /// <param name="instance">要填充的字符串。</param>
+        /// <param name="digits">小数点前的位数。</param>
+        /// <returns>用零填充的字符串。</returns>
         public static string PadZeros(this string instance, int digits)
         {
             string s = instance;
@@ -1205,7 +1205,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Decode a percent-encoded string. See <see cref="PercentEncode"/>.
+        /// 解码百分比编码的字符串。 请参阅 <see cref="PercentEncode"/>。
         /// </summary>
         public static string PercentDecode(this string instance)
         {
@@ -1213,8 +1213,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Percent-encode a string. This is meant to encode parameters in a URL
-        /// when sending a HTTP GET request and bodies of form-urlencoded POST request.
+        /// 对字符串进行百分比编码。 这是为了对 URL 中的参数进行编码
+        /// 发送 HTTP GET 请求和 form-urlencoded POST 请求的主体时。
         /// </summary>
         /// <seealso cref="PercentDecode(string)"/>
         public static string PercentEncode(this string instance)
@@ -1223,13 +1223,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// If the string is a path, this concatenates <paramref name="file"/>
-        /// at the end of the string as a subpath.
-        /// E.g. <c>"this/is".PlusFile("path") == "this/is/path"</c>.
+        /// 如果字符串是路径，则连接 <paramref name="file"/>
+        /// 在字符串的末尾作为子路径。
+        /// 例如 <c>"this/is".PlusFile("path") == "this/is/path"</c>.
         /// </summary>
-        /// <param name="instance">The path that will be concatenated.</param>
-        /// <param name="file">File name to concatenate with the path.</param>
-        /// <returns>The concatenated path with the given file name.</returns>
+        /// <param name="instance">将被连接的路径。</param>
+        /// <param name="file">要与路径连接的文件名。</param>
+        /// <returns>给定文件名的连接路径。</returns>
         public static string PlusFile(this string instance, string file)
         {
             if (instance.Length > 0 && instance[instance.Length - 1] == '/')
@@ -1238,39 +1238,39 @@ namespace Godot
         }
 
         /// <summary>
-        /// Replace occurrences of a substring for different ones inside the string.
+        /// 为字符串中不同的子字符串替换出现的子字符串。
         /// </summary>
         /// <seealso cref="ReplaceN(string, string, string)"/>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="what">The substring to be replaced in the string.</param>
-        /// <param name="forwhat">The substring that replaces <paramref name="what"/>.</param>
-        /// <returns>The string with the substring occurrences replaced.</returns>
+        /// <param name="instance">要修改的字符串。</param>
+        /// <param name="what">字符串中要替换的子字符串。</param>
+        /// <param name="forwhat">替换<paramref name="what"/>的子字符串。</param>
+        /// <returns>替换子串的字符串。</returns>
         public static string Replace(this string instance, string what, string forwhat)
         {
             return instance.Replace(what, forwhat);
         }
 
         /// <summary>
-        /// Replace occurrences of a substring for different ones inside the string, but search case-insensitive.
+        /// 用字符串中不同的子字符串替换出现的子字符串，但不区分大小写。
         /// </summary>
         /// <seealso cref="Replace(string, string, string)"/>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="what">The substring to be replaced in the string.</param>
-        /// <param name="forwhat">The substring that replaces <paramref name="what"/>.</param>
-        /// <returns>The string with the substring occurrences replaced.</returns>
+        /// <param name="instance">要修改的字符串。</param>
+        /// <param name="what">字符串中要替换的子字符串。</param>
+        /// <param name="forwhat">替换<paramref name="what"/>的子字符串。</param>
+        /// <returns>替换子串的字符串。</returns>
         public static string ReplaceN(this string instance, string what, string forwhat)
         {
             return Regex.Replace(instance, what, forwhat, RegexOptions.IgnoreCase);
         }
 
         /// <summary>
-        /// Perform a search for a substring, but start from the end of the string instead of the beginning.
+        /// 执行子字符串的搜索，但是从字符串的结尾而不是开头开始。
         /// </summary>
         /// <seealso cref="RFindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to search in the string.</param>
-        /// <param name="from">The position at which to start searching.</param>
-        /// <returns>The position at which the substring was found, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要在字符串中搜索的子字符串。</param>
+        /// <param name="from">开始搜索的位置。</param>
+        /// <returns>找到子字符串的位置，如果没有找到，则返回-1。</returns>
         public static int RFind(this string instance, string what, int from = -1)
         {
             return godot_icall_String_rfind(instance, what, from);
@@ -1280,14 +1280,14 @@ namespace Godot
         internal static extern int godot_icall_String_rfind(string str, string what, int from);
 
         /// <summary>
-        /// Perform a search for a substring, but start from the end of the string instead of the beginning.
-        /// Also search case-insensitive.
+        /// 执行子字符串的搜索，但是从字符串的结尾而不是开头开始。
+        /// 也搜索不区分大小写。
         /// </summary>
         /// <seealso cref="RFind(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to search in the string.</param>
-        /// <param name="from">The position at which to start searching.</param>
-        /// <returns>The position at which the substring was found, or -1 if not found.</returns>
+        /// <param name="instance">将被搜索的字符串。</param>
+        /// <param name="what">要在字符串中搜索的子字符串。</param>
+        /// <param name="from">开始搜索的位置。</param>
+        /// <returns>找到子字符串的位置，如果没有找到，则返回-1。</returns>
         public static int RFindN(this string instance, string what, int from = -1)
         {
             return godot_icall_String_rfindn(instance, what, from);
@@ -1297,12 +1297,12 @@ namespace Godot
         internal static extern int godot_icall_String_rfindn(string str, string what, int from);
 
         /// <summary>
-        /// Returns the right side of the string from a given position.
+        /// 从给定位置返回字符串的右侧。
         /// </summary>
         /// <seealso cref="Left(string, int)"/>
-        /// <param name="instance">The original string.</param>
-        /// <param name="pos">The position in the string from which the right side starts.</param>
-        /// <returns>The right side of the string from the given position.</returns>
+        /// <param name="instance">原始字符串。</param>
+        /// <param name="pos">字符串中右边开始的位置。</param>
+        /// <returns>从给定位置开始的字符串的右侧。</returns>
         public static string Right(this string instance, int pos)
         {
             if (pos >= instance.Length)
@@ -1315,12 +1315,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the string with characters removed from the right.
+        /// 返回字符串的副本，其中删除了右侧的字符。
         /// </summary>
         /// <seealso cref="LStrip(string, string)"/>
-        /// <param name="instance">The string to remove characters from.</param>
-        /// <param name="chars">The characters to be removed.</param>
-        /// <returns>A copy of the string with characters removed from the right.</returns>
+        /// <param name="instance">要从中删除字符的字符串。</param>
+        /// <param name="chars">要删除的字符。</param>
+        /// <returns>从右边删除字符的字符串的副本。</returns>
         public static string RStrip(this string instance, string chars)
         {
             int len = instance.Length;
@@ -1343,11 +1343,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the SHA-256 hash of the string as an array of bytes.
+        /// 将字符串的 SHA-256 哈希作为字节数组返回。
         /// </summary>
         /// <seealso cref="SHA256Text(string)"/>
-        /// <param name="instance">The string to hash.</param>
-        /// <returns>The SHA-256 hash of the string.</returns>
+        /// <param name="instance">要散列的字符串。</param>
+        /// <returns>字符串的 SHA-256 哈希值。</returns>
         public static byte[] SHA256Buffer(this string instance)
         {
             return godot_icall_String_sha256_buffer(instance);
@@ -1357,11 +1357,11 @@ namespace Godot
         internal static extern byte[] godot_icall_String_sha256_buffer(string str);
 
         /// <summary>
-        /// Returns the SHA-256 hash of the string as a string.
+        /// 将字符串的 SHA-256 哈希作为字符串返回。
         /// </summary>
         /// <seealso cref="SHA256Buffer(string)"/>
-        /// <param name="instance">The string to hash.</param>
-        /// <returns>The SHA-256 hash of the string.</returns>
+        /// <param name="instance">要散列的字符串。</param>
+        /// <returns>字符串的 SHA-256 哈希值。</returns>
         public static string SHA256Text(this string instance)
         {
             return godot_icall_String_sha256_text(instance);
@@ -1371,12 +1371,12 @@ namespace Godot
         internal static extern string godot_icall_String_sha256_text(string str);
 
         /// <summary>
-        /// Returns the similarity index of the text compared to this string.
-        /// 1 means totally similar and 0 means totally dissimilar.
+        /// 返回文本与该字符串相比的相似度指数。
+        /// 1 表示完全相似，0 表示完全不同。
         /// </summary>
-        /// <param name="instance">The string to compare.</param>
-        /// <param name="text">The other string to compare.</param>
-        /// <returns>The similarity index.</returns>
+        /// <param name="instance">要比较的字符串。</param>
+        /// <param name="text">要比较的另一个字符串。</param>
+        /// <returns>相似度指数。</returns>
         public static float Similarity(this string instance, string text)
         {
             if (instance == text)
@@ -1415,7 +1415,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a simplified canonical path.
+        ///返回简化的规范路径。
         /// </summary>
         public static string SimplifyPath(this string instance)
         {
@@ -1426,32 +1426,32 @@ namespace Godot
         internal static extern string godot_icall_String_simplify_path(string str);
 
         /// <summary>
-        /// Split the string by a divisor string, return an array of the substrings.
-        /// Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+        /// 将字符串除以除数字符串，返回子字符串数组。
+        /// 示例 "One,Two,Three" 如果被 "," 分割，将返回 ["One","Two","Three"]。
         /// </summary>
         /// <seealso cref="SplitFloats(string, string, bool)"/>
-        /// <param name="instance">The string to split.</param>
-        /// <param name="divisor">The divisor string that splits the string.</param>
+        /// <param name="instance">要拆分的字符串。</param>
+        /// <param name="divisor">分割字符串的除数字符串。</param>
         /// <param name="allowEmpty">
-        /// If <see langword="true"/>, the array may include empty strings.
-        /// </param>
-        /// <returns>The array of strings split from the string.</returns>
+        /// 如果 <see langword="true"/>，数组可能包含空字符串。
+        /// </参数>
+        /// <returns>从字符串中拆分出来的字符串数组。</returns>
         public static string[] Split(this string instance, string divisor, bool allowEmpty = true)
         {
             return instance.Split(new[] { divisor }, allowEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>
-        /// Split the string in floats by using a divisor string, return an array of the substrings.
-        /// Example "1,2.5,3" will return [1,2.5,3] if split by ",".
+        /// 使用除数字符串将字符串拆分为浮点数，返回子字符串数组。
+        /// 示例 "1,2.5,3" 如果被 "," 分割，将返回 [1,2.5,3]。
         /// </summary>
         /// <seealso cref="Split(string, string, bool)"/>
-        /// <param name="instance">The string to split.</param>
-        /// <param name="divisor">The divisor string that splits the string.</param>
+        /// <param name="instance">要拆分的字符串。</param>
+        /// <param name="divisor">分割字符串的除数字符串。</param>
         /// <param name="allowEmpty">
-        /// If <see langword="true"/>, the array may include empty floats.
-        /// </param>
-        /// <returns>The array of floats split from the string.</returns>
+        /// 如果 <see langword="true"/>，数组可能包含空浮点数。
+        /// </参数>
+        /// <returns>从字符串中拆分出来的浮点数数组。</returns>
         public static float[] SplitFloats(this string instance, string divisor, bool allowEmpty = true)
         {
             var ret = new List<float>();
@@ -1485,13 +1485,13 @@ namespace Godot
         };
 
         /// <summary>
-        /// Returns a copy of the string stripped of any non-printable character at the beginning and the end.
-        /// The optional arguments are used to toggle stripping on the left and right edges respectively.
+        /// 返回在开头和结尾去除了任何不可打印字符的字符串的副本。
+        /// 可选参数分别用于切换左右边缘的剥离。
         /// </summary>
-        /// <param name="instance">The string to strip.</param>
-        /// <param name="left">If the left side should be stripped.</param>
-        /// <param name="right">If the right side should be stripped.</param>
-        /// <returns>The string stripped of any non-printable characters.</returns>
+        /// <param name="instance">要剥离的字符串。</param>
+        /// <param name="left">如果左边应该被剥离。</param>
+        /// <param name="right">如果右边应该被剥离。</param>
+        /// <returns>去掉所有不可打印字符的字符串。</returns>
         public static string StripEdges(this string instance, bool left = true, bool right = true)
         {
             if (left)
@@ -1505,13 +1505,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns part of the string from the position <paramref name="from"/>, with length <paramref name="len"/>.
+        ///从 <paramref name="from"/> 位置返回字符串的一部分，长度为 <paramref name="len"/>。
         /// </summary>
-        /// <param name="instance">The string to slice.</param>
-        /// <param name="from">The position in the string that the part starts from.</param>
-        /// <param name="len">The length of the returned part.</param>
+        /// <param name="instance">要切片的字符串。</param>
+        /// <param name="from">字符串中部分开始的位置。</param>
+        /// <param name="len">返回部分的长度。</param>
         /// <returns>
-        /// Part of the string from the position <paramref name="from"/>, with length <paramref name="len"/>.
+        /// 从位置 <paramref name="from"/> 开始的部分字符串，长度为 <paramref name="len"/>。
         /// </returns>
         public static string Substr(this string instance, int from, int len)
         {
@@ -1520,93 +1520,93 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts the String (which is a character array) to PoolByteArray (which is an array of bytes).
-        /// The conversion is speeded up in comparison to <see cref="ToUTF8(string)"/> with the assumption
-        /// that all the characters the String contains are only ASCII characters.
+        /// 将 String（它是一个字符数组）转换为 PoolByteArray（它是一个字节数组）。
+        /// 与 <see cref="ToUTF8(string)"/> 相比，转换速度更快，假设
+        /// String 包含的所有字符都只是 ASCII 字符。
         /// </summary>
         /// <seealso cref="ToUTF8(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string as ASCII encoded bytes.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>作为 ASCII 编码字节的字符串。</returns>
         public static byte[] ToAscii(this string instance)
         {
             return Encoding.ASCII.GetBytes(instance);
         }
 
         /// <summary>
-        /// Converts a string, containing a decimal number, into a <see langword="float" />.
+        /// 将包含十进制数的字符串转换为 <see langword="float" />。
         /// </summary>
         /// <seealso cref="ToInt(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The number representation of the string.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>字符串的数字表示。</returns>
         public static float ToFloat(this string instance)
         {
             return float.Parse(instance);
         }
 
         /// <summary>
-        /// Converts a string, containing an integer number, into an <see langword="int" />.
+        /// 将包含整数的字符串转换为 <see langword="int" />。
         /// </summary>
         /// <seealso cref="ToFloat(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The number representation of the string.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>字符串的数字表示。</returns>
         public static int ToInt(this string instance)
         {
             return int.Parse(instance);
         }
 
         /// <summary>
-        /// Returns the string converted to lowercase.
+        /// 返回转换为小写的字符串。
         /// </summary>
         /// <seealso cref="ToUpper(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string converted to lowercase.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>转换为小写的字符串。</returns>
         public static string ToLower(this string instance)
         {
             return instance.ToLower();
         }
 
         /// <summary>
-        /// Returns the string converted to uppercase.
+        /// 返回转换为大写的字符串。
         /// </summary>
         /// <seealso cref="ToLower(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string converted to uppercase.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>转换为大写的字符串。</returns>
         public static string ToUpper(this string instance)
         {
             return instance.ToUpper();
         }
 
         /// <summary>
-        /// Converts the String (which is an array of characters) to PoolByteArray (which is an array of bytes).
-        /// The conversion is a bit slower than <see cref="ToAscii(string)"/>, but supports all UTF-8 characters.
-        /// Therefore, you should prefer this function over <see cref="ToAscii(string)"/>.
+        /// 将 String（字符数组）转换为 PoolByteArray（字节数组）。
+        /// 转换比 <see cref="ToAscii(string)"/> 慢一点，但支持所有 UTF-8 字符。
+        /// 因此，您应该更喜欢这个函数而不是 <see cref="ToAscii(string)"/>。
         /// </summary>
         /// <seealso cref="ToAscii(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string as UTF-8 encoded bytes.</returns>
+        /// <param name="instance">要转换的字符串。</param>
+        /// <returns>字符串为 UTF-8 编码字节。</returns>
         public static byte[] ToUTF8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
         }
 
         /// <summary>
-        /// Returns a copy of the string with special characters escaped using the XML standard.
+        /// 返回带有使用 XML 标准转义的特殊字符的字符串的副本。
         /// </summary>
         /// <seealso cref="XMLUnescape(string)"/>
-        /// <param name="instance">The string to escape.</param>
-        /// <returns>The escaped string.</returns>
+        /// <param name="instance">要转义的字符串。</param>
+        /// <returns>转义的字符串。</returns>
         public static string XMLEscape(this string instance)
         {
             return SecurityElement.Escape(instance);
         }
 
         /// <summary>
-        /// Returns a copy of the string with escaped characters replaced by their meanings
-        /// according to the XML standard.
+        /// 返回字符串的副本，其中转义字符替换为它们的含义
+        /// 根据 XML 标准。
         /// </summary>
         /// <seealso cref="XMLEscape(string)"/>
-        /// <param name="instance">The string to unescape.</param>
-        /// <returns>The unescaped string.</returns>
+        /// <param name="instance">要取消转义的字符串。</param>
+        /// <returns>未转义的字符串。</returns>
         public static string XMLUnescape(this string instance)
         {
             return SecurityElement.FromString(instance).Text;

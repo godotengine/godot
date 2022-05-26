@@ -26,10 +26,10 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Wrapper around Godot's Array class, an array of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
-    /// such as <see cref="System.Array"/> or <see cref="List{T}"/>.
+    /// 围绕 Godot 的 Array 类的包装，一个 Variant 数组
+    /// 在 C++ 引擎中分配的类型化元素。 有用的时候
+    /// 与引擎的接口。 否则更喜欢 .NET 集合
+    /// 例如 <see cref="System.Array"/> 或 <see cref="List{T}"/>.
     /// </summary>
     public class Array : IList, IDisposable
     {
@@ -37,7 +37,7 @@ namespace Godot.Collections
         private bool _disposed = false;
 
         /// <summary>
-        /// Constructs a new empty <see cref="Array"/>.
+        /// 构造一个新的空数组 <see cref="Array"/>.
         /// </summary>
         public Array()
         {
@@ -45,10 +45,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Array"/> from the given collection's elements.
+        /// 从给定集合的元素构造一个新的 <see cref="Array"/>。
         /// </summary>
-        /// <param name="collection">The collection of elements to construct from.</param>
-        /// <returns>A new Godot Array.</returns>
+        /// <param name="collection">要构造的元素的集合.</param>
+        /// <returns>新的 godot 数组.</returns>
         public Array(IEnumerable collection) : this()
         {
             if (collection == null)
@@ -59,10 +59,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Array"/> from the given objects.
+        /// 从给定的对象构造一个新的 <see cref="Array"/>.
         /// </summary>
-        /// <param name="array">The objects to put in the new array.</param>
-        /// <returns>A new Godot Array.</returns>
+        /// <param name="array">放入新数组的对象.</param>
+        /// <returns>新的 godot 数组.</returns>
         public Array(params object[] array) : this()
         {
             if (array == null)
@@ -91,9 +91,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Array"/>.
+        ///复制此 <see cref="Array"/>。
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
+        /// <param name="deep">如果<see langword="true"/>，执行深拷贝</param>
         /// <returns>A new Godot Array.</returns>
         public Array Duplicate(bool deep = false)
         {
@@ -101,17 +101,17 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Resizes this <see cref="Array"/> to the given size.
+        /// 将此 <see cref="Array"/> 调整为给定大小
         /// </summary>
-        /// <param name="newSize">The new size of the array.</param>
-        /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
+        /// <param name="newSize">数组的新大小.</param>
+        /// <returns><see cref="Error.Ok"/> 返回成功或错误代码.</returns>
         public Error Resize(int newSize)
         {
             return godot_icall_Array_Resize(GetPtr(), newSize);
         }
 
         /// <summary>
-        /// Shuffles the contents of this <see cref="Array"/> into a random order.
+        /// 将此 <see cref="Array"/> 的内容随机排列.
         /// </summary>
         public void Shuffle()
         {
@@ -119,11 +119,11 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Concatenates these two <see cref="Array"/>s.
+        /// 连接这两个 <see cref="Array"/>.
         /// </summary>
-        /// <param name="left">The first array.</param>
-        /// <param name="right">The second array.</param>
-        /// <returns>A new Godot Array with the contents of both arrays.</returns>
+        /// <param name="left">第一个数组.</param>
+        /// <param name="right">第二个数组.</param>
+        /// <returns>包含两个数组内容的新 Godot 数组.</returns>
         public static Array operator +(Array left, Array right)
         {
             return new Array(godot_icall_Array_Concatenate(left.GetPtr(), right.GetPtr()));
@@ -155,9 +155,9 @@ namespace Godot.Collections
         bool IList.IsFixedSize => false;
 
         /// <summary>
-        /// Returns the object at the given <paramref name="index"/>.
+        /// 返回给定 <paramref name="index"/> 处的对象.
         /// </summary>
-        /// <value>The object at the given <paramref name="index"/>.</value>
+        /// <value>给定 <paramref name="index"/> 处的对象.</value>
         public object this[int index]
         {
             get => godot_icall_Array_At(GetPtr(), index);
@@ -165,63 +165,63 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Adds an object to the end of this <see cref="Array"/>.
-        /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
+        /// 将一个对象添加到此 <see cref="Array"/> 的末尾。
+        ///这与 GDScript 中的<c> append</c> 或<c> push_back</c> 相同。
         /// </summary>
-        /// <param name="value">The object to add.</param>
-        /// <returns>The new size after adding the object.</returns>
+        /// <param name="value">要添加的对象.</param>
+        /// <returns>添加对象后的新尺寸.</returns>
         public int Add(object value) => godot_icall_Array_Add(GetPtr(), value);
 
         /// <summary>
-        /// Checks if this <see cref="Array"/> contains the given object.
+        /// 检查此 <see cref="Array"/> 是否包含给定对象.
         /// </summary>
-        /// <param name="value">The item to look for.</param>
-        /// <returns>Whether or not this array contains the given object.</returns>
+        /// <param name="value">要查找的项目.</param>
+        /// <returns>此数组是否包含给定对象.</returns>
         public bool Contains(object value) => godot_icall_Array_Contains(GetPtr(), value);
 
         /// <summary>
-        /// Erases all items from this <see cref="Array"/>.
+        /// 从中删除所有项目 <see cref="Array"/>.
         /// </summary>
         public void Clear() => godot_icall_Array_Clear(GetPtr());
 
         /// <summary>
-        /// Searches this <see cref="Array"/> for an object
-        /// and returns its index or -1 if not found.
+        /// 在这个<see cref="Array"/> 中搜索一个对象
+        ///并返回它的索引，如果没有找到则返回 -1。
         /// </summary>
-        /// <param name="value">The object to search for.</param>
-        /// <returns>The index of the object, or -1 if not found.</returns>
+        /// <param name="value">要搜索的对象.</param>
+        /// <returns>对象的索引，如果未找到则为 -1.</returns>
         public int IndexOf(object value) => godot_icall_Array_IndexOf(GetPtr(), value);
 
         /// <summary>
-        /// Inserts a new object at a given position in the array.
-        /// The position must be a valid position of an existing item,
-        /// or the position at the end of the array.
-        /// Existing items will be moved to the right.
+        /// 在数组中的给定位置插入一个新对象。
+        ///该位置必须是现有项目的有效位置，
+        ///或数组末尾的位置。
+        ///现有项目将向右移动。
         /// </summary>
-        /// <param name="index">The index to insert at.</param>
-        /// <param name="value">The object to insert.</param>
+        /// <param name="index">要插入的索引.</param>
+        /// <param name="value">要插入的对象.</param>
         public void Insert(int index, object value) => godot_icall_Array_Insert(GetPtr(), index, value);
 
         /// <summary>
-        /// Removes the first occurrence of the specified <paramref name="value"/>
-        /// from this <see cref="Array"/>.
+        ///删除指定<paramref name="value"/> 的第一次出现
+        ///从这个<see cref="Array"/>.
         /// </summary>
-        /// <param name="value">The value to remove.</param>
+        /// <param name="value">要删除的值.</param>
         public void Remove(object value) => godot_icall_Array_Remove(GetPtr(), value);
 
         /// <summary>
-        /// Removes an element from this <see cref="Array"/> by index.
+        /// 按索引从此 <see cref="Array"/> 中删除一个元素。
         /// </summary>
-        /// <param name="index">The index of the element to remove.</param>
+        /// <param name="index">要删除的元素的索引.</param>
         public void RemoveAt(int index) => godot_icall_Array_RemoveAt(GetPtr(), index);
 
         // ICollection
 
         /// <summary>
-        /// Returns the number of elements in this <see cref="Array"/>.
-        /// This is also known as the size or length of the array.
+        ///返回此<see cref="Array"/> 中的元素数。
+        ///这也称为数组的大小或长度。
         /// </summary>
-        /// <returns>The number of elements.</returns>
+        /// <returns>元素数量.</returns>
         public int Count => godot_icall_Array_Count(GetPtr());
 
         object ICollection.SyncRoot => this;
@@ -229,11 +229,11 @@ namespace Godot.Collections
         bool ICollection.IsSynchronized => false;
 
         /// <summary>
-        /// Copies the elements of this <see cref="Array"/> to the given
-        /// untyped C# array, starting at the given index.
+        ///将此<see cref="Array"/> 的元素复制到给定的
+        ///无类型的 C# 数组，从给定的索引开始。
         /// </summary>
-        /// <param name="array">The array to copy to.</param>
-        /// <param name="index">The index to start at.</param>
+        /// <param name="array">要复制到的数组.</param>
+        /// <param name="index">开始的索引.</param>
         public void CopyTo(System.Array array, int index)
         {
             if (array == null)
@@ -249,9 +249,9 @@ namespace Godot.Collections
         // IEnumerable
 
         /// <summary>
-        /// Gets an enumerator for this <see cref="Array"/>.
+        /// 获取此 <see cref="Array"/> 的枚举器。
         /// </summary>
-        /// <returns>An enumerator.</returns>
+        /// <returns>枚举器.</returns>
         public IEnumerator GetEnumerator()
         {
             int count = Count;
@@ -263,9 +263,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this <see cref="Array"/> to a string.
+        /// 将此 <see cref="Array"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this array.</returns>
+        /// <returns>此数组的字符串表示形式。</returns>
         public override string ToString()
         {
             return godot_icall_Array_ToString(GetPtr());
@@ -336,12 +336,12 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Typed wrapper around Godot's Array class, an array of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
-    /// such as arrays or <see cref="List{T}"/>.
+    /// 围绕 Godot 的 Array 类的类型化包装器，一个 Variant 数组
+    /// 在 C++ 引擎中分配的类型化元素。 有用的时候
+    /// 与引擎交互。 否则更喜欢 .NET 集合
+    /// 例如数组或<see cref="List{T}"/>。
     /// </summary>
-    /// <typeparam name="T">The type of the array.</typeparam>
+    /// <typeparam name="T">数组的类型.</typeparam>
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
         private Array _objectArray;
@@ -355,7 +355,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new empty <see cref="Array{T}"/>.
+        /// 构造一个新的空 <see cref="Array{T}"/>。
         /// </summary>
         public Array()
         {
@@ -363,10 +363,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Array{T}"/> from the given collection's elements.
+        /// 从给定集合的元素构造一个新的 <see cref="Array{T}"/>。
         /// </summary>
-        /// <param name="collection">The collection of elements to construct from.</param>
-        /// <returns>A new Godot Array.</returns>
+        /// <param name="collection">要构造的元素的集合.</param>
+        /// <returns>一个新的 godot 数组.</returns>
         public Array(IEnumerable<T> collection)
         {
             if (collection == null)
@@ -376,10 +376,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Array{T}"/> from the given items.
+        /// 从给定的项目构造一个新的 <see cref="Array{T}"/>。
         /// </summary>
-        /// <param name="array">The items to put in the new array.</param>
-        /// <returns>A new Godot Array.</returns>
+        /// <param name="array">要放入新数组的项目.</param>
+        /// <returns>一个新的 godot 数组.</returns>
         public Array(params T[] array) : this()
         {
             if (array == null)
@@ -390,9 +390,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a typed <see cref="Array{T}"/> from an untyped <see cref="Array"/>.
+        ///从无类型的 <see cref="Array"/> 构造一个有类型的 <see cref="Array{T}"/>。
         /// </summary>
-        /// <param name="array">The untyped array to construct from.</param>
+        /// <param name="array">要构造的无类型数组.</param>
         public Array(Array array)
         {
             _objectArray = array;
@@ -414,36 +414,36 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this typed <see cref="Array{T}"/> to an untyped <see cref="Array"/>.
+        /// 将此类型化的 <see cref="Array{T}"/> 转换为非类型化的 <see cref="Array"/>。
         /// </summary>
-        /// <param name="from">The typed array to convert.</param>
+        /// <param name="from">要转换的类型化数组.</param>
         public static explicit operator Array(Array<T> from)
         {
             return from._objectArray;
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Array{T}"/>.
+        /// 复制此 <see cref="Array{T}"/>。
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
-        /// <returns>A new Godot Array.</returns>
+        /// <param name="deep">如果<see langword="true"/>，执行深拷贝.</param>
+        /// <returns>一个新的 godot 数组.</returns>
         public Array<T> Duplicate(bool deep = false)
         {
             return new Array<T>(_objectArray.Duplicate(deep));
         }
 
         /// <summary>
-        /// Resizes this <see cref="Array{T}"/> to the given size.
+        /// 将此 <see cref="Array{T}"/> 调整为给定大小。
         /// </summary>
-        /// <param name="newSize">The new size of the array.</param>
-        /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
+        /// <param name="newSize">数组的新大小.</param>
+        /// <returns><see cref="Error.Ok"/> 成功或错误代码.</returns>
         public Error Resize(int newSize)
         {
             return _objectArray.Resize(newSize);
         }
 
         /// <summary>
-        /// Shuffles the contents of this <see cref="Array{T}"/> into a random order.
+        /// 将此 <see cref="Array{T}"/> 的内容随机排列。
         /// </summary>
         public void Shuffle()
         {
@@ -451,11 +451,11 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Concatenates these two <see cref="Array{T}"/>s.
+        /// 连接这两个 <see cref="Array{T}"/>s。
         /// </summary>
-        /// <param name="left">The first array.</param>
-        /// <param name="right">The second array.</param>
-        /// <returns>A new Godot Array with the contents of both arrays.</returns>
+        /// <param name="left">第一个数组.</param>
+        /// <param name="right">第二个数组.</param>
+        /// <returns>包含两个数组内容的新 Godot 数组.</returns>
         public static Array<T> operator +(Array<T> left, Array<T> right)
         {
             return new Array<T>(left._objectArray + right._objectArray);
@@ -464,9 +464,9 @@ namespace Godot.Collections
         // IList<T>
 
         /// <summary>
-        /// Returns the value at the given <paramref name="index"/>.
+        /// 返回给定 <paramref name="index"/> 的值。
         /// </summary>
-        /// <value>The value at the given <paramref name="index"/>.</value>
+        /// <value>给定 <paramref name="index"/> 的值.</value>
         public T this[int index]
         {
             get { return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass); }
@@ -474,33 +474,33 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Searches this <see cref="Array{T}"/> for an item
-        /// and returns its index or -1 if not found.
+        ///在这个<see cref="Array{T}" /> 中搜索一个项目
+        ///并返回它的索引，如果没有找到则返回 -1。
         /// </summary>
-        /// <param name="item">The item to search for.</param>
-        /// <returns>The index of the item, or -1 if not found.</returns>
+        /// <param name="item">要搜索的项目.</param>
+        /// <returns>项目的索引，如果未找到，则为 -1.</returns>
         public int IndexOf(T item)
         {
             return _objectArray.IndexOf(item);
         }
 
         /// <summary>
-        /// Inserts a new item at a given position in the <see cref="Array{T}"/>.
-        /// The position must be a valid position of an existing item,
-        /// or the position at the end of the array.
-        /// Existing items will be moved to the right.
+        ///在<see cref="Array{T}"/> 的给定位置插入一个新项目。
+        ///该位置必须是现有项目的有效位置，
+        ///或数组末尾的位置。
+        ///现有项目将向右移动。
         /// </summary>
-        /// <param name="index">The index to insert at.</param>
-        /// <param name="item">The item to insert.</param>
+        /// <param name="index">要插入的索引.</param>
+        /// <param name="item">要插入的项目.</param>
         public void Insert(int index, T item)
         {
             _objectArray.Insert(index, item);
         }
 
         /// <summary>
-        /// Removes an element from this <see cref="Array{T}"/> by index.
+        /// 按索引从此 <see cref="Array{T}"/> 中删除一个元素。
         /// </summary>
-        /// <param name="index">The index of the element to remove.</param>
+        /// <param name="index">要删除的元素的索引.</param>
         public void RemoveAt(int index)
         {
             _objectArray.RemoveAt(index);
@@ -509,10 +509,10 @@ namespace Godot.Collections
         // ICollection<T>
 
         /// <summary>
-        /// Returns the number of elements in this <see cref="Array{T}"/>.
-        /// This is also known as the size or length of the array.
+        /// 返回此 <see cref="Array{T}"/> 中的元素数。
+        /// 这也称为数组的大小或长度。
         /// </summary>
-        /// <returns>The number of elements.</returns>
+        /// <returns>元素数量.</returns>
         public int Count
         {
             get { return _objectArray.Count; }
@@ -521,18 +521,18 @@ namespace Godot.Collections
         bool ICollection<T>.IsReadOnly => false;
 
         /// <summary>
-        /// Adds an item to the end of this <see cref="Array{T}"/>.
-        /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
+        ///在<see cref="Array{T}"/> 的末尾添加一个项目。
+        ///这与 GDScript 中的<c> append</c> 或<c> push_back</c> 相同。
         /// </summary>
-        /// <param name="item">The item to add.</param>
-        /// <returns>The new size after adding the item.</returns>
+        /// <param name="item">要添加的项目.</param>
+        /// <returns>添加项目后的新尺寸.</returns>
         public void Add(T item)
         {
             _objectArray.Add(item);
         }
 
         /// <summary>
-        /// Erases all items from this <see cref="Array{T}"/>.
+        /// 删除此 <see cref="Array{T}"/> 中的所有项目。
         /// </summary>
         public void Clear()
         {
@@ -540,21 +540,21 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Checks if this <see cref="Array{T}"/> contains the given item.
+        /// 检查此 <see cref="Array{T}"/> 是否包含给定项目。
         /// </summary>
-        /// <param name="item">The item to look for.</param>
-        /// <returns>Whether or not this array contains the given item.</returns>
+        /// <param name="item">要查找的项目.</param>
+        /// <returns>此数组是否包含给定项目.</returns>
         public bool Contains(T item)
         {
             return _objectArray.Contains(item);
         }
 
         /// <summary>
-        /// Copies the elements of this <see cref="Array{T}"/> to the given
-        /// C# array, starting at the given index.
+        /// 将此<see cref="Array{T}"/> 的元素复制到给定的
+        /// C# 数组，从给定的索引开始。
         /// </summary>
-        /// <param name="array">The C# array to copy to.</param>
-        /// <param name="arrayIndex">The index to start at.</param>
+        /// <param name="array">要复制到的 C# 数组.</param>
+        /// <param name="arrayIndex">开始的索引.</param>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -579,11 +579,11 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of the specified value
-        /// from this <see cref="Array{T}"/>.
+        ///删除指定值的第一次出现
+        ///从这个<see cref= "Array{T}" />.
         /// </summary>
-        /// <param name="item">The value to remove.</param>
-        /// <returns>A <see langword="bool"/> indicating success or failure.</returns>
+        /// <param name="item">要删除的值.</param>
+        /// <returns>A <see langword="bool"/> 表示成功或失败.</returns>
         public bool Remove(T item)
         {
             return Array.godot_icall_Array_Remove(GetPtr(), item);
@@ -592,9 +592,9 @@ namespace Godot.Collections
         // IEnumerable<T>
 
         /// <summary>
-        /// Gets an enumerator for this <see cref="Array{T}"/>.
+        /// 获取此 <see cref="Array{T}"/> 的枚举器。
         /// </summary>
-        /// <returns>An enumerator.</returns>
+        /// <returns>枚举器.</returns>
         public IEnumerator<T> GetEnumerator()
         {
             int count = _objectArray.Count;
@@ -611,9 +611,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this <see cref="Array{T}"/> to a string.
+        ///将此 <see cref="Array{T}"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this array.</returns>
+        /// <returns>此数组的字符串表示形式.</returns>
         public override string ToString() => _objectArray.ToString();
     }
 }

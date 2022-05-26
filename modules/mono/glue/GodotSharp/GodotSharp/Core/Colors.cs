@@ -3,12 +3,12 @@ using System.Collections.Generic;
 namespace Godot
 {
     /// <summary>
-    /// This class contains color constants created from standardized color names.
-    /// The standardized color set is based on the X11 and .NET color names.
+    /// 此类包含从标准化颜色名称创建的颜色常量。
+    /// 标准化颜色集基于 X11 和 .NET 颜色名称。
     /// </summary>
     public static class Colors
     {
-        // Color names and values are derived from core/color_names.inc
+        // 颜色名称和值来自 core/color_names.inc
         internal static readonly Dictionary<string, Color> namedColors = new Dictionary<string, Color> {
             {"aliceblue", new Color(0.94f, 0.97f, 1.00f)},
             {"antiquewhite", new Color(0.98f, 0.92f, 0.84f)},

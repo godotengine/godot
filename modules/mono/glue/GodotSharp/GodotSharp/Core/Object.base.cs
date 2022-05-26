@@ -27,7 +27,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// The pointer to the native instance of this <see cref="Object"/>.
+        /// 指向此 <see cref="Object"/> 的本机实例的指针
         /// </summary>
         public IntPtr NativeInstance
         {
@@ -51,7 +51,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Disposes of this <see cref="Object"/>.
+        /// 处理这个 <see cref="Object"/>。
         /// </summary>
         public void Dispose()
         {
@@ -60,7 +60,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Disposes implementation of this <see cref="Object"/>.
+        ///处理此 <see cref="Object"/> 的实现。
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
@@ -86,26 +86,26 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts this <see cref="Object"/> to a string.
+        /// 将此 <see cref="Object"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this object.</returns>
+        /// <returns>此对象的字符串表示形式。</returns>
         public override string ToString()
         {
             return godot_icall_Object_ToString(GetPtr(this));
         }
 
         /// <summary>
-        /// Returns a new <see cref="SignalAwaiter"/> awaiter configured to complete when the instance
-        /// <paramref name="source"/> emits the signal specified by the <paramref name="signal"/> parameter.
+        /// 返回一个新的 <see cref="SignalAwaiter"/> 等待实例配置完成时
+        /// <paramref name="source"/> 发出由 <paramref name="signal"/> 参数指定的信号。
         /// </summary>
         /// <param name="source">
-        /// The instance the awaiter will be listening to.
+        /// 等待者将要监听的实例。
         /// </param>
         /// <param name="signal">
-        /// The signal the awaiter will be waiting for.
+        /// 等待者将等待的信号。
         /// </param>
         /// <example>
-        /// This sample prints a message once every frame up to 100 times.
+        /// 此示例每帧打印一条消息，最多 100 次。
         /// <code>
         /// public override void _Ready()
         /// {
@@ -118,8 +118,8 @@ namespace Godot
         /// </code>
         /// </example>
         /// <returns>
-        /// A <see cref="SignalAwaiter"/> that completes when
-        /// <paramref name="source"/> emits the <paramref name="signal"/>.
+        /// 一个完成的 <see cref="SignalAwaiter"/>
+        /// <paramref name="source"/> 发出 <paramref name="signal"/>。
         /// </returns>
         public SignalAwaiter ToSignal(Object source, string signal)
         {
@@ -127,7 +127,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Gets a new <see cref="DynamicGodotObject"/> associated with this instance.
+        /// 获取与此实例关联的新 <see cref="DynamicGodotObject"/>。
         /// </summary>
         public dynamic DynamicObject => new DynamicGodotObject(this);
 

@@ -8,34 +8,34 @@ using System;
 namespace Godot
 {
     /// <summary>
-    /// Provides constants and static methods for common mathematical functions.
+    /// 提供常用数学函数的常量和静态方法。
     /// </summary>
     public static partial class Mathf
     {
         // Define constants with Decimal precision and cast down to double or float.
 
         /// <summary>
-        /// The circle constant, the circumference of the unit circle in radians.
+        /// 圆常数，单位圆的周长，单位为弧度。
         /// </summary>
         // 6.2831855f and 6.28318530717959
         public const real_t Tau = (real_t)6.2831853071795864769252867666M;
 
         /// <summary>
-        /// Constant that represents how many times the diameter of a circle
-        /// fits around its perimeter. This is equivalent to <c>Mathf.Tau / 2</c>.
+        /// 代表圆直径多少倍的常数
+        /// 适合它的周边。 这相当于 <c>Mathf.Tau / 2</c>。
         /// </summary>
         // 3.1415927f and 3.14159265358979
         public const real_t Pi = (real_t)3.1415926535897932384626433833M;
 
         /// <summary>
-        /// Positive infinity. For negative infinity, use <c>-Mathf.Inf</c>.
+        /// 正无穷大。 对于负无穷大，使用 <c>-Mathf.Inf</c>。
         /// </summary>
         public const real_t Inf = real_t.PositiveInfinity;
 
         /// <summary>
-        /// "Not a Number", an invalid value. <c>NaN</c> has special properties, including
-        /// that it is not equal to itself. It is output by some invalid operations,
-        /// such as dividing zero by zero.
+        /// “不是数字”，无效值。 <c>NaN</c> 具有特殊属性，包括
+        /// 它不等于自身。 它是由一些无效操作输出的，
+        /// 比如将零除以零。
         /// </summary>
         public const real_t NaN = real_t.NaN;
 
@@ -45,32 +45,32 @@ namespace Godot
         private const real_t _rad2DegConst = (real_t)57.295779513082320876798154814M;
 
         /// <summary>
-        /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
+        /// 返回 <paramref name="s"/> 的绝对值（即正值）。
         /// </summary>
-        /// <param name="s">The input number.</param>
-        /// <returns>The absolute value of <paramref name="s"/>.</returns>
+        /// <param name="s">输入的数字。</param>
+        /// <returns><paramref name="s"/>的绝对值。</returns>
         public static int Abs(int s)
         {
             return Math.Abs(s);
         }
 
         /// <summary>
-        /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
+        /// 返回 <paramref name="s"/> 的绝对值（即正值）。
         /// </summary>
-        /// <param name="s">The input number.</param>
-        /// <returns>The absolute value of <paramref name="s"/>.</returns>
+        /// <param name="s">输入的数字。</param>
+        /// <returns><paramref name="s"/>的绝对值。</returns>
         public static real_t Abs(real_t s)
         {
             return Math.Abs(s);
         }
 
         /// <summary>
-        /// Returns the arc cosine of <paramref name="s"/> in radians.
-        /// Use to get the angle of cosine <paramref name="s"/>.
+        /// 以弧度返回 <paramref name="s"/> 的反余弦值。
+        /// 用于获取余弦角度 <paramref name="s"/>.
         /// </summary>
-        /// <param name="s">The input cosine value. Must be on the range of -1.0 to 1.0.</param>
+        /// <param name="s">输入余弦值。 必须在 -1.0 到 1.0 的范围内。</param>
         /// <returns>
-        /// An angle that would result in the given cosine value. On the range <c>0</c> to <c>Tau/2</c>.
+        /// 将产生给定余弦值的角度。 在 <c>0</c> 到 <c>Tau/2</c> 的范围内。
         /// </returns>
         public static real_t Acos(real_t s)
         {
@@ -78,12 +78,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the arc sine of <paramref name="s"/> in radians.
-        /// Use to get the angle of sine <paramref name="s"/>.
+        /// 以弧度返回 <paramref name="s"/> 的反正弦值。
+        /// 用于获取正弦角 <paramref name="s"/>.
         /// </summary>
-        /// <param name="s">The input sine value. Must be on the range of -1.0 to 1.0.</param>
+        /// <param name="s">输入正弦值。 必须在 -1.0 到 1.0 的范围内。</param>
         /// <returns>
-        /// An angle that would result in the given sine value. On the range <c>-Tau/4</c> to <c>Tau/4</c>.
+        /// 将产生给定正弦值的角度。 在 <c>-Tau/4</c> 到 <c>Tau/4</c> 范围内。
         /// </returns>
         public static real_t Asin(real_t s)
         {
@@ -91,15 +91,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the arc tangent of <paramref name="s"/> in radians.
-        /// Use to get the angle of tangent <paramref name="s"/>.
+        /// 以弧度返回 <paramref name="s"/> 的反正切。
+        /// 用于获取切线的角度 <paramref name="s"/>。
         ///
-        /// The method cannot know in which quadrant the angle should fall.
-        /// See <see cref="Atan2(real_t, real_t)"/> if you have both <c>y</c> and <c>x</c>.
+        /// 该方法无法知道角度应该落在哪个象限。
+        /// 如果您同时拥有 <c>y</c> 和 <c>x</c>，请参见 <see cref="Atan2(real_t, real_t)"/>。
         /// </summary>
-        /// <param name="s">The input tangent value.</param>
-        /// <returns>
-        /// An angle that would result in the given tangent value. On the range <c>-Tau/4</c> to <c>Tau/4</c>.
+        /// <param name="s">输入正切值。</param>
+        /// <返回>
+        /// 将导致给定正切值的角度。 在 <c>-Tau/4</c> 到 <c>Tau/4</c> 范围内。
         /// </returns>
         public static real_t Atan(real_t s)
         {
@@ -107,16 +107,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the arc tangent of <paramref name="y"/> and <paramref name="x"/> in radians.
-        /// Use to get the angle of the tangent of <c>y/x</c>. To compute the value, the method takes into
-        /// account the sign of both arguments in order to determine the quadrant.
+        /// 以弧度返回 <paramref name="y"/> 和 <paramref name="x"/> 的反正切。
+        /// 用于获取<c>y/x</c>的切线角度。 为了计算该值，该方法采用
+        /// 考虑两个参数的符号以确定象限。
         ///
-        /// Important note: The Y coordinate comes first, by convention.
+        /// 重要提示：按照惯例，Y 坐标在前。
         /// </summary>
-        /// <param name="y">The Y coordinate of the point to find the angle to.</param>
-        /// <param name="x">The X coordinate of the point to find the angle to.</param>
+        /// <param name="y">要找到角度的点的Y坐标。</param>
+        /// <param name="x">要找到角度的点的X坐标。</param>
         /// <returns>
-        /// An angle that would result in the given tangent value. On the range <c>-Tau/2</c> to <c>Tau/2</c>.
+        /// 将导致给定正切值的角度。 在 <c>-Tau/2</c> 到 <c>Tau/2</c> 范围内。
         /// </returns>
         public static real_t Atan2(real_t y, real_t x)
         {
@@ -124,94 +124,94 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a 2D point expressed in the cartesian coordinate
-        /// system (X and Y axis) to the polar coordinate system
-        /// (a distance from the origin and an angle).
+        /// 转换以笛卡尔坐标表示的二维点
+        /// 系统（X和Y轴）到极坐标系
+        ///（到原点的距离和角度）。
         /// </summary>
-        /// <param name="x">The input X coordinate.</param>
-        /// <param name="y">The input Y coordinate.</param>
-        /// <returns>A <see cref="Vector2"/> with X representing the distance and Y representing the angle.</returns>
+        /// <param name="x">输入的X坐标。</param>
+        /// <param name="y">输入的Y坐标。</param>
+        /// <returns>一个<see cref="Vector2"/>，其中X代表距离，Y代表角度。</returns>
         public static Vector2 Cartesian2Polar(real_t x, real_t y)
         {
             return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
         }
 
         /// <summary>
-        /// Rounds <paramref name="s"/> upward (towards positive infinity).
+        /// 向上舍入 <paramref name="s"/>（朝向正无穷大）。
         /// </summary>
-        /// <param name="s">The number to ceil.</param>
-        /// <returns>The smallest whole number that is not less than <paramref name="s"/>.</returns>
+        /// <param name="s">上限的数字。</param>
+        /// <returns>不小于<paramref name="s"/>的最小整数。</returns>
         public static real_t Ceil(real_t s)
         {
             return (real_t)Math.Ceiling(s);
         }
 
         /// <summary>
-        /// Clamps a <paramref name="value"/> so that it is not less than <paramref name="min"/>
-        /// and not more than <paramref name="max"/>.
+        /// 钳制一个 <paramref name="value"/> 使其不小于 <paramref name="min"/>
+        /// 并且不超过 <paramref name="max"/>。
         /// </summary>
-        /// <param name="value">The value to clamp.</param>
-        /// <param name="min">The minimum allowed value.</param>
-        /// <param name="max">The maximum allowed value.</param>
-        /// <returns>The clamped value.</returns>
+        /// <param name="value">要钳位的值。</param>
+        /// <param name="min">允许的最小值。</param>
+        /// <param name="max">最大允许值。</param>
+        /// <returns>钳位值。</returns>
         public static int Clamp(int value, int min, int max)
         {
             return value < min ? min : value > max ? max : value;
         }
 
         /// <summary>
-        /// Clamps a <paramref name="value"/> so that it is not less than <paramref name="min"/>
-        /// and not more than <paramref name="max"/>.
+        /// 钳制一个 <paramref name="value"/> 使其不小于 <paramref name="min"/>
+        /// 并且不超过 <paramref name="max"/>。
         /// </summary>
-        /// <param name="value">The value to clamp.</param>
-        /// <param name="min">The minimum allowed value.</param>
-        /// <param name="max">The maximum allowed value.</param>
-        /// <returns>The clamped value.</returns>
+        /// <param name="value">要钳位的值。</param>
+        /// <param name="min">允许的最小值。</param>
+        /// <param name="max">最大允许值。</param>
+        /// <returns>钳位值。</returns>
         public static real_t Clamp(real_t value, real_t min, real_t max)
         {
             return value < min ? min : value > max ? max : value;
         }
 
         /// <summary>
-        /// Returns the cosine of angle <paramref name="s"/> in radians.
+        /// 以弧度返回角度 <paramref name="s"/> 的余弦值。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The cosine of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>那个角度的余弦值。</returns>
         public static real_t Cos(real_t s)
         {
             return (real_t)Math.Cos(s);
         }
 
         /// <summary>
-        /// Returns the hyperbolic cosine of angle <paramref name="s"/> in radians.
+        /// 以弧度返回角度 <paramref name="s"/> 的双曲余弦值。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The hyperbolic cosine of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>该角度的双曲余弦值。</returns>
         public static real_t Cosh(real_t s)
         {
             return (real_t)Math.Cosh(s);
         }
 
         /// <summary>
-        /// Converts an angle expressed in degrees to radians.
+        /// 将以度数表示的角度转换为弧度。
         /// </summary>
-        /// <param name="deg">An angle expressed in degrees.</param>
-        /// <returns>The same angle expressed in radians.</returns>
+        /// <param name="deg">以度数表示的角度。</param>
+        /// <returns>以弧度表示的相同角度。</returns>
         public static real_t Deg2Rad(real_t deg)
         {
             return deg * _deg2RadConst;
         }
 
         /// <summary>
-        /// Easing function, based on exponent. The <paramref name="curve"/> values are:
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// Negative values are in-out/out-in.
+        /// 缓动函数，基于指数。 <paramref name="curve"/> 值是：
+        /// <c>0</c>是常数，<c>1</c>是线性的，<c>0</c>到<c>1</c>是缓入的，<c> 1</c> 或更多是缓出。
+        /// 负值是 in-out/out-in。
         /// </summary>
-        /// <param name="s">The value to ease.</param>
+        /// <param name="s">缓动的值。</param>
         /// <param name="curve">
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// </param>
-        /// <returns>The eased value.</returns>
+        /// <c>0</c>是常数，<c>1</c>是线性的，<c>0</c>到<c>1</c>是缓入的，<c> 1</c> 或更多是缓出。
+        /// </参数>
+        /// <returns>缓动值。</returns>
         public static real_t Ease(real_t s, real_t curve)
         {
             if (s < 0f)
@@ -247,47 +247,47 @@ namespace Godot
         }
 
         /// <summary>
-        /// The natural exponential function. It raises the mathematical
-        /// constant <c>e</c> to the power of <paramref name="s"/> and returns it.
+        /// 自然指数函数。 它提高了数学
+        /// 常量 <c>e</c> 的 <paramref name="s"/> 次幂并返回它。
         /// </summary>
-        /// <param name="s">The exponent to raise <c>e</c> to.</param>
-        /// <returns><c>e</c> raised to the power of <paramref name="s"/>.</returns>
+        /// <param name="s">将 <c>e</c> 提高到的指数。</param>
+        /// <returns><c>e</c> 提升到 <paramref name="s"/> 的幂。</returns>
         public static real_t Exp(real_t s)
         {
             return (real_t)Math.Exp(s);
         }
 
         /// <summary>
-        /// Rounds <paramref name="s"/> downward (towards negative infinity).
+        /// 向下舍入 <paramref name="s"/>（朝向负无穷大）。
         /// </summary>
-        /// <param name="s">The number to floor.</param>
-        /// <returns>The largest whole number that is not more than <paramref name="s"/>.</returns>
+        /// <param name="s">楼层数。</param>
+        /// <returns>不大于<paramref name="s"/>的最大整数。</returns>
         public static real_t Floor(real_t s)
         {
             return (real_t)Math.Floor(s);
         }
 
         /// <summary>
-        /// Returns a normalized value considering the given range.
-        /// This is the opposite of <see cref="Lerp(real_t, real_t, real_t)"/>.
+        /// 考虑给定范围返回一个标准化值。
+        /// 这与 <see cref="Lerp(real_t, real_t, real_t)"/> 相反。
         /// </summary>
-        /// <param name="from">The interpolated value.</param>
-        /// <param name="to">The destination value for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting value of the inverse interpolation.</returns>
+        /// <param name="from">内插值。</param>
+        /// <param name="to">插值的目标值。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>反插值的结果。</returns>
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
             return (weight - from) / (to - from);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="a"/> and <paramref name="b"/> are approximately equal
-        /// to each other.
-        /// The comparison is done using a tolerance calculation with <see cref="Epsilon"/>.
+        /// 如果 <paramref name="a"/> 和 <paramref name="b"/> 近似相等，则返回 <see langword="true"/>
+        /// 对彼此。
+        /// 比较是通过<see cref="Epsilon"/> 使用容差计算完成的。
         /// </summary>
-        /// <param name="a">One of the values.</param>
-        /// <param name="b">The other value.</param>
-        /// <returns>A <see langword="bool"/> for whether or not the two values are approximately equal.</returns>
+        /// <param name="a">其中一个值。</param>
+        /// <param name="b">另一个值。</param>
+        /// <returns>A <see langword="bool"/> 两个值是否近似相等。</returns>
         public static bool IsEqualApprox(real_t a, real_t b)
         {
             // Check for exact equality first, required to handle "infinity" values.
@@ -305,61 +305,61 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns whether <paramref name="s"/> is an infinity value (either positive infinity or negative infinity).
+        /// 返回 <paramref name="s"/> 是否为无穷大值（正无穷大或负无穷大）。
         /// </summary>
-        /// <param name="s">The value to check.</param>
-        /// <returns>A <see langword="bool"/> for whether or not the value is an infinity value.</returns>
+        /// <param name="s">要检查的值。</param>
+        /// <returns>一个 <see langword="bool"/> 该值是否为无穷大。</returns>
         public static bool IsInf(real_t s)
         {
             return real_t.IsInfinity(s);
         }
 
         /// <summary>
-        /// Returns whether <paramref name="s"/> is a <c>NaN</c> ("Not a Number" or invalid) value.
+        /// 返回 <paramref name="s"/> 是否为 <c>NaN</c>（“不是数字”或无效）值。
         /// </summary>
-        /// <param name="s">The value to check.</param>
-        /// <returns>A <see langword="bool"/> for whether or not the value is a <c>NaN</c> value.</returns>
+        /// <param name="s">要检查的值。</param>
+        /// <returns>一个 <see langword="bool"/> 该值是否为 <c>NaN</c> 值。</returns>
         public static bool IsNaN(real_t s)
         {
             return real_t.IsNaN(s);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="s"/> is approximately zero.
-        /// The comparison is done using a tolerance calculation with <see cref="Epsilon"/>.
+        /// 如果 <paramref name="s"/> 近似为零，则返回 <see langword="true"/>。
+        /// 比较是通过<see cref="Epsilon"/> 使用容差计算完成的。
         ///
-        /// This method is faster than using <see cref="IsEqualApprox(real_t, real_t)"/> with one value as zero.
+        /// 此方法比使用一个值为零的 <see cref="IsEqualApprox(real_t, real_t)"/> 更快。
         /// </summary>
-        /// <param name="s">The value to check.</param>
-        /// <returns>A <see langword="bool"/> for whether or not the value is nearly zero.</returns>
+        /// <param name="s">要检查的值。</param>
+        /// <returns>一个 <see langword="bool"/> 该值是否接近于零。</returns>
         public static bool IsZeroApprox(real_t s)
         {
             return Abs(s) < Epsilon;
         }
 
         /// <summary>
-        /// Linearly interpolates between two values by a normalized value.
-        /// This is the opposite <see cref="InverseLerp(real_t, real_t, real_t)"/>.
+        /// 通过标准化值在两个值之间进行线性插值。
+        /// 这是相反的<see cref="InverseLerp(real_t, real_t, real_t)"/>。
         /// </summary>
-        /// <param name="from">The start value for interpolation.</param>
-        /// <param name="to">The destination value for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting value of the interpolation.</returns>
+        /// <param name="from">插值的起始值。</param>
+        /// <param name="to">插值的目标值。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果。</returns>
         public static real_t Lerp(real_t from, real_t to, real_t weight)
         {
             return from + ((to - from) * weight);
         }
 
         /// <summary>
-        /// Linearly interpolates between two angles (in radians) by a normalized value.
+        /// 通过归一化值在两个角度（以弧度）之间进行线性插值。
         ///
-        /// Similar to <see cref="Lerp(real_t, real_t, real_t)"/>,
-        /// but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// 类似于 <see cref="Lerp(real_t, real_t, real_t)"/>,
+        /// 但当角度环绕 <see cref="Tau"/> 时会正确插值。
         /// </summary>
-        /// <param name="from">The start angle for interpolation.</param>
-        /// <param name="to">The destination angle for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting angle of the interpolation.</returns>
+        /// <param name="from">插值的起始角度。</param>
+        /// <param name="to">插值的目标角度。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果角度。</returns>
         public static real_t LerpAngle(real_t from, real_t to, real_t weight)
         {
             real_t difference = (to - from) % Mathf.Tau;
@@ -368,70 +368,70 @@ namespace Godot
         }
 
         /// <summary>
-        /// Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+        /// 自然对数。 达到一定水平的持续增长所需的时间。
         ///
-        /// Note: This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
+        /// 注意：这与大多数计算器上的“log”函数不同，后者使用以 10 为底的对数。
         /// </summary>
-        /// <param name="s">The input value.</param>
-        /// <returns>The natural log of <paramref name="s"/>.</returns>
+        /// <param name="s">输入值。</param>
+        /// <returns><paramref name="s"/>的自然对数。</returns>
         public static real_t Log(real_t s)
         {
             return (real_t)Math.Log(s);
         }
 
         /// <summary>
-        /// Returns the maximum of two values.
+        /// 返回两个值的最大值。
         /// </summary>
-        /// <param name="a">One of the values.</param>
-        /// <param name="b">The other value.</param>
-        /// <returns>Whichever of the two values is higher.</returns>
+        /// <param name="a">其中一个值。</param>
+        /// <param name="b">另一个值。</param>
+        /// <returns>这两个值哪个更高。</returns>
         public static int Max(int a, int b)
         {
             return a > b ? a : b;
         }
 
         /// <summary>
-        /// Returns the maximum of two values.
+        /// 返回两个值的最大值。
         /// </summary>
-        /// <param name="a">One of the values.</param>
-        /// <param name="b">The other value.</param>
-        /// <returns>Whichever of the two values is higher.</returns>
+        /// <param name="a">其中一个值。</param>
+        /// <param name="b">另一个值。</param>
+        /// <returns>这两个值哪个更高。</returns>
         public static real_t Max(real_t a, real_t b)
         {
             return a > b ? a : b;
         }
 
         /// <summary>
-        /// Returns the minimum of two values.
+        /// 返回两个值中的最小值。
         /// </summary>
-        /// <param name="a">One of the values.</param>
-        /// <param name="b">The other value.</param>
-        /// <returns>Whichever of the two values is lower.</returns>
+        /// <param name="a">其中一个值。</param>
+        /// <param name="b">另一个值。</param>
+        /// <returns>两个值中的哪个值较小。</returns>
         public static int Min(int a, int b)
         {
             return a < b ? a : b;
         }
 
         /// <summary>
-        /// Returns the minimum of two values.
+        /// 返回两个值中的最小值。
         /// </summary>
-        /// <param name="a">One of the values.</param>
-        /// <param name="b">The other value.</param>
-        /// <returns>Whichever of the two values is lower.</returns>
+        /// <param name="a">其中一个值。</param>
+        /// <param name="b">另一个值。</param>
+        /// <returns>两个值中的哪个值较小。</returns>
         public static real_t Min(real_t a, real_t b)
         {
             return a < b ? a : b;
         }
 
         /// <summary>
-        /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> value.
+        /// 将 <paramref name="from"/> 向 <paramref name="to"/> 移动 <paramref name="delta"/> 值。
         ///
-        /// Use a negative <paramref name="delta"/> value to move away.
+        /// 使用负的 <paramref name="delta"/> 值移开。
         /// </summary>
-        /// <param name="from">The start value.</param>
-        /// <param name="to">The value to move towards.</param>
-        /// <param name="delta">The amount to move by.</param>
-        /// <returns>The value after moving.</returns>
+        /// <param name="from">起始值。</param>
+        /// <param name="to">要移动的值。</param>
+        /// <param name="delta">移动量。</param>
+        /// <returns>移动后的值</returns>
         public static real_t MoveToward(real_t from, real_t to, real_t delta)
         {
             if (Abs(to - from) <= delta)
@@ -441,10 +441,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the nearest larger power of 2 for the integer <paramref name="value"/>.
+        /// 返回整数 <paramref name="value"/> 最接近的 2 的较大幂。
         /// </summary>
-        /// <param name="value">The input value.</param>
-        /// <returns>The nearest larger power of 2.</returns>
+        /// <param name="value">输入值。</param>
+        /// <returns>最接近的 2 的较大幂。</returns>
         public static int NearestPo2(int value)
         {
             value--;
@@ -458,25 +458,25 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a 2D point expressed in the polar coordinate
-        /// system (a distance from the origin <paramref name="r"/>
-        /// and an angle <paramref name="th"/>) to the cartesian
-        /// coordinate system (X and Y axis).
+        /// 转换以极坐标表示的二维点
+        /// 系统（与原点的距离 <paramref name="r"/>
+        /// 和一个角度 <paramref name="th"/>) 到笛卡尔
+        /// 坐标系（X 和 Y 轴）。
         /// </summary>
-        /// <param name="r">The distance from the origin.</param>
-        /// <param name="th">The angle of the point.</param>
-        /// <returns>A <see cref="Vector2"/> representing the cartesian coordinate.</returns>
+        /// <param name="r">到原点的距离</param>
+        /// <param name="th">点的角度。</param>
+        /// <returns>代表笛卡尔坐标的<see cref="Vector2"/>。</returns>
         public static Vector2 Polar2Cartesian(real_t r, real_t th)
         {
             return new Vector2(r * Cos(th), r * Sin(th));
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// 执行规范模运算，其中输出在 [0, <paramref name="b"/>) 范围内。
         /// </summary>
-        /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
-        /// <returns>The resulting output.</returns>
+        /// <param name="a">被除数，主要输入。</param>
+        /// <param name="b">除数。 输出在 [0, <paramref name="b"/>) 范围内。</param>
+        /// <returns>结果输出。</returns>
         public static int PosMod(int a, int b)
         {
             int c = a % b;
@@ -488,11 +488,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// 执行规范模运算，其中输出在 [0, <paramref name="b"/>) 范围内。
         /// </summary>
-        /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
-        /// <returns>The resulting output.</returns>
+        /// <param name="a">被除数，主要输入。</param>
+        /// <param name="b">除数。 输出在 [0, <paramref name="b"/>) 范围内。</param>
+        /// <returns>结果输出。</returns>
         public static real_t PosMod(real_t a, real_t b)
         {
             real_t c = a % b;
@@ -504,43 +504,43 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of <paramref name="x"/> raised to the power of <paramref name="y"/>.
+        /// 返回 <paramref name="x"/> 的 <paramref name="y"/> 次方的结果。
         /// </summary>
-        /// <param name="x">The base.</param>
-        /// <param name="y">The exponent.</param>
-        /// <returns><paramref name="x"/> raised to the power of <paramref name="y"/>.</returns>
+        /// <param name="x">基数。</param>
+        /// <param name="y">指数。</param>
+        /// <returns><paramref name="x"/> 提高到 <paramref name="y"/> 的幂。</returns>
         public static real_t Pow(real_t x, real_t y)
         {
             return (real_t)Math.Pow(x, y);
         }
 
         /// <summary>
-        /// Converts an angle expressed in radians to degrees.
+        /// 将以弧度表示的角度转换为度数。
         /// </summary>
-        /// <param name="rad">An angle expressed in radians.</param>
-        /// <returns>The same angle expressed in degrees.</returns>
+        /// <param name="rad">以弧度表示的角度。</param>
+        /// <returns>以度数表示的相同角度。</returns>
         public static real_t Rad2Deg(real_t rad)
         {
             return rad * _rad2DegConst;
         }
 
         /// <summary>
-        /// Rounds <paramref name="s"/> to the nearest whole number,
-        /// with halfway cases rounded towards the nearest multiple of two.
+        /// 将 <paramref name="s"/> 舍入到最接近的整数，
+        /// 中间的情况向最接近的二的倍数舍入。
         /// </summary>
-        /// <param name="s">The number to round.</param>
-        /// <returns>The rounded number.</returns>
+        /// <param name="s">要四舍五入的数字。</param>
+        /// <returns>四舍五入的数字。</returns>
         public static real_t Round(real_t s)
         {
             return (real_t)Math.Round(s);
         }
 
         /// <summary>
-        /// Returns the sign of <paramref name="s"/>: <c>-1</c> or <c>1</c>.
-        /// Returns <c>0</c> if <paramref name="s"/> is <c>0</c>.
+        /// 返回 <paramref name="s"/> 的符号：<c>-1</c> 或 <c>1</c>。
+        /// 如果 <paramref name="s"/> 是 <c>0</c>，则返回 <c>0</c>。
         /// </summary>
-        /// <param name="s">The input number.</param>
-        /// <returns>One of three possible values: <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
+        /// <param name="s">输入的数字。</param>
+        /// <returns>三个可能值之一：<c>1</c>、<c>-1</c> 或 <c>0</c>。</returns>
         public static int Sign(int s)
         {
             if (s == 0)
@@ -549,11 +549,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the sign of <paramref name="s"/>: <c>-1</c> or <c>1</c>.
-        /// Returns <c>0</c> if <paramref name="s"/> is <c>0</c>.
+        /// 返回 <paramref name="s"/> 的符号：<c>-1</c> 或 <c>1</c>。
+        /// 如果 <paramref name="s"/> 是 <c>0</c>，则返回 <c>0</c>。
         /// </summary>
-        /// <param name="s">The input number.</param>
-        /// <returns>One of three possible values: <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
+        /// <param name="s">输入的数字。</param>
+        /// <returns>三个可能值之一：<c>1</c>、<c>-1</c> 或 <c>0</c>。</returns>
         public static int Sign(real_t s)
         {
             if (s == 0)
@@ -562,34 +562,34 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the sine of angle <paramref name="s"/> in radians.
+        /// 以弧度返回角度 <paramref name="s"/> 的正弦值。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The sine of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>那个角度的正弦值。</returns>
         public static real_t Sin(real_t s)
         {
             return (real_t)Math.Sin(s);
         }
 
         /// <summary>
-        /// Returns the hyperbolic sine of angle <paramref name="s"/> in radians.
+        /// 以弧度返回角度 <paramref name="s"/> 的双曲正弦值。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The hyperbolic sine of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>该角度的双曲正弦值。</returns>
         public static real_t Sinh(real_t s)
         {
             return (real_t)Math.Sinh(s);
         }
 
         /// <summary>
-        /// Returns a number smoothly interpolated between <paramref name="from"/> and <paramref name="to"/>,
-        /// based on the <paramref name="weight"/>. Similar to <see cref="Lerp(real_t, real_t, real_t)"/>,
-        /// but interpolates faster at the beginning and slower at the end.
+        /// 返回一个在 <paramref name="from"/> 和 <paramref name="to"/> 之间平滑插值的数字，
+        /// 基于 <paramref name="weight"/>。 类似于 <see cref="Lerp(real_t, real_t, real_t)"/>，
+        /// 但在开始时插值更快，最后插值更慢。
         /// </summary>
-        /// <param name="from">The start value for interpolation.</param>
-        /// <param name="to">The destination value for interpolation.</param>
-        /// <param name="weight">A value representing the amount of interpolation.</param>
-        /// <returns>The resulting value of the interpolation.</returns>
+        /// <param name="from">插值的起始值。</param>
+        /// <param name="to">插值的目标值。</param>
+        /// <param name="weight">一个代表插值量的值。</param>
+        /// <returns>插值的结果。</returns>
         public static real_t SmoothStep(real_t from, real_t to, real_t weight)
         {
             if (IsEqualApprox(from, to))
@@ -601,24 +601,24 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the square root of <paramref name="s"/>, where <paramref name="s"/> is a non-negative number.
+        /// 返回 <paramref name="s"/> 的平方根，其中 <paramref name="s"/> 是一个非负数。
         ///
-        /// If you need negative inputs, use <see cref="System.Numerics.Complex"/>.
+        /// 如果您需要负输入，请使用 <see cref="System.Numerics.Complex"/>。
         /// </summary>
-        /// <param name="s">The input number. Must not be negative.</param>
-        /// <returns>The square root of <paramref name="s"/>.</returns>
+        /// <param name="s">输入数字。 不能为负数。</param>
+        /// <returns><paramref name="s"/>的平方根。</returns>
         public static real_t Sqrt(real_t s)
         {
             return (real_t)Math.Sqrt(s);
         }
 
         /// <summary>
-        /// Returns the position of the first non-zero digit, after the
-        /// decimal point. Note that the maximum return value is 10,
-        /// which is a design decision in the implementation.
+        /// 返回第一个非零数字的位置，在
+        /// 小数点。 注意最大返回值为10，
+        /// 这是实现中的设计决策。
         /// </summary>
-        /// <param name="step">The input value.</param>
-        /// <returns>The position of the first non-zero digit.</returns>
+        /// <param name="step">输入值。</param>
+        /// <returns>第一个非零数字的位置。</returns>
         public static int StepDecimals(real_t step)
         {
             double[] sd = new double[]
@@ -646,12 +646,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Snaps float value <paramref name="s"/> to a given <paramref name="step"/>.
-        /// This can also be used to round a floating point number to an arbitrary number of decimals.
+        /// 将浮点值 <paramref name="s"/> 捕捉到给定的 <paramref name="step"/>。
+        /// 这也可用于将浮点数四舍五入为任意小数位数。
         /// </summary>
-        /// <param name="s">The value to stepify.</param>
-        /// <param name="step">The step size to snap to.</param>
-        /// <returns>The snapped value.</returns>
+        /// <param name="s">要逐步化的值。</param>
+        /// <param name="step">捕捉到的步长。</param>
+        /// <returns></returns>
         public static real_t Stepify(real_t s, real_t step)
         {
             if (step != 0f)
@@ -663,35 +663,35 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the tangent of angle <paramref name="s"/> in radians.
+        /// 以弧度返回角度 <paramref name="s"/> 的正切。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The tangent of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>那个角度的正切。</returns>
         public static real_t Tan(real_t s)
         {
             return (real_t)Math.Tan(s);
         }
 
         /// <summary>
-        /// Returns the hyperbolic tangent of angle <paramref name="s"/> in radians.
+        /// 返回角度 <paramref name="s"/> 的双曲正切，单位为弧度。
         /// </summary>
-        /// <param name="s">The angle in radians.</param>
-        /// <returns>The hyperbolic tangent of that angle.</returns>
+        /// <param name="s">以弧度为单位的角度。</param>
+        /// <returns>该角度的双曲正切。</returns>
         public static real_t Tanh(real_t s)
         {
             return (real_t)Math.Tanh(s);
         }
 
         /// <summary>
-        /// Wraps <paramref name="value"/> between <paramref name="min"/> and <paramref name="max"/>.
-        /// Usable for creating loop-alike behavior or infinite surfaces.
-        /// If <paramref name="min"/> is <c>0</c>, this is equivalent
-        /// to <see cref="PosMod(int, int)"/>, so prefer using that instead.
+        /// 在 <paramref name="min"/> 和 <paramref name="max"/> 之间包裹 <paramref name="value"/>。
+        /// 可用于创建类似循环的行为或无限曲面。
+        /// 如果 <paramref name="min"/> 是 <c>0</c>，这是等价的
+        /// 到 <see cref="PosMod(int, int)"/>，所以更喜欢使用它。
         /// </summary>
-        /// <param name="value">The value to wrap.</param>
-        /// <param name="min">The minimum allowed value and lower bound of the range.</param>
-        /// <param name="max">The maximum allowed value and upper bound of the range.</param>
-        /// <returns>The wrapped value.</returns>
+        /// <param name="value">要包装的值。</param>
+        /// <param name="min">范围的最小值和下限。</param>
+        /// <param name="max">范围的最大允许值和上限。</param>
+        /// <returns>包装后的值。</returns>
         public static int Wrap(int value, int min, int max)
         {
             int range = max - min;
@@ -702,15 +702,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Wraps <paramref name="value"/> between <paramref name="min"/> and <paramref name="max"/>.
-        /// Usable for creating loop-alike behavior or infinite surfaces.
-        /// If <paramref name="min"/> is <c>0</c>, this is equivalent
-        /// to <see cref="PosMod(real_t, real_t)"/>, so prefer using that instead.
+        /// 在 <paramref name="min"/> 和 <paramref name="max"/> 之间包裹 <paramref name="value"/>。
+        /// 可用于创建类似循环的行为或无限曲面。
+        /// 如果 <paramref name="min"/> 是 <c>0</c>，这是等价的
+        /// 到 <see cref="PosMod(real_t, real_t)"/>，所以更喜欢使用它。
         /// </summary>
-        /// <param name="value">The value to wrap.</param>
-        /// <param name="min">The minimum allowed value and lower bound of the range.</param>
-        /// <param name="max">The maximum allowed value and upper bound of the range.</param>
-        /// <returns>The wrapped value.</returns>
+        /// <param name="value">要包装的值。</param>
+        /// <param name="min">范围的最小值和下限。</param>
+        /// <param name="max">范围的最大允许值和上限。</param>
+        /// <returns>包装后的值。</returns>
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t range = max - min;

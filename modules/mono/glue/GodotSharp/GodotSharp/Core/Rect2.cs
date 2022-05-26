@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// 2D axis-aligned bounding box. Rect2 consists of a position, a size, and
-    /// several utility functions. It is typically used for fast overlap tests.
+    /// 2D 轴对齐边界框。 Rect2 由位置、大小和
+    /// 几个实用函数。 它通常用于快速重叠测试。
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -20,9 +20,9 @@ namespace Godot
         private Vector2 _size;
 
         /// <summary>
-        /// Beginning corner. Typically has values lower than <see cref="End"/>.
+        /// 起点角。 通常具有低于 <see cref="End"/> 的值。
         /// </summary>
-        /// <value>Directly uses a private field.</value>
+        /// <value>直接使用私有字段。</value>
         public Vector2 Position
         {
             get { return _position; }
@@ -30,10 +30,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Size from <see cref="Position"/> to <see cref="End"/>. Typically all components are positive.
-        /// If the size is negative, you can use <see cref="Abs"/> to fix it.
+        /// 从 <see cref="Position"/> 到 <see cref="End"/> 的大小。 通常所有成分都是阳性的。
+        /// 如果size是负数，可以使用<see cref="Abs"/>来修复。
         /// </summary>
-        /// <value>Directly uses a private field.</value>
+        /// <value>直接使用私有字段。</value>
         public Vector2 Size
         {
             get { return _size; }
@@ -41,12 +41,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Ending corner. This is calculated as <see cref="Position"/> plus <see cref="Size"/>.
-        /// Setting this value will change the size.
+        /// 结束角。 这计算为 <see cref="Position"/> 加上 <see cref="Size"/>。
+        /// 设置这个值会改变大小。
         /// </summary>
         /// <value>
-        /// Getting is equivalent to <paramref name="value"/> = <see cref="Position"/> + <see cref="Size"/>,
-        /// setting is equivalent to <see cref="Size"/> = <paramref name="value"/> - <see cref="Position"/>
+        /// 获取等价于 <paramref name="value"/> = <see cref="Position"/> + <see cref="Size"/>,
+        /// 设置等价于 <see cref="Size"/> = <paramref name="value"/> - <see cref="Position"/>
         /// </value>
         public Vector2 End
         {
@@ -55,19 +55,19 @@ namespace Godot
         }
 
         /// <summary>
-        /// The area of this <see cref="Rect2"/>.
+        /// 这个 <see cref="Rect2"/> 的区域。
         /// </summary>
-        /// <value>Equivalent to <see cref="GetArea()"/>.</value>
+        /// <value>等价于<see cref="GetArea()"/>。</value>
         public real_t Area
         {
             get { return GetArea(); }
         }
 
         /// <summary>
-        /// Returns a <see cref="Rect2"/> with equivalent position and size, modified so that
-        /// the top-left corner is the origin and width and height are positive.
+        /// 返回一个 <see cref="Rect2"/> 具有相同的位置和大小，修改后
+        /// 左上角为原点，宽高为正。
         /// </summary>
-        /// <returns>The modified <see cref="Rect2"/>.</returns>
+        /// <returns>修改后的<see cref="Rect2"/>.</returns>
         public Rect2 Abs()
         {
             Vector2 end = End;
@@ -76,11 +76,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the intersection of this <see cref="Rect2"/> and <paramref name="b"/>.
-        /// If the rectangles do not intersect, an empty <see cref="Rect2"/> is returned.
+        /// 返回此 <see cref="Rect2"/> 和 <paramref name="b"/> 的交集。
+        /// 如果矩形不相交，则返回一个空的 <see cref="Rect2"/>。
         /// </summary>
-        /// <param name="b">The other <see cref="Rect2"/>.</param>
-        /// <returns>The clipped <see cref="Rect2"/>.</returns>
+        /// <param name="b">另一个<see cref="Rect2"/>.</param>
+        /// <returns>被剪裁的<see cref="Rect2"/>.</returns>
         public Rect2 Clip(Rect2 b)
         {
             Rect2 newRect = b;
@@ -103,11 +103,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this <see cref="Rect2"/> completely encloses another one.
+        /// 如果此 <see cref="Rect2"/> 完全包含另一个，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="b">The other <see cref="Rect2"/> that may be enclosed.</param>
+        /// <param name="b">另一个可能包含的<see cref="Rect2"/>。</param>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not this <see cref="Rect2"/> encloses <paramref name="b"/>.
+        /// 一个 <see langword="bool"/> 判断这个 <see cref="Rect2"/> 是否包含 <paramref name="b"/>。
         /// </returns>
         public bool Encloses(Rect2 b)
         {
@@ -117,10 +117,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this <see cref="Rect2"/> expanded to include a given point.
+        /// 返回此 <see cref="Rect2"/> 扩展为包含给定点。
         /// </summary>
-        /// <param name="to">The point to include.</param>
-        /// <returns>The expanded <see cref="Rect2"/>.</returns>
+        /// <param name="to">要包含的点。</param>
+        /// <returns>扩展的<see cref="Rect2"/>.</returns>
         public Rect2 Expand(Vector2 to)
         {
             Rect2 expanded = this;
@@ -153,9 +153,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the area of the <see cref="Rect2"/>.
+        /// 返回 <see cref="Rect2"/> 的面积。
         /// </summary>
-        /// <returns>The area.</returns>
+        /// <returns>区域。</returns>
         public real_t GetArea()
         {
             return _size.x * _size.y;
@@ -172,13 +172,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the <see cref="Rect2"/> grown a given amount of units towards
-        /// all the sides.
+        /// 返回一个 <see cref="Rect2"/> 的副本，其增长了给定数量的单位
+        ///所有方面。
         /// </summary>
         /// <seealso cref="GrowIndividual(real_t, real_t, real_t, real_t)"/>
         /// <seealso cref="GrowMargin(Margin, real_t)"/>
-        /// <param name="by">The amount to grow by.</param>
-        /// <returns>The grown <see cref="Rect2"/>.</returns>
+        /// <param name="by">增长的数量。</param>
+        /// <returns>长大的<see cref="Rect2"/>.</returns>
         public Rect2 Grow(real_t by)
         {
             Rect2 g = this;
@@ -192,16 +192,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the <see cref="Rect2"/> grown a given amount of units towards
-        /// each direction individually.
+        /// 返回一个 <see cref="Rect2"/> 的副本，其增长了给定数量的单位
+        /// 每个方向单独。
         /// </summary>
         /// <seealso cref="Grow(real_t)"/>
         /// <seealso cref="GrowMargin(Margin, real_t)"/>
-        /// <param name="left">The amount to grow by on the left.</param>
-        /// <param name="top">The amount to grow by on the top.</param>
-        /// <param name="right">The amount to grow by on the right.</param>
-        /// <param name="bottom">The amount to grow by on the bottom.</param>
-        /// <returns>The grown <see cref="Rect2"/>.</returns>
+        /// <param name="left">左边增长的数量。</param>
+        /// <param name="top">顶部增长的数量。</param>
+        /// <param name="right">右边增长的数量。</param>
+        /// <param name="bottom">底部增长的数量。</param>
+        /// <returns>长大的<see cref="Rect2"/>.</returns>
         public Rect2 GrowIndividual(real_t left, real_t top, real_t right, real_t bottom)
         {
             Rect2 g = this;
@@ -215,14 +215,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the <see cref="Rect2"/> grown a given amount of units towards
-        /// the <see cref="Margin"/> direction.
+        /// 返回一个 <see cref="Rect2"/> 的副本，其增长了给定数量的单位
+        /// <see cref="Margin"/> 方向。
         /// </summary>
         /// <seealso cref="Grow(real_t)"/>
         /// <seealso cref="GrowIndividual(real_t, real_t, real_t, real_t)"/>
-        /// <param name="margin">The direction to grow in.</param>
-        /// <param name="by">The amount to grow by.</param>
-        /// <returns>The grown <see cref="Rect2"/>.</returns>
+        /// <param name="margin">增长方向</param>
+        /// <param name="by">增长的数量。</param>
+        /// <returns>长大的<see cref="Rect2"/>.</returns>
         public Rect2 GrowMargin(Margin margin, real_t by)
         {
             Rect2 g = this;
@@ -236,11 +236,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="Rect2"/> is flat or empty,
-        /// or <see langword="false"/> otherwise.
+        /// 如果 <see cref="Rect2"/> 是平的或空的，则返回 <see langword="true"/>，
+        /// 或 <see langword="false"/> 否则。
         /// </summary>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="Rect2"/> has area.
+        /// <see langword="bool"/> 判断 <see cref="Rect2"/> 是否有面积。
         /// </returns>
         public bool HasNoArea()
         {
@@ -248,12 +248,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="Rect2"/> contains a point,
-        /// or <see langword="false"/> otherwise.
+        /// 如果 <see cref="Rect2"/> 包含一个点，则返回 <see langword="true"/>，
+        /// 或 <see langword="false"/> 否则。
         /// </summary>
-        /// <param name="point">The point to check.</param>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="Rect2"/> contains <paramref name="point"/>.
+        /// <param name="point">要检查的点。</param>
+        /// <返回>
+        /// <see langword="bool"/> 判断 <see cref="Rect2"/> 是否包含 <paramref name="point"/>。
         /// </returns>
         public bool HasPoint(Vector2 point)
         {
@@ -271,16 +271,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="Rect2"/> overlaps with <paramref name="b"/>
-        /// (i.e. they have at least one point in common).
+        /// 如果 <see cref="Rect2"/> 与 <paramref name="b"/> 重叠，则返回 <see langword="true"/>
+        ///（即它们至少有一个共同点）。
         ///
-        /// If <paramref name="includeBorders"/> is <see langword="true"/>,
-        /// they will also be considered overlapping if their borders touch,
-        /// even without intersection.
+        /// 如果 <paramref name="includeBorders"/> 是 <see langword="true"/>,
+        /// 如果它们的边框接触，它们也将被认为是重叠的，
+        /// 即使没有交集。
         /// </summary>
-        /// <param name="b">The other <see cref="Rect2"/> to check for intersections with.</param>
-        /// <param name="includeBorders">Whether or not to consider borders.</param>
-        /// <returns>A <see langword="bool"/> for whether or not they are intersecting.</returns>
+        /// <param name="b">另一个 <see cref="Rect2"/> 来检查交叉点。</param>
+        /// <param name="includeBorders">是否考虑边框</param>
+        /// <returns>一个 <see langword="bool"/> 它们是否相交。</returns>
         public bool Intersects(Rect2 b, bool includeBorders = false)
         {
             if (includeBorders)
@@ -326,10 +326,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a larger <see cref="Rect2"/> that contains this <see cref="Rect2"/> and <paramref name="b"/>.
+        /// 返回一个更大的 <see cref="Rect2"/> 包含这个 <see cref="Rect2"/> 和 <paramref name="b"/>。
         /// </summary>
-        /// <param name="b">The other <see cref="Rect2"/>.</param>
-        /// <returns>The merged <see cref="Rect2"/>.</returns>
+        /// <param name="b">另一个<see cref="Rect2"/>.</param>
+        /// <returns>合并后的<see cref="Rect2"/>.</returns>
         public Rect2 Merge(Rect2 b)
         {
             Rect2 newRect;
@@ -346,10 +346,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Rect2"/> from a position and size.
+        /// 根据位置和大小构造一个 <see cref="Rect2"/>。
         /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="size">The size.</param>
+        /// <param name="position">位置。</param>
+        /// <param name="size">大小。</param>
         public Rect2(Vector2 position, Vector2 size)
         {
             _position = position;
@@ -357,11 +357,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Rect2"/> from a position, width, and height.
+        /// 根据位置、宽度和高度构造一个 <see cref="Rect2"/>。
         /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
+        /// <param name="position">位置。</param>
+        /// <param name="width">宽度。</param>
+        /// <param name="height">高度。</param>
         public Rect2(Vector2 position, real_t width, real_t height)
         {
             _position = position;
@@ -369,11 +369,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Rect2"/> from x, y, and size.
+        /// 从 x、y 和大小构造一个 <see cref="Rect2"/>。
         /// </summary>
-        /// <param name="x">The position's X coordinate.</param>
-        /// <param name="y">The position's Y coordinate.</param>
-        /// <param name="size">The size.</param>
+        /// <param name="x">位置的X坐标</param>
+        /// <param name="y">位置的Y坐标</param>
+        /// <param name="size">大小。</param>
         public Rect2(real_t x, real_t y, Vector2 size)
         {
             _position = new Vector2(x, y);
@@ -381,12 +381,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Rect2"/> from x, y, width, and height.
+        /// 从 x、y、宽度和高度构造一个 <see cref="Rect2"/>。
         /// </summary>
-        /// <param name="x">The position's X coordinate.</param>
-        /// <param name="y">The position's Y coordinate.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
+        /// <param name="x">位置的X坐标</param>
+        /// <param name="y">位置的Y坐标</param>
+        /// <param name="width">宽度。</param>
+        /// <param name="height">高度。</param>
         public Rect2(real_t x, real_t y, real_t width, real_t height)
         {
             _position = new Vector2(x, y);
@@ -422,10 +422,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this rect and <paramref name="obj"/> are equal.
+        /// 如果此 rect 和 <paramref name="obj"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the rect and the other object are exactly equal.</returns>
+        /// <param name="obj">要比较的另一个对象。</param>
+        /// <returns>rect和其他对象是否相等。</returns>
         public override bool Equals(object obj)
         {
             if (obj is Rect2)
@@ -437,39 +437,39 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this rect and <paramref name="other"/> are equal.
+        /// 如果此 rect 和 <paramref name="other"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="other">The other rect to compare.</param>
-        /// <returns>Whether or not the rects are exactly equal.</returns>
+        /// <param name="other">要比较的另一个矩形。</param>
+        /// <returns>矩形是否相等。</returns>
         public bool Equals(Rect2 other)
         {
             return _position.Equals(other._position) && _size.Equals(other._size);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this rect and <paramref name="other"/> are approximately equal,
-        /// by running <see cref="Vector2.IsEqualApprox(Vector2)"/> on each component.
+        /// 如果这个 rect 和 <paramref name="other"/> 近似相等，则返回 <see langword="true"/>，
+        /// 通过在每个组件上运行 <see cref="Vector2.IsEqualApprox(Vector2)"/>。
         /// </summary>
-        /// <param name="other">The other rect to compare.</param>
-        /// <returns>Whether or not the rects are approximately equal.</returns>
+        /// <param name="other">要比较的另一个矩形。</param>
+        /// <returns>矩形是否近似相等。</returns>
         public bool IsEqualApprox(Rect2 other)
         {
             return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other.Size);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="Rect2"/>.
+        /// 用作 <see cref="Rect2"/> 的哈希函数。
         /// </summary>
-        /// <returns>A hash code for this rect.</returns>
+        /// <returns>这个矩形的哈希码。</returns>
         public override int GetHashCode()
         {
             return _position.GetHashCode() ^ _size.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="Rect2"/> to a string.
+        /// 将此 <see cref="Rect2"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this rect.</returns>
+        /// <returns>此矩形的字符串表示形式。</returns>
         public override string ToString()
         {
             return String.Format("({0}, {1})", new object[]
@@ -480,9 +480,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts this <see cref="Rect2"/> to a string with the given <paramref name="format"/>.
+        /// 将此 <see cref="Rect2"/> 转换为具有给定 <paramref name="format"/> 的字符串。
         /// </summary>
-        /// <returns>A string representation of this rect.</returns>
+        /// <returns>此矩形的字符串表示形式。</returns>
         public string ToString(string format)
         {
             return String.Format("({0}, {1})", new object[]

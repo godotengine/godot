@@ -4,43 +4,43 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// A color represented by red, green, blue, and alpha (RGBA) components.
-    /// The alpha component is often used for transparency.
-    /// Values are in floating-point and usually range from 0 to 1.
-    /// Some properties (such as <see cref="CanvasItem.Modulate"/>) may accept values
-    /// greater than 1 (overbright or HDR colors).
+    /// 由红色、绿色、蓝色和 alpha (RGBA) 分量表示的颜色。
+    /// alpha分量常用于透明度。
+    /// 值是浮点数，通常在 0 到 1 之间。
+    /// 一些属性（例如<see cref="CanvasItem.Modulate"/>）可以接受值
+    /// 大于 1（过亮或 HDR 颜色）。
     ///
-    /// If you want to supply values in a range of 0 to 255, you should use
-    /// <see cref="Color8"/> and the <c>r8</c>/<c>g8</c>/<c>b8</c>/<c>a8</c> properties.
+    /// 如果你想提供 0 到 255 范围内的值，你应该使用
+    /// <see cref="Color8"/> 和 <c>r8</c>/<c>g8</c>/<c>b8</c>/<c>a8</c> 属性 .
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Color : IEquatable<Color>
     {
         /// <summary>
-        /// The color's red component, typically on the range of 0 to 1.
+        /// 颜色的红色分量，通常在 0 到 1 的范围内。
         /// </summary>
         public float r;
 
         /// <summary>
-        /// The color's green component, typically on the range of 0 to 1.
+        /// 颜色的绿色分量，通常在 0 到 1 的范围内。
         /// </summary>
         public float g;
 
         /// <summary>
-        /// The color's blue component, typically on the range of 0 to 1.
+        /// 颜色的蓝色分量，通常在 0 到 1 的范围内。
         /// </summary>
         public float b;
 
         /// <summary>
-        /// The color's alpha (transparency) component, typically on the range of 0 to 1.
+        /// 颜色的 alpha（透明度）分量，通常在 0 到 1 的范围内。
         /// </summary>
         public float a;
 
         /// <summary>
-        /// Wrapper for <see cref="r"/> that uses the range 0 to 255 instead of 0 to 1.
+        /// <see cref="r"/> 的包装器，它使用范围 0 到 255 而不是 0 到 1。
         /// </summary>
-        /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        /// <value>获取相当于乘以 255 并四舍五入。 设置相当于除以255.</value>
         public int r8
         {
             get
@@ -54,9 +54,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Wrapper for <see cref="g"/> that uses the range 0 to 255 instead of 0 to 1.
+        /// <see cref="g"/> 的包装器，它使用范围 0 到 255 而不是 0 到 1。
         /// </summary>
-        /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        /// <value>获取相当于乘以 255 并四舍五入。 设置相当于除以255.</value>
         public int g8
         {
             get
@@ -70,9 +70,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Wrapper for <see cref="b"/> that uses the range 0 to 255 instead of 0 to 1.
+        /// <see cref="b"/> 的包装器，它使用范围 0 到 255 而不是 0 到 1。
         /// </summary>
-        /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        /// <value>获取相当于乘以 255 并四舍五入。 设置相当于除以255.</value>
         public int b8
         {
             get
@@ -86,9 +86,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Wrapper for <see cref="a"/> that uses the range 0 to 255 instead of 0 to 1.
+        /// <see cref="a"/> 的包装器，它使用范围 0 到 255 而不是 0 到 1。
         /// </summary>
-        /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        /// <value>获取相当于乘以 255 并四舍五入。 设置相当于除以255.</value>
         public int a8
         {
             get
@@ -102,9 +102,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// The HSV hue of this color, on the range 0 to 1.
+        /// 此颜色的 HSV 色调，范围为 0 到 1。
         /// </summary>
-        /// <value>Getting is a long process, refer to the source code for details. Setting uses <see cref="FromHsv"/>.</value>
+        /// <value>获取是一个漫长的过程，详情请参考源码。 设置使用 <see cref="FromHsv"/>.</value>
         public float h
         {
             get
@@ -150,9 +150,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// The HSV saturation of this color, on the range 0 to 1.
+        /// 此颜色的 HSV 饱和度，范围为 0 到 1.
         /// </summary>
-        /// <value>Getting is equivalent to the ratio between the min and max RGB value. Setting uses <see cref="FromHsv"/>.</value>
+        /// <value>获取相当于最小和最大 RGB 值之间的比率。 设置使用 <see cref="FromHsv"/>.</value>
         public float s
         {
             get
@@ -171,9 +171,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// The HSV value (brightness) of this color, on the range 0 to 1.
+        /// 此颜色的 HSV 值（亮度），范围为 0 到 1.
         /// </summary>
-        /// <value>Getting is equivalent to using <see cref="Math.Max(float, float)"/> on the RGB components. Setting uses <see cref="FromHsv"/>.</value>
+        /// <value>获取等效于在 RGB 组件上使用 <see cref="Math.Max(float, float)"/>。 设置使用 <see cref="FromHsv"/>.</value>
         public float v
         {
             get
@@ -187,13 +187,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a color according to the standardized name, with the
-        /// specified alpha value. Supported color names are the same as
-        /// the constants defined in <see cref="Colors"/>.
+        /// 根据标准化名称返回颜色，带有
+        /// 指定的alpha值。 支持的颜色名称与
+        /// <see cref="Colors"/> 中定义的常量。
         /// </summary>
-        /// <param name="name">The name of the color.</param>
-        /// <param name="alpha">The alpha (transparency) component represented on the range of 0 to 1. Default: 1.</param>
-        /// <returns>The constructed color.</returns>
+        /// <param name="name">颜色的名称.</param>
+        /// <param name="alpha">在 0 到 1 的范围内表示的 alpha（透明度）分量。默认值：1.</param>
+        /// <returns>构造的颜色.</returns>
         public static Color ColorN(string name, float alpha = 1f)
         {
             name = name.Replace(" ", String.Empty);
@@ -214,13 +214,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Access color components using their index.
+        /// 使用它们的索引访问颜色组件。
         /// </summary>
         /// <value>
-        /// <c>[0]</c> is equivalent to <see cref="r"/>,
-        /// <c>[1]</c> is equivalent to <see cref="g"/>,
-        /// <c>[2]</c> is equivalent to <see cref="b"/>,
-        /// <c>[3]</c> is equivalent to <see cref="a"/>.
+        /// <c>[0]</c> 相当于 <see cref="r"/>,
+        /// <c>[1]</c> 相当于 <see cref="g"/>,
+        /// <c>[2]</c> 相当于 <see cref="b"/>,
+        /// <c>[3]</c> 相当于 <see cref="a"/>.
         /// </value>
         public float this[int index]
         {
@@ -263,12 +263,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a color to HSV values. This is equivalent to using each of
-        /// the <c>h</c>/<c>s</c>/<c>v</c> properties, but much more efficient.
+        /// 将颜色转换为 HSV 值。 这相当于使用每个
+        /// <c>h</c>/<c>s</c>/<c>v</c> 属性，但效率更高。
         /// </summary>
-        /// <param name="hue">Output parameter for the HSV hue.</param>
-        /// <param name="saturation">Output parameter for the HSV saturation.</param>
-        /// <param name="value">Output parameter for the HSV value.</param>
+        /// <param name="hue">HSV 色调的输出参数.</param>
+        /// <param name="saturation">HSV 饱和的输出参数.</param>
+        /// <param name="value">HSV 值的输出参数.</param>
         public void ToHsv(out float hue, out float saturation, out float value)
         {
             float max = (float)Mathf.Max(r, Mathf.Max(g, b));
@@ -300,15 +300,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from an HSV profile, with values on the
-        /// range of 0 to 1. This is equivalent to using each of
-        /// the <c>h</c>/<c>s</c>/<c>v</c> properties, but much more efficient.
+        /// 从 HSV 配置文件构造颜色，其值位于
+        /// 0到1的范围。这相当于使用每个
+        /// <c>h</c>/<c>s</c>/<c>v</c> 属性，但效率更高。
         /// </summary>
-        /// <param name="hue">The HSV hue, typically on the range of 0 to 1.</param>
-        /// <param name="saturation">The HSV saturation, typically on the range of 0 to 1.</param>
-        /// <param name="value">The HSV value (brightness), typically on the range of 0 to 1.</param>
-        /// <param name="alpha">The alpha (transparency) value, typically on the range of 0 to 1.</param>
-        /// <returns>The constructed color.</returns>
+        /// <param name="hue">HSV 色调，通常在 0 到 1 的范围内.</param>
+        /// <param name="saturation">HSV 饱和度，通常在 0 到 1 的范围内.</param>
+        /// <param name="value">HSV 值（亮度），通常在 0 到 1 的范围内.</param>
+        /// <param name="alpha">alpha（透明度）值，通常在 0 到 1 的范围内.</param>
+        /// <returns>构造的颜色.</returns>
         public static Color FromHsv(float hue, float saturation, float value, float alpha = 1.0f)
         {
             if (saturation == 0)
@@ -347,12 +347,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new color resulting from blending this color over another.
-        /// If the color is opaque, the result is also opaque.
-        /// The second color may have a range of alpha values.
+        /// 返回一种新颜色，这种颜色是由这种颜色与另一种颜色混合而成的。
+        /// 如果颜色是不透明的，结果也是不透明的。
+        /// 第二种颜色可能有一个 alpha 值范围。
         /// </summary>
-        /// <param name="over">The color to blend over.</param>
-        /// <returns>This color blended over <paramref name="over"/>.</returns>
+        /// <param name="over">要混合的颜色.</param>
+        /// <returns>这种颜色混合了<paramref name="over"/>.</returns>
         public Color Blend(Color over)
         {
             Color res;
@@ -373,9 +373,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the most contrasting color.
+        /// 返回最具对比的颜色。
         /// </summary>
-        /// <returns>The most contrasting color</returns>
+        /// <returns>最反差的颜色</returns>
         public Color Contrasted()
         {
             return new Color(
@@ -387,11 +387,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new color resulting from making this color darker
-        /// by the specified ratio (on the range of 0 to 1).
+        /// 返回由于使该颜色变暗而产生的新颜色
+        /// 按指定的比率（在 0 到 1 的范围内）。
         /// </summary>
-        /// <param name="amount">The ratio to darken by.</param>
-        /// <returns>The darkened color.</returns>
+        /// <param name="amount">变暗的比例.</param>
+        /// <returns>变暗的颜色.</returns>
         public Color Darkened(float amount)
         {
             Color res = this;
@@ -402,9 +402,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the inverted color: <c>(1 - r, 1 - g, 1 - b, a)</c>.
+        /// 返回反转颜色：<c>(1 - r, 1 - g, 1 - b, a)</c>。
         /// </summary>
-        /// <returns>The inverted color.</returns>
+        /// <returns>反转的颜色.</returns>
         public Color Inverted()
         {
             return new Color(
@@ -416,11 +416,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new color resulting from making this color lighter
-        /// by the specified ratio (on the range of 0 to 1).
+        /// 返回由于使该颜色变亮而产生的新颜色
+        /// 按指定的比率（在 0 到 1 的范围内）。
         /// </summary>
-        /// <param name="amount">The ratio to lighten by.</param>
-        /// <returns>The darkened color.</returns>
+        /// <param name="amount">减仓比例.</param>
+        /// <returns>变暗的颜色.</returns>
         public Color Lightened(float amount)
         {
             Color res = this;
@@ -431,12 +431,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this color and <paramref name="to"/> by amount <paramref name="weight"/>.
+        /// 返回之间的线性插值结果
+        /// 这个颜色和 <paramref name="to"/> 的数量 <paramref name="weight"/>.
         /// </summary>
-        /// <param name="to">The destination color for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting color of the interpolation.</returns>
+        /// <param name="to">插值的目标颜色.</param>
+        /// <param name="weight">0.0 到 1.0 范围内的一个值，表示插值量.</param>
+        /// <returns>插值的结果颜色.</returns>
         public Color LinearInterpolate(Color to, float weight)
         {
             return new Color
@@ -449,12 +449,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this color and <paramref name="to"/> by color amount <paramref name="weight"/>.
+        /// 返回之间的线性插值结果
+        /// 这个颜色和 <paramref name="to"/> 按颜色量 <paramref name="weight"/>.
         /// </summary>
-        /// <param name="to">The destination color for interpolation.</param>
-        /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting color of the interpolation.</returns>
+        /// <param name="to">插值的目标颜色.</param>
+        /// <param name="weight">分量在 0.0 到 1.0 范围内的颜色，表示插值量.</param>
+        /// <returns>插值的结果颜色.</returns>
         public Color LinearInterpolate(Color to, Color weight)
         {
             return new Color
@@ -467,11 +467,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 32-bit integer in ABGR
-        /// format (each byte represents a color channel).
-        /// ABGR is the reversed version of the default format.
+        /// 返回在 ABGR 中转换为 32 位整数的颜色
+        /// 格式（每个字节代表一个颜色通道）。
+        /// ABGR 是默认格式的反转版本。
         /// </summary>
-        /// <returns>A <see langword="int"/> representing this color in ABGR32 format.</returns>
+        /// <returns>A <see langword="int"/>以 ABGR32 格式表示此颜色.</returns>
         public int ToAbgr32()
         {
             int c = (byte)Math.Round(a * 255);
@@ -486,11 +486,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 64-bit integer in ABGR
-        /// format (each word represents a color channel).
-        /// ABGR is the reversed version of the default format.
+        /// 返回在 ABGR 中转换为 64 位整数的颜色
+        /// 格式（每个单词代表一个颜色通道）。
+        /// ABGR 是默认格式的反转版本。
         /// </summary>
-        /// <returns>A <see langword="long"/> representing this color in ABGR64 format.</returns>
+        /// <returns>A <see langword="long"/> 以 ABGR64 格式表示此颜色.</returns>
         public long ToAbgr64()
         {
             long c = (ushort)Math.Round(a * 65535);
@@ -505,11 +505,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 32-bit integer in ARGB
-        /// format (each byte represents a color channel).
-        /// ARGB is more compatible with DirectX, but not used much in Godot.
+        /// 返回转换为 ARGB 中 32 位整数的颜色
+        /// 格式（每个字节代表一个颜色通道）。
+        /// ARGB 与 DirectX 更兼容，但在 Godot 中用得不多。
         /// </summary>
-        /// <returns>A <see langword="int"/> representing this color in ARGB32 format.</returns>
+        /// <returns>A <see langword="int"/> 以 ARGB32 格式表示此颜色.</returns>
         public int ToArgb32()
         {
             int c = (byte)Math.Round(a * 255);
@@ -524,11 +524,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 64-bit integer in ARGB
-        /// format (each word represents a color channel).
-        /// ARGB is more compatible with DirectX, but not used much in Godot.
+        /// 返回转换为 ARGB 中 64 位整数的颜色
+        /// 格式（每个单词代表一个颜色通道）。
+        /// ARGB 与 DirectX 更兼容，但在 Godot 中用得不多。
         /// </summary>
-        /// <returns>A <see langword="long"/> representing this color in ARGB64 format.</returns>
+        /// <returns>A <see langword="long"/> 以 ARGB64 格式表示此颜色.</returns>
         public long ToArgb64()
         {
             long c = (ushort)Math.Round(a * 65535);
@@ -543,11 +543,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 32-bit integer in RGBA
-        /// format (each byte represents a color channel).
-        /// RGBA is Godot's default and recommended format.
+        /// 返回转换为 RGBA 中的 32 位整数的颜色
+        /// 格式（每个字节代表一个颜色通道）。
+        /// RGBA 是 Godot 的默认和推荐格式。
         /// </summary>
-        /// <returns>A <see langword="int"/> representing this color in RGBA32 format.</returns>
+        /// <returns>A <see langword="int"/> 以 RGBA32 格式表示此颜色.</returns>
         public int ToRgba32()
         {
             int c = (byte)Math.Round(r * 255);
@@ -562,11 +562,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color converted to a 64-bit integer in RGBA
-        /// format (each word represents a color channel).
-        /// RGBA is Godot's default and recommended format.
+        /// 返回转换为 RGBA 中 64 位整数的颜色
+        /// 格式（每个单词代表一个颜色通道）。
+        /// RGBA 是 Godot 的默认和推荐格式。
         /// </summary>
-        /// <returns>A <see langword="long"/> representing this color in RGBA64 format.</returns>
+        /// <returns>A <see langword="long"/> 以 RGBA64 格式表示此颜色.</returns>
         public long ToRgba64()
         {
             long c = (ushort)Math.Round(r * 65535);
@@ -581,12 +581,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's HTML hexadecimal color string in RGBA format.
+        /// 以 RGBA 格式返回颜色的 HTML 十六进制颜色字符串。
         /// </summary>
         /// <param name="includeAlpha">
-        /// Whether or not to include alpha. If <see langword="false"/>, the color is RGB instead of RGBA.
+        /// 是否包含 alpha。 如果 <see langword="false"/>，颜色是 RGB 而不是 RGBA。
         /// </param>
-        /// <returns>A string for the HTML hexadecimal representation of this color.</returns>
+        /// <returns>此颜色的 HTML 十六进制表示的字符串.</returns>
         public string ToHtml(bool includeAlpha = true)
         {
             var txt = string.Empty;
@@ -602,12 +602,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Color"/> from RGBA values, typically on the range of 0 to 1.
+        /// 从 RGBA 值构造一个 <see cref="Color"/>，通常在 0 到 1 的范围内。
         /// </summary>
-        /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
-        /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
-        /// <param name="b">The color's blue component, typically on the range of 0 to 1.</param>
-        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
+        /// <param name="r">颜色的红色分量，通常在 0 到 1 的范围内.</param>
+        /// <param name="g">颜色的绿色分量，通常在 0 到 1 的范围内.</param>
+        /// <param name="b">颜色的蓝色分量，通常在 0 到 1 的范围内.</param>
+        /// <param name="a">颜色的 alpha（透明度）值，通常在 0 到 1 的范围内。默认值：1.</param>
         public Color(float r, float g, float b, float a = 1.0f)
         {
             this.r = r;
@@ -617,10 +617,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Color"/> from an existing color and an alpha value.
+        /// 从现有颜色和 alpha 值构造 <see cref="Color"/>。
         /// </summary>
-        /// <param name="c">The color to construct from. Only its RGB values are used.</param>
-        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
+        /// <param name="c">要构造的颜色。 仅使用其 RGB 值.</param>
+        /// <param name="a">颜色的 alpha（透明度）值，通常在 0 到 1 的范围内。默认值：1.</param>
         public Color(Color c, float a = 1.0f)
         {
             r = c.r;
@@ -630,10 +630,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Color"/> from a 32-bit integer in RGBA format
-        /// (each byte represents a color channel).
+        /// 从 RGBA 格式的 32 位整数构造 <see cref="Color"/>
+        ///（每个字节代表一个颜色通道）。
         /// </summary>
-        /// <param name="rgba">The <see langword="int"/> representing the color.</param>
+        /// <param name="rgba">The <see langword="int"/> 代表颜色.</param>
         public Color(int rgba)
         {
             a = (rgba & 0xFF) / 255.0f;
@@ -646,10 +646,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Color"/> from a 64-bit integer in RGBA format
-        /// (each word represents a color channel).
+        /// 从 RGBA 格式的 64 位整数构造 <see cref="Color"/>
+        ///（每个单词代表一个颜色通道）。
         /// </summary>
-        /// <param name="rgba">The <see langword="long"/> representing the color.</param>
+        /// <param name="rgba"><see langword="long"/> 代表颜色.</param>
         public Color(long rgba)
         {
             a = (rgba & 0xFFFF) / 65535.0f;
@@ -755,25 +755,25 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a color constructed from integer red, green, blue, and alpha channels.
-        /// Each channel should have 8 bits of information ranging from 0 to 255.
+        /// 返回由整数红色、绿色、蓝色和 alpha 通道构成的颜色。
+        /// 每个通道应该有 8 位信息，范围从 0 到 255。
         /// </summary>
-        /// <param name="r8">The red component represented on the range of 0 to 255.</param>
-        /// <param name="g8">The green component represented on the range of 0 to 255.</param>
-        /// <param name="b8">The blue component represented on the range of 0 to 255.</param>
-        /// <param name="a8">The alpha (transparency) component represented on the range of 0 to 255.</param>
-        /// <returns>The constructed color.</returns>
+        /// <param name="r8">红色分量表示在 0 到 255 的范围内.</param>
+        /// <param name="g8">绿色分量表示在 0 到 255 的范围内.</param>
+        /// <param name="b8">蓝色分量表示在 0 到 255 的范围内.</param>
+        /// <param name="a8">在 0 到 255 范围内表示的 alpha（透明度）分量.</param>
+        /// <returns>构造的颜色.</returns>
         public static Color Color8(byte r8, byte g8, byte b8, byte a8 = 255)
         {
             return new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
         }
 
         /// <summary>
-        /// Constructs a <see cref="Color"/> from the HTML hexadecimal color string in RGBA format.
+        /// 从 RGBA 格式的 HTML 十六进制颜色字符串构造 <see cref="Color"/>。
         /// </summary>
-        /// <param name="rgba">A string for the HTML hexadecimal representation of this color.</param>
+        /// <param name="rgba">此颜色的 HTML 十六进制表示的字符串.</param>
         /// <exception name="ArgumentOutOfRangeException">
-        /// Thrown when the given <paramref name="rgba"/> color code is invalid.
+        /// 当给定的 <paramref name="rgba"/> 颜色代码无效时抛出。
         /// </exception>
         public Color(string rgba)
         {
@@ -1043,6 +1043,7 @@ namespace Godot
         }
 
         /// <summary>
+
         /// Compares two <see cref="Color"/>s by first checking if
         /// the red value of the <paramref name="left"/> color is less than
         /// or equal to the red value of the <paramref name="right"/> color.
@@ -1102,9 +1103,10 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this color and <paramref name="obj"/> are equal.
+        /// 如果此颜色和 <paramref name="obj"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the color and the other object are equal.</returns>
+        /// <param name="obj">另一个要比较的对象.</param>
+        /// <returns>颜色与其他对象是否相等.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Color)
@@ -1116,50 +1118,49 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the colors are exactly equal.
-        /// Note: Due to floating-point precision errors, consider using
-        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+
+        /// 如果此颜色和 <paramref name="other"/> 相等，则返回 <see langword="true"/>
         /// </summary>
-        /// <param name="other">The other color.</param>
-        /// <returns>Whether or not the colors are equal.</returns>
+        /// <param name="other">要比较的其他颜色.</param>
+        /// <returns>颜色是否相等.</returns>
         public bool Equals(Color other)
         {
             return r == other.r && g == other.g && b == other.b && a == other.a;
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this color and <paramref name="other"/> are approximately equal,
+        /// 如果此颜色和 <paramref name="other"/> 大致相等，则返回 <see langword="true"/>，
         /// by running <see cref="Mathf.IsEqualApprox(float, float)"/> on each component.
         /// </summary>
-        /// <param name="other">The other color to compare.</param>
-        /// <returns>Whether or not the colors are approximately equal.</returns>
+        /// <param name="other">要比较的其他颜色.</param>
+        /// <returns>颜色是否大致相等.</returns>
         public bool IsEqualApprox(Color other)
         {
             return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="Color"/>.
+        /// 用作 <see cref="Color"/> 的散列函数.
         /// </summary>
-        /// <returns>A hash code for this color.</returns>
+        /// <returns>此颜色的哈希码.</returns>
         public override int GetHashCode()
         {
             return r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="Color"/> to a string.
+        /// 将此 <see cref="Color"/> 转换为字符串.
         /// </summary>
-        /// <returns>A string representation of this color.</returns>
+        /// <returns>此颜色的字符串表示.</returns>
         public override string ToString()
         {
             return String.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
         }
 
         /// <summary>
-        /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
+        /// 将此 <see cref="Color"/> 转换为具有给定 <paramref name="format"/> 的字符串.
         /// </summary>
-        /// <returns>A string representation of this color.</returns>
+        /// <returns>此颜色的字符串表示.</returns>
         public string ToString(string format)
         {
             return String.Format("{0},{1},{2},{3}", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));

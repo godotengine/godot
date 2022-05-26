@@ -46,7 +46,7 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
 #include "../utils/string_utils.h"
-
+#include "editor/editor_translation.h"
 #define CS_INDENT "    " // 4 whitespaces
 
 #define INDENT1 CS_INDENT
@@ -102,8 +102,9 @@ const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = 
 
 static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
-
-	return p_bbcode.dedent()
+	String translation_bbcode = p_bbcode;
+	translation_bbcode = DTR(translation_bbcode);
+	return translation_bbcode.dedent()
 			.replace("\t", "")
 			.replace("\r", "")
 			.strip_edges();
@@ -866,6 +867,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
+	
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
@@ -1184,7 +1186,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append(INDENT1 "/// </summary>\n");
 		}
 	}
-
+	//output.append(INDENT1 "[Serializable] \n");
 	output.append(INDENT1 "public ");
 	if (itype.is_singleton) {
 		output.append("static partial class ");
@@ -3074,7 +3076,7 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 
 void BindingsGenerator::_initialize() {
 	initialized = false;
-
+	load_doc_translations("zh_CN");
 	EditorHelp::generate_doc();
 
 	enum_types.clear();

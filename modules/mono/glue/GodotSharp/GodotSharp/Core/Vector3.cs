@@ -9,49 +9,49 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// 3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
+    /// 三元素结构，可用于表示 3D 空间中的位置或任何其他数值对。
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3 : IEquatable<Vector3>
     {
         /// <summary>
-        /// Enumerated index values for the axes.
-        /// Returned by <see cref="MaxAxis"/> and <see cref="MinAxis"/>.
+        /// 轴的枚举索引值。
+        /// 由 <see cref="MaxAxis"/> 和 <see cref="MinAxis"/> 返回。
         /// </summary>
         public enum Axis
         {
             /// <summary>
-            /// The vector's X axis.
+            /// 向量的 X 轴。
             /// </summary>
             X = 0,
             /// <summary>
-            /// The vector's Y axis.
+            /// 向量的 Y 轴。
             /// </summary>
             Y,
             /// <summary>
-            /// The vector's Z axis.
+            /// 向量的 Z 轴。
             /// </summary>
             Z
         }
 
         /// <summary>
-        /// The vector's X component. Also accessible by using the index position <c>[0]</c>.
+        /// 向量的 X 分量。 也可以通过使用索引位置 <c>[0]</c> 访问。
         /// </summary>
         public real_t x;
 
         /// <summary>
-        /// The vector's Y component. Also accessible by using the index position <c>[1]</c>.
+        /// 向量的 Y 分量。 也可以通过使用索引位置 <c>[1]</c> 访问。
         /// </summary>
         public real_t y;
 
         /// <summary>
-        /// The vector's Z component. Also accessible by using the index position <c>[2]</c>.
+        /// 向量的 Z 分量。 也可以通过使用索引位置 <c>[2]</c> 访问。
         /// </summary>
         public real_t z;
 
         /// <summary>
-        /// Access vector components using their index.
+        /// 使用它们的索引访问向量分量。
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">
         /// Thrown when the given the <paramref name="index"/> is not 0, 1 or 2.
@@ -114,48 +114,48 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new vector with all components in absolute values (i.e. positive).
+        /// 返回一个新向量，其中所有分量均为绝对值（即正数）。
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Abs(real_t)"/> called on each component.</returns>
+        /// <returns>在每个组件上调用带有 <see cref="Mathf.Abs(real_t)"/> 的向量。</returns>
         public Vector3 Abs()
         {
             return new Vector3(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
         }
 
         /// <summary>
-        /// Returns the unsigned minimum angle to the given vector, in radians.
+        /// 返回给定向量的无符号最小角度，以弧度为单位。
         /// </summary>
-        /// <param name="to">The other vector to compare this vector to.</param>
-        /// <returns>The unsigned angle between the two vectors, in radians.</returns>
+        /// <param name="to">与此向量进行比较的另一个向量。</param>
+        /// <returns>两个向量之间的无符号角度，以弧度为单位。</returns>
         public real_t AngleTo(Vector3 to)
         {
             return Mathf.Atan2(Cross(to).Length(), Dot(to));
         }
 
         /// <summary>
-        /// Returns this vector "bounced off" from a plane defined by the given normal.
+        /// 从给定法线定义的平面返回此向量“反弹”。
         /// </summary>
-        /// <param name="normal">The normal vector defining the plane to bounce off. Must be normalized.</param>
-        /// <returns>The bounced vector.</returns>
+        /// <param name="normal">定义要反弹的平面的法线向量。 必须标准化。</param>
+        /// <returns>反弹的向量。</returns>
         public Vector3 Bounce(Vector3 normal)
         {
             return -Reflect(normal);
         }
 
         /// <summary>
-        /// Returns a new vector with all components rounded up (towards positive infinity).
+        /// 返回一个新向量，其中所有分量向上舍入（朝向正无穷大）。
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Ceil"/> called on each component.</returns>
+        /// <returns>在每个组件上调用带有 <see cref="Mathf.Ceil"/> 的向量。</returns>
         public Vector3 Ceil()
         {
             return new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
         }
 
         /// <summary>
-        /// Returns the cross product of this vector and <paramref name="b"/>.
+        /// 返回此向量与 <paramref name="b"/> 的叉积。
         /// </summary>
-        /// <param name="b">The other vector.</param>
-        /// <returns>The cross product vector.</returns>
+        /// <param name="b">另一个向量。</param>
+        /// <returns>叉积向量。</returns>
         public Vector3 Cross(Vector3 b)
         {
             return new Vector3
@@ -167,14 +167,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a cubic interpolation between vectors <paramref name="preA"/>, this vector,
-        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
+        /// 在向量之间执行三次插值 <paramref name="preA"/>, 这个向量,
+        /// <paramref name="b"/> 和 <paramref name="postB"/>，按给定的数量 <paramref name="weight"/>。
         /// </summary>
-        /// <param name="b">The destination vector.</param>
-        /// <param name="preA">A vector before this vector.</param>
-        /// <param name="postB">A vector after <paramref name="b"/>.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The interpolated vector.</returns>
+        /// <param name="b">目标向量。</param>
+        /// <param name="preA">这个向量之前的一个向量。</param>
+        /// <param name="postB"><paramref name="b"/>之后的一个向量。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值向量。</returns>
         public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t weight)
         {
             Vector3 p0 = preA;
@@ -194,80 +194,80 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the normalized vector pointing from this vector to <paramref name="b"/>.
+        /// 返回从这个向量指向 <paramref name="b"/> 的归一化向量。
         /// </summary>
-        /// <param name="b">The other vector to point towards.</param>
-        /// <returns>The direction from this vector to <paramref name="b"/>.</returns>
+        /// <param name="b">另一个指向的向量。</param>
+        /// <returns>从这个向量到<paramref name="b"/>的方向。</returns>
         public Vector3 DirectionTo(Vector3 b)
         {
             return new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="b"/>.
-        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
-        /// you need to compare vectors or need the squared distance for some formula.
+        /// 返回此向量与 <paramref name="b"/> 之间的平方距离。
+        /// 这个方法比 <see cref="DistanceTo"/> 运行得快，所以如果
+        /// 你需要比较向量或者需要一些公式的平方距离。
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
-        /// <returns>The squared distance between the two vectors.</returns>
+        /// <param name="b">要使用的另一个向量。</param>
+        /// <returns>两个向量之间的平方距离。</returns>
         public real_t DistanceSquaredTo(Vector3 b)
         {
             return (b - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and <paramref name="b"/>.
+        /// 返回此向量与 <paramref name="b"/> 之间的距离。
         /// </summary>
         /// <seealso cref="DistanceSquaredTo(Vector3)"/>
-        /// <param name="b">The other vector to use.</param>
-        /// <returns>The distance between the two vectors.</returns>
+        /// <param name="b">要使用的另一个向量。</param>
+        /// <returns>两个向量之间的距离。</returns>
         public real_t DistanceTo(Vector3 b)
         {
             return (b - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and <paramref name="b"/>.
+        /// 返回此向量与 <paramref name="b"/> 的点积。
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
-        /// <returns>The dot product of the two vectors.</returns>
+        /// <param name="b">要使用的另一个向量。</param>
+        /// <returns>两个向量的点积。</returns>
         public real_t Dot(Vector3 b)
         {
             return (x * b.x) + (y * b.y) + (z * b.z);
         }
 
         /// <summary>
-        /// Returns a new vector with all components rounded down (towards negative infinity).
+        /// 返回一个所有分量向下舍入（向负无穷大）的新向量。
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
+        /// <returns>在每个组件上调用带有 <see cref="Mathf.Floor"/> 的向量。</returns>
         public Vector3 Floor()
         {
             return new Vector3(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z));
         }
 
         /// <summary>
-        /// Returns the inverse of this vector. This is the same as <c>new Vector3(1 / v.x, 1 / v.y, 1 / v.z)</c>.
+        /// 返回此向量的逆。 这与 <c>new Vector3(1 / v.x, 1 / v.y, 1 / v.z)</c> 相同。
         /// </summary>
-        /// <returns>The inverse of this vector.</returns>
+        /// <returns>这个向量的倒数。</returns>
         public Vector3 Inverse()
         {
             return new Vector3(1 / x, 1 / y, 1 / z);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the vector is normalized, and <see langword="false"/> otherwise.
+        /// 如果向量被规范化，则返回 <see langword="true"/>，否则返回 <see langword="false"/>。
         /// </summary>
-        /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
+        /// <returns>一个 <see langword="bool"/> 表示向量是否被归一化。</returns>
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
         }
 
         /// <summary>
-        /// Returns the length (magnitude) of this vector.
+        /// 返回此向量的长度（大小）。
         /// </summary>
         /// <seealso cref="LengthSquared"/>
-        /// <returns>The length of this vector.</returns>
+        /// <returns>这个向量的长度。</returns>
         public real_t Length()
         {
             real_t x2 = x * x;
@@ -278,11 +278,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared length (squared magnitude) of this vector.
-        /// This method runs faster than <see cref="Length"/>, so prefer it if
-        /// you need to compare vectors or need the squared length for some formula.
+        /// 返回此向量的平方长度（平方大小）。
+        /// 这个方法比 <see cref="Length"/> 运行得快，所以如果
+        /// 您需要比较向量或某些公式的平方长度。
         /// </summary>
-        /// <returns>The squared length of this vector.</returns>
+        /// <returns>这个向量的平方长度。</returns>
         public real_t LengthSquared()
         {
             real_t x2 = x * x;
@@ -293,12 +293,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this vector and <paramref name="to"/> by amount <paramref name="weight"/>.
+        /// 返回之间的线性插值结果
+        /// 这个向量和 <paramref name="to"/> 的数量 <paramref name="weight"/>.
         /// </summary>
-        /// <param name="to">The destination vector for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting vector of the interpolation.</returns>
+        /// <param name="to">插值的目标向量。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果向量。</returns>
         public Vector3 LinearInterpolate(Vector3 to, real_t weight)
         {
             return new Vector3
@@ -310,12 +310,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this vector and <paramref name="to"/> by the vector amount <paramref name="weight"/>.
+        /// 返回之间的线性插值结果
+        /// 这个向量和 <paramref name="to"/> 的向量量 <paramref name="weight"/>。
         /// </summary>
-        /// <param name="to">The destination vector for interpolation.</param>
-        /// <param name="weight">A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting vector of the interpolation.</returns>
+        /// <param name="to">插值的目标向量。</param>
+        /// <param name="weight">分量在0.0到1.0之间的向量，代表插值量。</param>
+        /// <returns>插值的结果向量。</returns>
         public Vector3 LinearInterpolate(Vector3 to, Vector3 weight)
         {
             return new Vector3
@@ -346,31 +346,31 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
-        /// If all components are equal, this method returns <see cref="Axis.X"/>.
+        /// 返回向量最大值的轴。 请参阅 <see cref="Axis"/>。
+        /// 如果所有组件都相等，则此方法返回 <see cref="Axis.X"/>。
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
+        /// <returns>最大轴的索引。</returns>
         public Axis MaxAxis()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
-        /// If all components are equal, this method returns <see cref="Axis.Z"/>.
+        /// 返回向量最小值的轴。 请参阅 <see cref="Axis"/>。
+        /// 如果所有组件都相等，则此方法返回 <see cref="Axis.Z"/>。
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
+        /// <returns>最小轴的索引。</returns>
         public Axis MinAxis()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }
 
         /// <summary>
-        /// Moves this vector toward <paramref name="to"/> by the fixed <paramref name="delta"/> amount.
+        /// 将此向量向 <paramref name="to"/> 移动固定的 <paramref name="delta"/> 数量。
         /// </summary>
-        /// <param name="to">The vector to move towards.</param>
-        /// <param name="delta">The amount to move towards by.</param>
-        /// <returns>The resulting vector.</returns>
+        /// <param name="to">要移动的向量。</param>
+        /// <param name="delta">要移动的数量。</param>
+        /// <returns>结果向量。</returns>
         public Vector3 MoveToward(Vector3 to, real_t delta)
         {
             Vector3 v = this;
@@ -383,9 +383,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the vector scaled to unit length. Equivalent to <c>v / v.Length()</c>.
+        /// 返回缩放到单位长度的向量。 等效于 <c>v / v.Length()</c>。
         /// </summary>
-        /// <returns>A normalized version of the vector.</returns>
+        /// <returns>向量的标准化版本。</returns>
         public Vector3 Normalized()
         {
             Vector3 v = this;
@@ -394,10 +394,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the outer product with <paramref name="b"/>.
+        /// 返回带有 <paramref name="b"/> 的外积。
         /// </summary>
-        /// <param name="b">The other vector.</param>
-        /// <returns>A <see cref="Basis"/> representing the outer product matrix.</returns>
+        /// <param name="b">另一个向量。</param>
+        /// <returns>代表外积矩阵的<see cref="Basis"/>。</returns>
         public Basis Outer(Vector3 b)
         {
             return new Basis(
@@ -408,12 +408,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components
-        /// and <paramref name="mod"/>.
+        /// 返回一个由该向量的组件的 <see cref="Mathf.PosMod(real_t, real_t)"/> 组成的向量
+        /// 和 <paramref name="mod"/>。
         /// </summary>
-        /// <param name="mod">A value representing the divisor of the operation.</param>
+        /// <param name="mod">表示运算除数的值。</param>
         /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="mod"/>.
+        /// 每个分量的向量 <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="mod"/>。
         /// </returns>
         public Vector3 PosMod(real_t mod)
         {
@@ -425,12 +425,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components
-        /// and <paramref name="modv"/>'s components.
+        /// 返回一个由该向量的组件的 <see cref="Mathf.PosMod(real_t, real_t)"/> 组成的向量
+        /// 和 <paramref name="modv"/> 的组件。
         /// </summary>
-        /// <param name="modv">A vector representing the divisors of the operation.</param>
-        /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="modv"/>'s components.
+        /// <param name="modv">表示运算除数的向量。</param>
+        /// <返回>
+        /// 每个组件的向量 <see cref="Mathf.PosMod(real_t, real_t)"/> by <paramref name="modv"/> 的组件。
         /// </returns>
         public Vector3 PosMod(Vector3 modv)
         {
@@ -442,20 +442,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector projected onto another vector <paramref name="onNormal"/>.
+        /// 返回这个向量投影到另一个向量 <paramref name="onNormal"/>。
         /// </summary>
-        /// <param name="onNormal">The vector to project onto.</param>
-        /// <returns>The projected vector.</returns>
+        /// <param name="onNormal">要投影到的向量。</param>
+        /// <returns>投影向量。</returns>
         public Vector3 Project(Vector3 onNormal)
         {
             return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
         }
 
         /// <summary>
-        /// Returns this vector reflected from a plane defined by the given <paramref name="normal"/>.
+        /// 返回从给定 <paramref name="normal"/> 定义的平面反射的向量。
         /// </summary>
-        /// <param name="normal">The normal vector defining the plane to reflect from. Must be normalized.</param>
-        /// <returns>The reflected vector.</returns>
+        /// <param name="normal">定义要反射的平面的法线向量。 必须标准化。</param>
+        /// <returns>反射向量。</returns>
         public Vector3 Reflect(Vector3 normal)
         {
 #if DEBUG
@@ -468,12 +468,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates this vector around a given <paramref name="axis"/> vector by <paramref name="angle"/> (in radians).
-        /// The <paramref name="axis"/> vector must be a normalized vector.
+        /// 围绕给定的 <paramref name="axis"/> 向量旋转该向量 <paramref name="phi"/> 弧度。
+        /// <paramref name="axis"/> 向量必须是归一化向量。
         /// </summary>
-        /// <param name="axis">The vector to rotate around. Must be normalized.</param>
-        /// <param name="angle">The angle to rotate by, in radians.</param>
-        /// <returns>The rotated vector.</returns>
+        /// <param name="axis">要旋转的向量。 必须标准化。</param>
+        /// <param name="phi">旋转角度，以弧度为单位。</param>
+        /// <returns>旋转后的向量。</returns>
         public Vector3 Rotated(Vector3 axis, real_t phi)
         {
 #if DEBUG
@@ -486,10 +486,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector with all components rounded to the nearest integer,
-        /// with halfway cases rounded towards the nearest multiple of two.
+        /// 返回这个向量，所有分量都四舍五入到最接近的整数，
+        /// 中间的情况向最接近的二的倍数舍入。
         /// </summary>
-        /// <returns>The rounded vector.</returns>
+        /// <returns>圆角向量。</returns>
         public Vector3 Round()
         {
             return new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
@@ -511,11 +511,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector with each component set to one or negative one, depending
-        /// on the signs of this vector's components, or zero if the component is zero,
-        /// by calling <see cref="Mathf.Sign(real_t)"/> on each component.
+        /// 返回一个向量，每个分量设置为一或负一，具体取决于
+        /// 在这个向量的分量的符号上，如果分量为零，则为零，
+        /// 通过在每个组件上调用 <see cref="Mathf.Sign(real_t)"/>。
         /// </summary>
-        /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
+        /// <returns>一个向量，其所有分量为 <c>1</c>、<c>-1</c> 或 <c>0</c>。</returns>
         public Vector3 Sign()
         {
             Vector3 v;
@@ -526,14 +526,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the signed angle to the given vector, in radians.
-        /// The sign of the angle is positive in a counter-clockwise
-        /// direction and negative in a clockwise direction when viewed
-        /// from the side specified by the <paramref name="axis"/>.
+        /// 返回给定向量的带符号角度，以弧度为单位。
+        /// 逆时针方向的角度符号为正
+        /// 查看时顺时针方向和负数
+        /// 从 <paramref name="axis"/> 指定的一侧开始。
         /// </summary>
-        /// <param name="to">The other vector to compare this vector to.</param>
-        /// <param name="axis">The reference axis to use for the angle sign.</param>
-        /// <returns>The signed angle between the two vectors, in radians.</returns>
+        /// <param name="to">与此向量进行比较的另一个向量。</param>
+        /// <param name="axis">用于角度符号的参考轴。</param>
+        /// <returns>两个向量之间的有符号角度，以弧度为单位。</returns>
         public real_t SignedAngleTo(Vector3 to, Vector3 axis)
         {
             Vector3 crossTo = Cross(to);
@@ -543,14 +543,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the spherical linear interpolation between
-        /// this vector and <paramref name="to"/> by amount <paramref name="weight"/>.
+        /// 返回球面线性插值的结果
+        /// 这个向量和 <paramref name="to"/> 的数量 <paramref name="weight"/>.
         ///
-        /// Note: Both vectors must be normalized.
+        /// 注意：两个向量都必须归一化。
         /// </summary>
-        /// <param name="to">The destination vector for interpolation. Must be normalized.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting vector of the interpolation.</returns>
+        /// <param name="to">插值的目标向量。 必须标准化。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果向量。</returns>
         public Vector3 Slerp(Vector3 to, real_t weight)
         {
 #if DEBUG
@@ -568,21 +568,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector slid along a plane defined by the given <paramref name="normal"/>.
+        /// 返回这个向量沿着给定的 <paramref name="normal"/> 定义的平面滑动。
         /// </summary>
-        /// <param name="normal">The normal vector defining the plane to slide on.</param>
-        /// <returns>The slid vector.</returns>
+        /// <param name="normal">定义要在其上滑动的平面的法线向量。</param>
+        /// <returns>滑动向量。</returns>
         public Vector3 Slide(Vector3 normal)
         {
             return this - (normal * Dot(normal));
         }
 
         /// <summary>
-        /// Returns this vector with each component snapped to the nearest multiple of <paramref name="step"/>.
-        /// This can also be used to round to an arbitrary number of decimals.
+        /// 返回此向量，其中每个组件都捕捉到最接近的 <paramref name="step"/> 倍数。
+        /// 这也可以用于四舍五入到任意小数位数。
         /// </summary>
-        /// <param name="step">A vector value representing the step size to snap to.</param>
-        /// <returns>The snapped vector.</returns>
+        /// <param name="step">一个向量值，表示要捕捉到的步长。</param>
+        /// <returns>捕捉到的向量。</returns>
         public Vector3 Snapped(Vector3 step)
         {
             return new Vector3
@@ -594,12 +594,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a diagonal matrix with the vector as main diagonal.
+        /// 返回一个以向量为主对角线的对角矩阵。
         ///
-        /// This is equivalent to a <see cref="Basis"/> with no rotation or shearing and
-        /// this vector's components set as the scale.
+        /// 这相当于一个没有旋转或剪切的 <see cref="Basis"/> 和
+        /// 这个向量的组件设置为比例。
         /// </summary>
-        /// <returns>A <see cref="Basis"/> with the vector as its main diagonal.</returns>
+        /// <returns>以向量为主对角线的<see cref="Basis"/>。</returns>
         public Basis ToDiagonalMatrix()
         {
             return new Basis(
@@ -623,68 +623,68 @@ namespace Godot
         private static readonly Vector3 _back = new Vector3(0, 0, 1);
 
         /// <summary>
-        /// Zero vector, a vector with all components set to <c>0</c>.
+        /// 零向量，所有分量都设置为 <c>0</c> 的向量。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(0, 0, 0)</c>.</value>
+        /// <value>等价于<c>new Vector3(0, 0, 0)</c>。</value>
         public static Vector3 Zero { get { return _zero; } }
         /// <summary>
-        /// One vector, a vector with all components set to <c>1</c>.
+        /// 一个向量，所有分量都设置为 <c>1</c> 的向量。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(1, 1, 1)</c>.</value>
+        /// <value>等价于<c>new Vector3(1, 1, 1)</c>。</value>
         public static Vector3 One { get { return _one; } }
         /// <summary>
-        /// Deprecated, please use a negative sign with <see cref="One"/> instead.
+        /// 已弃用，请改用带有 <see cref="One"/> 的负号。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(-1, -1, -1)</c>.</value>
+        /// <value>等价于<c>new Vector3(-1, -1, -1)</c>。</value>
         [Obsolete("Use a negative sign with Vector3.One instead.")]
         public static Vector3 NegOne { get { return _negOne; } }
         /// <summary>
-        /// Infinity vector, a vector with all components set to <see cref="Mathf.Inf"/>.
+        /// 无穷向量，所有分量都设置为 <see cref="Mathf.Inf"/> 的向量。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf)</c>.</value>
+        /// <value>等价于<c>new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf)</c>。</value>
         public static Vector3 Inf { get { return _inf; } }
 
         /// <summary>
-        /// Up unit vector.
+        /// 向上单位向量。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(0, 1, 0)</c>.</value>
+        /// <value>等价于<c>new Vector3(0, 1, 0)</c>。</value>
         public static Vector3 Up { get { return _up; } }
         /// <summary>
-        /// Down unit vector.
+        /// 向下单位向量。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(0, -1, 0)</c>.</value>
+        /// <value>等价于<c>new Vector3(0, -1, 0)</c>。</value>
         public static Vector3 Down { get { return _down; } }
         /// <summary>
-        /// Right unit vector. Represents the local direction of right,
-        /// and the global direction of east.
+        /// 右单位向量。 代表右的局部方向，
+        /// 和东的全球方向。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(1, 0, 0)</c>.</value>
+        /// <value>等价于<c>new Vector3(1, 0, 0)</c>。</value>
         public static Vector3 Right { get { return _right; } }
         /// <summary>
-        /// Left unit vector. Represents the local direction of left,
-        /// and the global direction of west.
+        /// 左单位向量。 代表左的局部方向，
+        /// 和西方的全球方向。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(-1, 0, 0)</c>.</value>
+        /// <value>等价于 <c>new Vector3(-1, 0, 0)</c>.</value>。
         public static Vector3 Left { get { return _left; } }
         /// <summary>
-        /// Forward unit vector. Represents the local direction of forward,
-        /// and the global direction of north.
+        /// 前向单位向量。 代表本地前进方向，
+        /// 和北的全球方向。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(0, 0, -1)</c>.</value>
+        /// <value>等价于<c>new Vector3(0, 0, -1)</c>.</value>
         public static Vector3 Forward { get { return _forward; } }
         /// <summary>
-        /// Back unit vector. Represents the local direction of back,
-        /// and the global direction of south.
+        /// 后单位向量。 代表背部的局部方向，
+        /// 和南的全球方向。
         /// </summary>
-        /// <value>Equivalent to <c>new Vector3(0, 0, 1)</c>.</value>
+        /// <value>等价于<c>new Vector3(0, 0, 1)</c>.</value>
         public static Vector3 Back { get { return _back; } }
 
         /// <summary>
-        /// Constructs a new <see cref="Vector3"/> with the given components.
+        /// 用给定的组件构造一个新的 <see cref="Vector3"/>。
         /// </summary>
-        /// <param name="x">The vector's X component.</param>
-        /// <param name="y">The vector's Y component.</param>
-        /// <param name="z">The vector's Z component.</param>
+        /// <param name="x">向量的X分量。</param>
+        /// <param name="y">向量的Y分量。</param>
+        /// <param name="z">向量的Z分量。</param>
         public Vector3(real_t x, real_t y, real_t z)
         {
             this.x = x;
@@ -693,9 +693,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Vector3"/> from an existing <see cref="Vector3"/>.
+        /// 从现有的 <see cref="Vector3"/> 构造一个新的 <see cref="Vector3"/>。
         /// </summary>
-        /// <param name="v">The existing <see cref="Vector3"/>.</param>
+        /// <param name="v">现有的<see cref="Vector3"/>.</param>
         public Vector3(Vector3 v)
         {
             x = v.x;
@@ -996,13 +996,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the vector is exactly equal
-        /// to the given object (<see paramref="obj"/>).
-        /// Note: Due to floating-point precision errors, consider using
-        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// 如果此向量和 <paramref name="obj"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="obj">The object to compare with.</param>
-        /// <returns>Whether or not the vector and the object are equal.</returns>
+        /// <param name="obj">要比较的另一个对象。</param>
+        /// <returns>向量和其他对象是否相等。</returns>
         public override bool Equals(object obj)
         {
             if (obj is Vector3)
@@ -1014,50 +1011,48 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the vectors are exactly equal.
-        /// Note: Due to floating-point precision errors, consider using
-        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// 如果此向量和 <paramref name="other"/> 相等，则返回 <see langword="true"/>
         /// </summary>
-        /// <param name="other">The other vector.</param>
-        /// <returns>Whether or not the vectors are exactly equal.</returns>
+        /// <param name="other">要比较的另一个向量。</param>
+        /// <returns>向量是否相等。</returns>
         public bool Equals(Vector3 other)
         {
             return x == other.x && y == other.y && z == other.z;
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this vector and <paramref name="other"/> are approximately equal,
-        /// by running <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
+        /// 如果此向量和 <paramref name="other"/> 近似相等，则返回 <see langword="true"/>，
+        /// 通过在每个组件上运行 <see cref="Mathf.IsEqualApprox(real_t, real_t)"/>。
         /// </summary>
-        /// <param name="other">The other vector to compare.</param>
-        /// <returns>Whether or not the vectors are approximately equal.</returns>
+        /// <param name="other">要比较的另一个向量。</param>
+        /// <returns>向量是否近似相等。</returns>
         public bool IsEqualApprox(Vector3 other)
         {
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="Vector3"/>.
+        /// 用作 <see cref="Vector3"/> 的哈希函数。
         /// </summary>
-        /// <returns>A hash code for this vector.</returns>
+        /// <returns>这个向量的哈希码。</returns>
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="Vector3"/> to a string.
+        /// 将此 <see cref="Vector3"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this vector.</returns>
+        /// <returns>此向量的字符串表示形式。</returns>
         public override string ToString()
         {
             return $"({x}, {y}, {z})";
         }
 
         /// <summary>
-        /// Converts this <see cref="Vector3"/> to a string with the given <paramref name="format"/>.
+        /// 将此 <see cref="Vector3"/> 转换为具有给定 <paramref name="format"/> 的字符串。
         /// </summary>
-        /// <returns>A string representation of this vector.</returns>
+        /// <returns>此向量的字符串表示形式。</returns>
         public string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)})";

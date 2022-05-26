@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// 2×3 matrix (2 rows, 3 columns) used for 2D linear transformations.
-    /// It can represent transformations such as translation, rotation, or scaling.
-    /// It consists of a three <see cref="Vector2"/> values: x, y, and the origin.
+    /// 2×3 矩阵（2 行，3 列）用于 2D 线性变换。
+    /// 可以表示平移、旋转或缩放等变换。
+    /// 它由三个 <see cref="Vector2"/> 值组成：x、y 和原点。
     ///
-    /// For more information, read this documentation article:
+    /// 有关更多信息，请阅读此文档文章：
     /// https://docs.godotengine.org/en/3.4/tutorials/math/matrices_and_transforms.html
     /// </summary>
     [Serializable]
@@ -21,25 +21,25 @@ namespace Godot
     public struct Transform2D : IEquatable<Transform2D>
     {
         /// <summary>
-        /// The basis matrix's X vector (column 0). Equivalent to array index <c>[0]</c>.
+        /// 基矩阵的 X 向量（第 0 列）。 等效于数组索引 <c>[0]</c>。
         /// </summary>
         public Vector2 x;
 
         /// <summary>
-        /// The basis matrix's Y vector (column 1). Equivalent to array index <c>[1]</c>.
+        /// 基矩阵的 Y 向量（第 1 列）。 等效于数组索引<c>[1]</c>。
         /// </summary>
         public Vector2 y;
 
         /// <summary>
-        /// The origin vector (column 2, the third column). Equivalent to array index <c>[2]</c>.
-        /// The origin vector represents translation.
+        /// 原点向量（第 2 列，第 3 列）。 等价于数组索引<c>[2]</c>。
+        /// 原点向量代表平移。
         /// </summary>
         public Vector2 origin;
 
         /// <summary>
-        /// The rotation of this transformation matrix.
+        /// 这个变换矩阵的旋转。
         /// </summary>
-        /// <value>Getting is equivalent to calling <see cref="Mathf.Atan2(real_t, real_t)"/> with the values of <see cref="x"/>.</value>
+        /// <value>获取相当于用<see cref="x"/>的值调用<see cref="Mathf.Atan2(real_t, real_t)"/>。</value>
         public real_t Rotation
         {
             get
@@ -57,9 +57,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// The scale of this transformation matrix.
+        /// 这个变换矩阵的尺度。
         /// </summary>
-        /// <value>Equivalent to the lengths of each column vector, but Y is negative if the determinant is negative.</value>
+        /// <value>等价于每个列向量的长度，但是如果行列式为负，则Y为负。</value>
         public Vector2 Scale
         {
             get
@@ -76,10 +76,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Access whole columns in the form of <see cref="Vector2"/>.
-        /// The third column is the <see cref="origin"/> vector.
+        /// 以 <see cref="Vector2"/> 的形式访问整个列。
+        /// 第三列是 <see cref="origin"/> 向量。
         /// </summary>
-        /// <param name="column">Which column vector.</param>
+        /// <param name="column">哪一列向量。</param>
         public Vector2 this[int column]
         {
             get
@@ -116,11 +116,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Access matrix elements in column-major order.
-        /// The third column is the <see cref="origin"/> vector.
+        /// 以列优先顺序访问矩阵元素。
+        /// 第三列是 <see cref="origin"/> 向量。
         /// </summary>
-        /// <param name="column">Which column, the matrix horizontal position.</param>
-        /// <param name="row">Which row, the matrix vertical position.</param>
+        /// <param name="column">哪一列，矩阵水平位置。</param>
+        /// <param name="row">哪一行，矩阵垂直位置。</param>
         public real_t this[int column, int row]
         {
             get
@@ -136,11 +136,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation, scaling, and translation.
+        /// 返回变换的逆，假设为
+        /// 变换由旋转、缩放和平移组成。
         /// </summary>
         /// <seealso cref="Inverse"/>
-        /// <returns>The inverse transformation matrix.</returns>
+        /// <returns>逆变换矩阵。</returns>
         public Transform2D AffineInverse()
         {
             real_t det = BasisDeterminant();
@@ -165,52 +165,52 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the determinant of the basis matrix. If the basis is
-        /// uniformly scaled, its determinant is the square of the scale.
+        /// 返回基矩阵的行列式。 如果基础是
+        /// 统一缩放，其行列式是缩放的平方。
         ///
-        /// A negative determinant means the Y scale is negative.
-        /// A zero determinant means the basis isn't invertible,
-        /// and is usually considered invalid.
+        /// 负行列式意味着 Y 比例为负。
+        /// 零行列式意味着基不可逆，
+        /// 并且通常被认为是无效的。
         /// </summary>
-        /// <returns>The determinant of the basis matrix.</returns>
+        /// <returns>基矩阵的行列式。</returns>
         private real_t BasisDeterminant()
         {
             return (x.x * y.y) - (x.y * y.x);
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by the basis matrix.
-        /// This method does not account for translation (the <see cref="origin"/> vector).
+        /// 返回由基矩阵变换（相乘）的向量。
+        /// 此方法不考虑翻译（<see cref="origin"/> 向量）。
         /// </summary>
         /// <seealso cref="BasisXformInv(Vector2)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
+        /// <param name="v">要转换的向量。</param>
+        /// <returns>转换后的向量。</returns>
         public Vector2 BasisXform(Vector2 v)
         {
             return new Vector2(Tdotx(v), Tdoty(v));
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by the inverse basis matrix.
-        /// This method does not account for translation (the <see cref="origin"/> vector).
+        /// 返回由逆基矩阵变换（相乘）的向量。
+        /// 此方法不考虑翻译（<see cref="origin"/> 向量）。
         ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
+        /// 注意：这会导致乘以
+        /// 仅当它表示旋转反射时的基矩阵。
         /// </summary>
         /// <seealso cref="BasisXform(Vector2)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
+        /// <param name="v">要逆变换的向量。</param>
+        /// <returns>逆变换后的向量。</returns>
         public Vector2 BasisXformInv(Vector2 v)
         {
             return new Vector2(x.Dot(v), y.Dot(v));
         }
 
         /// <summary>
-        /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
+        /// 通过 <paramref name="weight"/> 将此变换插入到另一个 <paramref name="transform"/>。
         /// </summary>
-        /// <param name="transform">The other transform.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The interpolated transform.</returns>
+        /// <param name="transform">另一个变换。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值变换。</returns>
         public Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
             real_t r1 = Rotation;
@@ -255,11 +255,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation and translation
-        /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
+        /// 返回变换的逆，假设为
+        /// 变换由旋转和平移组成
+        /// （无缩放，使用 <see cref="AffineInverse"/> 进行缩放变换）。
         /// </summary>
-        /// <returns>The inverse matrix.</returns>
+        /// <returns>逆矩阵。</returns>
         public Transform2D Inverse()
         {
             Transform2D inv = this;
@@ -275,10 +275,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the transform with the basis orthogonal (90 degrees),
-        /// and normalized axis vectors (scale of 1 or -1).
+        /// 返回基础正交（90 度）的变换，
+        /// 和归一化的轴向量（比例为 1 或 -1）。
         /// </summary>
-        /// <returns>The orthonormalized transform.</returns>
+        /// <returns>正交归一化变换。</returns>
         public Transform2D Orthonormalized()
         {
             Transform2D on = this;
@@ -297,20 +297,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform by <paramref name="angle"/> (in radians), using matrix multiplication.
+        /// 使用矩阵乘法将变换旋转 <paramref name="phi"/>（以弧度为单位）。
         /// </summary>
-        /// <param name="angle">The angle to rotate, in radians.</param>
-        /// <returns>The rotated transformation matrix.</returns>
+        /// <param name="phi">要旋转的角度，以弧度为单位。</param>
+        /// <returns>旋转后的变换矩阵。</returns>
         public Transform2D Rotated(real_t phi)
         {
             return this * new Transform2D(phi, new Vector2());
         }
 
         /// <summary>
-        /// Scales the transform by the given scaling factor, using matrix multiplication.
+        /// 使用矩阵乘法按给定的缩放因子缩放变换。
         /// </summary>
-        /// <param name="scale">The scale to introduce.</param>
-        /// <returns>The scaled transformation matrix.</returns>
+        /// <param name="scale">要引入的比例。</param>
+        /// <returns>缩放的变换矩阵。</returns>
         public Transform2D Scaled(Vector2 scale)
         {
             Transform2D copy = this;
@@ -339,14 +339,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Translates the transform by the given <paramref name="offset"/>,
-        /// relative to the transform's basis vectors.
+        /// 通过给定的 <paramref name="offset"/> 翻译变换，
+        /// 相对于变换的基向量。
         ///
-        /// Unlike <see cref="Rotated"/> and <see cref="Scaled"/>,
-        /// this does not use matrix multiplication.
+        /// 与 <see cref="Rotated"/> 和 <see cref="Scaled"/> 不同，
+        /// 这不使用矩阵乘法。
         /// </summary>
-        /// <param name="offset">The offset to translate by.</param>
-        /// <returns>The translated matrix.</returns>
+        /// <param name="offset">要翻译的偏移量。</param>
+        /// <returns>翻译后的矩阵。</returns>
         public Transform2D Translated(Vector2 offset)
         {
             Transform2D copy = this;
@@ -355,11 +355,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by this transformation matrix.
+        /// 返回一个被这个变换矩阵变换（相乘）的向量。
         /// </summary>
         /// <seealso cref="XformInv(Vector2)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
+        /// <param name="v">要转换的向量。</param>
+        /// <returns>转换后的向量。</returns>
         [Obsolete("Xform is deprecated. Use the multiplication operator (Transform2D * Vector2) instead.")]
         public Vector2 Xform(Vector2 v)
         {
@@ -367,11 +367,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by the inverse transformation matrix.
+        /// 返回由逆变换矩阵变换（相乘）的向量。
         /// </summary>
         /// <seealso cref="Xform(Vector2)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
+        /// <param name="v">要逆变换的向量。</param>
+        /// <returns>逆变换后的向量。</returns>
         [Obsolete("XformInv is deprecated. Use the multiplication operator (Vector2 * Transform2D) instead.")]
         public Vector2 XformInv(Vector2 v)
         {
@@ -385,29 +385,29 @@ namespace Godot
         private static readonly Transform2D _flipY = new Transform2D(1, 0, 0, -1, 0, 0);
 
         /// <summary>
-        /// The identity transform, with no translation, rotation, or scaling applied.
-        /// This is used as a replacement for <c>Transform2D()</c> in GDScript.
-        /// Do not use <c>new Transform2D()</c> with no arguments in C#, because it sets all values to zero.
+        /// 恒等变换，没有应用平移、旋转或缩放。
+        /// 这被用作 GDScript 中 <c>Transform2D()</c> 的替代品。
+        /// 不要在 C# 中使用没有参数的 <c>new Transform2D()</c>，因为它会将所有值设置为零。
         /// </summary>
-        /// <value>Equivalent to <c>new Transform2D(Vector2.Right, Vector2.Down, Vector2.Zero)</c>.</value>
+        /// <value>等价于<c>new Transform2D(Vector2.Right, Vector2.Down, Vector2.Zero)</c>.</value>
         public static Transform2D Identity { get { return _identity; } }
         /// <summary>
-        /// The transform that will flip something along the X axis.
+        /// 将沿 X 轴翻转某些东西的变换。
         /// </summary>
-        /// <value>Equivalent to <c>new Transform2D(Vector2.Left, Vector2.Down, Vector2.Zero)</c>.</value>
+        /// <value>等价于<c>new Transform2D(Vector2.Left, Vector2.Down, Vector2.Zero)</c>.</value>
         public static Transform2D FlipX { get { return _flipX; } }
         /// <summary>
-        /// The transform that will flip something along the Y axis.
+        /// 将沿 Y 轴翻转某些东西的变换。
         /// </summary>
-        /// <value>Equivalent to <c>new Transform2D(Vector2.Right, Vector2.Up, Vector2.Zero)</c>.</value>
+        /// <value>等价于<c>new Transform2D(Vector2.Right, Vector2.Up, Vector2.Zero)</c>.</value>
         public static Transform2D FlipY { get { return _flipY; } }
 
         /// <summary>
-        /// Constructs a transformation matrix from 3 vectors (matrix columns).
+        /// 从 3 个向量（矩阵列）构造一个变换矩阵。
         /// </summary>
-        /// <param name="xAxis">The X vector, or column index 0.</param>
-        /// <param name="yAxis">The Y vector, or column index 1.</param>
-        /// <param name="originPos">The origin vector, or column index 2.</param>
+        /// <param name="xAxis">X 向量，或列索引 0。</param>
+        /// <param name="yAxis">Y 向量，或列索引 1。</param>
+        /// <param name="originPos">原点向量，或列索引2。</param>
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 originPos)
         {
             x = xAxis;
@@ -416,15 +416,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given components.
-        /// Arguments are named such that xy is equal to calling x.y
+        /// 从给定的组件构造一个变换矩阵。
+        /// 参数的命名使得 xy 等于调用 x.y
         /// </summary>
-        /// <param name="xx">The X component of the X column vector, accessed via <c>t.x.x</c> or <c>[0][0]</c>.</param>
-        /// <param name="xy">The Y component of the X column vector, accessed via <c>t.x.y</c> or <c>[0][1]</c>.</param>
-        /// <param name="yx">The X component of the Y column vector, accessed via <c>t.y.x</c> or <c>[1][0]</c>.</param>
-        /// <param name="yy">The Y component of the Y column vector, accessed via <c>t.y.y</c> or <c>[1][1]</c>.</param>
-        /// <param name="ox">The X component of the origin vector, accessed via <c>t.origin.x</c> or <c>[2][0]</c>.</param>
-        /// <param name="oy">The Y component of the origin vector, accessed via <c>t.origin.y</c> or <c>[2][1]</c>.</param>
+        /// <param name="xx">X列向量的X分量，通过<c>t.x.x</c>或<c>[0][0]</c></param>访问
+        /// <param name="xy">X列向量的Y分量，通过<c>t.x.y</c>或<c>[0][1]</c></param>访问
+        /// <param name="yx">Y列向量的X分量，通过<c>t.y.x</c>或<c>[1][0]</c></param>访问
+        /// <param name="yy">Y列向量的Y分量，通过<c>t.y.y</c>或<c>[1][1]</c></param>访问
+        /// <param name="ox">原点向量的X分量，通过<c>t.origin.x</c>或<c>[2][0]</c></param访问 >
+        /// <param name="oy">原点向量的Y分量，通过<c>t.origin.y</c>或<c>[2][1]</c></param访问 >
+
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
@@ -433,11 +434,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from a <paramref name="rotation"/> value and
+        /// 从 <paramref name="rotation"/> 值和
         /// <paramref name="origin"/> vector.
         /// </summary>
-        /// <param name="rotation">The rotation of the new transform, in radians.</param>
-        /// <param name="origin">The origin vector, or column index 2.</param>
+        /// <param name="rotation">新变换的旋转，以弧度为单位。</param>
+        /// <param name="origin">原点向量，或列索引2。</param>
         public Transform2D(real_t rotation, Vector2 origin)
         {
             x.x = y.y = Mathf.Cos(rotation);
@@ -472,22 +473,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector2 transformed (multiplied) by transformation matrix.
+        /// 返回一个由变换矩阵变换（相乘）的 Vector2。
         /// </summary>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <param name="vector">A Vector2 to transform.</param>
-        /// <returns>The transformed Vector2.</returns>
+        /// <param name="transform">要应用的转换。</param>
+        /// <param name="vector">要转换的 Vector2。</param>
+        /// <returns>转换后的 Vector2.</returns>
         public static Vector2 operator *(Transform2D transform, Vector2 vector)
         {
             return new Vector2(transform.Tdotx(vector), transform.Tdoty(vector)) + transform.origin;
         }
 
         /// <summary>
-        /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix.
+        /// 返回由逆变换矩阵变换（相乘）的 Vector2。
         /// </summary>
-        /// <param name="vector">A Vector2 to inversely transform.</param>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <returns>The inversely transformed Vector2.</returns>
+        /// <param name="vector">要逆变换的Vector2。</param>
+        /// <param name="transform">要应用的转换。</param>
+        /// <returns>逆变换后的 Vector2.</returns>
         public static Vector2 operator *(Vector2 vector, Transform2D transform)
         {
             Vector2 vInv = vector - transform.origin;
@@ -495,11 +496,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by transformation matrix.
+        /// 返回一个由变换矩阵变换（相乘）的 Rect2。
         /// </summary>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <param name="rect">A Rect2 to transform.</param>
-        /// <returns>The transformed Rect2.</returns>
+        /// <param name="transform">要应用的转换。</param>
+        /// <param name="rect">要转换的 Rect2。</param>
+        /// <returns>转换后的 Rect2.</returns>
         public static Rect2 operator *(Transform2D transform, Rect2 rect)
         {
             Vector2 pos = transform * rect.Position;
@@ -510,11 +511,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by the inverse transformation matrix.
+        /// 返回一个由逆变换矩阵变换（相乘）的 Rect2。
         /// </summary>
-        /// <param name="rect">A Rect2 to inversely transform.</param>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <returns>The inversely transformed Rect2.</returns>
+        /// <param name="rect">一个要逆变换的Rect2。</param>
+        /// <param name="transform">要应用的转换。</param>
+        /// <returns>逆变换后的 Rect2.</returns>
         public static Rect2 operator *(Rect2 rect, Transform2D transform)
         {
             Vector2 pos = rect.Position * transform;
@@ -526,11 +527,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
+        /// 返回由变换矩阵变换（相乘）的给定 Vector2[] 的副本。
         /// </summary>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <param name="array">A Vector2[] to transform.</param>
-        /// <returns>The transformed copy of the Vector2[].</returns>
+        /// <param name="transform">要应用的转换。</param>
+        /// <param name="array">要转换的 Vector2[]。</param>
+        /// <returns>Vector2[] 的转换后的副本。</returns>
         public static Vector2[] operator *(Transform2D transform, Vector2[] array)
         {
             Vector2[] newArray = new Vector2[array.Length];
@@ -544,11 +545,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector2[] transformed (multiplied) by the inverse transformation matrix.
+        /// 返回由逆变换矩阵变换（相乘）的给定 Vector2[] 的副本。
         /// </summary>
-        /// <param name="array">A Vector2[] to inversely transform.</param>
-        /// <param name="transform">The transformation to apply.</param>
-        /// <returns>The inversely transformed copy of the Vector2[].</returns>
+        /// <param name="array">一个 Vector2[] 进行逆变换。</param>
+        /// <param name="transform">要应用的转换。</param>
+        /// <returns>Vector2[] 的逆变换副本。</returns>
         public static Vector2[] operator *(Vector2[] array, Transform2D transform)
         {
             Vector2[] newArray = new Vector2[array.Length];
@@ -588,54 +589,49 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the transform is exactly equal
-        /// to the given object (<see paramref="obj"/>).
-        /// Note: Due to floating-point precision errors, consider using
-        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// 如果此转换和 <paramref name="obj"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="obj">The object to compare with.</param>
-        /// <returns>Whether or not the transform and the object are exactly equal.</returns>
+        /// <param name="obj">要比较的另一个对象。</param>
+        /// <returns>变换和其他对象是否相等。</returns>
         public override bool Equals(object obj)
         {
             return obj is Transform2D transform2D && Equals(transform2D);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the transforms are exactly equal.
-        /// Note: Due to floating-point precision errors, consider using
-        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// 如果此转换和 <paramref name="other"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="other">The other transform to compare.</param>
-        /// <returns>Whether or not the matrices are exactly equal.</returns>
+        /// <param name="other">要比较的另一个变换。</param>
+        /// <returns>矩阵是否相等。</returns>
         public bool Equals(Transform2D other)
         {
             return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this transform and <paramref name="other"/> are approximately equal,
-        /// by running <see cref="Vector2.IsEqualApprox(Vector2)"/> on each component.
+        /// 如果此变换和 <paramref name="other"/> 近似相等，则返回 <see langword="true"/>，
+        /// 通过在每个组件上运行 <see cref="Vector2.IsEqualApprox(Vector2)"/>。
         /// </summary>
-        /// <param name="other">The other transform to compare.</param>
-        /// <returns>Whether or not the matrices are approximately equal.</returns>
+        /// <param name="other">要比较的另一个变换。</param>
+        /// <returns>矩阵是否近似相等。</returns>
         public bool IsEqualApprox(Transform2D other)
         {
             return x.IsEqualApprox(other.x) && y.IsEqualApprox(other.y) && origin.IsEqualApprox(other.origin);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="Transform2D"/>.
+        /// 用作 <see cref="Transform2D"/> 的哈希函数。
         /// </summary>
-        /// <returns>A hash code for this transform.</returns>
+        /// <returns>此转换的哈希码。</returns>
         public override int GetHashCode()
         {
             return x.GetHashCode() ^ y.GetHashCode() ^ origin.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="Transform2D"/> to a string.
+        /// 将此 <see cref="Transform2D"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this transform.</returns>
+        /// <returns>此转换的字符串表示形式。</returns>
         public override string ToString()
         {
             return String.Format("({0}, {1}, {2})", new object[]
@@ -647,9 +643,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/>.
+        /// 将此 <see cref="Transform2D"/> 转换为具有给定 <paramref name="format"/> 的字符串。
         /// </summary>
-        /// <returns>A string representation of this transform.</returns>
+        /// <returns>此转换的字符串表示形式。</returns>
         public string ToString(string format)
         {
             return String.Format("({0}, {1}, {2})", new object[]

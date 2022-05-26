@@ -7,20 +7,20 @@ using System.Runtime.CompilerServices;
 namespace Godot
 {
     /// <summary>
-    /// Represents an <see cref="Object"/> whose members can be dynamically accessed at runtime through the Variant API.
+    /// 表示一个 <see cref="Object"/> ，其成员可以在运行时通过 Variant API 动态访问。
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The <see cref="DynamicGodotObject"/> class enables access to the Variant
-    /// members of a <see cref="Object"/> instance at runtime.
+    /// <see cref="DynamicGodotObject"/> 类允许访问 Variant
+    /// <see cref="Object"/> 实例在运行时的成员。
     /// </para>
     /// <para>
-    /// This allows accessing the class members using their original names in the engine as well as the members from the
-    /// script attached to the <see cref="Object"/>, regardless of the scripting language it was written in.
+    /// 这允许使用它们在引擎中的原始名称以及来自
+    /// 附加到 <see cref="Object"/> 的脚本，不管它是用什么脚本语言编写的。
     /// </para>
     /// </remarks>
     /// <example>
-    /// This sample shows how to use <see cref="DynamicGodotObject"/> to dynamically access the engine members of a <see cref="Object"/>.
+    /// 这个示例展示了如何使用 <see cref="DynamicGodotObject"/> 来动态访问 <see cref="Object"/> 的引擎成员。
     /// <code>
     /// dynamic sprite = GetNode("Sprite").DynamicGodotObject;
     /// sprite.add_child(this);
@@ -30,7 +30,7 @@ namespace Godot
     /// </code>
     /// </example>
     /// <example>
-    /// This sample shows how to use <see cref="DynamicGodotObject"/> to dynamically access the members of the script attached to a <see cref="Object"/>.
+    /// 此示例显示如何使用 <see cref="DynamicGodotObject"/> 动态访问附加到 <see cref="Object"/> 的脚本成员。
     /// <code>
     /// dynamic childNode = GetNode("ChildNode").DynamicGodotObject;
     ///
@@ -40,7 +40,7 @@ namespace Godot
     ///     childNode.print_message(3);
     /// }
     /// </code>
-    /// The <c>ChildNode</c> node has the following GDScript script attached:
+    /// <c>ChildNode</c> 节点附加了以下 GDScript 脚本：
     /// <code>
     /// // # ChildNode.gd
     /// // var print_allowed = true
@@ -54,15 +54,15 @@ namespace Godot
     public class DynamicGodotObject : DynamicObject
     {
         /// <summary>
-        /// Gets the <see cref="Object"/> associated with this <see cref="DynamicGodotObject"/>.
+        /// 获取与此 <see cref="DynamicGodotObject"/> 关联的 <see cref="Object"/>。
         /// </summary>
         public Object Value { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DynamicGodotObject"/> class.
+        /// 初始化 <see cref="DynamicGodotObject"/> 类的新实例。
         /// </summary>
         /// <param name="godotObject">
-        /// The <see cref="Object"/> that will be associated with this <see cref="DynamicGodotObject"/>.
+        /// 将与此 <see cref="DynamicGodotObject"/> 关联的 <see cref="Object"/>。
         /// </param>
         /// <exception cref="ArgumentNullException">
         /// Thrown when the <paramref name="godotObject"/> parameter is <see langword="null"/>.

@@ -26,9 +26,9 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Wrapper around Godot's Dictionary class, a dictionary of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine.
+    /// 对 Godot 的 Dictionary 类的封装，一个 Variant 的字典
+    /// 在 C++ 引擎中分配的类型化元素。 有用的时候
+    /// 与引擎交互。
     /// </summary>
     public class Dictionary : IDictionary, IDisposable
     {
@@ -36,7 +36,7 @@ namespace Godot.Collections
         private bool _disposed = false;
 
         /// <summary>
-        /// Constructs a new empty <see cref="Dictionary"/>.
+        /// 构造一个新的空 <see cref="Dictionary"/>。
         /// </summary>
         public Dictionary()
         {
@@ -44,10 +44,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Dictionary"/> from the given dictionary's elements.
+        /// 从给定字典的元素构造一个新的 <see cref="Dictionary"/>。
         /// </summary>
-        /// <param name="dictionary">The dictionary to construct from.</param>
-        /// <returns>A new Godot Dictionary.</returns>
+        /// <param name="dictionary">要构造的字典.</param>
+        /// <returns>新的 godot 词典.</returns>
         public Dictionary(IDictionary dictionary) : this()
         {
             if (dictionary == null)
@@ -76,7 +76,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Disposes of this <see cref="Dictionary"/>.
+        /// 处理这个 <see cref="Dictionary"/>。
         /// </summary>
         public void Dispose()
         {
@@ -93,10 +93,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary"/>.
+        /// 复制此 <see cref="Dictionary"/>。
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
-        /// <returns>A new Godot Dictionary.</returns>
+        /// <param name="deep">如果<see langword="true"/>，执行深拷贝.</param>
+        /// <returns>新的 Godot 词典.</returns>
         public Dictionary Duplicate(bool deep = false)
         {
             return new Dictionary(godot_icall_Dictionary_Duplicate(GetPtr(), deep));
@@ -105,7 +105,7 @@ namespace Godot.Collections
         // IDictionary
 
         /// <summary>
-        /// Gets the collection of keys in this <see cref="Dictionary"/>.
+        /// 获取此 <see cref="Dictionary"/> 中的键集合。
         /// </summary>
         public ICollection Keys
         {
@@ -117,7 +117,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Gets the collection of elements in this <see cref="Dictionary"/>.
+        /// 获取此 <see cref="Dictionary"/> 中的元素集合。
         /// </summary>
         public ICollection Values
         {
@@ -141,9 +141,9 @@ namespace Godot.Collections
         bool IDictionary.IsReadOnly => false;
 
         /// <summary>
-        /// Returns the object at the given <paramref name="key"/>.
+        /// 返回给定 <paramref name="key"/> 处的对象。
         /// </summary>
-        /// <value>The object at the given <paramref name="key"/>.</value>
+        /// <value>给定 <paramref name="key"/> 处的对象.</value>
         public object this[object key]
         {
             get => godot_icall_Dictionary_GetValue(GetPtr(), key);
@@ -151,35 +151,35 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Adds an object <paramref name="value"/> at key <paramref name="key"/>
-        /// to this <see cref="Dictionary"/>.
+        /// 在键 <paramref name="key"/> 处添加对象 <paramref name="value"/>
+        /// 到这个<see cref="Dictionary"/>。
         /// </summary>
-        /// <param name="key">The key at which to add the object.</param>
-        /// <param name="value">The object to add.</param>
+        /// <param name="key">添加对象的键.</param>
+        /// <param name="value">要添加的对象.</param>
         public void Add(object key, object value) => godot_icall_Dictionary_Add(GetPtr(), key, value);
 
         /// <summary>
-        /// Erases all items from this <see cref="Dictionary"/>.
+        /// 删除此 <see cref="Dictionary"/> 中的所有项目。
         /// </summary>
         public void Clear() => godot_icall_Dictionary_Clear(GetPtr());
 
         /// <summary>
-        /// Checks if this <see cref="Dictionary"/> contains the given key.
+        /// 检查此 <see cref="Dictionary"/> 是否包含给定的键。
         /// </summary>
-        /// <param name="key">The key to look for.</param>
-        /// <returns>Whether or not this dictionary contains the given key.</returns>
+        /// <param name="key">寻找的键.</param>
+        /// <returns>这个字典是否包含给定的键.</returns>
         public bool Contains(object key) => godot_icall_Dictionary_ContainsKey(GetPtr(), key);
 
         /// <summary>
-        /// Gets an enumerator for this <see cref="Dictionary"/>.
+        /// 获取此 <see cref="Dictionary"/> 的枚举器。
         /// </summary>
-        /// <returns>An enumerator.</returns>
+        /// <returns>枚举器.</returns>
         public IDictionaryEnumerator GetEnumerator() => new DictionaryEnumerator(this);
 
         /// <summary>
-        /// Removes an element from this <see cref="Dictionary"/> by key.
+        /// 按键从此 <see cref="Dictionary"/> 中删除一个元素。
         /// </summary>
-        /// <param name="key">The key of the element to remove.</param>
+        /// <param name="key">要删除的元素的键.</param>
         public void Remove(object key) => godot_icall_Dictionary_RemoveKey(GetPtr(), key);
 
         // ICollection
@@ -189,18 +189,18 @@ namespace Godot.Collections
         bool ICollection.IsSynchronized => false;
 
         /// <summary>
-        /// Returns the number of elements in this <see cref="Dictionary"/>.
-        /// This is also known as the size or length of the dictionary.
+        /// 返回此 <see cref="Dictionary"/> 中的元素数。
+        /// 这也称为字典的大小或长度。
         /// </summary>
-        /// <returns>The number of elements.</returns>
+        /// <returns>元素数量.</returns>
         public int Count => godot_icall_Dictionary_Count(GetPtr());
 
         /// <summary>
-        /// Copies the elements of this <see cref="Dictionary"/> to the given
-        /// untyped C# array, starting at the given index.
+        /// 将此 <see cref="Dictionary"/> 的元素复制到给定的
+        /// 无类型的 C# 数组，从给定的索引开始。
         /// </summary>
-        /// <param name="array">The array to copy to.</param>
-        /// <param name="index">The index to start at.</param>
+        /// <param name="array">要复制到的数组.</param>
+        /// <param name="index">开始的索引.</param>
         public void CopyTo(System.Array array, int index)
         {
             if (array == null)
@@ -280,9 +280,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this <see cref="Dictionary"/> to a string.
+        /// 将此 <see cref="Dictionary"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this dictionary.</returns>
+        /// <returns>此字典的字符串表示形式.</returns>
         public override string ToString()
         {
             return godot_icall_Dictionary_ToString(GetPtr());
@@ -356,13 +356,13 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Typed wrapper around Godot's Dictionary class, a dictionary of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
-    /// such as <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
+    /// 围绕 Godot 的 Dictionary 类的类型化包装，一个 Variant 的字典
+    /// 在 C++ 引擎中分配的类型化元素。 有用的时候
+    /// 与引擎交互。 否则更喜欢 .NET 集合
+    /// 例如 <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>。
     /// </summary>
-    /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
-    /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
+    /// <typeparam name="TKey">字典键的类型.</typeparam>
+    /// <typeparam name="TValue">字典值的类型.</typeparam>
     public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private readonly Dictionary _objectDict;
@@ -376,7 +376,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new empty <see cref="Dictionary{TKey, TValue}"/>.
+        /// 构造一个新的空 <see cref="Dictionary{TKey, TValue}"/>。
         /// </summary>
         public Dictionary()
         {
@@ -384,10 +384,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Dictionary{TKey, TValue}"/> from the given dictionary's elements.
+        ///从给定字典的元素构造一个新的 <see cref="Dictionary{TKey, TValue}"/>。
         /// </summary>
-        /// <param name="dictionary">The dictionary to construct from.</param>
-        /// <returns>A new Godot Dictionary.</returns>
+        /// <param name="dictionary">要构造的字典.</param>
+        /// <returns>新的 Godot 词典.</returns>
         public Dictionary(IDictionary<TKey, TValue> dictionary)
         {
             _objectDict = new Dictionary();
@@ -406,10 +406,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Dictionary{TKey, TValue}"/> from the given dictionary's elements.
+        /// 从给定字典的元素构造一个新的 <see cref="Dictionary{TKey, TValue}"/>。
         /// </summary>
-        /// <param name="dictionary">The dictionary to construct from.</param>
-        /// <returns>A new Godot Dictionary.</returns>
+        /// <param name="dictionary">要构造的字典.</param>
+        /// <returns>新的 Godot 词典.</returns>
         public Dictionary(Dictionary dictionary)
         {
             _objectDict = dictionary;
@@ -426,9 +426,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this typed <see cref="Dictionary{TKey, TValue}"/> to an untyped <see cref="Dictionary"/>.
+        /// 将此类型化的 <see cref="Dictionary{TKey, TValue}"/> 转换为非类型化的 <see cref="Dictionary"/>。
         /// </summary>
-        /// <param name="from">The typed dictionary to convert.</param>
+        /// <param name="from">要转换的类型化字典.</param>
         public static explicit operator Dictionary(Dictionary<TKey, TValue> from)
         {
             return from._objectDict;
@@ -440,10 +440,10 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 复制此 <see cref="Dictionary{TKey, TValue}"/>。
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
-        /// <returns>A new Godot Dictionary.</returns>
+        /// <param name="deep">如果<see langword="true"/>，执行深拷贝.</param>
+        /// <returns>新的 Godot 词典.</returns>
         public Dictionary<TKey, TValue> Duplicate(bool deep = false)
         {
             return new Dictionary<TKey, TValue>(_objectDict.Duplicate(deep));
@@ -452,9 +452,9 @@ namespace Godot.Collections
         // IDictionary<TKey, TValue>
 
         /// <summary>
-        /// Returns the value at the given <paramref name="key"/>.
+        /// 返回给定 <paramref name="key"/> 的值。
         /// </summary>
-        /// <value>The value at the given <paramref name="key"/>.</value>
+        /// <value>给定 <paramref name="key"/> 的值.</value>
         public TValue this[TKey key]
         {
             get { return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(_objectDict.GetPtr(), key, valTypeEncoding, valTypeClass); }
@@ -462,7 +462,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Gets the collection of keys in this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 获取此 <see cref="Dictionary{TKey, TValue}"/> 中的键集合。
         /// </summary>
         public ICollection<TKey> Keys
         {
@@ -474,7 +474,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Gets the collection of elements in this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 获取此 <see cref="Dictionary{TKey, TValue}"/> 中的元素集合。
         /// </summary>
         public ICollection<TValue> Values
         {
@@ -492,41 +492,41 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Adds an object <paramref name="value"/> at key <paramref name="key"/>
-        /// to this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 在键 <paramref name="key"/> 处添加一个对象 <paramref name="value"/>
+        /// 到这个 <see cref="Dictionary{TKey, TValue}"/>。
         /// </summary>
-        /// <param name="key">The key at which to add the object.</param>
-        /// <param name="value">The object to add.</param>
+        /// <param name="key">添加对象的键.</param>
+        /// <param name="value">要添加的对象.</param>
         public void Add(TKey key, TValue value)
         {
             _objectDict.Add(key, value);
         }
 
         /// <summary>
-        /// Checks if this <see cref="Dictionary{TKey, TValue}"/> contains the given key.
+        /// 检查这个 <see cref="Dictionary{TKey, TValue}"/> 是否包含给定的键。
         /// </summary>
-        /// <param name="key">The key to look for.</param>
-        /// <returns>Whether or not this dictionary contains the given key.</returns>
+        /// <param name="key">寻找的键.</param>
+        /// <returns>这个字典是否包含给定的键。</returns>
         public bool ContainsKey(TKey key)
         {
             return _objectDict.Contains(key);
         }
 
         /// <summary>
-        /// Removes an element from this <see cref="Dictionary{TKey, TValue}"/> by key.
+        /// 按键从此 <see cref="Dictionary{TKey, TValue}"/> 中删除一个元素。
         /// </summary>
-        /// <param name="key">The key of the element to remove.</param>
+        /// <param name="key">要移除的元素的键。</param>
         public bool Remove(TKey key)
         {
             return Dictionary.godot_icall_Dictionary_RemoveKey(GetPtr(), key);
         }
 
         /// <summary>
-        /// Gets the object at the given <paramref name="key"/>.
+        /// 获取给定 <paramref name="key"/> 处的对象。
         /// </summary>
-        /// <param name="key">The key of the element to get.</param>
-        /// <param name="value">The value at the given <paramref name="key"/>.</param>
-        /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
+        /// <param name="key">要获取的元素的key。</param>
+        /// <param name="value">给定<paramref name="key"/>的值。</param>
+        /// <returns>如果为给定的 <paramref name="key"/> 找到对象。</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
             bool found = Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out object retValue, valTypeEncoding, valTypeClass);
@@ -537,10 +537,10 @@ namespace Godot.Collections
         // ICollection<KeyValuePair<TKey, TValue>>
 
         /// <summary>
-        /// Returns the number of elements in this <see cref="Dictionary{TKey, TValue}"/>.
-        /// This is also known as the size or length of the dictionary.
+        /// 返回此 <see cref="Dictionary{TKey, TValue}"/> 中的元素数。
+        /// 这也称为字典的大小或长度。
         /// </summary>
-        /// <returns>The number of elements.</returns>
+        /// <returns>元素个数。</returns>
         public int Count
         {
             get { return _objectDict.Count; }
@@ -554,7 +554,7 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Erases all the items from this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 删除此 <see cref="Dictionary{TKey, TValue}"/> 中的所有项目。
         /// </summary>
         public void Clear()
         {
@@ -567,11 +567,11 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Copies the elements of this <see cref="Dictionary{TKey, TValue}"/> to the given
-        /// untyped C# array, starting at the given index.
+        /// 将此 <see cref="Dictionary{TKey, TValue}"/> 的元素复制到给定的
+        /// 无类型的 C# 数组，从给定的索引开始。
         /// </summary>
-        /// <param name="array">The array to copy to.</param>
-        /// <param name="arrayIndex">The index to start at.</param>
+        /// <param name="array">要复制到的数组。</param>
+        /// <param name="arrayIndex">开始的索引。</param>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (array == null)
@@ -601,9 +601,9 @@ namespace Godot.Collections
         // IEnumerable<KeyValuePair<TKey, TValue>>
 
         /// <summary>
-        /// Gets an enumerator for this <see cref="Dictionary{TKey, TValue}"/>.
+        /// 获取此 <see cref="Dictionary{TKey, TValue}"/> 的枚举器。
         /// </summary>
-        /// <returns>An enumerator.</returns>
+        /// <returns>枚举器.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             for (int i = 0; i < Count; i++)
@@ -618,9 +618,9 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Converts this <see cref="Dictionary{TKey, TValue}"/> to a string.
+        /// 将此 <see cref="Dictionary{TKey, TValue}"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this dictionary.</returns>
+        /// <returns>此字典的字符串表示形式.</returns>
         public override string ToString() => _objectDict.ToString();
     }
 }

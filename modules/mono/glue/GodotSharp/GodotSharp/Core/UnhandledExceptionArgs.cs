@@ -3,12 +3,12 @@ using System;
 namespace Godot
 {
     /// <summary>
-    /// Event arguments for when unhandled exceptions occur.
+    /// 发生未处理异常时的事件参数。
     /// </summary>
     public class UnhandledExceptionArgs
     {
         /// <summary>
-        /// Exception object.
+        /// 异常对象。
         /// </summary>
         public Exception Exception { get; private set; }
 

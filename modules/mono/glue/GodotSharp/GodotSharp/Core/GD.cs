@@ -15,25 +15,25 @@ namespace Godot
     public static partial class GD
     {
         /// <summary>
-        /// Decodes a byte array back to a <c>Variant</c> value.
-        /// If <paramref name="allowObjects"/> is <see langword="true"/> decoding objects is allowed.
+        /// 将字节数组解码回 <c>Variant</c> 值。
+        /// 如果 <paramref name="allowObjects"/> 是 <see langword="true"/> 则允许解码对象。
         ///
-        /// WARNING: Deserialized object can contain code which gets executed.
-        /// Do not set <paramref name="allowObjects"/> to <see langword="true"/>
-        /// if the serialized object comes from untrusted sources to avoid
-        /// potential security threats (remote code execution).
+        /// 警告：反序列化的对象可以包含被执行的代码。
+        /// 不要将 <paramref name="allowObjects"/> 设置为 <see langword="true"/>
+        /// 如果序列化对象来自不受信任的来源，要避免
+        /// 潜在的安全威胁（远程代码执行）。
         /// </summary>
-        /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
-        /// <param name="allowObjects">If objects should be decoded.</param>
-        /// <returns>The decoded <c>Variant</c>.</returns>
+        /// <param name="bytes">将被解码为<c>Variant</c>的字节数组。</param>
+        /// <param name="allowObjects">如果对象应该被解码。</param>
+        /// <returns>解码后的<c>Variant</c>.</returns>
         public static object Bytes2Var(byte[] bytes, bool allowObjects = false)
         {
             return godot_icall_GD_bytes2var(bytes, allowObjects);
         }
 
         /// <summary>
-        /// Converts from a <c>Variant</c> type to another in the best way possible.
-        /// The <paramref name="type"/> parameter uses the <see cref="Variant.Type"/> values.
+        /// 以最佳方式从 <c>Variant</c> 类型转换为另一种类型。
+        /// <paramref name="type"/> 参数使用 <see cref="Variant.Type"/> 值。
         /// </summary>
         /// <example>
         /// <code>
@@ -45,25 +45,25 @@ namespace Godot
         /// GD.Print(b.Length);
         /// </code>
         /// </example>
-        /// <returns>The <c>Variant</c> converted to the given <paramref name="type"/>.</returns>
+        /// <returns><c>Variant</c> 转换为给定的 <paramref name="type"/>.</returns>
         public static object Convert(object what, Variant.Type type)
         {
             return godot_icall_GD_convert(what, type);
         }
 
         /// <summary>
-        /// Converts from decibels to linear energy (audio).
+        /// 从分贝转换为线性能量（音频）。
         /// </summary>
         /// <seealso cref="Linear2Db(real_t)"/>
-        /// <param name="db">Decibels to convert.</param>
-        /// <returns>Audio volume as linear energy.</returns>
+        /// <param name="db">要转换的分贝数。</param>
+        /// <returns>音频音量作为线性能量。</returns>
         public static real_t Db2Linear(real_t db)
         {
             return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
         /// <summary>
-        /// Returns the result of <paramref name="value"/> decreased by
+        /// 返回 <paramref name="value"/> 减少的结果
         /// <paramref name="step"/> * <paramref name="amount"/>.
         /// </summary>
         /// <example>
@@ -74,10 +74,10 @@ namespace Godot
         /// </example>
         /// <param name="value">Value that will be decreased.</param>
         /// <param name="amount">
-        /// Amount that will be decreased from <paramref name="value"/> for every <paramref name="step"/>.
+        /// 对于每个 <paramref name="step"/>，将从 <paramref name="value"/> 减少的数量。
         /// </param>
         /// <param name="step">Times the <paramref name="value"/> will be decreased by <paramref name="amount"/></param>
-        /// <returns>The decreased value.</returns>
+        /// <returns>减少的值。</returns>
         [Obsolete("DecTime has been deprecated and will be removed in Godot 4.0, use Mathf.MoveToward instead.")]
         public static real_t DecTime(real_t value, real_t amount, real_t step)
         {
@@ -90,13 +90,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Get the <see cref="FuncRef"/> that refers to the function
-        /// with the given name <paramref name="funcname"/> in the
-        /// given object <paramref name="instance"/>.
+        /// 获取引用函数的 <see cref="FuncRef"/>
+        /// 使用给定的名称 <paramref name="funcname"/> 在
+        /// 给定对象 <paramref name="instance"/>。
         /// </summary>
-        /// <param name="instance">The object that contains the function.</param>
-        /// <param name="funcname">The name of the function.</param>
-        /// <returns>A reference to the given object's function.</returns>
+        /// <param name="instance">包含函数的对象。</param>
+        /// <param name="funcname">函数名。</param>
+        /// <returns>对给定对象函数的引用。</returns>
         public static FuncRef FuncRef(Object instance, string funcname)
         {
             var ret = new FuncRef();
@@ -116,23 +116,23 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the integer hash of the variable passed.
+        /// 返回传递的变量的整数哈希。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.Print(GD.Hash("a")); // Prints 177670
         /// </code>
         /// </example>
-        /// <param name="var">Variable that will be hashed.</param>
-        /// <returns>Hash of the variable passed.</returns>
+        /// <param name="var">将被散列的变量。</param>
+        /// <returns>传递的变量的哈希值。</returns>
         public static int Hash(object var)
         {
             return godot_icall_GD_hash(var);
         }
 
         /// <summary>
-        /// Returns the <see cref="Object"/> that corresponds to <paramref name="instanceId"/>.
-        /// All Objects have a unique instance ID.
+        /// 返回对应于 <paramref name="instanceId"/> 的 <see cref="Object"/>。
+        /// 所有对象都有一个唯一的实例 ID。
         /// </summary>
         /// <example>
         /// <code>
@@ -149,16 +149,16 @@ namespace Godot
         /// }
         /// </code>
         /// </example>
-        /// <param name="instanceId">Instance ID of the Object to retrieve.</param>
-        /// <returns>The <see cref="Object"/> instance.</returns>
+        /// <param name="instanceId">要检索的对象的实例ID。</param>
+        /// <returns><see cref="Object"/> 实例。</returns>
         public static Object InstanceFromId(ulong instanceId)
         {
             return godot_icall_GD_instance_from_id(instanceId);
         }
 
         /// <summary>
-        /// Converts from linear energy to decibels (audio).
-        /// This can be used to implement volume sliders that behave as expected (since volume isn't linear).
+        /// 从线性能量转换为分贝（音频）。
+        /// 这可用于实现按预期运行的音量滑块（因为音量不是线性的）。
         /// </summary>
         /// <seealso cref="Db2Linear(real_t)"/>
         /// <example>
@@ -169,26 +169,26 @@ namespace Godot
         /// AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), GD.Linear2Db(slider.value));
         /// </code>
         /// </example>
-        /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels.</returns>
+        /// <param name="linear">要转换的线性能量。</param>
+        /// <returns>音频分贝数。</returns>
         public static real_t Linear2Db(real_t linear)
         {
             return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
 
         /// <summary>
-        /// Loads a resource from the filesystem located at <paramref name="path"/>.
-        /// The resource is loaded on the method call (unless it's referenced already
-        /// elsewhere, e.g. in another script or in the scene), which might cause slight delay,
-        /// especially when loading scenes. To avoid unnecessary delays when loading something
-        /// multiple times, either store the resource in a variable.
+        /// 从位于 <paramref name="path"/> 的文件系统加载资源。
+        /// 资源在方法调用时加载（除非它已经被引用
+        /// 其他地方，例如 在另一个脚本或场景中），这可能会导致轻微的延迟，
+        /// 特别是在加载场景时。 为了避免加载东西时不必要的延迟
+        /// 多次，要么将资源存储在变量中。
         ///
-        /// Note: Resource paths can be obtained by right-clicking on a resource in the FileSystem
-        /// dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+        /// 注意：资源路径可以通过右键单击FileSystem中的资源来获取
+        ///停靠并选择“复制路径”或将文件从文件系统停靠拖到脚本中。
         ///
-        /// Important: The path must be absolute, a local path will just return <see langword="null"/>.
-        /// This method is a simplified version of <see cref="ResourceLoader.Load"/>, which can be used
-        /// for more advanced scenarios.
+        /// 重要：路径必须是绝对路径，本地路径只会返回<see langword="null"/>。
+        /// 该方法是<see cref="ResourceLoader.Load"/>的简化版，可以使用
+        /// 用于更高级的场景。
         /// </summary>
         /// <example>
         /// <code>
@@ -196,26 +196,26 @@ namespace Godot
         /// var main = GD.Load("res://main.tscn"); // main will contain a PackedScene resource.
         /// </code>
         /// </example>
-        /// <param name="path">Path of the <see cref="Resource"/> to load.</param>
-        /// <returns>The loaded <see cref="Resource"/>.</returns>
+        /// <param name="path">要加载的 <see cref="Resource"/> 的路径。</param>
+        /// <returns>加载的<see cref="Resource"/>.</returns>
         public static Resource Load(string path)
         {
             return ResourceLoader.Load(path);
         }
 
         /// <summary>
-        /// Loads a resource from the filesystem located at <paramref name="path"/>.
-        /// The resource is loaded on the method call (unless it's referenced already
-        /// elsewhere, e.g. in another script or in the scene), which might cause slight delay,
-        /// especially when loading scenes. To avoid unnecessary delays when loading something
-        /// multiple times, either store the resource in a variable.
+        /// 从位于 <paramref name="path"/> 的文件系统加载资源。
+        /// 资源在方法调用时加载（除非它已经被引用
+        /// 其他地方，例如 在另一个脚本或场景中），这可能会导致轻微的延迟，
+        /// 特别是在加载场景时。 为了避免加载东西时不必要的延迟
+        /// 多次，要么将资源存储在变量中。
         ///
-        /// Note: Resource paths can be obtained by right-clicking on a resource in the FileSystem
-        /// dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+        /// 注意：资源路径可以通过右键单击FileSystem中的资源来获取
+        ///停靠并选择“复制路径”或将文件从文件系统停靠拖到脚本中。
         ///
-        /// Important: The path must be absolute, a local path will just return <see langword="null"/>.
-        /// This method is a simplified version of <see cref="ResourceLoader.Load"/>, which can be used
-        /// for more advanced scenarios.
+        /// 重要：路径必须是绝对路径，本地路径只会返回<see langword="null"/>。
+        /// 该方法是<see cref="ResourceLoader.Load"/>的简化版，可以使用
+        /// 用于更高级的场景。
         /// </summary>
         /// <example>
         /// <code>
@@ -223,51 +223,51 @@ namespace Godot
         /// var main = GD.Load&lt;PackedScene&gt;("res://main.tscn"); // main will contain a PackedScene resource.
         /// </code>
         /// </example>
-        /// <param name="path">Path of the <see cref="Resource"/> to load.</param>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
+        /// <param name="path">要加载的 <see cref="Resource"/> 的路径。</param>
+        /// <typeparam name="T">要转换的类型。 应该是 <see cref="Resource"/> 的后代。</typeparam>
         public static T Load<T>(string path) where T : class
         {
             return ResourceLoader.Load<T>(path);
         }
 
         /// <summary>
-        /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
+        /// 将错误消息推送到 Godot 的内置调试器和 OS 终端。
         ///
-        /// Note: Errors printed this way will not pause project execution.
-        /// To print an error message and pause project execution in debug builds,
-        /// use [code]assert(false, "test error")[/code] instead.
+        /// 注意：以这种方式打印的错误不会暂停项目执行。
+        /// 要在调试版本中打印错误消息并暂停项目执行，
+        /// 使用 [code]assert(false, "test error")[/code] 代替。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PushError("test_error"); // Prints "test error" to debugger and terminal as error call
         /// </code>
         /// </example>
-        /// <param name="message">Error message.</param>
+        /// <param name="message">错误消息.</param>
         public static void PushError(string message)
         {
             godot_icall_GD_pusherror(message);
         }
 
         /// <summary>
-        /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+        /// 将警告消息推送到 Godot 的内置调试器和 OS 终端。
         /// </summary>
         /// <example>
         /// GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
         /// </example>
-        /// <param name="message">Warning message.</param>
+        /// <param name="message">警告消息.</param>
         public static void PushWarning(string message)
         {
             godot_icall_GD_pushwarning(message);
         }
 
         /// <summary>
-        /// Converts one or more arguments of any type to string in the best way possible
-        /// and prints them to the console.
+        /// 以尽可能最好的方式将任何类型的一个或多个参数转换为字符串
+        /// 并将它们打印到控制台。
         ///
-        /// Note: Consider using <see cref="PushError(string)"/> and <see cref="PushWarning(string)"/>
-        /// to print error and warning messages instead of <see cref="Print(object[])"/>.
-        /// This distinguishes them from print messages used for debugging purposes,
-        /// while also displaying a stack trace when an error or warning is printed.
+        /// 注意：考虑使用 <see cref="PushError(string)"/> 和 <see cref="PushWarning(string)"/>
+        /// 打印错误和警告消息，而不是 <see cref="Print(object[])"/>。
+        /// 这将它们与用于调试目的的打印消息区分开来，
+        /// 同时在打印错误或警告时显示堆栈跟踪。
         /// </summary>
         /// <example>
         /// <code>
@@ -275,14 +275,14 @@ namespace Godot
         /// GD.Print("a", "b", a); // Prints ab[1, 2, 3]
         /// </code>
         /// </example>
-        /// <param name="what">Arguments that will be printed.</param>
+        /// <param name="what">将打印的参数.</param>
         public static void Print(params object[] what)
         {
             godot_icall_GD_print(GetPrintParams(what));
         }
 
         /// <summary>
-        /// Prints the current stack trace information to the console.
+        /// 将当前堆栈跟踪信息打印到控制台。
         /// </summary>
         public static void PrintStack()
         {
@@ -290,25 +290,25 @@ namespace Godot
         }
 
         /// <summary>
-        /// Prints one or more arguments to strings in the best way possible to standard error line.
+        /// 以标准错误行的最佳方式将一个或多个参数打印到字符串。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PrintErr("prints to stderr");
         /// </code>
         /// </example>
-        /// <param name="what">Arguments that will be printed.</param>
+        /// <param name="what">将打印的参数.</param>
         public static void PrintErr(params object[] what)
         {
             godot_icall_GD_printerr(GetPrintParams(what));
         }
 
         /// <summary>
-        /// Prints one or more arguments to strings in the best way possible to console.
-        /// No newline is added at the end.
+        /// 以可能的最佳控制台方式将一个或多个参数打印到字符串。
+        /// 最后不添加换行符。
         ///
-        /// Note: Due to limitations with Godot's built-in console, this only prints to the terminal.
-        /// If you need to print in the editor, use another method, such as <see cref="Print(object[])"/>.
+        /// 注意：由于 Godot 内置控制台的限制，这只会打印到终端。
+        /// 如果需要在编辑器中打印，请使用其他方法，例如<see cref="Print(object[])"/>。
         /// </summary>
         /// <example>
         /// <code>
@@ -317,57 +317,57 @@ namespace Godot
         /// // Prints AB
         /// </code>
         /// </example>
-        /// <param name="what">Arguments that will be printed.</param>
+        /// <param name="what">将打印的参数.</param>
         public static void PrintRaw(params object[] what)
         {
             godot_icall_GD_printraw(GetPrintParams(what));
         }
 
         /// <summary>
-        /// Prints one or more arguments to the console with a space between each argument.
+        /// 将一个或多个参数打印到控制台，每个参数之间有一个空格。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PrintS("A", "B", "C"); // Prints A B C
         /// </code>
         /// </example>
-        /// <param name="what">Arguments that will be printed.</param>
+        /// <param name="what">将打印的参数.</param>
         public static void PrintS(params object[] what)
         {
             godot_icall_GD_prints(GetPrintParams(what));
         }
 
         /// <summary>
-        /// Prints one or more arguments to the console with a tab between each argument.
+        /// 将一个或多个参数打印到控制台，每个参数之间有一个选项卡。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PrintT("A", "B", "C"); // Prints A       B       C
         /// </code>
         /// </example>
-        /// <param name="what">Arguments that will be printed.</param>
+        /// <param name="what">将打印的参数.</param>
         public static void PrintT(params object[] what)
         {
             godot_icall_GD_printt(GetPrintParams(what));
         }
 
         /// <summary>
-        /// Returns a random floating point value between <c>0.0</c> and <c>1.0</c> (inclusive).
+        /// 返回 <c>0.0</c> 和 <c>1.0</c>（含）之间的随机浮点值。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.Randf(); // Returns e.g. 0.375671
         /// </code>
         /// </example>
-        /// <returns>A random <see langword="float"/> number.</returns>
+        /// <returns>一个随机的 <see langword="float"/> 数字.</returns>
         public static float Randf()
         {
             return godot_icall_GD_randf();
         }
 
         /// <summary>
-        /// Returns a random unsigned 32-bit integer.
-        /// Use remainder to obtain a random value in the interval <c>[0, N - 1]</c> (where N is smaller than 2^32).
+        /// 返回一个随机无符号 32 位整数。
+        /// 使用余数获得区间<c>[0, N - 1]</c>（其中N小于2^32）内的随机值。
         /// </summary>
         /// <example>
         /// <code>
@@ -377,19 +377,19 @@ namespace Godot
         /// GD.Randi() % 100 + 1; // Returns random integer between 1 and 100
         /// </code>
         /// </example>
-        /// <returns>A random <see langword="uint"/> number.</returns>
+        /// <returns>一个随机的 <see langword="uint"/> 数字.</returns>
         public static uint Randi()
         {
             return godot_icall_GD_randi();
         }
 
         /// <summary>
-        /// Randomizes the seed (or the internal state) of the random number generator.
-        /// Current implementation reseeds using a number based on time.
+        /// 随机化随机数生成器的种子（或内部状态）。
+        /// 当前实现使用基于时间的数字重新播种。
         ///
-        /// Note: This method is called automatically when the project is run.
-        /// If you need to fix the seed to have reproducible results, use <see cref="Seed(ulong)"/>
-        /// to initialize the random number generator.
+        /// 注意：该方法在项目运行时自动调用。
+        /// 如果您需要修复种子以获得可重现的结果，请使用 <see cref="Seed(ulong)"/>
+        /// 初始化随机数生成器。
         /// </summary>
         public static void Randomize()
         {
@@ -397,60 +397,60 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a random floating point value on the interval between <paramref name="from"/>
-        /// and <paramref name="to"/> (inclusive).
+        /// 在 <paramref name="from"/> 之间的间隔上返回一个随机浮点值
+        /// 和 <paramref name="to"/>（包括）。
         /// </summary>
         /// <example>
         /// <code>
         /// GD.PrintS(GD.RandRange(-10.0, 10.0), GD.RandRange(-10.0, 10.0)); // Prints e.g. -3.844535 7.45315
         /// </code>
         /// </example>
-        /// <returns>A random <see langword="double"/> number inside the given range.</returns>
+        /// <returns>给定范围内的随机 <see langword="double"/> 数字。</returns>
         public static double RandRange(double from, double to)
         {
             return godot_icall_GD_rand_range(from, to);
         }
 
         /// <summary>
-        /// Returns a random unsigned 32-bit integer, using the given <paramref name="seed"/>.
-        /// The <paramref name="newSeed"/> will return the new seed.
+        /// 使用给定的 <paramref name="seed"/> 返回一个随机无符号 32 位整数。
+        /// <paramref name="newSeed"/> 将返回新种子。
         /// </summary>
-        /// <param name="seed">Seed to use to generate the random number.</param>
-        /// <param name="newSeed">Seed used by the random number generator.</param>
-        /// <returns>A random <see langword="uint"/> number.</returns>
+        /// <param name="seed">用于生成随机数的种子。</param>
+        /// <param name="newSeed">随机数生成器使用的种子。</param>
+        /// <returns>一个随机的<see langword="uint"/>数字。</returns>
         public static uint RandSeed(ulong seed, out ulong newSeed)
         {
             return godot_icall_GD_rand_seed(seed, out newSeed);
         }
 
         /// <summary>
-        /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <c>0</c> to <paramref name="end"/> in steps of <c>1</c>.
+        /// 返回一个 <see cref="IEnumerable{T}"/> 迭代自
+        /// <c>0</c> 到 <paramref name="end"/> 以 <c>1</c> 为步骤。
         /// </summary>
-        /// <param name="end">The last index.</param>
+        /// <param name="end">最后一个索引.</param>
         public static IEnumerable<int> Range(int end)
         {
             return Range(0, end, 1);
         }
 
         /// <summary>
-        /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <paramref name="start"/> to <paramref name="end"/> in steps of <c>1</c>.
+        /// 返回一个 <see cref="IEnumerable{T}"/> 迭代自
+        /// <paramref name="start"/> 到 <paramref name="end"/> 在 <c>1</c> 的步骤中。
         /// </summary>
-        /// <param name="start">The first index.</param>
-        /// <param name="end">The last index.</param>
+        /// <param name="start">第一个索引</param>
+        /// <param name="end">最后一个索引。</param>
         public static IEnumerable<int> Range(int start, int end)
         {
             return Range(start, end, 1);
         }
 
         /// <summary>
-        /// Returns a <see cref="IEnumerable{T}"/> that iterates from
-        /// <paramref name="start"/> to <paramref name="end"/> in steps of <paramref name="step"/>.
+        /// 返回一个 <see cref="IEnumerable{T}"/> 迭代自
+        /// <paramref name="start"/> 到 <paramref name="end"/> 在 <paramref name="step"/> 的步骤中。
         /// </summary>
-        /// <param name="start">The first index.</param>
-        /// <param name="end">The last index.</param>
-        /// <param name="step">The amount by which to increment the index on each iteration.</param>
+        /// <param name="start">第一个索引</param>
+        /// <param name="end">最后一个索引。</param>
+        /// <param name="step">每次迭代增加索引的数量。</param>
         public static IEnumerable<int> Range(int start, int end, int step)
         {
             if (end < start && step > 0)
@@ -472,26 +472,26 @@ namespace Godot
         }
 
         /// <summary>
-        /// Sets seed for the random number generator.
+        /// 为随机数生成器设置种子。
         /// </summary>
-        /// <param name="seed">Seed that will be used.</param>
+        /// <param name="seed">将使用的种子.</param>
         public static void Seed(ulong seed)
         {
             godot_icall_GD_seed(seed);
         }
 
         /// <summary>
-        /// Converts one or more arguments of any type to string in the best way possible.
+        /// 以尽可能最好的方式将任何类型的一个或多个参数转换为字符串。
         /// </summary>
-        /// <param name="what">Arguments that will converted to string.</param>
-        /// <returns>The string formed by the given arguments.</returns>
+        /// <param name="what">将转换为字符串的参数。</param>
+        /// <returns>给定参数形成的字符串。</returns>
         public static string Str(params object[] what)
         {
             return godot_icall_GD_str(what);
         }
 
         /// <summary>
-        /// Converts a formatted string that was returned by <see cref="Var2Str(object)"/> to the original value.
+        /// 将 <see cref="Var2Str(object)"/> 返回的格式化字符串转换为原始值。
         /// </summary>
         /// <example>
         /// <code>
@@ -500,39 +500,39 @@ namespace Godot
         /// GD.Print(b["a"]); // Prints 1
         /// </code>
         /// </example>
-        /// <param name="str">String that will be converted to Variant.</param>
-        /// <returns>The decoded <c>Variant</c>.</returns>
+        /// <param name="str">将被转换为Variant的字符串</param>
+        /// <returns>解码后的<c>Variant</c>.</returns>
         public static object Str2Var(string str)
         {
             return godot_icall_GD_str2var(str);
         }
 
         /// <summary>
-        /// Returns whether the given class exists in <see cref="ClassDB"/>.
+        /// 返回给定的类是否存在于 <see cref="ClassDB"/> 中。
         /// </summary>
-        /// <returns>If the class exists in <see cref="ClassDB"/>.</returns>
+        /// <returns>如果类存在于 <see cref="ClassDB"/>.</returns>
         public static bool TypeExists(string type)
         {
             return godot_icall_GD_type_exists(type);
         }
 
         /// <summary>
-        /// Encodes a <c>Variant</c> value to a byte array.
-        /// If <paramref name="fullObjects"/> is <see langword="true"/> encoding objects is allowed
-        /// (and can potentially include code).
-        /// Deserialization can be done with <see cref="Bytes2Var(byte[], bool)"/>.
+        /// 将 <c>Variant</c> 值编码为字节数组。
+        /// 如果 <paramref name="fullObjects"/> 是 <see langword="true"/> 允许编码对象
+        /// （并且可能包含代码）。
+        /// 可以使用 <see cref="Bytes2Var(byte[], bool)"/> 完成反序列化。
         /// </summary>
-        /// <param name="var">Variant that will be encoded.</param>
-        /// <param name="fullObjects">If objects should be serialized.</param>
-        /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
+        /// <param name="var">将被编码的变体。</param>
+        /// <param name="fullObjects">如果对象应该被序列化。</param>
+        /// <returns><c>Variant</c> 编码为字节数组。</returns>
         public static byte[] Var2Bytes(object var, bool fullObjects = false)
         {
             return godot_icall_GD_var2bytes(var, fullObjects);
         }
 
         /// <summary>
-        /// Converts a <c>Variant</c> <paramref name="var"/> to a formatted string that
-        /// can later be parsed using <see cref="Str2Var(string)"/>.
+        /// 将 <c>Variant</c> <paramref name="var"/> 转换为格式化字符串
+        /// 稍后可以使用 <see cref="Str2Var(string)"/> 解析。
         /// </summary>
         /// <example>
         /// <code>
@@ -545,8 +545,8 @@ namespace Godot
         /// // }
         /// </code>
         /// </example>
-        /// <param name="var">Variant that will be converted to string.</param>
-        /// <returns>The <c>Variant</c> encoded as a string.</returns>
+        /// <param name="var">将转换为字符串的变体。</param>
+        /// <returns><c>Variant</c> 编码为字符串。</returns>
         public static string Var2Str(object var)
         {
             return godot_icall_GD_var2str(var);

@@ -343,15 +343,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/inspector/max_array_dictionary_items_per_page"] = PropertyInfo(Variant::INT, "interface/inspector/max_array_dictionary_items_per_page", PROPERTY_HINT_RANGE, "10,100,1", PROPERTY_USAGE_DEFAULT);
 
 	// Theme
-	_initial_set("interface/theme/preset", "Default");
+	_initial_set("interface/theme/preset", "Custom");
 	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/icon_and_font_color", 0);
 	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/base_color", Color(0.2, 0.23, 0.31));
+	_initial_set("interface/theme/base_color", Color(0.156863, 0.164706, 0.211765, 1));
 	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/accent_color", Color(0.41, 0.61, 0.91));
+	_initial_set("interface/theme/accent_color", Color(0.741176, 0.576471, 0.976471, 1));
 	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/contrast", 0.25);
+	_initial_set("interface/theme/contrast", 0.07);
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::REAL, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
@@ -408,7 +408,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Text editor */
 
 	// Theme
-	_initial_set("text_editor/theme/color_theme", "Adaptive");
+	_initial_set("text_editor/theme/color_theme", "Custom");
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
 	_initial_set("text_editor/theme/line_spacing", 6);
 	hints["text_editor/theme/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/theme/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
@@ -693,41 +693,43 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 void EditorSettings::_load_default_text_editor_theme() {
 	bool dark_theme = is_dark_theme();
 
-	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
-	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/highlighting/symbol_color", Color(0.741176, 0.576471, 0.976471, 1));
+	_initial_set("text_editor/highlighting/keyword_color", Color(1, 0.47451, 0.776471, 1));
 	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
-	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
-	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
-	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
-	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
-	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.0, 0.0, 0.0, 0.23) : Color(0.2, 0.23, 0.31));
-	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
-	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
-	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
-	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
-	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
-	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
-	_initial_set("text_editor/highlighting/caret_color", Color(0.67, 0.67, 0.67));
+
+	_initial_set("text_editor/highlighting/base_type_color", Color(0.545098, 0.913725, 0.992157, 1));
+	_initial_set("text_editor/highlighting/engine_type_color", Color(0.545098, 0.913725, 0.992157, 1));
+	_initial_set("text_editor/highlighting/user_type_color", Color(0.545098, 0.913725, 0.992157, 1));
+	_initial_set("text_editor/highlighting/comment_color", Color(0.384314, 0.447059, 0.643137, 1));
+	_initial_set("text_editor/highlighting/string_color", Color(0.945098, 0.980392, 0.54902, 1));
+	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.156863, 0.164706, 0.211765, 1) : Color(0.2, 0.23, 0.31));
+	_initial_set("text_editor/highlighting/completion_background_color", Color(0.2, 0.23, 0.31, 1));
+	_initial_set("text_editor/highlighting/completion_selected_color", Color(1, 1, 1, 0.07));
+	_initial_set("text_editor/highlighting/completion_existing_color", Color(1, 1, 1, 0.14));
+	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1, 0.07));
+	_initial_set("text_editor/highlighting/completion_font_color", Color(0.972549, 0.972549, 0.94902, 1));
+	_initial_set("text_editor/highlighting/text_color", Color(0.972549, 0.972549, 0.94902, 1));
+	_initial_set("text_editor/highlighting/line_number_color", Color(0.384314, 0.447059, 0.643137, 0.501961));
+	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.384314, 0.447059, 0.643137, 1));
+	_initial_set("text_editor/highlighting/caret_color", Color(1, 1, 1, 1));
+
 	_initial_set("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/text_selected_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
-	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
-	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
-	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
-	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
-	_initial_set("text_editor/highlighting/number_color", Color(0.92, 0.58, 0.2));
-	_initial_set("text_editor/highlighting/function_color", Color(0.4, 0.64, 0.81));
-	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
-	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
-	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
-	_initial_set("text_editor/highlighting/executing_line_color", Color(0.2, 0.8, 0.2, 0.4));
-	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
-	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
-	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
+	_initial_set("text_editor/highlighting/text_selected_color", Color(0.1, 0.115, 0.155, 1));
+	_initial_set("text_editor/highlighting/selection_color", Color(0.266667, 0.278431, 0.352941, 1));
+	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.333333, 0.333333, 1));
+	_initial_set("text_editor/highlighting/current_line_color", Color(0.266667, 0.278431, 0.352941, 0.333333));
+	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.266667, 0.278431, 0.352941, 1));
+	_initial_set("text_editor/highlighting/word_highlighted_color", Color(1, 1, 1, 0.07));
+	_initial_set("text_editor/highlighting/number_color", Color(0.741176, 0.576471, 0.976471, 1));
+	_initial_set("text_editor/highlighting/function_color", Color(0.545098, 0.913725, 0.992157, 1));
+	_initial_set("text_editor/highlighting/member_variable_color", Color(0.972549, 0.972549, 0.94902, 1));
+	_initial_set("text_editor/highlighting/mark_color", Color(1, 0.333333, 0.333333, 0.301961));
+	_initial_set("text_editor/highlighting/bookmark_color", Color(0.545098, 0.913725, 0.992157, 1));
+	_initial_set("text_editor/highlighting/breakpoint_color", Color(1, 0.333333, 0.333333, 1));
+	_initial_set("text_editor/highlighting/executing_line_color", Color(0.313726, 0.980392, 0.482353, 0.4));
+	_initial_set("text_editor/highlighting/code_folding_color", Color(1, 1, 1, 0.7));
+	_initial_set("text_editor/highlighting/search_result_color", Color(1, 1, 1, 0.07));
+	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.384314, 0.447059, 0.643137, 0.380392));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
@@ -1610,6 +1612,8 @@ void EditorSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_settings_dir"), &EditorSettings::get_settings_dir);
 	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorSettings::get_project_settings_dir);
+
+	ClassDB::bind_method(D_METHOD("get_auto_display_scale"), &EditorSettings::get_auto_display_scale);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));

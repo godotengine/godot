@@ -940,6 +940,7 @@ Rect2 AtlasTexture::get_region() const {
 	return region;
 }
 
+
 void AtlasTexture::set_margin(const Rect2 &p_margin) {
 	if (margin == p_margin) {
 		return;
@@ -953,6 +954,18 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
+void AtlasTexture::set_offset(const Rect2& p_offset) {
+	if (offset == p_offset) {
+		return;
+	}
+	offset = p_offset;
+	emit_changed();
+	_change_notify("offset");
+}
+
+Rect2 AtlasTexture::get_offset() const {
+	return offset;
+}
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
@@ -981,12 +994,16 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &AtlasTexture::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &AtlasTexture::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &AtlasTexture::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &AtlasTexture::get_offset);
+
 	ClassDB::bind_method(D_METHOD("set_filter_clip", "enable"), &AtlasTexture::set_filter_clip);
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_atlas", "get_atlas");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
 }
 

@@ -9,54 +9,54 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// A unit quaternion used for representing 3D rotations.
-    /// Quaternions need to be normalized to be used for rotation.
+    /// 用于表示 3D 旋转的单位四元数。
+    /// 四元数需要归一化才能用于旋转。
     ///
-    /// It is similar to <see cref="Basis"/>, which implements matrix
-    /// representation of rotations, and can be parametrized using both
-    /// an axis-angle pair or Euler angles. Basis stores rotation, scale,
-    /// and shearing, while Quat only stores rotation.
+    /// 类似于<see cref="Basis"/>，实现矩阵
+    /// 旋转的表示，并且可以使用两者进行参数化
+    /// 一个轴角对或欧拉角。 基础存储旋转、缩放、
+    /// 和剪切，而 Quat 只存储旋转。
     ///
-    /// Due to its compactness and the way it is stored in memory, certain
-    /// operations (obtaining axis-angle and performing SLERP, in particular)
-    /// are more efficient and robust against floating-point errors.
+    /// 由于它的紧凑性和它在内存中的存储方式，某些
+    /// 操作（尤其是获取轴角和执行 SLERP）
+    /// 对浮点错误更有效和更健壮。
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Quat : IEquatable<Quat>
     {
         /// <summary>
-        /// X component of the quaternion (imaginary <c>i</c> axis part).
-        /// Quaternion components should usually not be manipulated directly.
+        /// 四元数的 X 分量（虚构的 <c>i</c> 轴部分）。
+        /// 四元数组件通常不应该被直接操作。
         /// </summary>
         public real_t x;
 
         /// <summary>
-        /// Y component of the quaternion (imaginary <c>j</c> axis part).
-        /// Quaternion components should usually not be manipulated directly.
+        /// 四元数的Y分量（虚<c>j</c>轴部分）。
+        /// 四元数组件通常不应该被直接操作。
         /// </summary>
         public real_t y;
 
         /// <summary>
-        /// Z component of the quaternion (imaginary <c>k</c> axis part).
-        /// Quaternion components should usually not be manipulated directly.
+        /// 四元数的 Z 分量（虚构的 <c>k</c> 轴部分）。
+        /// 四元数组件通常不应该被直接操作。
         /// </summary>
         public real_t z;
 
         /// <summary>
-        /// W component of the quaternion (real part).
-        /// Quaternion components should usually not be manipulated directly.
+        /// 四元数的 W 分量（实部）。
+        /// 四元数组件通常不应该被直接操作。
         /// </summary>
         public real_t w;
 
         /// <summary>
-        /// Access quaternion components using their index.
+        /// 使用它们的索引访问四元数组件。
         /// </summary>
         /// <value>
-        /// <c>[0]</c> is equivalent to <see cref="x"/>,
-        /// <c>[1]</c> is equivalent to <see cref="y"/>,
-        /// <c>[2]</c> is equivalent to <see cref="z"/>,
-        /// <c>[3]</c> is equivalent to <see cref="w"/>.
+        /// <c>[0]</c> 等价于 <see cref="x"/>,
+        /// <c>[1]</c> 等价于 <see cref="y"/>,
+        /// <c>[2]</c> 等价于 <see cref="z"/>,
+        /// <c>[3]</c> 等价于 <see cref="w"/>。
         /// </value>
         public real_t this[int index]
         {
@@ -99,37 +99,37 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the length (magnitude) of the quaternion.
+        /// 返回四元数的长度（大小）。
         /// </summary>
         /// <seealso cref="LengthSquared"/>
-        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
+        /// <value>等价于<c>Mathf.Sqrt(LengthSquared)</c>.</value>
         public real_t Length
         {
             get { return Mathf.Sqrt(LengthSquared); }
         }
 
         /// <summary>
-        /// Returns the squared length (squared magnitude) of the quaternion.
-        /// This method runs faster than <see cref="Length"/>, so prefer it if
-        /// you need to compare quaternions or need the squared length for some formula.
+        /// 返回四元数的平方长度（平方大小）。
+        /// 这个方法比 <see cref="Length"/> 运行得快，所以如果
+        /// 您需要比较四元数或某些公式的平方长度。
         /// </summary>
-        /// <value>Equivalent to <c>Dot(this)</c>.</value>
+        /// <value>等价于<c>Dot(this)</c>.</value>
         public real_t LengthSquared
         {
             get { return Dot(this); }
         }
 
         /// <summary>
-        /// Returns the angle between this quaternion and <paramref name="to"/>.
-        /// This is the magnitude of the angle you would need to rotate
-        /// by to get from one to the other.
+        /// 返回此四元数与 <paramref name="to"/> 之间的角度。
+        /// 这是您需要旋转的角度的大小
+        /// 通过从一个到另一个。
         ///
-        /// Note: This method has an abnormally high amount
-        /// of floating-point error, so methods such as
-        /// <see cref="Mathf.IsZeroApprox"/> will not work reliably.
+        /// 注意：此方法金额异常高
+        /// 的浮点错误，所以方法如
+        /// <see cref="Mathf.IsZeroApprox"/> 将无法可靠地工作。
         /// </summary>
-        /// <param name="to">The other quaternion.</param>
-        /// <returns>The angle between the quaternions.</returns>
+        /// <param name="to">另一个四元数。</param>
+        /// <returns>四元数之间的角度。</returns>
         public real_t AngleTo(Quat to)
         {
             real_t dot = Dot(to);
@@ -137,14 +137,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a cubic spherical interpolation between quaternions <paramref name="preA"/>, this quaternion,
-        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
+        /// 在四元数之间执行三次球面插值 <paramref name="preA"/>，这个四元数，
+        /// <paramref name="b"/> 和 <paramref name="postB"/>，按给定的数量 <paramref name="weight"/>。
         /// </summary>
-        /// <param name="b">The destination quaternion.</param>
-        /// <param name="preA">A quaternion before this quaternion.</param>
-        /// <param name="postB">A quaternion after <paramref name="b"/>.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The interpolated quaternion.</returns>
+        /// <param name="b">目标四元数。</param>
+        /// <param name="preA">这个四元数之前的一个四元数。</param>
+        /// <param name="postB"><paramref name="b"/>之后的四元数。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>内插四元数。</returns>
         public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t weight)
         {
             real_t t2 = (1.0f - weight) * weight * 2f;
@@ -154,22 +154,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the dot product of two quaternions.
+        /// 返回两个四元数的点积。
         /// </summary>
-        /// <param name="b">The other quaternion.</param>
-        /// <returns>The dot product.</returns>
+        /// <param name="b">另一个四元数。</param>
+        /// <returns>点积。</returns>
         public real_t Dot(Quat b)
         {
             return (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
         }
 
         /// <summary>
-        /// Returns Euler angles (in the YXZ convention: when decomposing,
-        /// first Z, then X, and Y last) corresponding to the rotation
-        /// represented by the unit quaternion. Returned vector contains
-        /// the rotation angles in the format (X angle, Y angle, Z angle).
+        /// 返回欧拉角（在 YXZ 约定中：分解时，
+        /// 先是Z，然后是X，最后是Y）对应旋转
+        /// 由单位四元数表示。 返回的向量包含
+        /// 格式中的旋转角度（X 角度，Y 角度，Z 角度）。
         /// </summary>
-        /// <returns>The Euler angle representation of this quaternion.</returns>
+        /// <returns>这个四元数的欧拉角表示。</returns>
         public Vector3 GetEuler()
         {
 #if DEBUG
@@ -183,9 +183,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the inverse of the quaternion.
+        /// 返回四元数的逆。
         /// </summary>
-        /// <returns>The inverse quaternion.</returns>
+        /// <returns>反四元数。</returns>
         public Quat Inverse()
         {
 #if DEBUG
@@ -198,18 +198,18 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns whether the quaternion is normalized or not.
+        ///返回四元数是否标准化。
         /// </summary>
-        /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
+        /// <returns>一个 <see langword="bool"/> 四元数是否被规范化。</returns>
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
         }
 
         /// <summary>
-        /// Returns a copy of the quaternion, normalized to unit length.
+        /// 返回四元数的副本，标准化为单位长度。
         /// </summary>
-        /// <returns>The normalized quaternion.</returns>
+        /// <returns>标准化的四元数。</returns>
         public Quat Normalized()
         {
             return this / Length;
@@ -243,14 +243,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the spherical linear interpolation between
-        /// this quaternion and <paramref name="to"/> by amount <paramref name="weight"/>.
+        /// 返回球面线性插值的结果
+        /// 这个四元数和 <paramref name="to"/> 的数量 <paramref name="weight"/>.
         ///
-        /// Note: Both quaternions must be normalized.
+        /// 注意：两个四元数都必须标准化。
         /// </summary>
-        /// <param name="to">The destination quaternion for interpolation. Must be normalized.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting quaternion of the interpolation.</returns>
+        /// <param name="to">插值的目标四元数。 必须标准化。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果四元数。</returns>
         public Quat Slerp(Quat to, real_t weight)
         {
 #if DEBUG
@@ -315,13 +315,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the spherical linear interpolation between
-        /// this quaternion and <paramref name="to"/> by amount <paramref name="weight"/>, but without
-        /// checking if the rotation path is not bigger than 90 degrees.
+        /// 返回球面线性插值的结果
+        /// 这个四元数和 <paramref name="to"/> 按数量 <paramref name="weight"/>，但没有
+        /// 检查旋转路径是否不大于 90 度。
         /// </summary>
-        /// <param name="to">The destination quaternion for interpolation. Must be normalized.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting quaternion of the interpolation.</returns>
+        /// <param name="to">插值的目标四元数。 必须标准化。</param>
+        /// <param name="weight">0.0到1.0范围内的一个值，代表插值量。</param>
+        /// <returns>插值的结果四元数。</returns>
         public Quat Slerpni(Quat to, real_t weight)
         {
             real_t dot = Dot(to);
@@ -346,10 +346,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by this quaternion.
+        /// 返回一个被这个四元数转换（相乘）的向量。
         /// </summary>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
+        /// <param name="v">要转换的向量。</param>
+        /// <returns>转换后的向量。</returns>
         public Vector3 Xform(Vector3 v)
         {
 #if DEBUG
@@ -367,20 +367,20 @@ namespace Godot
         private static readonly Quat _identity = new Quat(0, 0, 0, 1);
 
         /// <summary>
-        /// The identity quaternion, representing no rotation.
-        /// Equivalent to an identity <see cref="Basis"/> matrix. If a vector is transformed by
-        /// an identity quaternion, it will not change.
+        /// 恒等四元数，表示没有旋转。
+        /// 等价于一个恒等<see cref="Basis"/> 矩阵。 如果一个向量被转换为
+        /// 一个身份四元数，它不会改变。
         /// </summary>
-        /// <value>Equivalent to <c>new Quat(0, 0, 0, 1)</c>.</value>
+        /// <value>等价于<c>new Quat(0, 0, 0, 1)</c>.</value>
         public static Quat Identity { get { return _identity; } }
 
         /// <summary>
-        /// Constructs a <see cref="Quat"/> defined by the given values.
+        /// 构造一个由给定值定义的 <see cref="Quat"/>。
         /// </summary>
-        /// <param name="x">X component of the quaternion (imaginary <c>i</c> axis part).</param>
-        /// <param name="y">Y component of the quaternion (imaginary <c>j</c> axis part).</param>
-        /// <param name="z">Z component of the quaternion (imaginary <c>k</c> axis part).</param>
-        /// <param name="w">W component of the quaternion (real part).</param>
+        /// <param name="x">四元数的X分量（虚<c>i</c>轴部分）。</param>
+        /// <param name="y">四元数的Y分量（虚<c>j</c>轴部分）。</param>
+        /// <param name="z">四元数的Z分量（虚<c>k</c>轴部分）。</param>
+        /// <param name="w">四元数的W分量（实部）。</param>
         public Quat(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -390,29 +390,29 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quat"/> from the given <see cref="Quat"/>.
+        /// 从给定的 <see cref="Quat"/> 构造一个 <see cref="Quat"/>。
         /// </summary>
-        /// <param name="q">The existing quaternion.</param>
+        /// <param name="q">现有的四元数。</param>
         public Quat(Quat q)
         {
             this = q;
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quat"/> from the given <see cref="Basis"/>.
+        /// 从给定的 <see cref="Basis"/> 构造一个 <see cref="Quat"/>。
         /// </summary>
-        /// <param name="basis">The <see cref="Basis"/> to construct from.</param>
+        /// <param name="basis">要构造的<see cref="Basis"/>。</param>
         public Quat(Basis basis)
         {
             this = basis.Quat();
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quat"/> that will perform a rotation specified by
-        /// Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last),
-        /// given in the vector format as (X angle, Y angle, Z angle).
+        /// 构造一个 <see cref="Quat"/> 将执行指定的旋转
+        /// 欧拉角（在 YXZ 约定中：分解时，首先是 Z，然后是 X，最后是 Y），
+        /// 以矢量格式给出（X 角，Y 角，Z 角）。
         /// </summary>
-        /// <param name="eulerYXZ">Euler angles that the quaternion will be rotated by.</param>
+        /// <param name="eulerYXZ">四元数旋转的欧拉角。</param>
         public Quat(Vector3 eulerYXZ)
         {
             real_t halfA1 = eulerYXZ.y * 0.5f;
@@ -437,11 +437,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="Quat"/> that will rotate around the given axis
-        /// by the specified angle. The axis must be a normalized vector.
+        /// 构造一个将围绕给定轴旋转的 <see cref="Quat"/>
+        /// 指定角度。 轴必须是归一化向量。
         /// </summary>
-        /// <param name="axis">The axis to rotate around. Must be normalized.</param>
-        /// <param name="angle">The angle to rotate, in radians.</param>
+        /// <param name="axis">要旋转的轴。 必须标准化。</param>
+        /// <param name="angle">要旋转的角度，以弧度为单位。</param>
         public Quat(Vector3 axis, real_t angle)
         {
 #if DEBUG
@@ -627,10 +627,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this quaternion and <paramref name="obj"/> are equal.
+        /// 如果此四元数和 <paramref name="obj"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the quaternion and the other object are exactly equal.</returns>
+        /// <param name="obj">要比较的另一个对象。</param>
+        /// <returns>四元数和其他对象是否相等。</returns>
         public override bool Equals(object obj)
         {
             if (obj is Quat)
@@ -642,48 +642,48 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this quaternion and <paramref name="other"/> are equal.
+        /// 如果此四元数和 <paramref name="other"/> 相等，则返回 <see langword="true"/>。
         /// </summary>
-        /// <param name="other">The other quaternion to compare.</param>
-        /// <returns>Whether or not the quaternions are exactly equal.</returns>
+        /// <param name="other">要比较的另一个四元数。</param>
+        /// <returns>四元数是否相等。</returns>
         public bool Equals(Quat other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this quaternion and <paramref name="other"/> are approximately equal,
-        /// by running <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
+        /// 如果这个四元数和 <paramref name="other"/> 近似相等，则返回 <see langword="true"/>，
+        /// 通过在每个组件上运行 <see cref="Mathf.IsEqualApprox(real_t, real_t)"/>。
         /// </summary>
-        /// <param name="other">The other quaternion to compare.</param>
-        /// <returns>Whether or not the quaternions are approximately equal.</returns>
+        /// <param name="other">要比较的另一个四元数。</param>
+        /// <returns>四元数是否近似相等。</returns>
         public bool IsEqualApprox(Quat other)
         {
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="Quat"/>.
+        /// 用作 <see cref="Quat"/> 的哈希函数。
         /// </summary>
-        /// <returns>A hash code for this quaternion.</returns>
+        /// <returns>这个四元数的哈希码。</returns>
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="Quat"/> to a string.
+        /// 将此 <see cref="Quat"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this quaternion.</returns>
+        /// <returns>这个四元数的字符串表示。</returns>
         public override string ToString()
         {
             return $"({x}, {y}, {z}, {w})";
         }
 
         /// <summary>
-        /// Converts this <see cref="Quat"/> to a string with the given <paramref name="format"/>.
+        /// 将此 <see cref="Quat"/> 转换为具有给定 <paramref name="format"/> 的字符串。
         /// </summary>
-        /// <returns>A string representation of this quaternion.</returns>
+        /// <returns>此四元数的字符串表示形式。</returns>
         public string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";

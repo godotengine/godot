@@ -99,10 +99,19 @@ Rect2 AnimatedSprite::_get_rect() const {
 	Size2 s = t->get_size();
 
 	Point2 ofs = offset;
-	if (centered) {
-		ofs -= s / 2;
+	//-裁剪纹理居中
+	Ref<AtlasTexture> at = t;
+	if (at != nullptr && at->get_offset().size.x > 0 && at->get_offset().size.y > 0) {
+	
+	}
+	else {
+		if (centered) {
+			ofs -= s / 2;
+		}
 	}
 
+
+		
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
 	}
@@ -442,8 +451,20 @@ void AnimatedSprite::_notification(int p_what) {
 
 			Size2 s = texture->get_size();
 			Point2 ofs = offset;
-			if (centered) {
-				ofs -= s / 2;
+			
+			//-裁剪纹理居中
+			Ref<AtlasTexture> at = texture;
+			if (at != nullptr && at->get_offset().size.x > 0 && at->get_offset().size.y > 0) {
+				Point2 offset(-(at->get_offset().size.x / 2 - at->get_offset().position.x),
+					-(at->get_offset().size.y / 2 - at->get_offset().position.y));
+				
+				set_offset(offset);
+				ofs = offset;
+			}
+			else {
+				if (centered) {
+					ofs -= s / 2;
+				}
 			}
 
 			if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {

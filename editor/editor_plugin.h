@@ -105,7 +105,8 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
-
+	void reload_addon_plugin(const String& p_plugin);
+	
 	EditorInspector *get_inspector() const;
 
 	Error save_scene();
@@ -116,6 +117,8 @@ public:
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+
+	void restart_editor();
 
 	EditorInterface();
 };

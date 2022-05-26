@@ -1038,6 +1038,21 @@ void EditorSelection::add_node(Node *p_node) {
 	selection[p_node] = meta;
 
 	p_node->connect("tree_exiting", this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
+	
+
+	//创建的顶级场景节点基类如果继承Control，默认使用编辑器主题。
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (Object::cast_to<Control>(p_node) && p_node->get_parent()->is_class("Viewport")) {
+			Control* ct = Object::cast_to<Control>(p_node);
+			Viewport* view_port = (Viewport*)p_node->get_parent();
+
+			if (ct->get_theme() == nullptr && view_port == EditorNode::get_singleton()->get_scene_root()) {
+				ct->set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
+			}
+		}
+		
+	}
+
 
 	//emit_signal("selection_changed");
 }

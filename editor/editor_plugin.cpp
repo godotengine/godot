@@ -274,7 +274,9 @@ Control *EditorInterface::get_base_control() {
 float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
-
+void EditorInterface::reload_addon_plugin(const String& p_plugin) {
+	EditorNode::get_singleton()->reload_addon_plugin(p_plugin);
+}
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
 	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
@@ -298,7 +300,9 @@ Error EditorInterface::save_scene() {
 	save_scene_as(get_edited_scene_root()->get_filename());
 	return OK;
 }
-
+void EditorInterface::restart_editor() {
+	EditorNode::get_singleton()->restart_editor();
+}
 void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
@@ -344,7 +348,7 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
-
+	ClassDB::bind_method(D_METHOD("reload_addon_plugin", "plugin"), &EditorInterface::reload_addon_plugin);
 	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
@@ -353,7 +357,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
-
+	ClassDB::bind_method(D_METHOD("restart_editor"), &EditorInterface::restart_editor);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }
 

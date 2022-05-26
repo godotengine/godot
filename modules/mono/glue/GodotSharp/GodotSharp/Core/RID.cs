@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 namespace Godot
 {
     /// <summary>
-    /// The RID type is used to access the unique integer ID of a resource.
-    /// They are opaque, which means they do not grant access to the associated
-    /// resource by themselves. They are used by and with the low-level Server
-    /// classes such as <see cref="VisualServer"/>.
+    /// RID类型用于访问资源的唯一整数ID。
+    /// 它们是不透明的，这意味着它们不授予对关联的访问权限
+    /// 自己的资源。 它们由低级服务器使用并与低级服务器一起使用
+    /// 类，例如 <see cref="VisualServer"/>。
     /// </summary>
     public sealed partial class RID : IDisposable
     {
@@ -32,7 +32,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Disposes of this <see cref="RID"/>.
+        /// 处理这个<see cref="RID"/>。
         /// </summary>
         public void Dispose()
         {
@@ -60,7 +60,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// The pointer to the native instance of this <see cref="RID"/>.
+        /// 指向此 <see cref="RID"/> 的本机实例的指针。
         /// </summary>
         public IntPtr NativeInstance
         {
@@ -73,7 +73,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="RID"/> for the given <see cref="Object"/> <paramref name="from"/>.
+        /// 为给定的 <see cref="Object"/> <paramref name="from"/> 构造一个新的 <see cref="RID"/>。
         /// </summary>
         public RID(Object from)
         {
@@ -81,18 +81,18 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the ID of the referenced resource.
+        /// 返回引用资源的 ID。
         /// </summary>
-        /// <returns>The ID of the referenced resource.</returns>
+        /// <returns>引用资源的ID。</returns>
         public int GetId()
         {
             return godot_icall_RID_get_id(GetPtr(this));
         }
 
         /// <summary>
-        /// Converts this <see cref="RID"/> to a string.
+        /// 将此 <see cref="RID"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this RID.</returns>
+        /// <returns>此 RID 的字符串表示形式。</returns>
         public override string ToString() => "[RID]";
 
         [MethodImpl(MethodImplOptions.InternalCall)]

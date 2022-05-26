@@ -465,6 +465,23 @@ void EditorNode::_notification(int p_what) {
 			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
 			ResourceImporterTexture::get_singleton()->update_imports();
+
+			if (_reload_plugin_name != "") {
+				if (!_reload_plugin_tag)
+				{
+					if (this->is_addon_plugin_enabled(_reload_plugin_name)) {
+						this->set_addon_plugin_enabled(_reload_plugin_name, false);
+					}
+					_reload_plugin_tag = true;
+				}
+				else if (_reload_plugin_tag) {
+					if (!this->is_addon_plugin_enabled(_reload_plugin_name)) {
+						this->set_addon_plugin_enabled(_reload_plugin_name, true);
+					}
+					_reload_plugin_name = "";
+				}
+				
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1529,7 +1546,16 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instancing inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
 		return;
 	}
-
+	//卸载编辑器默认主题
+	if (Object::cast_to<Control>(scene)) {
+		Control* ct = Object::cast_to<Control>(scene);
+		if (ct->get_theme() == EditorNode::get_singleton()->get_gui_base()->get_theme()) {
+			ct->set_theme(nullptr);
+		}
+	}
+	
+		
+	if(scene)
 	editor_data.apply_changes_in_editors();
 	List<Ref<AnimatedValuesBackup>> anim_backups;
 	_reset_animation_players(scene, &anim_backups);
@@ -3265,6 +3291,15 @@ void EditorNode::_update_addon_config() {
 	project_settings->queue_save();
 }
 
+void EditorNode::reload_addon_plugin(String p_addon) {
+	if (!p_addon.begins_with("res://")) {
+		p_addon = _to_absolute_plugin_path(p_addon);
+	}
+	if (this->is_addon_plugin_enabled(p_addon)) {
+		_reload_plugin_tag = false;
+		_reload_plugin_name = p_addon;
+	}
+}
 void EditorNode::set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p_config_changed) {
 	if (!p_addon.begins_with("res://")) {
 		p_addon = _to_absolute_plugin_path(p_addon);
@@ -5869,7 +5904,7 @@ EditorNode::EditorNode() {
 	cmdline_export_mode = false;
 	scene_distraction = false;
 	script_distraction = false;
-
+	_reload_plugin_name = "";
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
 	if (!EditorSettings::get_singleton()) {
@@ -6032,7 +6067,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/editor/localize_settings", true);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
-	EDITOR_DEF_RST("interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+	EDITOR_DEF_RST("interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_LOCALIZED);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_property_name_style", PROPERTY_HINT_ENUM, "Raw,Capitalized,Localized"));
 	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));

@@ -81,7 +81,7 @@ public:
 	String get_title() const;
 	void set_resizable(bool p_resizable);
 	bool get_resizable() const;
-
+	void show_centered() ;
 	Size2 get_minimum_size() const;
 
 	WindowDialog();

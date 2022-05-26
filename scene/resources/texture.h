@@ -244,6 +244,7 @@ protected:
 	Ref<Texture> atlas;
 	Rect2 region;
 	Rect2 margin;
+	Rect2 offset;
 	bool filter_clip;
 
 	static void _bind_methods();
@@ -266,6 +267,9 @@ public:
 
 	void set_margin(const Rect2 &p_margin);
 	Rect2 get_margin() const;
+
+	void set_offset(const Rect2& p_offset);
+	Rect2 get_offset() const;
 
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;

@@ -5,16 +5,14 @@ namespace Godot
     public partial class Node
     {
         /// <summary>
-        /// Fetches a node. The <see cref="NodePath"/> can be either a relative path (from
-        /// the current node) or an absolute path (in the scene tree) to a node. If the path
-        /// does not exist, a <see langword="null"/> instance is returned and an error
-        /// is logged. Attempts to access methods on the return value will result in an
-        /// "Attempt to call &lt;method&gt; on a null instance." error.
-        /// Note: Fetching absolute paths only works when the node is inside the scene tree
-        /// (see <see cref="IsInsideTree"/>).
+        ///获取一个节点。NodePath 可以是一个相对路径（从当前节点），
+        ///也可以是一个绝对路径(在场景树中)。如果路径不存在，则返回
+        ///null instance，并记录错误。尝试访问返回值上的方法将导致
+        ///“Attempt to call(method) on a null instance.”错误。
+        ///注意：获取绝对路径只在节点在场景树中时生效（请参阅 is_inside_tree()）
         /// </summary>
         /// <example>
-        /// Example: Assume your current node is Character and the following tree:
+        /// 示例：假设你当前的节点是 Character，并且有一下树结构:
         /// <code>
         /// /root
         /// /root/Character
@@ -25,7 +23,7 @@ namespace Godot
         /// /root/Swamp/Mosquito
         /// /root/Swamp/Goblin
         /// </code>
-        /// Possible paths are:
+        /// 可能的路径会是下面这样：
         /// <code>
         /// GetNode("Sword");
         /// GetNode("Backpack/Dagger");
@@ -34,7 +32,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <seealso cref="GetNodeOrNull{T}(NodePath)"/>
-        /// <param name="path">The path to the node to fetch.</param>
+        /// <param name="path">要获取的节点的路径.</param>
         /// <exception cref="InvalidCastException">
         /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
@@ -48,16 +46,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Fetches a node. The <see cref="NodePath"/> can be either a relative path (from
-        /// the current node) or an absolute path (in the scene tree) to a node. If the path
-        /// does not exist, a <see langword="null"/> instance is returned and an error
-        /// is logged. Attempts to access methods on the return value will result in an
-        /// "Attempt to call &lt;method&gt; on a null instance." error.
-        /// Note: Fetching absolute paths only works when the node is inside the scene tree
-        /// (see <see cref="IsInsideTree"/>).
+        ///获取一个节点。NodePath 可以是一个相对路径（从当前节点），
+        ///也可以是一个绝对路径(在场景树中)。如果路径不存在，则返回
+        ///null instance，并记录错误。尝试访问返回值上的方法将导致
+        ///“Attempt to call(method) on a null instance.”错误。
+        ///注意：获取绝对路径只在节点在场景树中时生效（请参阅 is_inside_tree()）
         /// </summary>
         /// <example>
-        /// Example: Assume your current node is Character and the following tree:
+        /// 示例：假设你当前的节点是 Character，并且有一下树结构:
         /// <code>
         /// /root
         /// /root/Character
@@ -68,7 +64,7 @@ namespace Godot
         /// /root/Swamp/Mosquito
         /// /root/Swamp/Goblin
         /// </code>
-        /// Possible paths are:
+        /// 可能的路径会是下面这样：
         /// <code>
         /// GetNode("Sword");
         /// GetNode("Backpack/Dagger");
@@ -77,7 +73,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <seealso cref="GetNode{T}(NodePath)"/>
-        /// <param name="path">The path to the node to fetch.</param>
+        /// <param name="path">要获取的节点的路径.</param>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
         /// The <see cref="Node"/> at the given <paramref name="path"/>, or <see langword="null"/> if not found.
@@ -88,13 +84,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a child node by its index (see <see cref="GetChildCount"/>).
-        /// This method is often used for iterating all children of a node.
-        /// Negative indices access the children from the last one.
-        /// To access a child node via its name, use <see cref="GetNode"/>.
+        /// 按索引返回一个子节点  <see cref="GetChildCount"/>.
+        /// 这个方法经常被用于遍历一个节点的所有子节点。
+        /// 要通过一个子节点的名字访问它，请使用 <见 cref="GetNode"/>.
         /// </summary>
         /// <seealso cref="GetChildOrNull{T}(int)"/>
-        /// <param name="idx">Child index.</param>
+        /// <param name="idx">子节点索引.</param>
         /// <exception cref="InvalidCastException">
         /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
@@ -108,13 +103,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a child node by its index (see <see cref="GetChildCount"/>).
-        /// This method is often used for iterating all children of a node.
-        /// Negative indices access the children from the last one.
-        /// To access a child node via its name, use <see cref="GetNode"/>.
+        /// 按索引返回一个子节点 <see cref="GetChildCount"/>.
+        /// 这个方法经常被用于遍历一个节点的所有子节点。
+        /// 要通过一个子节点的名字访问它，请使用 <see cref="GetNode"/>.
         /// </summary>
         /// <seealso cref="GetChild{T}(int)"/>
-        /// <param name="idx">Child index.</param>
+        /// <param name="idx">子节点索引.</param>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>, or <see langword="null"/> if not found.
@@ -162,8 +156,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the parent node of the current node, or a <see langword="null"/> instance
-        /// if the node lacks a parent.
+        /// 返回当前节点的父节点，如果节点缺少父节点，则返回 <see langword="null"/> instance
+        /// 如果节点缺少父节点.
         /// </summary>
         /// <seealso cref="GetParentOrNull{T}"/>
         /// <exception cref="InvalidCastException">
@@ -179,8 +173,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the parent node of the current node, or a <see langword="null"/> instance
-        /// if the node lacks a parent.
+        /// 返回当前节点的父节点，如果节点缺少父节点，则返回 <see langword="null"/> instance
+        /// 如果节点缺少父节点.
         /// </summary>
         /// <seealso cref="GetParent{T}"/>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>

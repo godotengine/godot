@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
-    /// Plane represents a normalized plane equation.
-    /// "Over" or "Above" the plane is considered the side of
-    /// the plane towards where the normal is pointing.
+    /// Plane 表示归一化平面方程。
+    /// “Over”或“Above”平面被认为是侧面
+    /// 朝向法线指向的平面。
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]

@@ -362,3 +362,16 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# svn
+.svn
+
+icon.png
+icon.svg
+icon_outlined.png
+icon_outlined.svg
+logo.png
+logo.svg
+logo_outlined.png
+logo_outlined.svg
+editor/icons/icon_default_project_icon.svg

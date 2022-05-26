@@ -303,7 +303,32 @@ void WindowDialog::set_resizable(bool p_resizable) {
 bool WindowDialog::get_resizable() const {
 	return resizable;
 }
+void WindowDialog::show_centered() {
+	Rect2 rect;
+	Size2 window_size = get_viewport_rect().size;
+	rect.size = get_size();
+	rect.position = ((window_size - rect.size * get_scale()) / 2.0).floor();
+	// Fit the popup into the optionally provided bounds.
+	if (!rect.has_no_area()) {
+		set_size(rect.size);
 
+		// check if p_bounds.size was using an outdated cached values
+		if (rect.size != get_size()) {
+			set_position(rect.position - ((get_size() - rect.size) / 2.0).floor());
+		}
+		else {
+			set_position(rect.position);
+		}
+	}
+	_fix_size();
+
+	Control* focusable = find_next_valid_focus();
+
+	if (focusable) {
+		focusable->grab_focus();
+	}
+	show();
+}
 Size2 WindowDialog::get_minimum_size() const {
 	Ref<Font> font = get_font("title_font", "WindowDialog");
 
@@ -331,7 +356,7 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
 	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed);
 	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
-
+	ClassDB::bind_method(D_METHOD("show_centered"), &WindowDialog::show_centered);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_resizable", "get_resizable");
 }
@@ -567,7 +592,7 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
-
+	
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
 

@@ -322,7 +322,8 @@ private:
 	AcceptDialog *save_accept;
 	EditorAbout *about;
 	AcceptDialog *warning;
-
+	bool _reload_plugin_tag;
+	String _reload_plugin_name;
 	int overridden_default_layout;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
@@ -728,6 +729,7 @@ public:
 
 	void set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
+	void reload_addon_plugin(String p_addon);
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };

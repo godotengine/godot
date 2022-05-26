@@ -4,30 +4,30 @@ using System.Runtime.CompilerServices;
 namespace Godot
 {
     /// <summary>
-    /// A pre-parsed relative or absolute path in a scene tree,
-    /// for use with <see cref="Node.GetNode(NodePath)"/> and similar functions.
-    /// It can reference a node, a resource within a node, or a property
-    /// of a node or resource.
-    /// For instance, <c>"Path2D/PathFollow2D/Sprite2D:texture:size"</c>
-    /// would refer to the <c>size</c> property of the <c>texture</c>
-    /// resource on the node named <c>"Sprite2D"</c> which is a child of
-    /// the other named nodes in the path.
-    /// You will usually just pass a string to <see cref="Node.GetNode(NodePath)"/>
-    /// and it will be automatically converted, but you may occasionally
-    /// want to parse a path ahead of time with NodePath.
-    /// Exporting a NodePath variable will give you a node selection widget
-    /// in the properties panel of the editor, which can often be useful.
-    /// A NodePath is composed of a list of slash-separated node names
-    /// (like a filesystem path) and an optional colon-separated list of
-    /// "subnames" which can be resources or properties.
+    /// 场景树中预解析的相对或绝对路径，
+    /// 与 <see cref="Node.GetNode(NodePath)"/> 和类似函数一起使用。
+    /// 它可以引用节点、节点内的资源或属性
+    /// 一个节点或资源。
+    /// 比如 <c>"Path2D/PathFollow2D/Sprite2D:texture:size"</c>
+    /// 将引用 <c>texture</c> 的 <c>size</c> 属性
+    /// 名为 <c>"Sprite2D"</c> 的节点上的资源，它是
+    /// 路径中的其他命名节点。
+    /// 您通常只需将字符串传递给 <see cref="Node.GetNode(NodePath)"/>
+    /// 它会自动转换，但你可能偶尔会
+    /// 想用 NodePath 提前解析路径。
+    /// 导出 NodePath 变量将为您提供一个节点选择小部件
+    /// 在编辑器的属性面板中，这通常很有用。
+    /// NodePath 由斜线分隔的节点名称列表组成
+    ///（如文件系统路径）和一个可选的以冒号分隔的列表
+    /// “子名称”可以是资源或属性。
     ///
-    /// Note: In the editor, NodePath properties are automatically updated when moving,
-    /// renaming or deleting a node in the scene tree, but they are never updated at runtime.
+    /// 注意：在编辑器中，NodePath属性在移动时会自动更新，
+    /// 重命名或删除场景树中的节点，但它们在运行时永远不会更新。
     /// </summary>
     /// <example>
-    /// Some examples of NodePaths include the following:
+    /// NodePaths 的一些示例包括：
     /// <code>
-    /// // No leading slash means it is relative to the current node.
+    /// // 没有前导斜杠意味着它是相对于当前节点的。
     /// new NodePath("A"); // Immediate child A.
     /// new NodePath("A/B"); // A's child B.
     /// new NodePath("."); // The current node.
@@ -62,7 +62,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Disposes of this <see cref="NodePath"/>.
+        /// 处理这个 <see cref="NodePath"/>。
         /// </summary>
         public void Dispose()
         {
@@ -90,7 +90,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// The pointer to the native instance of this <see cref="NodePath"/>.
+        /// 指向此 <see cref="NodePath"/> 的本机实例的指针。
         /// </summary>
         public IntPtr NativeInstance
         {
@@ -98,25 +98,25 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs an empty <see cref="NodePath"/>.
+        /// 构造一个空的 <see cref="NodePath"/>。
         /// </summary>
         public NodePath() : this(string.Empty) { }
 
         /// <summary>
-        /// Constructs a <see cref="NodePath"/> from a string <paramref name="path"/>,
-        /// e.g.: <c>"Path2D/PathFollow2D/Sprite2D:texture:size"</c>.
-        /// A path is absolute if it starts with a slash. Absolute paths
-        /// are only valid in the global scene tree, not within individual
-        /// scenes. In a relative path, <c>"."</c> and <c>".."</c> indicate
-        /// the current node and its parent.
-        /// The "subnames" optionally included after the path to the target
-        /// node can point to resources or properties, and can also be nested.
+        /// 从字符串 <paramref name="path"/> 构造一个 <see cref="NodePath"/>,
+        /// 例如：<c>"Path2D/PathFollow2D/Sprite2D:texture:size"</c>.
+        /// 如果路径以斜杠开头，则它是绝对路径。 绝对路径
+        /// 仅在全局场景树中有效，在单个场景中无效
+        /// 场景。 在相对路径中，<c>"."</c> 和 <c>".."</c> 表示
+        /// 当前节点及其父节点。
+        /// 目标路径后可选包含的“子名称”
+        /// 节点可以指向资源或属性，也可以嵌套。
         /// </summary>
         /// <example>
-        /// Examples of valid NodePaths (assuming that those nodes exist and
-        /// have the referenced resources or properties):
+        /// 有效节点路径的示例（假设这些节点存在并且
+        /// 具有引用的资源或属性）：
         /// <code>
-        /// // Points to the Sprite2D node.
+        /// // 指向 Sprite2D 节点。
         /// "Path2D/PathFollow2D/Sprite2D"
         /// // Points to the Sprite2D node and its "texture" resource.
         /// // GetNode() would retrieve "Sprite2D", while GetNodeAndResource()
@@ -137,55 +137,55 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string to a <see cref="NodePath"/>.
+        /// 将字符串转换为 <see cref="NodePath"/>。
         /// </summary>
-        /// <param name="from">The string to convert.</param>
+        /// <param name="from">要转换的字符串.</param>
         public static implicit operator NodePath(string from)
         {
             return new NodePath(from);
         }
 
         /// <summary>
-        /// Converts this <see cref="NodePath"/> to a string.
+        ///将此 <see cref="NodePath"/> 转换为字符串。
         /// </summary>
-        /// <param name="from">The <see cref="NodePath"/> to convert.</param>
+        /// <param name="from"><see cref="NodePath"/> 要转换.</param>
         public static implicit operator string(NodePath from)
         {
             return godot_icall_NodePath_operator_String(NodePath.GetPtr(from));
         }
 
         /// <summary>
-        /// Converts this <see cref="NodePath"/> to a string.
+        /// 将此 <see cref="NodePath"/> 转换为字符串。
         /// </summary>
-        /// <returns>A string representation of this <see cref="NodePath"/>.</returns>
+        /// <returns>此 <see cref="NodePath"/> 的字符串表示形式.</returns>
         public override string ToString()
         {
             return (string)this;
         }
 
         /// <summary>
-        /// Returns a node path with a colon character (<c>:</c>) prepended,
-        /// transforming it to a pure property path with no node name (defaults
-        /// to resolving from the current node).
+        /// 返回带有冒号字符 (<c>:</c>) 的节点路径，
+        /// 将其转换为没有节点名称的纯属性路径（默认值
+        /// 从当前节点解析）。
         /// </summary>
         /// <example>
         /// <code>
-        /// // This will be parsed as a node path to the "x" property in the "position" node.
+        /// // 这将被解析为“位置”节点中“x”属性的节点路径。
         /// var nodePath = new NodePath("position:x");
         /// // This will be parsed as a node path to the "x" component of the "position" property in the current node.
         /// NodePath propertyPath = nodePath.GetAsPropertyPath();
         /// GD.Print(propertyPath); // :position:x
         /// </code>
         /// </example>
-        /// <returns>The <see cref="NodePath"/> as a pure property path.</returns>
+        /// <returns><see cref="NodePath"/> 作为纯属性路径。</returns>
         public NodePath GetAsPropertyPath()
         {
             return new NodePath(godot_icall_NodePath_get_as_property_path(NodePath.GetPtr(this)));
         }
 
         /// <summary>
-        /// Returns all subnames concatenated with a colon character (<c>:</c>)
-        /// as separator, i.e. the right side of the first colon in a node path.
+        /// 返回用冒号字符连接的所有子名称 (<c>:</c>)
+        /// 作为分隔符，即节点路径中第一个冒号的右侧
         /// </summary>
         /// <example>
         /// <code>
@@ -193,14 +193,14 @@ namespace Godot
         /// GD.Print(nodepath.GetConcatenatedSubnames()); // texture:load_path
         /// </code>
         /// </example>
-        /// <returns>The subnames concatenated with <c>:</c>.</returns>
+        /// <returns>与 <c>:</c> 连接的子名称。</returns>
         public string GetConcatenatedSubnames()
         {
             return godot_icall_NodePath_get_concatenated_subnames(NodePath.GetPtr(this));
         }
 
         /// <summary>
-        /// Gets the node name indicated by <paramref name="idx"/> (0 to <see cref="GetNameCount"/>).
+        /// 获取由 <paramref name="idx"/> 指示的节点名称（0 到 <see cref="GetNameCount"/>）。
         /// </summary>
         /// <example>
         /// <code>
@@ -211,60 +211,60 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="idx">The name index.</param>
-        /// <returns>The name at the given index <paramref name="idx"/>.</returns>
+        /// <returns>给定索引处的名称 <paramref name="idx"/>.</returns>
         public string GetName(int idx)
         {
             return godot_icall_NodePath_get_name(NodePath.GetPtr(this), idx);
         }
 
         /// <summary>
-        /// Gets the number of node names which make up the path.
-        /// Subnames (see <see cref="GetSubnameCount"/>) are not included.
-        /// For example, <c>"Path2D/PathFollow2D/Sprite2D"</c> has 3 names.
+        /// 获取组成路径的节点名称的数量。
+        /// 不包括子名称（参见 <see cref="GetSubnameCount"/>）。
+        /// 例如<c>"Path2D/PathFollow2D/Sprite2D"</c>有3个名字。
         /// </summary>
-        /// <returns>The number of node names which make up the path.</returns>
+        /// <returns>构成路径的节点名称的数量。</returns>
         public int GetNameCount()
         {
             return godot_icall_NodePath_get_name_count(NodePath.GetPtr(this));
         }
 
         /// <summary>
-        /// Gets the resource or property name indicated by <paramref name="idx"/> (0 to <see cref="GetSubnameCount"/>).
+        /// 获取由 <paramref name="idx"/> 指示的资源或属性名称（0 到 <see cref="GetSubnameCount"/>）。
         /// </summary>
         /// <param name="idx">The subname index.</param>
-        /// <returns>The subname at the given index <paramref name="idx"/>.</returns>
+        /// <returns>给定索引处的子名称 <paramref name="idx"/>.</returns>
         public string GetSubname(int idx)
         {
             return godot_icall_NodePath_get_subname(NodePath.GetPtr(this), idx);
         }
 
         /// <summary>
-        /// Gets the number of resource or property names ("subnames") in the path.
-        /// Each subname is listed after a colon character (<c>:</c>) in the node path.
-        /// For example, <c>"Path2D/PathFollow2D/Sprite2D:texture:load_path"</c> has 2 subnames.
+        /// 获取路径中资源或属性名称（“子名称”）的数量。
+        /// 每个子名称在节点路径中的冒号字符 (<c>:</c>) 之后列出。
+        /// 例如 <c>"Path2D/PathFollow2D/Sprite2D:texture:load_path"</c> 有 2 个子名。
         /// </summary>
-        /// <returns>The number of subnames in the path.</returns>
+        /// <returns>路径中的子名数。</returns>
         public int GetSubnameCount()
         {
             return godot_icall_NodePath_get_subname_count(NodePath.GetPtr(this));
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the node path is absolute (as opposed to relative),
-        /// which means that it starts with a slash character (<c>/</c>). Absolute node paths can
-        /// be used to access the root node (<c>"/root"</c>) or autoloads (e.g. <c>"/global"</c>
-        /// if a "global" autoload was registered).
+        /// 如果节点路径是绝对的（而不是相对的），则返回 <see langword="true"/>，
+        /// 这意味着它以斜杠字符 (<c>/</c>) 开头。 绝对节点路径可以
+        /// 用于访问根节点（<c>"/root"</c>）或自动加载（例如<c>"/global"</c>
+        /// 如果注册了“全局”自动加载）。
         /// </summary>
-        /// <returns>If the <see cref="NodePath"/> is an absolute path.</returns>
+        /// <returns>如果 <see cref="NodePath"/> 是绝对路径。</returns>
         public bool IsAbsolute()
         {
             return godot_icall_NodePath_is_absolute(NodePath.GetPtr(this));
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the node path is empty.
+        /// 如果节点路径为空，则返回 <see langword="true"/>。
         /// </summary>
-        /// <returns>If the <see cref="NodePath"/> is empty.</returns>
+        /// <returns>如果 <see cref="NodePath"/> 为空。</returns>
         public bool IsEmpty()
         {
             return godot_icall_NodePath_is_empty(NodePath.GetPtr(this));
