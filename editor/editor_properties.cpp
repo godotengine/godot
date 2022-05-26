@@ -42,6 +42,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
+#include "scene/resources/mesh.h"
 
 ///////////////////// Nil /////////////////////////
 
@@ -3172,7 +3173,7 @@ void EditorPropertyResource::_update_preferred_shader() {
 			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<CanvasItem>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
-		} else if (Object::cast_to<Node3D>(object)) {
+		} else if (Object::cast_to<Node3D>(object) || Object::cast_to<Mesh>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SKY);
