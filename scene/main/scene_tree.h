@@ -130,7 +130,7 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	RBSet<Node *> call_skip; // Skip erased nodes.
+	HashSet<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
@@ -273,7 +273,10 @@ public:
 
 	virtual void finalize() override;
 
+	bool is_auto_accept_quit() const;
 	void set_auto_accept_quit(bool p_enable);
+
+	bool is_quit_on_go_back() const;
 	void set_quit_on_go_back(bool p_enable);
 
 	void quit(int p_exit_code = EXIT_SUCCESS);

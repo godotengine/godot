@@ -53,7 +53,7 @@ private:
 	Ref<Environment> fallback_environment;
 	Ref<CameraEffects> camera_effects;
 
-	RBSet<Camera3D *> cameras;
+	HashSet<Camera3D *> cameras;
 
 protected:
 	static void _bind_methods();
@@ -77,7 +77,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	_FORCE_INLINE_ const RBSet<Camera3D *> &get_cameras() const { return cameras; }
+	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
 
 	PhysicsDirectSpaceState3D *get_direct_space_state();
 

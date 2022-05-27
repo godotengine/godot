@@ -85,8 +85,8 @@ public:
 		void update_end() { //call after updating dependencies
 			List<Pair<Dependency *, DependencyTracker *>> to_clean_up;
 
-			for (RBSet<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				Dependency *dep = E->get();
+			for (Dependency *E : dependencies) {
+				Dependency *dep = E;
 				HashMap<DependencyTracker *, uint32_t>::Iterator F = dep->instances.find(this);
 				ERR_CONTINUE(!F);
 				if (F->value != instance_version) {
@@ -105,8 +105,8 @@ public:
 		}
 
 		void clear() { // clear all dependencies
-			for (RBSet<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				Dependency *dep = E->get();
+			for (Dependency *E : dependencies) {
+				Dependency *dep = E;
 				dep->instances.erase(this);
 			}
 			dependencies.clear();
@@ -117,7 +117,7 @@ public:
 	private:
 		friend struct Dependency;
 		uint32_t instance_version = 0;
-		RBSet<Dependency *> dependencies;
+		HashSet<Dependency *> dependencies;
 	};
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;

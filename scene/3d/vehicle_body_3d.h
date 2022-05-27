@@ -162,7 +162,7 @@ class VehicleBody3D : public RigidDynamicBody3D {
 	real_t m_steeringValue = 0.0;
 	real_t m_currentVehicleSpeedKmHour = 0.0;
 
-	RBSet<RID> exclude;
+	HashSet<RID> exclude;
 
 	Vector<Vector3> m_forwardWS;
 	Vector<Vector3> m_axle;

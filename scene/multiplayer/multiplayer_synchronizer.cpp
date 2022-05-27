@@ -96,7 +96,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_replication_config", "config"), &MultiplayerSynchronizer::set_replication_config);
 	ClassDB::bind_method(D_METHOD("get_replication_config"), &MultiplayerSynchronizer::get_replication_config);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig"), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "congiruation", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig"), "set_replication_config", "get_replication_config");
 }
 
 void MultiplayerSynchronizer::_notification(int p_what) {

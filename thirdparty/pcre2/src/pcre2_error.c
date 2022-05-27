@@ -119,7 +119,7 @@ static const unsigned char compile_error_texts[] =
   /* 45 */
   "this version of PCRE2 does not have support for \\P, \\p, or \\X\0"
   "malformed \\P or \\p sequence\0"
-  "unknown property name after \\P or \\p\0"
+  "unknown property after \\P or \\p\0"
   "subpattern name is too long (maximum " XSTRING(MAX_NAME_SIZE) " code units)\0"
   "too many named subpatterns (maximum " XSTRING(MAX_NAME_COUNT) ")\0"
   /* 50 */
@@ -253,7 +253,7 @@ static const unsigned char match_error_texts[] =
   "unknown substring\0"
   /* 50 */
   "non-unique substring name\0"
-  "NULL argument passed\0"
+  "NULL argument passed with non-zero length\0"
   "nested recursion at the same subject position\0"
   "matching depth limit exceeded\0"
   "requested value is not available\0"

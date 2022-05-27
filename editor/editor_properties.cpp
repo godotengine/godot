@@ -42,6 +42,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
+#include "scene/resources/mesh.h"
 
 ///////////////////// Nil /////////////////////////
 
@@ -2229,8 +2230,8 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
 	}
+	spin[3]->set_suffix(p_suffix);
 }
 
 EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
@@ -2322,6 +2323,8 @@ void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
+		// Quaternion is inherently unitless, however someone may want to use it as
+		// a generic way to store 4 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_suffix);
 	}
 }
@@ -2506,7 +2509,9 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i % 3 == 2) {
+			spin[i]->set_suffix(p_suffix);
+		}
 	}
 }
 
@@ -2596,6 +2601,8 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
+		// Basis is inherently unitless, however someone may want to use it as
+		// a generic way to store 9 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_suffix);
 	}
 }
@@ -2692,7 +2699,9 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i % 4 == 3) {
+			spin[i]->set_suffix(p_suffix);
+		}
 	}
 }
 
@@ -2752,7 +2761,13 @@ void EditorPropertyColor::_picker_opening() {
 	last_color = picker->get_pick_color();
 }
 
-void EditorPropertyColor::_bind_methods() {
+void EditorPropertyColor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+		} break;
+	}
 }
 
 void EditorPropertyColor::update_property() {
@@ -3158,7 +3173,7 @@ void EditorPropertyResource::_update_preferred_shader() {
 			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<CanvasItem>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
-		} else if (Object::cast_to<Node3D>(object)) {
+		} else if (Object::cast_to<Node3D>(object) || Object::cast_to<Mesh>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SKY);
@@ -3346,7 +3361,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool angle_in_degrees = false;
 	bool greater = true;
 	bool lesser = true;
 	double min = -99999.0;

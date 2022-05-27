@@ -493,7 +493,7 @@ public:
 
 		HashMap<String, VisualScene> visual_scene_map;
 		HashMap<String, Node *> scene_map;
-		RBSet<String> idref_joints;
+		HashSet<String> idref_joints;
 		HashMap<String, String> sid_to_node_map;
 		//RBMap<String,NodeJoint*> bone_map;
 

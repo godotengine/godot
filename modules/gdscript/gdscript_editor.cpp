@@ -110,7 +110,7 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	}
 }
 
-bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, RBSet<int> *r_safe_lines) const {
+bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
@@ -159,7 +159,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 
 #ifdef DEBUG_ENABLED
 	if (r_safe_lines) {
-		const RBSet<int> &unsafe_lines = parser.get_unsafe_lines();
+		const HashSet<int> &unsafe_lines = parser.get_unsafe_lines();
 		for (int i = 1; i <= parser.get_last_line_number(); i++) {
 			if (!unsafe_lines.has(i)) {
 				r_safe_lines->insert(i);
@@ -3155,7 +3155,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 }
 
 ::Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
-	// Before parsing, try the usual stuff
+	// Before parsing, try the usual stuff.
 	if (ClassDB::class_exists(p_symbol)) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
 		r_result.class_name = p_symbol;
@@ -3171,7 +3171,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		}
 	}
 
-	if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+	// Need special checks for assert and preload as they are technically
+	// keywords, so are not registered in GDScriptUtilityFunctions.
+	if (GDScriptUtilityFunctions::function_exists(p_symbol) || "assert" == p_symbol || "preload" == p_symbol) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;
@@ -3227,6 +3229,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			is_function = true;
 			[[fallthrough]];
 		}
+		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			GDScriptParser::DataType base_type;

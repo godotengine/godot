@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/templates/local_vector.h"
-
+#include "core/templates/rb_set.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/gui/control.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
@@ -281,7 +281,7 @@ void TileSet::TerrainsPattern::set_terrains_from_array(Array p_terrains) {
 	int in_array_index = 0;
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i]) {
-			ERR_FAIL_COND(in_array_index >= p_terrains.size());
+			ERR_FAIL_INDEX(in_array_index, p_terrains.size());
 			set_terrain(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
 			in_array_index++;
 		}
@@ -1369,12 +1369,12 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	// Count the sum of probabilities.
 	double sum = 0.0;
 	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
-	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				sum += tile_data->get_probability();
 			} else {
 				sum += 1.0;
@@ -1389,13 +1389,13 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	double picked = Math::random(0.0, sum);
 
 	// Pick the tile.
-	for (RBSet<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				count += tile_data->get_probability();
 			} else {
 				count += 1.0;
@@ -1405,7 +1405,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 		}
 
 		if (count >= picked) {
-			return E->get();
+			return E;
 		}
 	}
 
@@ -3175,7 +3175,7 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size"), "set_tile_size", "get_tile_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "suffix:px"), "set_tile_size", "get_tile_size");
 
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_uv_clipping", "uv_clipping"), &TileSet::set_uv_clipping);
@@ -4273,9 +4273,9 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_texture_padding"), &TileSetAtlasSource::get_use_texture_padding);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_padding", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_texture_padding", "get_use_texture_padding");
 
 	// Base tiles
@@ -5552,7 +5552,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");

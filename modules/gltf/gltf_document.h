@@ -33,19 +33,12 @@
 
 #include "gltf_animation.h"
 
-#include "core/error/error_list.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
-#include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
@@ -135,12 +128,12 @@ private:
 	}
 
 	template <class T>
-	static Array to_array(const RBSet<T> &p_inp) {
+	static Array to_array(const HashSet<T> &p_inp) {
 		Array ret;
-		typename RBSet<T>::Element *elem = p_inp.front();
+		typename HashSet<T>::Iterator elem = p_inp.begin();
 		while (elem) {
-			ret.push_back(elem->get());
-			elem = elem->next();
+			ret.push_back(*elem);
+			++elem;
 		}
 		return ret;
 	}
@@ -154,7 +147,7 @@ private:
 	}
 
 	template <class T>
-	static void set_from_array(RBSet<T> &r_out, const Array &p_inp) {
+	static void set_from_array(HashSet<T> &r_out, const Array &p_inp) {
 		r_out.clear();
 		for (int i = 0; i < p_inp.size(); i++) {
 			r_out.insert(p_inp[i]);

@@ -36,6 +36,7 @@
 #include "core/doc_data.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"
+#include "core/templates/rb_set.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -570,7 +571,7 @@ public:
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 	virtual bool has_named_classes() const override;
 	virtual bool supports_builtin_mode() const override;

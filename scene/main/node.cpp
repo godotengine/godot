@@ -1637,7 +1637,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 		return const_cast<Node *>(p_node);
 	}
 
-	RBSet<const Node *> visited;
+	HashSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -1669,7 +1669,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 		return NodePath(".");
 	}
 
-	RBSet<const Node *> visited;
+	HashSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -2042,7 +2042,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 }
 #endif
 
-void Node::get_storable_properties(RBSet<StringName> &r_storable_properties) const {
+void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	List<PropertyInfo> pi;
 	get_property_list(&pi);
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
@@ -2528,9 +2528,10 @@ Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, 
 		int j = 0;
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
 		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
-			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
+			bool is_valid = false;
+			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j), &is_valid) : r_res->get(p_path.get_subname(j), &is_valid);
 
-			if (new_res_v.get_type() == Variant::NIL) { // Found nothing on that path
+			if (!is_valid) { // Found nothing on that path
 				return nullptr;
 			}
 

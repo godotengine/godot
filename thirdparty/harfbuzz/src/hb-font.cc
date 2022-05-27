@@ -2596,12 +2596,14 @@ hb_font_funcs_set_glyph_func (hb_font_funcs_t          *ffuncs,
     return;
   }
 
+  /* Since we pass it to two destroying functions. */
+  trampoline_reference (&trampoline->closure);
+
   hb_font_funcs_set_nominal_glyph_func (ffuncs,
 					hb_font_get_nominal_glyph_trampoline,
 					trampoline,
 					trampoline_destroy);
 
-  trampoline_reference (&trampoline->closure);
   hb_font_funcs_set_variation_glyph_func (ffuncs,
 					  hb_font_get_variation_glyph_trampoline,
 					  trampoline,

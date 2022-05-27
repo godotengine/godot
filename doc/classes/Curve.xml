@@ -38,12 +38,6 @@
 				Removes all points from the curve.
 			</description>
 		</method>
-		<method name="get_point_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of points describing the curve.
-			</description>
-		</method>
 		<method name="get_point_left_mode" qualifiers="const">
 			<return type="int" enum="Curve.TangentMode" />
 			<argument index="0" name="index" type="int" />
@@ -158,6 +152,9 @@
 		</member>
 		<member name="min_value" type="float" setter="set_min_value" getter="get_min_value" default="0.0">
 			The minimum value the curve can reach.
+		</member>
+		<member name="point_count" type="int" setter="set_point_count" getter="get_point_count" default="0">
+			The number of points describing the curve.
 		</member>
 	</members>
 	<signals>

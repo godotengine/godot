@@ -426,12 +426,13 @@ vec3 screen_space_dither(vec2 frag_coord) {
 void main() {
 #ifdef SUBPASS
 	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
-	vec3 color = subpassLoad(input_color).rgb * params.luminance_multiplier;
+	vec4 color = subpassLoad(input_color);
 #elif defined(MULTIVIEW)
-	vec3 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f).rgb * params.luminance_multiplier;
+	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
-	vec3 color = textureLod(source_color, uv_interp, 0.0f).rgb * params.luminance_multiplier;
+	vec4 color = textureLod(source_color, uv_interp, 0.0f);
 #endif
+	color.rgb *= params.luminance_multiplier;
 
 	// Exposure
 
@@ -443,7 +444,7 @@ void main() {
 	}
 #endif
 
-	color *= exposure;
+	color.rgb *= exposure;
 
 	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
@@ -456,19 +457,19 @@ void main() {
 	}
 
 	if (params.use_fxaa) {
-		color = do_fxaa(color, exposure, uv_interp);
+		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 #endif
 
 	if (params.use_debanding) {
 		// For best results, debanding should be done before tonemapping.
 		// Otherwise, we're adding noise to an already-quantized image.
-		color += screen_space_dither(gl_FragCoord.xy);
+		color.rgb += screen_space_dither(gl_FragCoord.xy);
 	}
 
-	color = apply_tonemapping(color, params.white);
+	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	color = linear_to_srgb(color); // regular linear -> SRGB conversion
+	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
 
 #ifndef SUBPASS
 	// Glow
@@ -482,19 +483,19 @@ void main() {
 		glow = apply_tonemapping(glow, params.white);
 		glow = linear_to_srgb(glow);
 
-		color = apply_glow(color, glow);
+		color.rgb = apply_glow(color.rgb, glow);
 	}
 #endif
 
 	// Additional effects
 
 	if (params.use_bcs) {
-		color = apply_bcs(color, params.bcs);
+		color.rgb = apply_bcs(color.rgb, params.bcs);
 	}
 
 	if (params.use_color_correction) {
-		color = apply_color_correction(color);
+		color.rgb = apply_color_correction(color.rgb);
 	}
 
-	frag_color = vec4(color, 1.0f);
+	frag_color = color;
 }

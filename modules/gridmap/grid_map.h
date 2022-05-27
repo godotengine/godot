@@ -113,7 +113,7 @@ class GridMap : public Node3D {
 		};
 
 		Vector<MultimeshInstance> multimesh_instances;
-		RBSet<IndexKey> cells;
+		HashSet<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
 

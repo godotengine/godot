@@ -264,8 +264,7 @@ void EditorPropertyArray::update_property() {
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Element"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyArray::_add_element));
 			vbox->add_child(button_add_item);
@@ -607,11 +606,16 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 		Variant array = object->get_array();
 		int size = array.call("size");
 
-		if ((reorder_to_index == 0 && mm->get_relative().y < 0.0f) || (reorder_to_index == size - 1 && mm->get_relative().y > 0.0f)) {
+		// Cumulate the mouse delta, many small changes (dragging slowly) should result in reordering at some point.
+		reorder_mouse_y_delta += mm->get_relative().y;
+
+		// Reordering is done by moving the dragged element by +1/-1 index at a time based on the cumulated mouse delta so if
+		// already at the array bounds make sure to ignore the remaining out of bounds drag (by resetting the cumulated delta).
+		if ((reorder_to_index == 0 && reorder_mouse_y_delta < 0.0f) || (reorder_to_index == size - 1 && reorder_mouse_y_delta > 0.0f)) {
+			reorder_mouse_y_delta = 0.0f;
 			return;
 		}
 
-		reorder_mouse_y_delta += mm->get_relative().y;
 		float required_y_distance = 20.0f * EDSCALE;
 		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
 			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
@@ -1102,8 +1106,7 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				button_add_item = memnew(Button);
-				button_add_item->set_text(TTR("Add Key/Value Pair"));
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 				button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(button_add_item);
@@ -1339,8 +1342,7 @@ void EditorPropertyLocalizableString::update_property() {
 		}
 
 		if (page_index == max_page) {
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Translation"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);

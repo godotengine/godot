@@ -33,6 +33,7 @@
 #include "hb-blob.hh"
 #include "hb-face.hh"
 #include "hb-machinery.hh"
+#include "hb-meta.hh"
 #include "hb-subset.hh"
 
 
@@ -518,7 +519,7 @@ struct UnsizedArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c, count))) return_trace (false);
-    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
+    if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
@@ -707,7 +708,7 @@ struct ArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
+    if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     unsigned int count = len;
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
@@ -835,7 +836,7 @@ struct HeadlessArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
+    if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     unsigned int count = get_length ();
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
@@ -884,7 +885,7 @@ struct ArrayOfM1
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
+    if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     unsigned int count = lenM1 + 1;
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
@@ -1070,7 +1071,7 @@ struct VarSizedBinSearchArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
+    if (!sizeof... (Ts) && hb_is_trivially_copyable(Type)) return_trace (true);
     unsigned int count = get_length ();
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!(*this)[i].sanitize (c, std::forward<Ts> (ds)...)))

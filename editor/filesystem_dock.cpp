@@ -726,7 +726,7 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 
 void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	// Register the previously selected items.
-	RBSet<String> cselection;
+	HashSet<String> cselection;
 	if (p_keep_selection) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
@@ -2592,7 +2592,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 }
 
-void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
+void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	// Right click is pressed in the tree.
 	Vector<String> paths = _tree_get_selected(false);
 
@@ -2615,7 +2618,10 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	}
 }
 
-void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
+void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	// Right click is pressed in the empty space of the tree.
 	path = "res://";
 	tree_popup->clear();
@@ -3106,8 +3112,8 @@ FileSystemDock::FileSystemDock() {
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
 	tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
-	tree->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
-	tree->connect("empty_rmb", callable_mp(this, &FileSystemDock::_tree_rmb_empty));
+	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
+	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect("mouse_exited", callable_mp(this, &FileSystemDock::_tree_mouse_exited));

@@ -94,13 +94,11 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p_test_only, real_t p_margin, int p_max_collisions) {
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 	parameters.max_collisions = p_max_collisions;
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
 	PhysicsServer3D::MotionResult result;
 
-	bool collided = move_and_collide(parameters, result, p_test_only);
-
-	// Don't report collision when the whole motion is done.
-	if (collided && result.collision_safe_fraction < 1) {
+	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -184,15 +182,9 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distan
 	}
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_distance, p_margin);
+	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
 
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
-
-	if (colliding) {
-		// Don't report collision when the whole motion is done.
-		return (r->collision_safe_fraction < 1.0);
-	} else {
-		return false;
-	}
+	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -1088,10 +1080,10 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater,exp"), "set_inertia", "get_inertia");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
 	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
@@ -1105,11 +1097,11 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "freeze"), "set_freeze_enabled", "is_freeze_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
 	ADD_GROUP("Linear", "linear_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity", PROPERTY_HINT_NONE, "suffix:m/s"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity", PROPERTY_HINT_NONE, "suffix:rad/s"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_GROUP("Constant Forces", "constant_");
@@ -1214,6 +1206,8 @@ bool CharacterBody3D::move_and_slide() {
 
 	if (!current_platform_velocity.is_equal_approx(Vector3())) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
 			parameters.exclude_objects.insert(platform_object_id);
@@ -1277,6 +1271,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.max_collisions = 4;
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
@@ -1521,6 +1516,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1575,6 +1571,7 @@ void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -1610,6 +1607,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -2001,7 +1999,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Floating", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_direction"), "set_up_direction", "get_up_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "suffix:m/s", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
 	ADD_GROUP("Floor", "floor_");
@@ -2014,7 +2012,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
 	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
@@ -2263,9 +2261,9 @@ bool PhysicalBone3D::PinJointData::_get(const StringName &p_name, Variant &r_ret
 void PhysicalBone3D::PinJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/damping", PROPERTY_HINT_RANGE, "0.01,8.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/impulse_clamp", PROPERTY_HINT_RANGE, "0.0,64.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/bias"), PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/damping"), PROPERTY_HINT_RANGE, "0.01,8.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/impulse_clamp"), PROPERTY_HINT_RANGE, "0.0,64.0,0.01"));
 }
 
 bool PhysicalBone3D::ConeJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -2335,11 +2333,11 @@ bool PhysicalBone3D::ConeJointData::_get(const StringName &p_name, Variant &r_re
 void PhysicalBone3D::ConeJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/swing_span", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/swing_span"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/twist_span"), PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/bias"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/softness"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/relaxation"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 }
 
 bool PhysicalBone3D::HingeJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -2417,12 +2415,12 @@ bool PhysicalBone3D::HingeJointData::_get(const StringName &p_name, Variant &r_r
 void PhysicalBone3D::HingeJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/angular_limit_enabled"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_relaxation", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("joint_constraints/angular_limit_enabled")));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_upper"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_lower"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_bias"), PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_softness"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_relaxation"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 }
 
 bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -2532,17 +2530,17 @@ bool PhysicalBone3D::SliderJointData::_get(const StringName &p_name, Variant &r_
 void PhysicalBone3D::SliderJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_upper"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_lower"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/linear_limit_upper")));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/linear_limit_lower")));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/linear_limit_softness"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/linear_limit_restitution"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/linear_limit_damping"), PROPERTY_HINT_RANGE, "0,16.0,0.01"));
 
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_upper"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_lower"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_softness"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_restitution"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/angular_limit_damping"), PROPERTY_HINT_RANGE, "0,16.0,0.01"));
 }
 
 bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -2782,29 +2780,30 @@ bool PhysicalBone3D::SixDOFJointData::_get(const StringName &p_name, Variant &r_
 }
 
 void PhysicalBone3D::SixDOFJointData::_get_property_list(List<PropertyInfo> *p_list) const {
-	const StringName axis_names[] = { "x", "y", "z" };
+	const StringName axis_names[] = { PNAME("x"), PNAME("y"), PNAME("z") };
 	for (int i = 0; i < 3; ++i) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/linear_limit_enabled"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_upper"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_lower"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/linear_spring_enabled"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_spring_stiffness"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_spring_damping"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_equilibrium_point"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_limit_enabled"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/erp"));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_spring_enabled"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_spring_stiffness"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_spring_damping"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_equilibrium_point"));
+		const String prefix = vformat("%s/%s/", PNAME("joint_constraints"), axis_names[i]);
+		p_list->push_back(PropertyInfo(Variant::BOOL, prefix + PNAME("linear_limit_enabled")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_limit_upper")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_limit_lower")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_limit_softness"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prefix + PNAME("linear_spring_enabled")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_spring_stiffness")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_spring_damping")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_equilibrium_point")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_restitution"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("linear_damping"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prefix + PNAME("angular_limit_enabled")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_limit_upper"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_limit_lower"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_limit_softness"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_restitution"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_damping"), PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("erp")));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prefix + PNAME("angular_spring_enabled")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_spring_stiffness")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_spring_damping")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("angular_equilibrium_point")));
 	}
 }
 
@@ -2851,9 +2850,9 @@ void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			names += parent->get_bone_name(i);
 		}
 
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bone_name", PROPERTY_HINT_ENUM, names));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, names));
 	} else {
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bone_name"));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name")));
 	}
 
 	if (joint_data) {
@@ -2985,12 +2984,12 @@ void PhysicalBone3D::_bind_methods() {
 
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset"), "set_joint_offset", "get_joint_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_joint_offset", "get_joint_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_lesser,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset"), "set_body_offset", "get_body_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_body_offset", "get_body_offset");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");

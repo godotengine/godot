@@ -268,25 +268,25 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (RBSet<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (const _EVCSort &E : vclist) {
 		uint32_t pusage = PROPERTY_USAGE_NONE;
-		if (E->get().save || !optimize_save) {
+		if (E.save || !optimize_save) {
 			pusage |= PROPERTY_USAGE_STORAGE;
 		}
 
-		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
+		if (!E.name.begins_with("_") && !E.name.begins_with("projects/")) {
 			pusage |= PROPERTY_USAGE_EDITOR;
 		} else {
 			pusage |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
 		}
 
-		PropertyInfo pi(E->get().type, E->get().name);
+		PropertyInfo pi(E.type, E.name);
 		pi.usage = pusage;
-		if (hints.has(E->get().name)) {
-			pi = hints[E->get().name];
+		if (hints.has(E.name)) {
+			pi = hints[E.name];
 		}
 
-		if (E->get().restart_if_changed) {
+		if (E.restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
 
@@ -446,7 +446,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
 
 	// Theme
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Gray,Light,Solarized (Dark),Solarized (Light),Custom")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/theme/icon_and_font_color", 0, "Auto,Dark,Light")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/base_color", Color(0.2, 0.23, 0.31), "")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/accent_color", Color(0.41, 0.61, 0.91), "")
@@ -609,9 +609,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Use a lower default FOV for the 3D camera compared to the
 	// Camera3D node as the 3D viewport doesn't span the whole screen.
 	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_fov", 70.0, "1,179,0.1")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_fov", 70.0, "1,179,0.1,degrees")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater,suffix:m")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater,suffix:m")
 
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/invert_x_axis", false);

@@ -628,7 +628,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	WindowData &wd = windows[p_window];
 
 	while (wd.transient_children.size()) {
-		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
+		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
@@ -2158,7 +2158,10 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 		WindowID win_id = E->get();
 		popup_list.erase(E);
 
-		_send_window_event(windows[win_id], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+		if (win_id != p_window) {
+			// Only request close on related windows, not this window.  We are already processing it.
+			_send_window_event(windows[win_id], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+		}
 		E = F;
 	}
 }
@@ -2173,6 +2176,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 			case WM_NCRBUTTONDOWN:
 			case WM_NCMBUTTONDOWN:
 			case WM_LBUTTONDOWN:
+			case WM_RBUTTONDOWN:
 			case WM_MBUTTONDOWN: {
 				MOUSEHOOKSTRUCT *ms = (MOUSEHOOKSTRUCT *)lParam;
 				Point2i pos = Point2i(ms->pt.x, ms->pt.y);

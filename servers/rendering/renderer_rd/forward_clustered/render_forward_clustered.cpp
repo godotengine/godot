@@ -1523,7 +1523,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		Vector<Color> c;
 		{
 			Color cc = clear_color.srgb_to_linear();
-			if (using_separate_specular) {
+			if (using_separate_specular || render_buffer) {
 				cc.a = 0; //subsurf scatter must be 0
 			}
 			c.push_back(cc);

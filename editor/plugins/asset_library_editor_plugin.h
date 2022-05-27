@@ -311,6 +311,7 @@ protected:
 
 public:
 	void disable_community_support();
+	void set_columns(int p_columns);
 
 	EditorAssetLibrary(bool p_templates_only = false);
 };

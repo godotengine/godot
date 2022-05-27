@@ -99,7 +99,7 @@ class GodotArea3D : public GodotCollisionObject3D {
 	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
 	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
-	RBSet<GodotConstraint3D *> constraints;
+	HashSet<GodotConstraint3D *> constraints;
 
 	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
@@ -163,7 +163,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const RBSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);

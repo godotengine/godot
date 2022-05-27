@@ -2452,17 +2452,17 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	if (p_word) {
 		int column = caret.column;
 		// Check for the case "<word><space><caret>" and ignore the space.
-		// No need to check for column being 0 since it is cheked above.
+		// No need to check for column being 0 since it is checked above.
 		if (is_whitespace(text[caret.line][caret.column - 1])) {
 			column -= 1;
 		}
 		// Get a list with the indices of the word bounds of the given text line.
 		const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
 		if (words.is_empty() || column <= words[0]) {
-			// If "words" is empty, meaning no words are left, we can remove everything until the begining of the line.
+			// If "words" is empty, meaning no words are left, we can remove everything until the beginning of the line.
 			column = 0;
 		} else {
-			// Otherwise search for the first word break that is smaller than the index from we're currentlu deleteing
+			// Otherwise search for the first word break that is smaller than the index from which we're currently deleting.
 			for (int i = words.size() - 2; i >= 0; i = i - 2) {
 				if (words[i] < column) {
 					column = words[i];
@@ -4756,9 +4756,7 @@ void TextEdit::add_gutter(int p_at) {
 		gutters.insert(p_at, GutterInfo());
 	}
 
-	for (int i = 0; i < text.size() + 1; i++) {
-		text.add_gutter(p_at);
-	}
+	text.add_gutter(p_at);
 	emit_signal(SNAME("gutter_added"));
 	update();
 }
@@ -4768,9 +4766,7 @@ void TextEdit::remove_gutter(int p_gutter) {
 
 	gutters.remove_at(p_gutter);
 
-	for (int i = 0; i < text.size() + 1; i++) {
-		text.remove_gutter(p_gutter);
-	}
+	text.remove_gutter(p_gutter);
 	emit_signal(SNAME("gutter_removed"));
 	update();
 }

@@ -73,6 +73,11 @@ Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
 Files: ./scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
@@ -176,7 +181,7 @@ License: OFL-1.1
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2022, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glslang/
@@ -365,8 +370,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2021, University of Cambridge
- 2009-2021, Zoltan Herczeg
+Copyright: 1997-2022, University of Cambridge
+ 2009-2022, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/

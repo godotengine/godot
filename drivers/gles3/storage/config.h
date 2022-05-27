@@ -34,7 +34,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/string/ustring.h"
-#include "core/templates/rb_set.h"
+#include "core/templates/hash_set.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -53,6 +53,8 @@ private:
 public:
 	bool use_nearest_mip_filter = false;
 	bool use_skeleton_software = false;
+	bool use_depth_prepass = true;
+	bool use_rgba_2d_shadows = false;
 
 	int max_vertex_texture_image_units = 0;
 	int max_texture_image_units = 0;
@@ -65,41 +67,18 @@ public:
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
 
-	RBSet<String> extensions;
+	HashSet<String> extensions;
 
 	bool float_texture_supported = false;
 	bool s3tc_supported = false;
-	bool latc_supported = false;
 	bool rgtc_supported = false;
 	bool bptc_supported = false;
-	bool etc_supported = false;
 	bool etc2_supported = false;
-	bool srgb_decode_supported = false;
-
-	bool keep_original_textures = false;
 
 	bool force_vertex_shading = false;
 
-	bool use_rgba_2d_shadows = false;
-	bool use_rgba_3d_shadows = false;
-
-	bool support_32_bits_indices = false;
-	bool support_write_depth = false;
-	bool support_npot_repeat_mipmap = false;
-	bool support_depth_cubemaps = false;
-	bool support_shadow_cubemaps = false;
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
-
-	GLuint depth_internalformat = 0;
-	GLuint depth_type = 0;
-	GLuint depth_buffer_internalformat = 0;
-
-	// in some cases the legacy render didn't orphan. We will mark these
-	// so the user can switch orphaning off for them.
-	bool should_orphan = true;
-
-	bool use_depth_prepass = true;
 
 	static Config *get_singleton() { return singleton; };
 

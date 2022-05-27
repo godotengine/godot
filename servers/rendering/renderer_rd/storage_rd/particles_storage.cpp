@@ -540,11 +540,8 @@ void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_tran
 		_particles_allocate_emission_buffer(particles);
 	}
 
-	if (particles->inactive) {
-		//in case it was inactive, make active again
-		particles->inactive = false;
-		particles->inactive_time = 0;
-	}
+	particles->inactive = false;
+	particles->inactive_time = 0;
 
 	int32_t idx = particles->emission_buffer->particle_count;
 	if (idx < particles->emission_buffer->particle_max) {
@@ -838,8 +835,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		}
 
 		uint32_t collision_3d_textures_used = 0;
-		for (const RBSet<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
-			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E->get());
+		for (const RID &E : p_particles->collisions) {
+			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E);
 			if (!pci || !pci->active) {
 				continue;
 			}

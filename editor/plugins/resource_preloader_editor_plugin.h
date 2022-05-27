@@ -63,7 +63,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 	void _paste_pressed();
 	void _remove_resource(const String &p_to_remove);
 	void _update_library();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _item_edited();
 
 	UndoRedo *undo_redo = nullptr;

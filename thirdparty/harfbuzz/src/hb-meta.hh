@@ -188,6 +188,19 @@ template <> struct hb_int_max<signed long long>		: hb_integral_constant<signed l
 template <> struct hb_int_max<unsigned long long>	: hb_integral_constant<unsigned long long,	ULLONG_MAX>	{};
 #define hb_int_max(T) hb_int_max<T>::value
 
+#if __GNUG__ && __GNUC__ < 5
+#define hb_is_trivially_copyable(T) __has_trivial_copy(T)
+#define hb_is_trivially_copy_assignable(T) __has_trivial_assign(T)
+#define hb_is_trivially_constructible(T) __has_trivial_constructor(T)
+#define hb_is_trivially_copy_constructible(T) __has_trivial_copy_constructor(T)
+#define hb_is_trivially_destructible(T) __has_trivial_destructor(T)
+#else
+#define hb_is_trivially_copyable(T) std::is_trivially_copyable<T>::value
+#define hb_is_trivially_copy_assignable(T) std::is_trivially_copy_assignable<T>::value
+#define hb_is_trivially_constructible(T) std::is_trivially_constructible<T>::value
+#define hb_is_trivially_copy_constructible(T) std::is_trivially_copy_constructible<T>::value
+#define hb_is_trivially_destructible(T) std::is_trivially_destructible<T>::value
+#endif
 
 /* Class traits. */
 

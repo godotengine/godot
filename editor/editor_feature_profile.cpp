@@ -101,7 +101,7 @@ bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) c
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
-			disabled_properties[p_class] = RBSet<StringName>();
+			disabled_properties[p_class] = HashSet<StringName>();
 		}
 
 		disabled_properties[p_class].insert(p_property);
@@ -166,24 +166,24 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Dictionary data;
 	data["type"] = "feature_profile";
 	Array dis_classes;
-	for (RBSet<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
-		dis_classes.push_back(String(E->get()));
+	for (const StringName &E : disabled_classes) {
+		dis_classes.push_back(String(E));
 	}
 	dis_classes.sort();
 	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
-	for (RBSet<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
-		dis_editors.push_back(String(E->get()));
+	for (const StringName &E : disabled_editors) {
+		dis_editors.push_back(String(E));
 	}
 	dis_editors.sort();
 	data["disabled_editors"] = dis_editors;
 
 	Array dis_props;
 
-	for (KeyValue<StringName, RBSet<StringName>> &E : disabled_properties) {
-		for (RBSet<StringName>::Element *F = E.value.front(); F; F = F->next()) {
-			dis_props.push_back(String(E.key) + ":" + String(F->get()));
+	for (KeyValue<StringName, HashSet<StringName>> &E : disabled_properties) {
+		for (const StringName &F : E.value) {
+			dis_props.push_back(String(E.key) + ":" + String(F));
 		}
 	}
 

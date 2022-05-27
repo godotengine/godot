@@ -160,8 +160,8 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
-		TK_HINT_WHITE_TEXTURE,
-		TK_HINT_BLACK_TEXTURE,
+		TK_HINT_DEFAULT_WHITE_TEXTURE,
+		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_NORMAL_TEXTURE,
 		TK_HINT_ROUGHNESS_R,
@@ -170,9 +170,7 @@ public:
 		TK_HINT_ROUGHNESS_A,
 		TK_HINT_ROUGHNESS_GRAY,
 		TK_HINT_ANISOTROPY_TEXTURE,
-		TK_HINT_ALBEDO_TEXTURE,
-		TK_HINT_BLACK_ALBEDO_TEXTURE,
-		TK_HINT_COLOR,
+		TK_HINT_SOURCE_COLOR,
 		TK_HINT_RANGE,
 		TK_HINT_INSTANCE_INDEX,
 		TK_FILTER_NEAREST,
@@ -503,7 +501,7 @@ public:
 		BlockNode *parent_block = nullptr;
 
 		enum BlockType {
-			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_STANDARD,
 			BLOCK_TYPE_FOR_INIT,
 			BLOCK_TYPE_FOR_CONDITION,
 			BLOCK_TYPE_FOR_EXPRESSION,
@@ -512,7 +510,7 @@ public:
 			BLOCK_TYPE_DEFAULT,
 		};
 
-		int block_type = BLOCK_TYPE_STANDART;
+		int block_type = BLOCK_TYPE_STANDARD;
 		SubClassTag block_tag = SubClassTag::TAG_GLOBAL;
 
 		struct Variable {
@@ -589,7 +587,7 @@ public:
 			bool is_const;
 			int array_size;
 
-			HashMap<StringName, RBSet<int>> tex_argument_connect;
+			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
 
 		StringName name;
@@ -622,7 +620,7 @@ public:
 		struct Function {
 			StringName name;
 			FunctionNode *function = nullptr;
-			RBSet<StringName> uses_function;
+			HashSet<StringName> uses_function;
 			bool callable;
 		};
 
@@ -653,10 +651,8 @@ public:
 		struct Uniform {
 			enum Hint {
 				HINT_NONE,
-				HINT_COLOR,
 				HINT_RANGE,
-				HINT_ALBEDO,
-				HINT_BLACK_ALBEDO,
+				HINT_SOURCE_COLOR,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
 				HINT_ROUGHNESS_R,
@@ -664,8 +660,8 @@ public:
 				HINT_ROUGHNESS_B,
 				HINT_ROUGHNESS_A,
 				HINT_ROUGHNESS_GRAY,
-				HINT_BLACK,
-				HINT_WHITE,
+				HINT_DEFAULT_BLACK,
+				HINT_DEFAULT_WHITE,
 				HINT_ANISOTROPY,
 				HINT_MAX
 			};
@@ -1068,10 +1064,10 @@ private:
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
-	String _get_shader_type_list(const RBSet<String> &p_shader_types) const;
+	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const RBSet<String> &p_shader_types);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1097,7 +1093,7 @@ public:
 		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
-		RBSet<String> shader_types;
+		HashSet<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
 	};
 

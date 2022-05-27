@@ -159,7 +159,7 @@ void ParallaxLayer::_bind_methods() {
 
 	ADD_GROUP("Motion", "motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_scale"), "set_motion_scale", "get_motion_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_offset"), "set_motion_offset", "get_motion_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_motion_offset", "get_motion_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_mirroring"), "set_mirroring", "get_mirroring");
 }
 

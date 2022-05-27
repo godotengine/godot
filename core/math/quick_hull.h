@@ -33,8 +33,8 @@
 
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_set.h"
 
 class QuickHull {
 public:

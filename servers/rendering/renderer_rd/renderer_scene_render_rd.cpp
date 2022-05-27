@@ -2388,6 +2388,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	bool can_use_storage = _render_buffers_can_be_storage();
 
 	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
 			_allocate_blur_textures(rb);
@@ -2440,6 +2441,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	if (can_use_effects && env && env->auto_exposure) {
+		RENDER_TIMESTAMP("Auto exposure");
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
 		if (rb->luminance.current.is_null()) {
 			_allocate_luminance_textures(rb);
@@ -2467,6 +2469,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	int max_glow_level = -1;
 
 	if (can_use_effects && env && env->glow_enabled) {
+		RENDER_TIMESTAMP("Glow");
 		RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
 
 		/* see that blur textures are allocated */
@@ -2515,6 +2518,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	{
+		RENDER_TIMESTAMP("Tonemap");
 		RD::get_singleton()->draw_command_begin_label("Tonemap");
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
@@ -4361,7 +4365,8 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RS::FogVolumeShape volume_type = storage->fog_volume_get_shape(fog_volume);
 			Vector3 extents = storage->fog_volume_get_extents(fog_volume);
 
-			if (volume_type == RS::FOG_VOLUME_SHAPE_BOX || volume_type == RS::FOG_VOLUME_SHAPE_ELLIPSOID) {
+			if (volume_type != RS::FOG_VOLUME_SHAPE_WORLD) {
+				// Local fog volume.
 				Vector3i points[8];
 				points[0] = _point_get_position_in_froxel_volume(fog_volume_instance->transform.xform(Vector3(extents.x, extents.y, extents.z)), fog_end, fog_near_size, fog_far_size, env->volumetric_fog_detail_spread, Vector3(rb->volumetric_fog->width, rb->volumetric_fog->height, rb->volumetric_fog->depth), p_cam_transform);
 				points[1] = _point_get_position_in_froxel_volume(fog_volume_instance->transform.xform(Vector3(-extents.x, extents.y, extents.z)), fog_end, fog_near_size, fog_far_size, env->volumetric_fog_detail_spread, Vector3(rb->volumetric_fog->width, rb->volumetric_fog->height, rb->volumetric_fog->depth), p_cam_transform);
@@ -5170,7 +5175,6 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	if (p_render_buffers.is_valid()) {
 		/*
 		_debug_draw_cluster(p_render_buffers);
-		RENDER_TIMESTAMP("Tonemap");
 		_render_buffers_post_process_and_tonemap(&render_data);
 		*/
 
@@ -5464,8 +5468,8 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_rid);
 
 		//remove from shadow atlases..
-		for (RBSet<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
-			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(E->get());
+		for (const RID &E : light_instance->shadow_atlases) {
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(E);
 			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
 			uint32_t key = shadow_atlas->shadow_owners[p_rid];
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;

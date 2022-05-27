@@ -223,9 +223,9 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 	occluder->vertices = p_vertices;
 	occluder->indices = p_indices;
 
-	for (RBSet<InstanceID>::Element *E = occluder->users.front(); E; E = E->next()) {
-		RID scenario_rid = E->get().scenario;
-		RID instance_rid = E->get().instance;
+	for (const InstanceID &E : occluder->users) {
+		RID scenario_rid = E.scenario;
+		RID instance_rid = E.instance;
 		ERR_CONTINUE(!scenarios.has(scenario_rid));
 		Scenario &scenario = scenarios[scenario_rid];
 		ERR_CONTINUE(!scenario.instances.has(instance_rid));

@@ -60,11 +60,11 @@ Size2 Button::get_minimum_size() const {
 			}
 		}
 	}
-
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
-
-	minsize.height = MAX(font_height, minsize.height);
+	if (!xl_text.is_empty()) {
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		minsize.height = MAX(font_height, minsize.height);
+	}
 
 	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }

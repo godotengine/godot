@@ -203,7 +203,8 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	if (ignored_warnings.has(warn_name)) {
 		return;
 	}
-	if (!GLOBAL_GET("debug/gdscript/warnings/" + warn_name)) {
+	int warn_level = (int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
+	if (!warn_level) {
 		return;
 	}
 
@@ -214,6 +215,11 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.end_line = p_source->end_line;
 	warning.leftmost_column = p_source->leftmost_column;
 	warning.rightmost_column = p_source->rightmost_column;
+
+	if (warn_level == GDScriptWarning::WarnLevel::ERROR) {
+		push_error(warning.get_message(), p_source);
+		return;
+	}
 
 	List<GDScriptWarning>::Element *before = nullptr;
 	for (List<GDScriptWarning>::Element *E = warnings.front(); E; E = E->next()) {
@@ -1624,6 +1630,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::AWAIT:
 						// Fine.
 						break;
+					case Node::LAMBDA:
+						// Standalone lambdas can't be used, so make this an error.
+						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
+						break;
 					default:
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 				}
@@ -1808,7 +1818,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 #ifdef DEBUG_ENABLED
 	bool all_have_return = true;
 	bool have_wildcard = false;
-	bool wildcard_has_return = false;
 	bool have_wildcard_without_continue = false;
 #endif
 
@@ -1826,9 +1835,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 		if (branch->has_wildcard) {
 			have_wildcard = true;
-			if (branch->block->has_return) {
-				wildcard_has_return = true;
-			}
 			if (!branch->block->has_continue) {
 				have_wildcard_without_continue = true;
 			}
@@ -1843,7 +1849,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
 #ifdef DEBUG_ENABLED
-	if (wildcard_has_return || (all_have_return && have_wildcard)) {
+	if (all_have_return && have_wildcard) {
 		current_suite->has_return = true;
 	}
 #endif
@@ -2103,7 +2109,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL)) {
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || (previous_operand->type == Node::LAMBDA && lambda_ended)) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -2926,6 +2932,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	current_function = function;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
+	body->parent_function = current_function;
+	body->parent_block = current_suite;
+
 	SuiteNode *previous_suite = current_suite;
 	current_suite = body;
 
@@ -3138,24 +3147,23 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 		String title, link; // For tutorials.
 		String doc_line = comments[line++].comment.trim_prefix("##");
-		String striped_line = doc_line.strip_edges();
+		String stripped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (striped_line.begins_with("@desc:") && p_desc.is_empty()) {
+		if (stripped_line.is_empty() && mode == BRIEF && !p_brief.is_empty()) {
 			mode = DESC;
-			striped_line = striped_line.trim_prefix("@desc:");
-			in_codeblock = _in_codeblock(doc_line, in_codeblock);
+			continue;
 
-		} else if (striped_line.begins_with("@tutorial")) {
+		} else if (stripped_line.begins_with("@tutorial")) {
 			int begin_scan = String("@tutorial").length();
-			if (begin_scan >= striped_line.length()) {
+			if (begin_scan >= stripped_line.length()) {
 				continue; // invalid syntax.
 			}
 
-			if (striped_line[begin_scan] == ':') { // No title.
+			if (stripped_line[begin_scan] == ':') { // No title.
 				// Syntax: ## @tutorial: https://godotengine.org/ // The title argument is optional.
 				title = "";
-				link = striped_line.trim_prefix("@tutorial:").strip_edges();
+				link = stripped_line.trim_prefix("@tutorial:").strip_edges();
 
 			} else {
 				/* Syntax:
@@ -3163,35 +3171,35 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				 *             ^ open           ^ close   ^ colon   ^ url
 				 */
 				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
-				while (open_bracket_pos < striped_line.length() && (striped_line[open_bracket_pos] == ' ' || striped_line[open_bracket_pos] == '\t')) {
+				while (open_bracket_pos < stripped_line.length() && (stripped_line[open_bracket_pos] == ' ' || stripped_line[open_bracket_pos] == '\t')) {
 					open_bracket_pos++;
 				}
-				if (open_bracket_pos == striped_line.length() || striped_line[open_bracket_pos++] != '(') {
+				if (open_bracket_pos == stripped_line.length() || stripped_line[open_bracket_pos++] != '(') {
 					continue; // invalid syntax.
 				}
 				close_bracket_pos = open_bracket_pos;
-				while (close_bracket_pos < striped_line.length() && striped_line[close_bracket_pos] != ')') {
+				while (close_bracket_pos < stripped_line.length() && stripped_line[close_bracket_pos] != ')') {
 					close_bracket_pos++;
 				}
-				if (close_bracket_pos == striped_line.length()) {
+				if (close_bracket_pos == stripped_line.length()) {
 					continue; // invalid syntax.
 				}
 
 				int colon_pos = close_bracket_pos + 1;
-				while (colon_pos < striped_line.length() && (striped_line[colon_pos] == ' ' || striped_line[colon_pos] == '\t')) {
+				while (colon_pos < stripped_line.length() && (stripped_line[colon_pos] == ' ' || stripped_line[colon_pos] == '\t')) {
 					colon_pos++;
 				}
-				if (colon_pos == striped_line.length() || striped_line[colon_pos++] != ':') {
+				if (colon_pos == stripped_line.length() || stripped_line[colon_pos++] != ':') {
 					continue; // invalid syntax.
 				}
 
-				title = striped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
-				link = striped_line.substr(colon_pos).strip_edges();
+				title = stripped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
+				link = stripped_line.substr(colon_pos).strip_edges();
 			}
 
 			mode = TUTORIALS;
 			in_codeblock = false;
-		} else if (striped_line.is_empty()) {
+		} else if (stripped_line.is_empty()) {
 			continue;
 		} else {
 			// Tutorial docs are single line, we need a @tag after it.
@@ -3211,7 +3219,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 			}
 			doc_line = doc_line.substr(i);
 		} else {
-			doc_line = striped_line;
+			doc_line = stripped_line;
 		}
 		String line_join = (in_codeblock) ? "\n" : " ";
 

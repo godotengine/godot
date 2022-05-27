@@ -2150,7 +2150,7 @@ bool Main::start() {
 
 		DocTools docsrc;
 		HashMap<String, String> doc_data_classes;
-		RBSet<String> checked_paths;
+		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -2189,10 +2189,10 @@ bool Main::start() {
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 
-		for (RBSet<String>::Element *E = checked_paths.front(); E; E = E->next()) {
-			print_line("Erasing old docs at: " + E->get());
-			err = DocTools::erase_classes(E->get());
-			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));
+		for (const String &E : checked_paths) {
+			print_line("Erasing old docs at: " + E);
+			err = DocTools::erase_classes(E);
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E + ": " + itos(err));
 		}
 
 		print_line("Generating new docs...");
@@ -2634,6 +2634,7 @@ bool Main::start() {
 
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
+uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
@@ -2774,12 +2775,17 @@ bool Main::iteration() {
 	Engine::get_singleton()->_process_frames++;
 
 	if (frame > 1000000) {
-		if (editor || project_manager) {
-			if (print_fps) {
-				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		// Wait a few seconds before printing FPS, as FPS reporting just after the engine has started is inaccurate.
+		if (hide_print_fps_attempts == 0) {
+			if (editor || project_manager) {
+				if (print_fps) {
+					print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+				}
+			} else if (print_fps || GLOBAL_GET("debug/settings/stdout/print_fps")) {
+				print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 			}
-		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+		} else {
+			hide_print_fps_attempts--;
 		}
 
 		Engine::get_singleton()->_fps = frames;

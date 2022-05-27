@@ -507,8 +507,8 @@ String TranslationServer::get_locale() const {
 
 Array TranslationServer::get_loaded_locales() const {
 	Array locales;
-	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
-		const Ref<Translation> &t = E->get();
+	for (const Ref<Translation> &E : translations) {
+		const Ref<Translation> &t = E;
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
 
@@ -530,8 +530,8 @@ Ref<Translation> TranslationServer::get_translation_object(const String &p_local
 	Ref<Translation> res;
 	int best_score = 0;
 
-	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
-		const Ref<Translation> &t = E->get();
+	for (const Ref<Translation> &E : translations) {
+		const Ref<Translation> &t = E;
 		ERR_FAIL_COND_V(t.is_null(), nullptr);
 		String l = t->get_locale();
 
@@ -599,8 +599,8 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 	StringName res;
 	int best_score = 0;
 
-	for (const RBSet<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
-		const Ref<Translation> &t = E->get();
+	for (const Ref<Translation> &E : translations) {
+		const Ref<Translation> &t = E;
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
 

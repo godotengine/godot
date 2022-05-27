@@ -981,7 +981,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data);
 			} else {
@@ -1024,6 +1024,7 @@ MaterialData::~MaterialData() {
 
 	if (uniform_buffer) {
 		glDeleteBuffers(1, &uniform_buffer);
+		uniform_buffer = 0;
 	}
 }
 
@@ -1116,8 +1117,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_USAMPLER2D:
 				case ShaderLanguage::TYPE_SAMPLER2D: {
 					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_BLACK);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
@@ -1137,8 +1137,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 
 				case ShaderLanguage::TYPE_SAMPLERCUBE: {
 					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
 						} break;
 						default: {
@@ -1154,8 +1153,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_USAMPLER3D:
 				case ShaderLanguage::TYPE_SAMPLER3D: {
 					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
 						} break;
 						default: {
@@ -1186,8 +1184,6 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				p_textures[k++] = gl_texture;
 			}
 		} else {
-			//bool srgb = p_use_linear_color && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO);
-
 			for (int j = 0; j < textures.size(); j++) {
 				Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);
 
@@ -1634,6 +1630,7 @@ ShaderCompiler::DefaultIdentifierActions actions;
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "time";
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
@@ -1673,13 +1670,6 @@ ShaderCompiler::DefaultIdentifierActions actions;
 
 		shaders.compiler_sky.initialize(actions);
 	}
-
-	//shaders.copy.initialize();
-	//shaders.copy_version = shaders.copy.version_create(); //TODO
-	//shaders.copy.version_bind_shader(shaders.copy_version, CopyShaderGLES3::MODE_COPY_SECTION);
-	//shaders.cubemap_filter.init();
-	//bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
-	//shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 }
 
 MaterialStorage::~MaterialStorage() {
@@ -2093,8 +2083,8 @@ void MaterialStorage::global_variable_set(const StringName &p_name, const Varian
 		} else {
 			//texture
 			MaterialStorage *material_storage = MaterialStorage::get_singleton();
-			for (RBSet<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-				Material *material = material_storage->get_material(E->get());
+			for (const RID &E : gv.texture_materials) {
+				Material *material = material_storage->get_material(E);
 				ERR_CONTINUE(!material);
 				material_storage->_material_queue_update(material, false, true);
 			}
@@ -2125,8 +2115,8 @@ void MaterialStorage::global_variable_set_override(const StringName &p_name, con
 	} else {
 		//texture
 		MaterialStorage *material_storage = MaterialStorage::get_singleton();
-		for (RBSet<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-			Material *material = material_storage->get_material(E->get());
+		for (const RID &E : gv.texture_materials) {
+			Material *material = material_storage->get_material(E);
 			ERR_CONTINUE(!material);
 			material_storage->_material_queue_update(material, false, true);
 		}
@@ -2383,7 +2373,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 
 	//make material unreference this
 	while (shader->owners.size()) {
-		material_set_shader(shader->owners.front()->get()->self, RID());
+		material_set_shader((*shader->owners.begin())->self, RID());
 	}
 
 	//clear data if exists
@@ -2423,8 +2413,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 			shader->data = nullptr;
 		}
 
-		for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *E : shader->owners) {
+			Material *material = E;
 			material->shader_mode = new_mode;
 			if (material->data) {
 				memdelete(material->data);
@@ -2440,8 +2430,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 			shader->mode = RS::SHADER_MAX; //invalid
 		}
 
-		for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *E : shader->owners) {
+			Material *material = E;
 			if (shader->data) {
 				material->data = material_data_request_func[new_mode](shader->data);
 				material->data->self = material->self;
@@ -2464,8 +2454,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		shader->data->set_code(p_code);
 	}
 
-	for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *E : shader->owners) {
+		Material *material = E;
 		material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
 	}
@@ -2506,8 +2496,8 @@ void MaterialStorage::shader_set_default_texture_param(RID p_shader, const Strin
 	if (shader->data) {
 		shader->data->set_default_texture_param(p_name, p_texture, p_index);
 	}
-	for (RBSet<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *E : shader->owners) {
+		Material *material = E;
 		_material_queue_update(material, false, true);
 	}
 }
@@ -2753,7 +2743,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	ShaderCompiler::GeneratedCode gen_code;
 
-	int blend_mode = BLEND_MODE_MIX;
+	int blend_modei = BLEND_MODE_MIX;
 	uses_screen_texture = false;
 
 	ShaderCompiler::IdentifierActions actions;
@@ -2761,12 +2751,12 @@ void CanvasShaderData::set_code(const String &p_code) {
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PMALPHA);
-	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
+	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
+	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
+	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
+	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PMALPHA);
+	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
 
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
@@ -2779,6 +2769,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 	if (version.is_null()) {
 		version = MaterialStorage::get_singleton()->shaders.canvas_shader.version_create();
 	}
+
+	blend_mode = BlendMode(blend_modei);
 
 #if 0
 	print_line("**compiling shader:");
@@ -3133,6 +3125,7 @@ GLES3::ShaderData *GLES3::_create_sky_shader_func() {
 // Sky material
 
 void SkyMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	uniform_set_updated = true;
 	return update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 

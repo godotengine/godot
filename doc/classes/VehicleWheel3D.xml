@@ -53,7 +53,7 @@
 			A negative value will result in the wheel reversing.
 		</member>
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
-			The steering angle for the wheel. Setting this to a non-zero value will result in the vehicle turning when it's moving.
+			The steering angle for the wheel, in radians. Setting this to a non-zero value will result in the vehicle turning when it's moving.
 		</member>
 		<member name="suspension_max_force" type="float" setter="set_suspension_max_force" getter="get_suspension_max_force" default="6000.0">
 			The maximum force the spring can resist. This value should be higher than a quarter of the [member RigidDynamicBody3D.mass] of the [VehicleBody3D] or the spring will not carry the weight of the vehicle. Good results are often obtained by a value that is about 3× to 4× this number.

@@ -249,7 +249,7 @@ String ProjectSettingsEditor::_get_setting_name() const {
 }
 
 void ProjectSettingsEditor::_add_feature_overrides() {
-	RBSet<String> presets;
+	HashSet<String> presets;
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
@@ -292,8 +292,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
 	int id = 1;
-	for (RBSet<String>::Element *E = presets.front(); E; E = E->next()) {
-		feature_box->add_item(E->get(), id++);
+	for (const String &E : presets) {
+		feature_box->add_item(E, id++);
 	}
 }
 

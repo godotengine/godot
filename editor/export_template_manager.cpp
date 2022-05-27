@@ -35,6 +35,7 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/os/keyboard.h"
+#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -592,7 +593,10 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 	}
 }
 
-void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_column, int p_id) {
+void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
@@ -694,7 +698,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	ProgressDialog::get_singleton()->add_task("uncompress_src", TTR("Uncompressing Android Build Sources"), total_files);
 
-	RBSet<String> dirs_tested;
+	HashSet<String> dirs_tested;
 	int idx = 0;
 	while (ret == UNZ_OK) {
 		// Get file path.
@@ -974,7 +978,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_table->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	installed_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vb->add_child(installed_table);
-	installed_table->connect("button_pressed", callable_mp(this, &ExportTemplateManager::_installed_table_button_cbk));
+	installed_table->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_installed_table_button_cbk));
 
 	// Dialogs.
 	uninstall_confirm = memnew(ConfirmationDialog);

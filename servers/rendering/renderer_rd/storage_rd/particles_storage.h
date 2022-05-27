@@ -224,7 +224,7 @@ struct Particles {
 	ParticleEmissionBuffer *emission_buffer = nullptr;
 	RID emission_storage_buffer;
 
-	RBSet<RID> collisions;
+	HashSet<RID> collisions;
 
 	RendererStorage::Dependency dependency;
 

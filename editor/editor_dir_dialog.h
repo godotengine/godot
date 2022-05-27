@@ -44,7 +44,7 @@ class EditorDirDialog : public ConfirmationDialog {
 	AcceptDialog *mkdirerr = nullptr;
 
 	Button *makedir = nullptr;
-	RBSet<String> opened_paths;
+	HashSet<String> opened_paths;
 
 	Tree *tree = nullptr;
 	bool updating = false;

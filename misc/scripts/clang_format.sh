@@ -21,6 +21,8 @@ while read -r f; do
         continue
     elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper"* ]]; then
         continue
+    elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix"* ]]; then
+        continue
     fi
 
     python misc/scripts/copyright_headers.py "$f"

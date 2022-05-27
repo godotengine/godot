@@ -34,7 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/templates/rb_set.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
@@ -180,7 +180,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
-	RBSet<String> late_update_files;
+	HashSet<String> late_update_files;
 
 	void _save_late_updated_files();
 
@@ -221,9 +221,9 @@ class EditorFileSystem : public Node {
 
 	void _delete_internal_files(String p_file);
 
-	RBSet<String> textfile_extensions;
-	RBSet<String> valid_extensions;
-	RBSet<String> import_extensions;
+	HashSet<String> textfile_extensions;
+	HashSet<String> valid_extensions;
+	HashSet<String> import_extensions;
 
 	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
@@ -269,11 +269,11 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, RBSet<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
-	RBSet<String> group_file_cache;
+	HashSet<String> group_file_cache;
 
 	ThreadWorkPool import_threads;
 
@@ -306,7 +306,7 @@ public:
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
-	RBSet<String> get_valid_extensions() const;
+	HashSet<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;

@@ -158,8 +158,8 @@ Vector<RID> PhysicsRayQueryParameters2D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -208,8 +208,8 @@ Vector<RID> PhysicsPointQueryParameters2D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -267,8 +267,8 @@ Vector<RID> PhysicsShapeQueryParameters2D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -505,12 +505,16 @@ void PhysicsTestMotionParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters2D::get_exclude_objects);
 	ClassDB::bind_method(D_METHOD("set_exclude_objects", "exclude_list"), &PhysicsTestMotionParameters2D::set_exclude_objects);
 
+	ClassDB::bind_method(D_METHOD("is_recovery_as_collision_enabled"), &PhysicsTestMotionParameters2D::is_recovery_as_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_recovery_as_collision_enabled", "enabled"), &PhysicsTestMotionParameters2D::set_recovery_as_collision_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recovery_as_collision"), "set_recovery_as_collision_enabled", "is_recovery_as_collision_enabled");
 }
 
 ///////////////////////////////
@@ -857,7 +861,7 @@ PhysicsServer2D::~PhysicsServer2D() {
 Vector<PhysicsServer2DManager::ClassInfo> PhysicsServer2DManager::physics_2d_servers;
 int PhysicsServer2DManager::default_server_id = -1;
 int PhysicsServer2DManager::default_server_priority = -1;
-const String PhysicsServer2DManager::setting_property_name("physics/2d/physics_engine");
+const String PhysicsServer2DManager::setting_property_name(PNAME("physics/2d/physics_engine"));
 
 void PhysicsServer2DManager::on_servers_changed() {
 	String physics_servers("DEFAULT");

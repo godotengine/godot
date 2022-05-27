@@ -145,7 +145,7 @@ private:
 		bool start_next = true;
 		int requests = 0;
 		int poll_requests = 0;
-		RBSet<String> sub_tasks;
+		HashSet<String> sub_tasks;
 	};
 
 	static void _thread_load_function(void *p_userdata);

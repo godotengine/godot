@@ -88,13 +88,13 @@ public:
 	};
 
 protected:
-	float cell_size = 0.3f;
-	float cell_height = 0.2f;
-	float agent_height = 2.0f;
-	float agent_radius = 1.0f;
-	float agent_max_climb = 0.9f;
+	float cell_size = 0.25f;
+	float cell_height = 0.25f;
+	float agent_height = 1.5f;
+	float agent_radius = 0.5f;
+	float agent_max_climb = 0.25f;
 	float agent_max_slope = 45.0f;
-	float region_min_size = 8.0f;
+	float region_min_size = 2.0f;
 	float region_merge_size = 20.0f;
 	float edge_max_length = 12.0f;
 	float edge_max_error = 1.3f;

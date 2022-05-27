@@ -33,6 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "effects/copy_effects.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 #include "rasterizer_storage_gles3.h"
@@ -58,6 +59,7 @@ protected:
 	GLES3::MeshStorage *mesh_storage = nullptr;
 	GLES3::ParticlesStorage *particles_storage = nullptr;
 	GLES3::LightStorage *light_storage = nullptr;
+	GLES3::CopyEffects *copy_effects = nullptr;
 	RasterizerStorageGLES3 *storage = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;

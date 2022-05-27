@@ -853,6 +853,8 @@ _FORCE_INLINE_ void TextServerFallback::_font_clear_cache(FontDataFallback *p_fo
 }
 
 RID TextServerFallback::create_font() {
+	_THREAD_SAFE_METHOD_
+
 	FontDataFallback *fd = memnew(FontDataFallback);
 
 	return font_owner.make_rid(fd);
@@ -2429,6 +2431,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 
 RID TextServerFallback::create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+
 	ShapedTextDataFallback *sd = memnew(ShapedTextDataFallback);
 	sd->direction = p_direction;
 	sd->orientation = p_orientation;
@@ -2807,6 +2810,8 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 }
 
 RID TextServerFallback::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {
+	_THREAD_SAFE_METHOD_
+
 	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
 

@@ -898,7 +898,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 			}
 
 #ifdef DEBUG_ENABLED
-			RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -947,7 +947,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -1160,8 +1160,16 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 		}
 	} else {
-		GDScriptParser::DataType return_type = resolve_datatype(p_function->return_type);
-		p_function->set_datatype(return_type);
+		if (p_function->return_type != nullptr) {
+			p_function->set_datatype(resolve_datatype(p_function->return_type));
+		} else {
+			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
+			// It's not "undetected" to not mix up with unknown functions.
+			GDScriptParser::DataType return_type;
+			return_type.type_source = GDScriptParser::DataType::INFERRED;
+			return_type.kind = GDScriptParser::DataType::VARIANT;
+			p_function->set_datatype(return_type);
+		}
 
 #ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
@@ -1231,7 +1239,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	GDScriptParser::DataType return_type = p_function->body->get_datatype();
 
-	if (p_function->get_datatype().has_no_type() && return_type.is_set()) {
+	if (!p_function->get_datatype().is_hard_type() && return_type.is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
 		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
@@ -1279,7 +1287,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		}
 
 #ifdef DEBUG_ENABLED
-		RBSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
+		HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 		for (uint32_t ignored_warning : stmt->ignored_warnings) {
 			parser->ignored_warning_codes.insert(ignored_warning);
 		}
@@ -1514,10 +1522,22 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant) {
 	GDScriptParser::DataType type;
 
+	GDScriptParser::DataType explicit_type;
+	if (p_constant->datatype_specifier != nullptr) {
+		explicit_type = resolve_datatype(p_constant->datatype_specifier);
+		explicit_type.is_meta_type = false;
+	}
+
 	if (p_constant->initializer != nullptr) {
 		reduce_expression(p_constant->initializer);
 		if (p_constant->initializer->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer));
+			GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer);
+			const_fold_array(array);
+
+			// Can only infer typed array if it has elements.
+			if (array->elements.size() > 0 || (p_constant->datatype_specifier != nullptr && explicit_type.has_container_element_type())) {
+				update_array_literal_element_type(explicit_type, array);
+			}
 		} else if (p_constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_constant->initializer));
 		}
@@ -1536,8 +1556,6 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	}
 
 	if (p_constant->datatype_specifier != nullptr) {
-		GDScriptParser::DataType explicit_type = resolve_datatype(p_constant->datatype_specifier);
-		explicit_type.is_meta_type = false;
 		if (!is_type_compatible(explicit_type, type)) {
 			push_error(vformat(R"(Assigned value for constant "%s" has type %s which is not compatible with defined type %s.)", p_constant->identifier->name, type.to_string(), explicit_type.to_string()), p_constant->initializer);
 #ifdef DEBUG_ENABLED
@@ -2057,7 +2075,8 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 	p_await->set_datatype(awaiting_type);
 
 #ifdef DEBUG_ENABLED
-	if (!awaiting_type.is_coroutine && awaiting_type.builtin_type != Variant::SIGNAL) {
+	awaiting_type = p_await->to_await->get_datatype();
+	if (!(awaiting_type.has_no_type() || awaiting_type.is_coroutine || awaiting_type.builtin_type == Variant::SIGNAL)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif

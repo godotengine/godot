@@ -83,7 +83,7 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
 
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));

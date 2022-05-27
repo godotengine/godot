@@ -650,8 +650,8 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
 
 	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_fill_degrees", "get_fill_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset"), "set_radial_center_offset", "get_radial_center_offset");
 
 	BIND_ENUM_CONSTANT(FILL_LEFT_TO_RIGHT);

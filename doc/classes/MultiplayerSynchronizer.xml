@@ -7,11 +7,11 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="congiruation" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
+		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
 		</member>
-		<member name="resource" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
-		</member>
-		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;&quot;)">
+		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
 		</member>
 	</members>
 </class>

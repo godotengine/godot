@@ -35,6 +35,7 @@
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/rb_set.h"
 
 class Input : public Object {
 	GDCLASS(Input, Object);

@@ -97,7 +97,7 @@ public:
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		bool exclusive = false;
-		RBSet<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		bool layered_window = false;
 		bool fullscreen = false;

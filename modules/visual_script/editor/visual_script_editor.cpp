@@ -1440,7 +1440,11 @@ void VisualScriptEditor::_deselect_input_names() {
 	}
 }
 
-void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button) {
+void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	TreeItem *root = members->get_root();
@@ -1625,8 +1629,8 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 	undo_redo->add_do_method(this, "_update_graph", p_id);
 
 	for (const KeyValue<int, RBSet<int>> &E : conn_map) {
-		for (const RBSet<int>::Element *F = E.value.front(); F; F = F->next()) {
-			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E.key, F->get());
+		for (const int &F : E.value) {
+			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E.key, F);
 		}
 	}
 
@@ -1813,14 +1817,14 @@ void VisualScriptEditor::_on_nodes_paste() {
 		undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
 	}
 
-	for (RBSet<VisualScript::SequenceConnection>::Element *E = clipboard->sequence_connections.front(); E; E = E->next()) {
-		undo_redo->add_do_method(script.ptr(), "sequence_connect", remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
-		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
+	for (const VisualScript::SequenceConnection &E : clipboard->sequence_connections) {
+		undo_redo->add_do_method(script.ptr(), "sequence_connect", remap[E.from_node], E.from_output, remap[E.to_node]);
+		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", remap[E.from_node], E.from_output, remap[E.to_node]);
 	}
 
-	for (RBSet<VisualScript::DataConnection>::Element *E = clipboard->data_connections.front(); E; E = E->next()) {
-		undo_redo->add_do_method(script.ptr(), "data_connect", remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
-		undo_redo->add_undo_method(script.ptr(), "data_disconnect", remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
+	for (const VisualScript::DataConnection &E : clipboard->data_connections) {
+		undo_redo->add_do_method(script.ptr(), "data_connect", remap[E.from_node], E.from_port, remap[E.to_node], E.to_port);
+		undo_redo->add_undo_method(script.ptr(), "data_disconnect", remap[E.from_node], E.from_port, remap[E.to_node], E.to_port);
 	}
 
 	undo_redo->add_do_method(this, "_update_graph");
@@ -1910,17 +1914,17 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	RBSet<int> to_select;
 	HashMap<int, int> remap;
 
-	for (RBSet<int>::Element *F = to_duplicate.front(); F; F = F->next()) {
+	for (const int &F : to_duplicate) {
 		// Duplicate from the specific function but place it into the default func as it would lack the connections.
-		Ref<VisualScriptNode> node = script->get_node(F->get());
+		Ref<VisualScriptNode> node = script->get_node(F);
 
 		Ref<VisualScriptNode> dupe = node->duplicate(true);
 
 		int new_id = idc++;
-		remap.insert(F->get(), new_id);
+		remap.insert(F, new_id);
 
 		to_select.insert(new_id);
-		undo_redo->add_do_method(script.ptr(), "add_node", new_id, dupe, script->get_node_position(F->get()) + Vector2(20, 20));
+		undo_redo->add_do_method(script.ptr(), "add_node", new_id, dupe, script->get_node_position(F) + Vector2(20, 20));
 		undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
 	}
 
@@ -1966,15 +1970,6 @@ void VisualScriptEditor::_generic_search(Vector2 pos, bool node_centered) {
 	}
 
 	new_connect_node_select->select_from_visual_script(script, false); // do not reset text
-
-	// Ensure that the dialog fits inside the graph.
-	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
-	pos.x = pos.x > bounds.x ? bounds.x : pos.x;
-	pos.y = pos.y > bounds.y ? bounds.y : pos.y;
-
-	if (pos != Vector2()) {
-		new_connect_node_select->set_position(pos);
-	}
 }
 
 void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
@@ -4201,9 +4196,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 						// If we still don't have a start node then,
 						// run through the nodes and select the first tree node,
 						// i.e. node without any input sequence but output sequence.
-						for (RBSet<int>::Element *E = nodes_from.front(); E; E = E->next()) {
-							if (!nodes_to.has(E->get())) {
-								start_node = E->get();
+						for (const int &E : nodes_from) {
+							if (!nodes_to.has(E)) {
+								start_node = E;
 							}
 						}
 					}
@@ -4272,13 +4267,13 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			// Move the nodes.
 
 			// Handles reconnection of sequence connections on undo, start here in case of issues.
-			for (RBSet<VisualScript::SequenceConnection>::Element *E = seqext.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "sequence_disconnect", E->get().from_node, E->get().from_output, E->get().to_node);
-				undo_redo->add_undo_method(script.ptr(), "sequence_connect", E->get().from_node, E->get().from_output, E->get().to_node);
+			for (const VisualScript::SequenceConnection &E : seqext) {
+				undo_redo->add_do_method(script.ptr(), "sequence_disconnect", E.from_node, E.from_output, E.to_node);
+				undo_redo->add_undo_method(script.ptr(), "sequence_connect", E.from_node, E.from_output, E.to_node);
 			}
-			for (RBSet<VisualScript::DataConnection>::Element *E = dataext.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "data_disconnect", E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-				undo_redo->add_undo_method(script.ptr(), "data_connect", E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			for (const VisualScript::DataConnection &E : dataext) {
+				undo_redo->add_do_method(script.ptr(), "data_disconnect", E.from_node, E.from_port, E.to_node, E.to_port);
+				undo_redo->add_undo_method(script.ptr(), "data_connect", E.from_node, E.from_port, E.to_node, E.to_port);
 			}
 
 			// I don't really think we need support for non sequenced functions at this moment.
@@ -4286,24 +4281,24 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			// Could fail with the new changes, start here when searching for bugs in create function shortcut.
 			int m = 1;
-			for (RBSet<int>::Element *G = end_nodes.front(); G; G = G->next()) {
+			for (const int &G : end_nodes) {
 				Ref<VisualScriptReturn> ret_node;
 				ret_node.instantiate();
 
 				int ret_id = fn_id + (m++);
 				selections.insert(ret_id);
-				Vector2 posi = _get_available_pos(false, script->get_node_position(G->get()) + Vector2(80, -100));
+				Vector2 posi = _get_available_pos(false, script->get_node_position(G) + Vector2(80, -100));
 				undo_redo->add_do_method(script.ptr(), "add_node", ret_id, ret_node, posi);
 				undo_redo->add_undo_method(script.ptr(), "remove_node", ret_id);
 
-				undo_redo->add_do_method(script.ptr(), "sequence_connect", G->get(), 0, ret_id);
+				undo_redo->add_do_method(script.ptr(), "sequence_connect", G, 0, ret_id);
 				// Add data outputs from each of the end_nodes.
-				Ref<VisualScriptNode> vsn = script->get_node(G->get());
+				Ref<VisualScriptNode> vsn = script->get_node(G);
 				if (vsn.is_valid() && vsn->get_output_value_port_count() > 0) {
 					ret_node->set_enable_return_value(true);
 					// Use the zeroth data port cause that's the likely one that is planned to be used.
 					ret_node->set_return_type(vsn->get_output_value_port_info(0).type);
-					undo_redo->add_do_method(script.ptr(), "data_connect", G->get(), 0, ret_id, 0);
+					undo_redo->add_do_method(script.ptr(), "data_connect", G, 0, ret_id, 0);
 				}
 			}
 
@@ -4352,7 +4347,11 @@ void VisualScriptEditor::_get_ends(int p_node, const List<VisualScript::Sequence
 	}
 }
 
-void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
+void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *ti = members->get_selected();
 	ERR_FAIL_COND(!ti);
 
@@ -4553,11 +4552,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	members_section->add_margin_child(TTR("Members:"), members, true);
 	members->set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 	members->set_hide_root(true);
-	members->connect("button_pressed", callable_mp(this, &VisualScriptEditor::_member_button));
+	members->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_member_button));
 	members->connect("item_edited", callable_mp(this, &VisualScriptEditor::_member_edited));
 	members->connect("cell_selected", callable_mp(this, &VisualScriptEditor::_member_selected), varray(), CONNECT_DEFERRED);
 	members->connect("gui_input", callable_mp(this, &VisualScriptEditor::_members_gui_input));
-	members->connect("item_rmb_selected", callable_mp(this, &VisualScriptEditor::_member_rmb_selected));
+	members->connect("item_mouse_selected", callable_mp(this, &VisualScriptEditor::_member_rmb_selected));
 	members->set_allow_rmb_select(true);
 	members->set_allow_reselect(true);
 	members->set_hide_folding(true);

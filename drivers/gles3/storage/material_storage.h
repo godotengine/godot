@@ -42,26 +42,14 @@
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
 
-#include "drivers/gles3/shaders/copy.glsl.gen.h"
-
 #include "../shaders/canvas.glsl.gen.h"
+#include "../shaders/cubemap_filter.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
 namespace GLES3 {
 
 /* Shader Structs */
-
-struct Shaders {
-	CanvasShaderGLES3 canvas_shader;
-	SkyShaderGLES3 sky_shader;
-	SceneShaderGLES3 scene_shader;
-
-	ShaderCompiler compiler_canvas;
-	ShaderCompiler compiler_scene;
-	ShaderCompiler compiler_particles;
-	ShaderCompiler compiler_sky;
-};
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
@@ -87,7 +75,7 @@ struct Shader {
 	String code;
 	RS::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
-	RBSet<Material *> owners;
+	HashSet<Material *> owners;
 };
 
 /* Material structs */
@@ -157,8 +145,8 @@ struct CanvasShaderData : public ShaderData {
 
 	bool valid;
 	RID version;
-	//PipelineVariants pipeline_variants;
 	String path;
+	BlendMode blend_mode = BLEND_MODE_MIX;
 
 	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -241,6 +229,7 @@ ShaderData *_create_sky_shader_func();
 
 struct SkyMaterialData : public MaterialData {
 	SkyShaderData *shader_data = nullptr;
+	bool uniform_set_updated = false;
 
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_next_pass(RID p_pass) {}
@@ -381,7 +370,7 @@ struct GlobalVariables {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
-		RBSet<RID> texture_materials; // materials using this
+		HashSet<RID> texture_materials; // materials using this
 
 		RS::GlobalVariableType type;
 		Variant value;
@@ -458,15 +447,23 @@ private:
 
 	SelfList<Material>::List material_update_list;
 
-	//static void _material_uniform_set_erased(void *p_material);
-
 public:
 	static MaterialStorage *get_singleton();
 
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
-	Shaders shaders;
+	struct Shaders {
+		CanvasShaderGLES3 canvas_shader;
+		SkyShaderGLES3 sky_shader;
+		SceneShaderGLES3 scene_shader;
+		CubemapFilterShaderGLES3 cubemap_filter_shader;
+
+		ShaderCompiler compiler_canvas;
+		ShaderCompiler compiler_scene;
+		ShaderCompiler compiler_particles;
+		ShaderCompiler compiler_sky;
+	} shaders;
 
 	/* GLOBAL VARIABLE API */
 

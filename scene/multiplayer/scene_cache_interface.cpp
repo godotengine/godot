@@ -214,17 +214,17 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, NodePath p_path, int 
 		}
 	} else {
 		// Long and painful.
-		for (const RBSet<int>::Element *E = multiplayer->get_connected_peers().front(); E; E = E->next()) {
-			if (p_peer_id < 0 && E->get() == -p_peer_id) {
+		for (const int &E : multiplayer->get_connected_peers()) {
+			if (p_peer_id < 0 && E == -p_peer_id) {
 				continue; // Continue, excluded.
 			}
-			if (p_peer_id > 0 && E->get() != p_peer_id) {
+			if (p_peer_id > 0 && E != p_peer_id) {
 				continue; // Continue, not for this peer.
 			}
 
-			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E->get());
+			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
 			if (!F) {
-				peers_to_add.push_back(E->get()); // Need to also be notified.
+				peers_to_add.push_back(E); // Need to also be notified.
 				has_all_peers = false;
 			} else if (!F->value) {
 				has_all_peers = false;

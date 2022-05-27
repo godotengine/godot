@@ -331,7 +331,7 @@ void DocTools::generate(bool p_basic_types) {
 	bool skip_setter_getter_methods = true;
 
 	while (classes.size()) {
-		RBSet<StringName> setters_getters;
+		HashSet<StringName> setters_getters;
 
 		String name = classes.front()->get();
 		if (!ClassDB::is_class_exposed(name)) {

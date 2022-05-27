@@ -148,7 +148,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 	// The names of the icons to never convert, even if one of their colors
 	// are contained in the dictionary above.
-	RBSet<StringName> exceptions;
+	HashSet<StringName> exceptions;
 
 	// Some of the colors below are listed for completeness sake.
 	// This can be a basis for proper palette validation later.
@@ -290,7 +290,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 	// Use the accent color for some icons (checkbox, radio, toggle, etc.).
 	Dictionary accent_color_icon_color_dictionary;
-	RBSet<StringName> accent_color_icons;
+	HashSet<StringName> accent_color_icons;
 
 	const Color accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
 	accent_color_icon_color_dictionary[Color::html("699ce8")] = accent_color;
@@ -393,8 +393,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_accent_color = Color(0.53, 0.67, 0.89);
 		preset_base_color = Color(0.24, 0.23, 0.27);
 		preset_contrast = default_contrast;
-	} else if (preset == "Grey") {
-		preset_accent_color = Color(0.72, 0.89, 1.00);
+	} else if (preset == "Gray") {
+		preset_accent_color = Color(0.44, 0.73, 0.98);
 		preset_base_color = Color(0.24, 0.24, 0.24);
 		preset_contrast = default_contrast;
 	} else if (preset == "Light") {
@@ -535,6 +535,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
+	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 
 	// Register icons + font
 
@@ -726,6 +727,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_hover_color", "Button", icon_hover_color);
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
+
+	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
+
+	theme->set_type_variation("InspectorActionButton", "Button");
+	Color color_inspector_action = dark_color_1.lerp(mono_color, 0.12);
+	color_inspector_action.a = 0.5;
+	Ref<StyleBoxFlat> style_inspector_action = style_widget->duplicate();
+	style_inspector_action->set_bg_color(color_inspector_action);
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("normal", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_hover->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("hover", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_pressed->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("pressed", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_disabled->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("disabled", "InspectorActionButton", style_inspector_action);
+	theme->set_constant("h_separation", "InspectorActionButton", ACTION_BUTTON_EXTRA_MARGIN);
 
 	// Variation for Editor Log filter buttons
 	theme->set_type_variation("EditorLogFilterButton", "Button");

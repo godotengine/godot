@@ -127,7 +127,7 @@ class ResourceFormatSaverBinaryInstance {
 	bool big_endian;
 	bool takeover_paths;
 	String magic;
-	RBSet<Ref<Resource>> resource_set;
+	HashSet<Ref<Resource>> resource_set;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
 		Ref<Resource> base;

@@ -631,7 +631,7 @@ hb_blob_create_from_file_or_fail (const char *file_name)
      Allison Lortie permission but changed a lot to suit our need. */
 #if defined(HAVE_MMAP) && !defined(HB_NO_MMAP)
   hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
-  if (unlikely (!file)) return hb_blob_get_empty ();
+  if (unlikely (!file)) return nullptr;
 
   int fd = open (file_name, O_RDONLY | O_BINARY, 0);
   if (unlikely (fd == -1)) goto fail_without_close;
@@ -671,7 +671,7 @@ fail_without_close:
 
 #elif defined(_WIN32) && !defined(HB_NO_MMAP)
   hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
-  if (unlikely (!file)) return hb_blob_get_empty ();
+  if (unlikely (!file)) return nullptr;
 
   HANDLE fd;
   unsigned int size = strlen (file_name) + 1;

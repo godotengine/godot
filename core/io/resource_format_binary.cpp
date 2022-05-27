@@ -1976,7 +1976,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 					}
 
 					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
-						// Was this missing resource overriden? If so do not save the old value.
+						// Was this missing resource overridden? If so do not save the old value.
 						Ref<Resource> res = p.value;
 						if (res.is_null()) {
 							p.value = missing_resource_properties[F.name];
@@ -2022,7 +2022,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
-	RBSet<String> used_unique_ids;
+	HashSet<String> used_unique_ids;
 
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {

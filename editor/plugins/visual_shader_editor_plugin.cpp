@@ -1670,7 +1670,7 @@ void VisualShaderEditor::_update_uniforms(bool p_update_refs) {
 	}
 }
 
-void VisualShaderEditor::_update_uniform_refs(RBSet<String> &p_deleted_names) {
+void VisualShaderEditor::_update_uniform_refs(HashSet<String> &p_deleted_names) {
 	for (int i = 0; i < VisualShader::TYPE_MAX; i++) {
 		VisualShader::Type type = VisualShader::Type(i);
 
@@ -2288,7 +2288,7 @@ void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_
 	undo_redo->add_do_method(this, "_update_uniforms", true);
 	undo_redo->add_undo_method(this, "_update_uniforms", true);
 
-	RBSet<String> changed_names;
+	HashSet<String> changed_names;
 	changed_names.insert(node->get_uniform_name());
 	_update_uniform_refs(changed_names);
 
@@ -3108,7 +3108,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		}
 	}
 
-	RBSet<String> uniform_names;
+	HashSet<String> uniform_names;
 
 	for (const int &F : p_nodes) {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, F);
@@ -3212,11 +3212,11 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 		undo_redo->create_action(TTR("Convert Uniform Node(s) To Constant(s)"));
 	}
 
-	const RBSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
-	RBSet<String> deleted_names;
+	const HashSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
+	HashSet<String> deleted_names;
 
-	for (RBSet<int>::Element *E = current_set.front(); E; E = E->next()) {
-		int node_id = E->get();
+	for (const int &E : current_set) {
+		int node_id = E;
 		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
 		bool caught = false;
 		Variant var;
@@ -3409,15 +3409,22 @@ void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_delete_nodes_request() {
+void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {
 	List<int> to_erase;
 
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
+	if (p_nodes.is_empty()) {
+		// Called from context menu.
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					to_erase.push_back(gn->get_name().operator String().to_int());
+				}
 			}
+		}
+	} else {
+		for (int i = 0; i < p_nodes.size(); i++) {
+			to_erase.push_back(p_nodes[i].operator String().to_int());
 		}
 	}
 
@@ -3782,7 +3789,7 @@ void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, Li
 	selection_center.x = 0.0f;
 	selection_center.y = 0.0f;
 
-	RBSet<int> nodes;
+	HashSet<int> nodes;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
@@ -3862,8 +3869,8 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
 	HashMap<int, int> connection_remap;
-	RBSet<int> unsupported_set;
-	RBSet<int> added_set;
+	HashSet<int> unsupported_set;
+	HashSet<int> added_set;
 
 	for (CopyItem &item : r_items) {
 		if (item.disabled) {
@@ -4411,7 +4418,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			_paste_nodes(true, menu_point);
 			break;
 		case NodeMenuOptions::DELETE:
-			_delete_nodes_request();
+			_delete_nodes_request(TypedArray<StringName>());
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
@@ -5250,6 +5257,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("QuarterResColor", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "quarter_res_color", "QUARTER_RES_COLOR"), { "quarter_res_color" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 	add_options.push_back(AddOption("Radiance", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "radiance", "RADIANCE"), { "radiance" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 	add_options.push_back(AddOption("ScreenUV", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("FragCoord", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "fragcoord", "FRAGCOORD"), { "fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+
 	add_options.push_back(AddOption("SkyCoords", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "sky_coords", "SKY_COORDS"), { "sky_coords" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 	add_options.push_back(AddOption("Time", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "time", "TIME"), { "time" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 

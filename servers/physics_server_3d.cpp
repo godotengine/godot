@@ -177,8 +177,8 @@ Vector<RID> PhysicsRayQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -231,8 +231,8 @@ Vector<RID> PhysicsPointQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -286,8 +286,8 @@ Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (RBSet<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret.write[idx++] = E->get();
+	for (const RID &E : parameters.exclude) {
+		ret.write[idx++] = E;
 	}
 	return ret;
 }
@@ -527,6 +527,9 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters3D::get_exclude_objects);
 	ClassDB::bind_method(D_METHOD("set_exclude_objects", "exclude_list"), &PhysicsTestMotionParameters3D::set_exclude_objects);
 
+	ClassDB::bind_method(D_METHOD("is_recovery_as_collision_enabled"), &PhysicsTestMotionParameters3D::is_recovery_as_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_recovery_as_collision_enabled", "enabled"), &PhysicsTestMotionParameters3D::set_recovery_as_collision_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
@@ -534,6 +537,7 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recovery_as_collision"), "set_recovery_as_collision_enabled", "is_recovery_as_collision_enabled");
 }
 
 ///////////////////////////////
@@ -1029,7 +1033,7 @@ PhysicsServer3D::~PhysicsServer3D() {
 Vector<PhysicsServer3DManager::ClassInfo> PhysicsServer3DManager::physics_servers;
 int PhysicsServer3DManager::default_server_id = -1;
 int PhysicsServer3DManager::default_server_priority = -1;
-const String PhysicsServer3DManager::setting_property_name("physics/3d/physics_engine");
+const String PhysicsServer3DManager::setting_property_name(PNAME("physics/3d/physics_engine"));
 
 void PhysicsServer3DManager::on_servers_changed() {
 	String physics_servers2("DEFAULT");

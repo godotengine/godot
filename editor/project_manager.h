@@ -70,6 +70,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
+	HBoxContainer *local_projects_hb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	EditorFileDialog *scan_dir = nullptr;

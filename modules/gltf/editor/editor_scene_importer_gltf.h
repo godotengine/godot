@@ -33,6 +33,9 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../gltf_document_extension.h"
+#include "../gltf_state.h"
+
 #include "editor/import/resource_importer_scene.h"
 
 class Animation;

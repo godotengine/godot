@@ -471,6 +471,13 @@ void Control::_validate_property(PropertyInfo &property) const {
 		property.hint_string = hint_string;
 	}
 
+	if (property.name == "mouse_force_pass_scroll_events") {
+		// Disable force pass if the control is not stopping the event.
+		if (data.mouse_filter != MOUSE_FILTER_STOP) {
+			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
+
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
 	Node *parent_node = get_parent_control();
 	if (!parent_node) {
@@ -829,6 +836,7 @@ void Control::_notification(int p_notification) {
 				}
 			} else {
 				data.minimum_size_valid = false;
+				_update_minimum_size();
 				_size_changed();
 			}
 		} break;
@@ -2921,11 +2929,20 @@ int Control::get_v_size_flags() const {
 void Control::set_mouse_filter(MouseFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, 3);
 	data.mouse_filter = p_filter;
+	notify_property_list_changed();
 	update_configuration_warnings();
 }
 
 Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
+}
+
+void Control::set_force_pass_scroll_events(bool p_force_pass_scroll_events) {
+	data.force_pass_scroll_events = p_force_pass_scroll_events;
+}
+
+bool Control::is_force_pass_scroll_events() const {
+	return data.force_pass_scroll_events;
 }
 
 void Control::warp_mouse(const Point2 &p_position) {
@@ -3240,6 +3257,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+	ClassDB::bind_method(D_METHOD("set_force_pass_scroll_events", "force_pass_scroll_events"), &Control::set_force_pass_scroll_events);
+	ClassDB::bind_method(D_METHOD("is_force_pass_scroll_events"), &Control::is_force_pass_scroll_events);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -3282,19 +3302,19 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Anchor Offsets", "offset_", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Grow Direction", "grow_", 1);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Left,Right,Both"), "set_h_grow_direction", "get_h_grow_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Top,Bottom,Both"), "set_v_grow_direction", "get_v_grow_direction");
 
 	ADD_SUBGROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset"), "set_pivot_offset", "get_pivot_offset");
@@ -3321,6 +3341,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
 	ADD_GROUP("Theme", "theme_");

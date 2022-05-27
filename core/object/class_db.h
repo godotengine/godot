@@ -38,6 +38,7 @@
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/templates/hash_set.h"
 
 #define DEFVAL(m_defval) (m_defval)
 
@@ -110,7 +111,7 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
-		RBSet<StringName> methods_in_properties;
+		HashSet<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
 		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
@@ -149,7 +150,7 @@ public:
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
-	static RBSet<StringName> default_values_cached;
+	static HashSet<StringName> default_values_cached;
 
 	// Native structs, used by binder
 	struct NativeStruct {

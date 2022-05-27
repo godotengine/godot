@@ -320,7 +320,7 @@ int OptionButton::get_selectable_item(bool p_from_last) const {
 			}
 		}
 	} else {
-		for (int i = get_item_count() - 1; i >= 0; i++) {
+		for (int i = get_item_count() - 1; i >= 0; i--) {
 			if (!is_item_disabled(i) && !is_item_separator(i)) {
 				return i;
 			}

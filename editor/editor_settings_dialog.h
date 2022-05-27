@@ -103,7 +103,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
-	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
+	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
 
 	void _builtin_action_popup_index_pressed(int p_index);

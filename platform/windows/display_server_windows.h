@@ -389,7 +389,7 @@ class DisplayServerWindows : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		RBSet<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		bool is_popup = false;
 		Rect2i parent_safe_rect;

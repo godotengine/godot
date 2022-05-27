@@ -47,6 +47,13 @@ class Theme : public Resource {
 #endif
 
 public:
+	using ThemeIconMap = HashMap<StringName, Ref<Texture2D>>;
+	using ThemeStyleMap = HashMap<StringName, Ref<StyleBox>>;
+	using ThemeFontMap = HashMap<StringName, Ref<Font>>;
+	using ThemeFontSizeMap = HashMap<StringName, int>;
+	using ThemeColorMap = HashMap<StringName, Color>;
+	using ThemeConstantMap = HashMap<StringName, int>;
+
 	enum DataType {
 		DATA_TYPE_COLOR,
 		DATA_TYPE_CONSTANT,
@@ -62,12 +69,12 @@ private:
 
 	void _emit_theme_changed(bool p_notify_list_changed = false);
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
-	HashMap<StringName, HashMap<StringName, int>> font_size_map;
-	HashMap<StringName, HashMap<StringName, Color>> color_map;
-	HashMap<StringName, HashMap<StringName, int>> constant_map;
+	HashMap<StringName, ThemeIconMap> icon_map;
+	HashMap<StringName, ThemeStyleMap> style_map;
+	HashMap<StringName, ThemeFontMap> font_map;
+	HashMap<StringName, ThemeFontSizeMap> font_size_map;
+	HashMap<StringName, ThemeColorMap> color_map;
+	HashMap<StringName, ThemeConstantMap> constant_map;
 	HashMap<StringName, StringName> variation_map;
 	HashMap<StringName, List<StringName>> variation_base_map;
 

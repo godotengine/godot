@@ -137,7 +137,7 @@ class DisplayServerX11 : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		RBSet<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		ObjectID instance_id;
 

@@ -387,9 +387,11 @@ void AudioStreamRandomizer::add_stream(int p_index) {
 	notify_property_list_changed();
 }
 
+// p_index_to is relative to the array prior to the removal of from.
+// Example: [0, 1, 2, 3], move(1, 3) => [0, 2, 1, 3]
 void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
-	ERR_FAIL_COND(p_index_from < 0);
-	ERR_FAIL_COND(p_index_from >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index_from, audio_stream_pool.size());
+	// p_index_to == audio_stream_pool.size() is valid (move to end).
 	ERR_FAIL_COND(p_index_to < 0);
 	ERR_FAIL_COND(p_index_to > audio_stream_pool.size());
 	audio_stream_pool.insert(p_index_to, audio_stream_pool[p_index_from]);
@@ -403,36 +405,31 @@ void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
 }
 
 void AudioStreamRandomizer::remove_stream(int p_index) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.remove_at(p_index);
 	emit_signal(SNAME("changed"));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::set_stream(int p_index, Ref<AudioStream> p_stream) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].stream = p_stream;
 	emit_signal(SNAME("changed"));
 }
 
 Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
-	ERR_FAIL_COND_V(p_index < 0, nullptr);
-	ERR_FAIL_COND_V(p_index >= audio_stream_pool.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, audio_stream_pool.size(), nullptr);
 	return audio_stream_pool[p_index].stream;
 }
 
 void AudioStreamRandomizer::set_stream_probability_weight(int p_index, float p_weight) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].weight = p_weight;
 	emit_signal(SNAME("changed"));
 }
 
 float AudioStreamRandomizer::get_stream_probability_weight(int p_index) const {
-	ERR_FAIL_COND_V(p_index < 0, 0);
-	ERR_FAIL_COND_V(p_index >= audio_stream_pool.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, audio_stream_pool.size(), 0);
 	return audio_stream_pool[p_index].weight;
 }
 

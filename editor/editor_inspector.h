@@ -205,11 +205,13 @@ public:
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 
+public:
 	friend class EditorInspector;
 	struct AddedEditor {
 		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
+		bool add_to_end = false;
 	};
 
 	List<AddedEditor> added_editors;
@@ -226,7 +228,7 @@ protected:
 
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -437,7 +439,7 @@ class EditorInspector : public ScrollContainer {
 	//map use to cache the instantiated editors
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	RBSet<StringName> pending;
+	HashSet<StringName> pending;
 
 	void _clear();
 	Object *object = nullptr;
@@ -470,7 +472,7 @@ class EditorInspector : public ScrollContainer {
 
 	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 	HashMap<StringName, String> class_descr_cache;
-	RBSet<StringName> restart_request_props;
+	HashSet<StringName> restart_request_props;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -531,6 +533,7 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
+	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 

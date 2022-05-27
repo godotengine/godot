@@ -12,13 +12,13 @@ mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PA
 
 #[vertex]
 
+layout(location = 0) in vec2 vertex_attrib;
+
 out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-	// One big triangle to cover the whole screen
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(3.0, -1.0), vec2(-1.0, 3.0));
-	uv_interp = base_arr[gl_VertexID];
+	uv_interp = vertex_attrib;
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
 }
 
@@ -46,18 +46,13 @@ layout(std140) uniform GlobalVariableData { //ubo:1
 	vec4 global_variables[MAX_GLOBAL_VARIABLES];
 };
 
-layout(std140) uniform SceneData { //ubo:2
-	float pad1;
-	float pad2;
-};
-
 struct DirectionalLightData {
 	vec4 direction_energy;
 	vec4 color_size;
 	bool enabled;
 };
 
-layout(std140) uniform DirectionalLights { //ubo:3
+layout(std140) uniform DirectionalLights { //ubo:4
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -65,7 +60,7 @@ directional_lights;
 /* clang-format off */
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:3
 
 #MATERIAL_UNIFORMS
 
@@ -98,6 +93,14 @@ uniform vec4 projection;
 uniform vec3 position;
 uniform float time;
 
+uniform float fog_aerial_perspective;
+uniform vec3 fog_light_color;
+uniform float fog_sun_scatter;
+uniform bool fog_enabled;
+uniform float fog_density;
+uniform float z_far;
+uniform uint directional_light_count;
+
 layout(location = 0) out vec4 frag_color;
 
 void main() {
@@ -106,12 +109,11 @@ void main() {
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
 	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
 	cube_normal = mat3(orientation) * cube_normal;
-	cube_normal.z = -cube_normal.z;
 	cube_normal = normalize(cube_normal);
 
 	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
@@ -126,13 +128,11 @@ void main() {
 	vec4 custom_fog = vec4(0.0);
 
 #ifdef USE_CUBEMAP_PASS
-	vec3 inverted_cube_normal = cube_normal;
-	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
@@ -149,7 +149,8 @@ void main() {
 
 	}
 
-	// Tonemap before writing as we are writing to an sRGB framebuffer
+	// Convert to Linear for tonemapping so color matches scene shader better
+	color = srgb_to_linear(color);
 	color *= exposure;
 	color = apply_tonemapping(color, white);
 	color = linear_to_srgb(color);

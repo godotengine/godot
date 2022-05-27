@@ -1064,7 +1064,7 @@ public:
 	void select_first_visible_project();
 	void erase_selected_projects(bool p_delete_project_contents);
 	Vector<Item> get_selected_projects() const;
-	const RBSet<String> &get_selected_project_keys() const;
+	const HashSet<String> &get_selected_project_keys() const;
 	void ensure_project_visible(int p_index);
 	int get_single_selected_index() const;
 	bool is_any_project_missing() const;
@@ -1090,7 +1090,7 @@ private:
 
 	String _search_term;
 	FilterOption _order_option;
-	RBSet<String> _selected_project_keys;
+	HashSet<String> _selected_project_keys;
 	String _last_clicked; // Project key
 	VBoxContainer *_scroll_children;
 	int _icon_load_index;
@@ -1258,7 +1258,7 @@ void ProjectList::load_projects() {
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
 
-	RBSet<String> favorites;
+	HashSet<String> favorites;
 	// Find favourites...
 	for (const PropertyInfo &E : properties) {
 		String property_key = E.name;
@@ -1504,7 +1504,7 @@ void ProjectList::sort_projects() {
 	update_dock_menu();
 }
 
-const RBSet<String> &ProjectList::get_selected_project_keys() const {
+const HashSet<String> &ProjectList::get_selected_project_keys() const {
 	// Faster if that's all you need
 	return _selected_project_keys;
 }
@@ -1539,7 +1539,7 @@ int ProjectList::get_single_selected_index() const {
 	String key;
 	if (_selected_project_keys.size() == 1) {
 		// Only one selected
-		key = _selected_project_keys.front()->get();
+		key = *_selected_project_keys.begin();
 	} else {
 		// Multiple selected, consider the last clicked one as "main"
 		key = _last_clicked;
@@ -1881,8 +1881,20 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			if (open_templates->is_visible()) {
+			if (open_templates && open_templates->is_visible()) {
 				open_templates->popup_centered();
+			}
+			if (asset_library) {
+				real_t size = get_size().x / EDSCALE;
+				asset_library->set_columns(size < 1000 ? 1 : 2);
+				// Adjust names of tabs to fit the new size.
+				if (size < 650) {
+					local_projects_hb->set_name(TTR("Local"));
+					asset_library->set_name(TTR("Asset Library"));
+				} else {
+					local_projects_hb->set_name(TTR("Local Projects"));
+					asset_library->set_name(TTR("Asset Library Projects"));
+				}
 			}
 		} break;
 
@@ -1890,10 +1902,6 @@ void ProjectManager::_notification(int p_what) {
 			int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
-
-			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available()) {
-				open_templates->popup_centered();
-			}
 
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
@@ -1904,6 +1912,10 @@ void ProjectManager::_notification(int p_what) {
 			if (asset_library) {
 				// Removes extra border margins.
 				asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+				// Suggest browsing asset library to get templates/demos.
+				if (open_templates && _project_list->get_project_count() == 0) {
+					open_templates->popup_centered();
+				}
 			}
 		} break;
 
@@ -2095,12 +2107,12 @@ void ProjectManager::_confirm_update_settings() {
 void ProjectManager::_open_selected_projects() {
 	// Show loading text to tell the user that the project manager is busy loading.
 	// This is especially important for the HTML5 project manager.
-	loading_label->set_modulate(Color(1, 1, 1));
+	loading_label->show();
 
-	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
-	for (const RBSet<String>::Element *E = selected_list.front(); E; E = E->next()) {
-		const String &selected = E->get();
+	for (const String &E : selected_list) {
+		const String &selected = E;
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		String conf = path.plus_file("project.godot");
 
@@ -2146,7 +2158,7 @@ void ProjectManager::_open_selected_projects() {
 }
 
 void ProjectManager::_open_selected_projects_ask() {
-	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	if (selected_list.size() < 1) {
 		return;
@@ -2261,7 +2273,7 @@ void ProjectManager::_run_project_confirm() {
 }
 
 void ProjectManager::_run_project() {
-	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	if (selected_list.size() < 1) {
 		return;
@@ -2321,14 +2333,14 @@ void ProjectManager::_import_project() {
 }
 
 void ProjectManager::_rename_project() {
-	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	if (selected_list.size() == 0) {
 		return;
 	}
 
-	for (RBSet<String>::Element *E = selected_list.front(); E; E = E->next()) {
-		const String &selected = E->get();
+	for (const String &E : selected_list) {
+		const String &selected = E;
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		npdialog->set_project_path(path);
 		npdialog->set_mode(ProjectDialog::MODE_RENAME);
@@ -2347,7 +2359,7 @@ void ProjectManager::_erase_missing_projects_confirm() {
 }
 
 void ProjectManager::_erase_project() {
-	const RBSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	if (selected_list.size() == 0) {
 		return;
@@ -2404,7 +2416,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		_install_project(p_files[0], file.substr(0, file.length() - 4).capitalize());
 		return;
 	}
-	RBSet<String> folders_set;
+	HashSet<String> folders_set;
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
@@ -2412,8 +2424,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	}
 	if (folders_set.size() > 0) {
 		PackedStringArray folders;
-		for (RBSet<String>::Element *E = folders_set.front(); E; E = E->next()) {
-			folders.push_back(E->get());
+		for (const String &E : folders_set) {
+			folders.push_back(E);
 		}
 
 		bool confirm = true;
@@ -2567,14 +2579,14 @@ ProjectManager::ProjectManager() {
 	tabs->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	tabs->connect("tab_changed", callable_mp(this, &ProjectManager::_on_tab_changed));
 
-	HBoxContainer *projects_hb = memnew(HBoxContainer);
-	projects_hb->set_name(TTR("Local Projects"));
-	tabs->add_child(projects_hb);
+	local_projects_hb = memnew(HBoxContainer);
+	local_projects_hb->set_name(TTR("Local Projects"));
+	tabs->add_child(local_projects_hb);
 
 	{
 		// Projects + search bar
 		VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-		projects_hb->add_child(search_tree_vb);
+		local_projects_hb->add_child(search_tree_vb);
 		search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 		HBoxContainer *hb = memnew(HBoxContainer);
@@ -2592,8 +2604,8 @@ ProjectManager::ProjectManager() {
 		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(loading_label);
-		// Hide the label but make it still take up space. This prevents reflows when showing the label.
-		loading_label->set_modulate(Color(0, 0, 0, 0));
+		// The loading label is shown later.
+		loading_label->hide();
 
 		Label *sort_label = memnew(Label);
 		sort_label->set_text(TTR("Sort:"));
@@ -2601,7 +2613,7 @@ ProjectManager::ProjectManager() {
 
 		filter_option = memnew(OptionButton);
 		filter_option->set_clip_text(true);
-		filter_option->set_custom_minimum_size(Size2(150 * EDSCALE, 10 * EDSCALE));
+		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
 		hb->add_child(filter_option);
 
@@ -2630,7 +2642,7 @@ ProjectManager::ProjectManager() {
 		// Project tab side bar
 		VBoxContainer *tree_vb = memnew(VBoxContainer);
 		tree_vb->set_custom_minimum_size(Size2(120, 120));
-		projects_hb->add_child(tree_vb);
+		local_projects_hb->add_child(tree_vb);
 
 		Button *create = memnew(Button);
 		create->set_text(TTR("New Project"));
@@ -2727,6 +2739,12 @@ ProjectManager::ProjectManager() {
 		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
+#ifdef ANDROID_ENABLED
+		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
+		// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
+		// Hiding the language selection dropdown also leaves more space for the version label to display.
+		language_btn->hide();
+#endif
 
 		Vector<String> editor_languages;
 		List<PropertyInfo> editor_settings_properties;
@@ -2755,6 +2773,9 @@ ProjectManager::ProjectManager() {
 		center_box->add_child(settings_hb);
 	}
 
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+#ifndef JAVASCRIPT_ENABLED
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Asset Library Projects"));
@@ -2763,6 +2784,7 @@ ProjectManager::ProjectManager() {
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+#endif
 
 	{
 		// Dialogs
@@ -2831,11 +2853,13 @@ ProjectManager::ProjectManager() {
 		dialog_error = memnew(AcceptDialog);
 		add_child(dialog_error);
 
-		open_templates = memnew(ConfirmationDialog);
-		open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-		open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
-		open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
-		add_child(open_templates);
+		if (asset_library) {
+			open_templates = memnew(ConfirmationDialog);
+			open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
+			open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
+			open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
+			add_child(open_templates);
+		}
 
 		about = memnew(EditorAbout);
 		add_child(about);
@@ -2869,8 +2893,8 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
-	// Define a minimum window size to prevent UI elements from overlapping or being cut off
-	DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
+	DisplayServer::get_singleton()->window_set_min_size(Size2(520, 350) * EDSCALE);
 
 	// Resize the bootsplash window based on Editor display scale EDSCALE.
 	float scale_factor = MAX(1, EDSCALE);

@@ -366,10 +366,13 @@ void ProjectExportDialog::_update_feature_list() {
 	}
 
 	custom_feature_display->clear();
-	for (RBSet<String>::Element *E = fset.front(); E; E = E->next()) {
-		String f = E->get();
-		if (E->next()) {
+	bool first = true;
+	for (const String &E : fset) {
+		String f = E;
+		if (!first) {
 			f += ", ";
+		} else {
+			first = false;
 		}
 		custom_feature_display->add_text(f);
 	}

@@ -125,7 +125,7 @@ class AudioStreamMicrophone : public AudioStream {
 	GDCLASS(AudioStreamMicrophone, AudioStream);
 	friend class AudioStreamPlaybackMicrophone;
 
-	RBSet<AudioStreamPlaybackMicrophone *> playbacks;
+	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
 
 protected:
 	static void _bind_methods();
@@ -192,7 +192,7 @@ private:
 		float weight;
 	};
 
-	RBSet<AudioStreamPlaybackRandomizer *> playbacks;
+	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
 	float random_pitch_scale = 1.1f;
 	float random_volume_offset_db = 5.0f;

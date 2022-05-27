@@ -86,11 +86,13 @@ private:
 		RID scenario;
 		RID instance;
 
-		bool operator<(const InstanceID &rhs) const {
-			if (instance == rhs.instance) {
-				return rhs.scenario < scenario;
-			}
-			return instance < rhs.instance;
+		static uint32_t hash(const InstanceID &p_ins) {
+			uint32_t h = hash_djb2_one_64(p_ins.scenario.get_id());
+			return hash_djb2_one_64(p_ins.instance.get_id(), h);
+		}
+		bool operator==(const InstanceID &rhs) const {
+			return instance == rhs.instance && rhs.scenario == scenario;
+			;
 		}
 
 		InstanceID() {}
@@ -101,7 +103,7 @@ private:
 	struct Occluder {
 		PackedVector3Array vertices;
 		PackedInt32Array indices;
-		RBSet<InstanceID> users;
+		HashSet<InstanceID, InstanceID> users;
 	};
 
 	struct OccluderInstance {
@@ -136,7 +138,7 @@ private:
 		int current_scene_idx = 0;
 
 		HashMap<RID, OccluderInstance> instances;
-		RBSet<RID> dirty_instances; // To avoid duplicates
+		HashSet<RID> dirty_instances; // To avoid duplicates
 		LocalVector<RID> dirty_instances_array; // To iterate and split into threads
 		LocalVector<RID> removed_instances;
 

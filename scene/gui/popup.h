@@ -57,6 +57,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	void _popup_conditional_hide();
+
+	virtual void _post_popup() override;
+
 public:
 	Popup();
 	~Popup();

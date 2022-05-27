@@ -764,8 +764,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 		_update_exports_values(values, propnames);
 
 		if (changed) {
-			for (RBSet<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-				E->get()->update(propnames, values);
+			for (PlaceHolderScriptInstance *E : placeholders) {
+				E->update(propnames, values);
 			}
 		} else {
 			p_instance_to_update->update(propnames, values);
@@ -788,10 +788,10 @@ void GDScript::update_exports() {
 		return;
 	}
 
-	RBSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy = inheriters_cache; //might get modified
 
-	for (RBSet<ObjectID>::Element *E = copy.front(); E; E = E->next()) {
-		Object *id = ObjectDB::get_instance(E->get());
+	for (const ObjectID &E : copy) {
+		Object *id = ObjectDB::get_instance(E);
 		GDScript *s = Object::cast_to<GDScript>(id);
 		if (!s) {
 			continue;
@@ -937,10 +937,10 @@ void GDScript::get_constants(HashMap<StringName, Variant> *p_constants) {
 	}
 }
 
-void GDScript::get_members(RBSet<StringName> *p_members) {
+void GDScript::get_members(HashSet<StringName> *p_members) {
 	if (p_members) {
-		for (RBSet<StringName>::Element *E = members.front(); E; E = E->next()) {
-			p_members->insert(E->get());
+		for (const StringName &E : members) {
+			p_members->insert(E);
 		}
 	}
 }
@@ -1916,7 +1916,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 #ifdef TOOLS_ENABLED
 
 			while (script->placeholders.size()) {
-				Object *obj = script->placeholders.front()->get()->get_owner();
+				Object *obj = (*script->placeholders.begin())->get_owner();
 
 				//save instance info
 				if (obj->get_script_instance()) {
@@ -1926,7 +1926,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
-					script->placeholders.erase(script->placeholders.front()->get());
+					script->placeholders.erase(*script->placeholders.begin());
 				}
 			}
 
@@ -2232,9 +2232,13 @@ GDScriptLanguage::GDScriptLanguage() {
 	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-		bool default_enabled = !warning.begins_with("unsafe_");
-		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
+		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
+		Variant default_enabled = GDScriptWarning::get_default_value(code);
+		String path = GDScriptWarning::get_settings_path_from_code(code);
+		GLOBAL_DEF(path, default_enabled);
+
+		PropertyInfo property_info = GDScriptWarning::get_property_info(code);
+		ProjectSettings::get_singleton()->set_custom_property_info(path, property_info);
 	}
 #endif // DEBUG_ENABLED
 }
@@ -2372,7 +2376,7 @@ Error ResourceFormatSaverGDScript::save(const String &p_path, const Ref<Resource
 	}
 
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
-		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource, false);
+		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource, true);
 	}
 
 	return OK;

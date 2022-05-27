@@ -3799,7 +3799,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	RBSet<Vector2i> lines_found;
+	HashSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
 	if (points.size() == 0) {

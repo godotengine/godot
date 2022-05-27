@@ -15,7 +15,7 @@
     "format:libs": "npm run lint:libs -- --fix",
     "format:modules": "npm run lint:modules -- --fix",
     "format:tools": "npm run lint:tools -- --fix",
-		"serve": "serve"
+    "serve": "serve"
   },
   "author": "Godot Engine contributors",
   "license": "MIT",

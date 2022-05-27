@@ -664,7 +664,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	return nullptr;
 }
 
-static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, RBSet<Ref<Script>> &r_scripts) {
+static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_scripts) {
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return;
 	}
@@ -686,15 +686,15 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 	ERR_FAIL_COND(!get_tree());
 
-	RBSet<Ref<Script>> scripts;
+	HashSet<Ref<Script>> scripts;
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		_find_changed_scripts_for_external_editor(base, base, scripts);
 	}
 
-	for (RBSet<Ref<Script>>::Element *E = scripts.front(); E; E = E->next()) {
-		Ref<Script> script = E->get();
+	for (const Ref<Script> &E : scripts) {
+		Ref<Script> script = E;
 
 		if (p_for_script.is_valid() && p_for_script != script) {
 			continue;
@@ -970,7 +970,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
-	RBSet<StringName> methods_found;
+	HashSet<StringName> methods_found;
 	for (int i = 0; i < nodes.size(); i++) {
 		List<Connection> connections;
 		nodes[i]->get_signals_connected_to_this(&connections);
@@ -1558,19 +1558,62 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 		String text_to_drop;
-		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ",";
-			}
 
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-			String path = sn->get_path_to(node);
-			text_to_drop += path.c_escape().quote(quote_style);
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
+				for (const String &segment : path.split("/")) {
+					if (!segment.is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+
+				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				if (use_type) {
+					text_to_drop += vformat("@onready var %s: %s = $%s\n", variable_name, node->get_class_name(), path);
+				} else {
+					text_to_drop += vformat("@onready var %s = $%s\n", variable_name, path);
+				}
+			}
+		} else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if (i > 0) {
+					text_to_drop += ", ";
+				}
+
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = "%" + node->get_name();
+				} else {
+					path = sn->get_path_to(node);
+				}
+				for (const String &segment : path.split("/")) {
+					if (!segment.is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+				text_to_drop += "$" + path;
+			}
 		}
 
 		te->set_caret_line(row);

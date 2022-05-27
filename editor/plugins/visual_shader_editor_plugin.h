@@ -346,7 +346,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _delete_nodes(int p_type, const List<int> &p_nodes);
 	void _delete_node_request(int p_type, int p_node);
-	void _delete_nodes_request();
+	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	void _node_changed(int p_id);
 
@@ -358,8 +358,8 @@ class VisualShaderEditor : public VBoxContainer {
 	int from_node = -1;
 	int from_slot = -1;
 
-	RBSet<int> selected_constants;
-	RBSet<int> selected_uniforms;
+	HashSet<int> selected_constants;
+	HashSet<int> selected_uniforms;
 	int selected_comment = -1;
 	int selected_float_constant = -1;
 
@@ -468,7 +468,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool _is_available(int p_mode);
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
-	void _update_uniform_refs(RBSet<String> &p_names);
+	void _update_uniform_refs(HashSet<String> &p_names);
 	void _update_varyings();
 
 	void _visibility_changed();

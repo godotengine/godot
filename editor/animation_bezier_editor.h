@@ -32,6 +32,7 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/templates/rb_set.h"
 
 class ViewPanner;
 
@@ -71,8 +72,8 @@ class AnimationBezierTrackEdit : public Control {
 	};
 
 	RBMap<int, RBMap<int, Rect2>> subtrack_icons;
-	RBSet<int> locked_tracks;
-	RBSet<int> hidden_tracks;
+	HashSet<int> locked_tracks;
+	HashSet<int> hidden_tracks;
 	int solo_track = -1;
 	bool is_filtered = false;
 

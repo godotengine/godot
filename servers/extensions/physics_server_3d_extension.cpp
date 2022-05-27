@@ -34,7 +34,7 @@ bool PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query(const RID &
 	return exclude && exclude->has(p_body);
 }
 
-thread_local const RBSet<RID> *PhysicsDirectSpaceState3DExtension::exclude = nullptr;
+thread_local const HashSet<RID> *PhysicsDirectSpaceState3DExtension::exclude = nullptr;
 
 void PhysicsDirectSpaceState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "hit_back_faces", "result");
@@ -113,8 +113,8 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 PhysicsDirectBodyState3DExtension::PhysicsDirectBodyState3DExtension() {
 }
 
-thread_local const RBSet<RID> *PhysicsServer3DExtension::exclude_bodies = nullptr;
-thread_local const RBSet<ObjectID> *PhysicsServer3DExtension::exclude_objects = nullptr;
+thread_local const HashSet<RID> *PhysicsServer3DExtension::exclude_bodies = nullptr;
+thread_local const HashSet<ObjectID> *PhysicsServer3DExtension::exclude_objects = nullptr;
 
 bool PhysicsServer3DExtension::body_test_motion_is_excluding_body(RID p_body) const {
 	return exclude_bodies && exclude_bodies->has(p_body);

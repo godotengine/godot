@@ -113,7 +113,7 @@ void Position2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gizmo_extents", "extents"), &Position2D::set_gizmo_extents);
 	ClassDB::bind_method(D_METHOD("get_gizmo_extents"), &Position2D::get_gizmo_extents);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,1000,0.1,or_greater"), "set_gizmo_extents", "get_gizmo_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,1000,0.1,or_greater,suffix:px"), "set_gizmo_extents", "get_gizmo_extents");
 }
 
 Position2D::Position2D() {

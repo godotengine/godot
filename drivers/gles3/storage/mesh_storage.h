@@ -123,7 +123,7 @@ struct Mesh {
 	List<MeshInstance *> instances;
 
 	RID shadow_mesh;
-	RBSet<Mesh *> shadow_owners;
+	HashSet<Mesh *> shadow_owners;
 
 	RendererStorage::Dependency dependency;
 };
@@ -491,6 +491,26 @@ public:
 			return multimesh->visible_instances;
 		}
 		return multimesh->instances;
+	}
+
+	_FORCE_INLINE_ GLuint multimesh_get_gl_buffer(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->buffer;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_stride(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->stride_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_color_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->color_offset_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_custom_data_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->custom_data_offset_cache;
 	}
 
 	/* SKELETON API */

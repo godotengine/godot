@@ -31,5 +31,9 @@
 		<member name="motion" type="Vector3" setter="set_motion" getter="get_motion" default="Vector3(0, 0, 0)">
 			Motion vector to define the length and direction of the motion to test.
 		</member>
+		<member name="recovery_as_collision" type="bool" setter="set_recovery_as_collision_enabled" getter="is_recovery_as_collision_enabled" default="false">
+			If set to [code]true[/code], any depenetration from the recovery phase is reported as a collision; this is used e.g. by [method CharacterBody3D.move_and_slide] for improving floor detection when floor snapping is disabled.
+			If set to [code]false[/code], only collisions resulting from the motion are detected; this is used e.g. by [method PhysicsBody3D.move_and_collide].
+		</member>
 	</members>
 </class>

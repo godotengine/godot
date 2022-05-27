@@ -110,7 +110,7 @@ private:
 
 	Ref<CSharpScript> base_cache; // TODO what's this for?
 
-	RBSet<Object *> instances;
+	HashSet<Object *> instances;
 
 #ifdef GD_MONO_HOT_RELOAD
 	struct StateBackup {
@@ -121,7 +121,7 @@ private:
 		List<Pair<StringName, Array>> event_signals;
 	};
 
-	RBSet<ObjectID> pending_reload_instances;
+	HashSet<ObjectID> pending_reload_instances;
 	RBMap<ObjectID, StateBackup> pending_reload_state;
 	StringName tied_class_name_for_reload;
 	StringName tied_class_namespace_for_reload;
@@ -141,7 +141,7 @@ private:
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
-	RBSet<PlaceHolderScriptInstance *> placeholders;
+	HashSet<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
 	bool exports_invalidated = true;
@@ -151,7 +151,7 @@ private:
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-	RBSet<StringName> exported_members_names;
+	HashSet<StringName> exported_members_names;
 #endif
 
 	HashMap<StringName, PropertyInfo> member_info;
@@ -218,7 +218,7 @@ public:
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
-	void get_members(RBSet<StringName> *p_members) override;
+	void get_members(HashSet<StringName> *p_members) override;
 
 	bool is_tool() const override { return tool; }
 	bool is_valid() const override { return valid; }
@@ -467,7 +467,7 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
-			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, RBSet<int> *r_safe_lines = nullptr) const override {
+			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
 		return true;
 	}
 	String validate_path(const String &p_path) const override;

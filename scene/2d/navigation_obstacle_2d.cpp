@@ -81,6 +81,26 @@ void NavigationObstacle2D::_notification(int p_what) {
 			parent_node2d = nullptr;
 		} break;
 
+		case NOTIFICATION_PAUSED: {
+			if (parent_node2d && !parent_node2d->can_process()) {
+				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			if (parent_node2d && !parent_node2d->can_process()) {
+				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node2d && parent_node2d->can_process() && !(map_before_pause == RID())) {
+				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d && parent_node2d->is_inside_tree()) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());

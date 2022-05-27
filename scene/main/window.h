@@ -131,7 +131,7 @@ private:
 	void _make_transient();
 	Window *transient_parent = nullptr;
 	Window *exclusive_child = nullptr;
-	RBSet<Window *> transient_children;
+	HashSet<Window *> transient_children;
 
 	friend class Control;
 	Ref<Theme> theme;

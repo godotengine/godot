@@ -1737,7 +1737,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 #ifdef TOOLS_ENABLED
 	// Keep order from cached ids.
-	RBSet<String> cached_ids_found;
+	HashSet<String> cached_ids_found;
 	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		String cached_id = E.key->get_id_for_path(local_path);
 		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
@@ -1809,7 +1809,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		f->store_line(String()); // Separate.
 	}
 
-	RBSet<String> used_unique_ids;
+	HashSet<String> used_unique_ids;
 
 	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();
@@ -1891,7 +1891,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
-					// Was this missing resource overriden? If so do not save the old value.
+					// Was this missing resource overridden? If so do not save the old value.
 					Ref<Resource> ures = value;
 					if (ures.is_null()) {
 						value = missing_resource_properties[PE->get().name];

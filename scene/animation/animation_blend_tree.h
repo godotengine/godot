@@ -53,7 +53,7 @@ public:
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -87,8 +87,8 @@ public:
 	};
 
 private:
-	float fade_in = 0.1;
-	float fade_out = 0.1;
+	float fade_in = 0.0;
+	float fade_out = 0.0;
 
 	bool autorestart = false;
 	float autorestart_delay = 1.0;
@@ -102,7 +102,7 @@ private:
 	float time;
 	float remaining;*/
 
-	StringName active = "active";
+	StringName active = PNAME("active");
 	StringName prev_active = "prev_active";
 	StringName time = "time";
 	StringName remaining = "remaining";
@@ -138,7 +138,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeOneShot();
 };
@@ -148,7 +148,7 @@ VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
-	StringName add_amount = "add_amount";
+	StringName add_amount = PNAME("add_amount");
 	bool sync = false;
 
 protected:
@@ -164,7 +164,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeAdd2();
 };
@@ -172,7 +172,7 @@ public:
 class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
-	StringName add_amount = "add_amount";
+	StringName add_amount = PNAME("add_amount");
 	bool sync = false;
 
 protected:
@@ -188,7 +188,7 @@ public:
 	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeAdd3();
 };
@@ -196,7 +196,7 @@ public:
 class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
-	StringName blend_amount = "blend_amount";
+	StringName blend_amount = PNAME("blend_amount");
 	bool sync = false;
 
 protected:
@@ -207,7 +207,7 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -219,7 +219,7 @@ public:
 class AnimationNodeBlend3 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend3, AnimationNode);
 
-	StringName blend_amount;
+	StringName blend_amount = PNAME("blend_amount");
 	bool sync;
 
 protected:
@@ -234,14 +234,14 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeBlend3();
 };
 
 class AnimationNodeTimeScale : public AnimationNode {
 	GDCLASS(AnimationNodeTimeScale, AnimationNode);
 
-	StringName scale = "scale";
+	StringName scale = PNAME("scale");
 
 protected:
 	static void _bind_methods();
@@ -252,7 +252,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTimeScale();
 };
@@ -260,7 +260,7 @@ public:
 class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
-	StringName seek_pos = "seek_position";
+	StringName seek_pos = PNAME("seek_position");
 
 protected:
 	static void _bind_methods();
@@ -271,7 +271,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTimeSeek();
 };
@@ -300,7 +300,7 @@ class AnimationNodeTransition : public AnimationNode {
 	StringName prev_xfading = "prev_xfading";
 	StringName prev = "prev";
 	StringName time = "time";
-	StringName current = "current";
+	StringName current = PNAME("current");
 	StringName prev_current = "prev_current";
 
 	float xfade = 0.0;
@@ -329,7 +329,7 @@ public:
 	void set_cross_fade_time(float p_fade);
 	float get_cross_fade_time() const;
 
-	double process(double p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeTransition();
 };
@@ -339,7 +339,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeOutput();
 };
 
@@ -408,7 +408,7 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	void get_node_list(List<StringName> *r_list);
 

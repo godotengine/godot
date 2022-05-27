@@ -113,7 +113,7 @@ public:
 
 private:
 	Ref<MultiplayerPeer> multiplayer_peer;
-	RBSet<int> connected_peers;
+	HashSet<int> connected_peers;
 	int remote_sender_id = 0;
 	int remote_sender_override = 0;
 
@@ -172,7 +172,7 @@ public:
 
 	bool has_multiplayer_peer() const { return multiplayer_peer.is_valid(); }
 	Vector<int> get_peer_ids() const;
-	const RBSet<int> get_connected_peers() const { return connected_peers; }
+	const HashSet<int> get_connected_peers() const { return connected_peers; }
 	int get_remote_sender_id() const { return remote_sender_override ? remote_sender_override : remote_sender_id; }
 	void set_remote_sender_override(int p_id) { remote_sender_override = p_id; }
 	int get_unique_id() const;

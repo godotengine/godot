@@ -475,7 +475,7 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {
-	RBSet<StringName> new_values;
+	HashSet<StringName> new_values;
 	for (const PropertyInfo &E : p_properties) {
 		StringName n = E.name;
 		new_values.insert(n);

@@ -42,12 +42,12 @@ class ConcavePolygonShape3D : public Shape3D {
 	struct DrawEdge {
 		Vector3 a;
 		Vector3 b;
-		bool operator<(const DrawEdge &p_edge) const {
-			if (a == p_edge.a) {
-				return b < p_edge.b;
-			} else {
-				return a < p_edge.a;
-			}
+		static uint32_t hash(const DrawEdge &p_edge) {
+			uint32_t h = hash_djb2_one_32(HashMapHasherDefault::hash(p_edge.a));
+			return hash_djb2_one_32(HashMapHasherDefault::hash(p_edge.b), h);
+		}
+		bool operator==(const DrawEdge &p_edge) const {
+			return (a == p_edge.a && b == p_edge.b);
 		}
 
 		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {

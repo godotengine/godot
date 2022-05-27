@@ -4,7 +4,7 @@
  *
  *   OpenType objects manager (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -411,9 +411,7 @@
     FT_String*  result;
 
 
-    (void)FT_STRDUP( result, source );
-
-    FT_UNUSED( error );
+    FT_MEM_STRDUP( result, source );
 
     return result;
   }

@@ -231,8 +231,8 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 		RBSet<int> iset = index_sets[i];
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
-			for (RBSet<int>::Element *E = iset.front(); E; E = E->next()) {
-				int set_idx = E->get();
+			for (const int &E : iset) {
+				int set_idx = E;
 				String scene_name = r_filenames[set_idx];
 				String full_path = p_full_paths[set_idx];
 
@@ -270,11 +270,11 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 			while (E) {
 				String scene_name = r_filenames[E->get()];
 				bool duplicate_found = false;
-				for (RBSet<int>::Element *F = iset.front(); F; F = F->next()) {
-					if (E->get() == F->get()) {
+				for (const int &F : iset) {
+					if (E->get() == F) {
 						continue;
 					}
-					String other_scene_name = r_filenames[F->get()];
+					String other_scene_name = r_filenames[F];
 					if (other_scene_name == scene_name) {
 						duplicate_found = true;
 						break;
@@ -800,7 +800,7 @@ void EditorNode::_notification(int p_what) {
 				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
 
-			RBSet<String> updated_textfile_extensions;
+			HashSet<String> updated_textfile_extensions;
 			bool extensions_match = true;
 			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 			for (const String &E : textfile_ext) {
@@ -907,12 +907,12 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 }
 
 void EditorNode::_fs_changed() {
-	for (RBSet<FileDialog *>::Element *E = file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (FileDialog *E : file_dialogs) {
+		E->invalidate();
 	}
 
-	for (RBSet<EditorFileDialog *>::Element *E = editor_file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (EditorFileDialog *E : editor_file_dialogs) {
+		E->invalidate();
 	}
 
 	_mark_unsaved_scenes();
@@ -1185,8 +1185,8 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 		Vector<String> errors;
-		for (RBSet<String>::Element *E = dependency_errors[p_resource].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[p_resource]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_RESOURCE, p_resource, errors);
 		dependency_errors.erase(p_resource);
@@ -1622,7 +1622,7 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, RBSet<Ref<Resource>> &edited_resources) {
+static bool _find_edited_resources(const Ref<Resource> &p_resource, HashSet<Ref<Resource>> &edited_resources) {
 	if (p_resource->is_edited()) {
 		edited_resources.insert(p_resource);
 		return true;
@@ -1659,7 +1659,7 @@ int EditorNode::_save_external_resources() {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	RBSet<Ref<Resource>> edited_subresources;
+	HashSet<Ref<Resource>> edited_subresources;
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
@@ -1677,8 +1677,8 @@ int EditorNode::_save_external_resources() {
 	// Clear later, because user may have put the same subresource in two different resources,
 	// which will be shared until the next reload.
 
-	for (RBSet<Ref<Resource>>::Element *E = edited_subresources.front(); E; E = E->next()) {
-		Ref<Resource> res = E->get();
+	for (const Ref<Resource> &E : edited_subresources) {
+		Ref<Resource> res = E;
 		res->set_edited(false);
 	}
 
@@ -3663,8 +3663,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
 		Vector<String> errors;
-		for (RBSet<String>::Element *E = dependency_errors[lpath].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[lpath]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_SCENE, lpath, errors);
 		opening_prev = false;
@@ -3678,10 +3678,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.erase(lpath); // At least not self path.
 
-	for (KeyValue<String, RBSet<String>> &E : dependency_errors) {
+	for (KeyValue<String, HashSet<String>> &E : dependency_errors) {
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E.key) + "\n";
-		for (RBSet<String>::Element *F = E.value.front(); F; F = F->next()) {
-			txt += "\t" + F->get() + "\n";
+		for (const String &F : E.value) {
+			txt += "\t" + F + "\n";
 		}
 		add_io_error(txt);
 	}
@@ -7025,11 +7025,15 @@ EditorNode::EditorNode() {
 	ScriptTextEditor::register_editor(); // Register one for text scripts.
 	TextEditor::register_editor();
 
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+#ifndef JAVASCRIPT_ENABLED
 	if (StreamPeerSSL::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+#endif
 
 	// Add interface before adding plugins.
 
