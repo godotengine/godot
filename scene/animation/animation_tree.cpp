@@ -403,6 +403,18 @@ Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	return Ref<AnimationNode>();
 }
 
+AnimationTree *AnimationNode::get_tree() const {
+	ERR_FAIL_NULL_V_EDMSG(state, nullptr, "get_tree() called outside of _process()");
+
+	return state->tree;
+}
+
+AnimationPlayer *AnimationNode::get_player() const {
+	ERR_FAIL_NULL_V_EDMSG(state, nullptr, "get_player() called outside of _process()");
+
+	return state->player;
+}
+
 void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
 	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
@@ -425,6 +437,9 @@ void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
+
+	ClassDB::bind_method(D_METHOD("get_tree"), &AnimationNode::get_tree);
+	ClassDB::bind_method(D_METHOD("get_player"), &AnimationNode::get_player);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
