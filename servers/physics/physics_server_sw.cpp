@@ -1356,7 +1356,7 @@ void PhysicsServerSW::flush_queries() {
 		values.push_back("flush_queries");
 		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics_3d", values);
 	}
 #endif
 };
