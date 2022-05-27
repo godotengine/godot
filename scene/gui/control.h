@@ -250,6 +250,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child);
 
 	//virtual void _window_gui_input(InputEvent p_event);
+	void set_modal_exclusive(bool p_exclusive);
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
