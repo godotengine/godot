@@ -194,6 +194,9 @@ void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 
 void Popup::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
+	if (popped_up) {
+		set_modal_exclusive(exclusive);
+	}
 }
 
 bool Popup::is_exclusive() const {
