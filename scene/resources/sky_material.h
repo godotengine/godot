@@ -149,7 +149,7 @@ public:
 };
 
 //////////////////////////////////////////////////////
-/* PanoramaSkyMaterial */
+/* PhysicalSkyMaterial */
 
 class PhysicalSkyMaterial : public Material {
 	GDCLASS(PhysicalSkyMaterial, Material);
@@ -168,7 +168,8 @@ private:
 	Color ground_color;
 	float exposure = 0.0f;
 	bool use_debanding = true;
-	Ref<Texture2D> night_sky;
+	Ref<Texture2D> sky_cover;
+	Color sky_cover_modulate;
 	static void _update_shader();
 	mutable bool shader_set = false;
 
@@ -206,8 +207,11 @@ public:
 	void set_use_debanding(bool p_use_debanding);
 	bool get_use_debanding() const;
 
-	void set_night_sky(const Ref<Texture2D> &p_night_sky);
-	Ref<Texture2D> get_night_sky() const;
+	void set_sky_cover(const Ref<Texture2D> &p_sky_cover);
+	Ref<Texture2D> get_sky_cover() const;
+
+	void set_sky_cover_modulate(const Color &p_sky_cover_modulate);
+	Color get_sky_cover_modulate() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;

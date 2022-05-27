@@ -26,14 +26,17 @@
 		<member name="mie_eccentricity" type="float" setter="set_mie_eccentricity" getter="get_mie_eccentricity" default="0.8">
 			Controls the direction of the mie scattering. A value of [code]1[/code] means that when light hits a particle it's passing through straight forward. A value of [code]-1[/code] means that all light is scatter backwards.
 		</member>
-		<member name="night_sky" type="Texture2D" setter="set_night_sky" getter="get_night_sky">
-			[Texture2D] for the night sky. This is added to the sky, so if it is bright enough, it may be visible during the day.
-		</member>
 		<member name="rayleigh_coefficient" type="float" setter="set_rayleigh_coefficient" getter="get_rayleigh_coefficient" default="2.0">
 			Controls the strength of the Rayleigh scattering. Rayleigh scattering results from light colliding with small particles. It is responsible for the blue color of the sky.
 		</member>
 		<member name="rayleigh_color" type="Color" setter="set_rayleigh_color" getter="get_rayleigh_color" default="Color(0.3, 0.405, 0.6, 1)">
 			Controls the [Color] of the Rayleigh scattering. While not physically accurate, this allows for the creation of alien-looking planets. For example, setting this to a red [Color] results in a Mars-looking atmosphere with a corresponding blue sunset.
+		</member>
+		<member name="sky_cover" type="Texture2D" setter="set_sky_cover" getter="get_sky_cover">
+			The sky cover texture to use. This texture must use an equirectangular projection (similar to [PanoramaSkyMaterial]). The texture's colors will be [i]added[/i] to the existing sky color, and will be multiplied by the atmospheric scattering color, [member exposure] and [member sky_cover_modulate]. This is mainly suited to displaying stars at night, but it can also be used to display clouds at day or night (with a non-physically-accurate look).
+		</member>
+		<member name="sky_cover_modulate" type="Color" setter="set_sky_cover_modulate" getter="get_sky_cover_modulate" default="Color(1, 1, 1, 1)">
+			The tint to apply to the [member sky_cover] texture. This can be used to change the sky cover's colors or opacity independently of the sky energy, which is useful for day/night or weather transitions. Only effective if a texture is defined in [member sky_cover].
 		</member>
 		<member name="sun_disk_scale" type="float" setter="set_sun_disk_scale" getter="get_sun_disk_scale" default="1.0">
 			Sets the size of the sun disk. Default value is based on Sol's perceived size from Earth.
