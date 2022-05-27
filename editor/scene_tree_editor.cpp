@@ -170,7 +170,7 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	}
 }
 
-bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected) {
+bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, TreeItem *p_root, bool p_show_tree_in_scene_tree_search, bool p_scroll_to_selected) {
 	if (!p_node) {
 		return false;
 	}
@@ -450,38 +450,52 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 	bool keep = (filter.is_subsequence_ofn(String(p_node->get_name())));
 
+	bool node_list_is_flat = !filter.is_empty() && !p_show_tree_in_scene_tree_search;
+
+	bool children_keep = false;
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		bool child_keep = _add_nodes(p_node->get_child(i), item, p_scroll_to_selected);
-
-		keep = keep || child_keep;
+		bool current_child_keep = _add_nodes(p_node->get_child(i), node_list_is_flat ? p_root : item, p_root, p_show_tree_in_scene_tree_search, p_scroll_to_selected);
+		children_keep = node_list_is_flat ? false : (children_keep ? true : current_child_keep);
 	}
 
-	if (valid_types.size()) {
-		bool valid = false;
-		for (int i = 0; i < valid_types.size(); i++) {
-			if (p_node->is_class(valid_types[i])) {
-				valid = true;
-				break;
+	bool is_enabled = false;
+	if (keep) {
+		if (valid_types.size()) {
+			for (int i = 0; i < valid_types.size(); i++) {
+				if (p_node->is_class(valid_types[i])) {
+					is_enabled = true;
+					break;
+				}
 			}
-		}
-
-		if (!valid) {
-			//item->set_selectable(0,marked_selectable);
-			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-			item->set_selectable(0, false);
+			// If we a filtering, we can discard invalid types
+			if (!is_enabled && !filter.is_empty()) {
+				keep = false;
+			}
+		} else {
+			is_enabled = true;
 		}
 	}
 
-	if (!keep) {
+	if (!is_enabled) {
 		if (editor_selection) {
 			Node *n = get_node(item->get_metadata(0));
 			if (n) {
 				editor_selection->remove_node(n);
 			}
 		}
+	}
+
+	if (!keep && !children_keep) {
 		memdelete(item);
 		return false;
 	} else {
+		// If we're only keeping the children or the type is invalid, grey this item out
+		if (!is_enabled) {
+			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			item->set_selectable(0, false);
+			item->deselect(0);
+		}
+
 		if (scroll) {
 			tree->scroll_to_item(item);
 		}
@@ -592,7 +606,12 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {
-		_add_nodes(get_scene_node(), nullptr, p_scroll_to_selected);
+		tree->set_hide_root(true);
+		TreeItem *root_item = tree->create_item(nullptr);
+
+		bool show_tree_in_scene_tree_search = EDITOR_GET("interface/editor/show_tree_in_scene_tree_search");
+
+		_add_nodes(get_scene_node(), root_item, root_item, show_tree_in_scene_tree_search, p_scroll_to_selected);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}

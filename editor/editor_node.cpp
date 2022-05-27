@@ -6093,6 +6093,7 @@ EditorNode::EditorNode() {
 	ClassDB::set_class_enabled("RootMotionView", true);
 
 	EDITOR_DEF("interface/editor/save_on_focus_loss", false);
+	EDITOR_DEF("interface/editor/show_tree_in_scene_tree_search", true);
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
 	EDITOR_DEF("interface/editor/localize_settings", true);
