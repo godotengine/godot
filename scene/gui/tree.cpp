@@ -2164,7 +2164,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			// Draw relationship lines.
-			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible()) {
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				int parent_ofs = p_pos.x + cache.item_margin;
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
