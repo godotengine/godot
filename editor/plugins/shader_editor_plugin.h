@@ -42,6 +42,11 @@
 #include "scene/resources/shader.h"
 #include "servers/rendering/shader_warnings.h"
 
+class ItemList;
+class VisualShaderEditor;
+class HSplitContainer;
+class ShaderCreateDialog;
+
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
@@ -160,9 +165,40 @@ public:
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
-	bool _2d;
-	ShaderEditor *shader_editor = nullptr;
+	struct EditedShader {
+		Ref<Shader> shader;
+		ShaderEditor *shader_editor = nullptr;
+		VisualShaderEditor *visual_shader_editor = nullptr;
+	};
+
+	LocalVector<EditedShader> edited_shaders;
+
+	enum {
+		FILE_NEW,
+		FILE_OPEN,
+		FILE_SAVE,
+		FILE_SAVE_AS,
+		FILE_INSPECT,
+		FILE_CLOSE,
+		FILE_MAX
+	};
+
+	HSplitContainer *main_split = nullptr;
+	ItemList *shader_list = nullptr;
+	TabContainer *shader_tabs = nullptr;
+
 	Button *button = nullptr;
+	MenuButton *file_menu = nullptr;
+
+	ShaderCreateDialog *shader_create_dialog = nullptr;
+
+	void _update_shader_list();
+	void _shader_selected(int p_index);
+	void _menu_item_pressed(int p_index);
+	void _resource_saved(Object *obj);
+	void _close_shader(int p_index);
+
+	void _shader_created(Ref<Shader> p_shader);
 
 public:
 	virtual String get_name() const override { return "Shader"; }
@@ -172,7 +208,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
-	ShaderEditor *get_shader_editor() const { return shader_editor; }
+	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
 
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
