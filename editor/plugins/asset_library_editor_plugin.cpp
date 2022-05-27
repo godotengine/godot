@@ -1402,9 +1402,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
-		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+		filter->set_placeholder(TTR("Search Templates, Projects, and Demos"));
 	} else {
-		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+		filter->set_placeholder(TTR("Search Assets (Excluding Templates, Projects, and Demos)"));
 	}
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);

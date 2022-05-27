@@ -299,7 +299,7 @@ EditorCommandPalette::EditorCommandPalette() {
 	add_child(vbc);
 
 	command_search_box = memnew(LineEdit);
-	command_search_box->set_placeholder(TTR("Filter commands"));
+	command_search_box->set_placeholder(TTR("Filter Commands"));
 	command_search_box->connect("gui_input", callable_mp(this, &EditorCommandPalette::_sbox_input));
 	command_search_box->connect("text_changed", callable_mp(this, &EditorCommandPalette::_update_command_search));
 	command_search_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);

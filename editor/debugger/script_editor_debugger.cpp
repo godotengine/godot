@@ -1765,7 +1765,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		search = memnew(LineEdit);
 		search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search->set_placeholder(TTR("Filter stack variables"));
+		search->set_placeholder(TTR("Filter Stack Variables"));
 		search->set_clear_button_enabled(true);
 		tools_hb->add_child(search);
 
