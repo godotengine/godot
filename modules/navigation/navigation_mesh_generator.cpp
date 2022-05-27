@@ -174,14 +174,16 @@ void NavigationMeshGenerator::_parse_geometry(const Transform &p_navmesh_xform, 
 	if (Object::cast_to<MultiMeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MultiMeshInstance *multimesh_instance = Object::cast_to<MultiMeshInstance>(p_node);
 		Ref<MultiMesh> multimesh = multimesh_instance->get_multimesh();
-		Ref<Mesh> mesh = multimesh->get_mesh();
-		if (mesh.is_valid()) {
-			int n = multimesh->get_visible_instance_count();
-			if (n == -1) {
-				n = multimesh->get_instance_count();
-			}
-			for (int i = 0; i < n; i++) {
-				_add_mesh(mesh, p_navmesh_xform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+		if (multimesh.is_valid()) {
+			Ref<Mesh> mesh = multimesh->get_mesh();
+			if (mesh.is_valid()) {
+				int n = multimesh->get_visible_instance_count();
+				if (n == -1) {
+					n = multimesh->get_instance_count();
+				}
+				for (int i = 0; i < n; i++) {
+					_add_mesh(mesh, p_navmesh_xform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+				}
 			}
 		}
 	}
