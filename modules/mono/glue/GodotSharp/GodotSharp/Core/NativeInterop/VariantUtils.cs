@@ -703,8 +703,8 @@ namespace Godot.NativeInterop
 
             var res = new System.Collections.Generic.Dictionary<TKey, TValue>(godotDictionary.Count);
 
-            foreach (System.Collections.Generic.KeyValuePair<TKey, TValue> pair in godotDictionary)
-                res.Add(pair.Key, pair.Value);
+            foreach (System.Collections.Generic.KeyValuePair<object, object> pair in godotDictionary)
+                res.Add((TKey)pair.Key, (TValue)pair.Value);
 
             return res;
         }

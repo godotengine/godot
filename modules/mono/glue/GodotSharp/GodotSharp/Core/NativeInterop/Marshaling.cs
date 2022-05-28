@@ -686,7 +686,7 @@ namespace Godot.NativeInterop
                         /* capacity: */ godotDictionary.Count
                     }, null)!;
 
-                foreach (System.Collections.DictionaryEntry pair in godotDictionary)
+                foreach (KeyValuePair<object, object> pair in godotDictionary)
                     dictionary.Add(pair.Key, pair.Value);
 
                 return dictionary;

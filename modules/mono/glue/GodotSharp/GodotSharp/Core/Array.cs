@@ -14,7 +14,9 @@ namespace Godot.Collections
     /// such as <see cref="System.Array"/> or <see cref="List{T}"/>.
     /// </summary>
     public sealed class Array :
-        IList,
+        IList<object>,
+        IReadOnlyList<object>,
+        ICollection,
         IDisposable
     {
         internal godot_array.movable NativeValue;
@@ -163,12 +165,6 @@ namespace Godot.Collections
             return newArray;
         }
 
-        // IList
-
-        bool IList.IsReadOnly => false;
-
-        bool IList.IsFixedSize => false;
-
         /// <summary>
         /// Returns the object at the given <paramref name="index"/>.
         /// </summary>
@@ -194,21 +190,21 @@ namespace Godot.Collections
         /// Adds an object to the end of this <see cref="Array"/>.
         /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
         /// </summary>
-        /// <param name="value">The object to add.</param>
+        /// <param name="item">The object to add.</param>
         /// <returns>The new size after adding the object.</returns>
-        public int Add(object value)
+        public void Add(object item)
         {
-            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(value);
+            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(item);
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_add(ref self, variantValue);
+            _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
         }
 
         /// <summary>
         /// Checks if this <see cref="Array"/> contains the given object.
         /// </summary>
-        /// <param name="value">The item to look for.</param>
+        /// <param name="item">The item to look for.</param>
         /// <returns>Whether or not this array contains the given object.</returns>
-        public bool Contains(object value) => IndexOf(value) != -1;
+        public bool Contains(object item) => IndexOf(item) != -1;
 
         /// <summary>
         /// Erases all items from this <see cref="Array"/>.
@@ -219,11 +215,11 @@ namespace Godot.Collections
         /// Searches this <see cref="Array"/> for an object
         /// and returns its index or -1 if not found.
         /// </summary>
-        /// <param name="value">The object to search for.</param>
+        /// <param name="item">The object to search for.</param>
         /// <returns>The index of the object, or -1 if not found.</returns>
-        public int IndexOf(object value)
+        public int IndexOf(object item)
         {
-            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(value);
+            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(item);
             var self = (godot_array)NativeValue;
             return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
         }
@@ -235,27 +231,32 @@ namespace Godot.Collections
         /// Existing items will be moved to the right.
         /// </summary>
         /// <param name="index">The index to insert at.</param>
-        /// <param name="value">The object to insert.</param>
-        public void Insert(int index, object value)
+        /// <param name="item">The object to insert.</param>
+        public void Insert(int index, object item)
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(value);
+            using godot_variant variantValue = Marshaling.ConvertManagedObjectToVariant(item);
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
         }
 
         /// <summary>
-        /// Removes the first occurrence of the specified <paramref name="value"/>
+        /// Removes the first occurrence of the specified <paramref name="item"/>
         /// from this <see cref="Array"/>.
         /// </summary>
-        /// <param name="value">The value to remove.</param>
-        public void Remove(object value)
+        /// <param name="item">The value to remove.</param>
+        public bool Remove(object item)
         {
-            int index = IndexOf(value);
+            int index = IndexOf(item);
             if (index >= 0)
+            {
                 RemoveAt(index);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -280,17 +281,49 @@ namespace Godot.Collections
         /// <returns>The number of elements.</returns>
         public int Count => NativeValue.DangerousSelfRef.Size;
 
-        object ICollection.SyncRoot => this;
+        public bool IsSynchronized => false;
 
-        bool ICollection.IsSynchronized => false;
+        public object SyncRoot => false;
+
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Copies the elements of this <see cref="Array"/> to the given
         /// untyped C# array, starting at the given index.
         /// </summary>
         /// <param name="array">The array to copy to.</param>
-        /// <param name="index">The index to start at.</param>
-        public void CopyTo(System.Array array, int index)
+        /// <param name="arrayIndex">The index to start at.</param>
+        public void CopyTo(object[] array, int arrayIndex)
+        {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
+
+            if (arrayIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Number was less than the array's lower bound in the first dimension.");
+            }
+
+            int count = Count;
+
+            if (array.Length < (arrayIndex + count))
+            {
+                throw new ArgumentException(
+                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+            }
+
+            unsafe
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    object obj = Marshaling.ConvertVariantToManagedObject(NativeValue.DangerousSelfRef.Elements[i]);
+                    array[arrayIndex] = obj;
+                    arrayIndex++;
+                }
+            }
+        }
+
+        void ICollection.CopyTo(System.Array array, int index)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
@@ -357,7 +390,7 @@ namespace Godot.Collections
         /// Gets an enumerator for this <see cref="Array"/>.
         /// </summary>
         /// <returns>An enumerator.</returns>
-        public IEnumerator GetEnumerator()
+        public IEnumerator<object> GetEnumerator()
         {
             int count = Count;
 
@@ -366,6 +399,8 @@ namespace Godot.Collections
                 yield return this[i];
             }
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Converts this <see cref="Array"/> to a string.
@@ -632,7 +667,7 @@ namespace Godot.Collections
         /// <param name="array">The C# array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
         public void CopyTo(T[] array, int arrayIndex) =>
-            _underlyingArray.CopyToGeneric<T>(array, arrayIndex, TypeOfElements);
+            _underlyingArray.CopyToGeneric(array, arrayIndex, TypeOfElements);
 
         /// <summary>
         /// Removes the first occurrence of the specified value
