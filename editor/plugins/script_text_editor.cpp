@@ -1524,6 +1524,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(res->get_path());
+		te->grab_focus();
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
@@ -1546,6 +1547,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
@@ -1619,6 +1621,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
@@ -1627,6 +1630,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 }
 
