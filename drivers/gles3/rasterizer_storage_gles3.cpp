@@ -442,6 +442,10 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 }
 
 bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
+	if (!config) {
+		return false;
+	}
+
 	if (p_feature == "rgtc") {
 		return config->rgtc_supported;
 	}
