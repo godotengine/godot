@@ -5295,14 +5295,12 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
 	// those shortcuts one by one.
-	// Resetting zoom to 100% is a duplicate shortcut of `canvas_item_editor/reset_zoom`,
-	// but it ensures both 1 and Ctrl + 0 can be used to reset zoom.
 	ED_SHORTCUT("canvas_item_editor/zoom_3.125_percent", TTR("Zoom to 3.125%"), KeyModifierMask::SHIFT | Key::KEY_5);
 	ED_SHORTCUT("canvas_item_editor/zoom_6.25_percent", TTR("Zoom to 6.25%"), KeyModifierMask::SHIFT | Key::KEY_4);
 	ED_SHORTCUT("canvas_item_editor/zoom_12.5_percent", TTR("Zoom to 12.5%"), KeyModifierMask::SHIFT | Key::KEY_3);
 	ED_SHORTCUT("canvas_item_editor/zoom_25_percent", TTR("Zoom to 25%"), KeyModifierMask::SHIFT | Key::KEY_2);
 	ED_SHORTCUT("canvas_item_editor/zoom_50_percent", TTR("Zoom to 50%"), KeyModifierMask::SHIFT | Key::KEY_1);
-	ED_SHORTCUT("canvas_item_editor/zoom_100_percent", TTR("Zoom to 100%"), Key::KEY_1);
+	ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_100_percent", TTR("Zoom to 100%"), { (int32_t)Key::KEY_1, (int32_t)(KeyModifierMask::CMD | Key::KEY_0) });
 	ED_SHORTCUT("canvas_item_editor/zoom_200_percent", TTR("Zoom to 200%"), Key::KEY_2);
 	ED_SHORTCUT("canvas_item_editor/zoom_400_percent", TTR("Zoom to 400%"), Key::KEY_3);
 	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom to 800%"), Key::KEY_4);
