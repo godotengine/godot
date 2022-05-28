@@ -419,7 +419,7 @@ void AnimationLibraryEditor::_item_renamed() {
 	}
 }
 
-void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_button) {
+void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_button, int p_id) {
 	if (p_item->get_parent() == tree->get_root()) {
 		// Library
 		StringName lib_name = p_item->get_metadata(0);

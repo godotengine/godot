@@ -99,7 +99,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _load_file(String p_path);
 
 	void _item_renamed();
-	void _button_pressed(TreeItem *p_item, int p_column, int p_button);
+	void _button_pressed(TreeItem *p_item, int p_column, int p_button, int p_id);
 
 	void _file_popup_selected(int p_id);
 
