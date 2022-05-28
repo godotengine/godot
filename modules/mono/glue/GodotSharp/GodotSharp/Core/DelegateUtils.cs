@@ -1,6 +1,8 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,14 +18,14 @@ namespace Godot
         {
             try
             {
-                var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
-                var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
-                return (@delegateA == @delegateB).ToGodotBool();
+                var @delegateA = (Delegate?)GCHandle.FromIntPtr(delegateGCHandleA).Target;
+                var @delegateB = (Delegate?)GCHandle.FromIntPtr(delegateGCHandleB).Target;
+                return (@delegateA! == @delegateB!).ToGodotBool();
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                return false.ToGodotBool();
+                return godot_bool.False;
             }
         }
 
@@ -34,10 +36,10 @@ namespace Godot
             try
             {
                 // TODO: Optimize
-                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
-                var managedArgs = new object[argc];
+                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
+                var managedArgs = new object?[argc];
 
-                var parameterInfos = @delegate!.Method.GetParameters();
+                var parameterInfos = @delegate.Method.GetParameters();
                 var paramsLength = parameterInfos.Length;
 
                 if (argc != paramsLength)
@@ -52,7 +54,7 @@ namespace Godot
                         *args[i], parameterInfos[i].ParameterType);
                 }
 
-                object invokeRet = @delegate.DynamicInvoke(managedArgs);
+                object? invokeRet = @delegate.DynamicInvoke(managedArgs);
 
                 *outRet = Marshaling.ConvertManagedObjectToVariant(invokeRet);
             }
@@ -72,10 +74,7 @@ namespace Godot
             CompilerGenerated
         }
 
-        internal static bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle, Collections.Array serializedData)
-            => TrySerializeDelegate((Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target, serializedData);
-
-        private static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
+        internal static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
         {
             if (@delegate is MulticastDelegate multicastDelegate)
             {
@@ -98,7 +97,7 @@ namespace Godot
                 }
             }
 
-            if (TrySerializeSingleDelegate(@delegate, out byte[] buffer))
+            if (TrySerializeSingleDelegate(@delegate, out byte[]? buffer))
             {
                 serializedData.Add(buffer);
                 return true;
@@ -107,11 +106,11 @@ namespace Godot
             return false;
         }
 
-        private static bool TrySerializeSingleDelegate(Delegate @delegate, out byte[] buffer)
+        private static bool TrySerializeSingleDelegate(Delegate @delegate, [MaybeNullWhen(false)] out byte[] buffer)
         {
             buffer = null;
 
-            object target = @delegate.Target;
+            object? target = @delegate.Target;
 
             switch (target)
             {
@@ -200,9 +199,6 @@ namespace Godot
 
         private static bool TrySerializeMethodInfo(BinaryWriter writer, MethodInfo methodInfo)
         {
-            if (methodInfo == null)
-                return false;
-
             SerializeType(writer, methodInfo.DeclaringType);
 
             writer.Write(methodInfo.Name);
@@ -241,7 +237,7 @@ namespace Godot
             return true;
         }
 
-        private static void SerializeType(BinaryWriter writer, Type type)
+        private static void SerializeType(BinaryWriter writer, Type? type)
         {
             if (type == null)
             {
@@ -256,9 +252,8 @@ namespace Godot
                 int genericArgumentsCount = genericArgs.Length;
                 writer.Write(genericArgumentsCount);
 
-                string assemblyQualifiedName = genericTypeDef.AssemblyQualifiedName;
-                Debug.Assert(assemblyQualifiedName != null);
-                writer.Write(assemblyQualifiedName);
+                writer.Write(genericTypeDef.Assembly.GetName().Name ?? "");
+                writer.Write(genericTypeDef.FullName ?? genericTypeDef.ToString());
 
                 for (int i = 0; i < genericArgs.Length; i++)
                     SerializeType(writer, genericArgs[i]);
@@ -268,21 +263,62 @@ namespace Godot
                 int genericArgumentsCount = 0;
                 writer.Write(genericArgumentsCount);
 
-                string assemblyQualifiedName = type.AssemblyQualifiedName;
-                Debug.Assert(assemblyQualifiedName != null);
-                writer.Write(assemblyQualifiedName);
+                writer.Write(type.Assembly.GetName().Name ?? "");
+                writer.Write(type.FullName ?? type.ToString());
             }
         }
 
-        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData,
-            out IntPtr delegateGCHandle)
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle,
+            godot_array* nSerializedData)
         {
-            bool res = TryDeserializeDelegate(serializedData, out Delegate @delegate);
-            delegateGCHandle = GCHandle.ToIntPtr(GCHandle.Alloc(@delegate));
-            return res;
+            try
+            {
+                var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                    NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
+
+                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
+
+                return TrySerializeDelegate(@delegate, serializedData)
+                    .ToGodotBool();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return godot_bool.False;
+            }
         }
 
-        private static bool TryDeserializeDelegate(Collections.Array serializedData, out Delegate @delegate)
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool TryDeserializeDelegateWithGCHandle(godot_array* nSerializedData,
+            IntPtr* delegateGCHandle)
+        {
+            try
+            {
+                var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                    NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
+
+                if (TryDeserializeDelegate(serializedData, out Delegate? @delegate))
+                {
+                    *delegateGCHandle = GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(@delegate));
+                    return godot_bool.True;
+                }
+                else
+                {
+                    *delegateGCHandle = IntPtr.Zero;
+                    return godot_bool.False;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *delegateGCHandle = default;
+                return godot_bool.False;
+            }
+        }
+
+        internal static bool TryDeserializeDelegate(Collections.Array serializedData,
+            [MaybeNullWhen(false)] out Delegate @delegate)
         {
             if (serializedData.Count == 1)
             {
@@ -302,12 +338,12 @@ namespace Godot
             {
                 if (elem is Collections.Array multiCastData)
                 {
-                    if (TryDeserializeDelegate(multiCastData, out Delegate oneDelegate))
+                    if (TryDeserializeDelegate(multiCastData, out Delegate? oneDelegate))
                         delegates.Add(oneDelegate);
                 }
                 else
                 {
-                    if (TryDeserializeSingleDelegate((byte[])elem, out Delegate oneDelegate))
+                    if (TryDeserializeSingleDelegate((byte[])elem, out Delegate? oneDelegate))
                         delegates.Add(oneDelegate);
                 }
             }
@@ -315,11 +351,11 @@ namespace Godot
             if (delegates.Count <= 0)
                 return false;
 
-            @delegate = delegates.Count == 1 ? delegates[0] : Delegate.Combine(delegates.ToArray());
+            @delegate = delegates.Count == 1 ? delegates[0] : Delegate.Combine(delegates.ToArray())!;
             return true;
         }
 
-        private static bool TryDeserializeSingleDelegate(byte[] buffer, out Delegate @delegate)
+        private static bool TryDeserializeSingleDelegate(byte[] buffer, [MaybeNullWhen(false)] out Delegate @delegate)
         {
             @delegate = null;
 
@@ -332,14 +368,18 @@ namespace Godot
                 {
                     case TargetKind.Static:
                     {
-                        Type delegateType = DeserializeType(reader);
+                        Type? delegateType = DeserializeType(reader);
                         if (delegateType == null)
                             return false;
 
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo methodInfo))
+                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
                             return false;
 
-                        @delegate = Delegate.CreateDelegate(delegateType, null, methodInfo);
+                        @delegate = Delegate.CreateDelegate(delegateType, null, methodInfo, throwOnBindFailure: false);
+
+                        if (@delegate == null)
+                            return false;
+
                         return true;
                     }
                     case TargetKind.GodotObject:
@@ -350,32 +390,37 @@ namespace Godot
                         if (godotObject == null)
                             return false;
 
-                        Type delegateType = DeserializeType(reader);
+                        Type? delegateType = DeserializeType(reader);
                         if (delegateType == null)
                             return false;
 
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo methodInfo))
+                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
                             return false;
 
-                        @delegate = Delegate.CreateDelegate(delegateType, godotObject, methodInfo);
+                        @delegate = Delegate.CreateDelegate(delegateType, godotObject, methodInfo,
+                            throwOnBindFailure: false);
+
+                        if (@delegate == null)
+                            return false;
+
                         return true;
                     }
                     case TargetKind.CompilerGenerated:
                     {
-                        Type targetType = DeserializeType(reader);
+                        Type? targetType = DeserializeType(reader);
                         if (targetType == null)
                             return false;
 
-                        Type delegateType = DeserializeType(reader);
+                        Type? delegateType = DeserializeType(reader);
                         if (delegateType == null)
                             return false;
 
-                        if (!TryDeserializeMethodInfo(reader, out MethodInfo methodInfo))
+                        if (!TryDeserializeMethodInfo(reader, out MethodInfo? methodInfo))
                             return false;
 
                         int fieldCount = reader.ReadInt32();
 
-                        object recreatedTarget = Activator.CreateInstance(targetType);
+                        object recreatedTarget = Activator.CreateInstance(targetType)!;
 
                         for (int i = 0; i < fieldCount; i++)
                         {
@@ -383,12 +428,17 @@ namespace Godot
                             int valueBufferLength = reader.ReadInt32();
                             byte[] valueBuffer = reader.ReadBytes(valueBufferLength);
 
-                            FieldInfo fieldInfo =
-                                targetType.GetField(name, BindingFlags.Instance | BindingFlags.Public);
+                            FieldInfo? fieldInfo = targetType.GetField(name,
+                                BindingFlags.Instance | BindingFlags.Public);
                             fieldInfo?.SetValue(recreatedTarget, GD.Bytes2Var(valueBuffer));
                         }
 
-                        @delegate = Delegate.CreateDelegate(delegateType, recreatedTarget, methodInfo);
+                        @delegate = Delegate.CreateDelegate(delegateType, recreatedTarget, methodInfo,
+                            throwOnBindFailure: false);
+
+                        if (@delegate == null)
+                            return false;
+
                         return true;
                     }
                     default:
@@ -397,18 +447,22 @@ namespace Godot
             }
         }
 
-        private static bool TryDeserializeMethodInfo(BinaryReader reader, out MethodInfo methodInfo)
+        private static bool TryDeserializeMethodInfo(BinaryReader reader,
+            [MaybeNullWhen(false)] out MethodInfo methodInfo)
         {
             methodInfo = null;
 
-            Type declaringType = DeserializeType(reader);
+            Type? declaringType = DeserializeType(reader);
+
+            if (declaringType == null)
+                return false;
 
             string methodName = reader.ReadString();
 
             int flags = reader.ReadInt32();
 
             bool hasReturn = reader.ReadBoolean();
-            Type returnType = hasReturn ? DeserializeType(reader) : typeof(void);
+            Type? returnType = hasReturn ? DeserializeType(reader) : typeof(void);
 
             int parametersCount = reader.ReadInt32();
 
@@ -418,7 +472,7 @@ namespace Godot
 
                 for (int i = 0; i < parametersCount; i++)
                 {
-                    Type parameterType = DeserializeType(reader);
+                    Type? parameterType = DeserializeType(reader);
                     if (parameterType == null)
                         return false;
                     parameterTypes[i] = parameterType;
@@ -432,15 +486,23 @@ namespace Godot
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 
-        private static Type DeserializeType(BinaryReader reader)
+        private static Type? DeserializeType(BinaryReader reader)
         {
             int genericArgumentsCount = reader.ReadInt32();
 
             if (genericArgumentsCount == -1)
                 return null;
 
-            string assemblyQualifiedName = reader.ReadString();
-            var type = Type.GetType(assemblyQualifiedName);
+            string assemblyName = reader.ReadString();
+
+            if (assemblyName.Length == 0)
+            {
+                GD.PushError($"Missing assembly name of type when attempting to deserialize delegate");
+                return null;
+            }
+
+            string typeFullName = reader.ReadString();
+            var type = ReflectionUtils.FindTypeInLoadedAssemblies(assemblyName, typeFullName);
 
             if (type == null)
                 return null; // Type not found
@@ -451,7 +513,7 @@ namespace Godot
 
                 for (int i = 0; i < genericArgumentsCount; i++)
                 {
-                    Type genericArgumentType = DeserializeType(reader);
+                    Type? genericArgumentType = DeserializeType(reader);
                     if (genericArgumentType == null)
                         return null;
                     genericArgumentTypes[i] = genericArgumentType;

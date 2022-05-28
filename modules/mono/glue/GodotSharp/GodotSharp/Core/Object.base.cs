@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Godot.Bridge;
 using Godot.NativeInterop;
 
 namespace Godot
@@ -150,7 +151,7 @@ namespace Godot
                 NativePtr = IntPtr.Zero;
             }
 
-            DisposablesTracker.UnregisterGodotObject(_weakReferenceToSelf);
+            DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
         }
 
         /// <summary>
@@ -327,6 +328,78 @@ namespace Godot
                 throw new NativeConstructorNotFoundException(type);
 
             return nativeConstructor;
+        }
+
+        protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
+        {
+            // Temporary solution via reflection until we add a signals events source generator
+
+            Type top = GetType();
+            Type native = InternalGetClassNativeBase(top);
+
+            while (top != null && top != native)
+            {
+                var foundEventSignals = top.GetEvents(
+                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                        BindingFlags.NonPublic | BindingFlags.Public)
+                    .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any())
+                    .Select(ev => ev.Name);
+
+                var fields = top.GetFields(
+                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+
+                foreach (var eventSignalField in fields
+                             .Where(f => typeof(Delegate).IsAssignableFrom(f.FieldType))
+                             .Where(f => foundEventSignals.Contains(f.Name)))
+                {
+                    var eventSignalDelegate = (Delegate)eventSignalField.GetValue(this);
+                    info.AddSignalEventDelegate(eventSignalField.Name, eventSignalDelegate);
+                }
+
+                top = top.BaseType;
+            }
+        }
+
+        // TODO: Should this be a constructor overload?
+        protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
+        {
+            // Temporary solution via reflection until we add a signals events source generator
+
+            void RestoreSignalEvent(StringName signalEventName)
+            {
+                Type top = GetType();
+                Type native = InternalGetClassNativeBase(top);
+
+                while (top != null && top != native)
+                {
+                    var foundEventSignal = top.GetEvent(signalEventName,
+                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                        BindingFlags.NonPublic | BindingFlags.Public);
+
+                    if (foundEventSignal != null &&
+                        foundEventSignal.GetCustomAttributes().OfType<SignalAttribute>().Any())
+                    {
+                        var field = top.GetField(foundEventSignal.Name,
+                            BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                            BindingFlags.NonPublic | BindingFlags.Public);
+
+                        if (field != null && typeof(Delegate).IsAssignableFrom(field.FieldType))
+                        {
+                            var eventSignalDelegate = info.GetSignalEventDelegate(signalEventName);
+                            field.SetValue(this, eventSignalDelegate);
+                            return;
+                        }
+                    }
+
+                    top = top.BaseType;
+                }
+            }
+
+            foreach (var signalEventName in info.GetSignalEventsList())
+            {
+                RestoreSignalEvent(signalEventName);
+            }
         }
     }
 }

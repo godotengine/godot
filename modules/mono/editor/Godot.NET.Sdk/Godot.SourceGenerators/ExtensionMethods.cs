@@ -224,8 +224,9 @@ namespace Godot.SourceGenerators
         {
             foreach (var property in properties)
             {
-                // Ignore properties without a getter. Godot properties must be readable.
-                if (property.IsWriteOnly)
+                // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
+                if (property.IsWriteOnly || property.IsReadOnly)
                     continue;
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
@@ -244,6 +245,11 @@ namespace Godot.SourceGenerators
         {
             foreach (var field in fields)
             {
+                // TODO: We should still restore read-only fields after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
+                if (field.IsReadOnly)
+                    continue;
+
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(field.Type, typeCache);
 
                 if (marshalType == null)

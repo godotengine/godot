@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using System.Runtime.Loader;
 using Godot.NativeInterop;
 
 #nullable enable
@@ -10,17 +9,12 @@ namespace Godot
 {
     internal static class DisposablesTracker
     {
-        static DisposablesTracker()
-        {
-            AssemblyLoadContext.Default.Unloading += _ => OnUnloading();
-        }
-
         [UnmanagedCallersOnly]
         internal static void OnGodotShuttingDown()
         {
             try
             {
-                OnUnloading();
+                OnGodotShuttingDownImpl();
             }
             catch (Exception e)
             {
@@ -28,7 +22,7 @@ namespace Godot
             }
         }
 
-        private static void OnUnloading()
+        private static void OnGodotShuttingDownImpl()
         {
             bool isStdoutVerbose;
 
@@ -66,30 +60,30 @@ namespace Godot
         }
 
         // ReSharper disable once RedundantNameQualifier
-        private static ConcurrentDictionary<WeakReference<Godot.Object>, object?> GodotObjectInstances { get; } =
+        private static ConcurrentDictionary<WeakReference<Godot.Object>, byte> GodotObjectInstances { get; } =
             new();
 
-        private static ConcurrentDictionary<WeakReference<IDisposable>, object?> OtherInstances { get; } =
+        private static ConcurrentDictionary<WeakReference<IDisposable>, byte> OtherInstances { get; } =
             new();
 
         public static WeakReference<Object> RegisterGodotObject(Object godotObject)
         {
             var weakReferenceToSelf = new WeakReference<Object>(godotObject);
-            GodotObjectInstances.TryAdd(weakReferenceToSelf, null);
+            GodotObjectInstances.TryAdd(weakReferenceToSelf, 0);
             return weakReferenceToSelf;
         }
 
         public static WeakReference<IDisposable> RegisterDisposable(IDisposable disposable)
         {
             var weakReferenceToSelf = new WeakReference<IDisposable>(disposable);
-            OtherInstances.TryAdd(weakReferenceToSelf, null);
+            OtherInstances.TryAdd(weakReferenceToSelf, 0);
             return weakReferenceToSelf;
         }
 
-        public static void UnregisterGodotObject(WeakReference<Object> weakReference)
+        public static void UnregisterGodotObject(Object godotObject, WeakReference<Object> weakReferenceToSelf)
         {
-            if (!GodotObjectInstances.TryRemove(weakReference, out _))
-                throw new ArgumentException("Godot Object not registered", nameof(weakReference));
+            if (!GodotObjectInstances.TryRemove(weakReferenceToSelf, out _))
+                throw new ArgumentException("Godot Object not registered", nameof(weakReferenceToSelf));
         }
 
         public static void UnregisterDisposable(WeakReference<IDisposable> weakReference)

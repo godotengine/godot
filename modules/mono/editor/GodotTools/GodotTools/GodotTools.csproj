@@ -9,6 +9,7 @@
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
     <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
     <GodotApiAssembliesDir>$(GodotOutputDataDir)/Api/$(GodotApiConfiguration)</GodotApiAssembliesDir>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <!-- Needed for our source generators to work despite this not being a Godot game project -->

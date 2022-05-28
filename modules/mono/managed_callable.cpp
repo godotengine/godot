@@ -87,6 +87,8 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
 	r_return_value = Variant();
 
+	ERR_FAIL_COND(delegate_handle.value == nullptr);
+
 	GDMonoCache::managed_callbacks.DelegateUtils_InvokeWithVariantArgs(
 			delegate_handle, p_arguments, p_argcount, &r_return_value);
 

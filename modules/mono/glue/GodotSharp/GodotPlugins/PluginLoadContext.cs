@@ -12,8 +12,11 @@ namespace GodotPlugins
         private readonly ICollection<string> _sharedAssemblies;
         private readonly AssemblyLoadContext _mainLoadContext;
 
+        public string? AssemblyLoadedPath { get; private set; }
+
         public PluginLoadContext(string pluginPath, ICollection<string> sharedAssemblies,
             AssemblyLoadContext mainLoadContext)
+            : base(isCollectible: true)
         {
             _resolver = new AssemblyDependencyResolver(pluginPath);
             _sharedAssemblies = sharedAssemblies;
@@ -31,6 +34,8 @@ namespace GodotPlugins
             string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
             {
+                AssemblyLoadedPath = assemblyPath;
+
                 // Load in memory to prevent locking the file
                 using var assemblyFile = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 string pdbPath = Path.ChangeExtension(assemblyPath, ".pdb");

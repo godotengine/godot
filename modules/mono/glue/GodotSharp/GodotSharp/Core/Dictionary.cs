@@ -578,6 +578,24 @@ namespace Godot.Collections
             return found;
         }
 
+        // TODO: This is temporary. It's needed for the serialization generator. It won't be needed once we replace Sysme.Object with a Variant type.
+        internal bool TryGetValueAsType<TValueCustom>(TKey key, [MaybeNullWhen(false)] out TValueCustom value)
+        {
+            using godot_variant variantKey = Marshaling.ConvertManagedObjectToVariant(key);
+            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
+                variantKey, out godot_variant retValue).ToBool();
+
+            using (retValue)
+            {
+                value = found ?
+                    (TValueCustom)Marshaling.ConvertVariantToManagedObjectOfType(retValue, typeof(TValueCustom)) :
+                    default;
+            }
+
+            return found;
+        }
+
         // ICollection<KeyValuePair<TKey, TValue>>
 
         /// <summary>

@@ -12,10 +12,11 @@ namespace Godot
 
         public SignalAwaiter(Object source, StringName signal, Object target)
         {
+            var awaiterGcHandle = CustomGCHandle.AllocStrong(this);
             using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
                 (godot_string_name)(signal?.NativeValue ?? default));
             NativeFuncs.godotsharp_internal_signal_awaiter_connect(Object.GetPtr(source), in signalSrc,
-                Object.GetPtr(target), GCHandle.ToIntPtr(GCHandle.Alloc(this)));
+                Object.GetPtr(target), GCHandle.ToIntPtr(awaiterGcHandle));
         }
 
         public bool IsCompleted => _completed;
@@ -39,11 +40,11 @@ namespace Godot
 
                 if (awaiter == null)
                 {
-                    *outAwaiterIsNull = true.ToGodotBool();
+                    *outAwaiterIsNull = godot_bool.True;
                     return;
                 }
 
-                *outAwaiterIsNull = false.ToGodotBool();
+                *outAwaiterIsNull = godot_bool.False;
 
                 awaiter._completed = true;
 
@@ -59,7 +60,7 @@ namespace Godot
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *outAwaiterIsNull = false.ToGodotBool();
+                *outAwaiterIsNull = godot_bool.False;
             }
         }
     }

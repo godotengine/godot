@@ -11,16 +11,16 @@ namespace GodotTools.Build
     [Serializable]
     public sealed partial class BuildInfo : RefCounted // TODO Remove RefCounted once we have proper serialization
     {
-        public string Solution { get; }
-        public string Configuration { get; }
-        public string? RuntimeIdentifier { get; }
-        public string? PublishOutputDir { get; }
-        public bool Restore { get; }
-        public bool Rebuild { get; }
-        public bool OnlyClean { get; }
+        public string Solution { get; private set; }
+        public string Configuration { get; private set; }
+        public string? RuntimeIdentifier { get; private set; }
+        public string? PublishOutputDir { get; private set; }
+        public bool Restore { get; private set; }
+        public bool Rebuild { get; private set; }
+        public bool OnlyClean { get; private set; }
 
         // TODO Use List once we have proper serialization
-        public Array<string> CustomProperties { get; } = new Array<string>();
+        public Array<string> CustomProperties { get; private set; } = new Array<string>();
 
         public string LogsDirPath =>
             Path.Combine(GodotSharpDirs.BuildLogsDirs, $"{Solution.MD5Text()}_{Configuration}");
@@ -54,6 +54,13 @@ namespace GodotTools.Build
                 hash = (hash * 29) + LogsDirPath.GetHashCode();
                 return hash;
             }
+        }
+
+        // Needed for instantiation from Godot, after reloading assemblies
+        private BuildInfo()
+        {
+            Solution = string.Empty;
+            Configuration = string.Empty;
         }
 
         public BuildInfo(string solution, string configuration, bool restore, bool rebuild, bool onlyClean)

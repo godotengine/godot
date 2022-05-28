@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[185];
+extern void *godotsharp_pinvoke_funcs[186];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
@@ -646,6 +646,28 @@ void CSharpLanguage::frame() {
 	}
 }
 
+struct CSharpScriptDepSort {
+	// Must support sorting so inheritance works properly (parent must be reloaded first)
+	bool operator()(const Ref<CSharpScript> &A, const Ref<CSharpScript> &B) const {
+		if (A == B) {
+			// Shouldn't happen but just in case...
+			return false;
+		}
+		const Script *I = B->get_base_script().ptr();
+		while (I) {
+			if (I == A.ptr()) {
+				// A is a base of B
+				return true;
+			}
+
+			I = I->get_base_script().ptr();
+		}
+
+		// A isn't a base of B
+		return false;
+	}
+};
+
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
@@ -676,38 +698,29 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 		return false;
 	}
 
-#warning TODO
-#if 0
-	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
+	String assembly_path = gdmono->get_project_assembly_path();
 
-	String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
-
-	appname_safe += ".dll";
-
-	if (proj_assembly) {
-		String proj_asm_path = proj_assembly->get_path();
-
-		if (!FileAccess::exists(proj_asm_path)) {
-			// Maybe it wasn't loaded from the default path, so check this as well
-			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
-			if (!FileAccess::exists(proj_asm_path)) {
-				return false; // No assembly to load
-			}
+	if (!assembly_path.is_empty()) {
+		if (!FileAccess::exists(assembly_path)) {
+			return false; // No assembly to load
 		}
 
-		if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time()) {
+		if (FileAccess::get_modified_time(assembly_path) <= gdmono->get_project_assembly_modified_time()) {
 			return false; // Already up to date
 		}
 	} else {
-		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe))) {
+		String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
+
+		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
+								.plus_file(appname_safe + ".dll");
+		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
+
+		if (!FileAccess::exists(assembly_path)) {
 			return false; // No assembly to load
 		}
 	}
 
 	return true;
-#else
-	return false;
-#endif
 }
 
 void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
@@ -715,27 +728,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
-#warning TODO ALCs after switching to .NET 6
+	// TODO:
+	//  Currently, this reloads all scripts, including those whose class is not part of the
+	//  assembly load context being unloaded. As such, we unnecessarily reload GodotTools.
 
-	// Try to load the project assembly if it was not yet loaded
-	// (while hot-reload is not yet implemented)
-	gdmono->initialize_load_assemblies();
+	print_verbose(".NET: Reloading assemblies...");
 
-	{
-		MutexLock lock(script_instances_mutex);
-
-		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
-			Ref<CSharpScript> script(elem->self());
-
-			script->exports_invalidated = true;
-
-			if (!script->get_path().is_empty()) {
-				script->reload(p_soft_reload);
-			}
-		}
-	}
-
-#if 0
 	// There is no soft reloading with Mono. It's always hard reloading.
 
 	List<Ref<CSharpScript>> scripts;
@@ -758,18 +756,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
 			ManagedCallable *managed_callable = elem->self();
 
+			ERR_CONTINUE(managed_callable->delegate_handle.value == nullptr);
+
 			Array serialized_data;
-			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 
-			MonoException *exc = nullptr;
-			bool success = (bool)GDMonoCache::managed_callbacks.methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle
-								   .invoke(managed_callable->delegate_handle,
-										   managed_serialized_data, &exc);
-
-			if (exc) {
-				GDMonoUtils::debug_print_unhandled_exception(exc);
-				continue;
-			}
+			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TrySerializeDelegateWithGCHandle(
+					managed_callable->delegate_handle, &serialized_data);
 
 			if (success) {
 				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
@@ -798,16 +790,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// If someone removes a script from a node, deletes the script, builds, adds a script to the
 		// same node, then builds again, the script might have no path and also no script_class. In
 		// that case, we can't (and don't need to) reload it.
-		if (script->get_path().is_empty() && !script->script_class) {
+		if (script->get_path().is_empty() && !script->valid) {
 			continue;
 		}
 
 		to_reload.push_back(script);
-
-		if (script->get_path().is_empty()) {
-			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
-			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
-		}
 
 		// Script::instances are deleted during managed object disposal, which happens on domain finalize.
 		// Only placeholders are kept. Therefore we need to keep a copy before that happens.
@@ -841,17 +828,20 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
 
-			// Call OnBeforeSerialize
-			if (csi->script->script_class->implements_interface(GDMonoCache::cached_data.class_ISerializationListener)) {
-				obj->get_script_instance()->call(string_names.on_before_serialize);
-			}
+			// Call OnBeforeSerialize and save instance info
 
-			// Save instance info
 			CSharpScript::StateBackup state;
 
-			// TODO: Proper state backup (Not only variants, serialize managed state of scripts)
-			csi->get_properties_state_for_reloading(state.properties);
-			csi->get_event_signals_state_for_reloading(state.event_signals);
+			Dictionary properties;
+
+			GDMonoCache::managed_callbacks.CSharpInstanceBridge_SerializeState(
+					csi->get_gchandle_intptr(), &properties, &state.event_signals);
+
+			for (const Variant *s = properties.next(nullptr); s != nullptr; s = properties.next(s)) {
+				StringName name = *s;
+				Variant value = properties[*s];
+				state.properties.push_back(Pair<StringName, Variant>(name, value));
+			}
 
 			owners_map[obj->get_instance_id()] = state;
 		}
@@ -868,7 +858,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	// Do domain reload
-	if (gdmono->reload_scripts_domain() != OK) {
+	if (gdmono->reload_project_assemblies() != OK) {
 		// Failed to reload the scripts domain
 		// Make sure to add the scripts back to their owners before returning
 		for (Ref<CSharpScript> &scr : to_reload) {
@@ -899,6 +889,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				scr->pending_reload_state.erase(obj_id);
 			}
+
+			scr->pending_reload_instances.clear();
+			scr->pending_reload_state.clear();
 		}
 
 		return;
@@ -916,46 +909,21 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			if (!script->valid) {
 				script->pending_reload_instances.clear();
+				script->pending_reload_state.clear();
 				continue;
 			}
 		} else {
-			const StringName &class_namespace = script->tied_class_namespace_for_reload;
-			const StringName &class_name = script->tied_class_name_for_reload;
-			GDMonoAssembly *project_assembly = gdmono->get_project_assembly();
+			bool success = GDMonoCache::managed_callbacks.ScriptManagerBridge_TryReloadRegisteredScriptWithClass(script.ptr());
 
-			// Search in project and tools assemblies first as those are the most likely to have the class
-			GDMonoClass *script_class = (project_assembly ? project_assembly->get_class(class_namespace, class_name) : nullptr);
-
-#ifdef TOOLS_ENABLED
-			if (!script_class) {
-				GDMonoAssembly *tools_assembly = gdmono->get_tools_assembly();
-				script_class = (tools_assembly ? tools_assembly->get_class(class_namespace, class_name) : nullptr);
-			}
-#endif
-
-			if (!script_class) {
-				script_class = gdmono->get_class(class_namespace, class_name);
-			}
-
-			if (!script_class) {
-				// The class was removed, can't reload
+			if (!success) {
+				// Couldn't reload
 				script->pending_reload_instances.clear();
+				script->pending_reload_state.clear();
 				continue;
 			}
-
-			bool obj_type = GDMonoCache::cached_data.class_GodotObject->is_assignable_from(script_class);
-			if (!obj_type) {
-				// The class no longer inherits Godot.Object, can't reload
-				script->pending_reload_instances.clear();
-				continue;
-			}
-
-			GDMonoClass *native = GDMonoUtils::get_class_native_base(script_class);
-
-			CSharpScript::reload_registered_script(script, script_class, native);
 		}
 
-		StringName native_name = NATIVE_GDMONOCLASS_NAME(script->native);
+		StringName native_name = script->get_instance_base_type();
 
 		{
 			for (const ObjectID &obj_id : script->pending_reload_instances) {
@@ -1020,57 +988,25 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			ERR_CONTINUE(!obj->get_script_instance());
 
-			// TODO: Restore serialized state
-
 			CSharpScript::StateBackup &state_backup = script->pending_reload_state[obj_id];
-
-			for (const Pair<StringName, Variant> &G : state_backup.properties) {
-				obj->get_script_instance()->set(G.first, G.second);
-			}
 
 			CSharpInstance *csi = CAST_CSHARP_INSTANCE(obj->get_script_instance());
 
 			if (csi) {
-				for (const Pair<StringName, Array> &G : state_backup.event_signals) {
-					const StringName &name = G.first;
-					const Array &serialized_data = G.second;
+				Dictionary properties;
 
-					HashMap<StringName, GDMonoField *>::Iterator match = script->event_signals.find(name);
-
-					if (!match) {
-						// The event or its signal attribute were removed
-						continue;
-					}
-
-					GDMonoField *event_signal_field = match->value;
-
-					MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
-					MonoDelegate *delegate = nullptr;
-
-					MonoException *exc = nullptr;
-					bool success = (bool)GDMonoCache::managed_callbacks.methodthunk_DelegateUtils_TryDeserializeDelegate.invoke(managed_serialized_data, &delegate, &exc);
-
-					if (exc) {
-						GDMonoUtils::debug_print_unhandled_exception(exc);
-						continue;
-					}
-
-					if (success) {
-						ERR_CONTINUE(delegate == nullptr);
-						event_signal_field->set_value(csi->get_mono_object(), (MonoObject *)delegate);
-					} else if (OS::get_singleton()->is_stdout_verbose()) {
-						OS::get_singleton()->print("Failed to deserialize event signal delegate\n");
-					}
+				for (const Pair<StringName, Variant> &G : state_backup.properties) {
+					properties[G.first] = G.second;
 				}
 
-				// Call OnAfterDeserialization
-				if (csi->script->script_class->implements_interface(GDMonoCache::cached_data.class_ISerializationListener)) {
-					obj->get_script_instance()->call(string_names.on_after_deserialize);
-				}
+				// Restore serialized state and call OnAfterDeserialization
+				GDMonoCache::managed_callbacks.CSharpInstanceBridge_DeserializeState(
+						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
 			}
 		}
 
 		script->pending_reload_instances.clear();
+		script->pending_reload_state.clear();
 	}
 
 	// Deserialize managed callables
@@ -1081,20 +1017,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			ManagedCallable *managed_callable = elem.key;
 			const Array &serialized_data = elem.value;
 
-			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
-			void *delegate = nullptr;
+			GCHandleIntPtr delegate = { nullptr };
 
-			MonoException *exc = nullptr;
-			bool success = (bool)GDMonoCache::managed_callbacks.methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle
-								   .invoke(managed_serialized_data, &delegate, &exc);
-
-			if (exc) {
-				GDMonoUtils::debug_print_unhandled_exception(exc);
-				continue;
-			}
+			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
+					&serialized_data, &delegate);
 
 			if (success) {
-				ERR_CONTINUE(delegate == nullptr);
+				ERR_CONTINUE(delegate.value == nullptr);
 				managed_callable->delegate_handle = delegate;
 			} else if (OS::get_singleton()->is_stdout_verbose()) {
 				OS::get_singleton()->print("Failed to deserialize delegate\n");
@@ -1110,7 +1039,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		InspectorDock::get_inspector_singleton()->update_tree();
 		NodeDock::get_singleton()->update_lists();
 	}
-#endif
 #endif
 }
 #endif
@@ -1155,12 +1083,6 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 }
 
 void CSharpLanguage::_on_scripts_domain_about_to_unload() {
-	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
-		CSharpScriptBinding &script_binding = E.value;
-		script_binding.gchandle.release();
-		script_binding.inited = false;
-	}
-
 #ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(ManagedCallable::instances_mutex);
@@ -1263,7 +1185,8 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 #endif
 
 	GCHandleIntPtr strong_gchandle =
-			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(&type_name, p_object);
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(
+					&type_name, p_object);
 
 	ERR_FAIL_NULL_V(strong_gchandle.value, false);
 
@@ -1604,75 +1527,6 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-#warning TODO
-#if 0
-void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state) {
-	List<PropertyInfo> property_list;
-	get_property_list(&property_list);
-
-	for (const PropertyInfo &prop_info : property_list) {
-		Pair<StringName, Variant> state_pair;
-		state_pair.first = prop_info.name;
-
-		ManagedType managedType;
-
-		GDMonoField *field = nullptr;
-		GDMonoClass *top = script->script_class;
-		while (top && top != script->native) {
-			field = top->get_field(state_pair.first);
-			if (field) {
-				break;
-			}
-
-			top = top->get_parent_class();
-		}
-		if (!field) {
-			continue; // Properties ignored. We get the property baking fields instead.
-		}
-
-		managedType = field->get_type();
-
-		if (GDMonoMarshal::managed_to_variant_type(managedType) != Variant::NIL) { // If we can marshal it
-			if (get(state_pair.first, state_pair.second)) {
-				r_state.push_back(state_pair);
-			}
-		}
-	}
-}
-
-void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state) {
-	MonoObject *owner_managed = get_mono_object();
-	ERR_FAIL_NULL(owner_managed);
-
-	for (const KeyValue<StringName, GDMonoField *> &E : script->event_signals) {
-		GDMonoField *event_signal_field = E.value;
-
-		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal_field->get_value(owner_managed);
-		if (!delegate_field_value) {
-			continue; // Empty
-		}
-
-		Array serialized_data;
-		MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
-
-		MonoException *exc = nullptr;
-		bool success = (bool)GDMonoCache::managed_callbacks.methodthunk_DelegateUtils_TrySerializeDelegate
-							   .invoke(delegate_field_value, managed_serialized_data, &exc);
-
-		if (exc) {
-			GDMonoUtils::debug_print_unhandled_exception(exc);
-			continue;
-		}
-
-		if (success) {
-			r_state.push_back(Pair<StringName, Array>(event_signal_field->get_name(), serialized_data));
-		} else if (OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print("Failed to serialize event signal delegate\n");
-		}
-	}
-}
-#endif
-
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
 	script->get_script_property_list(&props);
@@ -1906,6 +1760,7 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 			// If the native instance is still alive and Dispose() was called
 			// (instead of the finalizer), then we remove the script instance.
 			r_remove_script_instance = true;
+			// TODO: Last usage of 'is_finalizing_scripts_domain'. It should be replaced with a check to determine if the load context is being unloaded.
 		} else if (!GDMono::get_singleton()->is_finalizing_scripts_domain()) {
 			// If the native instance is still alive and this is called from the finalizer,
 			// then it was referenced from another thread before the finalizer could
@@ -2156,8 +2011,8 @@ void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, 
 		propnames.push_back(prop_info);
 	}
 
-	if (base_cache.is_valid()) {
-		base_cache->_update_exports_values(values, propnames);
+	if (base_script.is_valid()) {
+		base_script->_update_exports_values(values, propnames);
 	}
 }
 #endif
@@ -2319,13 +2174,16 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	// only for this, so need to call the destructor manually before passing this to C#.
 	rpc_functions_dict.~Dictionary();
 
+	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &tool, &rpc_functions_dict);
+			p_script.ptr(), &tool, &rpc_functions_dict, &base_script);
 
 	p_script->tool = tool;
 
 	p_script->rpc_config.clear();
 	p_script->rpc_config = rpc_functions_dict;
+
+	p_script->base_script = base_script;
 }
 
 bool CSharpScript::can_instantiate() const {
@@ -2586,8 +2444,8 @@ bool CSharpScript::get_property_default_value(const StringName &p_property, Vari
 		return true;
 	}
 
-	if (base_cache.is_valid()) {
-		return base_cache->get_property_default_value(p_property, r_value);
+	if (base_script.is_valid()) {
+		return base_script->get_property_default_value(p_property, r_value);
 	}
 
 #endif
@@ -2671,26 +2529,35 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
-	// TODO search in metadata file once we have it, not important any way?
-	return Ref<Script>();
+	return base_script;
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
-	List<PropertyInfo> props;
-
 #ifdef TOOLS_ENABLED
-	for (const PropertyInfo &E : exported_members_cache) {
-		props.push_back(E);
+	const CSharpScript *top = this;
+	while (top != nullptr) {
+		for (const PropertyInfo &E : top->exported_members_cache) {
+			r_list->push_back(E);
+		}
+
+		top = top->base_script.ptr();
 	}
 #else
-	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
-		props.push_front(E.value);
+	const CSharpScript *top = this;
+	while (top != nullptr) {
+		List<PropertyInfo> props;
+
+		for (const KeyValue<StringName, PropertyInfo> &E : top->member_info) {
+			props.push_front(E.value);
+		}
+
+		for (const PropertyInfo &prop : props) {
+			r_list->push_back(prop);
+		}
+
+		top = top->base_script.ptr();
 	}
 #endif
-
-	for (const PropertyInfo &prop : props) {
-		r_list->push_back(prop);
-	}
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
@@ -2852,6 +2719,4 @@ CSharpLanguage::StringNameCache::StringNameCache() {
 	_property_can_revert = StaticCString::create("_property_can_revert");
 	_property_get_revert = StaticCString::create("_property_get_revert");
 	_script_source = StaticCString::create("script/source");
-	on_before_serialize = StaticCString::create("OnBeforeSerialize");
-	on_after_deserialize = StaticCString::create("OnAfterDeserialize");
 }

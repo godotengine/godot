@@ -45,10 +45,12 @@ namespace gdmono {
 
 #ifdef TOOLS_ENABLED
 struct PluginCallbacks {
-	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *);
+	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *, String *);
 	using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *);
+	using FuncUnloadProjectPluginCallback = bool(GD_CLR_STDCALL *)();
 	FuncLoadProjectAssemblyCallback LoadProjectAssemblyCallback = nullptr;
 	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
+	FuncUnloadProjectPluginCallback UnloadProjectPluginCallback = nullptr;
 };
 #endif
 
@@ -63,13 +65,12 @@ class GDMono {
 	void *hostfxr_dll_handle = nullptr;
 	bool is_native_aot = false;
 
+	String project_assembly_path;
+	uint64_t project_assembly_modified_time = 0;
+
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();
 #endif
-
-	bool _try_load_api_assemblies();
-
-	Error _unload_scripts_domain();
 
 	uint64_t api_core_hash;
 #ifdef TOOLS_ENABLED
@@ -114,17 +115,32 @@ public:
 #endif
 	}
 
-	static GDMono *get_singleton() { return singleton; }
+	static GDMono *get_singleton() {
+		return singleton;
+	}
 
-	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized; }
-	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
+	_FORCE_INLINE_ bool is_runtime_initialized() const {
+		return runtime_initialized;
+	}
+	_FORCE_INLINE_ bool is_finalizing_scripts_domain() {
+		return finalizing_scripts_domain;
+	}
+
+	_FORCE_INLINE_ const String &get_project_assembly_path() const {
+		return project_assembly_path;
+	}
+	_FORCE_INLINE_ uint64_t get_project_assembly_modified_time() const {
+		return project_assembly_modified_time;
+	}
 
 #ifdef TOOLS_ENABLED
-	const gdmono::PluginCallbacks &get_plugin_callbacks() { return plugin_callbacks; }
+	const gdmono::PluginCallbacks &get_plugin_callbacks() {
+		return plugin_callbacks;
+	}
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
-	Error reload_scripts_domain();
+	Error reload_project_assemblies();
 #endif
 
 	void initialize();

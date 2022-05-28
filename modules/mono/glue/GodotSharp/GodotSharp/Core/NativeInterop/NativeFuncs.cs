@@ -95,7 +95,10 @@ namespace Godot.NativeInterop
             IntPtr oldGCHandlePtr);
 
         [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_new_csharp_script(godot_ref* r_script);
+        internal static extern void godotsharp_internal_new_csharp_script(godot_ref* r_dest);
+
+        [DllImport(GodotDllName)]
+        internal static extern godot_bool godotsharp_internal_script_load(in godot_string p_path, godot_ref* r_dest);
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);

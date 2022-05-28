@@ -50,7 +50,9 @@ namespace Godot.NativeInterop
         public static void TieManagedToUnmanaged(Object managed, IntPtr unmanaged,
             StringName nativeName, bool refCounted, Type type, Type nativeType)
         {
-            var gcHandle = GCHandle.Alloc(managed, refCounted ? GCHandleType.Weak : GCHandleType.Normal);
+            var gcHandle = refCounted ?
+                CustomGCHandle.AllocWeak(managed) :
+                CustomGCHandle.AllocStrong(managed, type);
 
             if (type == nativeType)
             {
@@ -65,7 +67,7 @@ namespace Godot.NativeInterop
                     // We don't dispose `script` ourselves here.
                     // `tie_user_managed_to_unmanaged` does it for us to avoid another P/Invoke call.
                     godot_ref script;
-                    ScriptManagerBridge.GetOrCreateScriptBridgeForType(type, &script);
+                    ScriptManagerBridge.GetOrLoadOrCreateScriptForType(type, &script);
 
                     // IMPORTANT: This must be called after GetOrCreateScriptBridgeForType
                     NativeFuncs.godotsharp_internal_tie_user_managed_to_unmanaged(
@@ -80,7 +82,7 @@ namespace Godot.NativeInterop
             if (type == nativeType)
                 return;
 
-            var strongGCHandle = GCHandle.Alloc(managed, GCHandleType.Normal);
+            var strongGCHandle = CustomGCHandle.AllocStrong(managed);
             NativeFuncs.godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
                 GCHandle.ToIntPtr(strongGCHandle), unmanaged);
         }

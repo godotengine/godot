@@ -58,7 +58,7 @@ namespace GodotTools.Build
         }
 
         // TODO Use List once we have proper serialization.
-        private readonly Array<BuildIssue> _issues = new Array<BuildIssue>();
+        private Array<BuildIssue> _issues = new Array<BuildIssue>();
         private ItemList _issuesList;
         private PopupMenu _issuesListContextMenu;
         private TextEdit _buildLog;
@@ -133,7 +133,9 @@ namespace GodotTools.Build
             if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
                 return;
 
-            string projectDir = issue.ProjectFile.Length > 0 ? issue.ProjectFile.GetBaseDir() : _buildInfo.Solution.GetBaseDir();
+            string projectDir = issue.ProjectFile.Length > 0 ?
+                issue.ProjectFile.GetBaseDir() :
+                _buildInfo.Solution.GetBaseDir();
 
             string file = Path.Combine(projectDir.SimplifyGodotPath(), issue.File.SimplifyGodotPath());
 
@@ -412,6 +414,16 @@ namespace GodotTools.Build
         {
             // In case it didn't update yet. We don't want to have to serialize any pending output.
             UpdateBuildLogText();
+
+            // NOTE:
+            // Currently, GodotTools is loaded in its own load context. This load context is not reloaded, but the script still are.
+            // Until that changes, we need workarounds like this one because events keep strong references to disposed objects.
+            BuildManager.BuildLaunchFailed -= BuildLaunchFailed;
+            BuildManager.BuildStarted -= BuildStarted;
+            BuildManager.BuildFinished -= BuildFinished;
+            // StdOutput/Error can be received from different threads, so we need to use CallDeferred
+            BuildManager.StdOutputReceived -= StdOutputReceived;
+            BuildManager.StdErrorReceived -= StdErrorReceived;
         }
 
         public void OnAfterDeserialize()

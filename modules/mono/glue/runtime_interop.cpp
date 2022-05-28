@@ -320,6 +320,17 @@ GD_PINVOKE_EXPORT void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *
 	memnew_placement(r_dest, Ref<CSharpScript>(memnew(CSharpScript)));
 }
 
+GD_PINVOKE_EXPORT bool godotsharp_internal_script_load(const String *p_path, Ref<CSharpScript> *r_dest) {
+	Ref<Resource> res = ResourceLoader::load(*p_path);
+	if (res.is_valid()) {
+		memnew_placement(r_dest, Ref<CSharpScript>(res));
+		return true;
+	} else {
+		memnew_placement(r_dest, Ref<CSharpScript>());
+		return false;
+	}
+}
+
 GD_PINVOKE_EXPORT void godotsharp_internal_reload_registered_script(CSharpScript *p_script) {
 	CRASH_COND(!p_script);
 	CSharpScript::reload_registered_script(Ref<CSharpScript>(p_script));
@@ -1311,7 +1322,7 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[185] = {
+void *godotsharp_pinvoke_funcs[186] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
@@ -1331,6 +1342,7 @@ void *godotsharp_pinvoke_funcs[185] = {
 	(void *)godotsharp_internal_tie_user_managed_to_unmanaged,
 	(void *)godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup,
 	(void *)godotsharp_internal_new_csharp_script,
+	(void *)godotsharp_internal_script_load,
 	(void *)godotsharp_internal_reload_registered_script,
 	(void *)godotsharp_array_filter_godot_objects_by_native,
 	(void *)godotsharp_array_filter_godot_objects_by_non_native,

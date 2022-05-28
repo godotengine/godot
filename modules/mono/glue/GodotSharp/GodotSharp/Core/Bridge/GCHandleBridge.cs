@@ -11,7 +11,7 @@ namespace Godot.Bridge
         {
             try
             {
-                GCHandle.FromIntPtr(gcHandlePtr).Free();
+                CustomGCHandle.Free(GCHandle.FromIntPtr(gcHandlePtr));
             }
             catch (Exception e)
             {

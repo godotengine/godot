@@ -501,105 +501,47 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.is_empty()) {
-		appname_safe = "UnnamedProject";
-	}
+	String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								   .plus_file(appname_safe + ".dll");
 	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
-	return plugin_callbacks.LoadProjectAssemblyCallback(assembly_path.utf16());
+	String loaded_assembly_path;
+	bool success = plugin_callbacks.LoadProjectAssemblyCallback(assembly_path.utf16(), &loaded_assembly_path);
+
+	if (success) {
+		project_assembly_path = loaded_assembly_path.simplify_path();
+		project_assembly_modified_time = FileAccess::get_modified_time(loaded_assembly_path);
+	}
+
+	return success;
 }
 #endif
 
-#warning TODO hot-reload
-#if 0
-Error GDMono::_unload_scripts_domain() {
-	ERR_FAIL_NULL_V(scripts_domain, ERR_BUG);
-
-	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
-
-	print_verbose("Mono: Finalizing scripts domain...");
-
-	if (mono_domain_get() != root_domain) {
-		mono_domain_set(root_domain, true);
-	}
+#ifdef GD_MONO_HOT_RELOAD
+Error GDMono::reload_project_assemblies() {
+	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
 	finalizing_scripts_domain = true;
 
-	if (!mono_domain_finalize(scripts_domain, 2000)) {
-		ERR_PRINT("Mono: Domain finalization timeout.");
+	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
+
+	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
+		ERR_FAIL_V_MSG(Error::FAILED, ".NET: Failed to unload assemblies.");
 	}
 
 	finalizing_scripts_domain = false;
 
-	mono_gc_collect(mono_gc_max_generation());
-
-	core_api_assembly = nullptr;
-#ifdef TOOLS_ENABLED
-	editor_api_assembly = nullptr;
-#endif
-
-	project_assembly = nullptr;
-#ifdef TOOLS_ENABLED
-	tools_assembly = nullptr;
-#endif
-
-	MonoDomain *domain = scripts_domain;
-	scripts_domain = nullptr;
-
-	print_verbose("Mono: Unloading scripts domain...");
-
-	MonoException *exc = nullptr;
-	mono_domain_try_unload(domain, (MonoObject **)&exc);
-
-	if (exc) {
-		ERR_PRINT("Exception thrown when unloading scripts domain.");
-		GDMonoUtils::debug_unhandled_exception(exc);
-		return FAILED;
-	}
-
-	return OK;
-}
-
-#ifdef GD_MONO_HOT_RELOAD
-Error GDMono::reload_scripts_domain() {
-	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
-
-	if (scripts_domain) {
-		Error domain_unload_err = _unload_scripts_domain();
-		ERR_FAIL_COND_V_MSG(domain_unload_err != OK, domain_unload_err, "Mono: Failed to unload scripts domain.");
-	}
-
-	Error domain_load_err = _load_scripts_domain();
-	ERR_FAIL_COND_V_MSG(domain_load_err != OK, domain_load_err, "Mono: Failed to load scripts domain.");
-
-	// Load assemblies. The API and tools assemblies are required,
-	// the application is aborted if these assemblies cannot be loaded.
-
-	if (!_try_load_api_assemblies()) {
-		CRASH_NOW_MSG("Failed to load one of the API assemblies.");
-	}
-
-#if defined(TOOLS_ENABLED)
-	bool tools_assemblies_loaded = _load_tools_assemblies();
-	CRASH_COND_MSG(!tools_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
-#endif
-
 	// Load the project's main assembly. Here, during hot-reloading, we do
 	// consider failing to load the project's main assembly to be an error.
-	// However, unlike the API and tools assemblies, the application can continue working.
 	if (!_load_project_assembly()) {
-		print_error("Mono: Failed to load project assembly");
+		print_error(".NET: Failed to load project assembly.");
 		return ERR_CANT_OPEN;
 	}
 
 	return OK;
 }
-#endif
 #endif
 
 GDMono::GDMono() {

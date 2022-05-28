@@ -49,6 +49,8 @@
   <!-- Sources -->
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
+    <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />
+    <Compile Include="Core\CustomGCHandle.cs" />
     <Compile Include="Core\Array.cs" />
     <Compile Include="Core\Attributes\AssemblyHasScriptsAttribute.cs" />
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
@@ -59,9 +61,11 @@
     <Compile Include="Core\Basis.cs" />
     <Compile Include="Core\Bridge\CSharpInstanceBridge.cs" />
     <Compile Include="Core\Bridge\GCHandleBridge.cs" />
+    <Compile Include="Core\Bridge\AlcReloadCfg.cs" />
     <Compile Include="Core\Bridge\ManagedCallbacks.cs" />
     <Compile Include="Core\Bridge\PropertyInfo.cs" />
     <Compile Include="Core\Bridge\ScriptManagerBridge.cs" />
+    <Compile Include="Core\Bridge\ScriptManagerBridge.types.cs" />
     <Compile Include="Core\Callable.cs" />
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Colors.cs" />
@@ -100,6 +104,7 @@
     <Compile Include="Core\Quaternion.cs" />
     <Compile Include="Core\Rect2.cs" />
     <Compile Include="Core\Rect2i.cs" />
+    <Compile Include="Core\ReflectionUtils.cs" />
     <Compile Include="Core\RID.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.cs" />
     <Compile Include="Core\NativeInterop\InteropStructs.cs" />

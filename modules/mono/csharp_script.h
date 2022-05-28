@@ -68,14 +68,6 @@ TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 class CSharpScript : public Script {
 	GDCLASS(CSharpScript, Script);
 
-public:
-	struct SignalParameter {
-		String name;
-		Variant::Type type;
-		bool nil_is_variant = false;
-	};
-
-private:
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
 
@@ -83,7 +75,7 @@ private:
 	bool valid = false;
 	bool reload_invalidated = false;
 
-	Ref<CSharpScript> base_cache; // TODO what's this for?
+	Ref<CSharpScript> base_script;
 
 	HashSet<Object *> instances;
 
@@ -93,13 +85,11 @@ private:
 		// Replace with buffer containing the serialized state of managed scripts.
 		// Keep variant state backup to use only with script instance placeholders.
 		List<Pair<StringName, Variant>> properties;
-		List<Pair<StringName, Array>> event_signals;
+		Dictionary event_signals;
 	};
 
 	HashSet<ObjectID> pending_reload_instances;
 	RBMap<ObjectID, StateBackup> pending_reload_state;
-	StringName tied_class_name_for_reload;
-	StringName tied_class_namespace_for_reload;
 #endif
 
 	String source;
@@ -174,8 +164,12 @@ public:
 
 	void get_members(HashSet<StringName> *p_members) override;
 
-	bool is_tool() const override { return tool; }
-	bool is_valid() const override { return valid; }
+	bool is_tool() const override {
+		return tool;
+	}
+	bool is_valid() const override {
+		return valid;
+	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -191,7 +185,9 @@ public:
 	const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
-	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
+	bool is_placeholder_fallback_enabled() const override {
+		return placeholder_fallback_enabled;
+	}
 #endif
 
 	Error load_source_code(const String &p_path);
@@ -230,9 +226,6 @@ class CSharpInstance : public ScriptInstance {
 
 	// Do not use unless you know what you are doing
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
-
-	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
-	void get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state);
 
 public:
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
@@ -325,8 +318,6 @@ class CSharpLanguage : public ScriptLanguage {
 		StringName _property_can_revert;
 		StringName _property_get_revert;
 		StringName _script_source;
-		StringName on_before_serialize; // OnBeforeSerialize
-		StringName on_after_deserialize; // OnAfterDeserialize
 
 		StringNameCache();
 	};
@@ -361,18 +352,30 @@ public:
 
 	StringNameCache string_names;
 
-	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
-	const Mutex &get_script_instances_mutex() { return script_instances_mutex; }
+	const Mutex &get_language_bind_mutex() {
+		return language_bind_mutex;
+	}
+	const Mutex &get_script_instances_mutex() {
+		return script_instances_mutex;
+	}
 
-	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
+	_FORCE_INLINE_ int get_language_index() {
+		return lang_idx;
+	}
 	void set_language_index(int p_idx);
 
-	_FORCE_INLINE_ const StringNameCache &get_string_names() { return string_names; }
+	_FORCE_INLINE_ const StringNameCache &get_string_names() {
+		return string_names;
+	}
 
-	_FORCE_INLINE_ static CSharpLanguage *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static CSharpLanguage *get_singleton() {
+		return singleton;
+	}
 
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const { return godotsharp_editor; }
+	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const {
+		return godotsharp_editor;
+	}
 #endif
 
 	static void release_script_gchandle(MonoGCHandleData &p_gchandle);
@@ -387,7 +390,9 @@ public:
 	void reload_assemblies(bool p_soft_reload);
 #endif
 
-	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const { return managed_callable_middleman; }
+	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const {
+		return managed_callable_middleman;
+	}
 
 	String get_name() const override;
 
@@ -416,7 +421,9 @@ public:
 	Script *create_script() const override;
 	bool has_named_classes() const override;
 	bool supports_builtin_mode() const override;
-	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override { return -1; }
+	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
+		return -1;
+	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
@@ -431,14 +438,20 @@ public:
 	/* TODO */ void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
 	/* TODO */ void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
 	/* TODO */ void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
-	/* TODO */ String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) override { return ""; }
+	/* TODO */ String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) override {
+		return "";
+	}
 	Vector<StackInfo> debug_get_current_stack_info() override;
 
 	/* PROFILING FUNCTIONS */
 	/* TODO */ void profiling_start() override {}
 	/* TODO */ void profiling_stop() override {}
-	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override { return 0; }
-	/* TODO */ int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override { return 0; }
+	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+		return 0;
+	}
+	/* TODO */ int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+		return 0;
+	}
 
 	void frame() override;
 

@@ -577,7 +577,29 @@ namespace Godot.NativeInterop
         {
             if (typeof(Godot.Object).IsAssignableFrom(type))
             {
-                var godotObject = VariantUtils.ConvertToGodotObject(p_var);
+                if (p_var.Type == Variant.Type.Nil)
+                {
+                    res = null;
+                    return true;
+                }
+
+                if (p_var.Type != Variant.Type.Object)
+                {
+                    GD.PushError("Invalid cast when marshaling Godot.Object type." +
+                                 $" Variant type is `{p_var.Type}`; expected `{p_var.Object}`.");
+                    res = null;
+                    return true;
+                }
+
+                var godotObjectPtr = VariantUtils.ConvertToGodotObjectPtr(p_var);
+
+                if (godotObjectPtr == IntPtr.Zero)
+                {
+                    res = null;
+                    return true;
+                }
+
+                var godotObject = InteropUtils.UnmanagedGetManaged(godotObjectPtr);
 
                 if (!type.IsInstanceOfType(godotObject))
                 {
@@ -864,9 +886,9 @@ namespace Godot.NativeInterop
         {
             if (p_managed_callable.Delegate != null)
             {
+                var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
                 NativeFuncs.godotsharp_callable_new_with_delegate(
-                    GCHandle.ToIntPtr(GCHandle.Alloc(p_managed_callable.Delegate)),
-                    out godot_callable callable);
+                    GCHandle.ToIntPtr(gcHandle), out godot_callable callable);
                 return callable;
             }
             else

@@ -52,6 +52,8 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(SignalAwaiter, SignalCallback);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectBinding);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance);
@@ -64,6 +66,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetOrCreateScriptBridgeForPath);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, TryReloadRegisteredScriptWithClass);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
@@ -74,6 +77,8 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SerializeState);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, DeserializeState);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, GetCurrentStackInfo);
 	CHECK_CALLBACK_NOT_NULL(DisposablesTracker, OnGodotShuttingDown);

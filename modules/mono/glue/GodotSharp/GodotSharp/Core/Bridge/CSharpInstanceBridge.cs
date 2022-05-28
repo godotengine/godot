@@ -18,7 +18,7 @@ namespace Godot.Bridge
                 {
                     *ret = default;
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
-                    return false.ToGodotBool();
+                    return godot_bool.False;
                 }
 
                 bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method),
@@ -31,17 +31,17 @@ namespace Godot.Bridge
                     // This is important, as it tells Object::call that no method was called.
                     // Otherwise, it would prevent Object::call from calling native methods.
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
-                    return false.ToGodotBool();
+                    return godot_bool.False;
                 }
 
                 *ret = retValue;
-                return true.ToGodotBool();
+                return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 *ret = default;
-                return false.ToGodotBool();
+                return godot_bool.False;
             }
         }
 
@@ -57,7 +57,7 @@ namespace Godot.Bridge
 
                 if (godotObject.SetGodotClassPropertyValue(CustomUnsafe.AsRef(name), CustomUnsafe.AsRef(value)))
                 {
-                    return true.ToGodotBool();
+                    return godot_bool.True;
                 }
 
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
@@ -70,7 +70,7 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                return false.ToGodotBool();
+                return godot_bool.False;
             }
         }
 
@@ -88,7 +88,7 @@ namespace Godot.Bridge
                 if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
                 {
                     *outRet = outRetValue;
-                    return true.ToGodotBool();
+                    return godot_bool.True;
                 }
 
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
@@ -99,17 +99,17 @@ namespace Godot.Bridge
                 if (ret == null)
                 {
                     *outRet = default;
-                    return false.ToGodotBool();
+                    return godot_bool.False;
                 }
 
                 *outRet = Marshaling.ConvertManagedObjectToVariant(ret);
-                return true.ToGodotBool();
+                return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 *outRet = default;
-                return false.ToGodotBool();
+                return godot_bool.False;
             }
         }
 
@@ -141,7 +141,7 @@ namespace Godot.Bridge
                 if (self == null)
                 {
                     *outRes = default;
-                    *outValid = false.ToGodotBool();
+                    *outValid = godot_bool.False;
                     return;
                 }
 
@@ -150,18 +150,18 @@ namespace Godot.Bridge
                 if (resultStr == null)
                 {
                     *outRes = default;
-                    *outValid = false.ToGodotBool();
+                    *outValid = godot_bool.False;
                     return;
                 }
 
                 *outRes = Marshaling.ConvertStringToNative(resultStr);
-                *outValid = true.ToGodotBool();
+                *outValid = godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
                 *outRes = default;
-                *outValid = false.ToGodotBool();
+                *outValid = godot_bool.False;
             }
         }
 
@@ -173,14 +173,86 @@ namespace Godot.Bridge
                 var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
-                    return false.ToGodotBool();
+                    return godot_bool.False;
 
                 return godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(method)).ToGodotBool();
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                return false.ToGodotBool();
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void SerializeState(
+            IntPtr godotObjectGCHandle,
+            godot_dictionary* propertiesState,
+            godot_dictionary* signalEventsState
+        )
+        {
+            try
+            {
+                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    return;
+
+                // Call OnBeforeSerialize
+
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                if (godotObject is ISerializationListener serializationListener)
+                    serializationListener.OnBeforeSerialize();
+
+                // Save instance state
+
+                var info = new GodotSerializationInfo(
+                    Collections.Dictionary<StringName, object>.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_dictionary_new_copy(*propertiesState)),
+                    Collections.Dictionary<StringName, Collections.Array>.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_dictionary_new_copy(*signalEventsState)));
+
+                godotObject.SaveGodotObjectData(info);
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void DeserializeState(
+            IntPtr godotObjectGCHandle,
+            godot_dictionary* propertiesState,
+            godot_dictionary* signalEventsState
+        )
+        {
+            try
+            {
+                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    return;
+
+                // Restore instance state
+
+                var info = new GodotSerializationInfo(
+                    Collections.Dictionary<StringName, object>.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_dictionary_new_copy(*propertiesState)),
+                    Collections.Dictionary<StringName, Collections.Array>.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_dictionary_new_copy(*signalEventsState)));
+
+                godotObject.RestoreGodotObjectData(info);
+
+                // Call OnAfterDeserialize
+
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                if (godotObject is ISerializationListener serializationListener)
+                    serializationListener.OnAfterDeserialize();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
             }
         }
     }
