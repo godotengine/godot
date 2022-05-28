@@ -1344,6 +1344,10 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed), varray(p_name));
 
+	for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[insert_pos].library->animations) {
+		_ref_anim(K.value);
+	}
+
 	_animation_set_cache_update();
 
 	notify_property_list_changed();
