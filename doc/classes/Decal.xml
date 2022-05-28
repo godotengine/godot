@@ -87,7 +87,8 @@
 			[b]Note:[/b] Setting [member normal_fade] to a value greater than [code]0.0[/code] has a small performance cost due to the added normal angle computations.
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
-			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-size/2[/code] to [code]size/2[/code].
+			Sets the size of the [AABB] used by the decal. All dimensions must be set to a value greater than zero (they will be clamped to [code]0.001[/code] if this is not the case). The AABB goes from [code]-size/2[/code] to [code]size/2[/code].
+			[b]Note:[/b] To improve culling efficiency of "hard surface" decals, set their [member upper_fade] and [member lower_fade] to [code]0.0[/code] and set the Y component of the [member size] as low as possible. This will reduce the decals' AABB size without affecting their appearance.
 		</member>
 		<member name="texture_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the base [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
