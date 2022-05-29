@@ -1391,7 +1391,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -1401,7 +1401,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
+				if ((p_render_data->render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_data->render_buffers)) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
