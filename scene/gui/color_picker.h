@@ -34,15 +34,22 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+
+class ColorMode;
+class ColorModeRGB;
+class ColorModeHSV;
+class ColorModeRAW;
+class ColorModeOKHSL;
 
 class ColorPresetButton : public BaseButton {
 	GDCLASS(ColorPresetButton, BaseButton);
@@ -64,6 +71,15 @@ class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
 public:
+	enum ColorModeType {
+		MODE_RGB,
+		MODE_HSV,
+		MODE_RAW,
+		MODE_OKHSL,
+
+		MODE_MAX
+	};
+
 	enum PickerShapeType {
 		SHAPE_HSV_RECTANGLE,
 		SHAPE_HSV_WHEEL,
@@ -73,38 +89,52 @@ public:
 		SHAPE_MAX
 	};
 
+	static const int SLIDER_COUNT = 4;
+
 private:
 	static Ref<Shader> wheel_shader;
 	static Ref<Shader> circle_shader;
 	static Ref<Shader> circle_ok_color_shader;
 	static List<Color> preset_cache;
 
+	int current_slider_count = SLIDER_COUNT;
+
+	bool slider_theme_modified = true;
+
+	Vector<ColorMode *> modes;
+
 	Control *screen = nullptr;
-	Control *uv_edit = memnew(Control);
-	Control *w_edit = memnew(Control);
-	AspectRatioContainer *wheel_edit = memnew(AspectRatioContainer);
-	MarginContainer *wheel_margin = memnew(MarginContainer);
+	Control *uv_edit = nullptr;
+	Control *w_edit = nullptr;
+	AspectRatioContainer *wheel_edit = nullptr;
+	MarginContainer *wheel_margin = nullptr;
 	Ref<ShaderMaterial> wheel_mat;
 	Ref<ShaderMaterial> circle_mat;
-	Control *wheel = memnew(Control);
-	Control *wheel_uv = memnew(Control);
-	TextureRect *sample = memnew(TextureRect);
-	GridContainer *preset_container = memnew(GridContainer);
-	HSeparator *preset_separator = memnew(HSeparator);
-	Button *btn_add_preset = memnew(Button);
-	Button *btn_pick = memnew(Button);
-	CheckButton *btn_hsv = memnew(CheckButton);
-	CheckButton *btn_raw = memnew(CheckButton);
-	HSlider *scroll[4];
-	SpinBox *values[4];
-	Label *labels[4];
-	Button *text_type = memnew(Button);
-	LineEdit *c_text = memnew(LineEdit);
+	Control *wheel = nullptr;
+	Control *wheel_uv = nullptr;
+	TextureRect *sample = nullptr;
+	GridContainer *preset_container = nullptr;
+	HSeparator *preset_separator = nullptr;
+	Button *btn_add_preset = nullptr;
+	Button *btn_pick = nullptr;
+
+	OptionButton *mode_option_button = nullptr;
+
+	HSlider *sliders[SLIDER_COUNT];
+	SpinBox *values[SLIDER_COUNT];
+	Label *labels[SLIDER_COUNT];
+	Button *text_type = nullptr;
+	LineEdit *c_text = nullptr;
+
+	HSlider *alpha_slider = nullptr;
+	SpinBox *alpha_value = nullptr;
+	Label *alpha_label = nullptr;
 
 	bool edit_alpha = true;
 	Size2i ms;
 	bool text_is_constructor = false;
-	PickerShapeType picker_type = SHAPE_HSV_WHEEL;
+	PickerShapeType current_shape = SHAPE_HSV_RECTANGLE;
+	ColorModeType current_mode = MODE_RGB;
 
 	const int preset_column_count = 9;
 	int prev_preset_size = 0;
@@ -114,8 +144,6 @@ private:
 	Color old_color;
 
 	bool display_old_color = false;
-	bool raw_mode_enabled = false;
-	bool hsv_mode_enabled = false;
 	bool deferred_mode_enabled = false;
 	bool updating = true;
 	bool changing_color = false;
@@ -128,6 +156,9 @@ private:
 	float v = 0.0;
 	Color last_color;
 
+	PickerShapeType _get_actual_shape() const;
+	void create_slider(GridContainer *gc, int idx);
+	void _reset_theme();
 	void _html_submitted(const String &p_html);
 	void _value_changed(double);
 	void _update_controls();
@@ -152,13 +183,20 @@ private:
 	inline int _get_preset_size();
 	void _add_preset_button(int p_size, const Color &p_color);
 
+	void _set_color_mode(ColorModeType p_mode);
+
 protected:
 	void _notification(int);
 	static void _bind_methods();
 
 public:
+	HSlider *get_slider(int idx);
+	Vector<float> get_active_slider_values();
+
 	static void init_shaders();
 	static void finish_shaders();
+
+	void add_mode(ColorMode *p_mode);
 
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
@@ -173,7 +211,7 @@ public:
 	void set_display_old_color(bool p_enabled);
 	bool is_displaying_old_color() const;
 
-	void set_picker_shape(PickerShapeType p_picker_type);
+	void set_picker_shape(PickerShapeType p_shape);
 	PickerShapeType get_picker_shape() const;
 
 	void add_preset(const Color &p_color);
@@ -181,11 +219,8 @@ public:
 	PackedColorArray get_presets() const;
 	void _update_presets();
 
-	void set_hsv_mode(bool p_enabled);
-	bool is_hsv_mode() const;
-
-	void set_raw_mode(bool p_enabled);
-	bool is_raw_mode() const;
+	void set_color_mode(ColorModeType p_mode);
+	ColorModeType get_color_mode() const;
 
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;
@@ -199,6 +234,7 @@ public:
 	void set_focus_on_line_edit();
 
 	ColorPicker();
+	~ColorPicker();
 };
 
 class ColorPickerButton : public Button {
@@ -239,4 +275,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);
+VARIANT_ENUM_CAST(ColorPicker::ColorModeType);
 #endif // COLOR_PICKER_H
