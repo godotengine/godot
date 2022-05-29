@@ -1761,7 +1761,7 @@
 			<argument index="0" name="material" type="RID" />
 			<argument index="1" name="parameter" type="String" />
 			<description>
-				Returns the default value for the param if available. Otherwise returns an empty [Variant].
+				Returns the default value for the param if available. Returns [code]null[/code] otherwise.
 			</description>
 		</method>
 		<method name="material_get_shader" qualifiers="const">

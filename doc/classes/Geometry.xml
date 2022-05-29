@@ -189,7 +189,7 @@
 			<argument index="2" name="from_b" type="Vector2" />
 			<argument index="3" name="dir_b" type="Vector2" />
 			<description>
-				Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and ([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
+				Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and ([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
 				[b]Note:[/b] The lines are specified using direction vectors, not end points.
 			</description>
 		</method>
@@ -297,7 +297,7 @@
 			<argument index="2" name="from_b" type="Vector2" />
 			<argument index="3" name="to_b" type="Vector2" />
 			<description>
-				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
+				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="segment_intersects_sphere">
