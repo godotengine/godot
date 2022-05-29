@@ -59,7 +59,7 @@ OcclusionHandle PortalRenderer::instance_moving_create(VSInstance *p_instance, R
 	}
 
 	OcclusionHandle handle = pool_id + 1;
-	instance_moving_update(handle, p_aabb);
+	instance_moving_update(handle, p_aabb, true);
 	return handle;
 }
 
