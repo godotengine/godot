@@ -151,7 +151,7 @@
 			<argument index="0" name="object" type="Object" />
 			<argument index="1" name="key" type="String" default="&quot;&quot;" />
 			<description>
-				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
+				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are reset, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="reset_all">
