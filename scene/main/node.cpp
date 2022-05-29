@@ -1964,6 +1964,9 @@ String Node::get_scene_file_path() const {
 
 void Node::set_editor_description(const String &p_editor_description) {
 	data.editor_description = p_editor_description;
+	if (is_inside_tree()) {
+		get_tree()->tree_changed();
+	}
 }
 
 String Node::get_editor_description() const {
