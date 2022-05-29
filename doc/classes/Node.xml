@@ -534,7 +534,7 @@
 			<return type="Variant" />
 			<argument index="0" name="method" type="String" />
 			<description>
-				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. See also [method rset] and [method rset_config] for properties. Returns an empty [Variant].
+				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. See also [method rset] and [method rset_config] for properties. Returns [code]null[/code].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [SceneTree]. You also need to keep track of the connection state, either by the [SceneTree] signals like [code]server_disconnected[/code] or by checking [code]SceneTree.network_peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
@@ -551,14 +551,14 @@
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="method" type="String" />
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
 			<return type="Variant" />
 			<argument index="0" name="method" type="String" />
 			<description>
-				Sends a [method rpc] using an unreliable protocol. Returns an empty [Variant].
+				Sends a [method rpc] using an unreliable protocol. Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="rpc_unreliable_id" qualifiers="vararg">
@@ -566,7 +566,7 @@
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="method" type="String" />
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="rset">
