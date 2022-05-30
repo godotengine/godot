@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef ANDROID_EXPORT_PLUGIN_H
+#define ANDROID_EXPORT_PLUGIN_H
+
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
@@ -254,3 +257,5 @@ public:
 
 	~EditorExportPlatformAndroid();
 };
+
+#endif // ANDROID_EXPORT_PLUGIN_H
