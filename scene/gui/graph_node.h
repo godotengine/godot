@@ -81,6 +81,7 @@ private:
 		Vector2 pos;
 		int type = 0;
 		Color color;
+		int height;
 	};
 
 	Vector<ConnCache> conn_input_cache;
@@ -167,10 +168,13 @@ public:
 	bool is_close_button_visible() const;
 
 	int get_connection_input_count();
-	int get_connection_output_count();
+	int get_connection_input_height(int p_idx);
 	Vector2 get_connection_input_position(int p_idx);
 	int get_connection_input_type(int p_idx);
 	Color get_connection_input_color(int p_idx);
+
+	int get_connection_output_count();
+	int get_connection_output_height(int p_idx);
 	Vector2 get_connection_output_position(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);

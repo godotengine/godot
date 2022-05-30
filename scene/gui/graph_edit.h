@@ -124,8 +124,8 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical = 0.0;
+	float port_hotzone_inner_extent = 0.0;
+	float port_hotzone_outer_extent = 0.0;
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
@@ -250,7 +250,7 @@ private:
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
 
-	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
+	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
 	bool arranging_graph = false;
 
