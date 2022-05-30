@@ -834,6 +834,8 @@ void ThemeItemImportTree::_notification(int p_what) {
 			select_icons_warning_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 
+			import_items_filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
 			// Bottom panel buttons.
 			import_collapse_types_button->set_icon(get_theme_icon(SNAME("CollapseTree"), SNAME("EditorIcons")));
 			import_expand_types_button->set_icon(get_theme_icon(SNAME("ExpandTree"), SNAME("EditorIcons")));
@@ -881,15 +883,10 @@ void ThemeItemImportTree::_bind_methods() {
 }
 
 ThemeItemImportTree::ThemeItemImportTree() {
-	HBoxContainer *import_items_filter_hb = memnew(HBoxContainer);
-	add_child(import_items_filter_hb);
-	Label *import_items_filter_label = memnew(Label);
-	import_items_filter_label->set_text(TTR("Filter:"));
-	import_items_filter_hb->add_child(import_items_filter_label);
 	import_items_filter = memnew(LineEdit);
+	import_items_filter->set_placeholder(TTR("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
-	import_items_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	import_items_filter_hb->add_child(import_items_filter);
+	add_child(import_items_filter);
 	import_items_filter->connect("text_changed", callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
 
 	HBoxContainer *import_main_hb = memnew(HBoxContainer);

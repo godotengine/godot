@@ -697,7 +697,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Search"));
+	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
@@ -739,7 +739,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->set_name(TTR("Shortcuts"));
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Search"));
+	shortcut_search_box->set_placeholder(TTR("Filter Shortcuts"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
