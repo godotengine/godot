@@ -73,6 +73,13 @@ void EditorHelp::_search(bool p_search_previous) {
 	}
 }
 
+void EditorHelp::_class_desc_finished() {
+	if (scroll_to >= 0) {
+		class_desc->scroll_to_paragraph(scroll_to);
+	}
+	scroll_to = -1;
+}
+
 void EditorHelp::_class_list_select(const String &p_select) {
 	_goto_desc(p_select);
 }
@@ -126,7 +133,11 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		// Case order is important here to correctly handle edge cases like Variant.Type in @GlobalScope.
 		if (table->has(link)) {
 			// Found in the current page.
-			class_desc->scroll_to_paragraph((*table)[link]);
+			if (class_desc->is_ready()) {
+				class_desc->scroll_to_paragraph((*table)[link]);
+			} else {
+				scroll_to = (*table)[link];
+			}
 		} else {
 			// Look for link in @GlobalScope.
 			// Note that a link like @GlobalScope.enum_name will not be found in this section, only enum_name will be.
@@ -1469,7 +1480,11 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
-	class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
+	if (class_desc->is_ready()) {
+		class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
+	} else {
+		scroll_to = line;
+	}
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
@@ -1824,7 +1839,11 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 void EditorHelp::scroll_to_section(int p_section_index) {
 	_wait_for_thread();
 	int line = section_line[p_section_index].second;
-	class_desc->scroll_to_paragraph(line);
+	if (class_desc->is_ready()) {
+		class_desc->scroll_to_paragraph(line);
+	} else {
+		scroll_to = line;
+	}
 }
 
 void EditorHelp::popup_search() {
@@ -1877,6 +1896,7 @@ EditorHelp::EditorHelp() {
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
+	class_desc->connect("finished", callable_mp(this, &EditorHelp::_class_desc_finished));
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized), varray(false));
