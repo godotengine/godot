@@ -124,7 +124,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 		variant_params[i] = _jobject_to_variant(env, j_param);
 		args[i] = &variant_params[i];
 		env->DeleteLocalRef(j_param);
-	};
+	}
 
 	singleton->emit_signal(signal_name, args, count);
 }

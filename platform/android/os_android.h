@@ -42,9 +42,7 @@ class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
 class OS_Android : public OS_Unix {
-	bool use_gl2;
 	bool use_apk_expansion;
-
 	bool secondary_gl_available = false;
 
 	VisualServer *visual_server;
@@ -54,16 +52,14 @@ class OS_Android : public OS_Unix {
 
 	AudioDriverOpenSL audio_driver_android;
 
-	const char *gl_extensions;
+	const char *gl_extensions = nullptr;
 
 	InputDefault *input;
 	VideoMode default_videomode;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	GodotJavaWrapper *godot_java;
 	GodotIOJavaWrapper *godot_io_java;
-
-	//PowerAndroid *power_manager_func;
 
 	int video_driver_index;
 
@@ -173,7 +169,6 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void init_video_mode(int p_video_width, int p_video_height);
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
@@ -191,4 +186,4 @@ private:
 	Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id);
 };
 
-#endif
+#endif // OS_ANDROID_H

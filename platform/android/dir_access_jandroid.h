@@ -36,8 +36,6 @@
 #include <stdio.h>
 
 class DirAccessJAndroid : public DirAccess {
-	//AAssetDir* aad;
-
 	static jobject io;
 	static jclass cls;
 
@@ -46,7 +44,7 @@ class DirAccessJAndroid : public DirAccess {
 	static jmethodID _dir_close;
 	static jmethodID _dir_is_dir;
 
-	int id;
+	int id = 0;
 
 	String current_dir;
 	String current;
