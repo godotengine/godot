@@ -96,6 +96,7 @@ public:
 	StringName emit;
 	StringName notification;
 	StringName property_list_changed;
+	StringName implicit_ready;
 };
 
 #endif // CORE_STRING_NAMES_H

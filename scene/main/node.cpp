@@ -151,6 +151,9 @@ void Node::_notification(int p_notification) {
 				set_physics_process(true);
 			}
 
+			if (has_method(CoreStringNames::get_singleton()->implicit_ready)) {
+				call(CoreStringNames::get_singleton()->implicit_ready);
+			}
 			GDVIRTUAL_CALL(_ready);
 		} break;
 

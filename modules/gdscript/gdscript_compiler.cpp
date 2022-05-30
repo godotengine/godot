@@ -37,6 +37,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
@@ -1974,16 +1975,16 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		if (p_func->identifier) {
 			func_name = p_func->identifier->name;
 		} else {
-			func_name = "<anonymous lambda>";
+			func_name = SNAME("<anonymous lambda>");
 		}
 		is_static = p_func->is_static;
 		rpc_config = p_func->rpc_config;
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
 		if (p_for_ready) {
-			func_name = "_ready";
+			func_name = CoreStringNames::get_singleton()->implicit_ready;
 		} else {
-			func_name = "@implicit_new";
+			func_name = SNAME("@implicit_new");
 		}
 	}
 
@@ -2028,6 +2029,18 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			if (field->initializer) {
 				// Emit proper line change.
 				codegen.generator->write_newline(field->initializer->start_line);
+
+				if (is_for_ready) {
+					// Make sure ready initializers in base classes are called.
+					GDScript *parent = p_script->base.ptr();
+					while (parent) {
+						if (parent->has_method(func_name)) {
+							codegen.generator->write_super_call(GDScriptCodeGenerator::Address::SELF, func_name, Vector<GDScriptCodeGenerator::Address>());
+							break;
+						}
+						parent = parent->base.ptr();
+					}
+				}
 
 				// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
 				if (field_type.is_hard_type() && field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type()) {
