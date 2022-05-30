@@ -89,7 +89,8 @@ void ShaderCreateDialog::_update_language_info() {
 			data.extensions.push_back("gdshader");
 			data.default_extension = "gdshader";
 		} else {
-			data.default_extension = "tres";
+			data.extensions.push_back("vshader");
+			data.default_extension = "vshader";
 		}
 		data.extensions.push_back("res");
 		data.extensions.push_back("tres");

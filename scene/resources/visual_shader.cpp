@@ -31,6 +31,7 @@
 #include "visual_shader.h"
 
 #include "core/templates/vmap.h"
+#include "scene/resources/resource_format_text.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 #include "visual_shader_particle_nodes.h"
@@ -2692,6 +2693,43 @@ VisualShader::VisualShader() {
 
 		graph[i].nodes[NODE_ID_OUTPUT].position = Vector2(400, 150);
 	}
+}
+
+///////////////////////////////////////////////////////////
+
+Ref<Resource> ResourceFormatLoaderVisualShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+}
+
+void ResourceFormatLoaderVisualShader::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("vshader");
+}
+
+bool ResourceFormatLoaderVisualShader::handles_type(const String &p_type) const {
+	return p_type == "VisualShader";
+}
+
+String ResourceFormatLoaderVisualShader::get_resource_type(const String &p_path) const {
+	String el = p_path.get_extension().to_lower();
+	if (el == "vshader") {
+		return "VisualShader";
+	}
+	return "";
+}
+
+Error ResourceFormatSaverVisualShader::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+	return ResourceFormatSaverText::singleton->save(p_path, p_resource, p_flags);
+}
+
+void ResourceFormatSaverVisualShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+	const VisualShader *vshader = Object::cast_to<VisualShader>(*p_resource);
+	if (vshader) {
+		p_extensions->push_back("vshader");
+	}
+}
+
+bool ResourceFormatSaverVisualShader::recognize(const Ref<Resource> &p_resource) const {
+	return p_resource->get_class_name() == "VisualShader";
 }
 
 ///////////////////////////////////////////////////////////

@@ -270,6 +270,9 @@ static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
+static Ref<ResourceFormatSaverVisualShader> resource_saver_vshader;
+static Ref<ResourceFormatLoaderVisualShader> resource_loader_vshader;
+
 void register_scene_types() {
 	SceneStringNames::create();
 
@@ -297,6 +300,12 @@ void register_scene_types() {
 
 	resource_loader_shader.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
+
+	resource_saver_vshader.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_saver_vshader, true);
+
+	resource_loader_vshader.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_vshader, true);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1171,6 +1180,12 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader);
 	resource_loader_shader.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_vshader);
+	resource_saver_vshader.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_vshader);
+	resource_loader_vshader.unref();
 
 	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED

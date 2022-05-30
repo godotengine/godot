@@ -48,6 +48,7 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
+#include "editor/plugins/visual_shader_editor_plugin.h"
 #include "modules/visual_script/editor/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -3542,14 +3543,20 @@ void ScriptEditor::_on_replace_in_files_requested(String text) {
 void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
+		String ext = fpath.get_extension();
 
-		if (fpath.get_extension() == "gdshader") {
+		if (ext == "gdshader") {
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
 			return;
-		} else if (fpath.get_extension() == "tscn") {
+		} else if (ext == "vshader") {
+			VisualShaderEditorPlugin *vshader_editor = Object::cast_to<VisualShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("VisualShader"));
+			vshader_editor->edit(res.ptr());
+			vshader_editor->make_visible(true);
+			return;
+		} else if (ext == "tscn") {
 			EditorNode::get_singleton()->load_scene(fpath);
 			return;
 		} else {

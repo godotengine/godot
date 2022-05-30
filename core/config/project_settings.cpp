@@ -1201,6 +1201,7 @@ ProjectSettings::ProjectSettings() {
 		extensions.push_back("cs");
 	}
 	extensions.push_back("gdshader");
+	extensions.push_back("vshader");
 
 	GLOBAL_DEF("editor/run/main_run_args", "");
 
