@@ -73,7 +73,7 @@ public:
 			return Object::call(p_method, p_args, p_argcount, r_error);
 		}
 
-		ERR_FAIL_COND_V(!instance, Variant());
+		ERR_FAIL_NULL_V(instance, Variant());
 
 		r_error.error = Variant::CallError::CALL_OK;
 

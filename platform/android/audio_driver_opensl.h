@@ -38,15 +38,14 @@
 #include <SLES/OpenSLES_Android.h>
 
 class AudioDriverOpenSL : public AudioDriver {
-	bool active;
+	bool active = false;
 	Mutex mutex;
 
 	enum {
-
 		BUFFER_COUNT = 2
 	};
 
-	bool pause;
+	bool pause = false;
 
 	uint32_t buffer_size;
 	int16_t *buffers[BUFFER_COUNT];
@@ -106,4 +105,4 @@ public:
 	AudioDriverOpenSL();
 };
 
-#endif // AUDIO_DRIVER_ANDROID_H
+#endif // AUDIO_DRIVER_OPENSL_H

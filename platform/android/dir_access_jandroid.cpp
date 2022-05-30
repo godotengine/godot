@@ -34,12 +34,12 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-jobject DirAccessJAndroid::io = NULL;
-jclass DirAccessJAndroid::cls = NULL;
-jmethodID DirAccessJAndroid::_dir_open = NULL;
-jmethodID DirAccessJAndroid::_dir_next = NULL;
-jmethodID DirAccessJAndroid::_dir_close = NULL;
-jmethodID DirAccessJAndroid::_dir_is_dir = NULL;
+jobject DirAccessJAndroid::io = nullptr;
+jclass DirAccessJAndroid::cls = nullptr;
+jmethodID DirAccessJAndroid::_dir_open = nullptr;
+jmethodID DirAccessJAndroid::_dir_next = nullptr;
+jmethodID DirAccessJAndroid::_dir_close = nullptr;
+jmethodID DirAccessJAndroid::_dir_is_dir = nullptr;
 
 DirAccess *DirAccessJAndroid::create_fs() {
 	return memnew(DirAccessJAndroid);
@@ -51,9 +51,9 @@ Error DirAccessJAndroid::list_dir_begin() {
 
 	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);
-	if (res <= 0)
+	if (res <= 0) {
 		return ERR_CANT_OPEN;
-
+	}
 	id = res;
 
 	return OK;
@@ -64,9 +64,9 @@ String DirAccessJAndroid::get_next() {
 
 	JNIEnv *env = get_jni_env();
 	jstring str = (jstring)env->CallObjectMethod(io, _dir_next, id);
-	if (!str)
+	if (!str) {
 		return "";
-
+	}
 	String ret = jstring_to_string((jstring)str, env);
 	env->DeleteLocalRef((jobject)str);
 	return ret;
@@ -83,9 +83,9 @@ bool DirAccessJAndroid::current_is_hidden() const {
 }
 
 void DirAccessJAndroid::list_dir_end() {
-	if (id == 0)
+	if (id == 0) {
 		return;
-
+	}
 	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _dir_close, id);
 	id = 0;
@@ -102,22 +102,25 @@ String DirAccessJAndroid::get_drive(int p_drive) {
 Error DirAccessJAndroid::change_dir(String p_dir) {
 	JNIEnv *env = get_jni_env();
 
-	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
+	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == "")) {
 		return OK;
+	}
 
 	String new_dir;
 
-	if (p_dir != "res://" && p_dir.length() > 1 && p_dir.ends_with("/"))
+	if (p_dir != "res://" && p_dir.length() > 1 && p_dir.ends_with("/")) {
 		p_dir = p_dir.substr(0, p_dir.length() - 1);
+	}
 
-	if (p_dir.begins_with("/"))
+	if (p_dir.begins_with("/")) {
 		new_dir = p_dir.substr(1, p_dir.length());
-	else if (p_dir.begins_with("res://"))
+	} else if (p_dir.begins_with("res://")) {
 		new_dir = p_dir.substr(6, p_dir.length());
-	else if (current_dir == "")
+	} else if (current_dir == "") {
 		new_dir = p_dir;
-	else
+	} else {
 		new_dir = current_dir.plus_file(p_dir);
+	}
 
 	//test if newdir exists
 	new_dir = new_dir.simplify_path();
@@ -125,8 +128,9 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	jstring js = env->NewStringUTF(new_dir.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);
 	env->DeleteLocalRef(js);
-	if (res <= 0)
+	if (res <= 0) {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	env->CallVoidMethod(io, _dir_close, res);
 
@@ -141,10 +145,11 @@ String DirAccessJAndroid::get_current_dir() {
 
 bool DirAccessJAndroid::file_exists(String p_file) {
 	String sd;
-	if (current_dir == "")
+	if (current_dir == "") {
 		sd = p_file;
-	else
+	} else {
 		sd = current_dir.plus_file(p_file);
+	}
 
 	FileAccessAndroid *f = memnew(FileAccessAndroid);
 	bool exists = f->file_exists(sd);
@@ -158,27 +163,30 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 
 	String sd;
 
-	if (current_dir == "")
+	if (current_dir == "") {
 		sd = p_dir;
-	else {
-		if (p_dir.is_rel_path())
+	} else {
+		if (p_dir.is_rel_path()) {
 			sd = current_dir.plus_file(p_dir);
-		else
+		} else {
 			sd = fix_path(p_dir);
+		}
 	}
 
 	String path = sd.simplify_path();
 
-	if (path.begins_with("/"))
+	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
+	} else if (path.begins_with("res://")) {
 		path = path.substr(6, path.length());
+	}
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);
 	env->DeleteLocalRef(js);
-	if (res <= 0)
+	if (res <= 0) {
 		return false;
+	}
 
 	env->CallVoidMethod(io, _dir_close, res);
 
@@ -216,12 +224,9 @@ void DirAccessJAndroid::setup(jobject p_io) {
 	_dir_next = env->GetMethodID(cls, "dir_next", "(I)Ljava/lang/String;");
 	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
 	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
-
-	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {
-	id = 0;
 }
 
 DirAccessJAndroid::~DirAccessJAndroid() {

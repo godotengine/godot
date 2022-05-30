@@ -154,8 +154,9 @@ void AndroidInputHandler::process_touch(int p_event, int p_pointer, const Vector
 
 				ERR_CONTINUE(idx == -1);
 
-				if (touch[i].pos == p_points[idx].pos)
+				if (touch[i].pos == p_points[idx].pos) {
 					continue; //no move unncesearily
+				}
 
 				Ref<InputEventScreenDrag> ev;
 				ev.instance();
