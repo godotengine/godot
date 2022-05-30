@@ -1446,8 +1446,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("snap", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 	theme->set_icon("minimap", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
 	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), SNAME("EditorIcons")));
-	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
-	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
 	// GraphEditMinimap
 	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
