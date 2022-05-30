@@ -1009,8 +1009,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Visual Node Ports
 
-	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
-	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 26 * scale);
+	theme->set_constant("port_hotzone_inner_extent", "GraphEdit", 22 * scale);
+	theme->set_constant("port_hotzone_outer_extent", "GraphEdit", 26 * scale);
 
 	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);
