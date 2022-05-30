@@ -72,6 +72,24 @@ void VisibilityNotifier::_exit_camera(Camera *p_camera) {
 	}
 }
 
+void VisibilityNotifier::set_max_distance(real_t p_max_distance) {
+	if (p_max_distance > CMP_EPSILON) {
+		_max_distance = p_max_distance;
+		_max_distance_squared = _max_distance * _max_distance;
+		_max_distance_active = true;
+
+		// make sure world aabb centre is up to date
+		if (is_inside_world()) {
+			AABB world_aabb = get_global_transform().xform(aabb);
+			_world_aabb_center = world_aabb.get_center();
+		}
+	} else {
+		_max_distance = 0.0;
+		_max_distance_squared = 0.0;
+		_max_distance_active = false;
+	}
+}
+
 void VisibilityNotifier::set_aabb(const AABB &p_aabb) {
 	if (aabb == p_aabb) {
 		return;
@@ -79,7 +97,9 @@ void VisibilityNotifier::set_aabb(const AABB &p_aabb) {
 	aabb = p_aabb;
 
 	if (is_inside_world()) {
-		get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+		AABB world_aabb = get_global_transform().xform(aabb);
+		get_world()->_update_notifier(this, world_aabb);
+		_world_aabb_center = world_aabb.get_center();
 	}
 
 	_change_notify("aabb");
@@ -128,11 +148,15 @@ void VisibilityNotifier::_notification(int p_what) {
 
 			AABB world_aabb = get_global_transform().xform(aabb);
 			world->_register_notifier(this, world_aabb);
+			_world_aabb_center = world_aabb.get_center();
 			_refresh_portal_mode();
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			AABB world_aabb = get_global_transform().xform(aabb);
 			world->_update_notifier(this, world_aabb);
+			if (_max_distance_active) {
+				_world_aabb_center = world_aabb.get_center();
+			}
 
 			if (_cull_instance_rid != RID()) {
 				VisualServer::get_singleton()->ghost_update(_cull_instance_rid, world_aabb);
@@ -176,7 +200,11 @@ void VisibilityNotifier::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_aabb"), &VisibilityNotifier::get_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibilityNotifier::is_on_screen);
 
+	ClassDB::bind_method(D_METHOD("set_max_distance", "distance"), &VisibilityNotifier::set_max_distance);
+	ClassDB::bind_method(D_METHOD("get_max_distance"), &VisibilityNotifier::get_max_distance);
+
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_max_distance", "get_max_distance");
 
 	ADD_SIGNAL(MethodInfo("camera_entered", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera")));
 	ADD_SIGNAL(MethodInfo("camera_exited", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera")));
@@ -188,6 +216,10 @@ VisibilityNotifier::VisibilityNotifier() {
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	set_notify_transform(true);
 	_in_gameplay = false;
+	_max_distance_active = false;
+	_max_distance = 0.0;
+	_max_distance_squared = 0.0;
+	_max_distance_leadin_counter = 1; // this could later be exposed as a property if necessary
 }
 
 VisibilityNotifier::~VisibilityNotifier() {

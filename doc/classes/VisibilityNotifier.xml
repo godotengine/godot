@@ -23,6 +23,10 @@
 		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB( -1, -1, -1, 2, 2, 2 )">
 			The VisibilityNotifier's bounding box.
 		</member>
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
+			In addition to checking whether a node is on screen or within a [Camera]'s view, VisibilityNotifier can also optionally check whether a node is within a specified maximum distance when using a [Camera] with perspective projection. This is useful for throttling the performance requirements of nodes that are far away.
+			[b]Note:[/b] This feature will be disabled if set to 0.0.
+		</member>
 	</members>
 	<signals>
 		<signal name="camera_entered">
