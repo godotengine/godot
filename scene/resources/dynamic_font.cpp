@@ -445,7 +445,7 @@ Size2 DynamicFontAtSize::get_char_tx_size(CharType p_char, CharType p_next, cons
 
 	ERR_FAIL_COND_V(!ch, Size2());
 	if (ch->found) {
-		return ch->rect_uv.size;
+		return ch->rect.size;
 	}
 	return Size2();
 }
