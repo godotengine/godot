@@ -178,6 +178,7 @@ private:
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
+	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
 	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
@@ -343,6 +344,9 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
+	void set_connection_lines_curvature(float p_curvature);
+	float get_connection_lines_curvature() const;
 
 	void set_connection_lines_thickness(float p_thickness);
 	float get_connection_lines_thickness() const;

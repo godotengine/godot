@@ -857,13 +857,23 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 		return ret;
 	}
 
+	float x_diff = (p_to.x - p_from.x);
+	float cp_offset = x_diff * lines_curvature;
+	if (x_diff < 0) {
+		cp_offset *= -1;
+	}
+
 	Curve2D curve;
-	Vector<Color> colors;
 	curve.add_point(p_from);
-	curve.set_point_out(0, Vector2(60, 0));
+	curve.set_point_out(0, Vector2(cp_offset, 0));
 	curve.add_point(p_to);
-	curve.set_point_in(1, Vector2(-60, 0));
-	return curve.tessellate();
+	curve.set_point_in(1, Vector2(-cp_offset, 0));
+
+	if (lines_curvature > 0) {
+		return curve.tessellate(5, 2.0);
+	} else {
+		return curve.tessellate(1);
+	}
 }
 
 void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom) {
@@ -1684,6 +1694,15 @@ void GraphEdit::_minimap_toggled() {
 	}
 }
 
+void GraphEdit::set_connection_lines_curvature(float p_curvature) {
+	lines_curvature = p_curvature;
+	update();
+}
+
+float GraphEdit::get_connection_lines_curvature() const {
+	return lines_curvature;
+}
+
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
 	lines_thickness = p_thickness;
 	update();
@@ -2262,6 +2281,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_snap", "enable"), &GraphEdit::set_use_snap);
 	ClassDB::bind_method(D_METHOD("is_using_snap"), &GraphEdit::is_using_snap);
 
+	ClassDB::bind_method(D_METHOD("set_connection_lines_curvature", "curvature"), &GraphEdit::set_connection_lines_curvature);
+	ClassDB::bind_method(D_METHOD("get_connection_lines_curvature"), &GraphEdit::get_connection_lines_curvature);
+
 	ClassDB::bind_method(D_METHOD("set_connection_lines_thickness", "pixels"), &GraphEdit::set_connection_lines_thickness);
 	ClassDB::bind_method(D_METHOD("get_connection_lines_thickness"), &GraphEdit::get_connection_lines_thickness);
 
@@ -2298,6 +2320,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness"), "set_connection_lines_thickness", "get_connection_lines_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
 

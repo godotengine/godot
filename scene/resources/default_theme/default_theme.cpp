@@ -1004,8 +1004,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
 	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
 	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
-	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
-	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
 
 	// Visual Node Ports
 
