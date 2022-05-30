@@ -72,4 +72,4 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIEnv *env, jclass clazz);
 }
 
-#endif /* !JAVA_GODOT_LIB_JNI_H */
+#endif // JAVA_GODOT_LIB_JNI_H
