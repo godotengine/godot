@@ -276,25 +276,25 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 			"get_used_rect() should return the expected value, its Rect size should be the same as get_size() if there are no transparent pixels.");
 
 	Ref<Image> image3 = memnew(Image(2, 2, false, Image::FORMAT_RGBA8));
-	image3->set_pixel(0, 0, Color(0, 1, 0, 1));
+	image3->set_pixel(0, 0, Color::GREEN);
 
 	//blit_rect() two images together
 	image->blit_rect(image3, Rect2(Vector2(0, 0), image3->get_size()), Vector2(0, 0));
 	CHECK_MESSAGE(
-			image->get_pixel(0, 0).is_equal_approx(Color(0, 1, 0, 1)),
+			image->get_pixel(0, 0).is_equal_approx(Color::GREEN),
 			"blit_rect() should replace old colors and not blend them.");
 	CHECK_MESSAGE(
-			!image->get_pixel(2, 2).is_equal_approx(Color(0, 1, 0, 1)),
+			!image->get_pixel(2, 2).is_equal_approx(Color::GREEN),
 			"blit_rect() should not affect the area of the image that is outside src_rect.");
 
 	// Flip image
 	image3->flip_x();
-	CHECK(image3->get_pixel(1, 0).is_equal_approx(Color(0, 1, 0, 1)));
+	CHECK(image3->get_pixel(1, 0).is_equal_approx(Color::GREEN));
 	CHECK_MESSAGE(
 			image3->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0, 0)),
 			"flip_x() should not leave old pixels behind.");
 	image3->flip_y();
-	CHECK(image3->get_pixel(1, 1).is_equal_approx(Color(0, 1, 0, 1)));
+	CHECK(image3->get_pixel(1, 1).is_equal_approx(Color::GREEN));
 	CHECK_MESSAGE(
 			image3->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 0)),
 			"flip_y() should not leave old pixels behind.");

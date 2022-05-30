@@ -69,7 +69,7 @@ private:
 		Variant metadata;
 		String tooltip;
 		Color custom_fg;
-		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
+		Color custom_bg = Color::TRANSPARENT_BLACK;
 
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;

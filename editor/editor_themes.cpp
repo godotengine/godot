@@ -436,14 +436,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
 	// Some places in the editor use 8-bit integer colors.
-	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast).clamp();
-	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5).clamp();
-	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2).clamp();
+	const Color dark_color_1 = base_color.lerp(Color::BLACK, contrast).clamp();
+	const Color dark_color_2 = base_color.lerp(Color::BLACK, contrast * 1.5).clamp();
+	const Color dark_color_3 = base_color.lerp(Color::BLACK, contrast * 2).clamp();
 
 	const Color background_color = dark_color_2;
 
 	// White (dark theme) or black (light theme), will be used to generate the rest of the colors
-	const Color mono_color = dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
+	const Color mono_color = dark_theme ? Color::WHITE : Color::BLACK;
 
 	const Color contrast_color_1 = base_color.lerp(mono_color, MAX(contrast, default_contrast));
 	const Color contrast_color_2 = base_color.lerp(mono_color, MAX(contrast * 1.5, default_contrast * 1.5));
@@ -458,7 +458,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color disabled_color = mono_color.inverted().lerp(base_color, 0.7);
 	const Color disabled_bg_color = mono_color.inverted().lerp(base_color, 0.9);
 
-	const Color icon_normal_color = Color(1, 1, 1);
+	const Color icon_normal_color = Color::WHITE;
 	Color icon_hover_color = icon_normal_color * (dark_theme ? 1.15 : 1.45);
 	icon_hover_color.a = 1.0;
 	Color icon_focus_color = icon_hover_color;
@@ -469,7 +469,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	const Color separator_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.1);
 	const Color highlight_color = Color(accent_color.r, accent_color.g, accent_color.b, 0.275);
-	const Color disabled_highlight_color = highlight_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
+	const Color disabled_highlight_color = highlight_color.lerp(dark_theme ? Color::BLACK : Color::WHITE, 0.5);
 
 	float prev_icon_saturation = theme->has_color(SNAME("icon_saturation"), SNAME("Editor")) ? theme->get_color(SNAME("icon_saturation"), SNAME("Editor")).r : 1.0;
 
@@ -510,8 +510,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color warning_color = Color(1, 0.87, 0.4);
 	Color error_color = Color(1, 0.47, 0.42);
 	Color property_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
-	Color readonly_color = property_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
-	Color readonly_warning_color = error_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
+	Color readonly_color = property_color.lerp(dark_theme ? Color::BLACK : Color::WHITE, 0.5);
+	Color readonly_warning_color = error_color.lerp(dark_theme ? Color::BLACK : Color::WHITE, 0.5);
 
 	if (!dark_theme) {
 		// Darken some colors to be readable on a light background
@@ -529,7 +529,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (!dark_theme) {
 		theme->set_color("vulkan_color", "Editor", Color::hex(0xad1128ff));
 	} else {
-		theme->set_color("vulkan_color", "Editor", Color(1.0, 0.0, 0.0));
+		theme->set_color("vulkan_color", "Editor", Color::RED);
 	}
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
@@ -948,7 +948,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		theme->set_stylebox("sub_inspector_property_bg_selected" + itos(i), "Editor", bg_color_selected);
 	}
 
-	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
+	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color::BLACK);
 	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
 
 	// EditorSpinSlider.
@@ -1358,7 +1358,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// RichTextLabel
 	theme->set_color("default_color", "RichTextLabel", font_color);
-	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "RichTextLabel", Color::TRANSPARENT_BLACK);
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * EDSCALE);
@@ -1389,7 +1389,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);
 	theme->set_color("font_color", "Label", font_color);
-	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
+	theme->set_color("font_shadow_color", "Label", Color::TRANSPARENT_BLACK);
 	theme->set_constant("shadow_offset_x", "Label", 1 * EDSCALE);
 	theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
 	theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
@@ -1413,7 +1413,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tooltip->set_bg_color(dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 	style_tooltip->set_border_width_all(0);
 	theme->set_color("font_color", "TooltipLabel", font_hover_color);
-	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_color_shadow", "TooltipLabel", Color::TRANSPARENT_BLACK);
 	theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 
 	// PopupPanel
@@ -1460,11 +1460,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (dark_theme) {
 		style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);
 		style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
-		style_minimap_node = make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
+		style_minimap_node = make_flat_stylebox(Color::WHITE, 0, 0, 0, 0);
 	} else {
 		style_minimap_camera = make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
 		style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
-		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
+		style_minimap_node = make_flat_stylebox(Color::BLACK, 0, 0, 0, 0);
 	}
 	style_minimap_camera->set_border_width_all(1);
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
@@ -1565,7 +1565,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
-	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
+	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color::WHITE : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_disabled_color);
 
 	// ColorPicker
@@ -1585,7 +1585,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 
 	// ColorPresetButton
-	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2, 2);
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color::WHITE, 2, 2, 2, 2, 2);
 	preset_sb->set_anti_aliased(false);
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
 	theme->set_icon("preset_bg", "ColorPresetButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));

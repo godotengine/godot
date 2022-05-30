@@ -2013,7 +2013,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	bool keep_color = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
-		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
+		clear_color = Color::BLACK; //in overdraw mode, BG should always be black
 	} else if (env) {
 		RS::EnvironmentBG bg_mode = env->background;
 		float bg_energy = env->bg_energy;

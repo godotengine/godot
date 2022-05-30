@@ -60,7 +60,7 @@ void OptionButton::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"));
-			Color clr = Color(1, 1, 1);
+			Color clr = Color::WHITE;
 			if (get_theme_constant(SNAME("modulate_arrow"))) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:

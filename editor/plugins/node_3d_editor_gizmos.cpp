@@ -828,11 +828,11 @@ void EditorNode3DGizmo::set_plugin(EditorNode3DGizmoPlugin *p_plugin) {
 }
 
 void EditorNode3DGizmo::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard", "modulate"), &EditorNode3DGizmo::add_lines, DEFVAL(false), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard", "modulate"), &EditorNode3DGizmo::add_lines, DEFVAL(false), DEFVAL(Color::WHITE));
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "material", "transform", "skeleton"), &EditorNode3DGizmo::add_mesh, DEFVAL(Variant()), DEFVAL(Transform3D()), DEFVAL(Ref<SkinReference>()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorNode3DGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorNode3DGizmo::add_collision_triangles);
-	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale", "modulate"), &EditorNode3DGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale", "modulate"), &EditorNode3DGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(Color::WHITE));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "ids", "billboard", "secondary"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorNode3DGizmo::_set_spatial_node);
 	ClassDB::bind_method(D_METHOD("get_spatial_node"), &EditorNode3DGizmo::get_spatial_node);
@@ -966,7 +966,7 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
-	handle_material->set_albedo(Color(1, 1, 1));
+	handle_material->set_albedo(Color::WHITE);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_on_top_of_alpha();
@@ -1223,9 +1223,9 @@ EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
 
 Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	// Enable vertex colors for the materials below as the gizmo color depends on the light color.
-	create_material("lines_primary", Color(1, 1, 1), false, false, true);
+	create_material("lines_primary", Color::WHITE, false, false, true);
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
-	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
+	create_material("lines_billboard", Color::WHITE, true, false, true);
 
 	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoDirectionalLight"), SNAME("EditorIcons")));
 	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLight"), SNAME("EditorIcons")));
@@ -2234,20 +2234,20 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	cursor_colors.push_back(color_x);
 	// FIXME: Use less strong darkening factor once GH-48573 is fixed.
 	// The current darkening factor compensates for lines being too bright in the 3D editor.
-	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
-	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_x.lerp(Color::BLACK, 0.75));
+	cursor_colors.push_back(color_x.lerp(Color::BLACK, 0.75));
 
 	const Color color_y = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_y_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_y);
 	cursor_colors.push_back(color_y);
-	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
-	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_y.lerp(Color::BLACK, 0.75));
+	cursor_colors.push_back(color_y.lerp(Color::BLACK, 0.75));
 
 	const Color color_z = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_z_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_z);
 	cursor_colors.push_back(color_z);
-	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
-	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_z.lerp(Color::BLACK, 0.75));
+	cursor_colors.push_back(color_z.lerp(Color::BLACK, 0.75));
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

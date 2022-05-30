@@ -2708,7 +2708,7 @@ static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Text
 	p_surface.draw_texture(p_icon, icon_pos, p_color);
 
 	// Draw text below the bar (for speed/zoom information).
-	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_font_size, p_color, Math::round(2 * EDSCALE), Color(0, 0, 0));
+	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_font_size, p_color, Math::round(2 * EDSCALE), Color::BLACK);
 }
 
 void Node3DEditorViewport::_draw() {
@@ -7367,7 +7367,7 @@ void Node3DEditor::_preview_settings_changed() {
 
 	{ //preview env
 		sky_material->set_sky_energy(environ_energy->get_value());
-		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5).lerp(Color(1, 1, 1), 0.5);
+		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5).lerp(Color::WHITE, 0.5);
 		sky_material->set_sky_top_color(environ_sky_color->get_pick_color());
 		sky_material->set_sky_horizon_color(hz_color);
 		sky_material->set_ground_bottom_color(environ_ground_color->get_pick_color());
@@ -7403,7 +7403,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_gi_button->set_pressed(false);
 	sun_max_distance->set_value(250);
 
-	sun_color->set_pick_color(Color(1, 1, 1));
+	sun_color->set_pick_color(Color::WHITE);
 	sun_energy->set_value(1.0);
 
 	sun_environ_updating = false;

@@ -626,7 +626,7 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
-			image->set_pixel(i, j, get_bit(Point2(i, j)) ? Color(1, 1, 1) : Color(0, 0, 0));
+			image->set_pixel(i, j, get_bit(Point2(i, j)) ? Color::WHITE : Color::BLACK);
 		}
 	}
 

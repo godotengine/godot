@@ -87,7 +87,7 @@ private:
 		Color bg_color;
 		bool custom_button = false;
 		bool expand_right = false;
-		Color icon_color = Color(1, 1, 1);
+		Color icon_color = Color::WHITE;
 
 		Size2i cached_minimum_size;
 		bool cached_minimum_size_dirty = true;

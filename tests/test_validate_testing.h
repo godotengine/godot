@@ -175,8 +175,8 @@ TEST_SUITE("Validate tests") {
 		INFO(vec3_arr);
 
 		PackedColorArray color_arr;
-		color_arr.push_back(Color(0, 0, 0));
-		color_arr.push_back(Color(1, 1, 1));
+		color_arr.push_back(Color::BLACK);
+		color_arr.push_back(Color::WHITE);
 		color_arr.push_back(Color(2, 2, 2));
 		INFO(color_arr);
 

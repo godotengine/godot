@@ -57,8 +57,8 @@ void Position2D::_draw_cross() {
 	PackedColorArray colors_x = {
 		color_x,
 		color_x,
-		color_x.lerp(Color(0, 0, 0), 0.5),
-		color_x.lerp(Color(0, 0, 0), 0.5)
+		color_x.lerp(Color::BLACK, 0.5),
+		color_x.lerp(Color::BLACK, 0.5)
 	};
 	draw_multiline_colors(points_x, colors_x);
 
@@ -66,8 +66,8 @@ void Position2D::_draw_cross() {
 	PackedColorArray colors_y = {
 		color_y,
 		color_y,
-		color_y.lerp(Color(0, 0, 0), 0.5),
-		color_y.lerp(Color(0, 0, 0), 0.5)
+		color_y.lerp(Color::BLACK, 0.5),
+		color_y.lerp(Color::BLACK, 0.5)
 	};
 	draw_multiline_colors(points_y, colors_y);
 }

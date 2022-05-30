@@ -558,7 +558,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			const Vector2 p = (vertex == edited_point) ? edited_point.pos : (points[i] + offset);
 			const Vector2 point = xform.xform(p);
 
-			const Color modulate = vertex == active_point ? Color(0.5, 1, 2) : Color(1, 1, 1);
+			const Color modulate = vertex == active_point ? Color(0.5, 1, 2) : Color::WHITE;
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, modulate);
 
 			if (vertex == hover_point) {

@@ -136,9 +136,9 @@ TEST_CASE("[Object] Metadata") {
 	const String meta_path = "complex_metadata_path";
 	Object object;
 
-	object.set_meta(meta_path, Color(0, 1, 0));
+	object.set_meta(meta_path, Color::GREEN);
 	CHECK_MESSAGE(
-			Color(object.get_meta(meta_path)).is_equal_approx(Color(0, 1, 0)),
+			Color(object.get_meta(meta_path)).is_equal_approx(Color::GREEN),
 			"The returned object metadata after setting should match the expected value.");
 
 	List<StringName> meta_list;

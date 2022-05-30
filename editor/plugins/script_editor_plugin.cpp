@@ -1955,7 +1955,7 @@ void ScriptEditor::_update_script_colors() {
 			continue;
 		}
 
-		script_list->set_item_custom_bg_color(i, Color(0, 0, 0, 0));
+		script_list->set_item_custom_bg_color(i, Color::TRANSPARENT_BLACK);
 
 		if (script_temperature_enabled) {
 			int pass = n->get_meta("__editor_pass", -1);

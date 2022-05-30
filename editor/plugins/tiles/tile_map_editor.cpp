@@ -760,7 +760,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 						Transform2D tile_xform;
 						tile_xform.set_origin(tile_map->map_to_world(coords));
 						tile_xform.set_scale(tile_shape_size);
-						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0), false);
+						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color::WHITE, false);
 					}
 				}
 			}
@@ -777,7 +777,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 					}
 				}
 			}
-			tile_map->draw_cells_outline(p_overlay, to_draw, Color(1.0, 1.0, 1.0), xform);
+			tile_map->draw_cells_outline(p_overlay, to_draw, Color::WHITE, xform);
 		} else if (drag_type == DRAG_TYPE_MOVE) {
 			if (!(patterns_item_list->is_visible_in_tree() && patterns_item_list->has_point(patterns_item_list->get_local_mouse_position()))) {
 				// Preview when moving.
@@ -1695,7 +1695,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	// Draw the hovered tile.
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile == 0 && !tile_set_dragging_selection) {
 		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(hovered_tile.get_atlas_coords()); frame++) {
-			Color color = Color(1.0, 1.0, 1.0);
+			Color color = Color::WHITE;
 			if (frame > 0) {
 				color.a *= 0.3;
 			}
@@ -1881,7 +1881,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile > 0) {
 		Rect2i rect = tile_atlas_view->get_alternative_tile_rect(hovered_tile.get_atlas_coords(), hovered_tile.alternative_tile);
 		if (rect != Rect2i()) {
-			alternative_tiles_control->draw_rect(rect, Color(1.0, 1.0, 1.0), false);
+			alternative_tiles_control->draw_rect(rect, Color::WHITE, false);
 		}
 	}
 }
@@ -2969,7 +2969,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 				Transform2D tile_xform;
 				tile_xform.set_origin(tile_map->map_to_world(coords));
 				tile_xform.set_scale(tile_shape_size);
-				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0), false);
+				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color::WHITE, false);
 			}
 		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
@@ -3438,7 +3438,7 @@ void TileMapEditor::_layers_selection_button_draw() {
 	RID ci = layers_selection_button->get_canvas_item();
 	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
 
-	Color clr = Color(1, 1, 1);
+	Color clr = Color::WHITE;
 	if (get_theme_constant(SNAME("modulate_arrow"))) {
 		switch (layers_selection_button->get_draw_mode()) {
 			case BaseButton::DRAW_PRESSED:

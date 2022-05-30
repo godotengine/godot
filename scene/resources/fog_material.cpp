@@ -170,7 +170,7 @@ void fog() {
 FogMaterial::FogMaterial() {
 	set_density(1.0);
 	set_albedo(Color(1, 1, 1, 1));
-	set_emission(Color(0, 0, 0, 1));
+	set_emission(Color::BLACK);
 
 	set_height_falloff(0.0);
 	set_edge_fade(0.1);

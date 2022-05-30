@@ -53,7 +53,7 @@ class RayCast3D : public Node3D {
 
 	Node *debug_shape = nullptr;
 	Ref<Material> debug_material;
-	Color debug_shape_custom_color = Color(0.0, 0.0, 0.0);
+	Color debug_shape_custom_color = Color::BLACK;
 	int debug_shape_thickness = 2;
 	Vector<Vector3> debug_shape_vertices;
 	Vector<Vector3> debug_line_vertices;

@@ -830,7 +830,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 
 	RID ci = tile_data_editor_dropdown_button->get_canvas_item();
 	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
-	Color clr = Color(1, 1, 1);
+	Color clr = Color::WHITE;
 	if (get_theme_constant(SNAME("modulate_arrow"))) {
 		switch (tile_data_editor_dropdown_button->get_draw_mode()) {
 			case BaseButton::DRAW_PRESSED:
@@ -1724,7 +1724,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		// Draw the tiles to be removed.
 		for (const Vector2i &E : drag_modified_tiles) {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(E); frame++) {
-				tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(E, frame), Color(0.0, 0.0, 0.0), false);
+				tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(E, frame), Color::BLACK, false);
 			}
 		}
 	} else if (drag_type == DRAG_TYPE_RECT_SELECT || drag_type == DRAG_TYPE_REMOVE_TILES_USING_RECT) {
@@ -1734,7 +1734,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Rect2i area = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 		area.set_end((area.get_end() + Vector2i(1, 1)).min(tile_set_atlas_source->get_atlas_grid_size()));
 
-		Color color = Color(0.0, 0.0, 0.0);
+		Color color = Color::BLACK;
 		if (drag_type == DRAG_TYPE_RECT_SELECT) {
 			color = selection_color.lightened(0.2);
 		}
@@ -1768,7 +1768,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				Vector2i coords = Vector2i(x, y);
 				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 					Vector2i origin = margins + (coords * (tile_size + separation));
-					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color(1.0, 1.0, 1.0), false);
+					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color::WHITE, false);
 				}
 			}
 		}
@@ -1785,7 +1785,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		tile_atlas_control->draw_rect(Rect2i(origin, area.size * tile_size), Color(1.0, 1.0, 1.0), false);
+		tile_atlas_control->draw_rect(Rect2i(origin, area.size * tile_size), Color::WHITE, false);
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
@@ -1793,7 +1793,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 			if (hovered_tile != TileSetSource::INVALID_ATLAS_COORDS) {
 				// Draw existing hovered tile.
 				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(hovered_tile); frame++) {
-					Color color = Color(1.0, 1.0, 1.0);
+					Color color = Color::WHITE;
 					if (frame > 0) {
 						color.a *= 0.3;
 					}
@@ -1806,7 +1806,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 					Vector2i separation = tile_set_atlas_source->get_separation();
 					Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 					Vector2i origin = margins + (hovered_base_tile_coords * (tile_size + separation));
-					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color(1.0, 1.0, 1.0), false);
+					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color::WHITE, false);
 				}
 			}
 		}
@@ -1957,7 +1957,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, hovered_alternative_tile_coords.z);
 			if (rect != Rect2i()) {
-				alternative_tiles_control->draw_rect(rect, Color(1.0, 1.0, 1.0), false);
+				alternative_tiles_control->draw_rect(rect, Color::WHITE, false);
 			}
 		}
 

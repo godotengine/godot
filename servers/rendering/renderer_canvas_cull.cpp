@@ -767,7 +767,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		if (p_width < border_size) {
 			border_size = p_width;
 		}
-		Color color2 = Color(1, 1, 1, 0);
+		Color color2 = Color::TRANSPARENT_WHITE;
 
 		PackedColorArray colors_begin;
 		PackedVector2Array points_begin;

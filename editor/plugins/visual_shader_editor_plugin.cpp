@@ -4607,7 +4607,7 @@ void VisualShaderEditor::_update_preview() {
 	Error err = sl.compile(code, info);
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
-		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
+		preview_text->set_line_background_color(i, Color::TRANSPARENT_BLACK);
 	}
 	if (err != OK) {
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");

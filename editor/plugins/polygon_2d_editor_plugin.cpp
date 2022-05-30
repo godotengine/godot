@@ -546,7 +546,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					uv_create_poly_prev.push_back(pos);
 					uv_create_uv_prev.push_back(pos);
 					if (uv_create_colors_prev.size()) {
-						uv_create_colors_prev.push_back(Color(1, 1, 1));
+						uv_create_colors_prev.push_back(Color::WHITE);
 					}
 
 					undo_redo->create_action(TTR("Create Internal Vertex"));
@@ -1157,8 +1157,8 @@ void Polygon2DEditor::_uv_draw() {
 						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
 						Transform2D endpoint_xform = bone_xform * n->get_transform();
 
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+						Color color = current ? Color::WHITE : Color(0.5, 0.5, 0.5);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color::BLACK, Math::round((current ? 5 : 4) * EDSCALE));
 						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 					}
 
@@ -1167,8 +1167,8 @@ void Polygon2DEditor::_uv_draw() {
 						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
 						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0));
 
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+						Color color = current ? Color::WHITE : Color(0.5, 0.5, 0.5);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color::BLACK, Math::round((current ? 5 : 4) * EDSCALE));
 						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 					}
 				}

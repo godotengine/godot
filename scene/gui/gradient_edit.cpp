@@ -177,17 +177,17 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (pos == -1) {
-			prev.color = Color(0, 0, 0);
+			prev.color = Color::BLACK;
 			prev.offset = 0;
 			if (points.size()) {
 				next = points[0];
 			} else {
-				next.color = Color(1, 1, 1);
+				next.color = Color::WHITE;
 				next.offset = 1.0;
 			}
 		} else {
 			if (pos == points.size() - 1) {
-				next.color = Color(1, 1, 1);
+				next.color = Color::WHITE;
 				next.offset = 1.0;
 			} else {
 				next = points[pos + 1];

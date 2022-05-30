@@ -190,9 +190,9 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 			cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
 
-			RD::get_singleton()->texture_clear(cascade.light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+			RD::get_singleton()->texture_clear(cascade.light_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+			RD::get_singleton()->texture_clear(cascade.light_aniso_0_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+			RD::get_singleton()->texture_clear(cascade.light_aniso_1_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 		}
 
 		cascade.cell_size = base_cell_size;
@@ -210,10 +210,10 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 		/* Probe History */
 
 		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
+		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
 
 		cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
+		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1); //needs to be cleared for average to work
 
 		/* Buffers */
 
@@ -1560,10 +1560,10 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 
 	if (cascade_prev != cascade) {
 		//initialize render
-		RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_albedo, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_emission, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_emission_aniso, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(render_geom_facing, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 	}
 
 	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
@@ -1868,9 +1868,9 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		RD::get_singleton()->compute_list_end();
 
 		//clear these textures, as they will have previous garbage on next draw
-		RD::get_singleton()->texture_clear(cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(cascades[cascade].light_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_0_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
+		RD::get_singleton()->texture_clear(cascades[cascade].light_aniso_1_tex, Color::TRANSPARENT_BLACK, 0, 1, 0, 1);
 
 #if 0
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cascades[cascade].sdf, 0);
@@ -2066,7 +2066,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 			texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-			RD::get_singleton()->texture_clear(texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1);
+			RD::get_singleton()->texture_clear(texture, Color::TRANSPARENT_BLACK, 0, levels.size(), 0, 1);
 
 			{
 				int total_elements = 0;
@@ -2379,7 +2379,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 	if (has_dynamic_object_data) {
 		//if it has dynamic object data, it needs to be cleared
-		RD::get_singleton()->texture_clear(texture, Color(0, 0, 0, 0), 0, mipmaps.size(), 0, 1);
+		RD::get_singleton()->texture_clear(texture, Color::TRANSPARENT_BLACK, 0, mipmaps.size(), 0, 1);
 	}
 
 	uint32_t light_count = 0;

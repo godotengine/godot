@@ -36,7 +36,7 @@
 class ColorRect : public Control {
 	GDCLASS(ColorRect, Control);
 
-	Color color = Color(1, 1, 1);
+	Color color = Color::WHITE;
 
 protected:
 	void _notification(int p_what);

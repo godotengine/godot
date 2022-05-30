@@ -3616,7 +3616,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
 				}
 				if (!mr.has("baseColorFactor")) {
-					material->set_albedo(Color(1, 1, 1));
+					material->set_albedo(Color::WHITE);
 				}
 				_set_texture_transform_uv1(bct, material);
 			}
@@ -3684,7 +3684,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(state, bct["index"]));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-				material->set_emission(Color(0, 0, 0));
+				material->set_emission(Color::BLACK);
 			}
 		}
 

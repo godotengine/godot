@@ -172,7 +172,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	// Draw the polygon in creation.
 	if (!in_creation_polygon.is_empty()) {
 		for (int i = 0; i < in_creation_polygon.size() - 1; i++) {
-			base_control->draw_line(in_creation_polygon[i], in_creation_polygon[i + 1], Color(1.0, 1.0, 1.0));
+			base_control->draw_line(in_creation_polygon[i], in_creation_polygon[i + 1], Color::WHITE);
 		}
 	}
 
@@ -184,7 +184,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT && !in_creation_polygon.is_empty()) {
-		base_control->draw_line(in_creation_polygon[in_creation_polygon.size() - 1], in_creation_point, Color(1.0, 1.0, 1.0));
+		base_control->draw_line(in_creation_polygon[in_creation_polygon.size() - 1], in_creation_point, Color::WHITE);
 	}
 
 	// Draw the handles.
@@ -207,7 +207,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		for (int i = 0; i < (int)polygons.size(); i++) {
 			const Vector<Vector2> &polygon = polygons[i];
 			for (int j = 0; j < polygon.size(); j++) {
-				const Color modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
+				const Color modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color::WHITE;
 				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, modulate);
 			}
 		}
@@ -1102,7 +1102,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 				break;
 		}
 
-		Color color = Color(1, 1, 1);
+		Color color = Color::WHITE;
 		if (p_selected) {
 			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -1117,7 +1117,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		}
 
 		Vector2 string_size = font->get_string_size(text, font_size);
-		p_canvas_item->draw_string(font, p_transform.get_origin() + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+		p_canvas_item->draw_string(font, p_transform.get_origin() + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color::BLACK);
 	}
 }
 
@@ -1194,7 +1194,7 @@ void TileDataTextureOffsetEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 	ERR_FAIL_COND(!tile_data);
 
 	Vector2i tile_set_tile_size = tile_set->get_tile_size();
-	Color color = Color(1.0, 0.0, 0.0);
+	Color color = Color::RED;
 	if (p_selected) {
 		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -1216,7 +1216,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 	}
 	ERR_FAIL_COND(value.get_type() != Variant::VECTOR2I && value.get_type() != Variant::VECTOR2);
 
-	Color color = Color(1.0, 1.0, 1.0);
+	Color color = Color::WHITE;
 	if (p_selected) {
 		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -1230,7 +1230,7 @@ void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 	TileData *tile_data = _get_tile_data(p_cell);
 	ERR_FAIL_COND(!tile_data);
 
-	Color color = Color(1.0, 1.0, 1.0);
+	Color color = Color::WHITE;
 	if (p_selected) {
 		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -1714,7 +1714,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
 				Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
-				Color color = Color(1, 1, 1);
+				Color color = Color::WHITE;
 				String text;
 				if (tile_data->get_terrain_set() >= 0) {
 					text = vformat("%d", tile_data->get_terrain_set());
@@ -1722,7 +1722,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 					text = "-";
 				}
 				Vector2 string_size = font->get_string_size(text, font_size);
-				p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+				p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color::BLACK);
 			}
 		}
 	}
@@ -1890,7 +1890,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 					Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
 					Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
-					Color color = Color(1, 1, 1);
+					Color color = Color::WHITE;
 					String text;
 					if (tile_data->get_terrain_set() >= 0) {
 						text = vformat("%d", tile_data->get_terrain_set());
@@ -1898,7 +1898,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 						text = "-";
 					}
 					Vector2 string_size = font->get_string_size(text, font_size);
-					p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+					p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color::BLACK);
 				}
 			}
 		}

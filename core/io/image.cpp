@@ -2113,7 +2113,7 @@ void Image::create(const char **p_xpm) {
 
 						// magenta mask
 						if (col_r == 255 && col_g == 0 && col_b == 255) {
-							colormap[colorstring] = Color(0, 0, 0, 0);
+							colormap[colorstring] = Color::TRANSPARENT_BLACK;
 							has_alpha = true;
 						} else {
 							colormap[colorstring] = Color(col_r / 255.0, col_g / 255.0, col_b / 255.0, 1.0);

@@ -39,7 +39,7 @@ class FogMaterial : public Material {
 private:
 	float density = 1.0;
 	Color albedo = Color(1, 1, 1, 1);
-	Color emission = Color(0, 0, 0, 0);
+	Color emission = Color::TRANSPARENT_BLACK;
 
 	float height_falloff = 0.0;
 

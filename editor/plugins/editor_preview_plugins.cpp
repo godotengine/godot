@@ -53,7 +53,7 @@ void post_process_preview(Ref<Image> p_image) {
 
 	const int r = MIN(w, h) / 32;
 	const int r2 = r * r;
-	Color transparent = Color(0, 0, 0, 0);
+	Color transparent = Color::TRANSPARENT_BLACK;
 
 	for (int i = 0; i < r; i++) {
 		for (int j = 0; j < r; j++) {
@@ -507,7 +507,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	Color comment_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/comment_color");
 
 	if (bg_color.a == 0) {
-		bg_color = Color(0, 0, 0, 0);
+		bg_color = Color::TRANSPARENT_BLACK;
 	}
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
@@ -777,7 +777,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	light2 = RS::get_singleton()->directional_light_create();
 	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//RS::get_singleton()->light_set_color(light2, RS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+	//RS::get_singleton()->light_set_color(light2, RS::LIGHT_COLOR_SPECULAR, Color::BLACK);
 	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
 	RS::get_singleton()->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));

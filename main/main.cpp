@@ -1796,7 +1796,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			// Create a 1×1 transparent image. This will effectively hide the splash image.
 			boot_logo.instantiate();
 			boot_logo->create(1, 1, false, Image::FORMAT_RGBA8);
-			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
+			boot_logo->set_pixel(0, 0, Color::TRANSPARENT_BLACK);
 		}
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)

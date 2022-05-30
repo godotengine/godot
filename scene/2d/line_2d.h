@@ -129,7 +129,7 @@ private:
 	LineCapMode _end_cap_mode = LINE_CAP_NONE;
 	float _width = 10.0;
 	Ref<Curve> _curve;
-	Color _default_color = Color(1, 1, 1);
+	Color _default_color = Color::WHITE;
 	Ref<Gradient> _gradient;
 	Ref<Texture2D> _texture;
 	LineTextureMode _texture_mode = LINE_TEXTURE_NONE;

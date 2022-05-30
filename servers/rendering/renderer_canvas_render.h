@@ -95,8 +95,8 @@ public:
 		Light() {
 			version = 0;
 			enabled = true;
-			color = Color(1, 1, 1);
-			shadow_color = Color(0, 0, 0, 0);
+			color = Color::WHITE;
+			shadow_color = Color::TRANSPARENT_BLACK;
 			height = 0;
 			z_min = -1024;
 			z_max = 1024;

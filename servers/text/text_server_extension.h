@@ -284,8 +284,8 @@ public:
 	GDVIRTUAL4(font_render_range, RID, const Vector2i &, int64_t, int64_t);
 	GDVIRTUAL3(font_render_glyph, RID, const Vector2i &, int64_t);
 
-	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color::WHITE) const override;
+	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color::WHITE) const override;
 	GDVIRTUAL6C(font_draw_glyph, RID, RID, int64_t, const Vector2 &, int64_t, const Color &);
 	GDVIRTUAL7C(font_draw_glyph_outline, RID, RID, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
 
@@ -463,8 +463,8 @@ public:
 	GDVIRTUAL2RC(int64_t, shaped_text_hit_test_grapheme, RID, double);
 	GDVIRTUAL2RC(int64_t, shaped_text_hit_test_position, RID, double);
 
-	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color::WHITE) const override;
+	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color::WHITE) const override;
 	GDVIRTUAL6C(shaped_text_draw, RID, RID, const Vector2 &, double, double, const Color &);
 	GDVIRTUAL7C(shaped_text_draw_outline, RID, RID, const Vector2 &, double, double, int64_t, const Color &);
 

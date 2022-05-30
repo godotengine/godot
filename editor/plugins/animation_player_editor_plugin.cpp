@@ -1433,7 +1433,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;
 	int cidx = 0;
-	onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
+	onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color::WHITE : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
 	for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
 		if (step_off == 0) {
 			// Skip present step and switch to the color of future.
