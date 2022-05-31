@@ -4523,6 +4523,7 @@ Point2 Tree::get_scroll() const {
 }
 
 void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
+	ERR_FAIL_NULL(p_item);
 	if (!is_visible_in_tree() || !p_item->is_visible()) {
 		return; // Hack to work around crash in get_item_rect() if Tree is not in tree.
 	}
