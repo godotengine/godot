@@ -91,4 +91,4 @@ public:
 	String get_system_dir(int p_dir, bool p_shared_storage);
 };
 
-#endif /* !JAVA_GODOT_IO_WRAPPER_H */
+#endif // JAVA_GODOT_IO_WRAPPER_H

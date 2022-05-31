@@ -76,9 +76,7 @@ public:
 };
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
-	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
-
+	ERR_FAIL_NULL(godot_java);
 	godot_java->alert(p_alert, p_title);
 }
 
@@ -106,7 +104,6 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	}
 #endif
-
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
@@ -164,7 +161,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = p_path;
@@ -313,7 +310,7 @@ Size2i OS_Android::get_display_size() const {
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 #if defined(GLES3_ENABLED)
-	ERR_FAIL_COND(!p_gl_extensions);
+	ERR_FAIL_NULL(p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
 }

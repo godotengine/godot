@@ -106,4 +106,4 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_storage_permission);
 
-#endif //GODOT_GRADLE_EXPORT_UTIL_H
+#endif // GODOT_GRADLE_EXPORT_UTIL_H
