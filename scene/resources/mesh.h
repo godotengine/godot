@@ -31,6 +31,7 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "core/local_vector.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
 #include "core/resource.h"
@@ -118,6 +119,12 @@ public:
 		BLEND_SHAPE_MODE_RELATIVE = VS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
+	enum StorageMode {
+		STORAGE_MODE_GPU,
+		STORAGE_MODE_CPU,
+		STORAGE_MODE_CPU_AND_GPU,
+	};
+
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
@@ -129,11 +136,14 @@ public:
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
+	int surface_get_face_count(int p_idx) const;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
 	virtual void set_blend_shape_name(int p_index, const StringName &p_name) = 0;
 
+	int get_face_count() const;
 	PoolVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	Ref<TriangleMesh> generate_triangle_mesh_from_aabb() const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
@@ -143,6 +153,7 @@ public:
 	Ref<Mesh> create_outline(float p_margin) const;
 
 	virtual AABB get_aabb() const = 0;
+	virtual void set_storage_mode(StorageMode p_storage_mode);
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
@@ -162,13 +173,30 @@ class ArrayMesh : public Mesh {
 	RES_BASE_EXTENSION("mesh");
 
 private:
+	// Storing the mesh data on CPU
+	struct CPUSurface {
+		Array arrays;
+		Array blend_shapes;
+		PrimitiveType primitive_type;
+		int num_verts = 0;
+		int num_inds = 0;
+	};
+
 	struct Surface {
 		String name;
 		AABB aabb;
 		Ref<Material> material;
 		bool is_2d;
+		// Watch for bugs here.
+		// When calling add_surface() rather than add_surface_from_arrays(),
+		// the creation flags will be unset, and left at default.
+		// Conversion from CPU to GPU memory assumes that creation_flags are
+		// correct, so is only TRULY safe when used with add_surface_from_arrays().
+		uint32_t creation_flags = ARRAY_COMPRESS_DEFAULT;
+		uint32_t creation_format = 0;
 	};
 	Vector<Surface> surfaces;
+	LocalVector<CPUSurface *> _cpu_surfaces;
 	RID mesh;
 	AABB aabb;
 	BlendShapeMode blend_shape_mode;
@@ -176,6 +204,18 @@ private:
 	AABB custom_aabb;
 
 	void _recompute_aabb();
+
+	// Data can be held on GPU, CPU or both.
+	// CPU is quicker for modifications, but can't be
+	// used for rendering.
+	bool _on_cpu = false;
+	bool _on_gpu = true;
+	StorageMode _storage_mode = STORAGE_MODE_GPU;
+
+	void add_surface_from_arrays_cpu(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes);
+	void add_surface_from_arrays_cpu_with_probe(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_flags, int p_surface_id);
+	void clear_cpu_surfaces();
+	bool on_cpu() const { return _on_cpu && ((int)_cpu_surfaces.size() == surfaces.size()); }
 
 protected:
 	virtual bool _is_generated() const { return false; }
@@ -236,6 +276,8 @@ public:
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file();
+
+	virtual void set_storage_mode(StorageMode p_storage_mode);
 
 	ArrayMesh();
 

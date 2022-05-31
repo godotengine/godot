@@ -65,6 +65,7 @@
 		<method name="is_mergeable_with" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="other_mesh_instance" type="Node" />
+			<argument index="1" name="shadows_only" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if this [MeshInstance] can be merged with the specified [code]other_mesh_instance[/code], using the [method MeshInstance.merge_meshes] function.
 				In order to be mergeable, properties of the [MeshInstance] must match, and each surface must match, in terms of material, attributes and vertex format.
@@ -72,9 +73,10 @@
 		</method>
 		<method name="merge_meshes">
 			<return type="bool" />
-			<argument index="0" name="mesh_instances" type="Array" default="[  ]" />
+			<argument index="0" name="mesh_instances" type="Array" />
 			<argument index="1" name="use_global_space" type="bool" default="false" />
 			<argument index="2" name="check_compatibility" type="bool" default="true" />
+			<argument index="3" name="shadows_only" type="bool" default="false" />
 			<description>
 				This function can merge together the data from several source [MeshInstance]s into a single destination [MeshInstance] (the MeshInstance the function is called from). This is primarily useful for improving performance by reducing the number of drawcalls and [Node]s.
 				Merging should only be attempted for simple meshes that do not contain animation.

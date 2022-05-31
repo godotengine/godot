@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "csg_shape.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/resources/merging_tool.h"
 
 void CSGShape::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -490,6 +492,50 @@ PoolVector<Vector3> CSGShape::get_brush_faces() {
 	}
 
 	return faces;
+}
+
+bool CSGShape::split_by_surface(Vector<Variant> p_destination_mesh_instances) {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Source CSGShape must be inside the SceneTree.");
+
+	// For simplicity we are requiring that the destination MeshInstances have the same parent
+	// as the source. This means we can use identical transforms.
+	Node *parent = get_parent();
+	ERR_FAIL_NULL_V_MSG(parent, false, "Source CSGShape must have a parent node.");
+
+	// Bound function only support variants, so we need to convert to a list of MeshInstances.
+	Vector<MeshInstance *> mis;
+
+	for (int n = 0; n < p_destination_mesh_instances.size(); n++) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_destination_mesh_instances[n]);
+		if (mi) {
+			ERR_FAIL_COND_V_MSG(mi->get_parent() != parent, false, "Destination MeshInstances must be siblings of the source CSGShape.");
+			mis.push_back(mi);
+		} else {
+			ERR_FAIL_V_MSG(false, "Only MeshInstances can be split.");
+		}
+	}
+
+	force_update_shape();
+
+	Array arr = get_meshes();
+	ERR_FAIL_COND_V(arr.empty(), false);
+
+	Ref<ArrayMesh> arr_mesh = arr[1];
+	ERR_FAIL_COND_V(!arr_mesh.is_valid(), false);
+
+	int num_surfaces = arr_mesh->get_surface_count();
+	ERR_FAIL_COND_V(num_surfaces == 0, false);
+
+	ERR_FAIL_COND_V_MSG(mis.size() != num_surfaces, false, "Number of surfaces and number of destination MeshInstances must match.");
+
+	CSGBrush *brush = _get_brush();
+	ERR_FAIL_NULL_V_MSG(brush, false, "Cannot get CSGBrush.");
+
+	for (int s = 0; s < num_surfaces; s++) {
+		MergingTool::split_csg_surface_to_mesh_instance(*this, *mis[s], arr_mesh, brush, s);
+	}
+
+	return true;
 }
 
 PoolVector<Face3> CSGShape::get_faces(uint32_t p_usage_flags) const {

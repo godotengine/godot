@@ -33,8 +33,10 @@
 VARIANT_ENUM_CAST(CullInstance::PortalMode);
 
 void CullInstance::set_portal_mode(CullInstance::PortalMode p_mode) {
-	_portal_mode = p_mode;
-	_refresh_portal_mode();
+	if (p_mode != _portal_mode) {
+		_portal_mode = p_mode;
+		_refresh_portal_mode();
+	}
 }
 
 CullInstance::PortalMode CullInstance::get_portal_mode() const {

@@ -2176,7 +2176,7 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 			if (!bf.get_bit(c)) {
 				MeshInstance *b = source_meshes[c];
 
-				if (a->is_mergeable_with(b)) {
+				if (a->is_mergeable_with(b, false)) {
 					merge_list.push_back(b);
 					bf.set_bit(c, true);
 				}
@@ -2200,7 +2200,7 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 				variant_merge_list.set(i, merge_list[i]);
 			}
 
-			if (merged->merge_meshes(variant_merge_list, true, false)) {
+			if (merged->merge_meshes(variant_merge_list, true, false, false)) {
 				// set all the source meshes to portal mode ignore so not shown
 				for (int i = 0; i < merge_list.size(); i++) {
 					merge_list[i]->set_portal_mode(CullInstance::PORTAL_MODE_IGNORE);
@@ -2305,8 +2305,10 @@ void RoomManager::_list_mergeable_mesh_instances(Spatial *p_node, LocalVector<Me
 			// disallow for portals or bounds
 			// mesh instance portals should be queued for deletion by this point, we don't want to merge portals!
 			if (!_node_is_type<Portal>(mi) && !_name_ends_with(mi, "-bound") && !mi->is_queued_for_deletion()) {
-				// only merge if visible
-				if (mi->is_inside_tree() && mi->is_visible()) {
+				// Only merge if visible.
+				// N.B. get_allow_merging() is the old flag on CullInstance, and is maintained for backward compatibility only.
+				// It is overruled by the Spatial "merging_mode" if this is set.
+				if (mi->is_inside_tree() && mi->is_visible() && mi->get_allow_merging()) {
 					r_list.push_back(mi);
 				}
 			}

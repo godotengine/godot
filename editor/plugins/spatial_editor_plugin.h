@@ -834,6 +834,10 @@ public:
 	int get_over_gizmo_handle() const { return over_gizmo_handle; }
 	void set_over_gizmo_handle(int idx) { over_gizmo_handle = idx; }
 
+	// Simple way to turn off (expensive) gizmo generation
+	// especially for temporary objects in the editor.
+	static bool _prevent_gizmo_generation;
+
 	void set_can_preview(Camera *p_preview);
 	void set_message(String p_message, float p_time = 5);
 

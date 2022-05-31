@@ -37,7 +37,7 @@ class CullInstance : public Spatial {
 	GDCLASS(CullInstance, Spatial);
 
 public:
-	enum PortalMode {
+	enum PortalMode : unsigned int {
 		PORTAL_MODE_STATIC, // not moving within a room
 		PORTAL_MODE_DYNAMIC, //  moving within room
 		PORTAL_MODE_ROAMING, // moving between rooms

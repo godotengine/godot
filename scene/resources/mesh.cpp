@@ -42,32 +42,116 @@
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
+int Mesh::surface_get_face_count(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
+
+	switch (surface_get_primitive_type(p_idx)) {
+		case PRIMITIVE_TRIANGLES: {
+			int len = (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
+			// Don't error if zero, it's valid (we'll just skip it later).
+			ERR_FAIL_COND_V_MSG((len % 3) != 0, 0, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLES).", p_idx, (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
+			return len;
+		} break;
+		case PRIMITIVE_TRIANGLE_FAN:
+		case PRIMITIVE_TRIANGLE_STRIP: {
+			int len = (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
+			// Don't error if zero, it's valid (we'll just skip it later).
+			ERR_FAIL_COND_V_MSG(len != 0 && len < 3, 0, vformat("Ignoring surface %d, incorrect %s count: %d (for %s).", p_idx, (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len, (surface_get_primitive_type(p_idx) == PRIMITIVE_TRIANGLE_FAN) ? "PRIMITIVE_TRIANGLE_FAN" : "PRIMITIVE_TRIANGLE_STRIP"));
+			return (len == 0) ? 0 : (len - 2) * 3;
+		} break;
+		default: {
+		} break;
+	}
+
+	return 0;
+}
+
+int Mesh::get_face_count() const {
+	int faces_size = 0;
+
+	for (int i = 0; i < get_surface_count(); i++) {
+		faces_size += surface_get_face_count(i);
+	}
+
+	return faces_size;
+}
+
+Ref<TriangleMesh> Mesh::generate_triangle_mesh_from_aabb() const {
+	AABB aabb = get_aabb();
+
+	Vector3 pts[8];
+	Vector3 s = aabb.position;
+	Vector3 l = s + aabb.size;
+
+	pts[0] = Vector3(s.x, s.y, s.z);
+	pts[1] = Vector3(l.x, s.y, s.z);
+	pts[2] = Vector3(l.x, l.y, s.z);
+	pts[3] = Vector3(s.x, l.y, s.z);
+	pts[4] = Vector3(l.x, l.y, l.z);
+	pts[5] = Vector3(s.x, l.y, l.z);
+	pts[6] = Vector3(s.x, s.y, l.z);
+	pts[7] = Vector3(l.x, s.y, l.z);
+
+	PoolVector<Vector3> face_pts;
+	face_pts.resize(6 * 2 * 3);
+	PoolVector<Vector3>::Write w = face_pts.write();
+	int wc = 0;
+	w[wc++] = pts[0];
+	w[wc++] = pts[1];
+	w[wc++] = pts[2];
+	w[wc++] = pts[0];
+	w[wc++] = pts[2];
+	w[wc++] = pts[3];
+
+	w[wc++] = pts[6];
+	w[wc++] = pts[5];
+	w[wc++] = pts[4];
+	w[wc++] = pts[6];
+	w[wc++] = pts[4];
+	w[wc++] = pts[7];
+
+	w[wc++] = pts[1];
+	w[wc++] = pts[7];
+	w[wc++] = pts[4];
+	w[wc++] = pts[1];
+	w[wc++] = pts[4];
+	w[wc++] = pts[2];
+
+	w[wc++] = pts[0];
+	w[wc++] = pts[3];
+	w[wc++] = pts[5];
+	w[wc++] = pts[0];
+	w[wc++] = pts[5];
+	w[wc++] = pts[6];
+
+	w[wc++] = pts[0];
+	w[wc++] = pts[6];
+	w[wc++] = pts[7];
+	w[wc++] = pts[0];
+	w[wc++] = pts[7];
+	w[wc++] = pts[1];
+
+	w[wc++] = pts[2];
+	w[wc++] = pts[4];
+	w[wc++] = pts[5];
+	w[wc++] = pts[2];
+	w[wc++] = pts[5];
+	w[wc++] = pts[3];
+
+	w.release();
+
+	Ref<TriangleMesh> tmesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	tmesh->create(face_pts);
+
+	return tmesh;
+}
+
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
 	}
 
-	int faces_size = 0;
-
-	for (int i = 0; i < get_surface_count(); i++) {
-		switch (surface_get_primitive_type(i)) {
-			case PRIMITIVE_TRIANGLES: {
-				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
-				// Don't error if zero, it's valid (we'll just skip it later).
-				ERR_CONTINUE_MSG((len % 3) != 0, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLES).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
-				faces_size += len;
-			} break;
-			case PRIMITIVE_TRIANGLE_FAN:
-			case PRIMITIVE_TRIANGLE_STRIP: {
-				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
-				// Don't error if zero, it's valid (we'll just skip it later).
-				ERR_CONTINUE_MSG(len != 0 && len < 3, vformat("Ignoring surface %d, incorrect %s count: %d (for %s).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len, (surface_get_primitive_type(i) == PRIMITIVE_TRIANGLE_FAN) ? "PRIMITIVE_TRIANGLE_FAN" : "PRIMITIVE_TRIANGLE_STRIP"));
-				faces_size += (len == 0) ? 0 : (len - 2) * 3;
-			} break;
-			default: {
-			} break;
-		}
-	}
+	int faces_size = get_face_count();
 
 	if (faces_size == 0) {
 		return triangle_mesh;
@@ -534,6 +618,9 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_MAX);
 }
 
+void Mesh::set_storage_mode(StorageMode p_storage_mode) {
+}
+
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
@@ -696,6 +783,9 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
+	// Data must be in GPU for this routine to work.
+	ERR_FAIL_COND_V(!_on_gpu, false);
+
 	String sname = p_name;
 
 	if (p_name == "blend_shape/names") {
@@ -807,10 +897,57 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	Surface s;
 	s.aabb = p_aabb;
 	s.is_2d = p_format & ARRAY_FLAG_USE_2D_VERTICES;
+	s.creation_format = p_format;
 	surfaces.push_back(s);
 	_recompute_aabb();
 
 	VisualServer::get_singleton()->mesh_add_surface(mesh, p_format, (VS::PrimitiveType)p_primitive, p_array, p_vertex_count, p_index_array, p_index_count, p_aabb, p_blend_shapes, p_bone_aabbs);
+}
+
+void ArrayMesh::clear_cpu_surfaces() {
+	for (unsigned int n = 0; n < _cpu_surfaces.size(); n++) {
+		CPUSurface *s = _cpu_surfaces[n];
+		DEV_ASSERT(s);
+		memdelete(s);
+	}
+
+	_cpu_surfaces.clear();
+}
+
+void ArrayMesh::add_surface_from_arrays_cpu_with_probe(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_flags, int p_surface_id) {
+	uint32_t creation_format = 0;
+
+	if (_on_gpu) {
+		// query the last created surface format
+		creation_format = VisualServer::get_singleton()->mesh_surface_get_format(mesh, surfaces.size());
+	} else {
+		creation_format = VisualServer::get_singleton()->mesh_find_format_from_arrays((VS::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_flags);
+	}
+
+	Surface s = surfaces[p_surface_id];
+	s.creation_flags = p_flags;
+	s.creation_format = creation_format;
+	surfaces.set(p_surface_id, s);
+
+	add_surface_from_arrays_cpu(p_primitive, p_arrays, p_blend_shapes);
+}
+
+void ArrayMesh::add_surface_from_arrays_cpu(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes) {
+	CPUSurface *s = memnew(CPUSurface);
+	_cpu_surfaces.push_back(s);
+
+	s->primitive_type = p_primitive;
+	s->arrays = p_arrays;
+	s->blend_shapes = p_blend_shapes;
+
+	if (p_arrays.size() > VS::ARRAY_VERTEX) {
+		// This is horrible but VisualServer uses this .. it may do a conversion to PoolVector3Array?
+		// Maybe this rarely happens.
+		s->num_verts = PoolVector3Array(p_arrays[VS::ARRAY_VERTEX]).size();
+	}
+	if (p_arrays.size() > VS::ARRAY_INDEX) {
+		s->num_inds = PoolIntArray(p_arrays[VS::ARRAY_INDEX]).size();
+	}
 }
 
 void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_flags) {
@@ -818,7 +955,9 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 
 	Surface s;
 
-	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_flags);
+	if (_on_gpu) {
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_flags);
+	}
 
 	/* make aABB? */ {
 		Variant arr = p_arrays[ARRAY_VERTEX];
@@ -840,9 +979,14 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 
 		s.aabb = aabb;
 		s.is_2d = arr.get_type() == Variant::POOL_VECTOR2_ARRAY;
+		s.creation_flags = p_flags;
 		surfaces.push_back(s);
 
 		_recompute_aabb();
+	}
+
+	if (_on_cpu) {
+		add_surface_from_arrays_cpu_with_probe(p_primitive, p_arrays, p_blend_shapes, p_flags, surfaces.size() - 1);
 	}
 
 	clear_cache();
@@ -852,10 +996,20 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 
 Array ArrayMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+
+	// preferentially read from CPU as quicker
+	if (on_cpu()) {
+		return _cpu_surfaces[p_surface]->arrays;
+	}
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
 Array ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+
+	// preferentially read from CPU as quicker
+	if (on_cpu()) {
+		return _cpu_surfaces[p_surface]->blend_shapes;
+	}
 	return VisualServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, p_surface);
 }
 
@@ -924,6 +1078,13 @@ void ArrayMesh::surface_remove(int p_idx) {
 	VisualServer::get_singleton()->mesh_remove_surface(mesh, p_idx);
 	surfaces.remove(p_idx);
 
+	if (on_cpu()) {
+		CPUSurface *s = _cpu_surfaces[p_idx];
+		DEV_ASSERT(s);
+		memdelete(s);
+		_cpu_surfaces.remove(p_idx);
+	}
+
 	clear_cache();
 	_recompute_aabb();
 	_change_notify();
@@ -932,21 +1093,46 @@ void ArrayMesh::surface_remove(int p_idx) {
 
 int ArrayMesh::surface_get_array_len(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), -1);
+
+	if (on_cpu()) {
+		CPUSurface *s = _cpu_surfaces[p_idx];
+		DEV_ASSERT(s);
+		return s->num_verts;
+	}
+
 	return VisualServer::get_singleton()->mesh_surface_get_array_len(mesh, p_idx);
 }
 
 int ArrayMesh::surface_get_array_index_len(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), -1);
+
+	if (on_cpu()) {
+		CPUSurface *s = _cpu_surfaces[p_idx];
+		DEV_ASSERT(s);
+		return s->num_inds;
+	}
 	return VisualServer::get_singleton()->mesh_surface_get_array_index_len(mesh, p_idx);
 }
 
 uint32_t ArrayMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), 0);
+
+	// not sure whether we need to support this yet?
+	if (!_on_gpu) {
+		return surfaces[p_idx].creation_format;
+	}
+
 	return VisualServer::get_singleton()->mesh_surface_get_format(mesh, p_idx);
 }
 
 ArrayMesh::PrimitiveType ArrayMesh::surface_get_primitive_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), PRIMITIVE_LINES);
+
+	if (on_cpu()) {
+		CPUSurface *s = _cpu_surfaces[p_idx];
+		DEV_ASSERT(s);
+		return s->primitive_type;
+	}
 	return (PrimitiveType)VisualServer::get_singleton()->mesh_surface_get_primitive_type(mesh, p_idx);
 }
 
@@ -956,7 +1142,10 @@ void ArrayMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 		return;
 	}
 	surfaces.write[p_idx].material = p_material;
-	VisualServer::get_singleton()->mesh_surface_set_material(mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
+
+	if (_on_gpu) {
+		VisualServer::get_singleton()->mesh_surface_set_material(mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
+	}
 
 	_change_notify("material");
 	emit_changed();
@@ -1040,6 +1229,11 @@ void ArrayMesh::clear_surfaces() {
 	if (!mesh.is_valid()) {
 		return;
 	}
+
+	if (_on_cpu) {
+		clear_cpu_surfaces();
+	}
+
 	VS::get_singleton()->mesh_clear(mesh);
 	surfaces.clear();
 	aabb = AABB();
@@ -1486,6 +1680,80 @@ void ArrayMesh::reload_from_file() {
 	_change_notify();
 }
 
+void ArrayMesh::set_storage_mode(StorageMode p_storage_mode) {
+	if (_storage_mode == p_storage_mode) {
+		return;
+	}
+
+	bool new_on_cpu = false;
+	bool new_on_gpu = false;
+
+	switch (p_storage_mode) {
+		default: {
+			new_on_cpu = false;
+			new_on_gpu = true;
+		} break;
+		case STORAGE_MODE_CPU: {
+			new_on_cpu = true;
+			new_on_gpu = false;
+		} break;
+		case STORAGE_MODE_CPU_AND_GPU: {
+			new_on_cpu = true;
+			new_on_gpu = true;
+		} break;
+	}
+
+	// cpu to gpu?
+	if (new_on_gpu && !_on_gpu) {
+		// must be on cpu to go to gpu
+		DEV_CHECK(_on_cpu);
+		if (mesh.is_valid()) {
+			// make sure mesh is clear (may not be necessary)
+			VS::get_singleton()->mesh_clear(mesh);
+
+			for (unsigned int n = 0; n < _cpu_surfaces.size(); n++) {
+				CPUSurface *s = _cpu_surfaces[n];
+				DEV_ASSERT(s);
+				VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)s->primitive_type, s->arrays, s->blend_shapes, surfaces[n].creation_flags);
+
+				ERR_CONTINUE((int)n >= surfaces.size());
+				const Ref<Material> &mat = surfaces[n].material;
+				VisualServer::get_singleton()->mesh_surface_set_material(mesh, n, mat.is_null() ? RID() : mat->get_rid());
+			}
+		}
+	}
+
+	// gpu to cpu?
+	if (new_on_cpu && !_on_cpu) {
+		// must be on gpu to go to cpu
+		DEV_CHECK(_on_gpu);
+		clear_cpu_surfaces();
+
+		if (mesh.is_valid()) {
+			for (int n = 0; n < surfaces.size(); n++) {
+				Array arrays = VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, n);
+				Array blend_shapes = VisualServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, n);
+				PrimitiveType primitive = (PrimitiveType)VisualServer::get_singleton()->mesh_surface_get_primitive_type(mesh, n);
+				add_surface_from_arrays_cpu(primitive, arrays, blend_shapes);
+			}
+		} // mesh valid
+	}
+
+	// clear anything not used
+	if (!new_on_cpu) {
+		clear_cpu_surfaces();
+	}
+	if (!new_on_gpu && _on_gpu) {
+		if (mesh.is_valid()) {
+			VS::get_singleton()->mesh_clear(mesh);
+		}
+	}
+
+	_on_cpu = new_on_cpu;
+	_on_gpu = new_on_gpu;
+	_storage_mode = p_storage_mode;
+}
+
 ArrayMesh::ArrayMesh() {
 	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 	blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
@@ -1493,4 +1761,5 @@ ArrayMesh::ArrayMesh() {
 
 ArrayMesh::~ArrayMesh() {
 	VisualServer::get_singleton()->free(mesh);
+	clear_cpu_surfaces();
 }
