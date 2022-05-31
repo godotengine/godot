@@ -384,11 +384,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	for (int i = motion_from; i <= motion_to; i++) {
 		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
-	for (const KeyValue<StringName, GroupData> &E : p_child->data.grouped) {
-		if (E.value.group) {
-			E.value.group->changed = true;
-		}
-	}
+	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
 }
@@ -405,6 +401,18 @@ void Node::raise() {
 		data.parent->move_child(this, data.parent->data.internal_children_back - 1);
 	} else {
 		data.parent->move_child(this, data.parent->get_child_count(false) - 1);
+	}
+}
+
+void Node::_propagate_groups_dirty() {
+	for (const KeyValue<StringName, GroupData> &E : data.grouped) {
+		if (E.value.group) {
+			E.value.group->changed = true;
+		}
+	}
+
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_groups_dirty();
 	}
 }
 
