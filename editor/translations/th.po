@@ -14218,6 +14218,14 @@ msgid "Runnable"
 msgstr "สามารถรันได้"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "ลบพรีเซ็ต '%s'?"
 
@@ -14361,19 +14369,27 @@ msgid "More Info..."
 msgstr "ย้ายไป..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "ส่งออก PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "ส่งออกโปรเจกต์"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "ส่งออกโหมด?"
+msgid "Export All"
+msgstr "ส่งออกทั้งหมด"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "กรุณาเลือกโฟลเดอร์ว่างเปล่า"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "ส่งออกทั้งหมด"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14381,7 +14397,8 @@ msgid "ZIP File"
 msgstr "ไฟล์ ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot เกมแพ็ค"
 
 #: editor/project_export.cpp
@@ -14698,12 +14715,12 @@ msgid "Project Manager"
 msgstr "ตัวจัดการโปรเจกต์"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "กำลังโหลด โปรดรอ..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "แก้ไขล่าสุด"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "กำลังโหลด โปรดรอ..."
 
 #: editor/project_manager.cpp
 #, fuzzy
