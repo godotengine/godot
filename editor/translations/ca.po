@@ -14462,6 +14462,14 @@ msgid "Runnable"
 msgstr "Executable"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Esborrar la configuració '%s' ?"
 
@@ -14604,19 +14612,27 @@ msgid "More Info..."
 msgstr "Mou cap a..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Exporta PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Exporta Projecte"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Mode d'Exportació?"
+msgid "Export All"
+msgstr "Exportar Tot"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Selecciona un directori buit."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Exportar Tot"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14624,8 +14640,9 @@ msgid "ZIP File"
 msgstr "Fitxer ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "Exporta Projecte"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14962,13 +14979,13 @@ msgstr "Gestor del Projecte"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Loading, please wait..."
-msgstr "S'estan buscant rèpliques..."
+msgid "Last Modified"
+msgstr "Última modificació"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Last Modified"
-msgstr "Última modificació"
+msgid "Loading, please wait..."
+msgstr "S'estan buscant rèpliques..."
 
 #: editor/project_manager.cpp
 #, fuzzy

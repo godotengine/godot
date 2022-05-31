@@ -70,13 +70,14 @@
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
 # Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
+# inci <incialien@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-03 13:13+0000\n"
-"Last-Translator: Yusuf Yavuzyigit <yusufyavuzyigit25@gmail.com>\n"
+"PO-Revision-Date: 2022-05-27 16:15+0000\n"
+"Last-Translator: inci <incialien@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -84,11 +85,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Tablet Sürücüsü"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -96,18 +97,16 @@ msgid "Clipboard"
 msgstr "Pano"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Şu anki Sahne"
+msgstr "Şu anki ekran"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Çıkış Kodu"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "V-Sync Etkin"
+msgstr "V-Sync Etkinleştirildi"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -118,13 +117,12 @@ msgid "Delta Smoothing"
 msgstr "Delta Yumuşatma"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Düşük İşlemci Kullanımı Modu"
+msgstr "Düşük İşlemci Kullanım Modu"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Düşük İşlemci Kullanımı Uyku Modu (μsn)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
@@ -132,62 +130,54 @@ msgid "Keep Screen On"
 msgstr "Ekranı Açık Tut"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "En Düşük Ekran Boyutu"
+msgstr "Minimum Pencere Boyutu"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Maksimum Ekran Boyutu"
+msgstr "Maksimum Pencere Boyutu"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Ekran Oryantasyonu"
+msgstr "Ekran Yönü"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Yeni Pencere"
+msgstr "Pencere"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
-#, fuzzy
 msgid "Borderless"
-msgstr "Kenar Pikselleri"
+msgstr "Kenarlıksız"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Piksel Başına Saydamlık Etkin"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
-#, fuzzy
 msgid "Fullscreen"
-msgstr "Tam Ekranı Aç/Kapat"
+msgstr "Tam Ekran"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Minimized"
-msgstr "Etkinleştir"
+msgstr "Küçültülmüş"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Yeniden Boyutlandırılabilir"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Position"
-msgstr "Dock Pozisyonu"
+msgstr "Pozisyon"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
 #: main/main.cpp modules/gridmap/grid_map.cpp
@@ -198,37 +188,32 @@ msgstr "Dock Pozisyonu"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Boyut:"
+msgstr "Boyut"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Düzenleyici"
+msgstr "Düzenleyici İpucu"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Hata Mesajlarını Yazdır"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Ara Değerleme Kipi"
+msgstr "Saniye Başına Yineleme"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Target FPS"
-msgstr "Hedef"
+msgstr "Hedef FPS"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "TimeScale Düğümü"
+msgstr "Zaman Ölçeği"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -240,23 +225,20 @@ msgid "Error"
 msgstr "Hata"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Kaydedilirken hata"
+msgstr "Hata Dizesi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Kaydedilirken hata"
+msgstr "Hata Satırı"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Arama Sonuçları"
+msgstr "Sonuç"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Bellek"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -267,16 +249,15 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Limitler"
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "Ctrl: Döndür"
+msgstr "Komut Sırası"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Çoklu İş Parçacığı Sıra Boyutu (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -287,17 +268,15 @@ msgstr "Fonksiyon"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#, fuzzy
 msgid "Data"
-msgstr "Veri ile"
+msgstr "Veri"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
-#, fuzzy
 msgid "Network"
-msgstr "Ağ Profilcisi"
+msgstr "Ağ"
 
 #: core/io/file_access_network.cpp
 #, fuzzy
@@ -305,9 +284,8 @@ msgid "Remote FS"
 msgstr "Uzak "
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Sayfa: "
+msgstr "Sayfa Boyutu"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -315,21 +293,19 @@ msgstr ""
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Engelleme Modu Etkin"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Bağla"
+msgstr "Bağlantı"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Okuma Yığın Boyutu"
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "Çizilmiş Nesneler:"
+msgstr "Nesne Kimliği"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 #, fuzzy
@@ -14218,6 +14194,14 @@ msgid "Runnable"
 msgstr "Koşturulabilir"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "'%s' önayarı silinsin mi?"
 
@@ -14362,19 +14346,27 @@ msgid "More Info..."
 msgstr "Şuraya Taşı..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "PCK/Zip Dışa Aktar"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Projeyi Dışa Aktar"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Dışa Aktarma Modu?"
+msgid "Export All"
+msgstr "Tümünü Dışa Aktar"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Lütfen boş bir klasör seçin."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Tümünü Dışa Aktar"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14382,7 +14374,8 @@ msgid "ZIP File"
 msgstr "ZIP Dosyası"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot Oyun Paketi"
 
 #: editor/project_export.cpp
@@ -14704,12 +14697,12 @@ msgid "Project Manager"
 msgstr "Proje Yöneticisi"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Yükleniyor, lütfen bekleyin..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Son Değişiklik"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Yükleniyor, lütfen bekleyin..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"

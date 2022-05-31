@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-23 21:52+0000\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
 "Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -13866,6 +13866,14 @@ msgid "Runnable"
 msgstr "Активний"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Вилучити набір «%s»?"
 
@@ -14010,19 +14018,27 @@ msgid "More Info..."
 msgstr "Додаткова інформація…"
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Експортувати PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Експортувати проєкт"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Режим експортування?"
+msgid "Export All"
+msgstr "Експортувати усе"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Будь ласка, виберіть порожню теку."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Експортувати усе"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14030,7 +14046,8 @@ msgid "ZIP File"
 msgstr "Файл ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Пакунок гри Godot"
 
 #: editor/project_export.cpp
@@ -14353,12 +14370,12 @@ msgid "Project Manager"
 msgstr "Керування проєктами"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Завантаження. Будь ласка, зачекайте..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Востаннє змінено"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Завантаження. Будь ласка, зачекайте..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -16842,11 +16859,11 @@ msgstr "Без з'єднань"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Bone I"
-msgstr ""
+msgstr "З'єднання I З Кісткою I"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Name"
-msgstr ""
+msgstr "З'єднання I З Іменем"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Godot Skin"
@@ -16931,7 +16948,7 @@ msgstr "Унікальні назви анімації"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Skeletons"
-msgstr "Каркас"
+msgstr "Скелети"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Skeleton To Node"
@@ -19328,7 +19345,7 @@ msgstr "Засвідчення"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Name"
-msgstr ""
+msgstr "Ім'я Apple ID"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Password"

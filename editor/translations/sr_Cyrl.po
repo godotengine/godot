@@ -15363,6 +15363,14 @@ msgid "Runnable"
 msgstr "Покретљива"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Delete preset '%s'?"
 msgstr "Обриши поставку „%s“?"
@@ -15518,21 +15526,28 @@ msgid "More Info..."
 msgstr "Помери у..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Извоз PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Извези пројекат"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export mode?"
-msgstr "Режим извоза:"
+msgid "Export All"
+msgstr "Извоз"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export All"
+msgid "Choose an export mode:"
+msgstr "Одабери празан фолдер."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Извоз"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -15542,7 +15557,7 @@ msgstr " Датотеке"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Godot Game Pack"
+msgid "Godot Project Pack"
 msgstr "Годот Игра Паковање"
 
 #: editor/project_export.cpp
@@ -15918,13 +15933,13 @@ msgstr "Менаџер пројекта"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Loading, please wait..."
-msgstr "Прихватам одредишта, молим сачекајте..."
+msgid "Last Modified"
+msgstr "Задњи Измењен"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Last Modified"
-msgstr "Задњи Измењен"
+msgid "Loading, please wait..."
+msgstr "Прихватам одредишта, молим сачекајте..."
 
 #: editor/project_manager.cpp
 #, fuzzy
