@@ -62,7 +62,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-05-23 16:04+0000\n"
+"PO-Revision-Date: 2022-05-24 13:02+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
@@ -9213,9 +9213,8 @@ msgstr ""
 "预期的剔除特别有用。"
 
 #: doc/classes/ArrayMesh.xml
-#, fuzzy
 msgid "Value used internally when no indices are present."
-msgstr "没有索引时，index_array_len 的默认值。"
+msgstr "没有索引时，内部所使用的值。"
 
 #: doc/classes/ArrayMesh.xml
 msgid "Amount of weights/bone indices per vertex (always 4)."
@@ -20745,18 +20744,16 @@ msgid "Show the system's cross mouse cursor when the user hovers the node."
 msgstr "当用户将鼠标悬停在节点上时，显示系统的交叉鼠标光标。"
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Show the system's wait mouse cursor when the user hovers the node. Often an "
 "hourglass."
-msgstr "当用户悬停节点时，显示系统繁忙的鼠标光标。通常是一个沙漏。"
+msgstr "当用户悬停节点时，显示系统等待的鼠标光标。通常是一个沙漏。"
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Show the system's busy mouse cursor when the user hovers the node. Often an "
 "arrow with a small hourglass."
-msgstr "当用户悬停节点时，显示系统繁忙的鼠标光标。通常是一个沙漏。"
+msgstr "当用户悬停节点时，显示系统繁忙的鼠标光标。通常是箭头加一个小沙漏。"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -22159,13 +22156,13 @@ msgid "A cryptographic key (RSA)."
 msgstr "加密密钥（RSA）。"
 
 #: doc/classes/CryptoKey.xml
+#, fuzzy
 msgid ""
 "The CryptoKey class represents a cryptographic key. Keys can be loaded and "
 "saved like any other [Resource].\n"
 "They can be used to generate a self-signed [X509Certificate] via [method "
 "Crypto.generate_self_signed_certificate] and as private key in [method "
-"StreamPeerSSL.accept_stream] along with the appropriate certificate.\n"
-"[b]Note:[/b] Not available in HTML5 exports."
+"StreamPeerSSL.accept_stream] along with the appropriate certificate."
 msgstr ""
 "CryptoKey类表示加密密钥。可以像其他任何[Resource]一样加载和保存键。\n"
 "它们可用于通过[method Crypto.generate_self_signed_certificate]生成自签名"
@@ -23843,6 +23840,7 @@ msgid "Dictionary type."
 msgstr "字典类型。"
 
 #: doc/classes/Dictionary.xml
+#, fuzzy
 msgid ""
 "Dictionary type. Associative container which contains values referenced by "
 "unique keys. Dictionaries are composed of pairs of keys (which must be "
@@ -23886,7 +23884,7 @@ msgid ""
 "accessing the dictionary with isn't a fixed string (such as a number or "
 "variable).\n"
 "[codeblock]\n"
-"export(string, \"White\", \"Yellow\", \"Orange\") var my_color\n"
+"export(String, \"White\", \"Yellow\", \"Orange\") var my_color\n"
 "var points_dict = {\"White\": 50, \"Yellow\": 75, \"Orange\": 100}\n"
 "func _ready():\n"
 "    # We can't use dot syntax here as `my_color` is a variable.\n"
@@ -25427,9 +25425,8 @@ msgid "Returns the scan progress for 0 to 1 if the FS is being scanned."
 msgstr "如果文件系统正在被扫描，返回扫描的进度，值为0-1。"
 
 #: doc/classes/EditorFileSystem.xml
-#, fuzzy
 msgid "Returns [code]true[/code] if the filesystem is being scanned."
-msgstr "返回 [code]true[/code] 如果文件系统已经被扫[/code]描完毕。"
+msgstr "如果文件系统正在进行扫描，则返回 [code]true[/code]。"
 
 #: doc/classes/EditorFileSystem.xml
 msgid "Scan the filesystem for changes."
@@ -30759,6 +30756,13 @@ msgid ""
 "[code]orientation[/code]    - [bool], contour orientation. If [code]true[/"
 "code], clockwise contours must be filled."
 msgstr ""
+"返回该字形的描边轮廓，是包含下列内容的 [code]Dictionary[/code]：\n"
+"[code]points[/code]         - [PoolVector3Array]，包含轮廓点。[code]x[/code] "
+"和 [code]y[/code] 是点的坐标。[code]z[/code] 是该点的类型，使用的是 [enum "
+"ContourPointTag] 中的值。\n"
+"[code]contours[/code]       - [PoolIntArray]，包含各个轮廓点的索引。\n"
+"[code]orientation[/code]    - [bool]，轮廓朝向。为 [code]true[/code] 时必须填"
+"充顺时针轮廓。"
 
 #: doc/classes/Font.xml
 msgid ""
@@ -30770,29 +30774,24 @@ msgstr ""
 "高度是字体高度（见 [method get_height]），与该字形的高度没有关系。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Returns resource id of the cache texture containing the char."
-msgstr "返回纹理图像的opengl id。"
+msgstr "返回包含该字符的缓存纹理的资源 ID。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Returns size of the cache texture containing the char."
-msgstr "返回碰撞体中的接触位置。"
+msgstr "返回包含该字符的缓存纹理的大小。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Returns char offset from the baseline."
-msgstr "返回图块的纹理偏移量。"
+msgstr "返回相对于基线的字符偏移。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Returns size of the char."
-msgstr "返回参数的正弦值。"
+msgstr "返回该字符的大小。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Returns rectangle in the cache texture containing the char."
-msgstr "返回一个包围着地图中已使用非空图块的矩形。"
+msgstr "返回包含该字符的缓存纹理的矩形区域。"
 
 #: doc/classes/Font.xml
 msgid "Returns the font descent (number of pixels below the baseline)."
@@ -30830,21 +30829,20 @@ msgstr ""
 "用它的控件。"
 
 #: doc/classes/Font.xml
-#, fuzzy
 msgid "Contour point is on the curve."
-msgstr "从曲线中删除所有点。"
+msgstr "轮廓点在曲线上。"
 
 #: doc/classes/Font.xml
 msgid ""
 "Contour point isn't on the curve, but serves as a control point for a conic "
 "(quadratic) Bézier arc."
-msgstr ""
+msgstr "轮廓点不在曲线上，而是作为圆锥（二次）贝塞尔曲线的控制点。"
 
 #: doc/classes/Font.xml
 msgid ""
 "Contour point isn't on the curve, but serves as a control point for a cubic "
 "Bézier arc."
-msgstr ""
+msgstr "轮廓点不在曲线上，而是作为三次贝塞尔曲线的控制点。"
 
 #: doc/classes/FuncRef.xml
 msgid "Reference to a function in an object."
@@ -31740,11 +31738,12 @@ msgstr ""
 "code]，否则返回 [code]false[/code]。"
 
 #: doc/classes/Geometry.xml
+#, fuzzy
 msgid ""
 "Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and "
 "([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the "
 "point of intersection as [Vector2]. If no intersection takes place, returns "
-"an empty [Variant].\n"
+"[code]null[/code].\n"
 "[b]Note:[/b] The lines are specified using direction vectors, not end points."
 msgstr ""
 "检查两行（[code]from_a[/code]，[code]dir_a[/code]）和（[code]from_b[/code]，"
@@ -31907,11 +31906,12 @@ msgstr ""
 "交点的法线。"
 
 #: doc/classes/Geometry.xml
+#, fuzzy
 msgid ""
 "Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and "
 "([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point "
-"of intersection as [Vector2]. If no intersection takes place, returns an "
-"empty [Variant]."
+"of intersection as [Vector2]. If no intersection takes place, returns "
+"[code]null[/code]."
 msgstr ""
 "检查两段（[code]from_a[/code], [code]to_a[/code]）和（[code]from_b[/code], "
 "[code]to_b[/code]）是否相交。如果是，返回相交点为[Vector2]。如果没有发生相"
@@ -33117,6 +33117,8 @@ msgid ""
 "Provides a list of node names to be removed (all selected nodes, excluding "
 "nodes without closing button)."
 msgstr ""
+"当有 GraphNode 尝试从该 GraphEdit 中移除时触发。提供要移除的节点名称列表（所"
+"有选中的节点，除去不包含关闭按钮的节点）。"
 
 #: doc/classes/GraphEdit.xml
 msgid ""
@@ -33839,6 +33841,7 @@ msgid "Context to compute cryptographic hashes over multiple iterations."
 msgstr "在多次迭代中计算加密哈希的上下文。"
 
 #: doc/classes/HashingContext.xml
+#, fuzzy
 msgid ""
 "The HashingContext class provides an interface for computing cryptographic "
 "hashes over multiple iterations. This is useful for example when computing "
@@ -33865,8 +33868,7 @@ msgid ""
 "    var res = ctx.finish()\n"
 "    # Print the result as hex string and array.\n"
 "    printt(res.hex_encode(), Array(res))\n"
-"[/codeblock]\n"
-"[b]Note:[/b] Not available in HTML5 exports."
+"[/codeblock]"
 msgstr ""
 "HashingContext 类为计算多次迭代的加密哈希值提供接口。例如，当计算大文件的哈希"
 "值（你不必在内存中加载它们）、网络流和一般的数据流（你不必持有缓冲区）时，这"
@@ -35549,6 +35551,8 @@ msgid ""
 "receiving files that are too large, preventing potential denial of service "
 "attacks."
 msgstr ""
+"允许的响应体大小上限（[code]-1[/code] 表示无限制）。只想要较小的文件时，可用"
+"于拒绝接收太大的文件，防止可能的拒绝服务攻击。"
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
@@ -35573,13 +35577,17 @@ msgid ""
 "the necessary folders beforehand using [method Directory.make_dir_recursive] "
 "to ensure the file can be written."
 msgstr ""
+"下载到的文件。设为非空字符串时，请求的输出会被写入位于该路径的文件中。如果在"
+"指定的位置已存在文件，一旦开始接收响应体数据，该文件就会被覆盖。\n"
+"[b]注意：[/b]创建该文件时，不会自动创建文件夹。如果 [member download_file] 指"
+"向子文件夹，建议提前使用 [method Directory.make_dir_recursive] 创建好必要的文"
+"件夹，确保能够写入文件。"
 
 #: doc/classes/HTTPRequest.xml
-#, fuzzy
 msgid ""
 "Maximum number of allowed redirects. This is used to prevent endless "
 "redirect loops."
-msgstr "允许的最大重定向数。"
+msgstr "允许的最大重定向数。用于防止无限重定向循环。"
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
@@ -35591,6 +35599,11 @@ msgid ""
 "timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
 "the download from failing if it takes too much time."
 msgstr ""
+"如果设为大于 [code]0.0[/code] 的值，在经过 [code]timeout[/code] 秒仍未[i]完成"
+"[/i]请求时，该 HTTP 请求就会超时。对于 REST API 等较小的 HTTP 请求，将 "
+"[member timeout] 设为大于 [code]0.0[/code] 的值可以定时防止应用程序在失败时陷"
+"入长时间的无响应状态。下载文件时请保持 [code]0.0[/code]，防止在需要花费较长时"
+"间下载时导致下载失败。"
 
 #: doc/classes/HTTPRequest.xml
 msgid "If [code]true[/code], multithreading is used to improve performance."
@@ -37505,24 +37518,22 @@ msgid ""
 msgstr "十字光标。通常出现在可以执行绘制操作或进行选择的区域上方。"
 
 #: doc/classes/Input.xml
-#, fuzzy
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application isn't usable during the "
 "operation (e.g. something is blocking its main thread)."
 msgstr ""
-"忙碌光标。表示应用程序正忙于执行操作。此光标形状表示应用程序在操作过程中不可"
+"等待光标。表示应用程序正忙于执行操作。此光标形状表示应用程序在操作过程中不可"
 "用（例如，有东西阻塞了主线程）。"
 
 #: doc/classes/Input.xml
-#, fuzzy
 msgid ""
 "Busy cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application is still usable during the "
 "operation."
 msgstr ""
-"等待型光标。表示应用程序正忙于执行一项操作。这种光标形状表示应用程序在操作过"
-"程中仍然可以使用。"
+"忙碌光标。表示应用程序正忙于执行一项操作。这种光标形状表示应用程序在操作过程"
+"中仍然可以使用。"
 
 #: doc/classes/Input.xml
 msgid "Drag cursor. Usually displayed when dragging something."
@@ -40644,93 +40655,86 @@ msgid "Background [StyleBox] for the [Label]."
 msgstr "为[Label]设置背景样式[StyleBox]。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "Displays plain text in a 3D world."
-msgstr "3D 世界中的 2D 精灵节点。"
+msgstr "在 3D 世界中显示普通文本。"
 
 #: doc/classes/Label3D.xml
 msgid ""
 "Label3D displays plain text in a 3D world. It gives you control over the "
 "horizontal and vertical alignment."
-msgstr ""
+msgstr "Label3D 在 3D 世界中显示普通文本。你可以控制水平和垂直对齐方式。"
 
 #: doc/classes/Label3D.xml
 msgid ""
 "Returns a [TriangleMesh] with the label's vertices following its current "
 "configuration (such as its [member pixel_size])."
 msgstr ""
+"返回使用该标签的顶点组成的 [TriangleMesh]，遵循当前的配置（例如 [member "
+"pixel_size]）。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the specified flag will be enabled. See [enum Label3D."
 "DrawFlags] for a list of flags."
 msgstr ""
-"如果指定的标志被启用，返回 [code]true[/code]。参阅 [enum Flags] 枚举器的选"
-"项。"
+"如果为 [code]true[/code]，会启用指定的标志。标志列表请参阅 [enum Label3D."
+"DrawFlags]。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for "
 "possible values."
-msgstr "图块地图的方向模式。有关可能的值，参阅[enum Mode]。"
+msgstr "该精灵的 Alpha 裁剪模式。可能的取值请参阅 [enum AlphaCutMode]。"
 
 #: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
 msgid "Threshold at which the alpha scissor will discard values."
 msgstr "alpha scissor 会丢弃数值的阈值。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "If [code]true[/code], wraps the text to the [member width]."
-msgstr "如果 [code]true[/code]，隐藏指定索引的行。"
+msgstr "如果为 [code]true[/code]，会按照 [member width] 将文本进行换行。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "The billboard mode to use for the label. See [enum SpatialMaterial."
 "BillboardMode] for possible values."
-msgstr "填充方向。有关可能的值，参阅[enum FillMode]。"
+msgstr ""
+"该标签所使用的公告板模式。可能的取值请参阅 [enum SpatialMaterial."
+"BillboardMode]。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], text can be seen from the back as well, if "
 "[code]false[/code], it is invisible when looking at it from behind."
 msgstr ""
-"如果为 [code]true[/code]，则从后面也可以看到纹理，如果为 [code]false[/code]，"
+"如果为 [code]true[/code]，则从后面也可以看到文本，如果为 [code]false[/code]，"
 "则从后面看它是不可见的。"
 
 #: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the label is rendered at the same size regardless of "
 "distance."
-msgstr "如果[code]true[/code]，则无论距离远近，对象都以相同的尺寸呈现。"
+msgstr "如果为 [code]true[/code]，则无论距离远近，标签都以相同的尺寸呈现。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "[Font] used for the [Label3D]'s text."
-msgstr "用于标签[Label]文本的字体[Font]。"
+msgstr "该 [Label3D] 的文本所使用的 [Font]。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "Controls the text's horizontal alignment. Supports left, center, right. Set "
 "it to one of the [enum Align] constants."
 msgstr ""
-"控制文本的水平对齐。支持左对齐、居中对齐、右对齐和填充，或者两端对齐。把它设"
-"置为[enum Align]常量之一。"
+"控制文本的水平对齐。支持左对齐、居中、右对齐。请将其设置为 [enum Align] 常量"
+"之一。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "Vertical space between lines in multiline [Label3D]."
-msgstr "多行[Label]中各行之间的垂直空间。"
+msgstr "多行 [Label3D] 中各行之间的垂直空间。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "Text [Color] of the [Label3D]."
-msgstr "[Label]标签的默认文本颜色[Color]。"
+msgstr "该 [Label3D] 的文本颜色 [Color]。"
 
 #: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
 #: doc/classes/SpriteBase3D.xml
@@ -40740,17 +40744,14 @@ msgid ""
 msgstr "如果[code]true[/code]，深度测试被禁用，对象将按渲染顺序绘制。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "The text drawing offset (in pixels)."
-msgstr "纹理的绘图偏移量。"
+msgstr "文本绘制偏移（单位为像素）。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "The tint of [Font]'s outline."
-msgstr "圆柱体的高度。"
+msgstr "对 [Font] 轮廓的染色。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "Sets the render priority for the text outline. Higher priority objects will "
 "be sorted in front of lower priority objects.\n"
@@ -40761,18 +40762,17 @@ msgid ""
 "This is because opaque objects are not sorted, while transparent objects are "
 "sorted from back to front (subject to priority)."
 msgstr ""
-"设置 3D 场景中透明物体的渲染优先级。优先级高的物体将被排序在优先级低的物体前"
-"面。\n"
+"设置文本轮廓的渲染优先级。优先级高的物体将被排序在优先级低的物体前面。\n"
+"[b]注意：[/b]仅在 [member alpha_cut] 为 [constant ALPHA_CUT_DISABLED]（默认"
+"值）时适用。\n"
 "[b]注意：[/b]仅适用于透明物体的排序。这不会影响透明物体相对于不透明物体的排序"
 "方式。这是因为不透明对象不被排序，而透明对象则从后往前排序（取决于优先级）。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "The size of one pixel's width on the label to scale it in 3D."
-msgstr "精灵上一个像素宽度的大小，以 3D 缩放。"
+msgstr "标签上一个像素宽度的大小，以 3D 缩放。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "Sets the render priority for the text. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
@@ -40783,41 +40783,38 @@ msgid ""
 "This is because opaque objects are not sorted, while transparent objects are "
 "sorted from back to front (subject to priority)."
 msgstr ""
-"设置 3D 场景中透明物体的渲染优先级。优先级高的物体将被排序在优先级低的物体前"
-"面。\n"
+"设置文本的渲染优先级。优先级高的物体将被排序在优先级低的物体前面。\n"
+"[b]注意：[/b]仅在 [member alpha_cut] 为 [constant ALPHA_CUT_DISABLED]（默认"
+"值）时适用。\n"
 "[b]注意：[/b]仅适用于透明物体的排序。这不会影响透明物体相对于不透明物体的排序"
 "方式。这是因为不透明对象不被排序，而透明对象则从后往前排序（取决于优先级）。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the [Light] in the [Environment] has effects on the "
 "label."
-msgstr "如果 [code]true[/code]，则 [Environment] 中的 [Light] 对精灵有影响。"
+msgstr "如果为 [code]true[/code]，则 [Environment] 中的 [Light] 对标签有影响。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "Controls the text's vertical alignment. Supports top, center, bottom. Set it "
 "to one of the [enum VAlign] constants."
 msgstr ""
-"控制文本的垂直对齐。支持顶部、中心、底部和填充。参阅 [enum VAlign] 常量。"
+"控制文本的垂直对齐。支持顶部、中心、底部。请将其设为 [enum VAlign] 常量之一。"
 
 #: doc/classes/Label3D.xml
 msgid "Text width (in pixels), used for autowrap and fill alignment."
-msgstr ""
+msgstr "文本宽度（单位为像素），用于自动换行和填充对齐。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid "If set, lights in the environment affect the label."
-msgstr "如果设置，环境中的灯光会影响精灵。"
+msgstr "如果打开，环境中的灯光会影响该标签。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "If set, text can be seen from the back as well. If not, the texture is "
 "invisible when looking at it from behind."
-msgstr "如果设置，从后面也可以看到纹理，如果没有，从后面看它是不可见的。"
+msgstr "如果打开，从后面也可以看到文本，如果不打开，从后面看它是不可见的。"
 
 #: doc/classes/Label3D.xml doc/classes/SpatialMaterial.xml
 #: doc/classes/SpriteBase3D.xml
@@ -40829,10 +40826,9 @@ msgstr ""
 "之后绘制的对象可能会覆盖它。"
 
 #: doc/classes/Label3D.xml
-#, fuzzy
 msgid ""
 "Label is scaled by depth so that it always appears the same size on screen."
-msgstr "按深度缩放对象，使其在屏幕上显示的大小始终相同。"
+msgstr "标签会根据深度进行缩放，从而在屏幕上始终以相同的大小显示。"
 
 #: doc/classes/Label3D.xml doc/classes/SpriteBase3D.xml
 msgid "Represents the size of the [enum DrawFlags] enum."
@@ -40844,6 +40840,8 @@ msgid ""
 "areas, but transparency sorting issues may be visible when multiple "
 "transparent materials are overlapping."
 msgstr ""
+"这个模式会进行标准的 Alpha 混合。可以显示半透明区域，但透明材质存在重叠时可能"
+"会暴露透明度排序问题。"
 
 #: doc/classes/Label3D.xml
 msgid ""
@@ -40855,6 +40853,12 @@ msgid ""
 "scripts), this mode might have transparency sorting issues between the main "
 "text and the outline."
 msgstr ""
+"这个模式只允许完全透明或者完全不透明的像素。这个模式也叫 [i]Alpha 测试[/i]或"
+"者[i]1位透明度[/i]。\n"
+"[b]注意：[/b]使用抗锯齿字体和轮廓时，这个模式可能会出现问题，请尝试调整 "
+"[member alpha_scissor_threshold] 或使用 SDF 字体。 \n"
+"[b]注意：[/b]文本中存在重叠的字形时（例如手写体），这个模式可能会造成主文本和"
+"轮廓的透明度排序问题。"
 
 #: doc/classes/Label3D.xml
 msgid ""
@@ -40866,6 +40870,11 @@ msgid ""
 "scripts), this mode might have transparency sorting issues between the main "
 "text and the outline."
 msgstr ""
+"这个模式会在深度预处理时绘制完全不透明的像素。比 [constant "
+"ALPHA_CUT_DISABLED] 或 [constant ALPHA_CUT_DISCARD] 要慢，但能够对半透明区域"
+"和平滑边缘进行正确的排序。\n"
+"[b]注意：[/b]文本中存在重叠的字形时（例如手写体），这个模式可能会造成主文本和"
+"轮廓的透明度排序问题。"
 
 #: doc/classes/LargeTexture.xml
 msgid ""
@@ -44809,9 +44818,8 @@ msgstr ""
 "航路径，则会返回代理父节点的原点。"
 
 #: doc/classes/NavigationAgent.xml
-#, fuzzy
 msgid "Returns the [RID] of this agent on the [NavigationServer]."
-msgstr "返回这个障碍物在 [NavigationServer] 上的 [RID]。"
+msgstr "返回这个代理在 [NavigationServer] 上的 [RID]。"
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
@@ -44880,6 +44888,11 @@ msgid ""
 "with many registered agents has a significant performance cost and should "
 "only be enabled on agents that currently require it."
 msgstr ""
+"为 [code]true[/code] 时，该代理会在 [NavigationServer] 上注册 RVO 避障回调。"
+"当使用了 [method set_velocity] 并且处理完成时，会通过与 [signal "
+"velocity_computed] 信号的连接收到安全速度 Vector3 [code]safe_velocity[/"
+"code]。为避障处理注册大量代理会对性能有显著影响，应该只在当前有需要的代理上启"
+"用。"
 
 #: doc/classes/NavigationAgent.xml
 msgid ""
@@ -44996,9 +45009,8 @@ msgstr ""
 "航路径，则会返回代理父节点的原点。"
 
 #: doc/classes/NavigationAgent2D.xml
-#, fuzzy
 msgid "Returns the [RID] of this agent on the [Navigation2DServer]."
-msgstr "返回这个障碍物在 [Navigation2DServer] 上的 [RID]。"
+msgstr "返回这个代理在 [Navigation2DServer] 上的 [RID]。"
 
 #: doc/classes/NavigationAgent2D.xml
 msgid ""
@@ -45017,6 +45029,11 @@ msgid ""
 "with many registered agents has a significant performance cost and should "
 "only be enabled on agents that currently require it."
 msgstr ""
+"为 [code]true[/code] 时，该代理会在 [Navigation2DServer] 上注册 RVO 避障回"
+"调。当使用了 [method set_velocity] 并且处理完成时，会通过与 [signal "
+"velocity_computed] 信号的连接收到安全速度 Vector2 [code]safe_velocity[/"
+"code]。为避障处理注册大量代理会对性能有显著影响，应该只在当前有需要的代理上启"
+"用。"
 
 #: doc/classes/NavigationMesh.xml
 msgid "A mesh to approximate the walkable areas and obstacles."
@@ -45998,11 +46015,10 @@ msgstr ""
 "code] 参数。"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
-#, fuzzy
 msgid ""
 "Enable or disable certificate verification when [member use_dtls] is "
 "[code]true[/code]."
-msgstr "当[member use_dtls] [code]true[/code] 时启用或禁用证书验证。"
+msgstr "当 [member use_dtls] 为 [code]true[/code] 时启用或禁用证书验证。"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
@@ -47140,7 +47156,6 @@ msgstr ""
 "如果本地系统是此节点的主系统（用于多人游戏），则返回 [code]true[/code]。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the physics interpolated flag is set for this "
 "Node (see [member physics_interpolation_mode]).\n"
@@ -47430,6 +47445,7 @@ msgstr ""
 "[b]注意：[/b]这个函数应该在移动节点[b]之后[/b]调用，而不是之前。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Sends a remote procedure call request for the given [code]method[/code] to "
 "peers on the network (and locally), optionally sending all additional "
@@ -47437,8 +47453,8 @@ msgid ""
 "will only be received by nodes with the same [NodePath], including the exact "
 "same node name. Behaviour depends on the RPC configuration for the given "
 "method, see [method rpc_config]. Methods are not exposed to RPCs by default. "
-"See also [method rset] and [method rset_config] for properties. Returns an "
-"empty [Variant].\n"
+"See also [method rset] and [method rset_config] for properties. Returns "
+"[code]null[/code].\n"
 "[b]Note:[/b] You can only safely use RPCs on clients after you received the "
 "[code]connected_to_server[/code] signal from the [SceneTree]. You also need "
 "to keep track of the connection state, either by the [SceneTree] signals "
@@ -47473,25 +47489,27 @@ msgstr ""
 "rset_config] 的属性。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
-"(see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty "
-"[Variant]."
+"(see [method NetworkedMultiplayerPeer.set_target_peer]). Returns [code]null[/"
+"code]."
 msgstr ""
 "向由[code]peer_id[/code]确定的特定peer发送一个[method rpc]（见[method "
 "NetworkedMultiplayerPeer.set_target_peer]）。返回一个空的[Variant]。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
-"Sends a [method rpc] using an unreliable protocol. Returns an empty "
-"[Variant]."
+"Sends a [method rpc] using an unreliable protocol. Returns [code]null[/code]."
 msgstr "使用一个不可靠的协议发送一个[method rpc]。返回一个空的[Variant]。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
 "using an unreliable protocol (see [method NetworkedMultiplayerPeer."
-"set_target_peer]). Returns an empty [Variant]."
+"set_target_peer]). Returns [code]null[/code]."
 msgstr ""
 "使用不可靠的协议（见[method NetworkedMultiplayerPeer.set_target_peer]）向由"
 "[code]peer_id[/code]标识的特定peer发送一个[method rpc]。返回一个空的"
@@ -56161,10 +56179,25 @@ msgstr "字节池数组。"
 msgid ""
 "An array specifically designed to hold bytes. Optimized for memory usage, "
 "does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference."
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolByteArray] or "
+"mutating a [PoolByteArray] within an [Array] or [Dictionary], changes will "
+"be lost:\n"
+"[codeblock]\n"
+"var array = [PoolByteArray()]\n"
+"array[0].push_back(123)\n"
+"print(array)  # [[]] (empty PoolByteArray within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolByteArray] property must be [i]reassigned[/i] with "
+"[code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolByteArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(123)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[123]] (PoolByteArray with 1 element inside an Array)\n"
+"[/codeblock]"
 msgstr ""
-"专门设计用于保存字节的数组。针对内存使用进行了优化，不会造成内存碎片。\n"
-"[b]注意：[/b]这种类型是按值传递而不是按引用传递。"
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -56329,17 +56362,34 @@ msgstr ""
 "负的索引都被认为是从数组的末端开始的。"
 
 #: doc/classes/PoolColorArray.xml
-msgid "A pooled array of [Color]."
+#, fuzzy
+msgid "A pooled array of [Color]s."
 msgstr "[Color] 池数组。"
 
 #: doc/classes/PoolColorArray.xml
 msgid ""
 "An array specifically designed to hold [Color]. Optimized for memory usage, "
 "does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference."
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolColorArray] or "
+"mutating a [PoolColorArray] within an [Array] or [Dictionary], changes will "
+"be lost:\n"
+"[codeblock]\n"
+"var array = [PoolColorArray()]\n"
+"array[0].push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
+"print(array)  # [[]] (empty PoolColorArray within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolColorArray] property must be [i]reassigned[/i] with "
+"[code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolColorArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(0.1, 0.2, 0.3, 0.4)]] (PoolColorArray with 1 element "
+"inside an Array)\n"
+"[/codeblock]"
 msgstr ""
-"专门用于保存 [Color] 的数组。对内存的使用进行了优化，不会使内存碎片化。\n"
-"[b]注意：[/b]这种类型是通过值传递的，而不是引用。"
 
 #: doc/classes/PoolColorArray.xml
 msgid ""
@@ -56375,10 +56425,28 @@ msgid "A pooled array of integers ([int])."
 msgstr "整数（[int]）池数组。"
 
 #: doc/classes/PoolIntArray.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold integer values ([int]). Optimized for "
 "memory usage, does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference.\n"
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolIntArray] or "
+"mutating a [PoolIntArray] within an [Array] or [Dictionary], changes will be "
+"lost:\n"
+"[codeblock]\n"
+"var array = [PoolIntArray()]\n"
+"array[0].push_back(1234)\n"
+"print(array)  # [[]] (empty PoolIntArray within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolIntArray] property must be [i]reassigned[/i] with "
+"[code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolIntArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(1234)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[1234]] (PoolIntArray with 1 element inside an Array)\n"
+"[/codeblock]\n"
 "[b]Note:[/b] This type is limited to signed 32-bit integers, which means it "
 "can only take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. "
 "[code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap "
@@ -56416,14 +56484,33 @@ msgid "Changes the int at the given index."
 msgstr "更改给定索引处的 int。"
 
 #: doc/classes/PoolRealArray.xml
-msgid "A pooled array of reals ([float])."
+#, fuzzy
+msgid "A pooled array of real numbers ([float])."
 msgstr "实数（[float]）池数组。"
 
 #: doc/classes/PoolRealArray.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold floating-point values. Optimized for "
 "memory usage, does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference.\n"
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolRealArray] or "
+"mutating a [PoolRealArray] within an [Array] or [Dictionary], changes will "
+"be lost:\n"
+"[codeblock]\n"
+"var array = [PoolRealArray()]\n"
+"array[0].push_back(12.34)\n"
+"print(array)  # [[]] (empty PoolRealArray within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolRealArray] property must be [i]reassigned[/i] with "
+"[code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolRealArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(12.34)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[12.34]] (PoolRealArray with 1 element inside an Array)\n"
+"[/codeblock]\n"
 "[b]Note:[/b] Unlike primitive [float]s which are 64-bit, numbers stored in "
 "[PoolRealArray] are 32-bit floats. This means values stored in "
 "[PoolRealArray] have lower precision compared to primitive [float]s. If you "
@@ -56455,18 +56542,33 @@ msgid "Changes the float at the given index."
 msgstr "更改给定索引处的浮点数。"
 
 #: doc/classes/PoolStringArray.xml
-msgid "A pooled array of [String]."
+#, fuzzy
+msgid "A pooled array of [String]s."
 msgstr "[String] 池数组。"
 
 #: doc/classes/PoolStringArray.xml
 msgid ""
 "An array specifically designed to hold [String]s. Optimized for memory "
 "usage, does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference."
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolStringArray] or "
+"mutating a [PoolStringArray] within an [Array] or [Dictionary], changes will "
+"be lost:\n"
+"[codeblock]\n"
+"var array = [PoolStringArray()]\n"
+"array[0].push_back(\"hello\")\n"
+"print(array)  # [[]] (empty PoolStringArray within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolStringArray] property must be [i]reassigned[/i] "
+"with [code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolStringArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(\"hello\")\n"
+"array[0] = pool_array\n"
+"print(array)  # [[hello]] (PoolStringArray with 1 element inside an Array)\n"
+"[/codeblock]"
 msgstr ""
-"专门设计用于保存 [String] 的数组。针对内存使用进行了优化，不会造成内存碎"
-"片。\n"
-"[b]注意：[/b]这种类型是按值传递，而不是引用传递。"
 
 #: doc/classes/PoolStringArray.xml
 msgid ""
@@ -56495,17 +56597,34 @@ msgid "Changes the [String] at the given index."
 msgstr "更改给定索引处的[String]。"
 
 #: doc/classes/PoolVector2Array.xml
-msgid "A pooled array of [Vector2]."
+#, fuzzy
+msgid "A pooled array of [Vector2]s."
 msgstr "[Vector2] 池数组。"
 
 #: doc/classes/PoolVector2Array.xml
 msgid ""
 "An array specifically designed to hold [Vector2]. Optimized for memory "
 "usage, does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference."
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolVector2Array] or "
+"mutating a [PoolVector2Array] within an [Array] or [Dictionary], changes "
+"will be lost:\n"
+"[codeblock]\n"
+"var array = [PoolVector2Array()]\n"
+"array[0].push_back(Vector2(12, 34))\n"
+"print(array)  # [[]] (empty PoolVector2Array within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolVector2Array] property must be [i]reassigned[/i] "
+"with [code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolVector2Array()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Vector2(12, 34))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(12, 34)]] (PoolVector2Array with 1 element inside an "
+"Array)\n"
+"[/codeblock]"
 msgstr ""
-"专门用来保存 [Vector2] 的数组。对内存的使用进行了优化，不会使内存碎片化。\n"
-"[b]注意：[/b]这种类型是通过值传递的，而不是引用。"
 
 #: doc/classes/PoolVector2Array.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
@@ -56539,10 +56658,26 @@ msgstr "[Vector3] 池数组。"
 msgid ""
 "An array specifically designed to hold [Vector3]. Optimized for memory "
 "usage, does not fragment the memory.\n"
-"[b]Note:[/b] This type is passed by value and not by reference."
+"[b]Note:[/b] This type is passed by value and not by reference. This means "
+"that when [i]mutating[/i] a class property of type [PoolVector3Array] or "
+"mutating a [PoolVector3Array] within an [Array] or [Dictionary], changes "
+"will be lost:\n"
+"[codeblock]\n"
+"var array = [PoolVector3Array()]\n"
+"array[0].push_back(Vector3(12, 34, 56))\n"
+"print(array)  # [[]] (empty PoolVector3Array within an empty Array)\n"
+"[/codeblock]\n"
+"Instead, the entire [PoolVector3Array] property must be [i]reassigned[/i] "
+"with [code]=[/code] for it to be changed:\n"
+"[codeblock]\n"
+"var array = [PoolVector3Array()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Vector3(12, 34, 56))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(12, 34, 56)]] (PoolVector3Array with 1 element inside an "
+"Array)\n"
+"[/codeblock]"
 msgstr ""
-"专门设计来容纳 [Vector3] 的数组。对内存的使用进行了优化，不会使内存碎片化。\n"
-"[b]注意：[/b]这种类型是通过值传递的，而不是引用。"
 
 #: doc/classes/PoolVector3Array.xml
 msgid ""
@@ -56968,7 +57103,6 @@ msgstr ""
 "请参阅[method add_submenu_item]。"
 
 #: doc/classes/PopupMenu.xml
-#, fuzzy
 msgid ""
 "Returns the tooltip associated with the specified index [code]idx[/code]."
 msgstr "返回与指定索引 [code]idx[/code]关联的工具提示。"
@@ -64646,7 +64780,6 @@ msgid "The default text font."
 msgstr "默认的文本字体。"
 
 #: doc/classes/RichTextLabel.xml
-#, fuzzy
 msgid "The background used when the [RichTextLabel] is focused."
 msgstr "[RichTextLabel] 获得焦点时使用的背景。"
 
@@ -64812,14 +64945,17 @@ msgid "Locks the specified linear or rotational axis."
 msgstr "锁定指定的线性或旋转轴。"
 
 #: doc/classes/RigidBody.xml
+#, fuzzy
 msgid ""
-"Damps RigidBody's rotational forces.\n"
+"Damps RigidBody's rotational forces. If this value is different from -1.0 it "
+"will be added to any linear damp derived from the world or areas.\n"
 "See [member ProjectSettings.physics/3d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
-"阻尼刚体的旋转力。\n"
+"实体的线性阻尼。不能小于-1.0。如果这个值与-1.0不同，任何从世界或区域派生的线"
+"性阻尼将被覆盖。\n"
 "关于阻尼的更多细节，请参阅[member ProjectSettings.physics/3d/"
-"default_angular_damp]。"
+"default_linear_damp]。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's rotation in the X axis."
@@ -64941,10 +65077,11 @@ msgstr ""
 "这个物体应用一半的重力。"
 
 #: doc/classes/RigidBody.xml
+#, fuzzy
 msgid ""
 "The body's linear damp. Cannot be less than -1.0. If this value is different "
-"from -1.0, any linear damp derived from the world or areas will be "
-"overridden.\n"
+"from -1.0 it will be added to any linear damp derived from the world or "
+"areas.\n"
 "See [member ProjectSettings.physics/3d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
@@ -65248,10 +65385,12 @@ msgstr ""
 "话）。"
 
 #: doc/classes/RigidBody2D.xml
+#, fuzzy
 msgid ""
 "Damps the body's [member angular_velocity]. If [code]-1[/code], the body "
 "will use the [b]Default Angular Damp[/b] defined in [b]Project > Project "
-"Settings > Physics > 2d[/b].\n"
+"Settings > Physics > 2d[/b]. If greater than [code]-1[/code] it will be "
+"added to the default project value.\n"
 "See [member ProjectSettings.physics/2d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
@@ -65360,10 +65499,12 @@ msgstr ""
 "值。设置0惯性会切换回自动计算。"
 
 #: doc/classes/RigidBody2D.xml
+#, fuzzy
 msgid ""
 "Damps the body's [member linear_velocity]. If [code]-1[/code], the body will "
 "use the [b]Default Linear Damp[/b] in [b]Project > Project Settings > "
-"Physics > 2d[/b].\n"
+"Physics > 2d[/b]. If greater than [code]-1[/code] it will be added to the "
+"default project value.\n"
 "See [member ProjectSettings.physics/2d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
@@ -66551,13 +66692,12 @@ msgstr ""
 "[code]scale[/code]。"
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the application automatically accepts quitting.\n"
 "For mobile platforms, see [member quit_on_go_back]."
 msgstr ""
-"为 [code]true[/code] 时应用程序将自动接受退出。默认启用。\n"
-"对于移动平台，请参阅 [method set_quit_on_go_back]。"
+"为 [code]true[/code] 时应用程序将自动接受退出。\n"
+"对于移动平台，请参阅 [member quit_on_go_back]。"
 
 #: doc/classes/SceneTree.xml
 msgid "The current scene."
@@ -66642,15 +66782,13 @@ msgstr ""
 "来全局开关物理插值的，这个属性可以在运行时控制插值。"
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the application quits automatically on going back (e."
 "g. on Android).\n"
 "To handle 'Go Back' button when this option is disabled, use [constant "
 "MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]."
 msgstr ""
-"为 [code]true[/code] 时应用程序将在返回时自动退出（例如在 Android 上）。默认"
-"启用。\n"
+"为 [code]true[/code] 时应用程序将在返回时自动退出（例如在 Android 上）。\n"
 "要在这个选项被禁用时处理“返回”按钮，请使用 [constant MainLoop."
 "NOTIFICATION_WM_GO_BACK_REQUEST]。"
 
@@ -69624,7 +69762,7 @@ msgstr "强制将 [member albedo_texture] 从sRGB空间转换为线性空间。"
 
 #: doc/classes/SpatialMaterial.xml
 msgid "Enables signed distance field rendering shader."
-msgstr ""
+msgstr "启用有符号距离场渲染着色器。"
 
 #: doc/classes/SpatialMaterial.xml
 msgid "If [code]true[/code], the object receives no ambient light."
@@ -71099,7 +71237,6 @@ msgid "The size of one pixel's width on the sprite to scale it in 3D."
 msgstr "精灵上一个像素宽度的大小，以 3D 缩放。"
 
 #: doc/classes/SpriteBase3D.xml
-#, fuzzy
 msgid ""
 "Sets the render priority for the sprite. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
@@ -71110,8 +71247,9 @@ msgid ""
 "This is because opaque objects are not sorted, while transparent objects are "
 "sorted from back to front (subject to priority)."
 msgstr ""
-"设置 3D 场景中透明物体的渲染优先级。优先级高的物体将被排序在优先级低的物体前"
-"面。\n"
+"设置精灵的渲染优先级。优先级高的物体将被排序在优先级低的物体前面。\n"
+"[b]注意：[/b]仅在 [member alpha_cut] 为 [constant ALPHA_CUT_DISABLED]（默认"
+"值）时适用。\n"
 "[b]注意：[/b]仅适用于透明物体的排序。这不会影响透明物体相对于不透明物体的排序"
 "方式。这是因为不透明对象不被排序，而透明对象则从后往前排序（取决于优先级）。"
 
@@ -71145,10 +71283,9 @@ msgid ""
 msgstr "如果设置，从后面也可以看到纹理，如果没有，从后面看它是不可见的。"
 
 #: doc/classes/SpriteBase3D.xml
-#, fuzzy
 msgid ""
 "Sprite is scaled by depth so that it always appears the same size on screen."
-msgstr "按深度缩放对象，使其在屏幕上显示的大小始终相同。"
+msgstr "精灵会根据深度进行缩放，从而在屏幕上始终以相同的大小显示。"
 
 #: doc/classes/SpriteFrames.xml
 msgid "Sprite frame library for AnimatedSprite and AnimatedSprite3D."
@@ -74982,9 +75119,8 @@ msgid ""
 msgstr "当 [member readonly] 启用时，设置这个 [TextEdit] 的 [StyleBox]。"
 
 #: doc/classes/TextMesh.xml
-#, fuzzy
 msgid "Generate an [PrimitiveMesh] from the text."
-msgstr "从网格生成[TriangleMesh]。"
+msgstr "从文本生成 [PrimitiveMesh]。"
 
 #: doc/classes/TextMesh.xml
 msgid ""
@@ -74996,10 +75132,15 @@ msgid ""
 "height for the front face, 40% for the back face, 10% for the outer edges "
 "and 10% for the inner edges."
 msgstr ""
+"根据文本生成 [PrimitiveMesh]。\n"
+"使用了矢量字形轮廓的动态字体才能用于生成 TextMesh。不支持位图字体（包括 "
+"TrueType/OpenType 容器中的位图数据，例如彩色 Emoji 字体）。\n"
+"UV 布局由 4 个横条组成，从上到下依次为：正面占 40% 高度，背面占 40% 的高度，"
+"外面占 10% 的高度，内侧面占 10% 的高度。"
 
 #: doc/classes/TextMesh.xml
 msgid "Step (in pixels) used to approximate Bézier curves."
-msgstr ""
+msgstr "用于近似贝塞尔曲线的步长（单位为像素）。"
 
 #: doc/classes/TextMesh.xml
 msgid ""
@@ -75007,30 +75148,28 @@ msgid ""
 "generated, and UV layout is changed to use full texture for the front face "
 "only."
 msgstr ""
+"生成的网格的深度，设为 [code]0.0[/code] 时只有正面，此时的 UV 布局会变为让正"
+"面占据整张纹理。"
 
 #: doc/classes/TextMesh.xml
-#, fuzzy
 msgid "[Font] used for the [TextMesh]'s text."
-msgstr "用于标签[Label]文本的字体[Font]。"
+msgstr "该 [TextMesh] 的文本所使用的 [Font]。"
 
 #: doc/classes/TextMesh.xml
-#, fuzzy
 msgid ""
 "Controls the text's horizontal alignment. Supports left, center and right. "
 "Set it to one of the [enum Align] constants."
 msgstr ""
-"控制文本的水平对齐。支持左对齐、居中对齐、右对齐和填充，或者两端对齐。把它设"
-"置为[enum Align]常量之一。"
+"控制文本的水平对齐。支持左对齐、居中、右对齐。把它设置为 [enum Align] 常量之"
+"一。"
 
 #: doc/classes/TextMesh.xml
-#, fuzzy
 msgid "The size of one pixel's width on the text to scale it in 3D."
-msgstr "精灵上一个像素宽度的大小，以 3D 缩放。"
+msgstr "文本上一个像素宽度的大小，以 3D 缩放。"
 
 #: doc/classes/TextMesh.xml
-#, fuzzy
 msgid "The text to generate mesh from."
-msgstr "从中获取常量的类型。"
+msgstr "用于生成网格的文本。"
 
 #: doc/classes/Texture.xml
 msgid "Texture for 2D and 3D."
@@ -79497,10 +79636,11 @@ msgid "Stops animation and removes all tweens."
 msgstr "停止动画，并删除所有补间。"
 
 #: doc/classes/Tween.xml
+#, fuzzy
 msgid ""
 "Resets a tween to its initial value (the one given, not the one before the "
 "tween), given its object and property/method pair. By default, all tweens "
-"are removed, unless [code]key[/code] is specified."
+"are reset, unless [code]key[/code] is specified."
 msgstr ""
 "将补间重置到它的初始值，即给定的值，而不是补间之前的值，指定其对象和属性或方"
 "法的对。默认情况下，除非指定了[code]key[/code]，否则所有的补间都被移除。"
@@ -81707,21 +81847,20 @@ msgstr ""
 "[VideoPlayer]中播放视频。"
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
-#, fuzzy
 msgid "[VideoStream] resource for video formats implemented via GDNative."
-msgstr "[VideoStream] 用于通过GDNative实现的视频格式的资源。"
+msgstr "通过 GDNative 实现的视频格式所使用的 [VideoStream] 资源。"
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
-#, fuzzy
 msgid ""
 "[VideoStream] resource for video formats implemented via GDNative.\n"
 "It can be used via [url=https://github.com/KidRigger/godot-"
 "videodecoder]godot-videodecoder[/url] which uses the [url=https://ffmpeg."
 "org]FFmpeg[/url] library."
 msgstr ""
-"[VideoStream]资源用于通过GDNative实现的视频格式。\n"
-"它可以通过[url=https://github.com/KidRigger/godot-videodecoder]godot-"
-"videodecoder[/url]使用[url=https://ffmpeg.org]FFmpeg[/url]库来使用。"
+"通过 GDNative 实现的视频格式所使用的 [VideoStream] 资源。\n"
+"它可以通过 [url=https://github.com/KidRigger/godot-videodecoder]godot-"
+"videodecoder[/url] 使用，内部使用的是 [url=https://ffmpeg.org]FFmpeg[/url] "
+"库。"
 
 #: modules/gdnative/doc_classes/VideoStreamGDNative.xml
 msgid "Returns the video file handled by this [VideoStreamGDNative]."
@@ -86260,9 +86399,10 @@ msgid "Returns the value of a certain material's parameter."
 msgstr "返回特定材质的参数值。"
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid ""
-"Returns the default value for the param if available. Otherwise returns an "
-"empty [Variant]."
+"Returns the default value for the param if available. Returns [code]null[/"
+"code] otherwise."
 msgstr "如果可用，返回参数的默认值。否则返回一个空的 [Variant]。"
 
 #: doc/classes/VisualServer.xml
@@ -92065,7 +92205,6 @@ msgid "Emitted when [member visibility_state] has changed."
 msgstr "当[member visibility_state]已更改时触发。"
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
-#, fuzzy
 msgid "We don't know the target ray mode."
 msgstr "不知道目标射线的模式。"
 
@@ -92269,14 +92408,14 @@ msgid "An X509 certificate (e.g. for SSL)."
 msgstr "X509 证书（例如用于 SSL）。"
 
 #: doc/classes/X509Certificate.xml
+#, fuzzy
 msgid ""
 "The X509Certificate class represents an X509 certificate. Certificates can "
 "be loaded and saved like any other [Resource].\n"
 "They can be used as the server certificate in [method StreamPeerSSL."
 "accept_stream] (along with the proper [CryptoKey]), and to specify the only "
 "certificate that should be accepted when connecting to an SSL server via "
-"[method StreamPeerSSL.connect_to_stream].\n"
-"[b]Note:[/b] Not available in HTML5 exports."
+"[method StreamPeerSSL.connect_to_stream]."
 msgstr ""
 "X509Certificate 类表示一个 X509 证书。证书可以像其他的 [Resource] 资源一样被"
 "加载和保存。\n"
