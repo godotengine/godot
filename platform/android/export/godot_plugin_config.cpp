@@ -89,7 +89,6 @@ PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAnd
 
 Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plugins_base_dir) {
 	Vector<PluginConfigAndroid> prebuilt_plugins;
-	// prebuilt_plugins.push_back(resolve_prebuilt_plugin(MY_PREBUILT_PLUGIN, plugins_base_dir));
 	return prebuilt_plugins;
 }
 
