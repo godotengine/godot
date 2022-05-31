@@ -1547,13 +1547,16 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 	//卸载编辑器默认主题
+	bool unload_default_theme = false;
 	if (Object::cast_to<Control>(scene)) {
 		Control* ct = Object::cast_to<Control>(scene);
 		if (ct->get_theme() == EditorNode::get_singleton()->get_gui_base()->get_theme()) {
 			ct->set_theme(nullptr);
+			unload_default_theme = true;
 		}
 	}
-	
+
+
 		
 	if(scene)
 	editor_data.apply_changes_in_editors();
@@ -1619,6 +1622,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		_update_scene_tabs();
 	} else {
 		_dialog_display_save_error(p_file, err);
+	}
+	//再还原回去
+	if (unload_default_theme) {
+		Control* ct = Object::cast_to<Control>(scene);
+		ct->set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
 	}
 }
 
