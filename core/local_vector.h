@@ -33,6 +33,7 @@
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
+#include "core/pool_vector.h"
 #include "core/sort_array.h"
 #include "core/vector.h"
 
@@ -240,6 +241,17 @@ public:
 		return ret;
 	}
 
+	operator PoolVector<T>() const {
+		PoolVector<T> pl;
+		if (size()) {
+			pl.resize(size());
+			typename PoolVector<T>::Write w = pl.write();
+			T *dest = w.ptr();
+			memcpy(dest, data, sizeof(T) * count);
+		}
+		return pl;
+	}
+
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
@@ -255,6 +267,19 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
+	LocalVector(const Vector<T> &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = p_from[i];
+		}
+	}
+	LocalVector(const PoolVector<T> &p_from) {
+		resize(p_from.size());
+		typename PoolVector<T>::Read r = p_from.read();
+		for (U i = 0; i < count; i++) {
+			data[i] = r[i];
+		}
+	}
 	inline LocalVector &operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
@@ -266,6 +291,14 @@ public:
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
+		}
+		return *this;
+	}
+	inline LocalVector &operator=(const PoolVector<T> &p_from) {
+		resize(p_from.size());
+		typename PoolVector<T>::Read r = p_from.read();
+		for (U i = 0; i < count; i++) {
+			data[i] = r[i];
 		}
 		return *this;
 	}
