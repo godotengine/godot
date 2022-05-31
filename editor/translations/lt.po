@@ -7,13 +7,14 @@
 # Ignotas Gražys <ignotas.gr@gmail.com>, 2020.
 # Kornelijus Tvarijanavičius <kornelitvari@protonmail.com>, 2020, 2021.
 # Lukas Hamm <ideallygrey@tuta.io>, 2021.
+# Ignas Kaveckas <ignas.kaveckas@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-15 04:33+0000\n"
-"Last-Translator: Lukas Hamm <ideallygrey@tuta.io>\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
+"Last-Translator: Ignas Kaveckas <ignas.kaveckas@gmail.com>\n"
 "Language-Team: Lithuanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lt/>\n"
 "Language: lt\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n==1 ? 0 : n%10>=2 && (n%100<10 || "
 "n%100>=20) ? 1 : n%10==0 || (n%100>10 && n%100<20) ? 2 : 3;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -6124,7 +6125,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
-msgstr ""
+msgstr "Nepavyko pašalinti laikino failo:"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -6152,7 +6153,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
-msgstr ""
+msgstr "Atsijungta"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
@@ -6165,32 +6166,34 @@ msgstr ""
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting..."
-msgstr ""
+msgstr "Jungiamasi..."
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Can't Connect"
-msgstr ""
+msgstr "Negalima prisijungti"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
-msgstr ""
+msgstr "Prisijungta"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Requesting..."
-msgstr ""
+msgstr "Daroma užklausa..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
-msgstr ""
+msgstr "Atsisiunčiama"
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
-msgstr ""
+msgstr "Prisijungimo klaida"
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
-msgstr ""
+msgstr "SSL Handshake klaida"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open the export templates file."
@@ -6199,12 +6202,12 @@ msgstr ""
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "Invalid version.txt format inside the export templates file: %s."
-msgstr "Šablonuose nerasta version.txt failo."
+msgstr "Klaidingas version.txt failo formatas eksporto šablono faile: %s."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "No version.txt found inside the export templates file."
-msgstr "Šablonuose nerasta version.txt failo."
+msgstr "Eksporto šablone nerasta version.txt failo."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -6217,16 +6220,16 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr ""
+msgstr "Importuojama:"
+
+#: editor/export_template_manager.cpp
+msgid "Remove templates for the version '%s'?"
+msgstr "Panaikinti versijos '%s' šablonus?"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Remove templates for the version '%s'?"
-msgstr "Panaikinti šablono versiją '%s'?"
-
-#: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
-msgstr ""
+msgstr "Išskleidžiami Android Build šaltiniai"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -6234,7 +6237,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr ""
+msgstr "Dabartinė versija:"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
@@ -13952,6 +13955,14 @@ msgid "Runnable"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr ""
 
@@ -14084,29 +14095,36 @@ msgid "More Info..."
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Export Project"
-msgstr ""
+#, fuzzy
+msgid "Export PCK/Zip..."
+msgstr "Redaguoti"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export mode?"
+msgid "Export Project..."
 msgstr "Importuoti iš Nodo:"
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr ""
 
+#: editor/project_export.cpp
+msgid "Choose an export mode:"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
+msgstr "Redaguoti"
+
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "Redaguoti Filtrus"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14390,13 +14408,13 @@ msgid "Project Manager"
 msgstr "Aprašymas:"
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "Atsiųsti"
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy

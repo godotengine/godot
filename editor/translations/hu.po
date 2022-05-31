@@ -14140,6 +14140,14 @@ msgid "Runnable"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr ""
 
@@ -14271,19 +14279,27 @@ msgid "More Info..."
 msgstr "Áthelyezés..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
-msgstr ""
+#, fuzzy
+msgid "Export PCK/Zip..."
+msgstr "Összes exportálása"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Projekt Exportálása"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Exportálási mód?"
+msgid "Export All"
+msgstr "Összes exportálása"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Válasszon egy Könyvtárat"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Összes exportálása"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14291,8 +14307,9 @@ msgid "ZIP File"
 msgstr "ZIP fájl"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "Projekt Exportálása"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14576,12 +14593,12 @@ msgid "Project Manager"
 msgstr "Projektkezelő"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Betöltés, kérem várjon..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Betöltés, kérem várjon..."
 
 #: editor/project_manager.cpp
 #, fuzzy

@@ -32,13 +32,14 @@
 # Number18 <secretemail7730@gmail.com>, 2022.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2022.
 # Otis Kao <momoslim@gmail.com>, 2022.
+# YuChiang Chang <chiang.c.tw@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-03 07:14+0000\n"
-"Last-Translator: Otis Kao <momoslim@gmail.com>\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
+"Last-Translator: YuChiang Chang <chiang.c.tw@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -14008,6 +14009,14 @@ msgid "Runnable"
 msgstr "可執行"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "確定要刪除預設設定「%s」？"
 
@@ -14148,19 +14157,27 @@ msgid "More Info..."
 msgstr "移動至..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "匯出 PCK/ZIP"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "匯出專案"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "匯出模式？"
+msgid "Export All"
+msgstr "全部匯出"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "請選擇一個空資料夾。"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "全部匯出"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14168,7 +14185,8 @@ msgid "ZIP File"
 msgstr "ZIP 檔案"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot 遊戲包"
 
 #: editor/project_export.cpp
@@ -14479,12 +14497,12 @@ msgid "Project Manager"
 msgstr "專案管理員"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "載入中，請稍後..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "最後修改時間"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "載入中，請稍後..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -16304,9 +16322,8 @@ msgstr ""
 #: main/main.cpp scene/3d/baked_lightmap.cpp scene/3d/camera.cpp
 #: scene/3d/world_environment.cpp scene/main/scene_tree.cpp
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Environment"
-msgstr "檢視環境"
+msgstr "環境"
 
 #: main/main.cpp
 msgid "Default Clear Color"

@@ -14153,6 +14153,14 @@ msgid "Runnable"
 msgstr "Executable"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Eliminar axustes de exportación '%s'?"
 
@@ -14290,28 +14298,37 @@ msgid "More Info..."
 msgstr "Mover a..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
-msgstr ""
+#, fuzzy
+msgid "Export PCK/Zip..."
+msgstr "Exportar..."
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Exportar Proxecto"
-
-#: editor/project_export.cpp
-msgid "Export mode?"
-msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Elixir un Directorio"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
+msgstr "Exportar..."
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "Exportar Proxecto"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14626,12 +14643,12 @@ msgid "Project Manager"
 msgstr "Administrador de Proxectos"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Cargando, por favor agarde..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Derradeira Modificación"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Cargando, por favor agarde..."
 
 #: editor/project_manager.cpp
 #, fuzzy
