@@ -1,0 +1,455 @@
+diff --git a/include/core/SkMatrix.h b/include/core/SkMatrix.h
+index 0314076..36c0b19 100644
+--- a/include/core/SkMatrix.h
++++ b/include/core/SkMatrix.h
+@@ -1666,7 +1666,9 @@ public:
+ 
+         example: https://fiddle.skia.org/c/@Matrix_dump
+     */
+-    void dump() const;
++// -- GODOT start --
++    //void dump() const;
++// -- GODOT end -- 
+ 
+     /** Returns the minimum scaling factor of SkMatrix by decomposing the scaling and
+         skewing elements.
+diff --git a/include/core/SkPath.h b/include/core/SkPath.h
+index 8936472..f2928c0 100644
+--- a/include/core/SkPath.h
++++ b/include/core/SkPath.h
+@@ -1677,14 +1677,16 @@ public:
+ 
+         example: https://fiddle.skia.org/c/@Path_dump
+     */
+-    void dump(SkWStream* stream, bool dumpAsHex) const;
++// -- GODOT start --
++    //void dump(SkWStream* stream, bool dumpAsHex) const;
+ 
+-    void dump() const { this->dump(nullptr, false); }
+-    void dumpHex() const { this->dump(nullptr, true); }
++    //void dump() const { this->dump(nullptr, false); }
++    //void dumpHex() const { this->dump(nullptr, true); }
+ 
+     // Like dump(), but outputs for the SkPath::Make() factory
+-    void dumpArrays(SkWStream* stream, bool dumpAsHex) const;
+-    void dumpArrays() const { this->dumpArrays(nullptr, false); }
++    //void dumpArrays(SkWStream* stream, bool dumpAsHex) const;
++    //void dumpArrays() const { this->dumpArrays(nullptr, false); }
++// -- GODOT end --
+ 
+     /** Writes SkPath to buffer, returning the number of bytes written.
+         Pass nullptr to obtain the storage size.
+diff --git a/include/core/SkRRect.h b/include/core/SkRRect.h
+index 0993851..65c19cc 100644
+--- a/include/core/SkRRect.h
++++ b/include/core/SkRRect.h
+@@ -461,23 +461,28 @@ public:
+ 
+         example: https://fiddle.skia.org/c/@RRect_dump
+     */
+-    void dump(bool asHex) const;
+-    SkString dumpToString(bool asHex) const;
++// -- GODOT start --
++    //void dump(bool asHex) const;
++    //SkString dumpToString(bool asHex) const;
++// -- GODOT end --
+ 
+     /** Writes text representation of SkRRect to standard output. The representation
+         may be directly compiled as C++ code. Floating point values are written
+         with limited precision; it may not be possible to reconstruct original
+         SkRRect from output.
+     */
+-    void dump() const { this->dump(false); }
++// -- GODOT start --
++    //void dump() const { this->dump(false); }
++// -- GODOT end --
+ 
+     /** Writes text representation of SkRRect to standard output. The representation
+         may be directly compiled as C++ code. Floating point values are written
+         in hexadecimal to preserve their exact bit pattern. The output reconstructs the
+         original SkRRect.
+     */
+-    void dumpHex() const { this->dump(true); }
+-
++// -- GODOT start --
++    //void dumpHex() const { this->dump(true); }
++// -- GODOT end --
+ private:
+     static bool AreRectAndRadiiValid(const SkRect&, const SkVector[4]);
+ 
+diff --git a/include/core/SkRect.h b/include/core/SkRect.h
+index 99efe70..4be0bea 100644
+--- a/include/core/SkRect.h
++++ b/include/core/SkRect.h
+@@ -1350,14 +1350,18 @@ public:
+ 
+         example: https://fiddle.skia.org/c/@Rect_dump
+     */
+-    void dump(bool asHex) const;
++// -- GODOT start --
++    //void dump(bool asHex) const;
++// -- GODOT end --
+ 
+     /** Writes text representation of SkRect to standard output. The representation may be
+         directly compiled as C++ code. Floating point values are written
+         with limited precision; it may not be possible to reconstruct original SkRect
+         from output.
+     */
+-    void dump() const { this->dump(false); }
++// -- GODOT start --
++    //void dump() const { this->dump(false); }
++// -- GODOT end --
+ 
+     /** Writes text representation of SkRect to standard output. The representation may be
+         directly compiled as C++ code. Floating point values are written
+@@ -1366,7 +1370,9 @@ public:
+ 
+         Use instead of dump() when submitting
+     */
+-    void dumpHex() const { this->dump(true); }
++// -- GODOT start --
++    //void dumpHex() const { this->dump(true); }
++// -- GODOT end --
+ };
+ 
+ inline bool SkIRect::contains(const SkRect& r) const {
+diff --git a/include/private/SkPathRef.h b/include/private/SkPathRef.h
+index 7d2f859..8ed5728 100644
+--- a/include/private/SkPathRef.h
++++ b/include/private/SkPathRef.h
+@@ -323,12 +323,16 @@ public:
+     /**
+      * Writes the path points and verbs to a buffer.
+      */
+-    void writeToBuffer(SkWBuffer* buffer) const;
++// -- GODOT start --
++    //void writeToBuffer(SkWBuffer* buffer) const;
++// -- GODOT end --
+ 
+     /**
+      * Gets the number of bytes that would be written in writeBuffer()
+      */
+-    uint32_t writeSize() const;
++// -- GODOT start --
++    //uint32_t writeSize() const;
++// -- GODOT end --
+ 
+     void interpolate(const SkPathRef& ending, SkScalar weight, SkPathRef* out) const;
+ 
+diff --git a/src/core/SkMatrix.cpp b/src/core/SkMatrix.cpp
+index 85e3c17..83a10cf 100644
+--- a/src/core/SkMatrix.cpp
++++ b/src/core/SkMatrix.cpp
+@@ -7,10 +7,12 @@
+ 
+ #include "include/core/SkMatrix.h"
+ 
+-#include "include/core/SkPaint.h"
++// -- GODOT start --
++//#include "include/core/SkPaint.h"
+ #include "include/core/SkPoint3.h"
+ #include "include/core/SkRSXform.h"
+-#include "include/core/SkString.h"
++//#include "include/core/SkString.h"
++// -- GODOT end --
+ #include "include/private/SkFloatBits.h"
+ #include "include/private/SkTo.h"
+ #include "include/private/SkVx.h"
+@@ -1621,6 +1623,8 @@ size_t SkMatrix::readFromMemory(const void* buffer, size_t length) {
+     return sizeInMemory;
+ }
+ 
++// -- GODOT start --
++/*
+ void SkMatrix::dump() const {
+     SkString str;
+     str.appendf("[%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f]",
+@@ -1794,6 +1798,8 @@ bool SkDecomposeUpper2x2(const SkMatrix& matrix,
+ 
+     return true;
+ }
++*/
++// -- GODOT end --
+ 
+ //////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
+index cee6d09..c450dfa 100644
+--- a/src/core/SkPath.cpp
++++ b/src/core/SkPath.cpp
+@@ -7,14 +7,16 @@
+ 
+ #include "include/core/SkPath.h"
+ 
+-#include "include/core/SkData.h"
++// -- GODOT start --
++//#include "include/core/SkData.h"
+ #include "include/core/SkMath.h"
+ #include "include/core/SkPathBuilder.h"
+ #include "include/core/SkRRect.h"
+ #include "include/private/SkMacros.h"
+ #include "include/private/SkPathRef.h"
+ #include "include/private/SkTo.h"
+-#include "src/core/SkBuffer.h"
++//#include "src/core/SkBuffer.h"
++// -- GODOT end --
+ #include "src/core/SkCubicClipper.h"
+ #include "src/core/SkGeometry.h"
+ #include "src/core/SkMatrixPriv.h"
+@@ -1908,6 +1910,8 @@ SkPath::Verb SkPath::RawIter::next(SkPoint pts[4]) {
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+ 
++// -- GODOT start --
++/*
+ #include "include/core/SkStream.h"
+ #include "include/core/SkString.h"
+ #include "src/core/SkStringUtils.h"
+@@ -2010,7 +2014,7 @@ void SkPath::dumpArrays(SkWStream* wStream, bool dumpAsHex) const {
+ 
+     auto append_scalar = [&](SkScalar v) {
+         if (dumpAsHex) {
+-            builder.appendf("SkBits2Float(0x%08X) /* %g */", SkFloat2Bits(v), v);
++            builder.appendf("SkBits2Float(0x%08X) %g", SkFloat2Bits(v), v);
+         } else {
+             builder.appendf("%g", v);
+         }
+@@ -2066,6 +2070,8 @@ void SkPath::dumpArrays(SkWStream* wStream, bool dumpAsHex) const {
+         SkDebugf("%s\n", builder.c_str());
+     }
+ }
++*/
++// -- GODOT end --
+ 
+ bool SkPath::isValidImpl() const {
+     if ((fFillType & ~3) != 0) {
+diff --git a/src/core/SkPathRef.cpp b/src/core/SkPathRef.cpp
+index 74952fe..ba586a6 100644
+--- a/src/core/SkPathRef.cpp
++++ b/src/core/SkPathRef.cpp
+@@ -12,7 +12,9 @@
+ #include "include/private/SkOnce.h"
+ #include "include/private/SkTo.h"
+ #include "include/private/SkVx.h"
+-#include "src/core/SkBuffer.h"
++// -- GODOT start --
++//#include "src/core/SkBuffer.h"
++// -- GODOT end --
+ #include "src/core/SkPathPriv.h"
+ #include "src/core/SkSafeMath.h"
+ 
+@@ -270,6 +272,8 @@ bool SkPathRef::operator== (const SkPathRef& ref) const {
+     return true;
+ }
+ 
++// -- GODOT start --
++/*
+ void SkPathRef::writeToBuffer(SkWBuffer* buffer) const {
+     SkDEBUGCODE(this->validate();)
+     SkDEBUGCODE(size_t beforePos = buffer->pos();)
+@@ -303,6 +307,8 @@ uint32_t SkPathRef::writeSize() const {
+                     fVerbs.bytes() + fPoints.bytes() + fConicWeights.bytes() +
+                     sizeof(SkRect));
+ }
++*/
++// -- GODOT end --
+ 
+ void SkPathRef::copy(const SkPathRef& ref,
+                      int additionalReserveVerbs,
+diff --git a/src/core/SkRRect.cpp b/src/core/SkRRect.cpp
+index 060e956..ec77016 100644
+--- a/src/core/SkRRect.cpp
++++ b/src/core/SkRRect.cpp
+@@ -6,9 +6,11 @@
+  */
+ 
+ #include "include/core/SkMatrix.h"
+-#include "include/core/SkString.h"
++// -- GODOT start --
++//#include "include/core/SkString.h"
+ #include "include/private/SkMalloc.h"
+-#include "src/core/SkBuffer.h"
++//#include "src/core/SkBuffer.h"
++// -- GODOT end --
+ #include "src/core/SkRRectPriv.h"
+ #include "src/core/SkRectPriv.h"
+ #include "src/core/SkScaleToSides.h"
+@@ -581,6 +583,8 @@ void SkRRect::inset(SkScalar dx, SkScalar dy, SkRRect* dst) const {
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+ 
++// -- GODOT start --
++/*
+ size_t SkRRect::writeToMemory(void* buffer) const {
+     // Serialize only the rect and corners, but not the derived type tag.
+     memcpy(buffer, this, kSizeInMemory);
+@@ -628,7 +632,7 @@ SkString SkRRect::dumpToString(bool asHex) const {
+         SkAppendScalar(&strY, fRadii[i].y(), asType);
+         line.appendf("    { %s, %s },", strX.c_str(), strY.c_str());
+         if (asHex) {
+-            line.appendf(" /* %f %f */", fRadii[i].x(), fRadii[i].y());
++            line.appendf(" %f %f ", fRadii[i].x(), fRadii[i].y());
+         }
+         line.append("\n");
+     }
+@@ -637,6 +641,8 @@ SkString SkRRect::dumpToString(bool asHex) const {
+ }
+ 
+ void SkRRect::dump(bool asHex) const { SkDebugf("%s\n", this->dumpToString(asHex).c_str()); }
++*/
++// -- GODOT end --
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+diff --git a/src/core/SkRRectPriv.h b/src/core/SkRRectPriv.h
+index cea579c..f55e47f 100644
+--- a/src/core/SkRRectPriv.h
++++ b/src/core/SkRRectPriv.h
+@@ -40,9 +40,11 @@ public:
+ 
+     static bool AllCornersCircular(const SkRRect& rr, SkScalar tolerance = SK_ScalarNearlyZero);
+ 
+-    static bool ReadFromBuffer(SkRBuffer* buffer, SkRRect* rr);
++// -- GODOT start --
++    //static bool ReadFromBuffer(SkRBuffer* buffer, SkRRect* rr);
+ 
+-    static void WriteToBuffer(const SkRRect& rr, SkWBuffer* buffer);
++    //static void WriteToBuffer(const SkRRect& rr, SkWBuffer* buffer);
++// -- GODOT end --
+ 
+     // Test if a point is in the rrect, if it were a closed set.
+     static bool ContainsPoint(const SkRRect& rr, const SkPoint& p) {
+diff --git a/src/core/SkRect.cpp b/src/core/SkRect.cpp
+index f5e91f1..166dc11 100644
+--- a/src/core/SkRect.cpp
++++ b/src/core/SkRect.cpp
+@@ -136,6 +136,8 @@ void SkRect::join(const SkRect& r) {
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////
+ 
++// -- GODOT start --
++/*
+ #include "include/core/SkString.h"
+ #include "src/core/SkStringUtils.h"
+ 
+@@ -151,10 +153,10 @@ void SkRect::dump(bool asHex) const {
+     SkString line;
+     if (asHex) {
+         SkString tmp;
+-        line.printf( "SkRect::MakeLTRB(%s, /* %f */\n", set_scalar(&tmp, fLeft, asType), fLeft);
+-        line.appendf("                 %s, /* %f */\n", set_scalar(&tmp, fTop, asType), fTop);
+-        line.appendf("                 %s, /* %f */\n", set_scalar(&tmp, fRight, asType), fRight);
+-        line.appendf("                 %s  /* %f */);", set_scalar(&tmp, fBottom, asType), fBottom);
++        line.printf( "SkRect::MakeLTRB(%s, %f\n", set_scalar(&tmp, fLeft, asType), fLeft);
++        line.appendf("                 %s, %f\n", set_scalar(&tmp, fTop, asType), fTop);
++        line.appendf("                 %s, %f\n", set_scalar(&tmp, fRight, asType), fRight);
++        line.appendf("                 %s  %f);", set_scalar(&tmp, fBottom, asType), fBottom);
+     } else {
+         SkString strL, strT, strR, strB;
+         SkAppendScalarDec(&strL, fLeft);
+@@ -166,6 +168,8 @@ void SkRect::dump(bool asHex) const {
+     }
+     SkDebugf("%s\n", line.c_str());
+ }
++*/
++// -- GODOT end --
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+diff --git a/src/pathops/SkPathOpsDebug.cpp b/src/pathops/SkPathOpsDebug.cpp
+index 7c89792..59f36c4 100644
+--- a/src/pathops/SkPathOpsDebug.cpp
++++ b/src/pathops/SkPathOpsDebug.cpp
+@@ -6,9 +6,11 @@
+  */
+ 
+ #include "include/core/SkPath.h"
+-#include "include/core/SkString.h"
++// -- GODOT start --
++//#include "include/core/SkString.h"
+ #include "include/private/SkMutex.h"
+-#include "src/core/SkOSFile.h"
++//#include "src/core/SkOSFile.h"
++// -- GODOT end --
+ #include "src/core/SkPathPriv.h"
+ #include "src/pathops/SkOpCoincidence.h"
+ #include "src/pathops/SkOpContour.h"
+@@ -511,6 +513,8 @@ void SkPathOpsDebug::WindingPrintf(int wind) {
+ #endif //  defined SK_DEBUG || !FORCE_RELEASE
+ 
+ 
++// -- GODOT start --
++/*
+ static void show_function_header(const char* functionName) {
+     SkDebugf("\nstatic void %s(skiatest::Reporter* reporter, const char* filename) {\n", functionName);
+     if (strcmp("skphealth_com76", functionName) == 0) {
+@@ -545,6 +549,8 @@ void SkPathOpsDebug::ShowPath(const SkPath& a, const SkPath& b, SkPathOp shapeOp
+     ShowOnePath(b, "pathB", true);
+     show_op(shapeOp, "path", "pathB");
+ }
++*/
++// -- GODOT end --
+ 
+ #include "src/pathops/SkIntersectionHelper.h"
+ #include "src/pathops/SkIntersections.h"
+@@ -2811,6 +2817,8 @@ void SkOpPtT::debugValidate() const {
+ #endif
+ }
+ 
++// -- GODOT start --
++/*
+ static void output_scalar(SkScalar num) {
+     if (num == (int) num) {
+         SkDebugf("%d", (int) num);
+@@ -2910,6 +2918,8 @@ void SkPathOpsDebug::ShowOnePath(const SkPath& path, const char* name, bool incl
+     SkDebugf("    %s.setFillType(SkPath::%s);\n", name, gFillTypeStr[(int)fillType]);
+     showPathContours(path, name);
+ }
++*/
++// -- GODOT end --
+ 
+ #if DEBUG_DUMP_VERIFY
+ #include "include/core/SkData.h"
+@@ -3112,6 +3122,8 @@ void SkPathOpsDebug::VerifySimplify(const SkPath& path, const SkPath& result) {
+ #endif
+ 
+ // global path dumps for msvs Visual Studio 17 to use from Immediate Window
++// -- GODOT start --
++/* 
+ void Dump(const SkPath& path) {
+     path.dump();
+ }
+@@ -3119,3 +3131,5 @@ void Dump(const SkPath& path) {
+ void DumpHex(const SkPath& path) {
+     path.dumpHex();
+ }
++*/
++// -- GODOT end --
+diff --git a/src/pathops/SkPathOpsDebug.h b/src/pathops/SkPathOpsDebug.h
+index de6c10e..6b54620 100644
+--- a/src/pathops/SkPathOpsDebug.h
++++ b/src/pathops/SkPathOpsDebug.h
+@@ -7,7 +7,9 @@
+ #ifndef SkPathOpsDebug_DEFINED
+ #define SkPathOpsDebug_DEFINED
+ 
+-#include "include/core/SkString.h"
++// -- GODOT start --
++//#include "include/core/SkString.h"
++// -- GODOT end --
+ #include "include/core/SkTypes.h"
+ #include "include/pathops/SkPathOps.h"
+ 
+@@ -346,8 +348,10 @@ public:
+     static void WindingPrintf(int winding);
+ 
+     static void ShowActiveSpans(SkOpContourHead* contourList);
+-    static void ShowOnePath(const SkPath& path, const char* name, bool includeDeclaration);
+-    static void ShowPath(const SkPath& one, const SkPath& two, SkPathOp op, const char* name);
++// -- GODOT start --
++    //static void ShowOnePath(const SkPath& path, const char* name, bool includeDeclaration);
++    //static void ShowPath(const SkPath& one, const SkPath& two, SkPathOp op, const char* name);
++// -- GODOT end --
+ 
+     static bool ChaseContains(const SkTDArray<SkOpSpanBase*>& , const SkOpSpanBase* );
+ 
