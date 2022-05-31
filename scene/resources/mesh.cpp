@@ -161,32 +161,45 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		return triangle_mesh;
 	}
 
-	int facecount = 0;
+	int faces_size = 0;
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		if (surface_get_primitive_type(i) != PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-
-		if (surface_get_format(i) & ARRAY_FORMAT_INDEX) {
-			facecount += surface_get_array_index_len(i);
-		} else {
-			facecount += surface_get_array_len(i);
+		switch (surface_get_primitive_type(i)) {
+			case PRIMITIVE_TRIANGLES: {
+				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+				// Don't error if zero, it's valid (we'll just skip it later).
+				ERR_CONTINUE_MSG((len % 3) != 0, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLES).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
+				faces_size += len;
+			} break;
+			case PRIMITIVE_TRIANGLE_STRIP: {
+				int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+				// Don't error if zero, it's valid (we'll just skip it later).
+				ERR_CONTINUE_MSG(len != 0 && len < 3, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLE_STRIP).", i, (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
+				faces_size += (len == 0) ? 0 : (len - 2) * 3;
+			} break;
+			default: {
+			} break;
 		}
 	}
 
-	if (facecount == 0 || (facecount % 3) != 0) {
+	if (faces_size == 0) {
 		return triangle_mesh;
 	}
 
 	Vector<Vector3> faces;
-	faces.resize(facecount);
+	faces.resize(faces_size);
 	Vector3 *facesw = faces.ptrw();
 
 	int widx = 0;
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		if (surface_get_primitive_type(i) != PRIMITIVE_TRIANGLES) {
+		Mesh::PrimitiveType primitive = surface_get_primitive_type(i);
+		if (primitive != PRIMITIVE_TRIANGLES && primitive != PRIMITIVE_TRIANGLE_STRIP) {
+			continue;
+		}
+		int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
+		if ((primitive == PRIMITIVE_TRIANGLES && (len == 0 || (len % 3) != 0)) || (primitive == PRIMITIVE_TRIANGLE_STRIP && len < 3)) {
+			// Error was already shown, just skip (including zero).
 			continue;
 		}
 
@@ -202,14 +215,30 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			Vector<int> indices = a[ARRAY_INDEX];
 			const int *ir = indices.ptr();
 
-			for (int j = 0; j < ic; j++) {
-				int index = ir[j];
-				facesw[widx++] = vr[index];
+			if (primitive == PRIMITIVE_TRIANGLES) {
+				for (int j = 0; j < ic; j++) {
+					int index = ir[j];
+					facesw[widx++] = vr[index];
+				}
+			} else { // PRIMITIVE_TRIANGLE_STRIP
+				for (int j = 2; j < ic; j++) {
+					facesw[widx++] = vr[ir[j - 2]];
+					facesw[widx++] = vr[ir[j - 1]];
+					facesw[widx++] = vr[ir[j]];
+				}
 			}
 
 		} else {
-			for (int j = 0; j < vc; j++) {
-				facesw[widx++] = vr[j];
+			if (primitive == PRIMITIVE_TRIANGLES) {
+				for (int j = 0; j < vc; j++) {
+					facesw[widx++] = vr[j];
+				}
+			} else { // PRIMITIVE_TRIANGLE_STRIP
+				for (int j = 2; j < vc; j++) {
+					facesw[widx++] = vr[j - 2];
+					facesw[widx++] = vr[j - 1];
+					facesw[widx++] = vr[j];
+				}
 			}
 		}
 	}
