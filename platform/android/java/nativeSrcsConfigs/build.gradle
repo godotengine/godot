@@ -1,6 +1,7 @@
 // Non functional android library used to provide Android Studio editor support to the project.
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -16,6 +17,10 @@ android {
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
     }
 
     packagingOptions {
