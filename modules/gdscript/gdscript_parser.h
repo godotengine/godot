@@ -749,8 +749,10 @@ public:
 	};
 
 	struct GetNodeNode : public ExpressionNode {
-		LiteralNode *string = nullptr;
-		Vector<IdentifierNode *> chain;
+		String full_path;
+#ifdef DEBUG_ENABLED
+		bool use_dollar = true;
+#endif
 
 		GetNodeNode() {
 			type = GET_NODE;

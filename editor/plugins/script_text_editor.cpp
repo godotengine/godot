@@ -1570,9 +1570,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
+				bool is_unique = false;
 				String path;
 				if (node->is_unique_name_in_owner()) {
-					path = "%" + node->get_name();
+					path = node->get_name();
+					is_unique = true;
 				} else {
 					path = sn->get_path_to(node);
 				}
@@ -1585,9 +1587,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
 				if (use_type) {
-					text_to_drop += vformat("@onready var %s: %s = $%s\n", variable_name, node->get_class_name(), path);
+					text_to_drop += vformat("@onready var %s: %s = %s%s\n", variable_name, node->get_class_name(), is_unique ? "%" : "$", path);
 				} else {
-					text_to_drop += vformat("@onready var %s = $%s\n", variable_name, path);
+					text_to_drop += vformat("@onready var %s = %s%s\n", variable_name, is_unique ? "%" : "$", path);
 				}
 			}
 		} else {
@@ -1602,19 +1604,22 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
+				bool is_unique = false;
 				String path;
 				if (node->is_unique_name_in_owner()) {
-					path = "%" + node->get_name();
+					path = node->get_name();
+					is_unique = true;
 				} else {
 					path = sn->get_path_to(node);
 				}
+
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_identifier()) {
 						path = path.c_escape().quote(quote_style);
 						break;
 					}
 				}
-				text_to_drop += "$" + path;
+				text_to_drop += (is_unique ? "%" : "$") + path;
 			}
 		}
 
