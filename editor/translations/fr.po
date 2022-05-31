@@ -96,13 +96,14 @@
 # Maxime Rigout <max.rigout@gmail.com>, 2022.
 # Zachary Dionne <zachary.dionne.01@gmail.com>, 2022.
 # Fares Setbel <fares.setbels@gmail.com>, 2022.
+# Nathan Hamy <hamynathan92@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 09:38+0000\n"
-"Last-Translator: Fares Setbel <fares.setbels@gmail.com>\n"
+"PO-Revision-Date: 2022-05-31 22:33+0000\n"
+"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -113,9 +114,8 @@ msgstr ""
 "X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Tablet Driver"
-msgstr "Pilote De Tablette"
+msgstr "Pilote de Tablette"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -138,7 +138,6 @@ msgid "V-Sync Via Compositor"
 msgstr "V-Sync via le compositeur"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Delta Smoothing"
 msgstr "Lissage de Delta"
 
@@ -5432,7 +5431,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Scene Tree"
-msgstr "Arbre de Scène"
+msgstr "une arborescence, arbre des scènes"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
@@ -5700,11 +5699,11 @@ msgstr "Afficher les aides"
 
 #: editor/editor_settings.cpp
 msgid "Help Font Size"
-msgstr ""
+msgstr "Taille de la police de l'aide"
 
 #: editor/editor_settings.cpp
 msgid "Help Source Font Size"
-msgstr ""
+msgstr "Taille de la police de l'aide de la source"
 
 #: editor/editor_settings.cpp
 msgid "Help Title Font Size"
@@ -5720,9 +5719,8 @@ msgid "Pick Distance"
 msgstr "Choisissez distance :"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Size"
-msgstr "Aperçu"
+msgstr "Aperçu de la taille"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -14222,6 +14220,14 @@ msgid "Runnable"
 msgstr "Exécutable"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Supprimer le préréglage « %s » ?"
 
@@ -14365,19 +14371,27 @@ msgid "More Info..."
 msgstr "Déplacer vers…"
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Exporter le PCK/ZIP"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Exporter le projet"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Mode d'exportation ?"
+msgid "Export All"
+msgstr "Tout exporter"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Veuillez choisir un dossier vide."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Tout exporter"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14385,7 +14399,8 @@ msgid "ZIP File"
 msgstr "Fichier ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Archive Godot"
 
 #: editor/project_export.cpp
@@ -14714,12 +14729,12 @@ msgid "Project Manager"
 msgstr "Gestionnaire de projets"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Chargement en cours, veuillez patienter..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Dernière modification"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Chargement en cours, veuillez patienter..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"

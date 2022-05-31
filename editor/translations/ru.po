@@ -114,13 +114,14 @@
 # Павел <Humani.apparatus.1960@gmail.com>, 2022.
 # Deleted User <noreply+44465@weblate.org>, 2022.
 # Bozhko Artyom Dmitrievich <jek_sun@mail.ru>, 2022.
+# FuzzMix <fmwolfiechad@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-23 21:52+0000\n"
-"Last-Translator: Bozhko Artyom Dmitrievich <jek_sun@mail.ru>\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
+"Last-Translator: FuzzMix <fmwolfiechad@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -13923,6 +13924,14 @@ msgid "Runnable"
 msgstr "Активный"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Удалить пресет «%s»?"
 
@@ -14067,19 +14076,27 @@ msgid "More Info..."
 msgstr "Подробнее..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Экспортировать PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Экспортировать проект"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Режим экспорта?"
+msgid "Export All"
+msgstr "Экспортировать всё"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Пожалуйста, выберите пустую папку."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Экспортировать всё"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14087,7 +14104,8 @@ msgid "ZIP File"
 msgstr "ZIP-файл"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Пакет игры Godot"
 
 #: editor/project_export.cpp
@@ -14407,12 +14425,12 @@ msgid "Project Manager"
 msgstr "Менеджер проектов"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Загрузка, пожалуйста, ждите..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Последнее изменение"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Загрузка, пожалуйста, ждите..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -16779,7 +16797,7 @@ msgstr "Просмотр буфера разреженных значений"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Byte Offset"
-msgstr ""
+msgstr "Смещение байтов разреженных значений"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Buffer"
@@ -17406,7 +17424,7 @@ msgstr ""
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Local Port"
-msgstr ""
+msgstr "Обнаружить локальный порт"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover IPv6"
@@ -18169,11 +18187,11 @@ msgstr "Размер буфера индекса полигонов холста
 
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
-msgstr ""
+msgstr "Проверить SSL"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
-msgstr ""
+msgstr "Доверенный SSL-сертификат"
 
 #: modules/websocket/websocket_macros.h
 #, fuzzy
@@ -18263,7 +18281,7 @@ msgstr "Интеллектуальная привязка"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
-msgstr ""
+msgstr "Путь к Android SDK"
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -18284,7 +18302,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Shutdown ADB On Exit"
-msgstr ""
+msgstr "Выключение ADB при выходе"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Launcher Icons"
@@ -18936,7 +18954,7 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Info"
-msgstr ""
+msgstr "Информация"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Identifier"
@@ -18964,14 +18982,12 @@ msgid "Capabilities"
 msgstr "Капитализировать свойства"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Access Wi-Fi"
-msgstr "Доступ"
+msgstr "Доступ к Wi-Fi"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Push Notifications"
-msgstr "Вращение пути"
+msgstr "Всплывающее уведомление"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -19903,7 +19919,7 @@ msgstr "Сигнал"
 
 #: platform/uwp/export/export.cpp
 msgid "Debug Certificate"
-msgstr ""
+msgstr "Сертификат отладки"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20110,7 +20126,7 @@ msgstr "Переключить автовоспроизведение"
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp
 msgid "Stream Paused"
-msgstr ""
+msgstr "Поток приостановлен"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
@@ -20731,7 +20747,7 @@ msgstr ""
 #: scene/2d/joints_2d.cpp scene/resources/animation.cpp
 #: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
 msgid "Length"
-msgstr ""
+msgstr "Длина"
 
 #: scene/2d/joints_2d.cpp
 #, fuzzy
@@ -21590,11 +21606,11 @@ msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
 msgid "Max dB"
-msgstr ""
+msgstr "Максимальное количество дБ"
 
 #: scene/3d/audio_stream_player_3d.cpp
 msgid "Out Of Range Mode"
-msgstr ""
+msgstr "Режим Вне Зоны Действия"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -21672,8 +21688,9 @@ msgid "Extents"
 msgstr "Гизмо"
 
 #: scene/3d/baked_lightmap.cpp
+#, fuzzy
 msgid "Tweaks"
-msgstr ""
+msgstr "Подстройки"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Bounces"
@@ -21741,7 +21758,7 @@ msgstr "Навигация"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Image Path"
-msgstr ""
+msgstr "Путь к изображению"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
@@ -21755,7 +21772,7 @@ msgstr "Имя кости"
 
 #: scene/3d/camera.cpp
 msgid "Keep Aspect"
-msgstr ""
+msgstr "Хранить Аспект"
 
 #: scene/3d/camera.cpp scene/3d/light.cpp scene/3d/reflection_probe.cpp
 msgid "Cull Mask"
@@ -21773,7 +21790,7 @@ msgstr "Проект"
 
 #: scene/3d/camera.cpp
 msgid "FOV"
-msgstr ""
+msgstr "Поле зрения"
 
 #: scene/3d/camera.cpp
 #, fuzzy
@@ -22839,7 +22856,7 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "Bound"
-msgstr ""
+msgstr "Граница"
 
 #: scene/3d/room_group.cpp
 #, fuzzy
@@ -26248,7 +26265,7 @@ msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Anisotropy"
-msgstr ""
+msgstr "Анизотропия"
 
 #: scene/resources/material.cpp
 msgid "Flowmap"
@@ -26264,14 +26281,12 @@ msgid "Deep Parallax"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Min Layers"
-msgstr "Слой"
+msgstr "Минимальное количество слоёв"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Max Layers"
-msgstr "Слой"
+msgstr "Максимальное количество слоёв"
 
 #: scene/resources/material.cpp
 msgid "Flip Tangent"
@@ -26415,7 +26430,7 @@ msgstr "Слияние из Сцены"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Edge"
-msgstr ""
+msgstr "Край"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -26450,7 +26465,7 @@ msgstr ""
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
-msgstr ""
+msgstr "Сферы"
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
@@ -26472,7 +26487,7 @@ msgstr ""
 
 #: scene/resources/particles_material.cpp
 msgid "Trail"
-msgstr ""
+msgstr "След"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -26582,7 +26597,7 @@ msgstr ""
 
 #: scene/resources/segment_shape_2d.cpp
 msgid "A"
-msgstr ""
+msgstr "А"
 
 #: scene/resources/shape_2d.cpp
 msgid "Custom Solver Bias"
@@ -26673,7 +26688,7 @@ msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Anti Aliasing"
-msgstr ""
+msgstr "Сглаживание"
 
 #: scene/resources/style_box.cpp
 msgid "Grow Begin"
@@ -26875,7 +26890,7 @@ msgstr "Инициализирован"
 
 #: servers/arvr/arvr_interface.cpp
 msgid "AR"
-msgstr ""
+msgstr "AR"
 
 #: servers/arvr/arvr_interface.cpp
 msgid "Is Anchor Detection Enabled"
@@ -27027,11 +27042,11 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Range Min Hz"
-msgstr ""
+msgstr "Минимальный Диапазон Hz"
 
 #: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Range Max Hz"
-msgstr ""
+msgstr "Максимальный Диапазон Hz"
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 msgid "Oversampling"
@@ -27087,7 +27102,7 @@ msgstr "Выходная задержка"
 
 #: servers/audio_server.cpp
 msgid "Channel Disable Threshold dB"
-msgstr ""
+msgstr "Порог Отключения Канала, дБ"
 
 #: servers/audio_server.cpp
 #, fuzzy
@@ -27096,7 +27111,7 @@ msgstr "Изменить время смешивания"
 
 #: servers/audio_server.cpp
 msgid "Video Delay Compensation (ms)"
-msgstr ""
+msgstr "Компенсация Задержки Видео (мс)"
 
 #: servers/audio_server.cpp
 #, fuzzy
@@ -27296,7 +27311,7 @@ msgstr "Импортировать тему"
 
 #: servers/visual_server.cpp
 msgid "Lossless Compression"
-msgstr ""
+msgstr "Сжатие без потерь"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -27305,7 +27320,7 @@ msgstr "Принудительно отправить"
 
 #: servers/visual_server.cpp
 msgid "WebP Compression Level"
-msgstr ""
+msgstr "Уровень сжатия WebP"
 
 #: servers/visual_server.cpp
 msgid "Time Rollover Secs"
@@ -27347,7 +27362,7 @@ msgstr "Центрировать выбранное"
 
 #: servers/visual_server.cpp
 msgid "High Quality GGX"
-msgstr ""
+msgstr "Высокое Качество GGX"
 
 #: servers/visual_server.cpp
 msgid "Irradiance Max Size"
@@ -27372,7 +27387,7 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Mesh Storage"
-msgstr ""
+msgstr "Хранилище Полисеток"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -27393,7 +27408,7 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Anisotropic Filter Level"
-msgstr ""
+msgstr "Уровень анизотропной фильтрации"
 
 #: servers/visual_server.cpp
 msgid "Use Nearest Mipmap Filter"
@@ -27439,7 +27454,7 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Legacy Stream"
-msgstr ""
+msgstr "Устаревший Поток"
 
 #: servers/visual_server.cpp
 msgid "Batching"
@@ -27549,12 +27564,11 @@ msgstr "Просмотр Occlusion Culling"
 
 #: servers/visual_server.cpp
 msgid "Max Active Spheres"
-msgstr ""
+msgstr "Максимальное количество активных сфер"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Max Active Polygons"
-msgstr "Передвинуть полигон"
+msgstr "Максимальное количество активных полигонов"
 
 #: servers/visual_server.cpp
 #, fuzzy

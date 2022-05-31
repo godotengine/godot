@@ -14148,6 +14148,14 @@ msgid "Runnable"
 msgstr "Dapat dijalankan"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Hapus preset '%s'?"
 
@@ -14295,19 +14303,27 @@ msgid "More Info..."
 msgstr "Pindahkan ke..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Ekspor PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Ekspor Projek"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Mode ekspor?"
+msgid "Export All"
+msgstr "Ekspor Semua"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Silakan pilih direktori kosong."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Ekspor Semua"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14315,7 +14331,8 @@ msgid "ZIP File"
 msgstr "Berkas ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Paket Gim Godot"
 
 #: editor/project_export.cpp
@@ -14639,12 +14656,12 @@ msgid "Project Manager"
 msgstr "Manajer Proyek"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Memuat, tunggu sejenak..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Terakhir Diubah"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Memuat, tunggu sejenak..."
 
 #: editor/project_manager.cpp
 #, fuzzy

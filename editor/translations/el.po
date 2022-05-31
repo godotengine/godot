@@ -14328,6 +14328,14 @@ msgid "Runnable"
 msgstr "Εκτελέσιμο"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Διαγραφή διαμόρφωσης '%s';"
 
@@ -14474,19 +14482,27 @@ msgid "More Info..."
 msgstr "Μετακίνηση σε..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Εξαγωγή PCK/ZIP"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Εξαγωγή έργου"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Λειτουργία εξαγωγής;"
+msgid "Export All"
+msgstr "Εξαγωγή Όλων"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Εξαγωγή Όλων"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14494,7 +14510,8 @@ msgid "ZIP File"
 msgstr "Αρχείο ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Πακέτο Παιχνιδιού Godot"
 
 #: editor/project_export.cpp
@@ -14821,13 +14838,13 @@ msgid "Project Manager"
 msgstr "Διαχειριστής"
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr "Τελευταία Τροποποιημένα"
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "Ανάκτηση δεδοένων κατοπτρισμού, παρακαλώ περιμένετε..."
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr "Τελευταία Τροποποιημένα"
 
 #: editor/project_manager.cpp
 #, fuzzy

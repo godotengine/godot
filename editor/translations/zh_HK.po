@@ -14417,6 +14417,14 @@ msgid "Runnable"
 msgstr "啟用"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Delete preset '%s'?"
 msgstr "要刪除選中檔案?"
@@ -14555,21 +14563,27 @@ msgstr "搬到..."
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export PCK/Zip"
+msgid "Export PCK/Zip..."
 msgstr "匯出"
-
-#: editor/project_export.cpp
-msgid "Export Project"
-msgstr ""
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export mode?"
-msgstr "匯出"
+msgid "Export Project..."
+msgstr "導入"
 
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Export All"
+msgstr "匯出"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "選擇資料夾"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "匯出"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14578,8 +14592,9 @@ msgid "ZIP File"
 msgstr "檔案"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "專案"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14874,13 +14889,13 @@ msgid "Project Manager"
 msgstr "開啟 Project Manager "
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "接收 mirrors中, 請稍侯..."
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy

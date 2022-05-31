@@ -14183,6 +14183,14 @@ msgid "Runnable"
 msgstr "قابل للتشغيل"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "حذف المُعد مُسبقاً '%s'؟"
 
@@ -14327,19 +14335,27 @@ msgid "More Info..."
 msgstr "تحريك إلي..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "تصدير PCK/ ملف مضغوط Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "تصدير المشروع"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "وضع التصدير؟"
+msgid "Export All"
+msgstr "تصدير الكُل"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "من فضلك اختر مُجلداً فارغاً."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "تصدير الكُل"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14347,7 +14363,8 @@ msgid "ZIP File"
 msgstr "الملف المضغوط ZIP File"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "رُزمة لعبة غودوت"
 
 #: editor/project_export.cpp
@@ -14666,13 +14683,13 @@ msgid "Project Manager"
 msgstr "مدير المشروع"
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr "آخر ما تم تعديله"
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "يستقبل المرايا، من فضلك إنتظر..."
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr "آخر ما تم تعديله"
 
 #: editor/project_manager.cpp
 #, fuzzy

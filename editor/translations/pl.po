@@ -60,14 +60,14 @@
 # Mateusz Zdrzałek <matjozohd@gmail.com>, 2022.
 # Konrad <kobe-interactive@protonmail.com>, 2022.
 # Pixel Zone - Godot Engine Tutorials <karoltomaszewskimusic@gmail.com>, 2022.
+# DK0492 <doriankaczmarek28@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 20:00+0000\n"
-"Last-Translator: Pixel Zone - Godot Engine Tutorials "
-"<karoltomaszewskimusic@gmail.com>\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
+"Last-Translator: DK0492 <doriankaczmarek28@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -397,7 +397,7 @@ msgstr "Przy wywołaniu \"%s\":"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr "Nasiono"
+msgstr "Ziarno"
 
 #: core/math/random_number_generator.cpp
 msgid "State"
@@ -14129,6 +14129,14 @@ msgid "Runnable"
 msgstr "Uruchamiany"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Usunąć profil \"%s\"?"
 
@@ -14271,19 +14279,27 @@ msgid "More Info..."
 msgstr "Przenieś do..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Eksport PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Wyeksportuj projekt"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Tryb eksportu?"
+msgid "Export All"
+msgstr "Eksportuj wszystko"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Proszę wybrać pusty folder."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Eksportuj wszystko"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14291,7 +14307,8 @@ msgid "ZIP File"
 msgstr "Plik ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godotowa paczka gry"
 
 #: editor/project_export.cpp
@@ -14615,12 +14632,12 @@ msgid "Project Manager"
 msgstr "Menedżer projektów"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Wczytywanie, proszę czekać..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Data modyfikacji"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Wczytywanie, proszę czekać..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -27970,9 +27987,8 @@ msgid "Ninepatch Mode"
 msgstr "Sposób interpolacji"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Otwórz"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"
@@ -28045,11 +28061,11 @@ msgstr "Wklej klatkę"
 
 #: servers/visual_server.cpp
 msgid "GLES2"
-msgstr ""
+msgstr "GLES2"
 
 #: servers/visual_server.cpp
 msgid "Compatibility"
-msgstr ""
+msgstr "Kompatybilność"
 
 #: servers/visual_server.cpp
 msgid "Disable Half Float"
@@ -28061,9 +28077,8 @@ msgid "Enable High Float"
 msgstr "Włącz priorytety"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Precision"
-msgstr "Wyrażenie"
+msgstr "Precyzja"
 
 #: servers/visual_server.cpp
 msgid "UV Contract"

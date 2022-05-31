@@ -14448,6 +14448,14 @@ msgid "Runnable"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr ""
 
@@ -14582,16 +14590,13 @@ msgid "More Info..."
 msgstr "Flyt Til..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Export Project"
-msgstr "Eksporter Projekt"
+#, fuzzy
+msgid "Export PCK/Zip..."
+msgstr "Eksporter"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export mode?"
+msgid "Export Project..."
 msgstr "Eksporter Projekt"
 
 #: editor/project_export.cpp
@@ -14599,13 +14604,24 @@ msgstr "Eksporter Projekt"
 msgid "Export All"
 msgstr "Eksporter"
 
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Vælg en Mappe"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
+msgstr "Eksporter"
+
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr "ZIP-Fil"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "Eksporter Projekt"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -14901,13 +14917,13 @@ msgid "Project Manager"
 msgstr "Projekt Manager"
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "Henter spejle, vent venligst ..."
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy

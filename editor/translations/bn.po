@@ -14865,6 +14865,14 @@ msgid "Runnable"
 msgstr "সক্রিয় করুন"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Delete preset '%s'?"
 msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
@@ -15016,21 +15024,28 @@ msgid "More Info..."
 msgstr "এখানে সরান..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "এক্সপোর্ট PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "প্রকল্প এক্সপোর্ট করুন"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export mode?"
-msgstr "এক্সপোর্ট মোড:"
+msgid "Export All"
+msgstr "এক্সপোর্ট"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export All"
+msgid "Choose an export mode:"
+msgstr "অনুগ্রহ করে প্রকল্পের ফোল্ডারের বাইরে এক্সপোর্ট করুন!"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "এক্সপোর্ট"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -15039,8 +15054,9 @@ msgid "ZIP File"
 msgstr "ফাইল"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
-msgstr ""
+#, fuzzy
+msgid "Godot Project Pack"
+msgstr "প্রকল্প এক্সপোর্ট করুন"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -15359,13 +15375,13 @@ msgid "Project Manager"
 msgstr "প্রজেক্ট ম্যানেজার"
 
 #: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Loading, please wait..."
 msgstr "মিরর রিট্রাইভ করা হচ্ছে, দযা করে অপেক্ষা করুন..."
-
-#: editor/project_manager.cpp
-msgid "Last Modified"
-msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
