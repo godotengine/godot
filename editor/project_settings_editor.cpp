@@ -560,6 +560,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
+	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
 	VBoxContainer *general_editor = memnew(VBoxContainer);
