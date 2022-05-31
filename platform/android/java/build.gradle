@@ -1,7 +1,3 @@
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
-apply from: 'app/config.gradle'
-apply from: 'scripts/publish-root.gradle'
-
 buildscript {
     apply from: 'app/config.gradle'
 
@@ -16,6 +12,13 @@ buildscript {
         classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
     }
 }
+
+plugins {
+    id 'io.github.gradle-nexus.publish-plugin'
+}
+
+apply from: 'app/config.gradle'
+apply from: 'scripts/publish-root.gradle'
 
 allprojects {
     repositories {
