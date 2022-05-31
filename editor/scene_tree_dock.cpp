@@ -45,6 +45,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
+#include "scene/3d/mesh_instance.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -777,6 +778,71 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			reparent_dialog->popup_centered_ratio();
 			reparent_dialog->set_current(nodeset);
+
+		} break;
+		case TOOL_MERGE_MESHES: {
+			if (!profile_allow_editing) {
+				break;
+			}
+			List<Node *> nodes = editor_selection->get_selected_node_list();
+			ERR_FAIL_COND(nodes.size() == 1);
+
+			Node *front = nodes.front()->get();
+			Node *root = get_tree()->get_edited_scene_root();
+
+			if (front == root) {
+				return;
+			}
+
+			bool suitable = false;
+			const MeshInstance *front_mi = Object::cast_to<MeshInstance>(front);
+
+			Vector<Variant> merge_list;
+			merge_list.push_back(front);
+
+			Vector<Node *> merge_list_parents;
+			merge_list_parents.push_back(front->get_parent());
+
+			Vector<Node *> merge_list_owners;
+			merge_list_owners.push_back(front->get_owner());
+
+			if (front_mi) {
+				suitable = true;
+				for (List<Node *>::Element *E = nodes.front()->next(); E; E = E->next()) {
+					Node *n = E->get();
+					if (!front_mi->is_mergeable_with(n)) {
+						suitable = false;
+						break;
+					}
+
+					merge_list.push_back(Variant(n));
+					merge_list_parents.push_back(n->get_parent());
+					merge_list_owners.push_back(n->get_owner());
+				}
+			} // if front was a mesh instance
+
+			if (suitable) {
+				MeshInstance *merged = memnew(MeshInstance);
+				merged->set_name("Merged");
+				Node *parent = front->get_parent();
+				parent->add_child(merged);
+				merged->set_owner(front->get_owner());
+
+				if (!merged->merge_meshes(merge_list, false, true)) {
+					current_option = -1;
+					accept->set_text(TTR("Merge failed."));
+					accept->popup_centered_minsize();
+					merged->queue_delete();
+				} else {
+					// Bandit the delete undo / redo functionality.
+					// The user can delete the merged mesh manually.
+					_delete_confirm();
+				}
+			} else {
+				current_option = -1;
+				accept->set_text(TTR("This operation requires compatible MeshInstances."));
+				accept->popup_centered_minsize();
+			}
 
 		} break;
 		case TOOL_MAKE_ROOT: {
@@ -2847,6 +2913,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_icon("ReparentToNewNode", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
 			if (selection.size() == 1) {
 				menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
+			} else {
+				menu->add_separator();
+				menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_meshes"), TOOL_MERGE_MESHES);
 			}
 		}
 	}
@@ -3301,6 +3370,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
 	ED_SHORTCUT("scene_tree/reparent_to_new_node", TTR("Reparent to New Node"));
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
+	ED_SHORTCUT("scene_tree/merge_meshes", TTR("Merge Meshes"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
