@@ -50,20 +50,19 @@
 
 void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
+		} break;
+
+		case NOTIFICATION_READY: {
 			connect("confirmed", this, "_export_pck_zip");
-			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
+			_update_export_all();
 		} break;
 
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", get_rect());
-		} break;
-
-		case NOTIFICATION_THEME_CHANGED: {
-			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
-			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -186,10 +185,12 @@ void ProjectExportDialog::_update_export_all() {
 		}
 	}
 
+	export_all_button->set_disabled(!can_export);
+
 	if (can_export) {
-		export_all_button->set_disabled(false);
+		export_all_button->set_tooltip(TTR("Export the project for all the presets defined."));
 	} else {
-		export_all_button->set_disabled(true);
+		export_all_button->set_tooltip(TTR("All presets must have an export path defined for Export All to work."));
 	}
 }
 
@@ -433,6 +434,7 @@ void ProjectExportDialog::_export_path_changed(const StringName &p_property, con
 
 	current->set_export_path(p_value);
 	_update_presets();
+	_update_export_all();
 }
 
 void ProjectExportDialog::_open_key_help_link() {
@@ -543,6 +545,10 @@ void ProjectExportDialog::_delete_preset_confirm() {
 	get_ok()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
+
+	// The Export All button might become enabled (if all other presets have an export path defined),
+	// or it could be disabled (if there are no presets anymore).
+	_update_export_all();
 }
 
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -1147,8 +1153,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	updating = false;
 
 	get_cancel()->set_text(TTR("Close"));
-	get_ok()->set_text(TTR("Export PCK/Zip"));
-	export_button = add_button(TTR("Export Project"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
+	get_ok()->set_text(TTR("Export PCK/Zip..."));
+	export_button = add_button(TTR("Export Project..."), !OS::get_singleton()->get_swap_ok_cancel(), "export");
 	export_button->connect("pressed", this, "_export_project");
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
@@ -1156,20 +1162,20 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	add_child(export_all_dialog);
-	export_all_dialog->set_title("Export All");
-	export_all_dialog->set_text(TTR("Export mode?"));
+	export_all_dialog->set_title(TTR("Export All"));
+	export_all_dialog->set_text(TTR("Choose an export mode:"));
 	export_all_dialog->get_ok()->hide();
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", this, "_export_all_dialog_action");
 
-	export_all_button = add_button(TTR("Export All"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
+	export_all_button = add_button(TTR("Export All..."), !OS::get_singleton()->get_swap_ok_cancel(), "export");
 	export_all_button->connect("pressed", this, "_export_all_dialog");
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
-	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Game Pack"));
+	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Project Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);
@@ -1237,8 +1243,6 @@ ProjectExportDialog::ProjectExportDialog() {
 			default_filename = "UnnamedProject";
 		}
 	}
-
-	_update_export_all();
 }
 
 ProjectExportDialog::~ProjectExportDialog() {
