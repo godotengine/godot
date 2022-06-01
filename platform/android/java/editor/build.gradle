@@ -1,5 +1,8 @@
 // Gradle build config for Godot Engine's Android port.
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
 
 dependencies {
     implementation libraries.kotlinStdLib
@@ -29,6 +32,10 @@ android {
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
     }
 
     buildTypes {
