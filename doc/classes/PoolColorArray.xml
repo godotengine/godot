@@ -9,7 +9,7 @@
 		[codeblock]
 		var array = [PoolColorArray()]
 		array[0].push_back(Color(0.1, 0.2, 0.3, 0.4))
-		print(array)  # [[]] (empty PoolColorArray within an empty Array)
+		print(array)  # [[]] (empty PoolColorArray within an Array)
 		[/codeblock]
 		Instead, the entire [PoolColorArray] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
 		[codeblock]
