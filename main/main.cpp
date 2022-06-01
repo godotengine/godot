@@ -411,8 +411,6 @@ Error Main::test_setup() {
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
 
-	preregister_server_types();
-
 	register_core_singletons();
 
 	/** INITIALIZE SERVERS **/
@@ -1598,7 +1596,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		tsman->add_interface(ts);
 	}
 
-	preregister_server_types();
+	register_server_types();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
@@ -1762,10 +1762,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (allow_focus_steal_pid) {
 		DisplayServer::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
-
-	register_server_types();
-	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	MAIN_PRINT("Main: Load Boot Image");
 
