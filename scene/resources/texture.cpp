@@ -2021,7 +2021,7 @@ RID GradientTexture2D::get_rid() const {
 	return texture;
 }
 
-Ref<Image> GradientTexture2D::get_image() const {
+Ref<Image> GradientTexture2D::get_data() const {
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
