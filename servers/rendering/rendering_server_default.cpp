@@ -313,7 +313,11 @@ RID RenderingServerDefault::get_test_cube() {
 }
 
 bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
-	return RSG::storage->has_os_feature(p_feature);
+	if (RSG::storage) {
+		return RSG::storage->has_os_feature(p_feature);
+	} else {
+		return false;
+	}
 }
 
 void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
@@ -384,6 +388,8 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		command_queue(p_create_thread) {
+	RenderingServer::init();
+
 	create_thread = p_create_thread;
 
 	if (!p_create_thread) {
