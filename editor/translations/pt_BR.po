@@ -14159,6 +14159,14 @@ msgid "Runnable"
 msgstr "Executável"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Excluir definição '%s'?"
 
@@ -14304,19 +14312,27 @@ msgid "More Info..."
 msgstr "Mover Para..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Exportar PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Exportar Projeto"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Modo de exportação?"
+msgid "Export All"
+msgstr "Exportar tudo"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Por favor, escolha uma pasta vazia."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Exportar tudo"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14324,7 +14340,8 @@ msgid "ZIP File"
 msgstr "Arquivo ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Pacote de Jogos Godot"
 
 #: editor/project_export.cpp
@@ -14648,12 +14665,12 @@ msgid "Project Manager"
 msgstr "Gerenciador de Projetos"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Carregando, por favor aguarde."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Ultima Modificação"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Carregando, por favor aguarde."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"

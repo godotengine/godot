@@ -323,18 +323,28 @@ vec4 apply_fxaa(vec4 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
+	const vec3 luma = vec3(0.299, 0.587, 0.114);
 
 	vec4 rgbNW = textureLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0);
 	vec4 rgbNE = textureLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0);
 	vec4 rgbSW = textureLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0);
 	vec4 rgbSE = textureLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0);
 	vec3 rgbM = color.rgb;
-	vec3 luma = vec3(0.299, 0.587, 0.114);
+
+#ifdef DISABLE_ALPHA
+	float lumaNW = dot(rgbNW.rgb * exposure, luma);
+	float lumaNE = dot(rgbNE.rgb * exposure, luma);
+	float lumaSW = dot(rgbSW.rgb * exposure, luma);
+	float lumaSE = dot(rgbSE.rgb * exposure, luma);
+	float lumaM = dot(rgbM * exposure, luma);
+#else
 	float lumaNW = dot(rgbNW.rgb * exposure, luma) - ((1.0 - rgbNW.a) / 8.0);
 	float lumaNE = dot(rgbNE.rgb * exposure, luma) - ((1.0 - rgbNE.a) / 8.0);
 	float lumaSW = dot(rgbSW.rgb * exposure, luma) - ((1.0 - rgbSW.a) / 8.0);
 	float lumaSE = dot(rgbSE.rgb * exposure, luma) - ((1.0 - rgbSE.a) / 8.0);
 	float lumaM = dot(rgbM * exposure, luma) - (color.a / 8.0);
+#endif
+
 	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
 	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
 
@@ -355,6 +365,11 @@ vec4 apply_fxaa(vec4 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 	vec4 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0) + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0));
 	vec4 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0) + textureLod(source, uv_interp + dir * 0.5, 0.0));
 
+#ifdef DISABLE_ALPHA
+	float lumaB = dot(rgbB.rgb, luma);
+	vec4 color_output = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
+	return vec4(color_output.rgb, 1.0);
+#else
 	float lumaB = dot(rgbB.rgb, luma) - ((1.0 - rgbB.a) / 8.0);
 	vec4 color_output = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
 	if (color_output.a == 0.0) {
@@ -363,6 +378,7 @@ vec4 apply_fxaa(vec4 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 		color_output.rgb /= color_output.a;
 	}
 	return color_output;
+#endif
 }
 
 // From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
@@ -428,6 +444,9 @@ vec3 apply_cas(vec3 color, float exposure, vec2 uv_interp, float sharpen_intensi
 void main() {
 	vec4 color = textureLod(source, uv_interp, 0.0f);
 
+#ifdef DISABLE_ALPHA
+	color.a = 1.0;
+#endif
 	// Exposure
 	float full_exposure = exposure;
 

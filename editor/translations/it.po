@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 20:00+0000\n"
+"PO-Revision-Date: 2022-05-30 16:17+0000\n"
 "Last-Translator: Alessandro Casalino <alessandro.casalino93@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -1143,9 +1143,8 @@ msgstr "Cambia la chiamata di un'animazione"
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Frame"
-msgstr "Fotogramma %"
+msgstr "Fotogramma"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1171,14 +1170,13 @@ msgid "Value"
 msgstr "Valore"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "Quantità"
+msgstr "Quantità Argomenti"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argomenti"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1205,14 +1203,12 @@ msgid "Stream"
 msgstr "Stream"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Scostamento della griglia:"
+msgstr "Scostamento Dall'Inizio"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Scostamento:"
+msgstr "Scostamento Dalla Fine"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1227,7 +1223,7 @@ msgstr "Animazione"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Easing"
-msgstr "Easing In-Out"
+msgstr "Easing"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -5429,17 +5425,14 @@ msgid "Line Numbers Zero Padded"
 msgstr "Numeri di Riga Riempiti con Zeri"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Bookmark Gutter"
 msgstr "Mostra i segnalibri nella barra laterale"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Breakpoint Gutter"
 msgstr "Mostra i punti d'interruzione nella barra laterale"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Info Gutter"
 msgstr "Mostra le informazioni nella barra laterale"
 
@@ -5542,7 +5535,6 @@ msgid "Auto Brace Complete"
 msgstr "Auto-completamento Parentesi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Complete Delay"
 msgstr "Delay del completamento automatico del codice"
 
@@ -5724,7 +5716,7 @@ msgstr "Modificatore Zoom"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Warped Mouse Panning"
-msgstr ""
+msgstr "Panning Continuo Del Mouse"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6096,9 +6088,8 @@ msgid "Flat"
 msgstr "Flat"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hide Slider"
-msgstr "Modalità Collisioni"
+msgstr "Nascondi Slider"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -9387,9 +9378,8 @@ msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separator"
-msgstr "Separazione:"
+msgstr "Separatore"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -12147,12 +12137,11 @@ msgid "Select UI Scene:"
 msgstr "Seleziona Scena UI:"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
-"Alterna il picker di controllo, permettendo di selezionare visualmente i "
+"Commuta il picker di controllo, permettendo di selezionare visualmente i "
 "tipi di controllo per la modifica."
 
 #: editor/plugins/theme_editor_preview.cpp
@@ -12743,7 +12732,6 @@ msgid "This property can't be changed."
 msgstr "Questa proprietà non può essere cambiata."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Options"
 msgstr "Opzioni Agganciamento"
 
@@ -12756,9 +12744,8 @@ msgstr "Opzioni Agganciamento"
 #: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
 #: scene/main/canvas_layer.cpp scene/resources/material.cpp
 #: scene/resources/particles_material.cpp scene/resources/style_box.cpp
-#, fuzzy
 msgid "Offset"
-msgstr "Scostamento:"
+msgstr "Scostamento"
 
 #: editor/plugins/tile_set_editor_plugin.cpp editor/rename_dialog.cpp
 #: scene/gui/range.cpp scene/resources/animation.cpp
@@ -12769,14 +12756,12 @@ msgstr "Passo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separation"
-msgstr "Separazione:"
+msgstr "Separazione"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Tile"
-msgstr "Seleziona"
+msgstr "Mattonella Selezionata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
@@ -12787,12 +12772,11 @@ msgstr "Seleziona"
 #: scene/resources/style_box.cpp scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Texture"
-msgstr "Testo"
+msgstr "Texture"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tex Offset"
-msgstr "Offset Byte"
+msgstr "Scostamento Texture"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
@@ -12802,59 +12786,49 @@ msgstr "Materiale"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/canvas_item.cpp
 #: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/style_box.cpp
-#, fuzzy
 msgid "Modulate"
-msgstr "Popola"
+msgstr "Modula"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Mode"
-msgstr "Commuta la modalità"
+msgstr "Modalità Mattonelle"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotile Bitmask Mode"
-msgstr "Modalità Bitmask"
+msgstr "Modalità Bitmask Autotile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Size"
-msgstr "Dimensione Outline:"
+msgstr "Dimensione Subtile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Spacing"
-msgstr "Spaziatura Linee"
+msgstr "Spaziatura Subtile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Offset"
-msgstr "Foro di Occlusione"
+msgstr "Scostamento Occlusore"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Offset"
-msgstr "Sensazione Navigazione"
+msgstr "Scostamento Navigazione"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Offset"
-msgstr "Scostamento:"
+msgstr "Scostamento Forma"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Transform"
-msgstr "Trasformazione"
+msgstr "Trasformazione Forma"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision"
-msgstr "Usa Collisioni"
+msgstr "Collisione Selezionata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Selected Collision One Way"
-msgstr "Solo nella selezione"
+msgstr "Collisione Selezionata Solo Da Una Parte"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -12862,19 +12836,16 @@ msgid "Selected Collision One Way Margin"
 msgstr "Margine di Collisione BVH"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Navigation"
-msgstr "Navigazione visibile"
+msgstr "Navigazione Selezionata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Occlusion"
-msgstr "Seleziona"
+msgstr "Occlusione Selezionata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tileset Script"
-msgstr "Filtra Script"
+msgstr "Script Tileset"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -13970,6 +13941,14 @@ msgid "Runnable"
 msgstr "Eseguibile"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Eliminare preset \"%s\"?"
 
@@ -14107,25 +14086,35 @@ msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
+"Nota: La chiave di crittografia deve essere salvata nel binario,\n"
+"occorre compilare i templates di esportazione dal sorgente."
 
 #: editor/project_export.cpp
 msgid "More Info..."
 msgstr "Maggiori Informazioni..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Esporta PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Esporta Progetto"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Modalità di esportazione?"
+msgid "Export All"
+msgstr "Esporta Tutto"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Si prega di scegliere una cartella vuota."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Esporta Tutto"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14133,7 +14122,8 @@ msgid "ZIP File"
 msgstr "File ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Pacchetto Gioco Godot"
 
 #: editor/project_export.cpp
@@ -14458,12 +14448,12 @@ msgid "Project Manager"
 msgstr "Gestore Progetto"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Caricamento, per favore attendere..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Ultima Modifica"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Caricamento, per favore attendere..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -15214,6 +15204,10 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Impossibile salvare un branch che è figlio di una scena già istanziata.\n"
+"Per salvare questo branch in una sua propria scena, aprire la scena "
+"originale, cliccare con il tasto destro del mouse su questo branch e "
+"selezionare \"Salva Branch come Scena\"."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15221,6 +15215,10 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Impossibile salvare un branch che fa parte di una scena ereditata.\n"
+"Per salvare questo branch in una sua propria scena, aprire la scena "
+"originale, cliccare con il tasto destro del mouse su questo branch e "
+"selezionare \"Salva Branch come Scena\"."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -15248,7 +15246,7 @@ msgstr "Rendi Locale"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Another node already uses this unique name in the scene."
-msgstr ""
+msgstr "Un altro nodo sta già usando questo nome unico nella scena."
 
 #: editor/scene_tree_dock.cpp
 msgid "Enable Scene Unique Name"
@@ -15435,7 +15433,6 @@ msgid "Show Scene Tree Root Selection"
 msgstr "Mostra Selezione del Tree Root di Scena"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Derive Script Globals By Name"
 msgstr "Ricava Script Globali Dal Nome"
 
@@ -16024,19 +16021,16 @@ msgid "Set Occluder Polygon Point Position"
 msgstr "Imposta Posizione Poligono di Occlusione"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Hole Point Position"
-msgstr "Imposta Posizione Punto Curva"
+msgstr "Imposta Posizione Del Foro Dell'Occlusore"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Occluder Polygon Front"
-msgstr "Crea Poligono di Occlusione"
+msgstr "Parte Davanti Del Poligono di Occlusione"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Occluder Polygon Back"
-msgstr "Crea Poligono di Occlusione"
+msgstr "Parte Dietro Del Poligono di Occlusione"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Occluder Hole"
@@ -16225,9 +16219,8 @@ msgid "Verbose stdout"
 msgstr "stdout Verbose"
 
 #: main/main.cpp scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Physics Interpolation"
-msgstr "Modalità d'interpolazione"
+msgstr "Interpolazione Fisica"
 
 #: main/main.cpp
 msgid "Enable Warnings"
@@ -16304,7 +16297,7 @@ msgstr "Immagine"
 
 #: main/main.cpp
 msgid "Fullsize"
-msgstr ""
+msgstr "Dimensione Massima"
 
 #: main/main.cpp scene/resources/dynamic_font.cpp
 msgid "Use Filter"
@@ -16396,14 +16389,12 @@ msgid "Auto Accept Quit"
 msgstr "Auto-Accetta Uscita"
 
 #: main/main.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Quit On Go Back"
-msgstr "Torna indietro"
+msgstr "Esci Nel Tornare indietro"
 
 #: main/main.cpp scene/main/viewport.cpp
-#, fuzzy
 msgid "Snap Controls To Pixels"
-msgstr "Scatta sui lati dei nodi"
+msgstr "Aggancia I Controlli Ai Pixel"
 
 #: main/main.cpp
 msgid "Dynamic Fonts"
@@ -16558,7 +16549,7 @@ msgstr "Scegli la Distanza:"
 #: modules/csg/csg_shape.cpp
 #, fuzzy
 msgid "Path Joined"
-msgstr "Rotazione Casuale:"
+msgstr "Percorsi Uniti"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Compression Mode"
@@ -16589,23 +16580,20 @@ msgid "DTLS Hostname"
 msgstr ""
 
 #: modules/enet/networked_multiplayer_enet.cpp
-#, fuzzy
 msgid "Use DTLS"
-msgstr "Usa Scatto"
+msgstr "Usa DTLS"
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FBX"
 msgstr ""
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
-#, fuzzy
 msgid "Use FBX"
-msgstr "Usa BVH"
+msgstr "Usa FBX"
 
 #: modules/gdnative/gdnative.cpp
-#, fuzzy
 msgid "Config File"
-msgstr "Memorizzazione file:"
+msgstr "File Di Configurazione"
 
 #: modules/gdnative/gdnative.cpp
 msgid "Load Once"
@@ -16907,9 +16895,8 @@ msgid "Parent"
 msgstr "Genitore"
 
 #: modules/gltf/gltf_node.cpp
-#, fuzzy
 msgid "Xform"
-msgstr "Piattaforma"
+msgstr "Xform"
 
 #: modules/gltf/gltf_node.cpp scene/3d/mesh_instance.cpp
 msgid "Skin"
@@ -20528,7 +20515,7 @@ msgstr ""
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Drawing"
-msgstr ""
+msgstr "Disegnare"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -21800,7 +21787,7 @@ msgstr "Tema Predefinito"
 #: scene/3d/baked_lightmap.cpp scene/resources/texture.cpp
 #, fuzzy
 msgid "Atlas"
-msgstr "Nuova Atlas"
+msgstr "Atlas"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
