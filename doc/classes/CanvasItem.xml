@@ -67,7 +67,7 @@
 			<argument index="1" name="radius" type="float" />
 			<argument index="2" name="color" type="Color" />
 			<description>
-				Draws a colored, unfilled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
