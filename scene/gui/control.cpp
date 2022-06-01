@@ -490,53 +490,45 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_ENTER_CANVAS: {
 			data.parent = Object::cast_to<Control>(get_parent());
 
+			if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				data.theme_owner = data.parent->data.theme_owner;
+				notification(NOTIFICATION_THEME_CHANGED);
+			}
+
 			if (is_set_as_toplevel()) {
 				data.SI = get_viewport()->_gui_add_subwindow_control(this);
-
-				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
-					data.theme_owner = data.parent->data.theme_owner;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
-
 			} else {
-				Node *parent = this; //meh
-				Control *parent_control = nullptr;
-				bool subwindow = false;
+				Node *parent = get_parent();
+				bool is_subwindow = false;
+				bool has_parent_control = false;
 
 				while (parent) {
-					parent = parent->get_parent();
-
-					if (!parent) {
-						break;
-					}
-
 					CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 					if (ci && ci->is_set_as_toplevel()) {
-						subwindow = true;
+						is_subwindow = true;
 						break;
 					}
 
-					parent_control = Object::cast_to<Control>(parent);
-
+					Control *parent_control = Object::cast_to<Control>(parent);
 					if (parent_control) {
+						has_parent_control = true;
 						break;
 					} else if (ci) {
+						// Continue.
 					} else {
 						break;
 					}
+
+					parent = parent->get_parent();
 				}
 
-				if (parent_control) {
-					//do nothing, has a parent control
-					if (data.theme.is_null() && parent_control->data.theme_owner) {
-						data.theme_owner = parent_control->data.theme_owner;
-						notification(NOTIFICATION_THEME_CHANGED);
-					}
-				} else if (subwindow) {
-					//is a subwindow (process input before other controls for that canvas)
+				if (has_parent_control) {
+					// Do nothing, has a parent control.
+				} else if (is_subwindow) {
+					// Is a subwindow (process input before other controls for that canvas).
 					data.SI = get_viewport()->_gui_add_subwindow_control(this);
 				} else {
-					//is a regular root control
+					// Is a regular root control.
 					Viewport *viewport = get_viewport();
 					ERR_FAIL_COND(!viewport);
 					data.RI = viewport->_gui_add_root_control(this);
@@ -547,7 +539,7 @@ void Control::_notification(int p_notification) {
 				if (data.parent_canvas_item) {
 					data.parent_canvas_item->connect("item_rect_changed", this, "_size_changed");
 				} else {
-					//connect viewport
+					// Connect viewport.
 					Viewport *viewport = get_viewport();
 					ERR_FAIL_COND(!viewport);
 					viewport->connect("size_changed", this, "_size_changed");
