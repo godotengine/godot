@@ -716,7 +716,7 @@ public:
 
 	virtual RID get_rid() const;
 	virtual bool has_alpha() const { return true; }
-	virtual Ref<Image> get_image() const;
+	virtual Ref<Image> get_data() const;
 
 	GradientTexture2D();
 	virtual ~GradientTexture2D();
