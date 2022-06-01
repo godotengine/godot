@@ -56,7 +56,7 @@
 			<argument index="1" name="radius" type="float" />
 			<argument index="2" name="color" type="Color" />
 			<description>
-				Draws a colored, unfilled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
 				[b]Note:[/b] Built-in antialiasing is not provided for [method draw_circle]. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedRegularPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
