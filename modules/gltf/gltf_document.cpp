@@ -80,7 +80,6 @@
 #endif // MODULE_GRIDMAP_ENABLED
 
 // FIXME: Hardcoded to avoid editor dependency.
-#define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
 #define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
 
 #include <stdio.h>
@@ -4470,12 +4469,8 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 				xform = gltf_skin->inverse_binds[joint_i];
 			}
 
-			if (state->use_named_skin_binds) {
-				skin->add_named_bind(bone_name, xform);
-			} else {
-				int32_t bone_i = gltf_skin->joint_i_to_bone_i[joint_i];
-				skin->add_bind(bone_i, xform);
-			}
+			int32_t bone_i = gltf_skin->joint_i_to_bone_i[joint_i];
+			skin->add_bind(bone_i, xform);
 		}
 
 		gltf_skin->godot_skin = skin;
@@ -4503,9 +4498,6 @@ bool GLTFDocument::_skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_
 
 	for (int i = 0; i < skin_a->get_bind_count(); ++i) {
 		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
-			return false;
-		}
-		if (skin_a->get_bind_name(i) != skin_b->get_bind_name(i)) {
 			return false;
 		}
 
@@ -5090,7 +5082,7 @@ BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, 
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
-	bone_attachment->set_bone_name(bone_node->get_name());
+	bone_attachment->set_bone(bone_index);
 
 	return bone_attachment;
 }
@@ -5608,10 +5600,7 @@ void GLTFDocument::_convert_bone_attachment_to_gltf(BoneAttachment3D *p_bone_att
 	}
 	int bone_idx = -1;
 	if (skeleton != nullptr) {
-		bone_idx = p_bone_attachment->get_bone_idx();
-		if (bone_idx == -1) {
-			bone_idx = skeleton->find_bone(p_bone_attachment->get_bone_name());
-		}
+		bone_idx = p_bone_attachment->get_bone();
 	}
 	GLTFNodeIndex par_node_index = p_parent_node_index;
 	if (skeleton != nullptr && bone_idx != -1 && skel_gltf_i != -1) {
@@ -6200,14 +6189,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 				for (int bind_i = 0, cnt = skin->get_bind_count(); bind_i < cnt; bind_i++) {
 					int bone_i = skin->get_bind_bone(bind_i);
 					Transform3D bind_pose = skin->get_bind_pose(bind_i);
-					StringName bind_name = skin->get_bind_name(bind_i);
-					if (bind_name != StringName()) {
-						bone_i = bone_name_to_idx[bind_name];
-					}
 					ERR_CONTINUE(bone_i < 0 || bone_i >= bone_cnt);
-					if (bind_name == StringName()) {
-						bind_name = skeleton->get_bone_name(bone_i);
-					}
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];
 					gltf_skin->joints_original.push_back(skeleton_bone_i);
 					gltf_skin->joints.push_back(skeleton_bone_i);
@@ -6216,7 +6198,6 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 						gltf_skin->roots.push_back(skeleton_bone_i);
 					}
 					gltf_skin->joint_i_to_bone_i[bind_i] = bone_i;
-					gltf_skin->joint_i_to_name[bind_i] = bind_name;
 				}
 				skin_gltf_i = state->skins.size();
 				state->skins.push_back(gltf_skin);
@@ -6941,7 +6922,6 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
-	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	_convert_scene_node(state, p_node, -1, -1);
@@ -6971,7 +6951,6 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
@@ -7086,7 +7065,6 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 		r_state.instantiate();
 	}
 	r_state->filename = p_path.get_file().get_basename();
-	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	r_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);

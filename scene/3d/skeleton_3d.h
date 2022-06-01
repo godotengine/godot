@@ -182,6 +182,7 @@ public:
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);
+	String get_concatenated_bone_names() const;
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 

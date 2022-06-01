@@ -39,8 +39,6 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minor_version", "minor_version"), &GLTFState::set_minor_version);
 	ClassDB::bind_method(D_METHOD("get_glb_data"), &GLTFState::get_glb_data);
 	ClassDB::bind_method(D_METHOD("set_glb_data", "glb_data"), &GLTFState::set_glb_data);
-	ClassDB::bind_method(D_METHOD("get_use_named_skin_binds"), &GLTFState::get_use_named_skin_binds);
-	ClassDB::bind_method(D_METHOD("set_use_named_skin_binds", "use_named_skin_binds"), &GLTFState::set_use_named_skin_binds);
 	ClassDB::bind_method(D_METHOD("get_nodes"), &GLTFState::get_nodes);
 	ClassDB::bind_method(D_METHOD("set_nodes", "nodes"), &GLTFState::set_nodes);
 	ClassDB::bind_method(D_METHOD("get_buffers"), &GLTFState::get_buffers);
@@ -87,7 +85,6 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minor_version"), "set_minor_version", "get_minor_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "glb_data"), "set_glb_data", "get_glb_data"); // Vector<uint8_t>
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_named_skin_binds"), "set_use_named_skin_binds", "get_use_named_skin_binds"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_nodes", "get_nodes"); // Vector<Ref<GLTFNode>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "buffers"), "set_buffers", "get_buffers"); // Vector<Vector<uint8_t>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "buffer_views", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_buffer_views", "get_buffer_views"); // Vector<Ref<GLTFBufferView>>
@@ -139,14 +136,6 @@ Vector<uint8_t> GLTFState::get_glb_data() {
 
 void GLTFState::set_glb_data(Vector<uint8_t> p_glb_data) {
 	glb_data = p_glb_data;
-}
-
-bool GLTFState::get_use_named_skin_binds() {
-	return use_named_skin_binds;
-}
-
-void GLTFState::set_use_named_skin_binds(bool p_use_named_skin_binds) {
-	use_named_skin_binds = p_use_named_skin_binds;
 }
 
 Array GLTFState::get_nodes() {

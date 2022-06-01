@@ -45,23 +45,6 @@ void Skin::add_bind(int p_bone, const Transform3D &p_pose) {
 	set_bind_pose(index, p_pose);
 }
 
-void Skin::add_named_bind(const String &p_name, const Transform3D &p_pose) {
-	uint32_t index = bind_count;
-	set_bind_count(bind_count + 1);
-	set_bind_name(index, p_name);
-	set_bind_pose(index, p_pose);
-}
-
-void Skin::set_bind_name(int p_index, const StringName &p_name) {
-	ERR_FAIL_INDEX(p_index, bind_count);
-	bool notify_change = (binds_ptr[p_index].name != StringName()) != (p_name != StringName());
-	binds_ptr[p_index].name = p_name;
-	emit_changed();
-	if (notify_change) {
-		notify_property_list_changed();
-	}
-}
-
 void Skin::set_bind_bone(int p_index, int p_bone) {
 	ERR_FAIL_INDEX(p_index, bind_count);
 	binds_ptr[p_index].bone = p_bone;
@@ -96,9 +79,6 @@ bool Skin::_set(const StringName &p_name, const Variant &p_value) {
 		if (what == "bone") {
 			set_bind_bone(index, p_value);
 			return true;
-		} else if (what == "name") {
-			set_bind_name(index, p_value);
-			return true;
 		} else if (what == "pose") {
 			set_bind_pose(index, p_value);
 			return true;
@@ -118,9 +98,6 @@ bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
 		if (what == "bone") {
 			r_ret = get_bind_bone(index);
 			return true;
-		} else if (what == "name") {
-			r_ret = get_bind_name(index);
-			return true;
 		} else if (what == "pose") {
 			r_ret = get_bind_pose(index);
 			return true;
@@ -133,8 +110,7 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("bind_count"), PROPERTY_HINT_RANGE, "0,16384,1,or_greater"));
 	for (int i = 0; i < get_bind_count(); i++) {
 		const String prefix = vformat("%s/%d/", PNAME("bind"), i);
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, prefix + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("bone"), PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("bone"), PROPERTY_HINT_RANGE, "0,16384,1,or_greater"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prefix + PNAME("pose")));
 	}
 }
@@ -144,13 +120,9 @@ void Skin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bind_count"), &Skin::get_bind_count);
 
 	ClassDB::bind_method(D_METHOD("add_bind", "bone", "pose"), &Skin::add_bind);
-	ClassDB::bind_method(D_METHOD("add_named_bind", "name", "pose"), &Skin::add_named_bind);
 
 	ClassDB::bind_method(D_METHOD("set_bind_pose", "bind_index", "pose"), &Skin::set_bind_pose);
 	ClassDB::bind_method(D_METHOD("get_bind_pose", "bind_index"), &Skin::get_bind_pose);
-
-	ClassDB::bind_method(D_METHOD("set_bind_name", "bind_index", "name"), &Skin::set_bind_name);
-	ClassDB::bind_method(D_METHOD("get_bind_name", "bind_index"), &Skin::get_bind_name);
 
 	ClassDB::bind_method(D_METHOD("set_bind_bone", "bind_index", "bone"), &Skin::set_bind_bone);
 	ClassDB::bind_method(D_METHOD("get_bind_bone", "bind_index"), &Skin::get_bind_bone);

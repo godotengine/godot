@@ -14,13 +14,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="add_named_bind">
-			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<argument index="1" name="pose" type="Transform3D" />
-			<description>
-			</description>
-		</method>
 		<method name="clear_binds">
 			<return type="void" />
 			<description>
@@ -34,12 +27,6 @@
 		</method>
 		<method name="get_bind_count" qualifiers="const">
 			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_bind_name" qualifiers="const">
-			<return type="StringName" />
-			<argument index="0" name="bind_index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -59,13 +46,6 @@
 		<method name="set_bind_count">
 			<return type="void" />
 			<argument index="0" name="bind_count" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="set_bind_name">
-			<return type="void" />
-			<argument index="0" name="bind_index" type="int" />
-			<argument index="1" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>

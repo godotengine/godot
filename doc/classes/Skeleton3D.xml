@@ -175,6 +175,11 @@
 				Returns the rest transform for a bone [code]bone_idx[/code].
 			</description>
 		</method>
+		<method name="get_concatenated_bone_names" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_modification_stack">
 			<return type="SkeletonModificationStack3D" />
 			<description>

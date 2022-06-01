@@ -37,8 +37,7 @@ class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
 
 	bool bound = false;
-	String bone_name;
-	int bone_idx = -1;
+	int bone = 0;
 
 	bool override_pose = false;
 	int override_mode = 0;
@@ -72,11 +71,8 @@ protected:
 public:
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	void set_bone_name(const String &p_name);
-	String get_bone_name() const;
-
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
+	void set_bone(const int &p_idx);
+	int get_bone() const;
 
 	void set_override_pose(bool p_override);
 	bool get_override_pose() const;

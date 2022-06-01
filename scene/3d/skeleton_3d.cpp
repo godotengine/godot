@@ -277,24 +277,7 @@ void Skeleton3D::_notification(int p_what) {
 
 				if (E->skeleton_version != version) {
 					for (uint32_t i = 0; i < bind_count; i++) {
-						StringName bind_name = skin->get_bind_name(i);
-
-						if (bind_name != StringName()) {
-							// Bind name used, use this.
-							bool found = false;
-							for (int j = 0; j < len; j++) {
-								if (bonesptr[j].name == bind_name) {
-									E->skin_bone_indices_ptrs[i] = j;
-									found = true;
-									break;
-								}
-							}
-
-							if (!found) {
-								ERR_PRINT("Skin bind #" + itos(i) + " contains named bind '" + String(bind_name) + "' but Skeleton3D has no bone by that name.");
-								E->skin_bone_indices_ptrs[i] = 0;
-							}
-						} else if (skin->get_bind_bone(i) >= 0) {
+						if (skin->get_bind_bone(i) >= 0) {
 							int bind_index = skin->get_bind_bone(i);
 							if (bind_index >= len) {
 								ERR_PRINT("Skin bind #" + itos(i) + " contains bone index bind: " + itos(bind_index) + " , which is greater than the skeleton bone count: " + itos(len) + ".");
@@ -540,6 +523,15 @@ void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 	}
 
 	bones.write[p_bone].name = p_name;
+}
+
+String Skeleton3D::get_concatenated_bone_names() const {
+	String bns;
+	const int bone_size = bones.size();
+	for (int i = 0; i < bone_size; i++) {
+		bns = bns + (i == 0 ? bones[i].name : "," + bones[i].name);
+	}
+	return bns;
 }
 
 bool Skeleton3D::is_bone_parent_of(int p_bone, int p_parent_bone_id) const {
@@ -1208,6 +1200,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_bone", "name"), &Skeleton3D::find_bone);
 	ClassDB::bind_method(D_METHOD("get_bone_name", "bone_idx"), &Skeleton3D::get_bone_name);
 	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_idx", "name"), &Skeleton3D::set_bone_name);
+	ClassDB::bind_method(D_METHOD("get_concatenated_bone_names"), &Skeleton3D::get_concatenated_bone_names);
 
 	ClassDB::bind_method(D_METHOD("get_bone_parent", "bone_idx"), &Skeleton3D::get_bone_parent);
 	ClassDB::bind_method(D_METHOD("set_bone_parent", "bone_idx", "parent_idx"), &Skeleton3D::set_bone_parent);
