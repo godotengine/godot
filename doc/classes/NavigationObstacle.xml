@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		3D obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation] node, or using [method set_navigation]. [NavigationObstacle] is physics safe.
+		[b]Note:[/b] Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
 	</description>
 	<tutorials>
 	</tutorials>
