@@ -320,6 +320,7 @@ void PathFollow::_bind_methods() {
 }
 
 void PathFollow::set_offset(float p_offset) {
+	ERR_FAIL_COND(!isfinite(p_offset));
 	delta_offset = p_offset - offset;
 	offset = p_offset;
 
