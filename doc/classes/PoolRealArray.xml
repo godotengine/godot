@@ -9,7 +9,7 @@
 		[codeblock]
 		var array = [PoolRealArray()]
 		array[0].push_back(12.34)
-		print(array)  # [[]] (empty PoolRealArray within an empty Array)
+		print(array)  # [[]] (empty PoolRealArray within an Array)
 		[/codeblock]
 		Instead, the entire [PoolRealArray] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
 		[codeblock]
