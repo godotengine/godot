@@ -1938,6 +1938,7 @@ void EditorInspectorArray::_setup() {
 		// Move button.
 		ae.move_texture_rect = memnew(TextureRect);
 		ae.move_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		ae.move_texture_rect->set_default_cursor_shape(Control::CURSOR_MOVE);
 		if (is_inside_tree()) {
 			ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 		}
@@ -2111,9 +2112,7 @@ EditorInspectorArray::EditorInspectorArray() {
 	elements_vbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(elements_vbox);
 
-	add_button = memnew(Button);
-	add_button->set_text(TTR("Add Element"));
-	add_button->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	add_button = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	vbox->add_child(add_button);
 
@@ -2296,6 +2295,14 @@ void EditorInspector::cleanup_plugins() {
 		inspector_plugins[i].unref();
 	}
 	inspector_plugin_count = 0;
+}
+
+Button *EditorInspector::create_inspector_action_button(const String &p_text) {
+	Button *button = memnew(Button);
+	button->set_text(p_text);
+	button->set_theme_type_variation(SNAME("InspectorActionButton"));
+	button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	return button;
 }
 
 void EditorInspector::set_undo_redo(UndoRedo *p_undo_redo) {
@@ -2991,11 +2998,9 @@ void EditorInspector::update_tree() {
 	}
 
 	if (!hide_metadata) {
-		Button *add_md = memnew(Button);
-		add_md->set_text(TTR("Add Metadata"));
-		add_md->set_focus_mode(Control::FOCUS_NONE);
-		add_md->set_icon(get_theme_icon("Add", "EditorIcons"));
-		add_md->connect("pressed", callable_mp(this, &EditorInspector::_show_add_meta_dialog));
+		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
+		add_md->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		add_md->connect(SNAME("pressed"), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
 		main_vbox->add_child(add_md);
 	}
 

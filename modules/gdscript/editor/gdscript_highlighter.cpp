@@ -387,9 +387,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
-		if (!in_node_path && in_region == -1 && str[j] == '$') {
+		if (!in_node_path && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
 			in_node_path = true;
-		} else if (in_region != -1 || (is_a_symbol && str[j] != '/')) {
+		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
 			in_node_path = false;
 		}
 

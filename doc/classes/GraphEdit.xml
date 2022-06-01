@@ -202,6 +202,9 @@
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
 		</member>
+		<member name="connection_lines_curvature" type="float" setter="set_connection_lines_curvature" getter="get_connection_lines_curvature" default="0.5">
+			The curvature of the lines between the nodes. 0 results in straight lines.
+		</member>
 		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="2.0">
 			The thickness of the lines between the nodes.
 		</member>
@@ -372,15 +375,11 @@
 		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
 			The outline color of the selection rectangle.
 		</theme_item>
-		<theme_item name="bezier_len_neg" data_type="constant" type="int" default="160">
+		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
+			The horizontal range within which a port can be grabbed (inner side).
 		</theme_item>
-		<theme_item name="bezier_len_pos" data_type="constant" type="int" default="80">
-		</theme_item>
-		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
-			The horizontal range within which a port can be grabbed (on both sides).
-		</theme_item>
-		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="26">
-			The vertical range within which a port can be grabbed (on both sides).
+		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
+			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
 		</theme_item>

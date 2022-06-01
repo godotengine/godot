@@ -728,6 +728,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 
+	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
+
+	theme->set_type_variation("InspectorActionButton", "Button");
+	Color color_inspector_action = dark_color_1.lerp(mono_color, 0.12);
+	color_inspector_action.a = 0.5;
+	Ref<StyleBoxFlat> style_inspector_action = style_widget->duplicate();
+	style_inspector_action->set_bg_color(color_inspector_action);
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("normal", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_hover->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("hover", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_pressed->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("pressed", "InspectorActionButton", style_inspector_action);
+	style_inspector_action = style_widget_disabled->duplicate();
+	style_inspector_action->set_default_margin(SIDE_RIGHT, ACTION_BUTTON_EXTRA_MARGIN);
+	theme->set_stylebox("disabled", "InspectorActionButton", style_inspector_action);
+	theme->set_constant("h_separation", "InspectorActionButton", ACTION_BUTTON_EXTRA_MARGIN);
+
 	// Variation for Editor Log filter buttons
 	theme->set_type_variation("EditorLogFilterButton", "Button");
 	// When pressed, don't tint the icons with the accent color, just leave them normal.
@@ -1132,14 +1152,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
-	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
+	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
+	theme->set_type_variation("TabContainerOdd", "TabContainer");
+
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(disabled_bg_color);
-	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
+	theme->set_stylebox("tab_selected", "TabContainerOdd", style_tab_selected_odd);
 
 	Ref<StyleBoxFlat> style_content_panel_odd = style_content_panel->duplicate();
 	style_content_panel_odd->set_bg_color(disabled_bg_color);
-	theme->set_stylebox("panel_odd", "TabContainer", style_content_panel_odd);
+	theme->set_stylebox("panel", "TabContainerOdd", style_content_panel_odd);
 
 	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
@@ -1426,8 +1448,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("snap", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 	theme->set_icon("minimap", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
 	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), SNAME("EditorIcons")));
-	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
-	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
 	// GraphEditMinimap
 	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);

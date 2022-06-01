@@ -140,6 +140,8 @@ class EditorHelp : public VBoxContainer {
 	Ref<Font> doc_title_font;
 	Ref<Font> doc_code_font;
 
+	int scroll_to = -1;
+
 	void _update_theme();
 	void _help_callback(const String &p_topic);
 
@@ -152,6 +154,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _add_bulletpoint();
 
+	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);

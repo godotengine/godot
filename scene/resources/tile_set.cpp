@@ -281,7 +281,7 @@ void TileSet::TerrainsPattern::set_terrains_from_array(Array p_terrains) {
 	int in_array_index = 0;
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i]) {
-			ERR_FAIL_COND(in_array_index >= p_terrains.size());
+			ERR_FAIL_INDEX(in_array_index, p_terrains.size());
 			set_terrain(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
 			in_array_index++;
 		}

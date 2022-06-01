@@ -273,7 +273,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
 			Vector<AudioFrame> volume_vector;
-			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+				force_update_panning = false;
 				volume_vector = _update_panning();
 			}
 
@@ -318,6 +319,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	}
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	//check if any area is diverting sound into a bus
 	Ref<World3D> world_3d = get_world_3d();
@@ -356,6 +358,7 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	return nullptr;
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 StringName AudioStreamPlayer3D::_get_actual_bus() {
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
@@ -364,6 +367,7 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 	return bus;
 }
 
+// Interacts with PhysicsServer3D, so can only be called during _physics_process
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(4);

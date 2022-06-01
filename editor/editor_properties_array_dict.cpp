@@ -264,8 +264,7 @@ void EditorPropertyArray::update_property() {
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Element"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyArray::_add_element));
 			vbox->add_child(button_add_item);
@@ -1107,8 +1106,7 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				button_add_item = memnew(Button);
-				button_add_item->set_text(TTR("Add Key/Value Pair"));
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 				button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(button_add_item);
@@ -1344,8 +1342,7 @@ void EditorPropertyLocalizableString::update_property() {
 		}
 
 		if (page_index == max_page) {
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Translation"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);

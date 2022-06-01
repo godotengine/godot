@@ -429,33 +429,33 @@ uint32_t GodotSoftBody3D::get_node_count() const {
 }
 
 real_t GodotSoftBody3D::get_node_inv_mass(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), 0.0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), 0.0);
 	return nodes[p_node_index].im;
 }
 
 Vector3 GodotSoftBody3D::get_node_position(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].x;
 }
 
 Vector3 GodotSoftBody3D::get_node_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].v;
 }
 
 Vector3 GodotSoftBody3D::get_node_biased_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].bv;
 }
 
 void GodotSoftBody3D::apply_node_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.v += p_impulse * node.im;
 }
 
 void GodotSoftBody3D::apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.bv += p_impulse * node.im;
 }
@@ -465,7 +465,7 @@ uint32_t GodotSoftBody3D::get_face_count() const {
 }
 
 void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1, Vector3 &r_point_2, Vector3 &r_point_3) const {
-	ERR_FAIL_COND(p_face_index >= faces.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_face_index, faces.size());
 	const Face &face = faces[p_face_index];
 	r_point_1 = face.n[0]->x;
 	r_point_2 = face.n[1]->x;
@@ -473,7 +473,7 @@ void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1,
 }
 
 Vector3 GodotSoftBody3D::get_face_normal(uint32_t p_face_index) const {
-	ERR_FAIL_COND_V(p_face_index >= faces.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_face_index, faces.size(), Vector3());
 	return faces[p_face_index].normal;
 }
 

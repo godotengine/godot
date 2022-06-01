@@ -103,4 +103,4 @@ struct PluginConfigAndroid {
 	static String get_plugins_names(Vector<PluginConfigAndroid> plugins_configs);
 };
 
-#endif // GODOT_PLUGIN_CONFIG_H
+#endif // ANDROID_GODOT_PLUGIN_CONFIG_H
