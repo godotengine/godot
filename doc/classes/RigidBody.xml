@@ -108,7 +108,7 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
-			Damps RigidBody's rotational forces. If this value is different from -1.0 it will be added to any linear damp derived from the world or areas.
+			Damps the body's rotational forces. If this value is different from -1.0 it will be added to any angular damp derived from the world or areas.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
