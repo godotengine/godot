@@ -1130,7 +1130,8 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
-				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER2DSCREEN: {
 					rd_texture = texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 				} break;
 

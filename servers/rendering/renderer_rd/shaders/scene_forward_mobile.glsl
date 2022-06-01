@@ -98,18 +98,6 @@ layout(location = 8) out highp float dp_clip;
 
 #endif
 
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#define ViewIndex gl_ViewIndex
-#else
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif
-#else
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
-
 invariant gl_Position;
 
 #GLOBALS

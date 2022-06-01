@@ -16,6 +16,7 @@
 #if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
 #extension GL_EXT_multiview : enable
 #endif
+#include "multiview_inc.glsl"
 
 #include "cluster_data_inc.glsl"
 #include "decal_data_inc.glsl"
@@ -314,19 +315,13 @@ layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 1, binding = 9) uniform texture2D depth_buffer;
-layout(set = 1, binding = 10) uniform texture2D color_buffer;
+layout(set = 1, binding = 9) uniform texture2DScreen depth_buffer;
+layout(set = 1, binding = 10) uniform texture2DScreen color_buffer;
 
-#ifdef USE_MULTIVIEW
-layout(set = 1, binding = 11) uniform texture2DArray normal_roughness_buffer;
-layout(set = 1, binding = 13) uniform texture2DArray ambient_buffer;
-layout(set = 1, binding = 14) uniform texture2DArray reflection_buffer;
-#else // USE_MULTIVIEW
-layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 13) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
-#endif
-layout(set = 1, binding = 12) uniform texture2D ao_buffer;
+layout(set = 1, binding = 11) uniform texture2DScreen normal_roughness_buffer;
+layout(set = 1, binding = 12) uniform texture2DScreen ao_buffer;
+layout(set = 1, binding = 13) uniform texture2DScreen ambient_buffer;
+layout(set = 1, binding = 14) uniform texture2DScreen reflection_buffer;
 layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
 layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
 
@@ -349,7 +344,7 @@ voxel_gi_instances;
 
 layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
 
-layout(set = 1, binding = 19) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 19) uniform texture2DScreen ssil_buffer;
 
 #endif
 
