@@ -96,14 +96,28 @@ void NavigationAgent2D::_bind_methods() {
 
 void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			agent_parent = Object::cast_to<Node2D>(get_parent());
-			if (agent_parent != nullptr) {
-				// place agent on navigation map first or else the RVO agent callback creation fails silently later
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
-				set_avoidance_enabled(avoidance_enabled);
-			}
+		case NOTIFICATION_POST_ENTER_TREE: {
+			// need to use POST_ENTER_TREE cause with normal ENTER_TREE not all required Nodes are ready.
+			// cannot use READY as ready does not get called if Node is readded to SceneTree
+			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
+		} break;
+
+		case NOTIFICATION_PARENTED: {
+			if (is_inside_tree() && (get_parent() != agent_parent)) {
+				// only react to PARENTED notifications when already inside_tree and parent changed, e.g. users switch nodes around
+				// PARENTED notification fires also when Node is added in scripts to a parent
+				// this would spam transforms fails and world fails while Node is outside SceneTree
+				// when node gets reparented when joining the tree POST_ENTER_TREE takes care of this
+				set_agent_parent(get_parent());
+				set_physics_process_internal(true);
+			}
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			// if agent has no parent no point in processing it until reparented
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
 		} break;
 
 		case NOTIFICATION_PAUSED: {
@@ -133,7 +147,11 @@ void NavigationAgent2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+				if (avoidance_enabled) {
+					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
+					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
+					NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+				}
 				_check_distance_to_target();
 			}
 		} break;
@@ -165,6 +183,21 @@ void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
 
 bool NavigationAgent2D::get_avoidance_enabled() const {
 	return avoidance_enabled;
+}
+
+void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
+	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
+	NavigationServer2D::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
+		// place agent on navigation map first or else the RVO agent callback creation fails silently later
+		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
+		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
+		// create new avoidance callback if enabled
+		set_avoidance_enabled(avoidance_enabled);
+	} else {
+		agent_parent = nullptr;
+		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
+	}
 }
 
 void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
