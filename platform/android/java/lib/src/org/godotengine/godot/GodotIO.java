@@ -224,12 +224,30 @@ public class GodotIO {
 	}
 
 	public int getScreenDPI() {
-		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
-		return (int)(metrics.density * 160f);
+		return activity.getResources().getDisplayMetrics().densityDpi;
 	}
 
+	/**
+	 * Returns bucketized density values.
+	 */
 	public float getScaledDensity() {
-		return activity.getResources().getDisplayMetrics().scaledDensity;
+		int densityDpi = activity.getResources().getDisplayMetrics().densityDpi;
+		float selectedScaledDensity;
+		if (densityDpi >= DisplayMetrics.DENSITY_XXXHIGH) {
+			selectedScaledDensity = 4.0f;
+		} else if (densityDpi >= DisplayMetrics.DENSITY_XXHIGH) {
+			selectedScaledDensity = 3.0f;
+		} else if (densityDpi >= DisplayMetrics.DENSITY_XHIGH) {
+			selectedScaledDensity = 2.0f;
+		} else if (densityDpi >= DisplayMetrics.DENSITY_HIGH) {
+			selectedScaledDensity = 1.5f;
+		} else if (densityDpi >= DisplayMetrics.DENSITY_MEDIUM) {
+			selectedScaledDensity = 1.0f;
+		} else {
+			selectedScaledDensity = 0.75f;
+		}
+		Log.d(TAG, "Selected scaled density: " + selectedScaledDensity);
+		return selectedScaledDensity;
 	}
 
 	public double getScreenRefreshRate(double fallback) {
