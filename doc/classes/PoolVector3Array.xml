@@ -9,7 +9,7 @@
 		[codeblock]
 		var array = [PoolVector3Array()]
 		array[0].push_back(Vector3(12, 34, 56))
-		print(array)  # [[]] (empty PoolVector3Array within an empty Array)
+		print(array)  # [[]] (empty PoolVector3Array within an Array)
 		[/codeblock]
 		Instead, the entire [PoolVector3Array] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
 		[codeblock]

@@ -9,7 +9,7 @@
 		[codeblock]
 		var array = [PoolVector2Array()]
 		array[0].push_back(Vector2(12, 34))
-		print(array)  # [[]] (empty PoolVector2Array within an empty Array)
+		print(array)  # [[]] (empty PoolVector2Array within an Array)
 		[/codeblock]
 		Instead, the entire [PoolVector2Array] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
 		[codeblock]
