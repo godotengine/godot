@@ -264,6 +264,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
@@ -969,6 +971,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);

@@ -474,7 +474,7 @@ private:
 
 	void _notification(int p_what);
 
-	void item_edited(int p_column, TreeItem *p_item, MouseButton p_mouse_index = MouseButton::NONE);
+	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);

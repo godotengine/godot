@@ -1471,7 +1471,7 @@ public:
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
 	virtual bool has_changed() const = 0;
-	virtual void init() = 0;
+	virtual void init();
 	virtual void finish() = 0;
 
 	/* STATUS INFORMATION */

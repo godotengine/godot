@@ -15,6 +15,7 @@
 // File changes (yyyy-mm-dd)
 // 2016-09-07: filip.strugar@intel.com: first commit
 // 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[compute]

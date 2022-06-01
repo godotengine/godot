@@ -445,6 +445,9 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 }
 
 void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index) {
+	// Used by Polygon and Mesh.
+	static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
+
 	RS::CanvasItemTextureFilter current_filter = state.default_filter;
 	RS::CanvasItemTextureRepeat current_repeat = state.default_repeat;
 
@@ -474,7 +477,10 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			continue;
 		}
 
-		_update_transform_2d_to_mat2x3(base_transform * draw_transform, state.instance_data_array[r_index].world);
+		if (c->type != Item::Command::TYPE_MESH) {
+			// For Meshes, this gets updated below.
+			_update_transform_2d_to_mat2x3(base_transform * draw_transform, state.instance_data_array[r_index].world);
+		}
 
 		for (int i = 0; i < 4; i++) {
 			state.instance_data_array[r_index].modulation[i] = 0.0;
@@ -577,7 +583,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				state.instance_data_array[r_index].dst_rect[1] = dst_rect.position.y;
 				state.instance_data_array[r_index].dst_rect[2] = dst_rect.size.width;
 				state.instance_data_array[r_index].dst_rect[3] = dst_rect.size.height;
-				//_render_batch(r_index);
+
 				r_index++;
 				if (r_index >= state.max_instances_per_batch - 1) {
 					_render_batch(r_index);
@@ -585,18 +591,18 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
-				/*
 				const Item::CommandNinePatch *np = static_cast<const Item::CommandNinePatch *>(c);
 
-				//bind pipeline
-				{
-					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_NINEPATCH].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
-					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+				if (np->texture != state.current_tex || state.current_primitive_points != 0 || state.current_command != Item::Command::TYPE_NINEPATCH) {
+					_render_batch(r_index);
+
+					state.current_primitive_points = 0;
+					state.current_command = Item::Command::TYPE_NINEPATCH;
 				}
 
 				//bind textures
-
-				_bind_canvas_texture(p_draw_list, np->texture, current_filter, current_repeat, index);
+				_bind_canvas_texture(np->texture, current_filter, current_repeat, r_index);
+				GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_NINEPATCH);
 
 				Rect2 src_rect;
 				Rect2 dst_rect(np->rect.position.x, np->rect.position.y, np->rect.size.x, np->rect.size.y);
@@ -643,14 +649,14 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				state.instance_data_array[r_index].ninepatch_margins[2] = np->margin[SIDE_RIGHT];
 				state.instance_data_array[r_index].ninepatch_margins[3] = np->margin[SIDE_BOTTOM];
 
-				RD::get_singleton()->draw_list_set_state.instance_data_array[r_index](p_draw_list, &state.instance_data_array[r_index], sizeof(PushConstant));
-				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
-				RD::get_singleton()->draw_list_draw(p_draw_list, true);
+				r_index++;
+				if (r_index >= state.max_instances_per_batch - 1) {
+					_render_batch(r_index);
+				}
 
 				// Restore if overridden.
 				state.instance_data_array[r_index].color_texture_pixel_size[0] = state.current_pixel_size.x;
 				state.instance_data_array[r_index].color_texture_pixel_size[1] = state.current_pixel_size.y;
-*/
 			} break;
 
 			case Item::Command::TYPE_POLYGON: {
@@ -680,29 +686,8 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 					state.instance_data_array[r_index].ninepatch_margins[j] = 0;
 				}
 
-				// If the previous operation is not done yet, allocate a new buffer
-				if (state.fences[state.current_buffer] != GLsync()) {
-					GLint syncStatus;
-					glGetSynciv(state.fences[state.current_buffer], GL_SYNC_STATUS, sizeof(GLint), nullptr, &syncStatus);
-					if (syncStatus == GL_UNSIGNALED) {
-						_allocate_instance_data_buffer();
-					} else {
-						glDeleteSync(state.fences[state.current_buffer]);
-					}
-				}
-
-				glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
-#ifdef JAVASCRIPT_ENABLED
-				//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
-				glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData), &state.instance_data_array[0], GL_DYNAMIC_DRAW);
-#else
-				void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-				memcpy(ubo, &state.instance_data_array[0], sizeof(InstanceData));
-				glUnmapBuffer(GL_UNIFORM_BUFFER);
-#endif
+				_bind_instance_data_buffer(1);
 				glBindVertexArray(pb->vertex_array);
-
-				static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 
 				if (pb->index_buffer != 0) {
 					glDrawElements(prim[polygon->primitive], pb->count, GL_UNSIGNED_INT, nullptr);
@@ -764,12 +749,18 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			case Item::Command::TYPE_MESH:
 			case Item::Command::TYPE_MULTIMESH:
 			case Item::Command::TYPE_PARTICLES: {
-				/*
+				GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 				RID mesh;
 				RID mesh_instance;
 				RID texture;
 				Color modulate(1, 1, 1, 1);
-				int instance_count = 1;
+				uint32_t instance_count = 1;
+				GLuint multimesh_buffer = 0;
+				uint32_t multimesh_stride = 0;
+				uint32_t multimesh_color_offset = 0;
+				uint32_t multimesh_custom_data_offset = 0;
+				bool multimesh_uses_color = false;
+				bool multimesh_uses_custom_data = false;
 
 				if (c->type == Item::Command::TYPE_MESH) {
 					const Item::CommandMesh *m = static_cast<const Item::CommandMesh *>(c);
@@ -781,26 +772,25 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				} else if (c->type == Item::Command::TYPE_MULTIMESH) {
 					const Item::CommandMultiMesh *mm = static_cast<const Item::CommandMultiMesh *>(c);
 					RID multimesh = mm->multimesh;
-					mesh = storage->multimesh_get_mesh(multimesh);
+					mesh = mesh_storage->multimesh_get_mesh(multimesh);
 					texture = mm->texture;
 
-					if (storage->multimesh_get_transform_format(multimesh) != RS::MULTIMESH_TRANSFORM_2D) {
+					if (mesh_storage->multimesh_get_transform_format(multimesh) != RS::MULTIMESH_TRANSFORM_2D) {
 						break;
 					}
 
-					instance_count = storage->multimesh_get_instances_to_draw(multimesh);
+					instance_count = mesh_storage->multimesh_get_instances_to_draw(multimesh);
 
 					if (instance_count == 0) {
 						break;
 					}
 
-					state.instance_data_array[r_index].flags |= 1; //multimesh, trails disabled
-					if (storage->multimesh_uses_colors(multimesh)) {
-						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_COLORS;
-					}
-					if (storage->multimesh_uses_custom_data(multimesh)) {
-						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_CUSTOM_DATA;
-					}
+					multimesh_buffer = mesh_storage->multimesh_get_gl_buffer(multimesh);
+					multimesh_stride = mesh_storage->multimesh_get_stride(multimesh);
+					multimesh_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
+					multimesh_custom_data_offset = mesh_storage->multimesh_get_custom_data_offset(multimesh);
+					multimesh_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
+					multimesh_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
 				}
 
 				// TODO: implement particles here
@@ -816,8 +806,15 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				}
 
 				_bind_canvas_texture(texture, current_filter, current_repeat, r_index);
+				if (instance_count == 1) {
+					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_ATTRIBUTES);
+				} else if (instance_count > 1) {
+					GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_INSTANCED);
+				} else {
+					ERR_PRINT("Must have at least one mesh instance to draw mesh");
+				}
 
-				uint32_t surf_count = storage->mesh_get_surface_count(mesh);
+				uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
 
 				state.instance_data_array[r_index].modulation[0] = base_color.r * modulate.r;
 				state.instance_data_array[r_index].modulation[1] = base_color.g * modulate.g;
@@ -829,19 +826,79 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 					state.instance_data_array[r_index].dst_rect[j] = 0;
 					state.instance_data_array[r_index].ninepatch_margins[j] = 0;
 				}
-
+				_bind_instance_data_buffer(1);
 				for (uint32_t j = 0; j < surf_count; j++) {
-					RS::SurfaceData *surface = storage->mesh_get_surface(mesh, j);
+					void *surface = mesh_storage->mesh_get_surface(mesh, j);
 
-					RS::PrimitiveType primitive = storage->mesh_surface_get_primitive(surface);
+					RS::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
 					ERR_CONTINUE(primitive < 0 || primitive >= RS::PRIMITIVE_MAX);
 
-					glBindVertexArray(surface->vertex_array);
-					static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
+					GLuint vertex_array_gl = 0;
+					GLuint index_array_gl = 0;
 
-					// Draw directly, no need to batch
+					uint32_t input_mask = 0; // 2D meshes always use the same vertex format
+					if (mesh_instance.is_valid()) {
+						mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array_gl);
+					} else {
+						mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, vertex_array_gl);
+					}
+
+					index_array_gl = mesh_storage->mesh_surface_get_index_buffer(surface, 0);
+					bool use_index_buffer = false;
+					glBindVertexArray(vertex_array_gl);
+					if (index_array_gl != 0) {
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_gl);
+						use_index_buffer = true;
+					}
+
+					if (instance_count > 1) {
+						// Bind instance buffers.
+						glBindBuffer(GL_ARRAY_BUFFER, multimesh_buffer);
+						glEnableVertexAttribArray(5);
+						glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+						glVertexAttribDivisor(5, 1);
+						glEnableVertexAttribArray(6);
+						glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
+						glVertexAttribDivisor(6, 1);
+
+						if (multimesh_uses_color) {
+							glEnableVertexAttribArray(7);
+							glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_color_offset * sizeof(float)));
+							glVertexAttribDivisor(7, 1);
+						}
+						if (multimesh_uses_custom_data) {
+							glEnableVertexAttribArray(8);
+							glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_custom_data_offset * sizeof(float)));
+							glVertexAttribDivisor(8, 1);
+						}
+					}
+
+					GLenum primitive_gl = prim[int(primitive)];
+					if (instance_count == 1) {
+						if (use_index_buffer) {
+							glDrawElements(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(surface), mesh_storage->mesh_surface_get_index_type(surface), 0);
+						} else {
+							glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(surface));
+						}
+					} else if (instance_count > 1) {
+						if (use_index_buffer) {
+							glDrawElementsInstanced(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(surface), mesh_storage->mesh_surface_get_index_type(surface), 0, instance_count);
+						} else {
+							glDrawArraysInstanced(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(surface), instance_count);
+						}
+					}
+
+					state.fences[state.current_buffer] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+					state.current_buffer = (state.current_buffer + 1) % state.canvas_instance_data_buffers.size();
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+					if (instance_count > 1) {
+						glDisableVertexAttribArray(5);
+						glDisableVertexAttribArray(6);
+						glDisableVertexAttribArray(7);
+						glDisableVertexAttribArray(8);
+					}
 				}
-				*/
 			} break;
 			case Item::Command::TYPE_TRANSFORM: {
 				const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
@@ -886,26 +943,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 
 void RasterizerCanvasGLES3::_render_batch(uint32_t &r_index) {
 	if (r_index > 0) {
-		// If the previous operation is not done yet, allocate a new buffer
-		if (state.fences[state.current_buffer] != GLsync()) {
-			GLint syncStatus;
-			glGetSynciv(state.fences[state.current_buffer], GL_SYNC_STATUS, sizeof(GLint), nullptr, &syncStatus);
-			if (syncStatus == GL_UNSIGNALED) {
-				_allocate_instance_data_buffer();
-			} else {
-				glDeleteSync(state.fences[state.current_buffer]);
-			}
-		}
-
-		glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
-#ifdef JAVASCRIPT_ENABLED
-		//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData) * r_index, state.instance_data_array, GL_DYNAMIC_DRAW);
-#else
-		void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(InstanceData) * r_index, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(ubo, state.instance_data_array, sizeof(InstanceData) * r_index);
-		glUnmapBuffer(GL_UNIFORM_BUFFER);
-#endif
+		_bind_instance_data_buffer(r_index);
 		glBindVertexArray(data.canvas_quad_array);
 		if (state.current_primitive_points == 0) {
 			glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, r_index);
@@ -937,6 +975,32 @@ void RasterizerCanvasGLES3::_render_batch(uint32_t &r_index) {
 
 		r_index = 0;
 	}
+}
+
+void RasterizerCanvasGLES3::_bind_instance_data_buffer(uint32_t p_max_index) {
+	if (p_max_index == 0) {
+		return;
+	}
+	// If the previous operation is not done yet, allocate a new buffer
+	if (state.fences[state.current_buffer] != GLsync()) {
+		GLint syncStatus;
+		glGetSynciv(state.fences[state.current_buffer], GL_SYNC_STATUS, sizeof(GLint), nullptr, &syncStatus);
+		if (syncStatus == GL_UNSIGNALED) {
+			_allocate_instance_data_buffer();
+		} else {
+			glDeleteSync(state.fences[state.current_buffer]);
+		}
+	}
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
+#ifdef JAVASCRIPT_ENABLED
+	//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData) * p_max_index, state.instance_data_array, GL_DYNAMIC_DRAW);
+#else
+	void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(InstanceData) * p_max_index, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+	memcpy(ubo, state.instance_data_array, sizeof(InstanceData) * p_max_index);
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+#endif
 }
 
 RID RasterizerCanvasGLES3::light_create() {

@@ -188,6 +188,7 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 	GeometryInstance3D();
+	virtual ~GeometryInstance3D();
 };
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);

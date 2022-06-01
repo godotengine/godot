@@ -270,6 +270,8 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
 		}
+
+		_clear_stack();
 #endif
 	}
 

@@ -74,4 +74,4 @@ public:
 	~NetSocketAndroid();
 };
 
-#endif
+#endif // NET_SOCKET_ANDROID_H

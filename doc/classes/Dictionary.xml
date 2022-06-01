@@ -43,7 +43,7 @@
 		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblocks]
 		[gdscript]
-		export(string, "White", "Yellow", "Orange") var my_color
+		export(String, "White", "Yellow", "Orange") var my_color
 		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.

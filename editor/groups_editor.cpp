@@ -499,7 +499,7 @@ GroupDialog::GroupDialog() {
 
 	add_filter = memnew(LineEdit);
 	add_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_filter->set_placeholder(TTR("Filter nodes"));
+	add_filter->set_placeholder(TTR("Filter Nodes"));
 	add_filter_hbc->add_child(add_filter);
 	add_filter->connect("text_changed", callable_mp(this, &GroupDialog::_add_filter_changed));
 
@@ -549,7 +549,7 @@ GroupDialog::GroupDialog() {
 
 	remove_filter = memnew(LineEdit);
 	remove_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	remove_filter->set_placeholder(TTR("Filter nodes"));
+	remove_filter->set_placeholder(TTR("Filter Nodes"));
 	remove_filter_hbc->add_child(remove_filter);
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
 

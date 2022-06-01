@@ -2232,9 +2232,13 @@ GDScriptLanguage::GDScriptLanguage() {
 	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-		bool default_enabled = !warning.begins_with("unsafe_");
-		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
+		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
+		Variant default_enabled = GDScriptWarning::get_default_value(code);
+		String path = GDScriptWarning::get_settings_path_from_code(code);
+		GLOBAL_DEF(path, default_enabled);
+
+		PropertyInfo property_info = GDScriptWarning::get_property_info(code);
+		ProjectSettings::get_singleton()->set_custom_property_info(path, property_info);
 	}
 #endif // DEBUG_ENABLED
 }

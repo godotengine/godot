@@ -124,8 +124,8 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical = 0.0;
+	float port_hotzone_inner_extent = 0.0;
+	float port_hotzone_outer_extent = 0.0;
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
@@ -178,6 +178,7 @@ private:
 	List<Connection> connections;
 
 	float lines_thickness = 2.0f;
+	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
 	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
@@ -250,7 +251,7 @@ private:
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
 
-	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
+	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
 	bool arranging_graph = false;
 
@@ -343,6 +344,9 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
+	void set_connection_lines_curvature(float p_curvature);
+	float get_connection_lines_curvature() const;
 
 	void set_connection_lines_thickness(float p_thickness);
 	float get_connection_lines_thickness() const;

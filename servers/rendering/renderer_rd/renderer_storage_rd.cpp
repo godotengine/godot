@@ -592,6 +592,10 @@ void RendererStorageRD::update_dirty_resources() {
 }
 
 bool RendererStorageRD::has_os_feature(const String &p_feature) const {
+	if (!RD::get_singleton()) {
+		return false;
+	}
+
 	if (p_feature == "rgtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC5_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}

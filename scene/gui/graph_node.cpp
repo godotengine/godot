@@ -832,6 +832,7 @@ void GraphNode::_connpos_update() {
 				cc.pos = Point2i(edgeofs, y + h / 2);
 				cc.type = slot_info[idx].type_left;
 				cc.color = slot_info[idx].color_left;
+				cc.height = size.height;
 				conn_input_cache.push_back(cc);
 			}
 			if (slot_info[idx].enable_right) {
@@ -839,6 +840,7 @@ void GraphNode::_connpos_update() {
 				cc.pos = Point2i(get_size().width - edgeofs, y + h / 2);
 				cc.type = slot_info[idx].type_right;
 				cc.color = slot_info[idx].color_right;
+				cc.height = size.height;
 				conn_output_cache.push_back(cc);
 			}
 		}
@@ -859,12 +861,13 @@ int GraphNode::get_connection_input_count() {
 	return conn_input_cache.size();
 }
 
-int GraphNode::get_connection_output_count() {
+int GraphNode::get_connection_input_height(int p_idx) {
 	if (connpos_dirty) {
 		_connpos_update();
 	}
 
-	return conn_output_cache.size();
+	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), 0);
+	return conn_input_cache[p_idx].height;
 }
 
 Vector2 GraphNode::get_connection_input_position(int p_idx) {
@@ -895,6 +898,23 @@ Color GraphNode::get_connection_input_color(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Color());
 	return conn_input_cache[p_idx].color;
+}
+
+int GraphNode::get_connection_output_count() {
+	if (connpos_dirty) {
+		_connpos_update();
+	}
+
+	return conn_output_cache.size();
+}
+
+int GraphNode::get_connection_output_height(int p_idx) {
+	if (connpos_dirty) {
+		_connpos_update();
+	}
+
+	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), 0);
+	return conn_output_cache[p_idx].height;
 }
 
 Vector2 GraphNode::get_connection_output_position(int p_idx) {
@@ -1066,15 +1086,17 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected", "selected"), &GraphNode::set_selected);
 	ClassDB::bind_method(D_METHOD("is_selected"), &GraphNode::is_selected);
 
-	ClassDB::bind_method(D_METHOD("get_connection_output_count"), &GraphNode::get_connection_output_count);
 	ClassDB::bind_method(D_METHOD("get_connection_input_count"), &GraphNode::get_connection_input_count);
-
-	ClassDB::bind_method(D_METHOD("get_connection_output_position", "idx"), &GraphNode::get_connection_output_position);
-	ClassDB::bind_method(D_METHOD("get_connection_output_type", "idx"), &GraphNode::get_connection_output_type);
-	ClassDB::bind_method(D_METHOD("get_connection_output_color", "idx"), &GraphNode::get_connection_output_color);
+	ClassDB::bind_method(D_METHOD("get_connection_input_height", "idx"), &GraphNode::get_connection_input_height);
 	ClassDB::bind_method(D_METHOD("get_connection_input_position", "idx"), &GraphNode::get_connection_input_position);
 	ClassDB::bind_method(D_METHOD("get_connection_input_type", "idx"), &GraphNode::get_connection_input_type);
 	ClassDB::bind_method(D_METHOD("get_connection_input_color", "idx"), &GraphNode::get_connection_input_color);
+
+	ClassDB::bind_method(D_METHOD("get_connection_output_count"), &GraphNode::get_connection_output_count);
+	ClassDB::bind_method(D_METHOD("get_connection_output_height", "idx"), &GraphNode::get_connection_output_height);
+	ClassDB::bind_method(D_METHOD("get_connection_output_position", "idx"), &GraphNode::get_connection_output_position);
+	ClassDB::bind_method(D_METHOD("get_connection_output_type", "idx"), &GraphNode::get_connection_output_type);
+	ClassDB::bind_method(D_METHOD("get_connection_output_color", "idx"), &GraphNode::get_connection_output_color);
 
 	ClassDB::bind_method(D_METHOD("set_show_close_button", "show"), &GraphNode::set_show_close_button);
 	ClassDB::bind_method(D_METHOD("is_close_button_visible"), &GraphNode::is_close_button_visible);

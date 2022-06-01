@@ -1418,6 +1418,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	main_pages->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_pages->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_pages->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_pages->set_theme_type_variation("TabContainerOdd");
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);

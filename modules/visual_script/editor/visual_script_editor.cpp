@@ -980,6 +980,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
+
 	// Use default_func instead of default_func for now I think that should be good stop gap solution to ensure not breaking anything.
 	graph->call_deferred(SNAME("set_scroll_ofs"), script->get_scroll() * EDSCALE);
 	updating_graph = false;
@@ -4593,6 +4596,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_drag_forwarding(this);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
+	float graph_lines_curvature = EditorSettings::get_singleton()->get("editors/visual_editors/lines_curvature");
+	graph->set_connection_lines_curvature(graph_lines_curvature);
 	graph->hide();
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualScriptEditor::_graph_ofs_changed));
 

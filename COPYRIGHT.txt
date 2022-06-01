@@ -118,6 +118,19 @@ Copyright: 2007, Starbreeze Studios
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Comment: Intel ASSAO and related files
+Copyright: 2016, Intel Corporation
+License: Expat
+
 Files: ./thirdparty/amd-fsr/
 Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.

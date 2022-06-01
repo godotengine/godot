@@ -862,6 +862,7 @@ void TabBar::_update_hover() {
 
 void TabBar::_update_cache() {
 	if (tabs.is_empty()) {
+		buttons_visible = false;
 		return;
 	}
 

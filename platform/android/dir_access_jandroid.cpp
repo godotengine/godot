@@ -55,7 +55,6 @@ Error DirAccessJAndroid::list_dir_begin() {
 	if (res <= 0) {
 		return ERR_CANT_OPEN;
 	}
-
 	id = res;
 
 	return OK;
@@ -69,7 +68,6 @@ String DirAccessJAndroid::get_next() {
 	if (!str) {
 		return "";
 	}
-
 	String ret = jstring_to_string((jstring)str, env);
 	env->DeleteLocalRef((jobject)str);
 	return ret;
@@ -89,7 +87,6 @@ void DirAccessJAndroid::list_dir_end() {
 	if (id == 0) {
 		return;
 	}
-
 	JNIEnv *env = get_jni_env();
 	env->CallVoidMethod(io, _dir_close, id);
 	id = 0;
@@ -228,12 +225,9 @@ void DirAccessJAndroid::setup(jobject p_io) {
 	_dir_next = env->GetMethodID(cls, "dir_next", "(I)Ljava/lang/String;");
 	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
 	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
-
-	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {
-	id = 0;
 }
 
 DirAccessJAndroid::~DirAccessJAndroid() {

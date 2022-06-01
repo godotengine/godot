@@ -426,8 +426,8 @@ void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			port_grab_distance_horizontal = get_theme_constant(SNAME("port_grab_distance_horizontal"));
-			port_grab_distance_vertical = get_theme_constant(SNAME("port_grab_distance_vertical"));
+			port_hotzone_inner_extent = get_theme_constant("port_hotzone_inner_extent");
+			port_hotzone_outer_extent = get_theme_constant("port_hotzone_outer_extent");
 
 			zoom_minus->set_icon(get_theme_icon(SNAME("minus")));
 			zoom_reset->set_icon(get_theme_icon(SNAME("reset")));
@@ -544,8 +544,7 @@ void GraphEdit::_set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashM
 }
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
-	Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
-	Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+	Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -553,14 +552,18 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 			continue;
 		}
 
-		for (int j = 0; j < gn->get_connection_output_count(); j++) {
-			if (is_in_output_hotzone(gn, j, p_point / zoom, port_size)) {
+		for (int j = 0; j < gn->get_connection_input_count(); j++) {
+			Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+			port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
+			if (is_in_input_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
 			}
 		}
 
-		for (int j = 0; j < gn->get_connection_input_count(); j++) {
-			if (is_in_input_hotzone(gn, j, p_point / zoom, port_size)) {
+		for (int j = 0; j < gn->get_connection_output_count(); j++) {
+			Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+			port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
+			if (is_in_output_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
 			}
 		}
@@ -572,8 +575,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-		Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
-		Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+		Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 
 		connecting_valid = false;
 		click_pos = mb->get_position() / zoom;
@@ -585,6 +587,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
+				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+				port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
+
 				if (is_in_output_hotzone(gn, j, click_pos, port_size)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
@@ -629,6 +634,10 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
+
+				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+				port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
+
 				if (is_in_input_hotzone(gn, j, click_pos, port_size)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
@@ -682,11 +691,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0;
 
 		if (connecting_valid) {
-			Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
-			Vector2i port_size = Vector2i(port->get_width(), port->get_height());
-
 			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
+				Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 				GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 				if (!gn) {
 					continue;
@@ -695,6 +702,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (!connecting_out) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
+						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+						port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
+
 						int type = gn->get_connection_output_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
@@ -707,6 +717,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				} else {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
+						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+						port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
+
 						int type = gn->get_connection_input_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
@@ -754,19 +767,24 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos) {
-	if (p_control->is_set_as_top_level() || !p_control->is_visible()) {
+bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos, const Vector2 &p_offset) {
+	if (p_control->is_set_as_top_level() || !p_control->is_visible() || !p_control->is_inside_tree()) {
 		return false;
 	}
 
-	if (!p_control->has_point(pos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
-		//test children
+	Rect2 control_rect = p_control->get_rect();
+	control_rect.size *= zoom;
+	control_rect.position *= zoom;
+	control_rect.position += p_offset;
+
+	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
+		// Test children.
 		for (int i = 0; i < p_control->get_child_count(); i++) {
-			Control *subchild = Object::cast_to<Control>(p_control->get_child(i));
-			if (!subchild) {
+			Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
+			if (!child_rect) {
 				continue;
 			}
-			if (_check_clickable_control(subchild, pos - subchild->get_position())) {
+			if (_check_clickable_control(child_rect, mpos, control_rect.position)) {
 				return true;
 			}
 		}
@@ -798,7 +816,13 @@ bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, 
 }
 
 bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
-	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos)) {
+	Rect2 hotzone = Rect2(
+			pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
+			pos.y - p_port_size.height / 2.0,
+			port_hotzone_inner_extent + port_hotzone_outer_extent,
+			p_port_size.height);
+
+	if (!hotzone.has_point(p_mouse_pos)) {
 		return false;
 	}
 
@@ -807,23 +831,17 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_po
 		if (!child) {
 			continue;
 		}
-		Rect2 rect = child->get_rect();
+		Rect2 child_rect = child->get_rect();
+		child_rect.size *= zoom;
 
-		// To prevent intersections with other nodes.
-		rect.position *= zoom;
-		rect.size *= zoom;
-
-		if (rect.has_point(p_mouse_pos)) {
-			//check sub-controls
-			Vector2 subpos = p_mouse_pos - rect.position;
-
+		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
 				Control *subchild = Object::cast_to<Control>(child->get_child(j));
 				if (!subchild) {
 					continue;
 				}
 
-				if (_check_clickable_control(subchild, subpos - subchild->get_position())) {
+				if (_check_clickable_control(subchild, p_mouse_pos * zoom, child_rect.position)) {
 					return false;
 				}
 			}
@@ -839,13 +857,23 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 		return ret;
 	}
 
+	float x_diff = (p_to.x - p_from.x);
+	float cp_offset = x_diff * lines_curvature;
+	if (x_diff < 0) {
+		cp_offset *= -1;
+	}
+
 	Curve2D curve;
-	Vector<Color> colors;
 	curve.add_point(p_from);
-	curve.set_point_out(0, Vector2(60, 0));
+	curve.set_point_out(0, Vector2(cp_offset, 0));
 	curve.add_point(p_to);
-	curve.set_point_in(1, Vector2(-60, 0));
-	return curve.tessellate();
+	curve.set_point_in(1, Vector2(-cp_offset, 0));
+
+	if (lines_curvature > 0) {
+		return curve.tessellate(5, 2.0);
+	} else {
+		return curve.tessellate(1);
+	}
 }
 
 void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom) {
@@ -1666,6 +1694,15 @@ void GraphEdit::_minimap_toggled() {
 	}
 }
 
+void GraphEdit::set_connection_lines_curvature(float p_curvature) {
+	lines_curvature = p_curvature;
+	update();
+}
+
+float GraphEdit::get_connection_lines_curvature() const {
+	return lines_curvature;
+}
+
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
 	lines_thickness = p_thickness;
 	update();
@@ -2244,6 +2281,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_snap", "enable"), &GraphEdit::set_use_snap);
 	ClassDB::bind_method(D_METHOD("is_using_snap"), &GraphEdit::is_using_snap);
 
+	ClassDB::bind_method(D_METHOD("set_connection_lines_curvature", "curvature"), &GraphEdit::set_connection_lines_curvature);
+	ClassDB::bind_method(D_METHOD("get_connection_lines_curvature"), &GraphEdit::get_connection_lines_curvature);
+
 	ClassDB::bind_method(D_METHOD("set_connection_lines_thickness", "pixels"), &GraphEdit::set_connection_lines_thickness);
 	ClassDB::bind_method(D_METHOD("get_connection_lines_thickness"), &GraphEdit::get_connection_lines_thickness);
 
@@ -2280,6 +2320,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness"), "set_connection_lines_thickness", "get_connection_lines_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "connection_lines_antialiased"), "set_connection_lines_antialiased", "is_connection_lines_antialiased");
 

@@ -3674,7 +3674,7 @@ ScriptEditor::ScriptEditor() {
 	list_split->add_child(scripts_vbox);
 
 	filter_scripts = memnew(LineEdit);
-	filter_scripts->set_placeholder(TTR("Filter scripts"));
+	filter_scripts->set_placeholder(TTR("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
 	filter_scripts->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
@@ -3717,7 +3717,7 @@ ScriptEditor::ScriptEditor() {
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
 	filter_methods = memnew(LineEdit);
-	filter_methods->set_placeholder(TTR("Filter methods"));
+	filter_methods->set_placeholder(TTR("Filter Methods"));
 	filter_methods->set_clear_button_enabled(true);
 	filter_methods->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
 	overview_vbox->add_child(filter_methods);

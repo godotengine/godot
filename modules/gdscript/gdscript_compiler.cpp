@@ -667,20 +667,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::GET_NODE: {
 			const GDScriptParser::GetNodeNode *get_node = static_cast<const GDScriptParser::GetNodeNode *>(p_expression);
 
-			String node_name;
-			if (get_node->string != nullptr) {
-				node_name += String(get_node->string->value);
-			} else {
-				for (int i = 0; i < get_node->chain.size(); i++) {
-					if (i > 0) {
-						node_name += "/";
-					}
-					node_name += get_node->chain[i]->name;
-				}
-			}
-
 			Vector<GDScriptCodeGenerator::Address> args;
-			args.push_back(codegen.add_constant(NodePath(node_name)));
+			args.push_back(codegen.add_constant(NodePath(get_node->full_path)));
 
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(get_node->get_datatype()));
 

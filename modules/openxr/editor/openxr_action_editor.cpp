@@ -63,8 +63,7 @@ void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_te
 }
 
 void OpenXRActionEditor::_on_item_selected(int p_idx) {
-	ERR_FAIL_COND(p_idx < 0);
-	ERR_FAIL_COND(p_idx >= OpenXRAction::OPENXR_ACTION_MAX);
+	ERR_FAIL_INDEX(p_idx, OpenXRAction::OPENXR_ACTION_MAX);
 
 	action->set_action_type(OpenXRAction::ActionType(p_idx));
 }

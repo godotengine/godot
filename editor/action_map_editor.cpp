@@ -644,6 +644,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tab_container->set_theme_type_variation("TabContainerOdd");
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
 	main_vbox->add_child(tab_container);
 

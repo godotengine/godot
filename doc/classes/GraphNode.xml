@@ -43,6 +43,13 @@
 				Returns the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
+		<method name="get_connection_input_height">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the height of the input connection [code]idx[/code].
+			</description>
+		</method>
 		<method name="get_connection_input_position">
 			<return type="Vector2" />
 			<argument index="0" name="idx" type="int" />
@@ -68,6 +75,13 @@
 			<return type="int" />
 			<description>
 				Returns the number of enabled output slots (connections) of the GraphNode.
+			</description>
+		</method>
+		<method name="get_connection_output_height">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the height of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_position">

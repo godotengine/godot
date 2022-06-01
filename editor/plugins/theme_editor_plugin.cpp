@@ -834,6 +834,8 @@ void ThemeItemImportTree::_notification(int p_what) {
 			select_icons_warning_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 
+			import_items_filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
 			// Bottom panel buttons.
 			import_collapse_types_button->set_icon(get_theme_icon(SNAME("CollapseTree"), SNAME("EditorIcons")));
 			import_expand_types_button->set_icon(get_theme_icon(SNAME("ExpandTree"), SNAME("EditorIcons")));
@@ -881,15 +883,10 @@ void ThemeItemImportTree::_bind_methods() {
 }
 
 ThemeItemImportTree::ThemeItemImportTree() {
-	HBoxContainer *import_items_filter_hb = memnew(HBoxContainer);
-	add_child(import_items_filter_hb);
-	Label *import_items_filter_label = memnew(Label);
-	import_items_filter_label->set_text(TTR("Filter:"));
-	import_items_filter_hb->add_child(import_items_filter_label);
 	import_items_filter = memnew(LineEdit);
+	import_items_filter->set_placeholder(TTR("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
-	import_items_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	import_items_filter_hb->add_child(import_items_filter);
+	add_child(import_items_filter);
 	import_items_filter->connect("text_changed", callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
 
 	HBoxContainer *import_main_hb = memnew(HBoxContainer);
@@ -1871,9 +1868,6 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_remove_all->set_icon(get_theme_icon(SNAME("ThemeRemoveAllItems"), SNAME("EditorIcons")));
 
 			import_another_theme_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-
-			tc->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			tc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 		} break;
 	}
 }
@@ -1896,6 +1890,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	tc = memnew(TabContainer);
 	add_child(tc);
+	tc->set_theme_type_variation("TabContainerOdd");
 
 	// Edit Items tab.
 	HSplitContainer *edit_dialog_hs = memnew(HSplitContainer);
@@ -3305,9 +3300,6 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(5, get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(6, get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
-			data_type_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			data_type_tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
-
 			type_variation_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
 	}
@@ -3407,6 +3399,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	main_vb->add_child(data_type_tabs);
 	data_type_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	data_type_tabs->set_use_hidden_tabs_for_min_size(true);
+	data_type_tabs->set_theme_type_variation("TabContainerOdd");
 
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);
@@ -3589,7 +3582,7 @@ void ThemeEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), SNAME("EditorStyles")));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), SNAME("EditorStyles")));
-			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
+			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainerOdd")));
 
 			add_preview_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;

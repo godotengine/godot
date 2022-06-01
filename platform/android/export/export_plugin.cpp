@@ -409,7 +409,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		List<String> args;
 		args.push_back("kill-server");
 		OS::get_singleton()->execute(adb, args);
-	};
+	}
 }
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
@@ -522,8 +522,8 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 
 bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
 	/*
-	 *  By not compressing files with little or not benefit in doing so,
-	 *  a performance gain is expected attime. Moreover, if the APK is
+	 *  By not compressing files with little or no benefit in doing so,
+	 *  a performance gain is expected at runtime. Moreover, if the APK is
 	 *  zip-aligned, assets stored as they are can be efficiently read by
 	 *  Android by memory-mapping them.
 	 */
@@ -833,11 +833,9 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	uint32_t ofs = 8;
 
 	uint32_t string_count = 0;
-	//uint32_t styles_count = 0;
 	uint32_t string_flags = 0;
 	uint32_t string_data_offset = 0;
 
-	//uint32_t styles_offset = 0;
 	uint32_t string_table_begins = 0;
 	uint32_t string_table_ends = 0;
 	Vector<uint8_t> stable_extra;
@@ -878,10 +876,8 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				int iofs = ofs + 8;
 
 				string_count = decode_uint32(&p_manifest[iofs]);
-				// iofs + 4 is `styles_count`.
 				string_flags = decode_uint32(&p_manifest[iofs + 8]);
 				string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-				// iofs + 16 is `styles_offset`.
 
 				uint32_t st_offset = iofs + 20;
 				string_table.resize(string_count);
@@ -1850,7 +1846,8 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	{                                                     \
 		DirAccess::remove_file_or_error(tmp_export_path); \
 		return m_err;                                     \
-	}
+	}                                                     \
+	((void)0)
 
 	// Export to temporary APK before sending to device.
 	Error err = export_project_helper(p_preset, true, tmp_export_path, EXPORT_FORMAT_APK, true, p_debug_flags);
@@ -2794,7 +2791,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	{                                                        \
 		DirAccess::remove_file_or_error(tmp_unaligned_path); \
 		return m_err;                                        \
-	}
+	}                                                        \
+	((void)0)
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
