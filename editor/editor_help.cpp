@@ -523,11 +523,22 @@ void EditorHelp::_update_doc() {
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
+	Ref<Texture2D> icon;
+	if (has_theme_icon(edited_class, SNAME("EditorIcons"))) {
+		icon = get_theme_icon(edited_class, SNAME("EditorIcons"));
+	} else if (ClassDB::class_exists(edited_class) && ClassDB::is_parent_class(edited_class, "Object")) {
+		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	} else {
+		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
+	}
+
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
+	class_desc->add_image(icon, icon->get_width(), icon->get_height());
+	class_desc->add_text(" ");
 	class_desc->push_color(headline_color);
 	_add_text(edited_class);
 	class_desc->pop();
