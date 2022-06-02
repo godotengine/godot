@@ -46,7 +46,7 @@ layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
 #elif defined(MODE_CUBEMAP_TO_PANORAMA)
 layout(set = 0, binding = 0) uniform samplerCube source_color;
 #elif !defined(MODE_SET_COLOR)
-layout(set = 0, binding = 0) uniform sampler2D source_color;
+layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #endif
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
@@ -54,17 +54,29 @@ layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 #endif
 
 #if defined(MODE_LINEARIZE_DEPTH_COPY) || defined(MODE_SIMPLE_COPY_DEPTH)
-layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2DArray dest_buffer;
 #elif defined(DST_IMAGE_8BIT)
-layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2DArray dest_buffer;
 #else
-layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2DArray dest_buffer;
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR
 shared vec4 local_cache[256];
 shared vec4 temp_cache[128];
 #endif
+
+vec4 fetch_texel(sampler2DArray tex, ivec2 pos, int lod) {
+	return texelFetch(tex, ivec3(pos, gl_GlobalInvocationID.z), lod);
+}
+
+vec4 sample_texture_lod(sampler2DArray tex, vec2 uv, float lod) {
+	return textureLod(tex, vec3(uv, gl_GlobalInvocationID.z), lod);
+}
+
+void store_image(restrict writeonly image2DArray tex, ivec2 pos, vec4 color) {
+	imageStore(tex, ivec3(pos, gl_GlobalInvocationID.z), color);
+}
 
 void main() {
 	// Pixel being shaded
@@ -79,15 +91,15 @@ void main() {
 #ifdef MODE_MIPMAP
 
 	ivec2 base_pos = (pos + params.section.xy) << 1;
-	vec4 color = texelFetch(source_color, base_pos, 0);
-	color += texelFetch(source_color, base_pos + ivec2(0, 1), 0);
-	color += texelFetch(source_color, base_pos + ivec2(1, 0), 0);
-	color += texelFetch(source_color, base_pos + ivec2(1, 1), 0);
+	vec4 color = fetch_texel(source_color, base_pos, 0);
+	color += fetch_texel(source_color, base_pos + ivec2(0, 1), 0);
+	color += fetch_texel(source_color, base_pos + ivec2(1, 0), 0);
+	color += fetch_texel(source_color, base_pos + ivec2(1, 1), 0);
 	color /= 4.0;
 	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isinf(color));
 	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
 
-	imageStore(dest_buffer, pos + params.target, color);
+	store_image(dest_buffer, pos + params.target, color);
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR
@@ -100,17 +112,17 @@ void main() {
 	if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
 		vec2 quad_offset_uv = clamp((vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.0)) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 
-		local_cache[dest_index] = (textureLod(source_color, quad_center_uv, 0) + textureLod(source_color, quad_offset_uv, 0)) * 0.5;
-		local_cache[dest_index + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.z, 0.0), 0)) * 0.5;
-		local_cache[dest_index + 16] = (textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0) + textureLod(source_color, quad_offset_uv + vec2(0.0, 1.0 / params.section.w), 0)) * 0.5;
-		local_cache[dest_index + 16 + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.zw), 0)) * 0.5;
+		local_cache[dest_index] = (sample_texture_lod(source_color, quad_center_uv, 0) + sample_texture_lod(source_color, quad_offset_uv, 0)) * 0.5;
+		local_cache[dest_index + 1] = (sample_texture_lod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0) + sample_texture_lod(source_color, quad_offset_uv + vec2(1.0 / params.section.z, 0.0), 0)) * 0.5;
+		local_cache[dest_index + 16] = (sample_texture_lod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0) + sample_texture_lod(source_color, quad_offset_uv + vec2(0.0, 1.0 / params.section.w), 0)) * 0.5;
+		local_cache[dest_index + 16 + 1] = (sample_texture_lod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0) + sample_texture_lod(source_color, quad_offset_uv + vec2(1.0 / params.section.zw), 0)) * 0.5;
 	} else
 #endif
 	{
-		local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
-		local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
-		local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
-		local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
+		local_cache[dest_index] = sample_texture_lod(source_color, quad_center_uv, 0);
+		local_cache[dest_index + 1] = sample_texture_lod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
+		local_cache[dest_index + 16] = sample_texture_lod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
+		local_cache[dest_index + 16 + 1] = sample_texture_lod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
 	}
 #ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
@@ -195,7 +207,7 @@ void main() {
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
 	}
 #endif
-	imageStore(dest_buffer, pos + params.target, color);
+	store_image(dest_buffer, pos + params.target, color);
 
 #endif
 
@@ -207,10 +219,10 @@ void main() {
 		if (bool(params.flags & FLAG_FLIP_Y)) {
 			uv.y = 1.0 - uv.y;
 		}
-		color = textureLod(source_color, uv, 0.0);
+		color = sample_texture_lod(source_color, uv, 0.0);
 
 	} else {
-		color = texelFetch(source_color, pos + params.section.xy, 0);
+		color = fetch_texel(source_color, pos + params.section.xy, 0);
 
 		if (bool(params.flags & FLAG_FLIP_Y)) {
 			pos.y = params.section.w - pos.y - 1;
@@ -225,25 +237,25 @@ void main() {
 		color.a = 1.0;
 	}
 
-	imageStore(dest_buffer, pos + params.target, color);
+	store_image(dest_buffer, pos + params.target, color);
 
 #endif
 
 #ifdef MODE_SIMPLE_COPY_DEPTH
 
-	vec4 color = texelFetch(source_color, pos + params.section.xy, 0);
+	vec4 color = fetch_texel(source_color, pos + params.section.xy, 0);
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		pos.y = params.section.w - pos.y - 1;
 	}
 
-	imageStore(dest_buffer, pos + params.target, vec4(color.r));
+	store_image(dest_buffer, pos + params.target, vec4(color.r));
 
 #endif
 
 #ifdef MODE_LINEARIZE_DEPTH_COPY
 
-	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
+	float depth = fetch_texel(source_color, pos + params.section.xy, 0).r;
 	depth = depth * 2.0 - 1.0;
 	depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
 	vec4 color = vec4(depth / params.camera_z_far);
@@ -252,7 +264,7 @@ void main() {
 		pos.y = params.section.w - pos.y - 1;
 	}
 
-	imageStore(dest_buffer, pos + params.target, color);
+	store_image(dest_buffer, pos + params.target, color);
 #endif
 
 #if defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
@@ -275,10 +287,10 @@ void main() {
 #else
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
-	imageStore(dest_buffer, pos + params.target, color);
+	store_image(dest_buffer, pos + params.target, color);
 #endif
 
 #ifdef MODE_SET_COLOR
-	imageStore(dest_buffer, pos + params.target, params.set_color);
+	store_image(dest_buffer, pos + params.target, params.set_color);
 #endif
 }

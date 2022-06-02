@@ -2403,14 +2403,12 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		_allocate_depth_backbuffer_textures(rb);
 	}
 
-	// @TODO IMPLEMENT MULTIVIEW, all effects need to support stereo buffers or effects are only applied to the left eye
-
 	bool can_use_storage = _render_buffers_can_be_storage();
 
 	if (can_use_storage) {
-		copy_effects->copy_to_rect(rb->depth_texture, rb->depth_back_texture, Rect2i(0, 0, rb->width, rb->height));
+		copy_effects->copy_to_rect(rb->depth_texture, rb->depth_back_texture, Rect2i(0, 0, rb->width, rb->height), false, false, false, false, false, rb->view_count);
 	} else {
-		copy_effects->copy_to_fb_rect(rb->depth_texture, rb->depth_back_fb, Rect2i(0, 0, rb->width, rb->height));
+		copy_effects->copy_to_fb_rect(rb->depth_texture, rb->depth_back_fb, Rect2i(0, 0, rb->width, rb->height), false, false, false, false, RID(), rb->view_count != 1);
 	}
 
 	RD::get_singleton()->draw_command_end_label();

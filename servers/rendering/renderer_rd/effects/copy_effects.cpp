@@ -280,7 +280,7 @@ CopyEffects::~CopyEffects() {
 	singleton = nullptr;
 }
 
-void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one) {
+void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one, int layer_count) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the copy_to_rect shader with the mobile renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -327,7 +327,7 @@ void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, cons
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 3, u_dest_texture), 3);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_rect.size.width, p_rect.size.height, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_rect.size.width, p_rect.size.height, layer_count);
 	RD::get_singleton()->compute_list_end();
 }
 
