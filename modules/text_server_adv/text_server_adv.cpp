@@ -5640,8 +5640,10 @@ TextServerAdvanced::TextServerAdvanced() {
 
 TextServerAdvanced::~TextServerAdvanced() {
 	_bmp_free_font_funcs();
+#ifdef MODULE_FREETYPE_ENABLED
 	if (ft_library != nullptr) {
 		FT_Done_FreeType(ft_library);
 	}
+#endif
 	u_cleanup();
 }
