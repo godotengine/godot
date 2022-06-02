@@ -491,7 +491,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
+						ResourceSaver::save(create_unscaled_default_project_icon(), dir.plus_file("icon.png"));
 						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
 					}
 				} else if (mode == MODE_INSTALL) {

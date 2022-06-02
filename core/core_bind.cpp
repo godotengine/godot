@@ -147,9 +147,9 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
-	return ::ResourceSaver::save(p_path, p_resource, p_flags);
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + p_path + "'.");
+	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
@@ -174,7 +174,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);

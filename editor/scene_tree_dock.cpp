@@ -2457,7 +2457,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			flg |= ResourceSaver::FLAG_COMPRESS;
 		}
 
-		err = ResourceSaver::save(p_file, sdata, flg);
+		err = ResourceSaver::save(sdata, p_file, flg);
 		if (err != OK) {
 			accept->set_text(TTR("Error saving scene."));
 			accept->popup_centered();

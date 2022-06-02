@@ -1225,7 +1225,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	}
 
 	String path = ProjectSettings::get_singleton()->localize_path(p_path);
-	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+	Error err = ResourceSaver::save(p_resource, path, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
 		if (ResourceLoader::is_imported(p_resource->get_path())) {
@@ -1448,7 +1448,7 @@ bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resour
 
 	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
-			ResourceSaver::save(p_res->get_path(), p_res, flags);
+			ResourceSaver::save(p_res, p_res->get_path(), flags);
 		}
 		processed[p_res] = false; // Because it's a file.
 		return false;
@@ -1679,7 +1679,7 @@ int EditorNode::_save_external_resources() {
 		if (ps.is_valid()) {
 			continue; // Do not save PackedScenes, this will mess up the editor.
 		}
-		ResourceSaver::save(res->get_path(), res, flg);
+		ResourceSaver::save(res, res->get_path(), flg);
 		saved++;
 	}
 
@@ -1750,7 +1750,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	err = ResourceSaver::save(p_file, sdata, flg);
+	err = ResourceSaver::save(sdata, p_file, flg);
 
 	// This needs to be emitted before saving external resources.
 	emit_signal(SNAME("scene_saved"), p_file);
@@ -1957,7 +1957,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true, file_export_lib_apply_xforms->is_pressed());
 
-			Error err = ResourceSaver::save(p_file, ml);
+			Error err = ResourceSaver::save(ml, p_file);
 			if (err) {
 				show_accept(TTR("Error saving MeshLibrary!"), TTR("OK"));
 				return;

@@ -159,7 +159,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	}
 
 	print_verbose("Saving to: " + p_save_path + ".fontdata");
-	err = ResourceSaver::save(p_save_path + ".fontdata", font, flg);
+	err = ResourceSaver::save(font, p_save_path + ".fontdata", flg);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;

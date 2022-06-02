@@ -385,7 +385,7 @@ void ScriptCreateDialog::_create_new() {
 	} else {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
-		Error err = ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
+		Error err = ResourceSaver::save(scr, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 		if (err != OK) {
 			alert->set_text(TTR("Error - Could not create script in filesystem."));
 			alert->popup_centered();

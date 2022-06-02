@@ -254,7 +254,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint
 			// Encode PNG icon.
 			it->set_image(copy);
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
-			ResourceSaver::save(path, it);
+			ResourceSaver::save(it, path);
 
 			{
 				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);

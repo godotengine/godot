@@ -41,12 +41,12 @@ class ResourceFormatSaver : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3R(int64_t, _save, String, Ref<Resource>, uint32_t)
+	GDVIRTUAL3R(int64_t, _save, Ref<Resource>, String, uint32_t)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 
 public:
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 
@@ -81,7 +81,7 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

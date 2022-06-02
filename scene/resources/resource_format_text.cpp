@@ -2211,7 +2211,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	return OK;
 }
 
-Error ResourceFormatSaverText::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}

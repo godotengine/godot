@@ -867,7 +867,6 @@ void EditorSettings::create() {
 		}
 
 		singleton->save_changed_setting = true;
-		singleton->config_file_path = config_file_path;
 
 		print_verbose("EditorSettings: Load OK!");
 
@@ -892,8 +891,8 @@ fail:
 	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
+	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
-	singleton->config_file_path = config_file_path;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
@@ -953,15 +952,10 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path.is_empty()) {
-		ERR_PRINT("Cannot save EditorSettings config, no valid path");
-		return;
-	}
-
-	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
+	Error err = ResourceSaver::save(singleton);
 
 	if (err != OK) {
-		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
 		singleton->changed_settings.clear();
 		print_verbose("EditorSettings: Save OK!");

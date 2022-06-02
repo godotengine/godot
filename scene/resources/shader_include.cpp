@@ -113,7 +113,7 @@ String ResourceFormatLoaderShaderInclude::get_resource_type(const String &p_path
 
 // ResourceFormatSaverShaderInclude
 
-Error ResourceFormatSaverShaderInclude::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShaderInclude::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ShaderInclude> shader_inc = p_resource;
 	ERR_FAIL_COND_V(shader_inc.is_null(), ERR_INVALID_PARAMETER);
 
