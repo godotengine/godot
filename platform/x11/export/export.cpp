@@ -35,36 +35,17 @@
 #include "platform/x11/logo.gen.h"
 #include "scene/resources/texture.h"
 
-static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
+class EditorExportPlatformX11 : public EditorExportPlatformPC {
+public:
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
+};
 
-void register_x11_exporter() {
-	Ref<EditorExportPlatformPC> platform;
-	platform.instance();
-
-	Ref<Image> img = memnew(Image(_x11_logo));
-	Ref<ImageTexture> logo;
-	logo.instance();
-	logo->create_from_image(img);
-	platform->set_logo(logo);
-	platform->set_name("Linux/X11");
-	platform->set_extension("x86");
-	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_release_32("linux_x11_32_release");
-	platform->set_debug_32("linux_x11_32_debug");
-	platform->set_release_64("linux_x11_64_release");
-	platform->set_debug_64("linux_x11_64_debug");
-	platform->set_os_name("X11");
-	platform->set_chmod_flags(0755);
-	platform->set_fixup_embedded_pck_func(&fixup_embedded_pck);
-
-	EditorExport::get_singleton()->add_export_platform(platform);
-}
-
-static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
+Error EditorExportPlatformX11::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (!f) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -73,6 +54,7 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 		uint32_t magic = f->get_32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
 			f->close();
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -83,7 +65,8 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
 		f->close();
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
+		return ERR_INVALID_DATA;
 	}
 
 	// Get info about the section header table
@@ -162,5 +145,31 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 	memfree(strings);
 	f->close();
 
-	return found ? OK : ERR_FILE_CORRUPT;
+	if (!found) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		return ERR_FILE_CORRUPT;
+	}
+	return OK;
+}
+
+void register_x11_exporter() {
+	Ref<EditorExportPlatformX11> platform;
+	platform.instance();
+
+	Ref<Image> img = memnew(Image(_x11_logo));
+	Ref<ImageTexture> logo;
+	logo.instance();
+	logo->create_from_image(img);
+	platform->set_logo(logo);
+	platform->set_name("Linux/X11");
+	platform->set_extension("x86");
+	platform->set_extension("x86_64", "binary_format/64_bits");
+	platform->set_release_32("linux_x11_32_release");
+	platform->set_debug_32("linux_x11_32_debug");
+	platform->set_release_64("linux_x11_64_release");
+	platform->set_debug_64("linux_x11_64_debug");
+	platform->set_os_name("X11");
+	platform->set_chmod_flags(0755);
+
+	EditorExport::get_singleton()->add_export_platform(platform);
 }

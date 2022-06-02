@@ -22,6 +22,7 @@
 			<argument index="0" name="image" type="Texture" />
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
+			<argument index="3" name="align" type="int" enum="RichTextLabel.InlineAlign" default="2" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -334,6 +335,18 @@
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Makes text fill width.
+		</constant>
+		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
+			Aligns top of the inline image to the top of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER" value="1" enum="InlineAlign">
+			Aligns center of the inline image to the center of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_BASELINE" value="2" enum="InlineAlign">
+			Aligns bottom of the inline image to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM" value="3" enum="InlineAlign">
+			Aligns bottom of the inline image to the bottom of the text.
 		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.

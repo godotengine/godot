@@ -46,6 +46,14 @@ public:
 		ALIGN_FILL
 	};
 
+	enum InlineAlign {
+
+		INLINE_ALIGN_TOP,
+		INLINE_ALIGN_CENTER,
+		INLINE_ALIGN_BASELINE,
+		INLINE_ALIGN_BOTTOM
+	};
+
 	enum ListType {
 
 		LIST_NUMBERS,
@@ -147,7 +155,11 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture> image;
 		Size2 size;
-		ItemImage() { type = ITEM_IMAGE; }
+		InlineAlign align;
+		ItemImage() {
+			type = ITEM_IMAGE;
+			align = INLINE_ALIGN_BASELINE;
+		}
 	};
 
 	struct ItemFont : public Item {
@@ -407,7 +419,7 @@ protected:
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0);
+	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0, RichTextLabel::InlineAlign p_align = INLINE_ALIGN_BASELINE);
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
@@ -509,6 +521,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(RichTextLabel::Align);
+VARIANT_ENUM_CAST(RichTextLabel::InlineAlign);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
 
