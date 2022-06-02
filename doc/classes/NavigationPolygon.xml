@@ -61,6 +61,12 @@
 				Clears the array of polygons, but it doesn't clear the array of outlines and vertices.
 			</description>
 		</method>
+		<method name="get_mesh">
+			<return type="NavigationMesh" />
+			<description>
+				Returns the [NavigationMesh] resulting from this navigation polygon. This navmesh can be used to update the navmesh of a region with the [method NavigationServer.region_set_navmesh] API directly (as 2D uses the 3D server behind the scene).
+			</description>
+		</method>
 		<method name="get_outline" qualifiers="const">
 			<return type="PoolVector2Array" />
 			<argument index="0" name="idx" type="int" />
