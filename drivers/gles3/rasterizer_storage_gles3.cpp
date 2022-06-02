@@ -6557,6 +6557,9 @@ void RasterizerStorageGLES3::update_particles() {
 		}
 
 		Material *material = material_owner.getornull(particles->process_material);
+		int texture_count = 0;
+		RID *textures = nullptr;
+
 		if (!material || !material->shader || material->shader->mode != VS::SHADER_PARTICLES) {
 			shaders.particles.set_custom_shader(0);
 		} else {
@@ -6566,11 +6569,11 @@ void RasterizerStorageGLES3::update_particles() {
 				glBindBufferBase(GL_UNIFORM_BUFFER, 0, material->ubo_id);
 			}
 
-			int tc = material->textures.size();
-			RID *textures = material->textures.ptrw();
+			texture_count = material->textures.size();
+			textures = material->textures.ptrw();
 			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
-			for (int i = 0; i < tc; i++) {
+			for (int i = 0; i < texture_count; i++) {
 				glActiveTexture(GL_TEXTURE0 + i);
 
 				GLenum target;
@@ -6668,6 +6671,12 @@ void RasterizerStorageGLES3::update_particles() {
 			} else {
 				_particles_process(particles, frame.delta);
 			}
+		}
+
+		// Unbind textures
+		for (int i = 0; i < texture_count; i++) {
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
 		particle_update_list.remove(particle_update_list.first());
