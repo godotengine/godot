@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle2D] is physics safe.
+		[b]Note:[/b] Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
 	</description>
 	<tutorials>
 	</tutorials>
