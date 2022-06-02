@@ -3456,21 +3456,19 @@ String String::http_escape() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
-		char ord = temp[i];
+		uint8_t ord = temp[i];
 		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
 				(ord >= 'a' && ord <= 'z') ||
 				(ord >= 'A' && ord <= 'Z') ||
 				(ord >= '0' && ord <= '9')) {
 			res += ord;
 		} else {
-			char h_Val[3];
-#if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%02hhX", ord);
-#else
-			sprintf(h_Val, "%02hhX", ord);
-#endif
-			res += "%";
-			res += h_Val;
+			char p[4] = { '%', 0, 0, 0 };
+			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+			p[1] = hex[ord >> 4];
+			p[2] = hex[ord & 0xF];
+			res += p;
 		}
 	}
 	return res;
