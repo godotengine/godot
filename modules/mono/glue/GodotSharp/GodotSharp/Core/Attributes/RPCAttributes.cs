@@ -7,4 +7,7 @@ namespace Godot
 
     [AttributeUsage(AttributeTargets.Method)]
     public class AuthorityAttribute : Attribute { }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ServerAttribute : Attribute { }
 }

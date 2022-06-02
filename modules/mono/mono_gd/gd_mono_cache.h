@@ -113,6 +113,7 @@ struct CachedData {
 	GDMonoClass *class_ToolAttribute = nullptr;
 	GDMonoClass *class_AnyPeerAttribute = nullptr;
 	GDMonoClass *class_AuthorityAttribute = nullptr;
+	GDMonoClass *class_ServerAttribute = nullptr;
 	GDMonoClass *class_GodotMethodAttribute = nullptr;
 	GDMonoField *field_GodotMethodAttribute_methodName = nullptr;
 	GDMonoClass *class_ScriptPathAttribute = nullptr;
