@@ -331,7 +331,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 	popup_centered_ratio();
 
-	set_title(TTR("Owners Of:") + " " + p_path.get_file());
+	set_title(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), owners->get_item_count()));
 }
 
 DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
