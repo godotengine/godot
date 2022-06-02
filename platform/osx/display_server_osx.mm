@@ -569,9 +569,6 @@ DisplayServerOSX::WindowData &DisplayServerOSX::get_window(WindowID p_window) {
 }
 
 void DisplayServerOSX::send_event(NSEvent *p_event) {
-	if ([p_event type] == NSEventTypeLeftMouseDown || [p_event type] == NSEventTypeRightMouseDown || [p_event type] == NSEventTypeOtherMouseDown) {
-		mouse_process_popups();
-	}
 	// Special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
 	if ([p_event type] == NSEventTypeKeyDown) {
@@ -3085,15 +3082,17 @@ void DisplayServerOSX::popup_close(WindowID p_window) {
 	}
 }
 
-void DisplayServerOSX::mouse_process_popups(bool p_close) {
+bool DisplayServerOSX::mouse_process_popups(bool p_close) {
 	_THREAD_SAFE_METHOD_
 
 	bool was_empty = popup_list.is_empty();
+	bool closed = false;
 	if (p_close) {
 		// Close all popups.
 		List<WindowID>::Element *E = popup_list.front();
 		if (E) {
 			send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+			closed = true;
 		}
 		if (!was_empty) {
 			// Inform OS that all popups are closed.
@@ -3102,7 +3101,7 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 	} else {
 		uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
 		if (delta < 250) {
-			return;
+			return false;
 		}
 
 		Point2i pos = mouse_get_position();
@@ -3125,12 +3124,14 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 		}
 		if (C) {
 			send_window_event(windows[C->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+			closed = true;
 		}
 		if (!was_empty && popup_list.is_empty()) {
 			// Inform OS that all popups are closed.
 			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.HIToolbox.endMenuTrackingNotification" object:@"org.godotengine.godot.popup_window"];
 		}
 	}
+	return closed;
 }
 
 DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
