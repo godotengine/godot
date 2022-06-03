@@ -681,6 +681,7 @@ public:
 			Vector<ConstantNode::Value> default_value;
 			Scope scope = SCOPE_LOCAL;
 			Hint hint = HINT_NONE;
+			bool use_color = false;
 			TextureFilter filter = FILTER_DEFAULT;
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
@@ -756,6 +757,9 @@ public:
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_datatype_name(DataType p_type);
+	static String get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint);
+	static String get_texture_filter_name(TextureFilter p_filter);
+	static String get_texture_repeat_name(TextureRepeat p_repeat);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 	static bool is_token_operator_assign(TokenType p_type);
