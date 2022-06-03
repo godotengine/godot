@@ -2072,8 +2072,9 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vect
 		}
 	} else {
 		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			Vector2 ratio = Vector2((float)p_size.x / (float)p_size.y, (float)p_size.y / (float)p_size.x);
 			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * ratio;
 			}
 		}
 		switch (p_bit) {
@@ -2203,8 +2204,9 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_s
 		}
 	} else {
 		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			Vector2 ratio = Vector2((float)p_size.x / (float)p_size.y, (float)p_size.y / (float)p_size.x);
 			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * ratio;
 			}
 		}
 		switch (p_bit) {
@@ -2298,8 +2300,9 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_siz
 		}
 	} else {
 		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			Vector2 ratio = Vector2((float)p_size.x / (float)p_size.y, (float)p_size.y / (float)p_size.x);
 			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * ratio;
 			}
 		}
 		switch (p_bit) {
