@@ -891,6 +891,8 @@ public:
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
 	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) = 0;
+	virtual void viewport_set_keep_linear(RID p_viewport, bool p_keep_linear) = 0;
+	virtual void viewport_set_force_high_precision(RID p_viewport, bool p_force_high_precision) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
 
 	enum ViewportOcclusionCullingBuildQuality {

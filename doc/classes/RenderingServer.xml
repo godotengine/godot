@@ -3185,6 +3185,15 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
+		<method name="viewport_set_force_high_precision">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code] and using the Vulkan-Clustered or Vulkan-mobile renderer, high precision will be used in the 2D rendering pipeline (3D is always high precision) and [method viewport_get_texture] will return an image with the [constant Image.FORMAT_RGBAH] format.
+				Use with [method viewport_set_keep_linear] to obtain an accurate texture containing the rendering results from a frame.
+			</description>
+		</method>
 		<method name="viewport_set_fsr_sharpness">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -3199,6 +3208,14 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the viewport's global transformation matrix.
+			</description>
+		</method>
+		<method name="viewport_set_keep_linear">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], skip linear to sRGB conversion during tonemapping. If used without [method viewport_set_force_high_precision] this can result in significant banding in the rendered output.
 			</description>
 		</method>
 		<method name="viewport_set_measure_render_time">

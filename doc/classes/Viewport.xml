@@ -195,6 +195,9 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
 		</member>
+		<member name="force_high_precision" type="bool" setter="set_force_high_precision" getter="is_forced_high_precision" default="false">
+			If [code]true[/code] and using the Vulkan-Clustered or Vulkan-mobile renderer, high precision will be used in the 2D rendering pipeline (3D is always high precision) and [method get_texture] will return an image with the [constant Image.FORMAT_RGBAH] format. Use with [member keep_linear] to obtain an accurate texture containing the rendering results from a frame.
+		</member>
 		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_sharpness] project setting.
@@ -212,6 +215,10 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
+		</member>
+		<member name="keep_linear" type="bool" setter="set_keep_linear" getter="is_keeping_linear" default="false">
+			If [code]true[/code], skip linear to sRGB conversion during tonemapping.
+			[b]Note:[/b] If used without [member force_high_precision] this can result in significant banding in the rendered output.
 		</member>
 		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail.

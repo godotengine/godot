@@ -83,6 +83,8 @@ private:
 		float pixel_size[2]; //  8 - 104
 		uint32_t use_fxaa; //  4 - 108
 		uint32_t use_debanding; //  4 - 112
+		float pad[3]; //  12 - 124
+		uint32_t keep_linear; //  4 - 128
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -141,6 +143,7 @@ public:
 		bool use_debanding = false;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
+		bool keep_linear = false;
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);

@@ -1186,6 +1186,7 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 GLuint TextureStorage::system_fbo = 0;
 
 void TextureStorage::_update_render_target(RenderTarget *rt) {
+	Config *config = Config::get_singleton();
 	// do not allocate a render target with no size
 	if (rt->size.x <= 0 || rt->size.y <= 0) {
 		return;
@@ -1196,11 +1197,17 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rt->fbo = system_fbo;
 		return;
 	}
-
-	rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
-	rt->color_format = GL_RGBA;
-	rt->color_type = rt->is_transparent ? GL_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
-	rt->image_format = Image::FORMAT_RGBA8;
+	if (rt->force_high_precision && config->framebuffer_float_supported) {
+		rt->color_internal_format = rt->is_transparent ? GL_RGBA16F : GL_RGB16F;
+		rt->color_format = GL_RGBA;
+		rt->color_type = GL_HALF_FLOAT;
+		rt->image_format = Image::FORMAT_RGBAF;
+	} else {
+		rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
+		rt->color_format = GL_RGBA;
+		rt->color_type = rt->is_transparent ? GL_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
+		rt->image_format = Image::FORMAT_RGBA8;
+	}
 
 	glDisable(GL_SCISSOR_TEST);
 	glColorMask(1, 1, 1, 1);
@@ -1389,6 +1396,14 @@ void TextureStorage::render_target_free(RID p_rid) {
 		//memdelete(t);
 	}
 	render_target_owner.free(p_rid);
+}
+void TextureStorage::render_target_set_force_high_precision(RID p_render_target, bool p_force_high_precision) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (rt->force_high_precision != p_force_high_precision) {
+		rt->force_high_precision = p_force_high_precision;
+		_update_render_target(rt);
+	}
 }
 
 void TextureStorage::render_target_set_position(RID p_render_target, int p_x, int p_y) {

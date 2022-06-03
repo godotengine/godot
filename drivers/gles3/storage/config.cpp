@@ -61,9 +61,11 @@ Config::Config() {
 	etc2_supported = false;
 	s3tc_supported = true;
 	rgtc_supported = true; //RGTC - core since OpenGL version 3.0
+	framebuffer_float_supported = true;
 #else
 	float_texture_supported = extensions.has("GL_ARB_texture_float") || extensions.has("GL_OES_texture_float");
 	etc2_supported = true;
+	framebuffer_float_supported = extensions.has("GL_EXT_color_buffer_float") && extensions.has("GL_EXT_color_buffer_half_float");
 #if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 	// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 	// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).

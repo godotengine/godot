@@ -124,6 +124,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 
 	tonemap.push_constant.use_fxaa = p_settings.use_fxaa;
 	tonemap.push_constant.use_debanding = p_settings.use_debanding;
+	tonemap.push_constant.keep_linear = p_settings.keep_linear;
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
@@ -208,6 +209,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
 	tonemap.push_constant.use_debanding = p_settings.use_debanding;
+	tonemap.push_constant.keep_linear = p_settings.keep_linear;
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);

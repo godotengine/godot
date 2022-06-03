@@ -138,10 +138,10 @@ layout(std140) uniform SceneData { // ubo:2
 
 	mat3 radiance_inverse_xform;
 
+	bool keep_linear;
 	uint directional_light_count;
 	float z_far;
 	float z_near;
-	float pad;
 
 	bool fog_enabled;
 	float fog_density;
@@ -448,10 +448,10 @@ layout(std140) uniform SceneData { // ubo:2
 
 	mat3 radiance_inverse_xform;
 
+	bool keep_linear;
 	uint directional_light_count;
 	float z_far;
 	float z_near;
-	float pad;
 
 	bool fog_enabled;
 	float fog_density;
@@ -1032,8 +1032,10 @@ void main() {
 #ifndef MODE_RENDER_DEPTH
 
 	// Convert colors to linear
-	albedo = srgb_to_linear(albedo);
-	emission = srgb_to_linear(emission);
+	if (!scene_data.keep_linear) {
+		albedo = srgb_to_linear(albedo);
+		emission = srgb_to_linear(emission);
+	}
 	// TODO Backlight and transmittance when used
 #ifndef MODE_UNSHADED
 	vec3 f0 = F0(metallic, specular, albedo);
@@ -1248,10 +1250,12 @@ void main() {
 	}
 #endif
 
-	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
-	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
-	frag_color.rgb = linear_to_srgb(frag_color.rgb);
+	if (!scene_data.keep_linear) {
+		// Tonemap before writing as we are writing to an sRGB framebuffer
+		frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+		frag_color.rgb = linear_to_srgb(frag_color.rgb);
+	}
 
 #ifdef USE_BCS
 	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);

@@ -81,6 +81,8 @@ layout(push_constant, std430) uniform Params {
 	vec2 pixel_size;
 	bool use_fxaa;
 	bool use_debanding;
+	vec3 pad;
+	bool keep_linear;
 }
 params;
 
@@ -469,8 +471,9 @@ void main() {
 	}
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
-
-	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
+	if (!params.keep_linear) {
+		color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
+	}
 
 #ifndef SUBPASS
 	// Glow

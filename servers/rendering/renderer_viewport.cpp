@@ -177,7 +177,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			// to compensate for the loss of sharpness.
 			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count(), p_viewport->keep_linear);
 		}
 	}
 }
@@ -759,6 +759,11 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
 }
 
+bool RendererViewport::viewport_is_keeping_linear(RID p_viewport) const {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	return viewport->keep_linear;
+}
+
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -1139,6 +1144,27 @@ void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p
 	viewport->occlusion_buffer_dirty = true;
 }
 
+void RendererViewport::viewport_set_keep_linear(RID p_viewport, bool p_set_keep_linear) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->keep_linear == p_set_keep_linear) {
+		return;
+	}
+	viewport->keep_linear = p_set_keep_linear;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_force_high_precision(RID p_viewport, bool p_force_high_precision) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->force_high_precision == p_force_high_precision) {
+		return;
+	}
+	viewport->force_high_precision = p_force_high_precision;
+	RSG::texture_storage->render_target_set_force_high_precision(viewport->render_target, viewport->force_high_precision);
+}
 void RendererViewport::viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) {
 	if (occlusion_rays_per_thread == p_rays_per_thread) {
 		return;

@@ -74,6 +74,7 @@ public:
 	bool rgtc_supported = false;
 	bool bptc_supported = false;
 	bool etc2_supported = false;
+	bool framebuffer_float_supported = false;
 
 	bool force_vertex_shading = false;
 

@@ -309,6 +309,9 @@ private:
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
+	bool keep_linear = false;
+	bool force_high_precision = false;
+
 	Ref<ViewportTexture> default_texture;
 	HashSet<ViewportTexture *> viewport_textures;
 
@@ -552,6 +555,12 @@ public:
 	void set_use_occlusion_culling(bool p_us_occlusion_culling);
 	bool is_using_occlusion_culling() const;
 
+	void set_keep_linear(bool p_keep_linear);
+	bool is_keeping_linear() const;
+
+	void set_force_high_precision(bool p_force_high_precision);
+	bool is_forced_high_precision() const;
+
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -704,7 +713,6 @@ public:
 	bool is_using_own_world_3d() const;
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
-
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
 #endif // _3D_DISABLED

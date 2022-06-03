@@ -1398,6 +1398,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 
 	//time global variables
 	scene_state.ubo.time = time;
+	scene_state.ubo.keep_linear = p_render_data->keep_linear;
 
 	if (is_environment(p_render_data->environment)) {
 		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
@@ -1721,6 +1722,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 			render_data.screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 		}
 		render_data.render_info = r_render_info;
+		render_data.keep_linear = rb->keep_linear;
 	}
 
 	PagedArray<RID> empty;
@@ -2275,7 +2277,7 @@ RID RasterizerSceneGLES3::render_buffers_create() {
 	return render_buffers_owner.make_rid(rb);
 }
 
-void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count, bool p_keep_linear) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -2291,6 +2293,7 @@ void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_
 	//rb->screen_space_aa = p_screen_space_aa;
 	//rb->use_debanding = p_use_debanding;
 	//rb->view_count = p_view_count;
+	rb->keep_linear = p_keep_linear;
 
 	_free_render_buffer_data(rb);
 

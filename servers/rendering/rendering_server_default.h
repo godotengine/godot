@@ -624,6 +624,8 @@ public:
 	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
+	FUNC2(viewport_set_keep_linear, RID, bool)
+	FUNC2(viewport_set_force_high_precision, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_mesh_lod_threshold, RID, float)

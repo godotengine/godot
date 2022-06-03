@@ -2947,6 +2947,34 @@ bool Viewport::is_using_occlusion_culling() const {
 	return use_occlusion_culling;
 }
 
+void Viewport::set_keep_linear(bool p_keep_linear) {
+	if (keep_linear == p_keep_linear) {
+		return;
+	}
+	keep_linear = p_keep_linear;
+	RS::get_singleton()->viewport_set_keep_linear(viewport, p_keep_linear);
+
+	notify_property_list_changed();
+}
+
+bool Viewport::is_keeping_linear() const {
+	return keep_linear;
+}
+
+void Viewport::set_force_high_precision(bool p_force_high_precision) {
+	if (force_high_precision == p_force_high_precision) {
+		return;
+	}
+	force_high_precision = p_force_high_precision;
+	RS::get_singleton()->viewport_set_force_high_precision(viewport, force_high_precision);
+
+	notify_property_list_changed();
+}
+
+bool Viewport::is_forced_high_precision() const {
+	return force_high_precision;
+}
+
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
 	debug_draw = p_debug_draw;
 	RS::get_singleton()->viewport_set_debug_draw(viewport, RS::ViewportDebugDraw(p_debug_draw));
@@ -3590,7 +3618,6 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 		_propagate_exit_world_3d(p_node->get_child(i));
 	}
 }
-
 void Viewport::set_use_xr(bool p_use_xr) {
 	use_xr = p_use_xr;
 
@@ -3689,6 +3716,12 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_occlusion_culling", "enable"), &Viewport::set_use_occlusion_culling);
 	ClassDB::bind_method(D_METHOD("is_using_occlusion_culling"), &Viewport::is_using_occlusion_culling);
+
+	ClassDB::bind_method(D_METHOD("set_keep_linear", "enable"), &Viewport::set_keep_linear);
+	ClassDB::bind_method(D_METHOD("is_keeping_linear"), &Viewport::is_keeping_linear);
+
+	ClassDB::bind_method(D_METHOD("set_force_high_precision", "enable"), &Viewport::set_force_high_precision);
+	ClassDB::bind_method(D_METHOD("is_forced_high_precision"), &Viewport::is_forced_high_precision);
 
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
@@ -3821,6 +3854,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_taa"), "set_use_taa", "is_using_taa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_linear"), "set_keep_linear", "is_keeping_linear");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_high_precision"), "set_force_high_precision", "is_forced_high_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 #ifndef _3D_DISABLED
@@ -4145,6 +4180,7 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {}
+SubViewport::SubViewport() {
+}
 
 SubViewport::~SubViewport() {}

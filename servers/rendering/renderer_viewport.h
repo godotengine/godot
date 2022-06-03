@@ -60,7 +60,7 @@ public:
 		float scaling_3d_scale = 1.0;
 		float fsr_sharpness = 0.2f;
 		float texture_mipmap_bias = 0.0f;
-		bool fsr_enabled = false;
+		bool fsr_enabled;
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
@@ -85,6 +85,9 @@ public:
 		bool disable_environment = false;
 		bool disable_3d = false;
 		bool measure_render_time = false;
+
+		bool keep_linear = false;
+		bool force_high_precision = false;
 
 		bool snap_2d_transforms_to_pixel = false;
 		bool snap_2d_vertices_to_pixel = false;
@@ -207,6 +210,7 @@ public:
 	RID viewport_allocate();
 	void viewport_initialize(RID p_rid);
 
+	bool viewport_is_keeping_linear(RID p_viewport) const;
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
@@ -255,6 +259,8 @@ public:
 	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
+	void viewport_set_keep_linear(RID p_viewport, bool p_keep_linear);
+	void viewport_set_force_high_precision(RID p_viewport, bool p_force_high_precision);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
 	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
 	void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels);

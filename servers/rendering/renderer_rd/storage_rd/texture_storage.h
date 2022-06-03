@@ -139,9 +139,11 @@ private:
 
 		bool is_render_target;
 		bool is_proxy;
+		bool sdf_enabled = false;
 
 		Ref<Image> image_cache_2d;
 		String path;
+		bool force_high_precision = false;
 
 		RID proxy_to;
 		Vector<RID> proxies;
@@ -261,6 +263,7 @@ private:
 		Image::Format image_format = Image::FORMAT_L8;
 
 		bool is_transparent = false;
+		bool force_high_precision = false;
 
 		bool sdf_enabled = false;
 
@@ -547,6 +550,8 @@ public:
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
+
+	virtual void render_target_set_force_high_precision(RID p_render_target, bool p_force_high_precision) override;
 
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;

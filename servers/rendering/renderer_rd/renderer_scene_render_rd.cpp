@@ -2046,6 +2046,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.white = environment_get_white(p_render_data->environment);
 			tonemap.exposure = environment_get_exposure(p_render_data->environment);
 		}
+		tonemap.keep_linear = rb->keep_linear;
 
 		if (camfx && camfx->override_exposure_enabled) {
 			tonemap.exposure = camfx->override_exposure;
@@ -2448,7 +2449,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 	return true;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count, bool p_keep_linear) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -2488,6 +2489,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	rb->screen_space_aa = p_screen_space_aa;
 	rb->use_taa = p_use_taa;
 	rb->use_debanding = p_use_debanding;
+	rb->keep_linear = p_keep_linear;
 	rb->view_count = p_view_count;
 
 	if (is_clustered_enabled()) {

@@ -123,6 +123,8 @@ struct RenderDataGLES3 {
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
 
+	bool keep_linear = false;
+
 	RendererScene::RenderInfo *render_info = nullptr;
 };
 
@@ -354,10 +356,10 @@ private:
 
 			float radiance_inverse_xform[12];
 
+			bool keep_linear = false;
 			uint32_t directional_light_count;
 			float z_far;
 			float z_near;
-			float pad1;
 
 			uint32_t fog_enabled;
 			float fog_density;
@@ -502,6 +504,7 @@ protected:
 		//uint32_t view_count = 1;
 
 		bool is_transparent = false;
+		bool keep_linear = false;
 
 		RID render_target;
 		GLuint internal_texture = 0; // Used for rendering when post effects are enabled
@@ -762,7 +765,7 @@ public:
 	}
 
 	RID render_buffers_create() override;
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count, bool p_keep_linear) override;
 	void gi_set_use_half_resolution(bool p_enable) override;
 
 	void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_curve) override;

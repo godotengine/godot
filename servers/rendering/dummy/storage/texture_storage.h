@@ -151,6 +151,7 @@ public:
 
 	virtual RID render_target_create() override { return RID(); }
 	virtual void render_target_free(RID p_rid) override {}
+	virtual void render_target_set_force_high_precision(RID p_render_target, bool p_force_high_precision) override {}
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override {}
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override {}
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }

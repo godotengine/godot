@@ -92,6 +92,7 @@ struct RenderDataRD {
 
 	uint32_t directional_light_count = 0;
 	bool directional_light_soft_shadows = false;
+	bool keep_linear = false;
 
 	RendererScene::RenderInfo *render_info = nullptr;
 };
@@ -460,6 +461,7 @@ private:
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_taa = false;
 		bool use_debanding = false;
+		bool keep_linear = false;
 		uint32_t view_count = 1;
 
 		RID render_target;
@@ -1105,7 +1107,7 @@ public:
 	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual RID render_buffers_create() override;
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count, bool p_keep_linear) override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;
 
 	RID render_buffers_get_depth_texture(RID p_render_buffers);
