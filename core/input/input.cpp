@@ -1401,8 +1401,8 @@ String Input::get_joy_guid(int p_device) const {
 	return joy_names[p_device].uid;
 }
 
-Array Input::get_connected_joypads() {
-	Array ret;
+TypedArray<int> Input::get_connected_joypads() {
+	TypedArray<int> ret;
 	HashMap<int, Joypad>::Iterator elem = joy_names.begin();
 	while (elem) {
 		if (elem->value.connected) {
