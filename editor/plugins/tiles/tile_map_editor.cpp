@@ -2028,7 +2028,6 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// --- Toolbar ---
 	toolbar = memnew(HBoxContainer);
-	toolbar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *tilemap_tiles_tools_buttons = memnew(HBoxContainer);
 
@@ -3423,7 +3422,7 @@ void TileMapEditor::_notification(int p_what) {
 			advanced_menu_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
-			toogle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
+			toggle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -3458,64 +3457,13 @@ void TileMapEditor::_on_grid_toggled(bool p_pressed) {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TileMapEditor::_layers_selection_button_draw() {
-	if (!has_theme_icon(SNAME("arrow"), SNAME("OptionButton"))) {
+void TileMapEditor::_layers_selection_item_selected(int p_index) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map || tile_map->get_layers_count() <= 0) {
 		return;
 	}
 
-	RID ci = layers_selection_button->get_canvas_item();
-	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
-
-	Color clr = Color(1, 1, 1);
-	if (get_theme_constant(SNAME("modulate_arrow"))) {
-		switch (layers_selection_button->get_draw_mode()) {
-			case BaseButton::DRAW_PRESSED:
-				clr = get_theme_color(SNAME("font_pressed_color"));
-				break;
-			case BaseButton::DRAW_HOVER:
-				clr = get_theme_color(SNAME("font_hover_color"));
-				break;
-			case BaseButton::DRAW_DISABLED:
-				clr = get_theme_color(SNAME("font_disabled_color"));
-				break;
-			default:
-				if (layers_selection_button->has_focus()) {
-					clr = get_theme_color(SNAME("font_focus_color"));
-				} else {
-					clr = get_theme_color(SNAME("font_color"));
-				}
-		}
-	}
-
-	Size2 size = layers_selection_button->get_size();
-
-	Point2 ofs;
-	if (is_layout_rtl()) {
-		ofs = Point2(get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
-	} else {
-		ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
-	}
-	Rect2 dst_rect = Rect2(ofs, arrow->get_size());
-	if (!layers_selection_button->is_pressed()) {
-		dst_rect.size = -dst_rect.size;
-	}
-	arrow->draw_rect(ci, dst_rect, false, clr);
-}
-
-void TileMapEditor::_layers_selection_button_pressed() {
-	if (!layers_selection_popup->is_visible()) {
-		Size2 size = layers_selection_popup->get_contents_minimum_size();
-		size.x = MAX(size.x, layers_selection_button->get_size().x);
-		layers_selection_popup->set_position(layers_selection_button->get_screen_position() - Size2(0, size.y * get_global_transform().get_scale().y));
-		layers_selection_popup->set_size(size);
-		layers_selection_popup->popup();
-	} else {
-		layers_selection_popup->hide();
-	}
-}
-
-void TileMapEditor::_layers_selection_id_pressed(int p_id) {
-	tile_map_layer = p_id;
+	tile_map_layer = p_index;
 	_update_layers_selection();
 }
 
@@ -3698,8 +3646,6 @@ void TileMapEditor::_layers_select_next_or_previous(bool p_next) {
 }
 
 void TileMapEditor::_update_layers_selection() {
-	layers_selection_popup->clear();
-
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -3726,32 +3672,23 @@ void TileMapEditor::_update_layers_selection() {
 	} else {
 		tile_map_layer = -1;
 	}
-	tile_map->set_selected_layer(toogle_highlight_selected_layer_button->is_pressed() ? tile_map_layer : -1);
+	tile_map->set_selected_layer(toggle_highlight_selected_layer_button->is_pressed() ? tile_map_layer : -1);
 
-	// Build the list of layers.
-	for (int i = 0; i < tile_map->get_layers_count(); i++) {
-		String name = tile_map->get_layer_name(i);
-		layers_selection_popup->add_item(name.is_empty() ? vformat(TTR("Layer #%d"), i) : name, i);
-		layers_selection_popup->set_item_as_radio_checkable(i, true);
-		layers_selection_popup->set_item_disabled(i, !tile_map->is_layer_enabled(i));
-		layers_selection_popup->set_item_checked(i, i == tile_map_layer);
-	}
+	layers_selection_button->clear();
+	if (tile_map->get_layers_count() > 0) {
+		// Build the list of layers.
+		for (int i = 0; i < tile_map->get_layers_count(); i++) {
+			String name = tile_map->get_layer_name(i);
+			layers_selection_button->add_item(name.is_empty() ? vformat(TTR("Layer %d"), i) : name, i);
+			layers_selection_button->set_item_disabled(i, !tile_map->is_layer_enabled(i));
+		}
 
-	// Update the button label.
-	if (tile_map_layer >= 0) {
-		layers_selection_button->set_text(layers_selection_popup->get_item_text(tile_map_layer));
+		layers_selection_button->set_disabled(false);
+		layers_selection_button->select(tile_map_layer);
 	} else {
-		layers_selection_button->set_text(TTR("Select a layer"));
+		layers_selection_button->set_disabled(true);
+		layers_selection_button->set_text(TTR("No Layers"));
 	}
-
-	// Set button minimum width.
-	Size2 min_button_size = Size2(layers_selection_popup->get_contents_minimum_size().x, 0);
-	if (has_theme_icon(SNAME("arrow"), SNAME("OptionButton"))) {
-		Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
-		min_button_size.x += arrow->get_size().x;
-	}
-	layers_selection_button->set_custom_minimum_size(min_button_size);
-	layers_selection_button->update();
 
 	tabs_plugins[tabs_bar->get_current_tab()]->edit(tile_map_id, tile_map_layer);
 }
@@ -4028,7 +3965,6 @@ TileMapEditor::TileMapEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
-	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
 		Vector<TileMapEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();
@@ -4057,31 +3993,23 @@ TileMapEditor::TileMapEditor() {
 	}
 
 	// Wide empty separation control.
-	Control *h_empty_space = memnew(Control);
-	h_empty_space->set_h_size_flags(SIZE_EXPAND_FILL);
-	tile_map_toolbar->add_child(h_empty_space);
+	tile_map_toolbar->add_spacer();
 
 	// Layer selector.
-	layers_selection_popup = memnew(PopupMenu);
-	layers_selection_popup->connect("id_pressed", callable_mp(this, &TileMapEditor::_layers_selection_id_pressed));
-	layers_selection_popup->set_flag(Window::FLAG_POPUP, false);
-
-	layers_selection_button = memnew(Button);
-	layers_selection_button->set_toggle_mode(true);
-	layers_selection_button->connect("draw", callable_mp(this, &TileMapEditor::_layers_selection_button_draw));
-	layers_selection_button->connect("pressed", callable_mp(this, &TileMapEditor::_layers_selection_button_pressed));
-	layers_selection_button->connect("hidden", callable_mp((Window *)layers_selection_popup, &Popup::hide));
-	layers_selection_button->set_tooltip(TTR("Tile Map Layer"));
-	layers_selection_button->add_child(layers_selection_popup);
+	layers_selection_button = memnew(OptionButton);
+	layers_selection_button->set_custom_minimum_size(Size2(200, 0));
+	layers_selection_button->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
+	layers_selection_button->set_tooltip(TTR("TileMap Layers"));
+	layers_selection_button->connect("item_selected", callable_mp(this, &TileMapEditor::_layers_selection_item_selected));
 	tile_map_toolbar->add_child(layers_selection_button);
 
-	toogle_highlight_selected_layer_button = memnew(Button);
-	toogle_highlight_selected_layer_button->set_flat(true);
-	toogle_highlight_selected_layer_button->set_toggle_mode(true);
-	toogle_highlight_selected_layer_button->set_pressed(true);
-	toogle_highlight_selected_layer_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_layers_selection));
-	toogle_highlight_selected_layer_button->set_tooltip(TTR("Highlight Selected TileMap Layer"));
-	tile_map_toolbar->add_child(toogle_highlight_selected_layer_button);
+	toggle_highlight_selected_layer_button = memnew(Button);
+	toggle_highlight_selected_layer_button->set_flat(true);
+	toggle_highlight_selected_layer_button->set_toggle_mode(true);
+	toggle_highlight_selected_layer_button->set_pressed(true);
+	toggle_highlight_selected_layer_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_layers_selection));
+	toggle_highlight_selected_layer_button->set_tooltip(TTR("Highlight Selected TileMap Layer"));
+	tile_map_toolbar->add_child(toggle_highlight_selected_layer_button);
 
 	tile_map_toolbar->add_child(memnew(VSeparator));
 
