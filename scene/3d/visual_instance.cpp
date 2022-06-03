@@ -101,6 +101,15 @@ void VisualInstance::_notification(int p_what) {
 				if (!_is_using_identity_transform()) {
 					Transform gt = get_global_transform();
 					VisualServer::get_singleton()->instance_set_transform(instance, gt);
+
+					// For instance when first adding to the tree, when the previous transform is
+					// unset, to prevent streaking from the origin.
+					if (_is_physics_interpolation_reset_requested()) {
+						if (_is_vi_visible()) {
+							_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+						}
+						_set_physics_interpolation_reset_requested(false);
+					}
 				}
 			}
 		} break;
