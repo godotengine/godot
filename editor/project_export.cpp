@@ -1064,6 +1064,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	sections = memnew(TabContainer);
 	sections->set_use_hidden_tabs_for_min_size(true);
+	sections->set_theme_type_variation("TabContainerOdd");
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

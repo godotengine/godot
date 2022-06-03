@@ -131,6 +131,17 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 
 	NavigationServer3D::get_singleton()->region_set_navmesh(region, p_navmesh);
 
+	if (debug_view == nullptr && is_inside_tree() && navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
+		MeshInstance3D *dm = memnew(MeshInstance3D);
+		dm->set_mesh(navmesh->get_debug_mesh());
+		if (is_enabled()) {
+			dm->set_material_override(get_tree()->get_debug_navigation_material());
+		} else {
+			dm->set_material_override(get_tree()->get_debug_navigation_disabled_material());
+		}
+		add_child(dm);
+		debug_view = dm;
+	}
 	if (debug_view && navmesh.is_valid()) {
 		Object::cast_to<MeshInstance3D>(debug_view)->set_mesh(navmesh->get_debug_mesh());
 	}

@@ -83,7 +83,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-18 23:16+0000\n"
+"PO-Revision-Date: 2022-05-27 16:15+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -9468,9 +9468,8 @@ msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separator"
-msgstr "Separación:"
+msgstr "Separador"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -12856,9 +12855,8 @@ msgstr "Paso"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separation"
-msgstr "Separación:"
+msgstr "Separación"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -14052,6 +14050,14 @@ msgid "Runnable"
 msgstr "Ejecutable"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "¿Eliminar preajuste '%s'?"
 
@@ -14196,19 +14202,27 @@ msgid "More Info..."
 msgstr "Mover a..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Exportar PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Exportar Proyecto"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "¿Modo de Exportación?"
+msgid "Export All"
+msgstr "Exportar Todo"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Por favor elija una carpeta vacía."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Exportar Todo"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14216,7 +14230,8 @@ msgid "ZIP File"
 msgstr "Archivo ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot Game Pack"
 
 #: editor/project_export.cpp
@@ -14542,12 +14557,12 @@ msgid "Project Manager"
 msgstr "Administrador de Proyectos"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Cargando, espera por favor..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Ultima Modificación"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Cargando, espera por favor..."
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -25269,9 +25284,8 @@ msgid "Font Color Disabled"
 msgstr "Clip Deshabilitado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "H Separation"
-msgstr "Separación:"
+msgstr "Separación en H"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25359,14 +25373,12 @@ msgid "Font Outline Modulate"
 msgstr "Forzar Modulación en Blanco"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Shadow Offset X"
-msgstr "Desplazamiento de Cuadrícula en X:"
+msgstr "Desplazamiento de la Sombra en X"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Shadow Offset Y"
-msgstr "Desplazamiento de Cuadrícula en Y:"
+msgstr "Desplazamiento de la Sombra en Y"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25424,14 +25436,12 @@ msgid "Space"
 msgstr "Escena Principal"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folded"
-msgstr "Carpeta:"
+msgstr "Plegado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Fold"
-msgstr "Carpeta:"
+msgstr "Plegar"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Readonly"
@@ -25599,9 +25609,8 @@ msgid "Font Color Separator"
 msgstr "Separador de Color de Fuentes"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "V Separation"
-msgstr "Separación:"
+msgstr "Separación en V"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25782,9 +25791,8 @@ msgid "Icon Margin"
 msgstr "Asignar Margen"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Line Separation"
-msgstr "Separación:"
+msgstr "Separación de Líneas"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25844,9 +25852,8 @@ msgid "Large"
 msgstr "Objetivo"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder"
-msgstr "Carpeta:"
+msgstr "Carpeta"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy

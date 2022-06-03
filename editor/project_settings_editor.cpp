@@ -560,6 +560,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
+	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
 	VBoxContainer *general_editor = memnew(VBoxContainer);
@@ -586,7 +587,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_editor->add_child(header);
 
 	property_box = memnew(LineEdit);
-	property_box->set_placeholder(TTR("Select a setting or type its name"));
+	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	header->add_child(property_box);

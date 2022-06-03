@@ -14379,6 +14379,14 @@ msgid "Runnable"
 msgstr "Uitvoerbaar"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Verwijder voorinstelling '%s'?"
 
@@ -14523,19 +14531,27 @@ msgid "More Info..."
 msgstr "Verplaats Naar..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Exporteer PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Project Exporteren"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Exporteermodus?"
+msgid "Export All"
+msgstr "Exporteer alles"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Kies alstublieft een lege map."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Exporteer alles"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14543,7 +14559,8 @@ msgid "ZIP File"
 msgstr "Zip-bestand"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot Game Pack"
 
 #: editor/project_export.cpp
@@ -14870,12 +14887,12 @@ msgid "Project Manager"
 msgstr "Projectbeheer"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Aan het laden, even wachten a.u.b..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Laatst bewerkt"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Aan het laden, even wachten a.u.b..."
 
 #: editor/project_manager.cpp
 #, fuzzy

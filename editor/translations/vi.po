@@ -14039,6 +14039,14 @@ msgid "Runnable"
 msgstr "Chạy được"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr ""
 
@@ -14181,19 +14189,27 @@ msgid "More Info..."
 msgstr "Di chuyển đến..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "Xuất PCK/Zip"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "Xuất bản Dự án"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "Chế độ xuất?"
+msgid "Export All"
+msgstr "Xuất tất cả"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "Hãy chọn một thư mục trống."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "Xuất tất cả"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -14201,7 +14217,8 @@ msgid "ZIP File"
 msgstr "Tệp ZIP"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Gói trò chơi Godot"
 
 #: editor/project_export.cpp
@@ -14525,12 +14542,12 @@ msgid "Project Manager"
 msgstr "Trình quản lý Dự án"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "Đang tải, đợi xíu..."
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Sửa đổi lần cuối"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Đang tải, đợi xíu..."
 
 #: editor/project_manager.cpp
 #, fuzzy

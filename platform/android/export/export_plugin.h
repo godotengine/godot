@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef ANDROID_EXPORT_PLUGIN_H
+#define ANDROID_EXPORT_PLUGIN_H
+
 #include "godot_plugin_config.h"
 
 #include "core/io/zip_io.h"
@@ -234,3 +237,5 @@ public:
 
 	~EditorExportPlatformAndroid();
 };
+
+#endif // ANDROID_EXPORT_PLUGIN_H

@@ -411,6 +411,11 @@ void Node3DEditorViewport::cancel_transform() {
 	set_message(TTR("Transform Aborted."), 3);
 }
 
+void Node3DEditorViewport::_update_shrink() {
+	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+	subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+}
+
 float Node3DEditorViewport::get_znear() const {
 	return CLAMP(spatial_editor->get_znear(), MIN_Z, MAX_Z);
 }
@@ -2387,11 +2392,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 	viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
-
-	if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
-		subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
-	}
+	_update_shrink();
 
 	// Update MSAA, screen-space AA and debanding if changed
 
@@ -3085,8 +3086,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_HALF_RESOLUTION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
-			current = !current;
-			view_menu->get_popup()->set_item_checked(idx, current);
+			view_menu->get_popup()->set_item_checked(idx, !current);
+			_update_shrink();
 		} break;
 		case VIEW_INFORMATION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
@@ -8126,7 +8127,13 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	if (p_object->is_class("Node3D")) {
+		return true;
+	} else {
+		// This ensures that gizmos are cleared when selecting a non-Node3D node.
+		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
+		return false;
+	}
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {

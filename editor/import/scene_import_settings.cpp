@@ -1229,6 +1229,7 @@ SceneImportSettings::SceneImportSettings() {
 	data_mode = memnew(TabContainer);
 	tree_split->add_child(data_mode);
 	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	data_mode->set_theme_type_variation("TabContainerOdd");
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);

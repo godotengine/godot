@@ -3102,6 +3102,10 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			return *reinterpret_cast<const String *>(_data._mem) == *reinterpret_cast<const String *>(p_variant._data._mem);
 		} break;
 
+		case STRING_NAME: {
+			return *reinterpret_cast<const StringName *>(_data._mem) == *reinterpret_cast<const StringName *>(p_variant._data._mem);
+		} break;
+
 		case VECTOR2: {
 			const Vector2 *l = reinterpret_cast<const Vector2 *>(_data._mem);
 			const Vector2 *r = reinterpret_cast<const Vector2 *>(p_variant._data._mem);

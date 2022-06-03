@@ -52,7 +52,7 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	int idx = p_id / 2;
 	int t = p_id % 2;
 	String n = TTR("Curve Point #") + itos(idx);
-	if (t == 0) {
+	if (t == 1) {
 		n += " In";
 	} else {
 		n += " Out";
@@ -78,7 +78,7 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 	int t = p_id % 2;
 
 	Vector3 ofs;
-	if (t == 0) {
+	if (t == 1) {
 		ofs = c->get_point_in(idx);
 	} else {
 		ofs = c->get_point_out(idx);
@@ -144,7 +144,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 			local.snap(Vector3(snap, snap, snap));
 		}
 
-		if (t == 0) {
+		if (t == 1) {
 			c->set_point_in(idx, local);
 			if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
 				c->set_point_out(idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
@@ -184,7 +184,7 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 	int idx = p_id / 2;
 	int t = p_id % 2;
 
-	if (t == 0) {
+	if (t == 1) {
 		if (p_cancel) {
 			c->set_point_in(p_id, p_restore);
 			return;
@@ -263,16 +263,16 @@ void Path3DGizmo::redraw() {
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
 			handles.push_back(p);
-			if (i > 0) {
-				v3p.push_back(p);
-				v3p.push_back(p + c->get_point_in(i));
-				sec_handles.push_back(p + c->get_point_in(i));
-			}
-
+			// push Out points first so they get selected if the In and Out points are on top of each other.
 			if (i < c->get_point_count() - 1) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_out(i));
 				sec_handles.push_back(p + c->get_point_out(i));
+			}
+			if (i > 0) {
+				v3p.push_back(p);
+				v3p.push_back(p + c->get_point_in(i));
+				sec_handles.push_back(p + c->get_point_in(i));
 			}
 		}
 

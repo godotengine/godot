@@ -1152,14 +1152,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
-	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
+	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
+	theme->set_type_variation("TabContainerOdd", "TabContainer");
+
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(disabled_bg_color);
-	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
+	theme->set_stylebox("tab_selected", "TabContainerOdd", style_tab_selected_odd);
 
 	Ref<StyleBoxFlat> style_content_panel_odd = style_content_panel->duplicate();
 	style_content_panel_odd->set_bg_color(disabled_bg_color);
-	theme->set_stylebox("panel_odd", "TabContainer", style_content_panel_odd);
+	theme->set_stylebox("panel", "TabContainerOdd", style_content_panel_odd);
 
 	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
@@ -1446,8 +1448,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("snap", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 	theme->set_icon("minimap", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
 	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), SNAME("EditorIcons")));
-	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
-	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
 	// GraphEditMinimap
 	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);

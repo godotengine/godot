@@ -87,6 +87,8 @@ class BindingsGenerator {
 		StringName cname;
 		bool is_enum = false;
 
+		List<TypeReference> generic_type_parameters;
+
 		TypeReference() {}
 
 		TypeReference(const StringName &p_cname) :
@@ -205,6 +207,8 @@ class BindingsGenerator {
 		 */
 		String name;
 		StringName cname;
+
+		int type_parameter_count;
 
 		/**
 		 * Identifier name of the base class.
@@ -678,6 +682,8 @@ class BindingsGenerator {
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
 	const TypeInterface *_get_type_or_placeholder(const TypeReference &p_typeref);
+
+	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);

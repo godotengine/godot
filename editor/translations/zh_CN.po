@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-05-23 21:52+0000\n"
+"PO-Revision-Date: 2022-05-27 04:48+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1184,9 +1184,8 @@ msgid "Value"
 msgstr "值"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "数量"
+msgstr "参数个数"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -1201,14 +1200,12 @@ msgid "Type"
 msgstr "类型"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In Handle"
-msgstr "设置处理程序"
+msgstr "入点手柄"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out Handle"
-msgstr "设置处理程序"
+msgstr "出点手柄"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1218,14 +1215,12 @@ msgid "Stream"
 msgstr "流"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "端口偏移"
+msgstr "起点偏移"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "水平偏移"
+msgstr "终点偏移"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1238,7 +1233,6 @@ msgid "Animation"
 msgstr "动画"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing"
 msgstr "缓入缓出"
 
@@ -9194,9 +9188,8 @@ msgid "Icon"
 msgstr "图标"
 
 #: editor/plugins/item_list_editor_plugin.cpp
-#, fuzzy
 msgid "ID"
-msgstr "IOD"
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -12488,7 +12481,6 @@ msgid "This property can't be changed."
 msgstr "不能修改该属性。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Options"
 msgstr "吸附选项"
 
@@ -12517,9 +12509,8 @@ msgid "Separation"
 msgstr "间距"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Tile"
-msgstr "选中"
+msgstr "所选图块"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
@@ -12532,9 +12523,8 @@ msgid "Texture"
 msgstr "纹理"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tex Offset"
-msgstr "标题偏移"
+msgstr "纹理偏移"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
@@ -12548,74 +12538,60 @@ msgid "Modulate"
 msgstr "调制"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Mode"
-msgstr "切换模式"
+msgstr "图块模式"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotile Bitmask Mode"
-msgstr "位掩码模式"
+msgstr "自动图块位掩码模式"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Size"
-msgstr "轮廓大小"
+msgstr "子图块大小"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Spacing"
-msgstr "行间距"
+msgstr "子图块间距"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Offset"
-msgstr "遮挡器空洞"
+msgstr "遮挡器偏移"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Offset"
-msgstr "导航体验"
+msgstr "导航偏移"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Offset"
-msgstr "基础偏移"
+msgstr "形状偏移"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Transform"
-msgstr "变换"
+msgstr "形状变换"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision"
-msgstr "使用碰撞"
+msgstr "所选碰撞"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision One Way"
-msgstr "仅选中"
+msgstr "所选碰撞单向"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision One Way Margin"
-msgstr "BVH 碰撞边距"
+msgstr "所选碰撞单向边距"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Navigation"
-msgstr "显示导航"
+msgstr "所选导航"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Occlusion"
-msgstr "选中项聚焦"
+msgstr "所选遮挡"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tileset Script"
-msgstr "筛选脚本"
+msgstr "图块集脚本"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -13663,6 +13639,14 @@ msgid "Runnable"
 msgstr "可执行的"
 
 #: editor/project_export.cpp
+msgid "Export the project for all the presets defined."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "是否删除预设 “%s”？"
 
@@ -13804,19 +13788,27 @@ msgid "More Info..."
 msgstr "更多信息..."
 
 #: editor/project_export.cpp
-msgid "Export PCK/Zip"
+#, fuzzy
+msgid "Export PCK/Zip..."
 msgstr "导出 PCK/ZIP"
 
 #: editor/project_export.cpp
-msgid "Export Project"
+#, fuzzy
+msgid "Export Project..."
 msgstr "导出项目"
 
 #: editor/project_export.cpp
-msgid "Export mode?"
-msgstr "导出模式？"
+msgid "Export All"
+msgstr "全部导出"
 
 #: editor/project_export.cpp
-msgid "Export All"
+#, fuzzy
+msgid "Choose an export mode:"
+msgstr "请选择空文件夹。"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All..."
 msgstr "全部导出"
 
 #: editor/project_export.cpp editor/project_manager.cpp
@@ -13824,7 +13816,8 @@ msgid "ZIP File"
 msgstr "ZIP 文件"
 
 #: editor/project_export.cpp
-msgid "Godot Game Pack"
+#, fuzzy
+msgid "Godot Project Pack"
 msgstr "Godot 游戏包"
 
 #: editor/project_export.cpp
@@ -14134,12 +14127,12 @@ msgid "Project Manager"
 msgstr "项目管理器"
 
 #: editor/project_manager.cpp
-msgid "Loading, please wait..."
-msgstr "正在加载，请稍候……"
-
-#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "修改时间"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "正在加载，请稍候……"
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -17634,7 +17627,6 @@ msgid "Base object is not a Node!"
 msgstr "基础对象不是一个节点！"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Path does not lead to Node!"
 msgstr "路径必须指向节点！"
 
@@ -17927,20 +17919,19 @@ msgstr "退出时关闭 ADB"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Launcher Icons"
-msgstr ""
+msgstr "启动器图标"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Main 192 X 192"
-msgstr "iPhone 120×120"
+msgstr "主图标 192×192"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adaptive Foreground 432 X 432"
-msgstr ""
+msgstr "自适应前景 432×432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adaptive Background 432 X 432"
-msgstr ""
+msgstr "自适应背景 432×432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -17975,7 +17966,6 @@ msgid "Export Format"
 msgstr "导出格式"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Architectures"
 msgstr "架构"
 
@@ -18432,68 +18422,56 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "标识符中不允许使用字符“%s”。"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Landscape Launch Screens"
-msgstr "使用启动屏幕 Storyboard"
+msgstr "横屏启动画面"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 2436 X 1125"
-msgstr "iPhone 120×120"
+msgstr "iPhone 2436×1125"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 2208 X 1242"
-msgstr "iPhone 120×120"
+msgstr "iPhone 2208×1242"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPad 1024 X 768"
-msgstr "iPad 76×76"
+msgstr "iPad 1024×768"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPad 2048 X 1536"
-msgstr "iPad 152×152"
+msgstr "iPad 2048×1536"
 
 #: platform/iphone/export/export.cpp
 msgid "Portrait Launch Screens"
-msgstr ""
+msgstr "竖屏启动画面"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 640 X 960"
-msgstr "iPhone 120×120"
+msgstr "iPhone 640×960"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 640 X 1136"
-msgstr "iPhone 120×120"
+msgstr "iPhone 640×1136"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 750 X 1334"
-msgstr "iPhone 120×120"
+msgstr "iPhone 750×1334"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 1125 X 2436"
-msgstr "iPhone 120×120"
+msgstr "iPhone 1125×2436"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPad 768 X 1024"
-msgstr "iPad 76×76"
+msgstr "iPad 768×1024"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPad 1536 X 2048"
-msgstr "iPad 152×152"
+msgstr "iPad 1536×2048"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "iPhone 1242 X 2208"
-msgstr "iPhone 120×120"
+msgstr "iPhone 1242×2208"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID"
@@ -20327,15 +20305,13 @@ msgid "Path Max Distance"
 msgstr "路径最大距离"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Avoidance Enabled"
-msgstr "启用隐藏"
+msgstr "启用避障"
 
 #: scene/2d/navigation_agent_2d.cpp
-#, fuzzy
 msgid ""
 "The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr "NavigationAgent2D 只能在 Node2D 节点下使用。"
+msgstr "NavigationAgent2D 只能在继承 Node2D 的父节点下使用。"
 
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_obstacle.cpp
 msgid "Estimate Radius"
@@ -21315,14 +21291,12 @@ msgid "Render Priority"
 msgstr "渲染优先级"
 
 #: scene/3d/label_3d.cpp
-#, fuzzy
 msgid "Outline Render Priority"
-msgstr "渲染优先级"
+msgstr "轮廓渲染优先级"
 
 #: scene/3d/label_3d.cpp
-#, fuzzy
 msgid "Outline Modulate"
-msgstr "字体轮廓调制"
+msgstr "轮廓调制"
 
 #: scene/3d/label_3d.cpp scene/resources/default_theme/default_theme.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/primitive_meshes.cpp
@@ -21330,14 +21304,12 @@ msgid "Font"
 msgstr "字体"
 
 #: scene/3d/label_3d.cpp scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Horizontal Alignment"
-msgstr "启用水平"
+msgstr "水平对齐"
 
 #: scene/3d/label_3d.cpp
-#, fuzzy
 msgid "Vertical Alignment"
-msgstr "对齐"
+msgstr "垂直对齐"
 
 #: scene/3d/label_3d.cpp scene/gui/dialogs.cpp scene/gui/label.cpp
 msgid "Autowrap"
@@ -21445,10 +21417,9 @@ msgid "Ignore Y"
 msgstr "忽略 Y"
 
 #: scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
-msgstr "NavigationAgent 只能在 Spatial 节点下使用。"
+msgstr "NavigationAgent 只能在继承 Spatial 的父节点下使用。"
 
 #: scene/3d/navigation_mesh_instance.cpp
 msgid ""
@@ -21590,9 +21561,8 @@ msgid "Motion Z"
 msgstr "运动 Z"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Joint Constraints"
-msgstr "常量"
+msgstr "关节约束"
 
 #: scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
 msgid "Impulse Clamp"
@@ -21612,124 +21582,102 @@ msgid "Relaxation"
 msgstr "松驰"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Enabled"
-msgstr "角度限制 X"
+msgstr "角度限制启用"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Upper"
-msgstr "角度限制 X"
+msgstr "角度上限"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Lower"
-msgstr "角度限制 X"
+msgstr "角度下限"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Bias"
-msgstr "角度限制 X"
+msgstr "角度限制偏倚"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Softness"
-msgstr "角度限制 X"
+msgstr "角度限制软度"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Relaxation"
-msgstr "角度限制 X"
+msgstr "角度限制松弛"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Upper"
-msgstr "线性限制 X"
+msgstr "线性上限"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Lower"
-msgstr "线性限制 X"
+msgstr "线性下限"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Softness"
-msgstr "线性限制 X"
+msgstr "线性限制软度"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Restitution"
-msgstr "线性限制 X"
+msgstr "线性限制复原"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Damping"
-msgstr "线性限制 X"
+msgstr "线性限制阻尼"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Restitution"
-msgstr "角度限制 X"
+msgstr "角度限制复原"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Damping"
-msgstr "角度限制 X"
+msgstr "角度限制阻尼"
 
 #: scene/3d/physics_body.cpp
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: scene/3d/physics_body.cpp
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 #: scene/3d/physics_body.cpp
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Limit Enabled"
-msgstr "线性限制 X"
+msgstr "线性限制启用"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Spring Enabled"
-msgstr "线性弹簧 X"
+msgstr "线性弹簧启用"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Spring Stiffness"
-msgstr "线性硬度"
+msgstr "线性弹簧硬度"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Spring Damping"
-msgstr "线性弹簧 X"
+msgstr "线性弹簧阻尼"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Equilibrium Point"
-msgstr "平衡点"
+msgstr "线性平衡点"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Restitution"
-msgstr "复原"
+msgstr "线性复原"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Linear Damping"
 msgstr "线性阻尼"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Restitution"
-msgstr "复原"
+msgstr "角度复原"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Damping"
 msgstr "角度阻尼"
 
@@ -21738,24 +21686,20 @@ msgid "ERP"
 msgstr "ERP"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Spring Enabled"
-msgstr "角度弹簧 X"
+msgstr "角度弹簧启用"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Spring Stiffness"
-msgstr "区域角硬度"
+msgstr "角度弹簧硬度"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Spring Damping"
-msgstr "角度弹簧 X"
+msgstr "角度弹簧阻尼"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Equilibrium Point"
-msgstr "平衡点"
+msgstr "角度平衡点"
 
 #: scene/3d/physics_body.cpp
 msgid "Body Offset"
@@ -22196,33 +22140,28 @@ msgstr ""
 "请确保所有房间都包含几何结构，或者包含手动边界。"
 
 #: scene/3d/skeleton.cpp scene/resources/skin.cpp
-#, fuzzy
 msgid "Pose"
-msgstr "复制姿势"
+msgstr "姿势"
 
 #: scene/3d/skeleton.cpp
-#, fuzzy
 msgid "Bound Children"
-msgstr "子节点"
+msgstr "绑定子节点"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Pinned Points"
-msgstr "将 %s 固定"
+msgstr "固定点"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Attachments"
-msgstr "调整"
+msgstr "附件"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Point Index"
-msgstr "获取索引"
+msgstr "点索引"
 
 #: scene/3d/soft_body.cpp
 msgid "Spatial Attachment Path"
-msgstr ""
+msgstr "空间附件路径"
 
 #: scene/3d/soft_body.cpp
 msgid "Physics Enabled"
@@ -22472,29 +22411,24 @@ msgid "Autorestart"
 msgstr "自动重启"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Delay"
-msgstr "延迟（毫秒）"
+msgstr "延迟"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Random Delay"
-msgstr "自动重启随机延迟"
+msgstr "随机延迟"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Add Amount"
-msgstr "数量"
+msgstr "叠加量"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Blend Amount"
-msgstr "缩放量"
+msgstr "混合量"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Seek Position"
-msgstr "流位置"
+msgstr "寻道位置"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Input Count"
@@ -24944,9 +24878,8 @@ msgid "Ensure Correct Normals"
 msgstr "确保正确法线"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Albedo Tex MSDF"
-msgstr "反照率纹理强制 sRGB"
+msgstr "反照率纹理 MSDF"
 
 #: scene/resources/material.cpp
 msgid "Vertex Color"
@@ -25050,7 +24983,7 @@ msgstr "清漆"
 
 #: scene/resources/material.cpp
 msgid "Gloss"
-msgstr ""
+msgstr "光泽"
 
 #: scene/resources/material.cpp
 msgid "Anisotropy"
@@ -25058,7 +24991,7 @@ msgstr "各向异性"
 
 #: scene/resources/material.cpp
 msgid "Flowmap"
-msgstr ""
+msgstr "流向图"
 
 #: scene/resources/material.cpp
 msgid "Ambient Occlusion"
@@ -25141,14 +25074,12 @@ msgid "Custom AABB"
 msgstr "自定义 AABB"
 
 #: scene/resources/mesh_library.cpp
-#, fuzzy
 msgid "Mesh Transform"
-msgstr "变换"
+msgstr "网格变换"
 
 #: scene/resources/mesh_library.cpp
-#, fuzzy
 msgid "NavMesh Transform"
-msgstr "画布变换"
+msgstr "导航网格变换"
 
 #: scene/resources/multimesh.cpp
 msgid "Color Format"
@@ -25343,9 +25274,8 @@ msgid "Is Hemisphere"
 msgstr "是否半球"
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Curve Step"
-msgstr "曲线"
+msgstr "曲线步长"
 
 #: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
 msgid "Slips On Slope"
@@ -25360,17 +25290,14 @@ msgid "Custom Solver Bias"
 msgstr "自定义求解器偏倚"
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bind Count"
-msgstr "点数"
+msgstr "绑定数"
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bind"
 msgstr "绑定"
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bone"
 msgstr "骨骼"
 
@@ -25463,19 +25390,16 @@ msgid "Image Size"
 msgstr "图像大小"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Side"
-msgstr "边数"
+msgstr "面"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Front"
-msgstr "前视图"
+msgstr "正面"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Back"
-msgstr "后退"
+msgstr "反面"
 
 #: scene/resources/texture.cpp
 msgid "Storage Mode"
@@ -25486,14 +25410,12 @@ msgid "Lossy Storage Quality"
 msgstr "有损存储质量"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "From"
-msgstr "填充起点"
+msgstr "起点"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "To"
-msgstr "顶部"
+msgstr "终点"
 
 #: scene/resources/texture.cpp
 msgid "Base"
@@ -25524,27 +25446,22 @@ msgid "Output Port For Preview"
 msgstr "输出端口预览"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Depth Draw"
-msgstr "深度绘制模式"
+msgstr "深度绘制"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Cull"
-msgstr "剔除模式"
+msgstr "剔除"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Diffuse"
-msgstr "漫反射图像"
+msgstr "漫反射"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Async"
-msgstr "异步模式"
+msgstr "异步"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Modes"
 msgstr "模式"
 
@@ -25949,9 +25866,8 @@ msgid "Collision Unsafe Fraction"
 msgstr "碰撞不安全小数"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Physics Engine"
-msgstr "启用物理"
+msgstr "物理引擎"
 
 #: servers/physics_server.cpp
 msgid "Center Of Mass"
@@ -25966,14 +25882,12 @@ msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varying 不能在“%s”函数中赋值。"
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid ""
 "Varyings which were assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr "已在“vertex”函数中赋值的 varying 不能在“fragment”或“light”中重新赋值。"
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid ""
 "Varyings which were assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."

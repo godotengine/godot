@@ -1150,7 +1150,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				p_textures[k++] = rd_texture;
 			}
 		} else {
-			bool srgb = p_use_linear_color && p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR;
+			bool srgb = p_use_linear_color && p_texture_uniforms[i].use_color;
 
 			for (int j = 0; j < textures.size(); j++) {
 				Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);

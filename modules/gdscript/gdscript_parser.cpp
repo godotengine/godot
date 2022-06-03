@@ -2830,51 +2830,97 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	if (match(GDScriptTokenizer::Token::LITERAL)) {
-		if (previous.literal.get_type() != Variant::STRING) {
-			push_error(R"(Expect node path as string or identifier after "$".)");
-			return nullptr;
-		}
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		make_completion_context(COMPLETION_GET_NODE, get_node);
-		get_node->string = parse_literal();
-		return get_node;
-	} else if (current.is_node_name()) {
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		int chain_position = 0;
-		do {
-			make_completion_context(COMPLETION_GET_NODE, get_node, chain_position++);
-			if (!current.is_node_name()) {
-				push_error(R"(Expect node path after "/".)");
-				return nullptr;
-			}
-			advance();
-			IdentifierNode *identifier = alloc_node<IdentifierNode>();
-			identifier->name = previous.get_identifier();
-			get_node->chain.push_back(identifier);
-		} while (match(GDScriptTokenizer::Token::SLASH));
-		return get_node;
-	} else if (match(GDScriptTokenizer::Token::SLASH)) {
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		IdentifierNode *identifier_root = alloc_node<IdentifierNode>();
-		get_node->chain.push_back(identifier_root);
-		int chain_position = 0;
-		do {
-			make_completion_context(COMPLETION_GET_NODE, get_node, chain_position++);
-			if (!current.is_node_name()) {
-				push_error(R"(Expect node path after "/".)");
-				return nullptr;
-			}
-			advance();
-			IdentifierNode *identifier = alloc_node<IdentifierNode>();
-			identifier->name = previous.get_identifier();
-			get_node->chain.push_back(identifier);
-		} while (match(GDScriptTokenizer::Token::SLASH));
-		return get_node;
-	} else {
-		push_error(R"(Expect node path as string or identifier after "$".)");
+	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
+		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
 		return nullptr;
 	}
+
+	if (check(GDScriptTokenizer::Token::LITERAL)) {
+		if (current.literal.get_type() != Variant::STRING) {
+			push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
+			return nullptr;
+		}
+	}
+
+	GetNodeNode *get_node = alloc_node<GetNodeNode>();
+
+	// Store the last item in the path so the parser knows what to expect.
+	// Allow allows more specific error messages.
+	enum PathState {
+		PATH_STATE_START,
+		PATH_STATE_SLASH,
+		PATH_STATE_PERCENT,
+		PATH_STATE_NODE_NAME,
+	} path_state = PATH_STATE_START;
+
+	if (previous.type == GDScriptTokenizer::Token::DOLLAR) {
+		// Detect initial slash, which will be handled in the loop if it matches.
+		match(GDScriptTokenizer::Token::SLASH);
+#ifdef DEBUG_ENABLED
+	} else {
+		get_node->use_dollar = false;
+#endif
+	}
+
+	int context_argument = 0;
+
+	do {
+		if (previous.type == GDScriptTokenizer::Token::PERCENT) {
+			if (path_state != PATH_STATE_START && path_state != PATH_STATE_SLASH) {
+				push_error(R"("%" is only valid in the beginning of a node name (either after "$" or after "/"))");
+				return nullptr;
+			}
+			get_node->full_path += "%";
+
+			path_state = PATH_STATE_PERCENT;
+		} else if (previous.type == GDScriptTokenizer::Token::SLASH) {
+			if (path_state != PATH_STATE_START && path_state != PATH_STATE_NODE_NAME) {
+				push_error(R"("/" is only valid at the beginning of the path or after a node name.)");
+				return nullptr;
+			}
+
+			get_node->full_path += "/";
+
+			path_state = PATH_STATE_SLASH;
+		}
+
+		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
+
+		if (match(GDScriptTokenizer::Token::LITERAL)) {
+			if (previous.literal.get_type() != Variant::STRING) {
+				String previous_token;
+				switch (path_state) {
+					case PATH_STATE_START:
+						previous_token = "$";
+						break;
+					case PATH_STATE_PERCENT:
+						previous_token = "%";
+						break;
+					case PATH_STATE_SLASH:
+						previous_token = "/";
+						break;
+					default:
+						break;
+				}
+				push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous_token));
+				return nullptr;
+			}
+
+			get_node->full_path += previous.literal.operator String();
+
+			path_state = PATH_STATE_NODE_NAME;
+		} else if (current.is_node_name()) {
+			advance();
+			get_node->full_path += previous.get_identifier();
+
+			path_state = PATH_STATE_NODE_NAME;
+		} else if (!check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
+			push_error(vformat(R"(Unexpected "%s" in node path.)", current.get_name()));
+			return nullptr;
+		}
+	} while (match(GDScriptTokenizer::Token::SLASH) || match(GDScriptTokenizer::Token::PERCENT));
+
+	return get_node;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
@@ -3278,7 +3324,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER }, // STAR_STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
+		{ &GDScriptParser::parse_get_node,                  &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
 		// Assignment
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PLUS_EQUAL,
@@ -4258,17 +4304,10 @@ void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const
 }
 
 void GDScriptParser::TreePrinter::print_get_node(GetNodeNode *p_get_node) {
-	push_text("$");
-	if (p_get_node->string != nullptr) {
-		print_literal(p_get_node->string);
-	} else {
-		for (int i = 0; i < p_get_node->chain.size(); i++) {
-			if (i > 0) {
-				push_text("/");
-			}
-			print_identifier(p_get_node->chain[i]);
-		}
+	if (p_get_node->use_dollar) {
+		push_text("$");
 	}
+	push_text(p_get_node->full_path);
 }
 
 void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier) {

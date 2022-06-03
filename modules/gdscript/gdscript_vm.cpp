@@ -3450,23 +3450,26 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	// Check if this function has been interrupted by `await`.
-	// If that is the case we want to keep it in the debugger until it actually exits.
+	// Check if this is not the last time it was interrupted by `await` or if it's the first time executing.
+	// If that is the case then we exit the function as normal. Otherwise we postpone it until the last `await` is completed.
 	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
-	if (!awaited) {
+	if (!p_state || awaited) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
 		}
+#endif
+
+		// Free stack, except reserved addresses.
+		for (int i = 3; i < _stack_size; i++) {
+			stack[i].~Variant();
+		}
+#ifdef DEBUG_ENABLED
 	}
 #endif
 
-	// Clear the stack even if there was an `await`.
-	// The stack saved in the state is a copy, so this needs to be destructed to avoid leaks.
-	if (_stack_size) {
-		// Free stack.
-		for (int i = 0; i < _stack_size; i++) {
-			stack[i].~Variant();
-		}
+	// Always free reserved addresses, since they are never copied.
+	for (int i = 0; i < 3; i++) {
+		stack[i].~Variant();
 	}
 
 	return retvalue;
