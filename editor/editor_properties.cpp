@@ -733,14 +733,12 @@ void EditorPropertyFlags::_set_read_only(bool p_read_only) {
 	}
 };
 
-void EditorPropertyFlags::_flag_toggled() {
-	uint32_t value = 0;
-	for (int i = 0; i < flags.size(); i++) {
-		if (flags[i]->is_pressed()) {
-			uint32_t val = 1;
-			val <<= flag_indices[i];
-			value |= val;
-		}
+void EditorPropertyFlags::_flag_toggled(int p_index) {
+	uint32_t value = get_edited_object()->get(get_edited_property());
+	if (flags[p_index]->is_pressed()) {
+		value |= flag_values[p_index];
+	} else {
+		value &= ~flag_values[p_index];
 	}
 
 	emit_changed(get_edited_property(), value);
@@ -750,13 +748,7 @@ void EditorPropertyFlags::update_property() {
 	uint32_t value = get_edited_object()->get(get_edited_property());
 
 	for (int i = 0; i < flags.size(); i++) {
-		uint32_t val = 1;
-		val <<= flag_indices[i];
-		if (value & val) {
-			flags[i]->set_pressed(true);
-		} else {
-			flags[i]->set_pressed(false);
-		}
+		flags[i]->set_pressed((value & flag_values[i]) == flag_values[i]);
 	}
 }
 
@@ -764,17 +756,24 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	ERR_FAIL_COND(flags.size());
 
 	bool first = true;
+	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
 		if (!option.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled));
+			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled), varray(i));
 			add_focusable(cb);
 			vbox->add_child(cb);
 			flags.push_back(cb);
-			flag_indices.push_back(i);
+			Vector<String> text_split = p_options[i].split(":");
+			if (text_split.size() != 1) {
+				current_val = text_split[1].to_int();
+			} else {
+				current_val = 1 << i;
+			}
+			flag_values.push_back(current_val);
 			if (first) {
 				set_label_reference(cb);
 				first = false;
