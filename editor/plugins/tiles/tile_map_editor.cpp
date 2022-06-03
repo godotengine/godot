@@ -3428,6 +3428,7 @@ void TileMapEditor::_notification(int p_what) {
 
 void TileMapEditor::_on_grid_toggled(bool p_pressed) {
 	EditorSettings::get_singleton()->set("editors/tiles_editor/display_grid", p_pressed);
+	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
 void TileMapEditor::_layers_selection_button_draw() {
