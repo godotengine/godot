@@ -49,7 +49,6 @@ protected:
 	};
 
 	struct BlendPoint {
-		StringName name;
 		Ref<AnimationRootNode> node;
 		Vector2 position;
 	};
@@ -63,7 +62,7 @@ protected:
 
 	Vector<BlendTriangle> triangles;
 
-	StringName blend_position = "blend_position";
+	StringName blend_position = "blend2d_position";
 	StringName closest = "closest";
 	StringName length_internal = "length_internal";
 	Vector2 max_space = Vector2(1, 1);
@@ -73,7 +72,7 @@ protected:
 	String y_label = "y";
 	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
 
-	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
+	void _add_blend_point(int p_index, Ref<AnimationRootNode> p_node);
 	void _set_triangles(const Vector<int> &p_triangles);
 	Vector<int> _get_triangles() const;
 
@@ -95,13 +94,15 @@ public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(List<Ref<AnimationNode>> *r_child_nodes) override;
 
-	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+	void add_blend_point(const StringName &p_name, Ref<AnimationRootNode> p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
-	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+	void set_blend_point_node(int p_point, Ref<AnimationRootNode> p_node);
+	void set_blend_point_name(int p_point, const StringName &p_name);
 	Vector2 get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+	StringName get_blend_point_name(int p_point) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
 

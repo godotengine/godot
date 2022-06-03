@@ -41,6 +41,7 @@ class AnimationNodeStartState;
 class AnimationNodeEndState;
 class AnimationPlayer;
 class AnimationTree;
+class AnimationRootNode;
 
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
@@ -96,10 +97,14 @@ public:
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
+	StringName node_name;
+	AnimationRootNode *tree_root = nullptr;
+
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
 	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, real_t *r_max = nullptr);
+	void _tree_root_changed(AnimationRootNode *p_root);
 
 protected:
 	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_seek_root, real_t p_blend, int p_pingponged = 0);
@@ -128,12 +133,7 @@ public:
 	void set_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_parameter(const StringName &p_name) const;
 
-	struct ChildNode {
-		StringName name;
-		Ref<AnimationNode> node;
-	};
-
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual void get_child_nodes(List<Ref<AnimationNode>> *r_child_nodes);
 
 	virtual double process(double p_time, bool p_seek, bool p_seek_root);
 	virtual String get_caption() const;
@@ -264,6 +264,19 @@ private:
 
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
+		}
+	};
+
+	struct ListPropertyInfoComparator {
+		bool operator()(const PropertyInfo &p_a, const PropertyInfo &p_b) const {
+			int count_a = p_a.name.count("/");
+			int count_b = p_b.name.count("/");
+
+			if (count_a != count_b) {
+				return count_a < count_b;
+			}
+
+			return is_str_less(p_a.name.ptr(), p_b.name.ptr());
 		}
 	};
 

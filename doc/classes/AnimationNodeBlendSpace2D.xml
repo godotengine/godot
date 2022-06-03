@@ -15,9 +15,10 @@
 	<methods>
 		<method name="add_blend_point">
 			<return type="void" />
-			<argument index="0" name="node" type="AnimationRootNode" />
-			<argument index="1" name="pos" type="Vector2" />
-			<argument index="2" name="at_index" type="int" default="-1" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="node" type="AnimationRootNode" />
+			<argument index="2" name="pos" type="Vector2" />
+			<argument index="3" name="at_index" type="int" default="-1" />
 			<description>
 				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
@@ -36,6 +37,12 @@
 			<return type="int" />
 			<description>
 				Returns the number of points in the blend space.
+			</description>
+		</method>
+		<method name="get_blend_point_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="point" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
@@ -78,6 +85,13 @@
 			<argument index="0" name="triangle" type="int" />
 			<description>
 				Removes the triangle at index [code]triangle[/code] from the blend space.
+			</description>
+		</method>
+		<method name="set_blend_point_name">
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
+			<argument index="1" name="name" type="StringName" />
+			<description>
 			</description>
 		</method>
 		<method name="set_blend_point_node">

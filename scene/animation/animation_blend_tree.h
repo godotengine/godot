@@ -148,7 +148,7 @@ VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
-	StringName add_amount = PNAME("add_amount");
+	StringName add_amount = PNAME("add2_amount");
 	bool sync = false;
 
 protected:
@@ -172,7 +172,7 @@ public:
 class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
-	StringName add_amount = PNAME("add_amount");
+	StringName add_amount = PNAME("add3_amount");
 	bool sync = false;
 
 protected:
@@ -196,7 +196,7 @@ public:
 class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
-	StringName blend_amount = PNAME("blend_amount");
+	StringName blend_amount = PNAME("blend2_amount");
 	bool sync = false;
 
 protected:
@@ -219,7 +219,7 @@ public:
 class AnimationNodeBlend3 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend3, AnimationNode);
 
-	StringName blend_amount = PNAME("blend_amount");
+	StringName blend_amount = PNAME("blend3_amount");
 	bool sync;
 
 protected:
@@ -382,6 +382,8 @@ public:
 		//no need to check for cycles due to tree topology
 	};
 
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
 	Ref<AnimationNode> get_node(const StringName &p_name) const;
 	void remove_node(const StringName &p_name);
@@ -393,7 +395,7 @@ public:
 	void set_node_position(const StringName &p_node, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_node) const;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(List<Ref<AnimationNode>> *r_child_nodes) override;
 
 	void connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node);
 	void disconnect_node(const StringName &p_node, int p_input_index);
