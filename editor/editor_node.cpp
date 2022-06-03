@@ -968,21 +968,14 @@ void EditorNode::_fs_changed() {
 						ERR_PRINT(vformat("Cannot export project with preset \"%s\" due to configuration errors:\n%s", preset_name, config_error));
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
+						platform->clear_messages();
 						err = platform->export_project(export_preset, export_defer.debug, export_path);
 					}
 				}
-				switch (err) {
-					case OK:
-						break;
-					case ERR_FILE_NOT_FOUND:
-						export_error = vformat("Project export failed for preset \"%s\". The export template appears to be missing.", preset_name);
-						break;
-					case ERR_FILE_BAD_PATH:
-						export_error = vformat("Project export failed for preset \"%s\". The target path \"%s\" appears to be invalid.", preset_name, export_path);
-						break;
-					default:
-						export_error = vformat("Project export failed with error code %d for preset \"%s\".", (int)err, preset_name);
-						break;
+				if (err != OK) {
+					export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
+				} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
+					export_error = vformat("Project export for preset \"%s\" completed with errors.", preset_name);
 				}
 			}
 		}

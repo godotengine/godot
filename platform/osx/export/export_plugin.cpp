@@ -261,7 +261,8 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 				if (f.is_null()) {
 					// Clean up generated file.
 					DirAccess::remove_file_or_error(path);
-					ERR_FAIL();
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not open icon file \"%s\"."), path));
+					return;
 				}
 
 				int ofs = data.size();
@@ -441,18 +442,25 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 
 	String str;
 	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
+		return err;
+	}
 
 	print_verbose("altool (" + p_path + "):\n" + str);
-	if (str.find("RequestUUID") == -1) {
-		EditorNode::add_io_error("altool: " + str);
+	int rq_offset = str.find("RequestUUID");
+	if (rq_offset == -1) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed."));
 		return FAILED;
 	} else {
-		print_line(TTR("Note: The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
-		print_line("      " + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-		print_line("          \"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
-		print_line("      " + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
-		print_line("          \"xcrun stapler staple <app path>\"");
+		int next_nl = str.find("\n", rq_offset);
+		String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 14, -1) : str.substr(rq_offset + 14, next_nl - rq_offset - 14);
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 	}
 
 #endif
@@ -470,21 +478,21 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 
 #ifdef OSX_ENABLED
 		if (p_preset->get("codesign/timestamp") && p_warn) {
-			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+			add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Timestamping is not compatible with ad-hoc signature, and was disabled!"));
 		}
 		if (p_preset->get("codesign/hardened_runtime") && p_warn) {
-			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+			add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"));
 		}
 #endif
 
 		String error_msg;
 		Error err = CodeSign::codesign(false, p_preset->get("codesign/replace_existing_signature"), p_path, p_ent_path, error_msg);
 		if (err != OK) {
-			EditorNode::add_io_error("Built-in CodeSign: " + error_msg);
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Built-in CodeSign failed with error \"%s\"."), error_msg));
 			return FAILED;
 		}
 #else
-		ERR_FAIL_V_MSG(FAILED, "Built-in CodeSign require regex module");
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Built-in CodeSign require regex module."));
 #endif
 		return OK;
 	} else {
@@ -493,7 +501,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		if (p_preset->get("codesign/timestamp")) {
 			if (ad_hoc) {
 				if (p_warn) {
-					WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+					add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Timestamping is not compatible with ad-hoc signature, and was disabled!"));
 				}
 			} else {
 				args.push_back("--timestamp");
@@ -502,7 +510,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		if (p_preset->get("codesign/hardened_runtime")) {
 			if (ad_hoc) {
 				if (p_warn) {
-					WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+					add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"));
 				}
 			} else {
 				args.push_back("--options");
@@ -540,15 +548,18 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 
 		String str;
 		Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
-		ERR_FAIL_COND_V(err != OK, err);
+		if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
+			return err;
+		}
 
 		print_verbose("codesign (" + p_path + "):\n" + str);
 		if (str.find("no identity found") != -1) {
-			EditorNode::add_io_error("CodeSign: " + TTR("No identity found."));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
 		}
 		if ((str.find("unrecognized blob type") != -1) || (str.find("cannot read entitlement data") != -1)) {
-			EditorNode::add_io_error("CodeSign: " + TTR("Invalid entitlements file."));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid entitlements file."));
 			return FAILED;
 		}
 		return OK;
@@ -593,7 +604,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 				return code_sign_error;
 			}
 		} else if (p_should_error_on_non_code) {
-			ERR_PRINT(vformat("Cannot sign file %s.", current_file));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign file %s."), current_file));
 			return Error::FAILED;
 		}
 
@@ -611,7 +622,7 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(Ref<DirAccess> &dir_access, 
 	Error err{ OK };
 	if (dir_access->dir_exists(p_src_path)) {
 #ifndef UNIX_ENABLED
-		WARN_PRINT("Relative symlinks are not supported, exported " + p_src_path.get_file() + " might be broken!");
+		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
 		err = dir_access->make_dir_recursive(p_in_app_path);
@@ -668,14 +679,17 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 
 	String str;
 	Error err = OS::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("Could not start hdiutil executable."));
+		return err;
+	}
 
 	print_verbose("hdiutil returned: " + str);
 	if (str.find("create failed") != -1) {
 		if (str.find("File exists") != -1) {
-			EditorNode::add_io_error("hdiutil: " + TTR("DMG creation failed, file already exists."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
 		} else {
-			EditorNode::add_io_error("hdiutil: " + TTR("DMG create failed."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed."));
 		}
 		return FAILED;
 	}
@@ -685,7 +699,10 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 
 Error EditorExportPlatformOSX::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
+		return ERR_CANT_CREATE;
+	}
 
 	f->store_line("#!/bin/sh");
 	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
@@ -713,12 +730,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		String err;
 		src_pkg_name = find_export_template("osx.zip", &err);
 		if (src_pkg_name.is_empty()) {
-			EditorNode::add_io_error(err);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
 
 	if (!DirAccess::exists(p_path.get_base_dir())) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
 	}
 
@@ -731,7 +749,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-		EditorNode::add_io_error(TTR("Could not find template app to export:") + "\n" + src_pkg_name);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not find template app to export: \"%s\"."), src_pkg_name));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -756,7 +774,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	} else if (p_path.ends_with("app")) {
 		export_format = "app";
 	} else {
-		EditorNode::add_io_error("Invalid export format");
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid export format."));
 		return ERR_CANT_CREATE;
 	}
 
@@ -781,13 +799,16 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
 	if (tmp_app_dir.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory: \"%s\"."), tmp_base_path_name));
 		err = ERR_CANT_CREATE;
 	}
 
 	DirAccess::remove_file_or_error(scr_path);
 	if (DirAccess::exists(tmp_app_path_name)) {
+		String old_dir = tmp_app_dir->get_current_dir();
 		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
 			tmp_app_dir->erase_contents_recursive();
+			tmp_app_dir->change_dir(old_dir);
 		}
 	}
 
@@ -797,21 +818,33 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/MacOS");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/MacOS"));
+		}
 	}
 
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Frameworks"));
+		}
 	}
 
 	if ((err == OK) && helpers.size() > 0) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Helpers");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Helpers");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Helpers"));
+		}
 	}
 
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Resources");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Resources"));
+		}
 	}
 
 	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
@@ -955,16 +988,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		if (((info.external_fa >> 16L) & 0120000) == 0120000) {
 #ifndef UNIX_ENABLED
-			WARN_PRINT(vformat("Relative symlinks are not supported on this OS, the exported project might be broken!"));
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Relative symlinks are not supported on this OS, the exported project might be broken!"));
 #endif
 			// Handle symlinks in the archive.
 			file = tmp_app_path_name.plus_file(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
 			}
 			if (err == OK) {
 				String lnk_data = String::utf8((const char *)data.ptr(), data.size());
 				err = tmp_app_dir->create_link(lnk_data, file);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not created symlink \"%s\" -> \"%s\"."), lnk_data, file));
+				}
 				print_verbose(vformat("ADDING SYMLINK %s => %s\n", file, lnk_data));
 			}
 
@@ -1039,6 +1078,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			file = tmp_app_path_name.plus_file(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
 			}
 			if (err == OK) {
 				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
@@ -1049,6 +1091,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 						FileAccess::set_unix_permissions(file, 0755);
 					}
 				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
 					err = ERR_CANT_CREATE;
 				}
 			}
@@ -1061,7 +1104,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		ERR_PRINT(vformat("Requested template binary '%s' not found. It might be missing from your template archive.", binary_to_use));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template binary \"%s\" not found. It might be missing from your template archive."), binary_to_use));
 		err = ERR_FILE_NOT_FOUND;
 	}
 
@@ -1071,6 +1114,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console script."));
+			}
 		}
 	}
 
@@ -1214,6 +1260,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				ent_f->store_line("</dict>");
 				ent_f->store_line("</plist>");
 			} else {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create entitlements file."));
 				err = ERR_CANT_CREATE;
 			}
 
@@ -1231,6 +1278,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ent_f->store_line("</dict>");
 					ent_f->store_line("</plist>");
 				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create helper entitlements file."));
 					err = ERR_CANT_CREATE;
 				}
 			}
@@ -1258,7 +1306,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			ad_hoc = (sign_identity == "" || sign_identity == "-");
 			bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 			if ((!dylibs_found.is_empty() || !shared_objects.is_empty()) && sign_enabled && ad_hoc && !lib_validation) {
-				ERR_PRINT("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries.");
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
 				err = ERR_CANT_CREATE;
 			}
 		}
@@ -1342,7 +1390,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		bool noto_enabled = p_preset->get("notarization/enable");
 		if (err == OK && noto_enabled) {
 			if (export_format == "app") {
-				WARN_PRINT("Notarization requires the app to be archived first, select the DMG or ZIP export format instead.");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
@@ -1467,7 +1515,8 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 
 			Ref<FileAccess> fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
 			if (fa.is_null()) {
-				ERR_FAIL_MSG(vformat("Can't open file to read from path \"%s\".", dir.plus_file(f)));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.plus_file(f)));
+				return;
 			}
 			const int bufsize = 16384;
 			uint8_t buf[bufsize];

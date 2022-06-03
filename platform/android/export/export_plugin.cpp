@@ -1818,7 +1818,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String can_export_error;
 	bool can_export_missing_templates;
 	if (!can_export(p_preset, can_export_error, can_export_missing_templates)) {
-		EditorNode::add_io_error(can_export_error);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), can_export_error);
 		return ERR_UNCONFIGURED;
 	}
 
@@ -1897,7 +1897,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 	print_verbose(output);
 	if (err || rv != 0) {
-		EditorNode::add_io_error(vformat(TTR("Could not install to device: %s"), output));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Could not install to device: %s"), output));
 		CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 	}
 
@@ -1975,7 +1975,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 	print_verbose(output);
 	if (err || rv != 0) {
-		EditorNode::add_io_error(TTR("Could not execute on device."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
 		CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 	}
 
@@ -2030,7 +2030,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	da->list_dir_end();
 
 	if (apksigner_path.is_empty()) {
-		EditorNode::get_singleton()->show_warning(TTR("Unable to find the 'apksigner' tool."));
+		print_error("Unable to find the 'apksigner' tool.");
 	}
 
 	return apksigner_path;
@@ -2335,7 +2335,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	String apksigner = get_apksigner_path();
 	print_verbose("Starting signing of the " + export_label + " binary using " + apksigner);
 	if (!FileAccess::exists(apksigner)) {
-		EditorNode::add_io_error(vformat(TTR("'apksigner' could not be found.\nPlease check the command is available in the Android SDK build-tools directory.\nThe resulting %s is unsigned."), export_label));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' could not be found. Please check that the command is available in the Android SDK build-tools directory. The resulting %s is unsigned."), export_label));
 		return OK;
 	}
 
@@ -2368,7 +2368,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	}
 
 	if (!FileAccess::exists(keystore)) {
-		EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
 		return ERR_FILE_CANT_OPEN;
 	}
 
@@ -2389,10 +2389,14 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	}
 	int retval;
 	output.clear();
-	OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+	Error err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start apksigner executable."));
+		return err;
+	}
 	print_verbose(output);
 	if (retval) {
-		EditorNode::add_io_error(vformat(TTR("'apksigner' returned with error #%d"), retval));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' returned with error #%d"), retval));
 		return ERR_CANT_CREATE;
 	}
 
@@ -2409,10 +2413,14 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	}
 
 	output.clear();
-	OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+	err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start apksigner executable."));
+		return err;
+	}
 	print_verbose(output);
 	if (retval) {
-		EditorNode::add_io_error(vformat(TTR("'apksigner' verification of %s failed."), export_label));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' verification of %s failed."), export_label));
 		return ERR_CANT_CREATE;
 	}
 
@@ -2520,22 +2528,21 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	if (export_format == EXPORT_FORMAT_AAB) {
 		if (!p_path.ends_with(".aab")) {
-			EditorNode::get_singleton()->show_warning(TTR("Invalid filename! Android App Bundle requires the *.aab extension."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid filename! Android App Bundle requires the *.aab extension."));
 			return ERR_UNCONFIGURED;
 		}
 		if (apk_expansion) {
-			EditorNode::get_singleton()->show_warning(TTR("APK Expansion not compatible with Android App Bundle."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("APK Expansion not compatible with Android App Bundle."));
 			return ERR_UNCONFIGURED;
 		}
 	}
 	if (export_format == EXPORT_FORMAT_APK && !p_path.ends_with(".apk")) {
-		EditorNode::get_singleton()->show_warning(
-				TTR("Invalid filename! Android APK requires the *.apk extension."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid filename! Android APK requires the *.apk extension."));
 		return ERR_UNCONFIGURED;
 	}
 	if (export_format > EXPORT_FORMAT_AAB || export_format < EXPORT_FORMAT_APK) {
-		EditorNode::add_io_error(TTR("Unsupported export format!\n"));
-		return ERR_UNCONFIGURED; //TODO: is this the right error?
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unsupported export format!"));
+		return ERR_UNCONFIGURED;
 	}
 
 	if (use_custom_build) {
@@ -2545,13 +2552,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			print_verbose("Checking build version..");
 			Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 			if (f.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
 				return ERR_UNCONFIGURED;
 			}
 			String version = f->get_line().strip_edges();
 			print_verbose("- build version: " + version);
 			if (version != VERSION_FULL_CONFIG) {
-				EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Android build version mismatch: Template installed: %s, Godot version: %s. Please reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
 				return ERR_UNCONFIGURED;
 			}
 		}
@@ -2564,7 +2571,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String project_name = get_project_name(p_preset->get("package/name"));
 		err = _create_project_name_strings_files(p_preset, project_name); //project name localization.
 		if (err != OK) {
-			EditorNode::add_io_error(TTR("Unable to overwrite res://android/build/res/*.xml files with project name"));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res://android/build/res/*.xml files with project name."));
 		}
 		// Copies the project icon files into the appropriate Gradle project directory.
 		_copy_icons_to_gradle_project(p_preset, processed_splash_config_xml, splash_image, splash_bg_color_image, main_image, foreground, background);
@@ -2581,7 +2588,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.debug = p_debug;
 			err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 			if (err != OK) {
-				EditorNode::add_io_error(TTR("Could not export project files to gradle project\n"));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
@@ -2593,7 +2600,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			print_verbose("Saving apk expansion file..");
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
 			if (err != OK) {
-				EditorNode::add_io_error(TTR("Could not write expansion package file!"));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
 				return err;
 			}
 		}
@@ -2678,7 +2685,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					debug_keystore = OS::get_singleton()->get_resource_dir().plus_file(debug_keystore).simplify_path();
 				}
 				if (!FileAccess::exists(debug_keystore)) {
-					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
 				}
 
@@ -2694,7 +2701,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					release_keystore = OS::get_singleton()->get_resource_dir().plus_file(release_keystore).simplify_path();
 				}
 				if (!FileAccess::exists(release_keystore)) {
-					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
 				}
 
@@ -2706,7 +2713,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
 		if (result != 0) {
-			EditorNode::get_singleton()->show_warning(TTR("Building of Android project failed, check output for the error.\nAlternatively visit docs.godotengine.org for Android build documentation."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Building of Android project failed, check output for the error. Alternatively visit docs.godotengine.org for Android build documentation."));
 			return ERR_CANT_CREATE;
 		}
 
@@ -2736,7 +2743,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		print_verbose("Copying Android binary using gradle command: " + String("\n") + build_command + " " + join_list(copy_args, String(" ")));
 		int copy_result = EditorNode::get_singleton()->execute_and_show_output(TTR("Moving output"), build_command, copy_args);
 		if (copy_result != 0) {
-			EditorNode::get_singleton()->show_warning(TTR("Unable to copy and rename export file, check gradle project directory for outputs."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to copy and rename export file, check gradle project directory for outputs."));
 			return ERR_CANT_CREATE;
 		}
 
@@ -2758,7 +2765,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			src_apk = find_export_template("android_release.apk");
 		}
 		if (src_apk.is_empty()) {
-			EditorNode::add_io_error(vformat(TTR("Package not found: %s"), src_apk));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Package not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -2776,7 +2783,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	unzFile pkg = unzOpen2(src_apk.utf8().get_data(), &io);
 	if (!pkg) {
-		EditorNode::add_io_error(vformat(TTR("Could not find template APK to export:\n%s"), src_apk));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not find template APK to export: \"%s\"."), src_apk));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -2907,7 +2914,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	if (!invalid_abis.is_empty()) {
 		String unsupported_arch = String(", ").join(invalid_abis);
-		EditorNode::add_io_error(vformat(TTR("Missing libraries in the export template for the selected architectures: %s.\nPlease build a template with all required libraries, or uncheck the missing architectures in the export preset."), unsupported_arch));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), unsupported_arch));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 	}
 
@@ -2925,7 +2932,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (apk_expansion) {
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
 			if (err != OK) {
-				EditorNode::add_io_error(TTR("Could not write expansion package file!"));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
 				return err;
 			}
 		} else {
@@ -2938,7 +2945,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	if (err != OK) {
 		unzClose(pkg);
-		EditorNode::add_io_error(TTR("Could not export project files"));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not export project files.")));
 		CLEANUP_AND_RETURN(ERR_SKIP);
 	}
 
@@ -2974,7 +2981,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	unzFile tmp_unaligned = unzOpen2(tmp_unaligned_path.utf8().get_data(), &io);
 	if (!tmp_unaligned) {
-		EditorNode::add_io_error(TTR("Could not unzip temporary unaligned APK."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not unzip temporary unaligned APK.")));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 	}
 

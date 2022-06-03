@@ -33,6 +33,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/resource.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"
@@ -170,6 +171,19 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
 
+	enum ExportMessageType {
+		EXPORT_MESSAGE_NONE,
+		EXPORT_MESSAGE_INFO,
+		EXPORT_MESSAGE_WARNING,
+		EXPORT_MESSAGE_ERROR,
+	};
+
+	struct ExportMessage {
+		ExportMessageType msg_type;
+		String category;
+		String text;
+	};
+
 private:
 	struct SavedData {
 		uint64_t ofs = 0;
@@ -199,6 +213,8 @@ private:
 		HashSet<String> features;
 		Vector<String> features_pv;
 	};
+
+	Vector<ExportMessage> messages;
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
 	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
@@ -239,6 +255,47 @@ public:
 	};
 
 	virtual Ref<EditorExportPreset> create_preset();
+
+	virtual void clear_messages() { messages.clear(); }
+	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
+		ExportMessage msg;
+		msg.category = p_category;
+		msg.text = p_message;
+		msg.msg_type = p_type;
+		messages.push_back(msg);
+		switch (p_type) {
+			case EXPORT_MESSAGE_INFO: {
+				print_line(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_WARNING: {
+				WARN_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_ERROR: {
+				ERR_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			default:
+				break;
+		}
+	}
+
+	virtual int get_message_count() const {
+		return messages.size();
+	}
+
+	virtual ExportMessage get_message(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, messages.size(), ExportMessage());
+		return messages[p_index];
+	}
+
+	virtual ExportMessageType get_worst_message_type() const {
+		ExportMessageType worst_type = EXPORT_MESSAGE_NONE;
+		for (int i = 0; i < messages.size(); i++) {
+			worst_type = MAX(worst_type, messages[i].msg_type);
+		}
+		return worst_type;
+	}
+
+	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
 	virtual bool should_update_export_options() { return false; }
@@ -459,7 +516,7 @@ public:
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
 
-	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 		return Error::OK;
 	}
 };

@@ -928,17 +928,13 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 	current->set_export_path(p_path);
 
+	platform->clear_messages();
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
-	if (err != OK && err != ERR_SKIP) {
-		if (err == ERR_FILE_NOT_FOUND) {
-			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nExport templates seem to be missing or invalid."), platform->get_name()));
-		} else { // Assume misconfiguration. FIXME: Improve error handling and preset config validation.
-			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nThis might be due to a configuration issue in the export preset or your export settings."), platform->get_name()));
+	result_dialog_log->clear();
+	if (err != ERR_SKIP) {
+		if (platform->fill_log_messages(result_dialog_log, err)) {
+			result_dialog->popup_centered_ratio(0.5);
 		}
-
-		ERR_PRINT(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
-		error_dialog->show();
-		error_dialog->popup_centered(Size2(300, 80));
 	}
 }
 
@@ -957,6 +953,8 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 	String mode = p_debug ? TTR("Debug") : TTR("Release");
 	EditorProgress ep("exportall", TTR("Exporting All") + " " + mode, EditorExport::get_singleton()->get_export_preset_count(), true);
 
+	bool show_dialog = false;
+	result_dialog_log->clear();
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		ERR_FAIL_COND(preset.is_null());
@@ -965,17 +963,16 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 
 		ep.step(preset->get_name(), i);
 
+		platform->clear_messages();
 		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
-		if (err != OK && err != ERR_SKIP) {
-			if (err == ERR_FILE_BAD_PATH) {
-				error_dialog->set_text(TTR("The given export path doesn't exist:") + "\n" + preset->get_export_path().get_base_dir());
-			} else {
-				error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " " + platform->get_name());
-			}
-			error_dialog->show();
-			error_dialog->popup_centered(Size2(300, 80));
-			ERR_PRINT("Failed to export project");
+		if (err == ERR_SKIP) {
+			return;
 		}
+		bool has_messages = platform->fill_log_messages(result_dialog_log, err);
+		show_dialog = show_dialog || has_messages;
+	}
+	if (show_dialog) {
+		result_dialog->popup_centered_ratio(0.5);
 	}
 }
 
@@ -1248,11 +1245,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	export_error2->set_text(String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ");
 
-	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_title(TTR("Error"));
-	error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " ");
-	main_vb->add_child(error_dialog);
-	error_dialog->hide();
+	result_dialog = memnew(AcceptDialog);
+	result_dialog->set_title(TTR("Project Export"));
+	result_dialog_log = memnew(RichTextLabel);
+	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog->add_child(result_dialog_log);
+
+	main_vb->add_child(result_dialog);
+	result_dialog->hide();
 
 	LinkButton *download_templates = memnew(LinkButton);
 	download_templates->set_text(TTR("Manage Export Templates"));
