@@ -80,7 +80,7 @@
 			</description>
 		</method>
 		<method name="get_connected_joypads">
-			<return type="Array" />
+			<return type="int[]" />
 			<description>
 				Returns an [Array] containing the device IDs of all currently connected joypads.
 			</description>
