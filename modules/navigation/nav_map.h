@@ -50,10 +50,10 @@ class NavMap : public NavRid {
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size.
-	real_t cell_size = 0.3;
+	real_t cell_size = 0.25;
 
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = 5.0;
+	real_t edge_connection_margin = 0.25;
 
 	bool regenerate_polygons = true;
 	bool regenerate_links = true;

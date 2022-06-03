@@ -150,8 +150,8 @@ World3D::World3D() {
 
 	navigation_map = NavigationServer3D::get_singleton()->map_create();
 	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
-	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.3));
-	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.3));
+	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.25));
+	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25));
 }
 
 World3D::~World3D() {
