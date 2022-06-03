@@ -609,7 +609,7 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 /* Text manipulation */
 
 // Overridable actions
-void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
+void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) {
 	bool had_selection = has_selection();
 	String selection_text = (had_selection ? get_selected_text() : "");
 
@@ -674,7 +674,7 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	}
 }
 
-void CodeEdit::_backspace_internal() {
+void CodeEdit::_backspace_internal(int p_caret) {
 	if (!is_editable()) {
 		return;
 	}
