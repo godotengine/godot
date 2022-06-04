@@ -61,6 +61,7 @@ public:
 			StringName name;
 			ShaderLanguage::DataType type;
 			ShaderLanguage::ShaderNode::Uniform::Hint hint;
+			bool use_color = false;
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
 			bool global;

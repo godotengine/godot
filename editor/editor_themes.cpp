@@ -1484,6 +1484,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const int gn_margin_side = 2;
 	const int gn_margin_bottom = 2;
 
+	// StateMachine
+	const int sm_margin_side = 10;
+
 	Color graphnode_bg = dark_color_3;
 	if (!dark_theme) {
 		graphnode_bg = prop_section_color;
@@ -1510,10 +1513,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsbposition->set_border_color(error_color);
 	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
 	Ref<StyleBoxEmpty> graphsbslot = make_empty_stylebox(12, 0, 12, 0);
-	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
+	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
 	smgraphsb->set_border_width_all(border_width);
 	smgraphsb->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
+	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
 	smgraphsbselected->set_border_width_all(2 * EDSCALE + border_width);
 	smgraphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
 	smgraphsbselected->set_shadow_size(8 * EDSCALE);

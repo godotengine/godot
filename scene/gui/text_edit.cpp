@@ -3080,7 +3080,7 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 	_remove_text(p_line, 0, p_line, text[p_line].length());
 	_insert_text(p_line, 0, p_new_text);
 	if (caret.line == p_line && caret.column > p_new_text.length()) {
-		set_caret_column(MIN(caret.column, p_new_text.length()), false);
+		set_caret_column(p_new_text.length(), false);
 	}
 	if (has_selection() && p_line == selection.to_line && selection.to_column > text[p_line].length()) {
 		selection.to_column = text[p_line].length();

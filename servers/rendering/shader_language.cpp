@@ -1014,6 +1014,93 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 	return "";
 }
 
+String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
+	String result;
+	switch (p_hint) {
+		case ShaderNode::Uniform::HINT_RANGE: {
+			result = "hint_range";
+		} break;
+		case ShaderNode::Uniform::HINT_SOURCE_COLOR: {
+			result = "hint_color";
+		} break;
+		case ShaderNode::Uniform::HINT_NORMAL: {
+			result = "hint_normal";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
+			result = "hint_roughness_normal";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_R: {
+			result = "hint_roughness_r";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_G: {
+			result = "hint_roughness_g";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_B: {
+			result = "hint_roughness_b";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_A: {
+			result = "hint_roughness_a";
+		} break;
+		case ShaderNode::Uniform::HINT_ROUGHNESS_GRAY: {
+			result = "hint_roughness_gray";
+		} break;
+		case ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+			result = "hint_default_black";
+		} break;
+		case ShaderNode::Uniform::HINT_DEFAULT_WHITE: {
+			result = "hint_default_white";
+		} break;
+		case ShaderNode::Uniform::HINT_ANISOTROPY: {
+			result = "hint_anisotropy";
+		} break;
+		default:
+			break;
+	}
+	return result;
+}
+
+String ShaderLanguage::get_texture_filter_name(TextureFilter p_filter) {
+	String result;
+	switch (p_filter) {
+		case FILTER_NEAREST: {
+			result = "filter_nearest";
+		} break;
+		case FILTER_LINEAR: {
+			result = "filter_linear";
+		} break;
+		case FILTER_NEAREST_MIPMAP: {
+			result = "filter_nearest_mipmap";
+		} break;
+		case FILTER_LINEAR_MIPMAP: {
+			result = "filter_linear_mipmap";
+		} break;
+		case FILTER_NEAREST_MIPMAP_ANISOTROPIC: {
+			result = "filter_nearest_mipmap_anisotropic";
+		} break;
+		case FILTER_LINEAR_MIPMAP_ANISOTROPIC: {
+			result = "filter_linear_mipmap_anisotropic";
+		} break;
+		default: {
+		} break;
+	}
+	return result;
+}
+
+String ShaderLanguage::get_texture_repeat_name(TextureRepeat p_repeat) {
+	String result;
+	switch (p_repeat) {
+		case REPEAT_DISABLE: {
+			result = "repeat_disable";
+		} break;
+		case REPEAT_ENABLE: {
+			result = "repeat_enable";
+		} break;
+		default: {
+		} break;
+	}
+	return result;
+}
+
 bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 	return is_token_datatype(p_type) && p_type != TK_TYPE_VOID;
 }
@@ -7970,11 +8057,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				[[fallthrough]];
 			case TK_UNIFORM:
 			case TK_VARYING: {
-				bool uniform = tk.type == TK_UNIFORM;
+				bool is_uniform = tk.type == TK_UNIFORM;
 #ifdef DEBUG_ENABLED
 				keyword_completion_context = CF_UNSPECIFIED;
 #endif // DEBUG_ENABLED
-				if (!uniform) {
+				if (!is_uniform) {
 					if (shader_type_identifier == "particles" || shader_type_identifier == "sky" || shader_type_identifier == "fog") {
 						_set_error(vformat(RTR("Varyings cannot be used in '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
@@ -7991,7 +8078,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				bool temp_error = false;
 				uint32_t datatype_flag;
 
-				if (!uniform) {
+				if (!is_uniform) {
 					datatype_flag = CF_VARYING_TYPE;
 					keyword_completion_context = CF_INTERPOLATION_QUALIFIER | CF_PRECISION_MODIFIER | datatype_flag;
 
@@ -8019,7 +8106,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #endif // DEBUG_ENABLED
 
 				if (is_token_interpolation(tk.type)) {
-					if (uniform) {
+					if (is_uniform) {
 						_set_error(RTR("Interpolation qualifiers are not supported for uniforms."));
 #ifdef DEBUG_ENABLED
 						temp_error = true;
@@ -8065,7 +8152,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				}
 
 				if (shader->structs.has(tk.text)) {
-					if (uniform) {
+					if (is_uniform) {
 						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
 						return ERR_PARSE_ERROR;
 					} else {
@@ -8090,7 +8177,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					return ERR_PARSE_ERROR;
 				}
 
-				if (!uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
+				if (!is_uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
 					_set_error(RTR("Invalid type for varying, only 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', or arrays of these types are allowed."));
 					return ERR_PARSE_ERROR;
 				}
@@ -8131,7 +8218,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					return ERR_PARSE_ERROR;
 				}
 
-				if (uniform) {
+				if (is_uniform) {
 					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL && Engine::get_singleton()->is_editor_hint()) { // Type checking for global uniforms is not allowed outside the editor.
 						//validate global uniform
 						DataType gvtype = global_var_get_type_func(name);
@@ -8145,16 +8232,16 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							return ERR_PARSE_ERROR;
 						}
 					}
-					ShaderNode::Uniform uniform2;
+					ShaderNode::Uniform uniform;
 
-					uniform2.type = type;
-					uniform2.scope = uniform_scope;
-					uniform2.precision = precision;
-					uniform2.array_size = array_size;
+					uniform.type = type;
+					uniform.scope = uniform_scope;
+					uniform.precision = precision;
+					uniform.array_size = array_size;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
-						Error error = _parse_array_size(nullptr, constants, true, nullptr, &uniform2.array_size, nullptr);
+						Error error = _parse_array_size(nullptr, constants, true, nullptr, &uniform.array_size, nullptr);
 						if (error != OK) {
 							return error;
 						}
@@ -8166,14 +8253,14 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							_set_error(vformat(RTR("The '%s' qualifier is not supported for sampler types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
-						uniform2.texture_order = texture_uniforms++;
-						uniform2.texture_binding = texture_binding;
-						if (uniform2.array_size > 0) {
-							texture_binding += uniform2.array_size;
+						uniform.texture_order = texture_uniforms++;
+						uniform.texture_binding = texture_binding;
+						if (uniform.array_size > 0) {
+							texture_binding += uniform.array_size;
 						} else {
 							++texture_binding;
 						}
-						uniform2.order = -1;
+						uniform.order = -1;
 						if (_validate_datatype(type) != OK) {
 							return ERR_PARSE_ERROR;
 						}
@@ -8182,20 +8269,20 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							_set_error(vformat(RTR("The '%s' qualifier is not supported for matrix types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
-						uniform2.texture_order = -1;
+						uniform.texture_order = -1;
 						if (uniform_scope != ShaderNode::Uniform::SCOPE_INSTANCE) {
-							uniform2.order = uniforms++;
+							uniform.order = uniforms++;
 #ifdef DEBUG_ENABLED
 							if (check_device_limit_warnings) {
-								if (uniform2.array_size > 0) {
-									int size = get_datatype_size(uniform2.type) * uniform2.array_size;
-									int m = (16 * uniform2.array_size);
+								if (uniform.array_size > 0) {
+									int size = get_datatype_size(uniform.type) * uniform.array_size;
+									int m = (16 * uniform.array_size);
 									if ((size % m) != 0U) {
 										size += m - (size % m);
 									}
 									uniform_buffer_size += size;
 								} else {
-									uniform_buffer_size += get_datatype_size(uniform2.type);
+									uniform_buffer_size += get_datatype_size(uniform.type);
 								}
 
 								if (uniform_buffer_exceeded_line == -1 && uniform_buffer_size > max_uniform_buffer_size) {
@@ -8206,7 +8293,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						}
 					}
 
-					if (uniform2.array_size > 0) {
+					if (uniform.array_size > 0) {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
 							_set_error(vformat(RTR("The '%s' qualifier is not supported for uniform arrays."), "SCOPE_GLOBAL"));
 							return ERR_PARSE_ERROR;
@@ -8222,7 +8309,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					if (tk.type == TK_COLON) {
 						completion_type = COMPLETION_HINT;
 						completion_base = type;
-						completion_base_array = uniform2.array_size > 0;
+						completion_base_array = uniform.array_size > 0;
 
 						//hint
 						do {
@@ -8234,180 +8321,251 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								return ERR_PARSE_ERROR;
 							}
 
-							if (uniform2.array_size > 0) {
+							if (uniform.array_size > 0) {
 								if (tk.type != TK_HINT_SOURCE_COLOR) {
 									_set_error(RTR("This hint is not supported for uniform arrays."));
 									return ERR_PARSE_ERROR;
 								}
 							}
 
-							if (tk.type == TK_HINT_DEFAULT_WHITE_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_DEFAULT_WHITE;
-							} else if (tk.type == TK_HINT_DEFAULT_BLACK_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_DEFAULT_BLACK;
-							} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
-							} else if (tk.type == TK_HINT_ROUGHNESS_NORMAL_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL;
-							} else if (tk.type == TK_HINT_ROUGHNESS_R) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_R;
-							} else if (tk.type == TK_HINT_ROUGHNESS_G) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_G;
-							} else if (tk.type == TK_HINT_ROUGHNESS_B) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_B;
-							} else if (tk.type == TK_HINT_ROUGHNESS_A) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
-							} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
-							} else if (tk.type == TK_HINT_ANISOTROPY_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ANISOTROPY;
-							} else if (tk.type == TK_HINT_SOURCE_COLOR) {
-								if (type != TYPE_VEC3 && type != TYPE_VEC4 && type <= TYPE_MAT4) {
-									_set_error(vformat(RTR("Source color hint is for '%s', '%s' or sampler types only."), "vec3", "vec4"));
-									return ERR_PARSE_ERROR;
-								}
-								uniform2.hint = ShaderNode::Uniform::HINT_SOURCE_COLOR;
-							} else if (tk.type == TK_HINT_RANGE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_RANGE;
-								if (type != TYPE_FLOAT && type != TYPE_INT) {
-									_set_error(vformat(RTR("Range hint is for '%s' and '%s' only."), "float", "int"));
-									return ERR_PARSE_ERROR;
-								}
+							ShaderNode::Uniform::Hint new_hint = ShaderNode::Uniform::HINT_NONE;
+							TextureFilter new_filter = FILTER_DEFAULT;
+							TextureRepeat new_repeat = REPEAT_DEFAULT;
 
-								tk = _get_token();
-								if (tk.type != TK_PARENTHESIS_OPEN) {
-									_set_expected_after_error("(", "hint_range");
-									return ERR_PARSE_ERROR;
-								}
+							switch (tk.type) {
+								case TK_HINT_SOURCE_COLOR: {
+									if (type != TYPE_VEC3 && type != TYPE_VEC4 && !is_sampler_type(type)) {
+										_set_error(vformat(RTR("Source color hint is for '%s', '%s' or sampler types only."), "vec3", "vec4"));
+										return ERR_PARSE_ERROR;
+									}
 
-								tk = _get_token();
+									if (is_sampler_type(type)) {
+										if (uniform.use_color) {
+											_set_error(vformat(RTR("Duplicated hint: '%s'."), "source_color"));
+											return ERR_PARSE_ERROR;
+										}
+										uniform.use_color = true;
+									} else {
+										new_hint = ShaderNode::Uniform::HINT_SOURCE_COLOR;
+									}
+								} break;
+								case TK_HINT_DEFAULT_BLACK_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_DEFAULT_BLACK;
+								} break;
+								case TK_HINT_DEFAULT_WHITE_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_DEFAULT_WHITE;
+								} break;
+								case TK_HINT_NORMAL_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_NORMAL;
+								} break;
+								case TK_HINT_ROUGHNESS_NORMAL_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL;
+								} break;
+								case TK_HINT_ROUGHNESS_R: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_R;
+								} break;
+								case TK_HINT_ROUGHNESS_G: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_G;
+								} break;
+								case TK_HINT_ROUGHNESS_B: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_B;
+								} break;
+								case TK_HINT_ROUGHNESS_A: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
+								} break;
+								case TK_HINT_ROUGHNESS_GRAY: {
+									new_hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
+								} break;
+								case TK_HINT_ANISOTROPY_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_ANISOTROPY;
+								} break;
+								case TK_HINT_RANGE: {
+									if (type != TYPE_FLOAT && type != TYPE_INT) {
+										_set_error(vformat(RTR("Range hint is for '%s' and '%s' only."), "float", "int"));
+										return ERR_PARSE_ERROR;
+									}
 
-								float sign = 1.0;
-
-								if (tk.type == TK_OP_SUB) {
-									sign = -1.0;
 									tk = _get_token();
-								}
+									if (tk.type != TK_PARENTHESIS_OPEN) {
+										_set_expected_after_error("(", "hint_range");
+										return ERR_PARSE_ERROR;
+									}
 
-								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-									_set_error(RTR("Expected an integer constant."));
-									return ERR_PARSE_ERROR;
-								}
-
-								uniform2.hint_range[0] = tk.constant;
-								uniform2.hint_range[0] *= sign;
-
-								tk = _get_token();
-
-								if (tk.type != TK_COMMA) {
-									_set_error(RTR("Expected ',' after integer constant."));
-									return ERR_PARSE_ERROR;
-								}
-
-								tk = _get_token();
-
-								sign = 1.0;
-
-								if (tk.type == TK_OP_SUB) {
-									sign = -1.0;
 									tk = _get_token();
-								}
 
-								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-									_set_error(RTR("Expected an integer constant after ','."));
-									return ERR_PARSE_ERROR;
-								}
+									float sign = 1.0;
 
-								uniform2.hint_range[1] = tk.constant;
-								uniform2.hint_range[1] *= sign;
+									if (tk.type == TK_OP_SUB) {
+										sign = -1.0;
+										tk = _get_token();
+									}
 
-								tk = _get_token();
+									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
+										_set_error(RTR("Expected an integer constant."));
+										return ERR_PARSE_ERROR;
+									}
 
-								if (tk.type == TK_COMMA) {
+									uniform.hint_range[0] = tk.constant;
+									uniform.hint_range[0] *= sign;
+
 									tk = _get_token();
+
+									if (tk.type != TK_COMMA) {
+										_set_error(RTR("Expected ',' after integer constant."));
+										return ERR_PARSE_ERROR;
+									}
+
+									tk = _get_token();
+
+									sign = 1.0;
+
+									if (tk.type == TK_OP_SUB) {
+										sign = -1.0;
+										tk = _get_token();
+									}
 
 									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
 										_set_error(RTR("Expected an integer constant after ','."));
 										return ERR_PARSE_ERROR;
 									}
 
-									uniform2.hint_range[2] = tk.constant;
+									uniform.hint_range[1] = tk.constant;
+									uniform.hint_range[1] *= sign;
+
 									tk = _get_token();
-								} else {
-									if (type == TYPE_INT) {
-										uniform2.hint_range[2] = 1;
+
+									if (tk.type == TK_COMMA) {
+										tk = _get_token();
+
+										if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
+											_set_error(RTR("Expected an integer constant after ','."));
+											return ERR_PARSE_ERROR;
+										}
+
+										uniform.hint_range[2] = tk.constant;
+										tk = _get_token();
 									} else {
-										uniform2.hint_range[2] = 0.001;
+										if (type == TYPE_INT) {
+											uniform.hint_range[2] = 1;
+										} else {
+											uniform.hint_range[2] = 0.001;
+										}
 									}
-								}
 
-								if (tk.type != TK_PARENTHESIS_CLOSE) {
-									_set_expected_error(")");
-									return ERR_PARSE_ERROR;
-								}
-							} else if (tk.type == TK_HINT_INSTANCE_INDEX) {
-								if (custom_instance_index != -1) {
-									_set_error(vformat(RTR("Can only specify '%s' once."), "instance_index"));
-									return ERR_PARSE_ERROR;
-								}
+									if (tk.type != TK_PARENTHESIS_CLOSE) {
+										_set_expected_error(")");
+										return ERR_PARSE_ERROR;
+									}
 
-								tk = _get_token();
-								if (tk.type != TK_PARENTHESIS_OPEN) {
-									_set_expected_after_error("(", "instance_index");
-									return ERR_PARSE_ERROR;
-								}
+									new_hint = ShaderNode::Uniform::HINT_RANGE;
+								} break;
+								case TK_HINT_INSTANCE_INDEX: {
+									if (custom_instance_index != -1) {
+										_set_error(vformat(RTR("Can only specify '%s' once."), "instance_index"));
+										return ERR_PARSE_ERROR;
+									}
 
-								tk = _get_token();
+									tk = _get_token();
+									if (tk.type != TK_PARENTHESIS_OPEN) {
+										_set_expected_after_error("(", "instance_index");
+										return ERR_PARSE_ERROR;
+									}
 
-								if (tk.type == TK_OP_SUB) {
-									_set_error(RTR("The instance index can't be negative."));
-									return ERR_PARSE_ERROR;
-								}
+									tk = _get_token();
 
-								if (!tk.is_integer_constant()) {
-									_set_error(RTR("Expected an integer constant."));
-									return ERR_PARSE_ERROR;
-								}
+									if (tk.type == TK_OP_SUB) {
+										_set_error(RTR("The instance index can't be negative."));
+										return ERR_PARSE_ERROR;
+									}
 
-								custom_instance_index = tk.constant;
+									if (!tk.is_integer_constant()) {
+										_set_error(RTR("Expected an integer constant."));
+										return ERR_PARSE_ERROR;
+									}
 
-								if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
-									_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), MAX_INSTANCE_UNIFORM_INDICES - 1));
-									return ERR_PARSE_ERROR;
-								}
+									custom_instance_index = tk.constant;
 
-								tk = _get_token();
+									if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
+										_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), MAX_INSTANCE_UNIFORM_INDICES - 1));
+										return ERR_PARSE_ERROR;
+									}
 
-								if (tk.type != TK_PARENTHESIS_CLOSE) {
-									_set_expected_error(")");
-									return ERR_PARSE_ERROR;
-								}
-							} else if (tk.type == TK_FILTER_LINEAR) {
-								uniform2.filter = FILTER_LINEAR;
-							} else if (tk.type == TK_FILTER_NEAREST) {
-								uniform2.filter = FILTER_NEAREST;
-							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP) {
-								uniform2.filter = FILTER_NEAREST_MIPMAP;
-							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
-								uniform2.filter = FILTER_LINEAR_MIPMAP;
-							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC) {
-								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISOTROPIC;
-							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC) {
-								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISOTROPIC;
-							} else if (tk.type == TK_REPEAT_DISABLE) {
-								uniform2.repeat = REPEAT_DISABLE;
-							} else if (tk.type == TK_REPEAT_ENABLE) {
-								uniform2.repeat = REPEAT_ENABLE;
+									tk = _get_token();
+
+									if (tk.type != TK_PARENTHESIS_CLOSE) {
+										_set_expected_error(")");
+										return ERR_PARSE_ERROR;
+									}
+								} break;
+								case TK_FILTER_NEAREST: {
+									new_filter = FILTER_NEAREST;
+								} break;
+								case TK_FILTER_LINEAR: {
+									new_filter = FILTER_LINEAR;
+								} break;
+								case TK_FILTER_NEAREST_MIPMAP: {
+									new_filter = FILTER_NEAREST_MIPMAP;
+								} break;
+								case TK_FILTER_LINEAR_MIPMAP: {
+									new_filter = FILTER_LINEAR_MIPMAP;
+								} break;
+								case TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC: {
+									new_filter = FILTER_NEAREST_MIPMAP_ANISOTROPIC;
+								} break;
+								case TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC: {
+									new_filter = FILTER_LINEAR_MIPMAP_ANISOTROPIC;
+								} break;
+								case TK_REPEAT_DISABLE: {
+									new_repeat = REPEAT_DISABLE;
+								} break;
+								case TK_REPEAT_ENABLE: {
+									new_repeat = REPEAT_ENABLE;
+								} break;
+								default:
+									break;
 							}
-
-							if (uniform2.hint == ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-								if (type != TYPE_VEC3 && type != TYPE_VEC4 && !is_sampler_type(type)) {
-									_set_error(vformat(RTR("This hint is only for '%s', '%s' or sampler types."), "vec3", "vec4"));
-									return ERR_PARSE_ERROR;
-								}
-							} else if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && !is_sampler_type(type)) {
+							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || (new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_RANGE)) && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
+							}
+
+							if (new_hint != ShaderNode::Uniform::HINT_NONE) {
+								if (uniform.hint != ShaderNode::Uniform::HINT_NONE) {
+									if (uniform.hint == new_hint) {
+										_set_error(vformat(RTR("Duplicated hint: '%s'."), get_uniform_hint_name(new_hint)));
+									} else {
+										_set_error(vformat(RTR("Redefinition of hint: '%s'. The hint has already been set to '%s'."), get_uniform_hint_name(new_hint), get_uniform_hint_name(uniform.hint)));
+									}
+									return ERR_PARSE_ERROR;
+								} else {
+									uniform.hint = new_hint;
+								}
+							}
+
+							if (new_filter != FILTER_DEFAULT) {
+								if (uniform.filter != FILTER_DEFAULT) {
+									if (uniform.filter == new_filter) {
+										_set_error(vformat(RTR("Duplicated hint: '%s'."), get_texture_filter_name(new_filter)));
+									} else {
+										_set_error(vformat(RTR("Redefinition of hint: '%s'. The filter mode has already been set to '%s'."), get_texture_filter_name(new_filter), get_texture_filter_name(uniform.filter)));
+									}
+									return ERR_PARSE_ERROR;
+								} else {
+									uniform.filter = new_filter;
+								}
+							}
+
+							if (new_repeat != REPEAT_DEFAULT) {
+								if (uniform.repeat != REPEAT_DEFAULT) {
+									if (uniform.repeat == new_repeat) {
+										_set_error(vformat(RTR("Duplicated hint: '%s'."), get_texture_repeat_name(new_repeat)));
+									} else {
+										_set_error(vformat(RTR("Redefinition of hint: '%s'. The repeat mode has already been set to '%s'."), get_texture_repeat_name(new_repeat), get_texture_repeat_name(uniform.repeat)));
+									}
+									return ERR_PARSE_ERROR;
+								} else {
+									uniform.repeat = new_repeat;
+								}
 							}
 
 							tk = _get_token();
@@ -8417,9 +8575,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 					if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
 						if (custom_instance_index >= 0) {
-							uniform2.instance_index = custom_instance_index;
+							uniform.instance_index = custom_instance_index;
 						} else {
-							uniform2.instance_index = instance_index++;
+							uniform.instance_index = instance_index++;
 							if (instance_index > MAX_INSTANCE_UNIFORM_INDICES) {
 								_set_error(vformat(RTR("Too many '%s' uniforms in shader, maximum supported is %d."), "instance", MAX_INSTANCE_UNIFORM_INDICES));
 								return ERR_PARSE_ERROR;
@@ -8430,7 +8588,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					//reset scope for next uniform
 
 					if (tk.type == TK_OP_ASSIGN) {
-						if (uniform2.array_size > 0) {
+						if (uniform.array_size > 0) {
 							_set_error(RTR("Setting default values to uniform arrays is not supported."));
 							return ERR_PARSE_ERROR;
 						}
@@ -8446,16 +8604,16 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 						ConstantNode *cn = static_cast<ConstantNode *>(expr);
 
-						uniform2.default_value.resize(cn->values.size());
+						uniform.default_value.resize(cn->values.size());
 
-						if (!convert_constant(cn, uniform2.type, uniform2.default_value.ptrw())) {
-							_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform2.type)));
+						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
+							_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform.type)));
 							return ERR_PARSE_ERROR;
 						}
 						tk = _get_token();
 					}
 
-					shader->uniforms[name] = uniform2;
+					shader->uniforms[name] = uniform;
 #ifdef DEBUG_ENABLED
 					if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_UNIFORM_FLAG)) {
 						used_uniforms.insert(name, Usage(tk_line));

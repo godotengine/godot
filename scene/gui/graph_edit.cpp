@@ -508,8 +508,9 @@ void GraphEdit::_notification(int p_what) {
 
 void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
 	Rect2 comment_node_rect = p_node->get_rect();
-	Vector<GraphNode *> enclosed_nodes;
+	comment_node_rect.size *= zoom;
 
+	Vector<GraphNode *> enclosed_nodes;
 	for (int i = 0; i < get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 		if (!gn || gn->is_selected()) {
@@ -517,6 +518,8 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 		}
 
 		Rect2 node_rect = gn->get_rect();
+		node_rect.size *= zoom;
+
 		bool included = comment_node_rect.encloses(node_rect);
 		if (included) {
 			enclosed_nodes.push_back(gn);
