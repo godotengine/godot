@@ -3298,19 +3298,20 @@ void DisplayServerX11::popup_close(WindowID p_window) {
 	}
 }
 
-void DisplayServerX11::mouse_process_popups() {
+bool DisplayServerX11::mouse_process_popups() {
 	_THREAD_SAFE_METHOD_
 
 	if (popup_list.is_empty()) {
-		return;
+		return false;
 	}
 
 	uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
 	if (delta < 250) {
-		return;
+		return false;
 	}
 
 	int number_of_screens = XScreenCount(x11_display);
+	bool closed = false;
 	for (int i = 0; i < number_of_screens; i++) {
 		Window root, child;
 		int root_x, root_y, win_x, win_y;
@@ -3340,6 +3341,7 @@ void DisplayServerX11::mouse_process_popups() {
 					}
 					if (C) {
 						_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+						closed = true;
 					}
 				}
 			}
@@ -3347,6 +3349,7 @@ void DisplayServerX11::mouse_process_popups() {
 			last_mouse_monitor_pos = pos;
 		}
 	}
+	return closed;
 }
 
 void DisplayServerX11::process_events() {
@@ -3357,7 +3360,7 @@ void DisplayServerX11::process_events() {
 	++frame;
 #endif
 
-	mouse_process_popups();
+	bool ignore_events = mouse_process_popups();
 
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
@@ -3407,6 +3410,10 @@ void DisplayServerX11::process_events() {
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
 		XEvent &event = events[event_index];
+		if (ignore_events) {
+			XFreeEventData(x11_display, &event.xcookie);
+			continue;
+		}
 
 		WindowID window_id = MAIN_WINDOW_ID;
 

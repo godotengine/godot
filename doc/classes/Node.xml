@@ -637,7 +637,7 @@
 			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
 			<argument index="4" name="channel" type="int" default="0" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(auth)[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">

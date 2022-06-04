@@ -1652,7 +1652,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.append("static ");
 	}
 
-	p_output.append(prop_itype->cs_type);
+	String prop_cs_type = prop_itype->cs_type + _get_generic_type_parameters(*prop_itype, proptype_name.generic_type_parameters);
+
+	p_output.append(prop_cs_type);
 	p_output.append(" ");
 	p_output.append(p_iprop.proxy_name);
 	p_output.append("\n" INDENT2 OPEN_BLOCK);
@@ -1762,6 +1764,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					"Invalid default value for parameter '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
 		}
 
+		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
 		// Add the current arguments to the signature
 		// If the argument has a default value which is not a constant, we will make it Nullable
 		{
@@ -1773,7 +1777,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				arguments_sig += "Nullable<";
 			}
 
-			arguments_sig += arg_type->cs_type;
+			arguments_sig += arg_cs_type;
 
 			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
 				arguments_sig += "> ";
@@ -1800,7 +1804,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			String arg_in = iarg.name;
 			arg_in += "_in";
 
-			cs_in_statements += arg_type->cs_type;
+			cs_in_statements += arg_cs_type;
 			cs_in_statements += " ";
 			cs_in_statements += arg_in;
 			cs_in_statements += " = ";
@@ -1820,7 +1824,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				cs_in_statements += " : ";
 			}
 
-			String cs_type = arg_type->cs_type;
+			String cs_type = arg_cs_type;
 			if (cs_type.ends_with("[]")) {
 				cs_type = cs_type.substr(0, cs_type.length() - 2);
 			}
@@ -1837,7 +1841,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Escape < and > in the attribute default value
 			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
-			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + param_def_arg + "</param>");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is <c>" + param_def_arg + "</c>.</param>");
 		} else {
 			icall_params += arg_type->cs_in.is_empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -1903,7 +1907,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("virtual ");
 		}
 
-		p_output.append(return_type->cs_type + " ");
+		String return_cs_type = return_type->cs_type + _get_generic_type_parameters(*return_type, p_imethod.return_type.generic_type_parameters);
+
+		p_output.append(return_cs_type + " ");
 		p_output.append(p_imethod.proxy_name + "(");
 		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L2);
 
@@ -1914,7 +1920,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output.append("return;\n" CLOSE_BLOCK_L2);
 			} else {
 				p_output.append("return default(");
-				p_output.append(return_type->cs_type);
+				p_output.append(return_cs_type);
 				p_output.append(");\n" CLOSE_BLOCK_L2);
 			}
 
@@ -1956,7 +1962,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		} else if (return_type->cs_out.is_empty()) {
 			p_output.append("return " + im_call + "(" + icall_params + ");\n");
 		} else {
-			p_output.append(sformat(return_type->cs_out, im_call, icall_params, return_type->cs_type, return_type->im_type_out));
+			p_output.append(sformat(return_type->cs_out, im_call, icall_params, return_cs_type, return_type->im_type_out));
 			p_output.append("\n");
 		}
 
@@ -2517,6 +2523,42 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 	return &placeholder_types.insert(placeholder.cname, placeholder)->value;
 }
 
+const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters) {
+	if (p_generic_type_parameters.is_empty()) {
+		return "";
+	}
+
+	ERR_FAIL_COND_V_MSG(p_itype.type_parameter_count != p_generic_type_parameters.size(), "",
+			"Generic type parameter count mismatch for type '" + p_itype.name + "'." +
+					" Found " + itos(p_generic_type_parameters.size()) + ", but requires " +
+					itos(p_itype.type_parameter_count) + ".");
+
+	int i = 0;
+	String params = "<";
+	for (const TypeReference &param_type : p_generic_type_parameters) {
+		const TypeInterface *param_itype = _get_type_or_placeholder(param_type);
+
+		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
+				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
+
+		if (p_itype.api_type == ClassDB::API_CORE) {
+			ERR_FAIL_COND_V_MSG(param_itype->api_type == ClassDB::API_EDITOR, "",
+					"Generic type parameter '" + param_itype->name + "' has type from the editor API." +
+							" Core API cannot have dependencies on the editor API.");
+		}
+
+		params += param_itype->cs_type;
+		if (i < p_generic_type_parameters.size() - 1) {
+			params += ", ";
+		}
+
+		i++;
+	}
+	params += ">";
+
+	return params;
+}
+
 StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
 	switch (p_meta) {
 		case GodotTypeInfo::METADATA_INT_IS_INT8:
@@ -2832,6 +2874,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
+			} else if (return_info.type == Variant::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
+				imethod.return_type.cname = Variant::get_type_name(return_info.type);
+				imethod.return_type.generic_type_parameters.push_back(TypeReference(return_info.hint_string));
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -2861,6 +2906,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
+				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+					iarg.type.cname = Variant::get_type_name(arginfo.type);
+					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
@@ -2966,6 +3014,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
+				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+					iarg.type.cname = Variant::get_type_name(arginfo.type);
+					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
@@ -3549,13 +3600,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.name = "Array";
 	itype.cname = itype.name;
 	itype.proxy_name = itype.name;
+	itype.type_parameter_count = 1;
 	itype.c_out = "\treturn memnew(Array(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new " + itype.cs_type + "(%0(%1));";
+	itype.cs_out = "return new %2(%0(%1));";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
@@ -3565,13 +3617,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.name = "Dictionary";
 	itype.cname = itype.name;
 	itype.proxy_name = itype.name;
+	itype.type_parameter_count = 2;
 	itype.c_out = "\treturn memnew(Dictionary(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new " + itype.cs_type + "(%0(%1));";
+	itype.cs_out = "return new %2(%0(%1));";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);

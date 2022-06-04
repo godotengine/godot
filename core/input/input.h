@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/rb_set.h"
+#include "core/variant/typed_array.h"
 
 class Input : public Object {
 	GDCLASS(Input, Object);
@@ -259,7 +260,7 @@ public:
 
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
 	String get_joy_name(int p_idx);
-	Array get_connected_joypads();
+	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);

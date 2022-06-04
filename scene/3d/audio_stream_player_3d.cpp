@@ -541,6 +541,7 @@ float AudioStreamPlayer3D::get_unit_db() const {
 
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
 	unit_size = p_volume;
+	update_gizmos();
 }
 
 float AudioStreamPlayer3D::get_unit_size() const {
@@ -669,6 +670,7 @@ void AudioStreamPlayer3D::_bus_layout_changed() {
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
 	ERR_FAIL_COND(p_metres < 0.0);
 	max_distance = p_metres;
+	update_gizmos();
 }
 
 float AudioStreamPlayer3D::get_max_distance() const {
@@ -729,6 +731,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
 	ERR_FAIL_INDEX((int)p_model, 4);
 	attenuation_model = p_model;
+	update_gizmos();
 }
 
 AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model() const {

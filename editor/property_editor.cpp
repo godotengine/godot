@@ -105,15 +105,16 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 	switch (type) {
 		case Variant::INT: {
 			if (hint == PROPERTY_HINT_FLAGS) {
-				int val = v;
-
-				if (val & (1 << p_which)) {
-					val &= ~(1 << p_which);
+				int idx = menu->get_item_index(p_which);
+				uint32_t item_value = menu->get_item_metadata(idx);
+				uint32_t value = v;
+				// If the item wasn't previously checked it means it was pressed,
+				// otherwise it was unpressed.
+				if (!menu->is_item_checked(idx)) {
+					v = value | item_value;
 				} else {
-					val |= (1 << p_which);
+					v = value & ~item_value;
 				}
-
-				v = val;
 				emit_signal(SNAME("variant_changed"));
 			} else if (hint == PROPERTY_HINT_ENUM) {
 				v = menu->get_item_metadata(p_which);
@@ -486,15 +487,19 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				set_size(Size2(200, 150) * EDSCALE);
 			} else if (hint == PROPERTY_HINT_FLAGS) {
 				Vector<String> flags = hint_text.split(",");
+				uint32_t value = v;
 				for (int i = 0; i < flags.size(); i++) {
-					String flag = flags[i];
-					if (flag.is_empty()) {
-						continue;
+					uint32_t current_val;
+					Vector<String> text_split = flags[i].split(":");
+					if (text_split.size() != 1) {
+						current_val = text_split[1].to_int();
+					} else {
+						current_val = 1 << i;
 					}
-					menu->add_check_item(flag, i);
-					int f = v;
-					if (f & (1 << i)) {
-						menu->set_item_checked(menu->get_item_index(i), true);
+					menu->add_check_item(text_split[0], current_val);
+					menu->set_item_metadata(i, current_val);
+					if ((value & current_val) == current_val) {
+						menu->set_item_checked(menu->get_item_index(current_val), true);
 					}
 				}
 				menu->set_position(get_position());

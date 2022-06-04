@@ -265,9 +265,9 @@ class EditorPropertyFlags : public EditorProperty {
 	GDCLASS(EditorPropertyFlags, EditorProperty);
 	VBoxContainer *vbox = nullptr;
 	Vector<CheckBox *> flags;
-	Vector<int> flag_indices;
+	Vector<uint32_t> flag_values;
 
-	void _flag_toggled();
+	void _flag_toggled(int p_index);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;

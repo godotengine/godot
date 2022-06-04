@@ -295,7 +295,7 @@ protected:
 	void _window_changed(XEvent *event);
 
 public:
-	void mouse_process_popups();
+	bool mouse_process_popups();
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);
 

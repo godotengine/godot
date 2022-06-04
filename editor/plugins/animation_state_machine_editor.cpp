@@ -1220,7 +1220,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	for (const StringName &E : nodes) {
 		Ref<AnimationNode> anode = state_machine->get_node(E);
 		String name = E;
-		bool needs_editor = EditorNode::get_singleton()->item_has_editor(anode.ptr());
+		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = selected_nodes.has(E) ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
@@ -1432,7 +1432,6 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			} else {
 				state_machine_draw->draw_texture(edit, nr.edit.position);
 			}
-			offset.x += sep + edit->get_width();
 		}
 	}
 
