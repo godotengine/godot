@@ -107,7 +107,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		for (const StringName &E : classes) {
 			String name = String(E).replace_first("AnimationNode", "");
-			if (name == "Animation") {
+			if (name == "Animation" || name == "StartState" || name == "EndState") {
 				continue; // nope
 			}
 			int idx = menu->get_item_count();
