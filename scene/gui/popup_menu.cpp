@@ -551,7 +551,6 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				if (i == mouse_over) {
-					hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
 					hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(size.width - style->get_minimum_size().width, h + vseparation)));
 				}
 
