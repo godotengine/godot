@@ -493,8 +493,6 @@ void FindReplaceBar::_hide_bar() {
 	}
 
 	text_editor->set_search_text("");
-	result_line = -1;
-	result_col = -1;
 	hide();
 }
 
