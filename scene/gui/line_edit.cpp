@@ -1686,13 +1686,17 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
-	bool using_placeholder = text.is_empty() && ime_text.is_empty();
-	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
-		min_size.width += r_icon->get_width();
-		min_size.height = MAX(min_size.height, r_icon->get_height());
+	int icon_max_width = 0;
+	if (right_icon.is_valid()) {
+		min_size.height = MAX(min_size.height, right_icon->get_height());
+		icon_max_width = right_icon->get_width();
 	}
+	if (clear_button_enabled) {
+		Ref<Texture2D> clear_icon = Control::get_theme_icon(SNAME("clear"));
+		min_size.height = MAX(min_size.height, clear_icon->get_height());
+		icon_max_width = MAX(icon_max_width, clear_icon->get_width());
+	}
+	min_size.width += icon_max_width;
 
 	return style->get_minimum_size() + min_size;
 }
