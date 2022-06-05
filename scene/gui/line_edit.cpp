@@ -1563,7 +1563,7 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.height = font->get_height();
 
 	// Take icons into account.
-	if (!text.empty() && is_editable() && clear_button_enabled) {
+	if (clear_button_enabled) {
 		min_size.width = MAX(min_size.width, Control::get_icon("clear")->get_width());
 		min_size.height = MAX(min_size.height, Control::get_icon("clear")->get_height());
 	}
