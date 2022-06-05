@@ -414,6 +414,7 @@ void Node3DEditorViewport::cancel_transform() {
 void Node3DEditorViewport::_update_shrink() {
 	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
 	subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+	subviewport_container->set_texture_filter(shrink ? TEXTURE_FILTER_NEAREST : TEXTURE_FILTER_PARENT_NODE);
 }
 
 float Node3DEditorViewport::get_znear() const {
