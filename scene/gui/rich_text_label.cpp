@@ -3369,21 +3369,34 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 	bool in_bold = false;
 	bool in_italics = false;
+	bool after_list_open_tag = false;
+	bool after_list_close_tag = false;
 
 	set_process_internal(false);
 
-	while (pos < p_bbcode.length()) {
+	while (pos <= p_bbcode.length()) {
 		int brk_pos = p_bbcode.find("[", pos);
 
 		if (brk_pos < 0) {
 			brk_pos = p_bbcode.length();
 		}
 
-		if (brk_pos > pos) {
-			add_text(p_bbcode.substr(pos, brk_pos - pos));
+		String text = brk_pos > pos ? p_bbcode.substr(pos, brk_pos - pos) : "";
+
+		// Trim the first newline character, it may be added later as needed.
+		if (after_list_close_tag || after_list_open_tag) {
+			text = text.trim_prefix("\n");
 		}
 
 		if (brk_pos == p_bbcode.length()) {
+			// For tags that are not properly closed.
+			if (text.is_empty() && after_list_open_tag) {
+				text = "\n";
+			}
+
+			if (!text.is_empty()) {
+				add_text(text);
+			}
 			break; //nothing else to add
 		}
 
@@ -3391,7 +3404,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		if (brk_end == -1) {
 			//no close, add the rest
-			add_text(p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos));
+			text += p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
+			add_text(text);
 			break;
 		}
 
@@ -3437,9 +3451,36 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 
 			if (!tag_ok) {
-				add_text("[" + tag);
+				text += "[" + tag;
+				add_text(text);
+				after_list_open_tag = false;
+				after_list_close_tag = false;
 				pos = brk_end;
 				continue;
+			}
+
+			if (text.is_empty() && after_list_open_tag) {
+				text = "\n"; // Make empty list have at least one item.
+			}
+			after_list_open_tag = false;
+
+			if (tag == "/ol" || tag == "/ul") {
+				if (!text.is_empty()) {
+					// Make sure text ends with a newline character, that is, the last item
+					// will wrap at the end of block.
+					if (!text.ends_with("\n")) {
+						text += "\n";
+					}
+				} else if (!after_list_close_tag) {
+					text = "\n"; // Make the innermost list item wrap at the end of lists.
+				}
+				after_list_close_tag = true;
+			} else {
+				after_list_close_tag = false;
+			}
+
+			if (!text.is_empty()) {
+				add_text(text);
 			}
 
 			tag_stack.pop_front();
@@ -3447,8 +3488,23 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (tag != "/img" && tag != "/dropcap") {
 				pop();
 			}
+			continue;
+		}
 
-		} else if (tag == "b") {
+		if (tag == "ol" || tag.begins_with("ol ") || tag == "ul" || tag.begins_with("ul ")) {
+			if (text.is_empty() && after_list_open_tag) {
+				text = "\n"; // Make each list have at least one item at the beginning.
+			}
+			after_list_open_tag = true;
+		} else {
+			after_list_open_tag = false;
+		}
+		if (!text.is_empty()) {
+			add_text(text);
+		}
+		after_list_close_tag = false;
+
+		if (tag == "b") {
 			//use bold font
 			in_bold = true;
 			if (in_italics) {
