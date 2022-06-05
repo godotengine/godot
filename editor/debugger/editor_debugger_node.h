@@ -116,6 +116,7 @@ private:
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
+	void _update_errors();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
