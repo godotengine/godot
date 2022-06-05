@@ -191,7 +191,7 @@ void ShaderCreateDialog::_create_new() {
 	if (!is_built_in) {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		shader->set_path(lpath);
-		Error err = ResourceSaver::save(lpath, shader, ResourceSaver::FLAG_CHANGE_PATH);
+		Error err = ResourceSaver::save(lpath, shader, ResourceSaverFlags::FLAG_CHANGE_PATH);
 		if (err != OK) {
 			alert->set_text(TTR("Error - Could not create shader in filesystem."));
 			alert->popup_centered();

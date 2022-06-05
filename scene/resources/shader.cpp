@@ -210,7 +210,7 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverShader::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShader::save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags) {
 	Ref<Shader> shader = p_resource;
 	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
 

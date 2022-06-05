@@ -594,9 +594,9 @@ private:
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
-	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
-	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
-	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
+	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags);
+	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags);
+	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags);
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);

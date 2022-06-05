@@ -72,9 +72,9 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 	Error err = font->load_bitmap_font(p_source_file);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load font to file \"" + p_source_file + "\".");
 
-	int flg = ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	ResourceSaverFlags flg = ResourceSaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS;
 	if ((bool)p_options["compress"]) {
-		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
+		flg |= ResourceSaverFlags::FLAG_COMPRESS;
 	}
 
 	print_verbose("Saving to: " + p_save_path + ".fontdata");

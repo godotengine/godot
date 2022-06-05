@@ -184,13 +184,13 @@ class ResourceFormatSaverTextInstance {
 	String _write_resource(const Ref<Resource> &res);
 
 public:
-	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags = ResourceSaverFlags::FLAG_NONE);
 };
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags = ResourceSaverFlags::FLAG_NONE);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

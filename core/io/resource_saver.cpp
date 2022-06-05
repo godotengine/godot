@@ -41,7 +41,7 @@ bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
-Error ResourceFormatSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaver::save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags) {
 	int64_t res;
 	if (GDVIRTUAL_CALL(_save, p_path, p_resource, p_flags, res)) {
 		return (Error)res;
@@ -75,7 +75,7 @@ void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
 
-Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceSaver::save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags) {
 	String extension = p_path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
 

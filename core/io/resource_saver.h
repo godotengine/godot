@@ -35,6 +35,17 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 
+enum ResourceSaverFlags {
+	FLAG_NONE = 0,
+	FLAG_RELATIVE_PATHS = 1,
+	FLAG_BUNDLE_RESOURCES = 2,
+	FLAG_CHANGE_PATH = 4,
+	FLAG_OMIT_EDITOR_PROPERTIES = 8,
+	FLAG_SAVE_BIG_ENDIAN = 16,
+	FLAG_COMPRESS = 32,
+	FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
+};
+
 class ResourceFormatSaver : public RefCounted {
 	GDCLASS(ResourceFormatSaver, RefCounted);
 
@@ -46,7 +57,7 @@ protected:
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 
 public:
-	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags = ResourceSaverFlags::FLAG_NONE);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 
@@ -70,18 +81,7 @@ class ResourceSaver {
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
 
 public:
-	enum SaverFlags {
-		FLAG_NONE = 0,
-		FLAG_RELATIVE_PATHS = 1,
-		FLAG_BUNDLE_RESOURCES = 2,
-		FLAG_CHANGE_PATH = 4,
-		FLAG_OMIT_EDITOR_PROPERTIES = 8,
-		FLAG_SAVE_BIG_ENDIAN = 16,
-		FLAG_COMPRESS = 32,
-		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
-	};
-
-	static Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static Error save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags = ResourceSaverFlags::FLAG_NONE);
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
@@ -99,5 +99,15 @@ public:
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };
+
+VARIANT_ENUM_CAST(ResourceSaverFlags);
+
+inline ResourceSaverFlags operator|(ResourceSaverFlags a, ResourceSaverFlags b) {
+	return (ResourceSaverFlags)((int)a | (int)b);
+}
+
+inline ResourceSaverFlags &operator|=(ResourceSaverFlags &a, ResourceSaverFlags b) {
+	return (ResourceSaverFlags &)((int &)a |= (int)b);
+}
 
 #endif // RESOURCE_SAVER_H

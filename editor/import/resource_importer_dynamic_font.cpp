@@ -307,9 +307,9 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 		TS->font_set_spacing(conf, size.x, TextServer::SPACING_GLYPH, spacing.y);
 	}
 
-	int flg = ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	ResourceSaverFlags flg = ResourceSaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS;
 	if ((bool)p_options["compress"]) {
-		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
+		flg |= ResourceSaverFlags::FLAG_COMPRESS;
 	}
 
 	print_verbose("Saving to: " + p_save_path + ".fontdata");

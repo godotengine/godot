@@ -94,20 +94,9 @@ protected:
 	static ResourceSaver *singleton;
 
 public:
-	enum SaverFlags {
-		FLAG_NONE = 0,
-		FLAG_RELATIVE_PATHS = 1,
-		FLAG_BUNDLE_RESOURCES = 2,
-		FLAG_CHANGE_PATH = 4,
-		FLAG_OMIT_EDITOR_PROPERTIES = 8,
-		FLAG_SAVE_BIG_ENDIAN = 16,
-		FLAG_COMPRESS = 32,
-		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
-	};
-
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 
 	ResourceSaver() { singleton = this; }
@@ -715,8 +704,6 @@ public:
 
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
-
-VARIANT_ENUM_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);

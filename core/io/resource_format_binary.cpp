@@ -1873,10 +1873,10 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	}
 }
 
-Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags) {
 	Error err;
 	Ref<FileAccess> f;
-	if (p_flags & ResourceSaver::FLAG_COMPRESS) {
+	if (p_flags & ResourceSaverFlags::FLAG_COMPRESS) {
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
 		fac->configure("RSCC");
@@ -1888,11 +1888,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create file '" + p_path + "'.");
 
-	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
-	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
-	bundle_resources = p_flags & ResourceSaver::FLAG_BUNDLE_RESOURCES;
-	big_endian = p_flags & ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
-	takeover_paths = p_flags & ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	relative_paths = p_flags & ResourceSaverFlags::FLAG_RELATIVE_PATHS;
+	skip_editor = p_flags & ResourceSaverFlags::FLAG_OMIT_EDITOR_PROPERTIES;
+	bundle_resources = p_flags & ResourceSaverFlags::FLAG_BUNDLE_RESOURCES;
+	big_endian = p_flags & ResourceSaverFlags::FLAG_SAVE_BIG_ENDIAN;
+	takeover_paths = p_flags & ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	if (!p_path.begins_with("res://")) {
 		takeover_paths = false;
@@ -1903,7 +1903,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	_find_resources(p_resource, true);
 
-	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
+	if (!(p_flags & ResourceSaverFlags::FLAG_COMPRESS)) {
 		//save header compressed
 		static const uint8_t header[4] = { 'R', 'S', 'R', 'C' };
 		f->store_buffer(header, 4);
@@ -2099,7 +2099,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	return OK;
 }
 
-Error ResourceFormatSaverBinary::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverBinary::save(const String &p_path, const Ref<Resource> &p_resource, ResourceSaverFlags p_flags) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
 	return saver.save(local_path, p_resource, p_flags);

@@ -1204,13 +1204,13 @@ void EditorNode::edit_node(Node *p_node) {
 
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 	editor_data.apply_changes_in_editors();
-	int flg = 0;
+	ResourceSaverFlags flg = ResourceSaverFlags::FLAG_NONE;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
-		flg |= ResourceSaver::FLAG_COMPRESS;
+		flg |= ResourceSaverFlags::FLAG_COMPRESS;
 	}
 
 	String path = ProjectSettings::get_singleton()->localize_path(p_path);
-	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
 		if (ResourceLoader::is_imported(p_resource->get_path())) {
@@ -1417,7 +1417,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	ERR_FAIL_COND_MSG(err != OK, "Cannot save config file to '" + path + "'.");
 }
 
-bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
+bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags) {
 	if (p_res.is_null()) {
 		return false;
 	}
@@ -1429,11 +1429,11 @@ bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resour
 	bool changed = p_res->is_edited();
 	p_res->set_edited(false);
 
-	bool subchanged = _find_and_save_edited_subresources(p_res.ptr(), processed, flags);
+	bool subchanged = _find_and_save_edited_subresources(p_res.ptr(), processed, p_flags);
 
 	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
-			ResourceSaver::save(p_res->get_path(), p_res, flags);
+			ResourceSaver::save(p_res->get_path(), p_res, p_flags);
 		}
 		processed[p_res] = false; // Because it's a file.
 		return false;
@@ -1443,7 +1443,7 @@ bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resour
 	}
 }
 
-bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
+bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags) {
 	bool ret_changed = false;
 	List<PropertyInfo> pi;
 	obj->get_property_list(&pi);
@@ -1456,7 +1456,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 			case Variant::OBJECT: {
 				Ref<Resource> res = obj->get(E.name);
 
-				if (_find_and_save_resource(res, processed, flags)) {
+				if (_find_and_save_resource(res, processed, p_flags)) {
 					ret_changed = true;
 				}
 
@@ -1467,7 +1467,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 				for (int i = 0; i < len; i++) {
 					const Variant &v = varray.get(i);
 					Ref<Resource> res = v;
-					if (_find_and_save_resource(res, processed, flags)) {
+					if (_find_and_save_resource(res, processed, p_flags)) {
 						ret_changed = true;
 					}
 				}
@@ -1480,7 +1480,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 				for (const Variant &F : keys) {
 					Variant v = d[F];
 					Ref<Resource> res = v;
-					if (_find_and_save_resource(res, processed, flags)) {
+					if (_find_and_save_resource(res, processed, p_flags)) {
 						ret_changed = true;
 					}
 				}
@@ -1493,15 +1493,15 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 	return ret_changed;
 }
 
-void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
-	_find_and_save_edited_subresources(scene, processed, flags);
+void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, ResourceSaverFlags p_flags) {
+	_find_and_save_edited_subresources(scene, processed, p_flags);
 
 	for (int i = 0; i < scene->get_child_count(); i++) {
 		Node *n = scene->get_child(i);
 		if (n->get_owner() != editor_data.get_edited_scene_root()) {
 			continue;
 		}
-		_save_edited_subresources(n, processed, flags);
+		_save_edited_subresources(n, processed, p_flags);
 	}
 }
 
@@ -1653,11 +1653,11 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, HashSet<Ref<
 int EditorNode::_save_external_resources() {
 	// Save external resources and its subresources if any was modified.
 
-	int flg = 0;
+	ResourceSaverFlags flg = ResourceSaverFlags::FLAG_NONE;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
-		flg |= ResourceSaver::FLAG_COMPRESS;
+		flg |= ResourceSaverFlags::FLAG_COMPRESS;
 	}
-	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	flg |= ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	HashSet<Ref<Resource>> edited_subresources;
 	int saved = 0;
@@ -1743,11 +1743,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	int flg = 0;
+	ResourceSaverFlags flg = ResourceSaverFlags::FLAG_NONE;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
-		flg |= ResourceSaver::FLAG_COMPRESS;
+		flg |= ResourceSaverFlags::FLAG_COMPRESS;
 	}
-	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	flg |= ResourceSaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	err = ResourceSaver::save(p_file, sdata, flg);
 
@@ -2126,7 +2126,7 @@ void EditorNode::_save_default_environment() {
 
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
 		HashMap<Ref<Resource>, bool> processed;
-		_find_and_save_edited_subresources(fallback.ptr(), processed, 0);
+		_find_and_save_edited_subresources(fallback.ptr(), processed, ResourceSaverFlags::FLAG_NONE);
 		save_resource_in_path(fallback, fallback->get_path());
 	}
 }

@@ -2424,9 +2424,9 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			return;
 		}
 
-		int flg = 0;
+		ResourceSaverFlags flg = ResourceSaverFlags::FLAG_NONE;
 		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
-			flg |= ResourceSaver::FLAG_COMPRESS;
+			flg |= ResourceSaverFlags::FLAG_COMPRESS;
 		}
 
 		err = ResourceSaver::save(p_file, sdata, flg);
