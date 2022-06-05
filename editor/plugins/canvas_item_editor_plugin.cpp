@@ -1284,7 +1284,9 @@ void CanvasItemEditor::_pan_callback(Vector2 p_scroll_vec) {
 }
 
 void CanvasItemEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	zoom_widget->set_zoom_by_increments((int)SIGN(p_scroll_vec.y), p_alt);
+	int scroll_sign = (int)SIGN(p_scroll_vec.y);
+	// Inverted so that scrolling up (-1) zooms in, scrolling down (+1) zooms out.
+	zoom_widget->set_zoom_by_increments(-scroll_sign, p_alt);
 	if (!Math::is_equal_approx(ABS(p_scroll_vec.y), (real_t)1.0)) {
 		// Handle high-precision (analog) scrolling.
 		zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * p_scroll_vec.y + 1.f));
