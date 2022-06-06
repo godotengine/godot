@@ -3458,8 +3458,8 @@ void Viewport::_own_world_3d_changed() {
 	_update_audio_listener_3d();
 }
 
-void Viewport::set_use_own_world_3d(bool p_world_3d) {
-	if (p_world_3d == own_world_3d.is_valid()) {
+void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
+	if (p_use_own_world_3d == own_world_3d.is_valid()) {
 		return;
 	}
 
@@ -3467,17 +3467,17 @@ void Viewport::set_use_own_world_3d(bool p_world_3d) {
 		_propagate_exit_world_3d(this);
 	}
 
-	if (!p_world_3d) {
-		own_world_3d = Ref<World3D>();
-		if (world_3d.is_valid()) {
-			world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
-		}
-	} else {
+	if (p_use_own_world_3d) {
 		if (world_3d.is_valid()) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
 			own_world_3d = Ref<World3D>(memnew(World3D));
+		}
+	} else {
+		own_world_3d = Ref<World3D>();
+		if (world_3d.is_valid()) {
+			world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
 		}
 	}
 
