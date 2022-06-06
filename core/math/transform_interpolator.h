@@ -50,7 +50,7 @@ class Transform;
 
 class TransformInterpolator {
 public:
-	enum Method {
+	enum Method : unsigned int {
 		INTERP_LERP,
 		INTERP_SLERP,
 		INTERP_SCALED_SLERP,
