@@ -1613,6 +1613,7 @@ void RichTextLabel::_notification(int p_what) {
 			update();
 		} break;
 
+		case NOTIFICATION_PREDELETE:
 		case NOTIFICATION_EXIT_TREE: {
 			_stop_thread();
 		} break;
@@ -2555,6 +2556,10 @@ bool RichTextLabel::_validate_line_caches() {
 
 void RichTextLabel::_process_line_caches() {
 	// Shape invalid lines.
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	MutexLock data_lock(data_mutex);
 	Rect2 text_rect = _get_text_rect();
 
