@@ -2895,8 +2895,8 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Viewport::set_use_own_world(bool p_world) {
-	if (p_world == own_world.is_valid()) {
+void Viewport::set_use_own_world(bool p_use_own_world) {
+	if (p_use_own_world == own_world.is_valid()) {
 		return;
 	}
 
@@ -2904,17 +2904,17 @@ void Viewport::set_use_own_world(bool p_world) {
 		_propagate_exit_world(this);
 	}
 
-	if (!p_world) {
-		own_world = Ref<World>();
-		if (world.is_valid()) {
-			world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
-		}
-	} else {
+	if (p_use_own_world) {
 		if (world.is_valid()) {
 			own_world = world->duplicate();
 			world->connect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
 		} else {
 			own_world = Ref<World>(memnew(World));
+		}
+	} else {
+		own_world = Ref<World>();
+		if (world.is_valid()) {
+			world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
 		}
 	}
 
