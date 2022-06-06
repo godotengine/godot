@@ -190,6 +190,14 @@ struct PropertyInfo {
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
+	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
+			type((Variant::Type)pinfo.type),
+			name(pinfo.name),
+			class_name(pinfo.class_name), // can be null
+			hint((PropertyHint)pinfo.hint),
+			hint_string(pinfo.hint_string), // can be null
+			usage(pinfo.usage) {}
+
 	bool operator==(const PropertyInfo &p_info) const {
 		return ((type == p_info.type) &&
 				(name == p_info.name) &&

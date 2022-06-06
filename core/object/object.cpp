@@ -493,7 +493,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		uint32_t pcount;
 		const GDNativePropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
 		for (uint32_t i = 0; i < pcount; i++) {
-			p_list->push_back(PropertyInfo(Variant::Type(pinfo[i].type), pinfo[i].class_name, PropertyHint(pinfo[i].hint), pinfo[i].hint_string, pinfo[i].usage, pinfo[i].class_name));
+			p_list->push_back(PropertyInfo(pinfo[i]));
 		}
 		if (_extension->free_property_list) {
 			_extension->free_property_list(_extension_instance, pinfo);
