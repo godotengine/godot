@@ -2116,7 +2116,7 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "INFINITY", Vector3(INFINITY, INFINITY, INFINITY));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
@@ -2145,7 +2145,7 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "INFINITY", Vector2(INFINITY, INFINITY));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
