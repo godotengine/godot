@@ -1472,6 +1472,10 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(String, chr, sarray("char"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
 
+	/* StringName */
+
+	bind_method(StringName, hash, sarray(), varray());
+
 	/* Vector2 */
 
 	bind_method(Vector2, angle, sarray(), varray());
@@ -1684,6 +1688,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_name_count, sarray(), varray());
 	bind_method(NodePath, get_name, sarray("idx"), varray());
 	bind_method(NodePath, get_subname_count, sarray(), varray());
+	bind_method(NodePath, hash, sarray(), varray());
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
 	bind_method(NodePath, get_as_property_path, sarray(), varray());

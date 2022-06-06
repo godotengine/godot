@@ -1329,7 +1329,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
-		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform.columns[0][1]);
+		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.
@@ -3272,7 +3272,7 @@ void TextServerAdvanced::font_set_global_oversampling(double p_oversampling) {
 int64_t TextServerAdvanced::_convert_pos(const String &p_utf32, const Char16String &p_utf16, int64_t p_pos) const {
 	int64_t limit = p_pos;
 	if (p_utf32.length() != p_utf16.length()) {
-		const UChar *data = p_utf16.ptr();
+		const UChar *data = p_utf16.get_data();
 		for (int i = 0; i < p_pos; i++) {
 			if (U16_IS_LEAD(data[i])) {
 				limit--;
@@ -5591,7 +5591,7 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 
 	HashSet<int> breaks;
 	UErrorCode err = U_ZERO_ERROR;
-	UBreakIterator *bi = ubrk_open(UBRK_LINE, p_language.ascii().get_data(), (const UChar *)utf16.ptr(), utf16.length(), &err);
+	UBreakIterator *bi = ubrk_open(UBRK_LINE, p_language.ascii().get_data(), (const UChar *)utf16.get_data(), utf16.length(), &err);
 	if (U_FAILURE(err)) {
 		// No data loaded - use fallback.
 		for (int i = 0; i < p_string.length(); i++) {
