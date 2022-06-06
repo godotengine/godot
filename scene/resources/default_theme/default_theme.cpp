@@ -569,9 +569,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> style_pp = sb_expand(make_stylebox(popup_bg_png, 5, 5, 5, 5, 4, 4, 4, 4), 2, 2, 2, 2);
 
 	Ref<StyleBoxTexture> selected = make_stylebox(selection_png, 6, 6, 6, 6);
-	for (int i = 0; i < 4; i++) {
-		selected->set_expand_margin_size(Margin(i), 2 * scale);
-	}
+	selected->set_expand_margin_size(MARGIN_TOP, 2 * scale);
+	selected->set_expand_margin_size(MARGIN_BOTTOM, 2 * scale);
+	selected->set_expand_margin_size(MARGIN_LEFT, 6 * scale);
+	selected->set_expand_margin_size(MARGIN_RIGHT, 6 * scale);
 
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
 
