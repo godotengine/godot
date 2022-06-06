@@ -157,6 +157,12 @@
 				For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:load_path"[/code] has 2 subnames.
 			</description>
 		</method>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the 32-bit hash value representing the [NodePath]'s contents.
+			</description>
+		</method>
 		<method name="is_absolute" qualifiers="const">
 			<return type="bool" />
 			<description>

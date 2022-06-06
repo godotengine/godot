@@ -67,8 +67,8 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include <godot_cpp/templates/hash_map.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/set.hpp>
 #include <godot_cpp/templates/thread_work_pool.hpp>
 #include <godot_cpp/templates/vector.hpp>
 
