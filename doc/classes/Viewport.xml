@@ -227,7 +227,7 @@
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
-			If [code]true[/code], the viewport will use the [World3D] defined in [member world_3d].
+			If [code]true[/code], the viewport will use a unique copy of the [World3D] defined in [member world_3d].
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.

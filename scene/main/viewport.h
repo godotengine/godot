@@ -676,7 +676,7 @@ public:
 	Ref<World3D> get_world_3d() const;
 	Ref<World3D> find_world_3d() const;
 	void _own_world_3d_changed();
-	void set_use_own_world_3d(bool p_world_3d);
+	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
