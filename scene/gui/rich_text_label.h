@@ -117,6 +117,10 @@ private:
 		int char_count = 0;
 
 		Line() { text_buf.instantiate(); }
+
+		_FORCE_INLINE_ float get_height(float line_separation) const {
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
+		}
 	};
 
 	struct Item {
@@ -503,6 +507,8 @@ private:
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
+
+	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;

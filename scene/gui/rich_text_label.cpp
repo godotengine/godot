@@ -414,7 +414,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 	}
 
 	l.offset.y = p_h;
-	return l.offset.y + l.text_buf->get_size().y + l.text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
+	return _calculate_line_vertical_offset(l);
 }
 
 float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset) {
@@ -683,7 +683,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	*r_char_offset = l.char_offset + l.char_count;
 
 	l.offset.y = p_h;
-	return l.offset.y + l.text_buf->get_size().y + l.text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
+	return _calculate_line_vertical_offset(l);
 }
 
 int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
@@ -1566,7 +1566,7 @@ int RichTextLabel::_find_first_line(int p_from, int p_to, int p_vofs) const {
 	while (l < r) {
 		int m = Math::floor(double(l + r) / 2.0);
 		MutexLock lock(main->lines[m].text_buf->get_mutex());
-		int ofs = main->lines[m].offset.y + main->lines[m].text_buf->get_size().y + main->lines[m].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
+		int ofs = _calculate_line_vertical_offset(main->lines[m]);
 		if (ofs < p_vofs) {
 			l = m + 1;
 		} else {
@@ -1574,6 +1574,10 @@ int RichTextLabel::_find_first_line(int p_from, int p_to, int p_vofs) const {
 		}
 	}
 	return l;
+}
+
+_FORCE_INLINE_ float RichTextLabel::_calculate_line_vertical_offset(const RichTextLabel::Line &line) const {
+	return line.get_height(get_theme_constant(SNAME("line_separation")));
 }
 
 void RichTextLabel::_notification(int p_what) {
@@ -2489,7 +2493,7 @@ bool RichTextLabel::_validate_line_caches() {
 		// Resize lines without reshaping.
 		int fi = main->first_resized_line.load();
 
-		float total_height = 0;
+		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
 			total_height = _resize_line(main, i, base_font, base_font_size, text_rect.get_size().width - scroll_w, total_height);
 
@@ -2560,10 +2564,9 @@ void RichTextLabel::_process_line_caches() {
 	int fi = main->first_invalid_line.load();
 	int total_chars = (fi == 0) ? 0 : (main->lines[fi].char_offset + main->lines[fi].char_count);
 
-	float total_height = 0;
+	float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 	for (int i = fi; i < (int)main->lines.size(); i++) {
 		total_height = _shape_line(main, i, base_font, base_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
-
 		updating_scroll = true;
 		bool exceeds = total_height > ctrl_height && scroll_active;
 		if (exceeds != scroll_visible) {
@@ -2577,11 +2580,11 @@ void RichTextLabel::_process_line_caches() {
 				scroll_w = 0;
 				vscroll->hide();
 			}
-
 			main->first_invalid_line.store(0);
 			main->first_resized_line.store(0);
 			main->first_invalid_font_line.store(0);
 
+			// since scroll was added or removed we need to resize all lines
 			total_height = 0;
 			for (int j = 0; j <= i; j++) {
 				total_height = _resize_line(main, j, base_font, base_font_size, text_rect.get_size().width - scroll_w, total_height);
