@@ -297,6 +297,13 @@
 				Returns how many connections this [code]region[/code] has with other regions in the map.
 			</description>
 		</method>
+		<method name="region_get_enter_cost" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the [code]enter_cost[/code] of this [code]region[/code].
+			</description>
+		</method>
 		<method name="region_get_layers" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="region" type="RID" />
@@ -309,6 +316,21 @@
 			<argument index="0" name="region" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [code]region[/code] is currently assigned to.
+			</description>
+		</method>
+		<method name="region_get_travel_cost" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the [code]travel_cost[/code] of this [code]region[/code].
+			</description>
+		</method>
+		<method name="region_set_enter_cost" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="enter_cost" type="float" />
+			<description>
+				Sets the [code]enter_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
 		<method name="region_set_layers" qualifiers="const">
@@ -341,6 +363,14 @@
 			<argument index="1" name="transform" type="Transform3D" />
 			<description>
 				Sets the global transformation for the region.
+			</description>
+		</method>
+		<method name="region_set_travel_cost" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="travel_cost" type="float" />
+			<description>
+				Sets the [code]travel_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
 		<method name="set_active" qualifiers="const">

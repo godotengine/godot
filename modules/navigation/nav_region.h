@@ -46,6 +46,8 @@ class NavRegion : public NavRid {
 	Transform3D transform;
 	Ref<NavigationMesh> mesh;
 	uint32_t layers = 1;
+	float enter_cost = 0.0;
+	float travel_cost = 1.0;
 	Vector<gd::Edge::Connection> connections;
 
 	bool polygons_dirty = true;
@@ -64,6 +66,12 @@ public:
 	NavMap *get_map() const {
 		return map;
 	}
+
+	void set_enter_cost(float p_enter_cost) { enter_cost = MAX(p_enter_cost, 0.0); }
+	float get_enter_cost() const { return enter_cost; }
+
+	void set_travel_cost(float p_travel_cost) { travel_cost = MAX(p_travel_cost, 0.0); }
+	float get_travel_cost() const { return travel_cost; }
 
 	void set_layers(uint32_t p_layers);
 	uint32_t get_layers() const;

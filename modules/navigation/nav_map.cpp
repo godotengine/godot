@@ -140,6 +140,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	float reachable_d = 1e30;
 	bool is_reachable = true;
 
+	gd::NavigationPoly *prev_least_cost_poly = nullptr;
+
 	while (true) {
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
 		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
@@ -156,9 +158,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					continue;
 				}
 
+				float region_enter_cost = 0.0;
+				float region_travel_cost = least_cost_poly->poly->owner->get_travel_cost();
+
+				if (prev_least_cost_poly != nullptr && !(prev_least_cost_poly->poly->owner->get_self() == least_cost_poly->poly->owner->get_self())) {
+					region_enter_cost = least_cost_poly->poly->owner->get_enter_cost();
+				}
+				prev_least_cost_poly = least_cost_poly;
+
 				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly->entry, pathway);
-				const float new_distance = least_cost_poly->entry.distance_to(new_entry) + least_cost_poly->traveled_distance;
+				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly->traveled_distance;
 
 				const std::vector<gd::NavigationPoly>::iterator it = std::find(
 						navigation_polys.begin(),
@@ -238,7 +248,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		for (List<uint32_t>::Element *element = to_visit.front(); element != nullptr; element = element->next()) {
 			gd::NavigationPoly *np = &navigation_polys[element->get()];
 			float cost = np->traveled_distance;
-			cost += np->entry.distance_to(end_point);
+			cost += (np->entry.distance_to(end_point) * np->poly->owner->get_travel_cost());
 			if (cost < least_cost) {
 				least_cost_id = np->self_id;
 				least_cost = cost;
@@ -249,7 +259,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
-			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
+			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
 			if (reachable_d > d) {
 				reachable_d = d;
 				reachable_end = navigation_polys[least_cost_id].poly;
