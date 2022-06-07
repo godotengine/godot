@@ -398,6 +398,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			if (grabbing_spinner) {
 				grabber->hide();
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
