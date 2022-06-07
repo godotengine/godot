@@ -60,6 +60,7 @@
 #include "servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/taa_resolve.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
@@ -89,6 +90,20 @@ private:
 		RID shader_version;
 		RID pipeline;
 	} FSR_upscale;
+
+	struct TAAResolvePushConstant {
+		float resolution_width;
+		float resolution_height;
+		float disocclusion_threshold;
+		float disocclusion_scale;
+	};
+
+	struct TAAResolve {
+		TAAResolvePushConstant push_constant;
+		TaaResolveShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+	} TAA_resolve;
 
 	struct CubemapRoughnessPushConstant {
 		uint32_t face_id;
@@ -654,6 +669,7 @@ public:
 	bool get_prefer_raster_effects();
 
 	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
+	void taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);

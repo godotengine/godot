@@ -171,7 +171,7 @@ sdfgi;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-layout(set = 1, binding = 0, std140) uniform SceneData {
+struct SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
 	mat4 inv_view_matrix;
@@ -249,11 +249,19 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
+	vec2 taa_jitter;
+	uvec2 pad;
+};
+
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
+	SceneData prev_data;
 }
-scene_data;
+scene_data_block;
 
 struct InstanceData {
 	mat4 transform;
+	mat4 prev_transform;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)

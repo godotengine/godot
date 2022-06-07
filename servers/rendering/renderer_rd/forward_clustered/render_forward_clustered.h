@@ -89,9 +89,11 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID specular;
 		RID normal_roughness_buffer;
 		RID voxelgi_buffer;
+		RID velocity_buffer;
 
 		RS::ViewportMSAA msaa;
 		RD::TextureSamples texture_samples;
+		bool use_taa;
 
 		RID color_msaa;
 		RID depth_msaa;
@@ -99,6 +101,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID normal_roughness_buffer_msaa;
 		RID roughness_buffer_msaa;
 		RID voxelgi_buffer_msaa;
+		RID velocity_buffer_msaa;
 
 		RID depth_fb;
 		RID depth_normal_roughness_fb;
@@ -112,8 +115,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
 		void ensure_voxelgi();
+		void ensure_velocity();
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count);
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 
 		~RenderBufferDataForwardClustered();
@@ -128,6 +132,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	virtual void _base_uniforms_changed() override;
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) override;
 
 	bool base_uniform_set_updated = false;
 	void _update_render_base_uniform_set();
@@ -148,7 +153,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	enum ColorPassFlags {
 		COLOR_PASS_FLAG_TRANSPARENT = 1 << 0,
 		COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
-		COLOR_PASS_FLAG_MULTIVIEW = 1 << 2
+		COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
+		COLOR_PASS_FLAG_MOTION_VECTORS = 1 << 3,
 	};
 
 	struct GeometryInstanceSurfaceDataCache;
@@ -300,6 +306,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float reflection_multiplier;
 
 			uint32_t pancake_shadows;
+
+			float taa_jitter[2];
+			uint32_t pad[2];
 		};
 
 		struct PushConstant {
@@ -310,6 +319,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		struct InstanceData {
 			float transform[16];
+			float prev_transform[16];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
@@ -317,7 +327,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float lightmap_uv_scale[4];
 		};
 
-		UBO ubo;
+		UBO ubo_data[2];
+		UBO &ubo = ubo_data[0];
+		UBO &prev_ubo = ubo_data[1];
 
 		LocalVector<RID> uniform_buffers;
 
@@ -492,7 +504,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		//used during setup
 		uint32_t base_flags = 0;
+		uint64_t prev_transform_change_frame = 0xFFFFFFFF;
+		bool prev_transform_dirty = true;
 		Transform3D transform;
+		Transform3D prev_transform;
 		RID voxel_gi_instances[MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE];
 		RID lightmap_instance;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;

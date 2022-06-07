@@ -3340,6 +3340,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="viewport_set_use_taa">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], use Temporal Anti-Aliasing.
+			</description>
+		</method>
 		<method name="viewport_set_use_xr">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -4104,6 +4112,8 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
