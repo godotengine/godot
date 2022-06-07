@@ -396,8 +396,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(vsnode.ptr());
 	bool is_group = !group_node.is_null();
 
-	bool is_comment = false;
-
 	Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(group_node.ptr());
 	bool is_expression = !expression_node.is_null();
 	String expression = "";
@@ -409,8 +407,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	// Create graph node.
 	GraphNode *node = memnew(GraphNode);
-	graph->add_child(node);
-	node->set_theme(vstheme);
 	editor->_update_created_node(node);
 	register_link(p_type, p_id, vsnode.ptr(), node);
 
@@ -449,7 +445,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (is_resizable) {
 		Ref<VisualShaderNodeComment> comment_node = Object::cast_to<VisualShaderNodeComment>(vsnode.ptr());
 		if (comment_node.is_valid()) {
-			is_comment = true;
 			node->set_comment(true);
 
 			Label *comment_label = memnew(Label);
@@ -460,6 +455,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		}
 		editor->call_deferred(SNAME("_set_node_size"), (int)p_type, p_id, size);
 	}
+
+	graph->add_child(node);
+	node->set_theme(vstheme);
 
 	Ref<VisualShaderNodeParticleEmit> emit = vsnode;
 	if (emit.is_valid()) {
@@ -1017,10 +1015,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_box->set_draw_line_numbers(true);
 
 		expression_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
-	}
-
-	if (is_comment) {
-		graph->move_child(node, 0); // to prevents a bug where comment node overlaps its content
 	}
 }
 

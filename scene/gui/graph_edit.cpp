@@ -349,7 +349,25 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
 	ERR_FAIL_COND(!gn);
 	if (gn->is_comment()) {
-		move_child(gn, 0);
+		// Check whether the selected comment node encloses another comment node.
+		int enclosed_comment_node_min_idx = INT_MAX;
+		bool has_enclosed_comments = false;
+		for (int i = 0; i < comment_enclosed_nodes[gn->get_name()].size(); i++) {
+			GraphNode *enclosed_child_comment = comment_enclosed_nodes[gn->get_name()][i];
+
+			if (enclosed_child_comment->is_comment() && (enclosed_child_comment != gn)) {
+				has_enclosed_comments = true;
+				int idx = enclosed_child_comment->get_index();
+				enclosed_comment_node_min_idx = MIN(enclosed_comment_node_min_idx, idx);
+			}
+		}
+		if (has_enclosed_comments) {
+			int new_index = MAX(MIN(background_nodes_separator_idx, enclosed_comment_node_min_idx - 1), 0);
+			move_child(gn, new_index);
+		} else {
+			move_child(gn, background_nodes_separator_idx);
+		}
+
 	} else {
 		gn->raise();
 	}
@@ -387,6 +405,19 @@ void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
 	connections_layer->queue_redraw();
 }
 
+void GraphEdit::_graph_node_resized(Vector2 p_new_minsize, Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	if (gn && gn->is_comment()) {
+		_update_comment_enclosed_nodes_list(gn, comment_enclosed_nodes);
+		_graph_node_raised(p_gn);
+	}
+}
+
+void GraphEdit::_reorder_comment_nodes(GraphNode *p_node) {
+	_update_comment_enclosed_nodes_list(p_node, comment_enclosed_nodes);
+	_graph_node_raised(p_node);
+}
+
 void GraphEdit::add_child_notify(Node *p_child) {
 	Control::add_child_notify(p_child);
 
@@ -399,7 +430,18 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->connect("selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
 		gn->connect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
 		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
+
+		if (gn->is_comment()) {
+			background_nodes_separator_idx++;
+			gn->connect("minimum_size_changed", callable_mp(this, &GraphEdit::_reorder_comment_nodes).bind(gn));
+
+			// Move connections layer to ensure that connection lines are drawn in front of comment nodes, but behind normal nodes.
+			move_child(connections_layer, background_nodes_separator_idx);
+			_reorder_comment_nodes(gn);
+		}
+
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
+		gn->connect("resize_request", callable_mp(this, &GraphEdit::_graph_node_resized).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
 		_graph_node_moved(gn);
@@ -428,6 +470,12 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		gn->disconnect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
 		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
+		gn->disconnect("resize_request", callable_mp(this, &GraphEdit::_graph_node_resized));
+
+		if (gn->is_comment()) {
+			background_nodes_separator_idx--;
+			gn->disconnect("minimum_size_changed", callable_mp(this, &GraphEdit::_reorder_comment_nodes));
+		}
 
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
 		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
@@ -530,7 +578,7 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 	Vector<GraphNode *> enclosed_nodes;
 	for (int i = 0; i < get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || gn->is_selected()) {
+		if (!gn || gn == p_node) {
 			continue;
 		}
 
@@ -1244,6 +1292,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						gn->set_drag(false);
 						if (gn->is_comment()) {
 							_set_drag_comment_enclosed_nodes(gn, comment_enclosed_nodes, false);
+							_reorder_comment_nodes(gn);
 						}
 					}
 				}
@@ -1312,7 +1361,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					if (o_gn->is_selected()) {
 						o_gn->set_drag(true);
 						if (o_gn->is_comment()) {
-							_update_comment_enclosed_nodes_list(o_gn, comment_enclosed_nodes);
+							_reorder_comment_nodes(o_gn);
 							_set_drag_comment_enclosed_nodes(o_gn, comment_enclosed_nodes, true);
 						}
 					}
@@ -2451,7 +2500,7 @@ GraphEdit::GraphEdit() {
 	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer, false, INTERNAL_MODE_FRONT);
+	add_child(connections_layer, false);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset

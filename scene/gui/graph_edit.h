@@ -186,15 +186,22 @@ private:
 	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
 	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
+	void _reorder_comment_nodes(GraphNode *p_node);
+
 	void _graph_node_selected(Node *p_gn);
 	void _graph_node_deselected(Node *p_gn);
 	void _graph_node_raised(Node *p_gn);
+	void _graph_node_resized(Vector2 p_new_minsize, Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
 	void _graph_node_slot_updated(int p_index, Node *p_gn);
 
 	void _update_scroll();
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
+
+	// This separates the children in two layers to ensure the order
+	// of both background nodes (e.g comment nodes) and foreground nodes.
+	int background_nodes_separator_idx = 0;
 
 	Control *connections_layer = nullptr;
 	GraphEditFilter *top_layer = nullptr;
