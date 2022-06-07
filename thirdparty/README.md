@@ -432,6 +432,15 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/Auburn/FastNoiseLite
   * Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022) + custom changes
   * License: MIT
+- `ok_color.h`
+  * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h
+  * Version: git (d69831edb90ffdcd08b7e64da3c5405acd48ad2c, 2022)
+  * License: MIT
+  * Modifications: License included in header.
+- `ok_color_shader.h`
+  * https://www.shadertoy.com/view/7sK3D1
+  * Version: 2021-09-13
+  * License: MIT
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html

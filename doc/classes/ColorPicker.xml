@@ -91,6 +91,9 @@
 		<constant name="SHAPE_VHS_CIRCLE" value="2" enum="PickerShapeType">
 			HSV Color Model circle color space. Use Saturation as a radius.
 		</constant>
+		<constant name="SHAPE_OKHSL_CIRCLE" value="3" enum="PickerShapeType">
+			HSL OK Color Model circle color space.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="h_width" data_type="constant" type="int" default="30">
