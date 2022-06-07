@@ -167,6 +167,7 @@ void PopupMenu::_activate_submenu(int over) {
 
 	pm->set_position(pos);
 	pm->set_scale(get_global_transform().get_scale());
+	pm->popup();
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
@@ -175,6 +176,7 @@ void PopupMenu::_activate_submenu(int over) {
 			pum->set_current_index(0);
 		}
 
+		// Setting autohide areas *must* be done after `popup()` which can move the popup (to fit it into the viewport).
 		pr.position -= pum->get_global_position();
 		pum->clear_autohide_areas();
 		pum->add_autohide_area(Rect2(pr.position.x, pr.position.y, pr.size.x, items[over]._ofs_cache));
@@ -183,8 +185,6 @@ void PopupMenu::_activate_submenu(int over) {
 			pum->add_autohide_area(Rect2(pr.position.x, pr.position.y + from, pr.size.x, pr.size.y - from));
 		}
 	}
-
-	pm->popup();
 }
 
 void PopupMenu::_submenu_timeout() {
@@ -551,7 +551,6 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				if (i == mouse_over) {
-					hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
 					hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(size.width - style->get_minimum_size().width, h + vseparation)));
 				}
 
