@@ -147,6 +147,24 @@ void ImageTexture::reload_from_file() {
 	}
 }
 
+bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "image") {
+		create_from_image(p_value);
+	}
+	return false;
+}
+
+bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "image") {
+		r_ret = get_image();
+	}
+	return false;
+}
+
+void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+}
+
 void ImageTexture::create_from_image(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
 	w = p_image->get_width();
