@@ -939,7 +939,9 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		if (metadata.has(p_name)) {
 			metadata.erase(p_name);
 			metadata_properties.erase("metadata/" + p_name.operator String());
-			notify_property_list_changed();
+			if (!p_name.operator String().begins_with("_")) { // Don't notify for editor-only properties.
+				notify_property_list_changed();
+			}
 		}
 		return;
 	}
@@ -951,7 +953,9 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 		metadata_properties["metadata/" + p_name.operator String()] = V;
-		notify_property_list_changed();
+		if (!p_name.operator String().begins_with("_")) { // Don't notify for editor-only properties.
+			notify_property_list_changed();
+		}
 	}
 }
 
