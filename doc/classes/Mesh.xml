@@ -123,7 +123,7 @@
 		<method name="generate_triangle_mesh" qualifiers="const">
 			<return type="TriangleMesh" />
 			<description>
-				Generate a [TriangleMesh] from the mesh.
+				Generate a [TriangleMesh] from the mesh. Considers only surfaces using one of these primitive types: [constant PRIMITIVE_TRIANGLES], [constant PRIMITIVE_TRIANGLE_STRIP].
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">
