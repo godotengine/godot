@@ -45,6 +45,31 @@ Official binaries for the Godot editor and the export templates can be found
 [See the official docs](https://docs.godotengine.org/en/latest/development/compiling/)
 for compilation instructions for every supported platform.
 
+## Getting Started
+
+Godot is a full game engine with a very large number of features, this short guide should act as a jumping off point
+but please feel free to [explore the docs](https://docs.godotengine.org/en/stable/index.html) for additional in-depth
+information.
+
+### Step 1: Create a Project
+
+To start your journey into Godot you will need a project to work on. There are a few ways to do this. You could create a 
+new project of your own in the Local Projects tab, or you can browse the many community templates, demos and games in the Asset Library Projects tab.
+It may be a good idea to explore an already established Godot project in order to learn how the many different functions of Godot interact
+
+### Step 2: Explore Scenes, Nodes, and Signals
+
+Once you have a project to work from, it will be important to understand that basic building blocks in Godot.
+In Godot, we call those building blocks Scenes, Nodes, and Signals. At a high level, your game will be built from a
+number of scenes. A scene could be a character, or an item, or a menu or any other sort of object that you could think of.
+Scenes are the "things" your game is made of. Each scene is in turn, constructed of nodes. Nodes are the fundamental building blocks of Godot.
+Signals are the messages that a node emits when some pre-determined event happens. Through signals, nodes can communicate and interact, 
+and influence scenes as your game runs.
+
+And that's it! It may seem daunting, but getting started in Godot can be quick and easy. Exploration of the editor is an important part of learning all of the things that Godot can offer.
+If this short how-to wasn't enough, [see this more detailed guide](https://docs.godotengine.org/en/stable/getting_started/step_by_step/index.html)
+for more instructions and explorations.
+
 ## Community and contributing
 
 Godot is not only an engine but an ever-growing community of users and engine
