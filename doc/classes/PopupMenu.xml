@@ -528,6 +528,12 @@
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
 		</member>
+		<member name="text_max_width" type="float" setter="set_text_max_width" getter="get_text_max_width" default="-1.0">
+			Sets width limit for the [member text_overrun_behavior].
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextLine.OverrunBehavior" default="0">
+			Sets the clipping behavior when the item text exceeds [member text_max_width]. See [enum TextLine.OverrunBehavior] for a description of all modes.
+		</member>
 	</members>
 	<signals>
 		<signal name="id_focused">

@@ -738,12 +738,48 @@ void PopupMenu::_shape_item(int p_item) {
 			items.write[p_item].text_buf->set_direction((TextServer::Direction)items[p_item].text_direction);
 		}
 		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].opentype_features, !items[p_item].language.is_empty() ? items[p_item].language : TranslationServer::get_singleton()->get_tool_locale());
+		if (text_max_width > 0) {
+			items.write[p_item].text_buf->set_width(text_max_width);
+			items.write[p_item].text_buf->set_text_overrun_behavior(overrun_behavior);
+		}
 
 		items.write[p_item].accel_text_buf->clear();
 		items.write[p_item].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		items.write[p_item].accel_text_buf->add_string(_get_accel_text(items.write[p_item]), font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		items.write[p_item].dirty = false;
 	}
+}
+
+void PopupMenu::set_text_max_width(float p_width) {
+	if (text_max_width != p_width) {
+		text_max_width = p_width;
+		for (int i = 0; i < items.size(); i++) {
+			items.write[i].dirty = true;
+			_shape_item(i);
+		}
+		child_controls_changed();
+		control->update();
+	}
+}
+
+float PopupMenu::get_text_max_width() const {
+	return text_max_width;
+}
+
+void PopupMenu::set_text_overrun_behavior(TextLine::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		for (int i = 0; i < items.size(); i++) {
+			items.write[i].dirty = true;
+			_shape_item(i);
+		}
+		child_controls_changed();
+		control->update();
+	}
+}
+
+TextLine::OverrunBehavior PopupMenu::get_text_overrun_behavior() const {
+	return overrun_behavior;
 }
 
 void PopupMenu::_notification(int p_what) {
@@ -1892,11 +1928,19 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
 
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &PopupMenu::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &PopupMenu::get_text_overrun_behavior);
+
+	ClassDB::bind_method(D_METHOD("set_text_max_width", "width"), &PopupMenu::set_text_max_width);
+	ClassDB::bind_method(D_METHOD("get_text_max_width"), &PopupMenu::get_text_max_width);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "text_max_width"), "set_text_max_width", "get_text_max_width");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 

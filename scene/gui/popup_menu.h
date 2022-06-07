@@ -129,6 +129,8 @@ class PopupMenu : public Popup {
 	MarginContainer *margin_container = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
+	TextLine::OverrunBehavior overrun_behavior = TextLine::OVERRUN_NO_TRIMMING;
+	float text_max_width = -1.0;
 
 	void _draw_items();
 	void _draw_background();
@@ -252,6 +254,12 @@ public:
 
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
+
+	void set_text_overrun_behavior(TextLine::OverrunBehavior p_behavior);
+	TextLine::OverrunBehavior get_text_overrun_behavior() const;
+
+	void set_text_max_width(float p_width);
+	float get_text_max_width() const;
 
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
