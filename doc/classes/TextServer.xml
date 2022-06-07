@@ -121,6 +121,20 @@
 				Returns font embolden strength.
 			</description>
 		</method>
+		<method name="font_get_face_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns number of faces in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="font_get_face_index" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Recturns an active face index in the TrueType / OpenType collection.
+			</description>
+		</method>
 		<method name="font_get_fixed_size" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -591,6 +605,14 @@
 			<argument index="1" name="strength" type="float" />
 			<description>
 				Sets font embolden strength. If [code]strength[/code] is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="font_set_face_index">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="face_index" type="int" />
+			<description>
+				Sets an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="font_set_fixed_size">

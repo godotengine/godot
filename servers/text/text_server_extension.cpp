@@ -55,6 +55,11 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(font_set_data, "font_rid", "data");
 	GDVIRTUAL_BIND(font_set_data_ptr, "font_rid", "data_ptr", "data_size");
 
+	GDVIRTUAL_BIND(font_set_face_index, "font_rid", "face_index");
+	GDVIRTUAL_BIND(font_get_face_index, "font_rid");
+
+	GDVIRTUAL_BIND(font_get_face_count, "font_rid");
+
 	GDVIRTUAL_BIND(font_set_style, "font_rid", "style");
 	GDVIRTUAL_BIND(font_get_style, "font_rid");
 
@@ -411,6 +416,26 @@ void TextServerExtension::font_set_data(const RID &p_font_rid, const PackedByteA
 
 void TextServerExtension::font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) {
 	GDVIRTUAL_CALL(font_set_data_ptr, p_font_rid, p_data_ptr, p_data_size);
+}
+
+void TextServerExtension::font_set_face_index(const RID &p_font_rid, int64_t p_index) {
+	GDVIRTUAL_CALL(font_set_face_index, p_font_rid, p_index);
+}
+
+int64_t TextServerExtension::font_get_face_index(const RID &p_font_rid) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(font_get_face_index, p_font_rid, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int64_t TextServerExtension::font_get_face_count(const RID &p_font_rid) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(font_get_face_count, p_font_rid, ret)) {
+		return ret;
+	}
+	return 0;
 }
 
 void TextServerExtension::font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) {

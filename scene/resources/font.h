@@ -46,6 +46,7 @@ class FontData : public Resource {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
+	int face_index = 0;
 	PackedByteArray data;
 
 	bool antialiased = true;
@@ -90,6 +91,11 @@ public:
 	virtual void set_data_ptr(const uint8_t *p_data, size_t p_size);
 	virtual void set_data(const PackedByteArray &p_data);
 	virtual PackedByteArray get_data() const;
+
+	virtual void set_face_index(int64_t p_index);
+	virtual int64_t get_face_index() const;
+
+	virtual int64_t get_face_count() const;
 
 	// Common properties.
 	virtual void set_font_name(const String &p_name);

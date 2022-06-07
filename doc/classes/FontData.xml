@@ -3,7 +3,7 @@
 	<brief_description>
 		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
 		Supported font formats:
-		- Dynamic font importer: TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
+		- Dynamic font importer: TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
 	</brief_description>
@@ -85,6 +85,12 @@
 			<argument index="1" name="size" type="int" />
 			<description>
 				Returns font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_face_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of faces in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
@@ -318,7 +324,8 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
+				Loads a TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
+				[b]Note:[/b] Use [member face_index] to select specific face from the collection file.
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
 			</description>
 		</method>
@@ -569,6 +576,9 @@
 		</member>
 		<member name="embolden" type="float" setter="set_embolden" getter="get_embolden" default="0.0">
 			If is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+		</member>
+		<member name="face_index" type="int" setter="set_face_index" getter="get_face_index" default="0">
+			Active face index in the TrueType / OpenType collection file.
 		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
