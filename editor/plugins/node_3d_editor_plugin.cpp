@@ -4167,7 +4167,8 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			Vector3 motion_snapped = motion;
 			motion_snapped.snap(Vector3(snap, snap, snap));
 			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
-			set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
+			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			motion = _edit.original.basis.inverse().xform(motion);
 
@@ -4267,7 +4268,8 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			}
 			Vector3 motion_snapped = motion;
 			motion_snapped.snap(Vector3(snap, snap, snap));
-			set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+			// TRANSLATORS: Refers to changing the position of a node in the 3D editor.
+			set_message(TTR("Translating:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 
@@ -7711,6 +7713,7 @@ Node3DEditor::Node3DEditor() {
 	p->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	view_menu = memnew(MenuButton);
+	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);

@@ -3035,7 +3035,7 @@
 				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
 				[/gdscript]
 				[/codeblocks]
-				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
+				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For further optimization, see [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
 		<method name="viewport_create">

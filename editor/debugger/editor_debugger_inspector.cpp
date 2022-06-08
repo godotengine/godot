@@ -68,7 +68,7 @@ void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) 
 
 String EditorDebuggerRemoteObject::get_title() {
 	if (remote_object_id.is_valid()) {
-		return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
+		return vformat(TTR("Remote %s:"), String(type_name)) + " " + itos(remote_object_id);
 	} else {
 		return "<null>";
 	}

@@ -625,7 +625,7 @@ void DynamicFontImportSettings::_change_text_opts() {
 
 void DynamicFontImportSettings::_glyph_clear() {
 	selected_glyphs.clear();
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 	_range_selected();
 }
 
@@ -654,7 +654,7 @@ void DynamicFontImportSettings::_glyph_text_selected() {
 			}
 		}
 		TS->free_rid(text_rid);
-		label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+		label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 	}
 	_range_selected();
 }
@@ -681,7 +681,7 @@ void DynamicFontImportSettings::_glyph_selected() {
 			item->clear_custom_bg_color(glyph_table->get_selected_column());
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 
 	item = glyph_tree->get_selected();
 	ERR_FAIL_NULL(item);
@@ -769,7 +769,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			col = 0;
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 }
 
 bool DynamicFontImportSettings::_char_update(int32_t p_char) {
@@ -1292,7 +1292,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 			}
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 
 	import_settings_data->options = options_general;
 	inspector_general->edit(import_settings_data.ptr());
@@ -1556,7 +1556,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	label_glyphs = memnew(Label);
 	text_hb->add_child(label_glyphs);
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(0));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(0));
 	label_glyphs->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 
 	Button *btn_fill = memnew(Button);

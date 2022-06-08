@@ -63,7 +63,7 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 				break;
 			}
 			case OccluderInstance3D::BAKE_ERROR_CANT_SAVE: {
-				EditorNode::get_singleton()->show_warning(TTR("Could not save the new occluder at the specified path: ") + p_file);
+				EditorNode::get_singleton()->show_warning(TTR("Could not save the new occluder at the specified path:") + " " + p_file);
 				break;
 			}
 			default: {

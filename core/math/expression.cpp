@@ -1245,7 +1245,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 		case Expression::ENode::TYPE_INPUT: {
 			const Expression::InputNode *in = static_cast<const Expression::InputNode *>(p_node);
 			if (in->index < 0 || in->index >= p_inputs.size()) {
-				r_error_str = vformat(RTR("Invalid input %i (not passed) in expression"), in->index);
+				r_error_str = vformat(RTR("Invalid input %d (not passed) in expression"), in->index);
 				return true;
 			}
 			r_ret = p_inputs[in->index];

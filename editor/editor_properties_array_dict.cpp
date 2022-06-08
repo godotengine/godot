@@ -249,7 +249,7 @@ void EditorPropertyArray::update_property() {
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size: ")));
+			Label *label = memnew(Label(TTR("Size:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbox->add_child(label);
 

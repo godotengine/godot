@@ -5171,11 +5171,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	hb->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
-	view_menu->set_shortcut_context(this);
+	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
+	view_menu->set_switch_on_hover(true);
+	view_menu->set_shortcut_context(this);
 	hb->add_child(view_menu);
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
-	view_menu->set_switch_on_hover(true);
 
 	p = view_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
