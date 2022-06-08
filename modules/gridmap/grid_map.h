@@ -98,6 +98,7 @@ class GridMap : public Node3D {
 		struct NavMesh {
 			RID region;
 			Transform3D xform;
+			RID navmesh_debug_instance;
 		};
 
 		struct MultimeshInstance {
