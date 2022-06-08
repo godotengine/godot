@@ -205,6 +205,8 @@ void EditorPluginSettings::_bind_methods() {
 }
 
 EditorPluginSettings::EditorPluginSettings() {
+	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
+
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);

@@ -104,6 +104,7 @@ protected:
 	HashSet<String> custom_features;
 	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
+	LocalVector<String> hidden_prefixes;
 	HashMap<StringName, AutoloadInfo> autoloads;
 
 	Array global_class_list;
@@ -168,6 +169,7 @@ public:
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
+	void add_hidden_prefix(const String &p_prefix);
 
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
