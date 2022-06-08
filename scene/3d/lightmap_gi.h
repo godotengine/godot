@@ -61,6 +61,8 @@ class LightmapGIData : public Resource {
 	Array _get_user_data() const;
 	void _set_probe_data(const Dictionary &p_data);
 	Dictionary _get_probe_data() const;
+	void _set_light_textures_data(const Array &p_data);
+	Array _get_light_textures_data() const;
 
 protected:
 	static void _bind_methods();
