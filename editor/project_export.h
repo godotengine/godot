@@ -73,7 +73,8 @@ private:
 	Button *button_export = nullptr;
 	bool updating = false;
 
-	AcceptDialog *error_dialog = nullptr;
+	RichTextLabel *result_dialog_log = nullptr;
+	AcceptDialog *result_dialog = nullptr;
 	ConfirmationDialog *delete_confirm = nullptr;
 
 	OptionButton *export_filter = nullptr;
