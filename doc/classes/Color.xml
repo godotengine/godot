@@ -157,10 +157,10 @@
 				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. [code]h[/code] (hue), [code]s[/code] (saturation), and [code]v[/code] (value) are typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
-				var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
+				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
 				[/gdscript]
 				[csharp]
-				var c = Color.FromHsv(0.58f, 0.5f, 0.79f, 0.8f);
+				var color = Color.FromHsv(0.58f, 0.5f, 0.79f, 0.8f);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -175,10 +175,10 @@
 				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. [code]h[/code] (hue), [code]s[/code] (saturation), and [code]v[/code] (value) are typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
-				var c = Color.from_ok_hsl(0.58, 0.5, 0.79, 0.8)
+				var color = Color.from_ok_hsl(0.58, 0.5, 0.79, 0.8)
 				[/gdscript]
 				[csharp]
-				var c = Color.FromOkHsl(0.58f, 0.5f, 0.79f, 0.8f);
+				var color = Color.FromOkHsl(0.58f, 0.5f, 0.79f, 0.8f);
 				[/csharp]
 				[/codeblocks]
 			</description>

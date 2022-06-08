@@ -22,7 +22,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		The timer will be automatically freed after its time elapses.
+		The timer will be automatically freed after its time elapses, so be aware that any reference you might have kept to it will become invalid.
 	</description>
 	<tutorials>
 	</tutorials>

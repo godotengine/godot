@@ -420,11 +420,8 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item("ResourcePreloader", preloader_editor);
 	button->hide();
-
-	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-	//preloader_editor->set_margin( MARGIN_TOP, 120 );
 }
 
 ResourcePreloaderEditorPlugin::~ResourcePreloaderEditorPlugin() {

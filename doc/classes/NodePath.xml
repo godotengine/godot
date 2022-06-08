@@ -107,7 +107,7 @@
 			<return type="StringName" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
+				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count] - 1).
 				[codeblocks]
 				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D")
