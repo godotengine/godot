@@ -1289,9 +1289,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	//scene_state.ubo.subsurface_scatter_width = subsurface_scatter_size;
 
-	Vector2 vp_he = p_render_data->cam_projection.get_viewport_half_extents();
-	scene_state.ubo.viewport_size[0] = vp_he.x;
-	scene_state.ubo.viewport_size[1] = vp_he.y;
+	scene_state.ubo.viewport_size[0] = render_buffer->width;
+	scene_state.ubo.viewport_size[1] = render_buffer->height;
 	scene_state.ubo.directional_light_count = 0;
 	scene_state.ubo.opaque_prepass_threshold = 0.99f;
 
