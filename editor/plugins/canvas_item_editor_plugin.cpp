@@ -6126,6 +6126,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
+	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
 	hb->add_child(view_menu);
 	view_menu->get_popup()->connect("id_pressed", this, "_popup_callback");

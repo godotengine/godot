@@ -1690,7 +1690,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 			//if no exit bit was set, and has sequence outputs, guess next node
 			if (output >= node->sequence_output_count) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-				error_str = RTR("Node returned an invalid sequence output: ") + itos(output);
+				error_str = RTR("Node returned an invalid sequence output:") + " " + itos(output);
 				error = true;
 				break;
 			}
@@ -1760,7 +1760,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					// check for stack overflow
 					if (flow_stack_pos + 1 >= flow_max) {
 						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-						error_str = RTR("Stack overflow with stack depth: ") + itos(output);
+						error_str = RTR("Stack overflow with stack depth:") + " " + itos(output);
 						error = true;
 						break;
 					}

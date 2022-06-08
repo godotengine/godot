@@ -76,7 +76,7 @@
 			<return type="String" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
+				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count] - 1).
 				[codeblock]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite")
 				print(node_path.get_name(0)) # Path2D

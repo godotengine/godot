@@ -175,7 +175,7 @@ public:
 
 	String get_title() {
 		if (remote_object_id) {
-			return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
+			return vformat(TTR("Remote %s:"), String(type_name)) + " " + itos(remote_object_id);
 		} else {
 			return "<null>";
 		}

@@ -665,6 +665,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Extra config */
 
+	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	_initial_set("project_manager/sorting_order", 0);
 	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Path,Last Modified");
 
