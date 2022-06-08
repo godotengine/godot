@@ -150,6 +150,7 @@ void ImageTexture::reload_from_file() {
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "image") {
 		create_from_image(p_value);
+		return true;
 	}
 	return false;
 }
@@ -157,6 +158,7 @@ bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "image") {
 		r_ret = get_image();
+		return true;
 	}
 	return false;
 }
