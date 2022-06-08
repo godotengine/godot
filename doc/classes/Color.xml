@@ -36,7 +36,7 @@
 			<description>
 				Constructs a color from a 32-bit integer in RGBA format (each byte represents a color channel).
 				[codeblock]
-				var c = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)
+				var color = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)
 				[/codeblock]
 			</description>
 		</method>
@@ -82,8 +82,8 @@
 			<description>
 				Returns the most contrasting color.
 				[codeblock]
-				var c = Color(0.3, 0.4, 0.9)
-				var contrasted_color = c.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
+				var color = Color(0.3, 0.4, 0.9)
+				var contrasted_color = color.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -107,7 +107,7 @@
 			<description>
 				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
 				[codeblock]
-				var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
+				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
 				[/codeblock]
 			</description>
 		</method>
@@ -124,8 +124,8 @@
 				Returns the color's grayscale representation.
 				The gray value is calculated as [code](r + g + b) / 3[/code].
 				[codeblock]
-				var c = Color(0.2, 0.45, 0.82)
-				var gray = c.gray() # A value of 0.466667
+				var color = Color(0.2, 0.45, 0.82)
+				var gray = color.gray() # A value of 0.466667
 				[/codeblock]
 			</description>
 		</method>
@@ -217,9 +217,9 @@
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
 				[codeblock]
-				var c = Color(1, 1, 1, 0.5)
-				var s1 = c.to_html() # Returns "7fffffff"
-				var s2 = c.to_html(false) # Returns "ffffff"
+				var color = Color(1, 1, 1, 0.5)
+				var s1 = color.to_html() # Returns "7fffffff"
+				var s2 = color.to_html(false) # Returns "ffffff"
 				[/codeblock]
 			</description>
 		</method>

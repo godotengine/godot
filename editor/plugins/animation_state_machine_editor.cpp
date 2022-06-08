@@ -1282,7 +1282,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_end->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
-	top_hb->add_child(memnew(Label(TTR("Transition: "))));
+	top_hb->add_child(memnew(Label(TTR("Transition:"))));
 	transition_mode = memnew(OptionButton);
 	top_hb->add_child(transition_mode);
 

@@ -220,6 +220,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		bezier_handle_icon = get_icon("KeyBezierHandle", "EditorIcons");
 		selected_icon = get_icon("KeyBezierSelected", "EditorIcons");
 		if (handle_mode_option->get_item_count() == 0) {
+			// TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 			handle_mode_option->add_icon_item(get_icon("BezierHandlesFree", "EditorIcons"), TTR("Free"), HANDLE_MODE_FREE);
 			handle_mode_option->add_icon_item(get_icon("BezierHandlesBalanced", "EditorIcons"), TTR("Balanced"), HANDLE_MODE_BALANCED);
 			handle_mode_option->add_icon_item(get_icon("BezierHandlesMirror", "EditorIcons"), TTR("Mirror"), HANDLE_MODE_MIRROR);

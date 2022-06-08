@@ -379,10 +379,10 @@
 			Low quality for the screen-space ambient occlusion effect (fastest).
 		</constant>
 		<constant name="SSAO_QUALITY_MEDIUM" value="1" enum="SSAOQuality">
-			Low quality for the screen-space ambient occlusion effect.
+			Medium quality for the screen-space ambient occlusion effect.
 		</constant>
 		<constant name="SSAO_QUALITY_HIGH" value="2" enum="SSAOQuality">
-			Low quality for the screen-space ambient occlusion effect (slowest).
+			High quality for the screen-space ambient occlusion effect (slowest).
 		</constant>
 	</constants>
 </class>
