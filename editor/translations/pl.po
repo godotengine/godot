@@ -366,7 +366,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Niewystarczająca ilość bajtów dla bajtów dekodujących lub zły format."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Niewłaściwe dane %i (nie przekazane) w wyrażeniu"
 
 #: core/math/expression.cpp
@@ -1071,6 +1072,7 @@ msgstr "Wysoka jakość"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "Maksymalny rozmiar bufora mieszania kształtów (KB)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Wolne"
@@ -1087,7 +1089,7 @@ msgstr "Odbij"
 msgid "Time:"
 msgstr "Czas:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Wartość:"
 
@@ -1337,8 +1339,73 @@ msgid "Remove this track."
 msgstr "Usuń tę ścieżkę."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Czas (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Pozycja"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Krok obrotu:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Skala:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Typ:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Szablon eksportu nieprawidłowy:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Łagodne wejście-wyjście"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Ustaw uchwyt"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Ustaw uchwyt"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Członek transmisji"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Restart(y):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Zanikanie w (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animacje:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1552,7 +1619,8 @@ msgid "Add Method Track Key"
 msgstr "Dodaj klucz ścieżki metody"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Metoda nie znaleziona w obiekcie: "
 
 #: editor/animation_track_editor.cpp
@@ -2516,8 +2584,9 @@ msgstr "Otwórz układ magistrali audio"
 msgid "There is no '%s' file."
 msgstr "Nie ma pliku \"%s\"."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Układ"
 
 #: editor/editor_audio_buses.cpp
@@ -5042,11 +5111,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Wybrany węzeł to nie Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Rozmiar: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Rozmiar:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Strona: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6030,10 +6102,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Menedżer projektów"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6805,14 +6879,6 @@ msgid "Replace in Files"
 msgstr "Zastąp w plikach"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Znajdź: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Zastąp: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Zastąp wszystkie (NIE MOŻNA COFNĄĆ)"
 
@@ -7209,7 +7275,8 @@ msgid "Generating Lightmaps"
 msgstr "Generowanie Lightmapy"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Generowanie dla siatki: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8053,10 +8120,12 @@ msgstr "Opcje trybu warstw cebuli"
 msgid "Directions"
 msgstr "Kierunki"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Poprzedni"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Przyszłe"
@@ -8216,7 +8285,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Ustaw koniec animacji. To jest przydatne dla podprzejść."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Przejście: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8231,11 +8301,6 @@ msgstr "DrzewoAnimacji"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Nowa nazwa:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Skala:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9152,6 +9217,7 @@ msgstr "Utwórz własne kości z węzłów"
 msgid "Clear Custom Bones"
 msgstr "Wyczyść własne kości"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9216,6 +9282,10 @@ msgstr "Powiększ do zaznaczenia"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Podejrzyj skalę płótna"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Układ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9993,7 +10063,8 @@ msgid "Volume"
 msgstr "Głośność"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Źródła emisji: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10382,13 +10453,6 @@ msgid "Instance:"
 msgstr "Instancja:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Typ:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Otwórz w edytorze"
@@ -10396,10 +10460,6 @@ msgstr "Otwórz w edytorze"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Wczytaj zasób"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Wstępny ładowacz zasobów"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11101,12 +11161,16 @@ msgstr "Obróć"
 msgid "Translate"
 msgstr "Przesuń"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Skalowanie: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Przesuwanie: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11128,11 +11192,6 @@ msgstr "Pułap:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Odchylenie:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Rozmiar:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11654,15 +11713,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Uproszczenie: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Zmniejsz (piksele): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Zwiększ (piksele): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15857,7 +15919,8 @@ msgid "Attach Node Script"
 msgstr "Dołącz skrypt dla węzła"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Zdalny "
 
 #: editor/script_editor_debugger.cpp
@@ -16918,7 +16981,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Wyłączony singleton GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Biblioteki: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17812,7 +17876,8 @@ msgstr ""
 "roboczej! Proszę naprawić swój węzeł."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Węzeł zwrócił niewłaściwą sekwencję wyjściową: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17820,7 +17885,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "Znaleziono bit sekwencji, ale nie węzeł na stosie, zgłoś błąd!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Przepełnienie stosu z głębokością stosu: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18190,7 +18256,8 @@ msgid "for (elem) in (input):"
 msgstr "for (element) in (wejście):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Typ danych wejściowych nie jest iterowalny: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18198,7 +18265,8 @@ msgid "Iterator became invalid"
 msgstr "Iterator stał się nieprawidłowy"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Iterator stał się nieprawidłowy: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18362,11 +18430,13 @@ msgid "Operator"
 msgstr "Iterator"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ":nieprawidłowy argument typu: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ":nieprawidłowe argumenty: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18379,11 +18449,13 @@ msgid "Var Name"
 msgstr "Nazwa"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Nie znaleziono VariableGet w skrypcie: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "Nie znaleziono VariableSet w skrypcie: "
 
 #: modules/visual_script/visual_script_nodes.cpp

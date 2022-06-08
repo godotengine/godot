@@ -356,7 +356,8 @@ msgstr ""
 "است ."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "ورودی نامعتبر i% (تایید نشده) در عبارت"
 
 #: core/math/expression.cpp
@@ -1097,6 +1098,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "آزاد کردن"
@@ -1113,7 +1115,7 @@ msgstr "بازتاب"
 msgid "Time:"
 msgstr "زمان:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "مقدار:"
 
@@ -1361,8 +1363,70 @@ msgid "Remove this track."
 msgstr "این ترک را حذف کن."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "زمان(s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "برداشتن موج"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "وضعیت:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "نام دارایی ایندکس نامعتبر."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "انتقال"
+
+#: editor/animation_track_editor.cpp
+msgid "In-Handle:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Out-Handle:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "افزودن مورد"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "شروع"
+
+#: editor/animation_track_editor.cpp
+msgid "End (s):"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "گره انیمیشن"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1577,7 +1641,8 @@ msgid "Add Method Track Key"
 msgstr "افزودن تابع کلید میسر"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "تابع در شئ یافت نشد: "
 
 #: editor/animation_track_editor.cpp
@@ -2541,8 +2606,9 @@ msgstr "چیدمان اتوبوس صوتی را باز کنید"
 msgid "There is no '%s' file."
 msgstr "پرونده '٪ s' وجود ندارد."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "چیدمان"
 
 #: editor/editor_audio_buses.cpp
@@ -4978,11 +5044,13 @@ msgid "Selected node is not a Viewport!"
 msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
 msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+msgid "Page:"
 msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
@@ -5937,10 +6005,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "مدیر پروژه"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6732,16 +6802,6 @@ msgstr "جایگزینی همه"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Find: "
-msgstr "یافتن"
-
-#: editor/find_in_files.cpp
-#, fuzzy
-msgid "Replace: "
-msgstr "جایگزینی"
-
-#: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "جایگزینی همه"
 
@@ -7142,7 +7202,7 @@ msgid "Generating Lightmaps"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+msgid "Generating for Mesh:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
@@ -8008,11 +8068,13 @@ msgstr ""
 msgid "Directions"
 msgstr "توضیح"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Past"
 msgstr "چسباندن"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr ""
@@ -8178,7 +8240,7 @@ msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Transition: "
+msgid "Transition:"
 msgstr "انتقال"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8194,11 +8256,6 @@ msgstr "گره انیمیشن"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -9137,6 +9194,7 @@ msgstr ""
 msgid "Clear Custom Bones"
 msgstr "پخش سفارشی صحنه"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9199,6 +9257,10 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "چیدمان"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9980,8 +10042,9 @@ msgid "Volume"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
-msgstr ""
+#, fuzzy
+msgid "Emission Source:"
+msgstr "انتقال را در انیمیشن تغییر بده"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10380,13 +10443,6 @@ msgid "Instance:"
 msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "گشودن در ویرایشگر"
@@ -10394,11 +10450,6 @@ msgstr "گشودن در ویرایشگر"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
-msgid "ResourcePreloader"
-msgstr "منبع"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11149,13 +11200,16 @@ msgstr "وضعیت:"
 msgid "Translate"
 msgstr "ترجمه‌ها"
 
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr ""
-
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Translating: "
+msgid "Scaling:"
+msgstr "بومی"
+
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Translating:"
 msgstr "انتقال"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11177,11 +11231,6 @@ msgstr "سوییچ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11722,15 +11771,16 @@ msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
+msgstr "افزودن وظیفه"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Shrink (Pixels):"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
-msgstr ""
-
-#: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+msgid "Grow (Pixels):"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15995,7 +16045,7 @@ msgstr "صحنه جدید"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
-msgid "Remote "
+msgid "Remote %s:"
 msgstr "برداشتن"
 
 #: editor/script_editor_debugger.cpp
@@ -17041,8 +17091,9 @@ msgid "Disabled GDNative Singleton"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
-msgstr ""
+#, fuzzy
+msgid "Libraries:"
+msgstr "صادکردن فایل کتابخانه ای"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 #, fuzzy
@@ -17931,7 +17982,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
-msgid "Node returned an invalid sequence output: "
+msgid "Node returned an invalid sequence output:"
 msgstr "گره ،‌ یک سلسله خروجی نامعتبر را برگردانده است: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17941,7 +17992,7 @@ msgstr "بیت دنباله پیدا شد ولی گره موجود در پشته
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
-msgid "Stack overflow with stack depth: "
+msgid "Stack overflow with stack depth:"
 msgstr "سرریزی پشته با عمق پشته: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18339,7 +18390,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "نوع ورودی قابل تکرار نیست: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18349,7 +18401,7 @@ msgstr "تکرارگر نامعتبر شد"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
-msgid "Iterator became invalid: "
+msgid "Iterator became invalid:"
 msgstr "تکرارگر نامعتبر شد: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18518,11 +18570,13 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": آرگومان نوع نامعتبر "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": آرگومان‌های نامعتبر: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18535,11 +18589,13 @@ msgid "Var Name"
 msgstr "نام"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet در اسکریپت پیدا نشد: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet در اسکریپت پیدا نشد: "
 
 #: modules/visual_script/visual_script_nodes.cpp

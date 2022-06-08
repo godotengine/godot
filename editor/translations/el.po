@@ -327,7 +327,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Δεν υπάρχουν αρκετά byte για την αποκωδικοποίηση, ή άκυρη μορφή."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Άκυρη είσοδος %i (δεν πέρασε) στην έκφραση"
 
 #: core/math/expression.cpp
@@ -1063,6 +1064,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Ελεύθερο"
@@ -1079,7 +1081,7 @@ msgstr "Κατοπτρισμός"
 msgid "Time:"
 msgstr "Χρόνος:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Τιμή:"
 
@@ -1329,8 +1331,73 @@ msgid "Remove this track."
 msgstr "Αφαίρεση κομματιού."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Χρόνος (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Θέση"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Βήμα Περιστροφής:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Κλιμάκωση:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Τύπος:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Άκυρο προτύπο εξαγωγής:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Ομαλή κίνηση από μέσα προς τα έξω"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Ορισμός λαβής"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Ορισμός λαβής"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Στοιχείο επιλογής"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Επανεκκίνηση (δευτερόλεπτα):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Εμφάνιση σε (δευτερόλεπτα):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Κινήσεις:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1551,7 +1618,8 @@ msgid "Add Method Track Key"
 msgstr "Προσθήκη κλειδιού μεθόδου"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Δεν βρέθηκε η μέθοδος στο αντικείμενο: "
 
 #: editor/animation_track_editor.cpp
@@ -2535,8 +2603,9 @@ msgstr "Άνοιγμα διάταξης διαύλων ήχου"
 msgid "There is no '%s' file."
 msgstr "Δεν υπάρχει αρχείο «%s»."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Διάταξη"
 
 #: editor/editor_audio_buses.cpp
@@ -5075,11 +5144,15 @@ msgid "Selected node is not a Viewport!"
 msgstr "Ο επιλεγμένος κόμβος δεν είναι Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Size:"
 msgstr "Μέγεθος: "
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Σελίδα: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6059,10 +6132,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Διαχειριστής"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6856,14 +6931,6 @@ msgid "Replace in Files"
 msgstr "Αντικατάσταση όλων"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Εύρεση: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Αντικατάσταση: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Αντικατάσταση όλων"
@@ -7261,7 +7328,8 @@ msgid "Generating Lightmaps"
 msgstr "Δημιουργία χαρτών φωτός"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Δημιουρία για πλέγμα: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8111,10 +8179,12 @@ msgstr "Επιλογές Ξεφλουδίσματος Κρεμμυδιού"
 msgid "Directions"
 msgstr "Κατευθήνσεις"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Παρελθόν"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Μέλλον"
@@ -8274,7 +8344,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Ορισμός τελικής κίνησης. Χρήσιμο για υπο-μεταβάσεις."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Μετάβαση: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8289,11 +8360,6 @@ msgstr "AnimationTree"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Νέο όνομα:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Κλιμάκωση:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9226,6 +9292,7 @@ msgstr "Δημιουργία Προσαρμοσμένου(ων) Οστού(ών)
 msgid "Clear Custom Bones"
 msgstr "Εκκαθάριση Προσαρμοσμένων Οστών"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9290,6 +9357,10 @@ msgstr "Καρέ Επιλογής"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Προεπισκόπηση Κλιμάκωσης Καμβά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Διάταξη"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10081,7 +10152,8 @@ msgid "Volume"
 msgstr "Ένταση"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Πηγή εκπομπής: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10476,13 +10548,6 @@ msgid "Instance:"
 msgstr "Στιγμιότυπο:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Τύπος:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Άνοιγμα στον επεξεργαστή"
@@ -10490,10 +10555,6 @@ msgstr "Άνοιγμα στον επεξεργαστή"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Φόρτωση πόρου"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Πρόφραμμα προφόρτωσης"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -11226,12 +11287,16 @@ msgstr "Λειτουργία Περιστροφής"
 msgid "Translate"
 msgstr "Μετατόπιση:"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Κλιμάκωση: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Μετακίνηση: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11255,12 +11320,6 @@ msgstr "Τόνος"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "Μέγεθος: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11795,15 +11854,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Απλοποίηση: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Σμίκρυνση (Εικονοστοιχεία): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Αύξηση (Εικονοστοιχεία): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -16063,7 +16125,8 @@ msgid "Attach Node Script"
 msgstr "Σύνδεση Δέσμης Ενεργειών Κόμβου"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Απομακρυσμένο "
 
 #: editor/script_editor_debugger.cpp
@@ -17128,7 +17191,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Απενεργοποίηση Μονοσυνόλου GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Βιβλιοθήκες: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -18030,7 +18094,8 @@ msgstr ""
 "εργασίας του κόμβου! Παρακαλούμε διορθώστε τον κόμβο σας."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Ο κόμβος επέστρεψε μία άκυρη ακολουθία ως έξοδο: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18040,7 +18105,8 @@ msgstr ""
 "αναφέρετε το bug!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Υπερχείλιση στοίβας με βάθος στοίβας: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18419,7 +18485,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Δεν μπορεί να γίνει επανάληψη στον εισηγμένο τύπο: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18427,7 +18494,8 @@ msgid "Iterator became invalid"
 msgstr "Ο επαναλήπτης έγινε άκυρος"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Ο επαναλήπτης έγινε άκυρος: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18601,11 +18669,13 @@ msgid "Operator"
 msgstr "Τελεστής επικάλυψης."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Άκυρη παράμετρος τύπου: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Άκυροι παράμετροι: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18618,11 +18688,13 @@ msgid "Var Name"
 msgstr "Όνομα"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Το VariableGet δεν βρέθηκε στη δέσμη ενεργειών: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "Το VariableSet δεν βρέθηκε στη δέσμη ενεργειών: "
 
 #: modules/visual_script/visual_script_nodes.cpp

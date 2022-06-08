@@ -367,7 +367,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nedostatek bajtů pro dekódování bajtů, nebo neplatný formát."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Neplatný vstup %i (nepředán) ve výrazu"
 
 #: core/math/expression.cpp
@@ -1126,6 +1127,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Volný"
@@ -1142,7 +1144,7 @@ msgstr "Zrcadlit"
 msgid "Time:"
 msgstr "Čas:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Hodnota:"
 
@@ -1392,8 +1394,73 @@ msgid "Remove this track."
 msgstr "Odstranit tuto stopu."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Čas (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Pozice doku"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Krok rotace:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Zvětšení:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Typ:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Neplatná šablona pro export:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Hladký vstup-výstup"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Nastavit úchyt"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Nastavit úchyt"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Položka volby"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Restart (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Objevení za (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animace:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1611,7 +1678,8 @@ msgid "Add Method Track Key"
 msgstr "Přidat stopu volání metody"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Tato metoda nebyla v objektu nalezena: "
 
 #: editor/animation_track_editor.cpp
@@ -2579,8 +2647,9 @@ msgstr "Otevřít rozložení audio sběrnice"
 msgid "There is no '%s' file."
 msgstr "Neexistuje '%s' soubor."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Rozložení"
 
 #: editor/editor_audio_buses.cpp
@@ -5094,11 +5163,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Vybraný uzel není Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Velikost: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Velikost:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Strana: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6081,10 +6153,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Správce projektů"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6854,14 +6928,6 @@ msgid "Replace in Files"
 msgstr "Nahradit všechny"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Najít: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Nahradit: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Nahradit všechny"
@@ -7259,7 +7325,8 @@ msgid "Generating Lightmaps"
 msgstr "Generování světelné mapy"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Generování pro síť: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8095,10 +8162,12 @@ msgstr "Onion Skinning možnosti"
 msgid "Directions"
 msgstr "Směry"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Předcházející"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Budoucí"
@@ -8258,7 +8327,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Nastavit koncovou animaci. Užitečné pro pod-přechody."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Přechod: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8273,11 +8343,6 @@ msgstr "Strom animací"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Nové jméno:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Zvětšení:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9195,6 +9260,7 @@ msgstr "Vytvořit kosti z uzlů"
 msgid "Clear Custom Bones"
 msgstr "Vymazat kosti"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9259,6 +9325,10 @@ msgstr "Výběr snímku"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Náhled měřítka plátna"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Rozložení"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10032,7 +10102,8 @@ msgid "Volume"
 msgstr "Hlasitost"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Zdroje emisí: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10419,13 +10490,6 @@ msgid "Instance:"
 msgstr "Instance:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Typ:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Otevřít v editoru"
@@ -10433,10 +10497,6 @@ msgstr "Otevřít v editoru"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Načíst zdroj"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Zdroj"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11150,12 +11210,16 @@ msgstr "Otočit"
 msgid "Translate"
 msgstr "Posunout"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Škálování: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Posun: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11177,11 +11241,6 @@ msgstr "Stoupání:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Odklon (Yaw):"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Velikost:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11705,15 +11764,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Zjednodušení: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Zmenšení (pixely): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Zvětšení (pixely): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15925,7 +15987,8 @@ msgid "Attach Node Script"
 msgstr "Připojit script k uzlu"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Vzdálený "
 
 #: editor/script_editor_debugger.cpp
@@ -16988,7 +17051,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Vypnutý GDNative Singleton"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Knihovny: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17880,7 +17944,8 @@ msgstr ""
 "Opravte prosím váš uzel."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Uzel vrátil neplatnou posloupnost výstupu: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17888,7 +17953,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "Nalezen bit posloupnosti ale ne uzel v zásobníku. Nahlaste chybu!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Přetečení zásobníku s hloubkou: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18260,7 +18326,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Vstupním typem nelze iterovat: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18268,7 +18335,8 @@ msgid "Iterator became invalid"
 msgstr "Iterátor se stal neplatným"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Iterátor se stal neplatným: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18441,11 +18509,13 @@ msgid "Operator"
 msgstr "Operátor překrytí."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Neplatný argument typu: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Neplatné argumenty: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18458,11 +18528,13 @@ msgid "Var Name"
 msgstr "Název"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Proměnná pro získání nebyla ve skriptu nalezena: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "Proměnná pro nastavení nebyla ve skriptu nalezena: "
 
 #: modules/visual_script/visual_script_nodes.cpp

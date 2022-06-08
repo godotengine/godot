@@ -22,13 +22,14 @@
 # Andras Virag <snowflake71@gmail.com>, 2021.
 # balintmaci <balintmaci@gmail.com>, 2021.
 # Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
+# Mr.Catfood <sipos22@msn.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-23 15:30+0000\n"
-"Last-Translator: Balázs Püspök-Kiss <pkblazsak@gmail.com>\n"
+"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"Last-Translator: Mr.Catfood <sipos22@msn.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -36,21 +37,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "A vágólap üres!"
+msgstr "Vágólap"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Jelenlegi Jelenet"
+msgstr "Aktuális képernyő"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
@@ -70,9 +69,8 @@ msgid "Delta Smoothing"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Mozgató Mód"
+msgstr "Alacsony processzorhasználati mód"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -361,7 +359,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Érvénytelen bemenet %i (nem átadott) a kifejezésben"
 
 #: core/math/expression.cpp
@@ -1115,6 +1114,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Szabad"
@@ -1131,7 +1131,7 @@ msgstr "Tükör"
 msgid "Time:"
 msgstr "Idő:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Érték:"
 
@@ -1380,8 +1380,72 @@ msgid "Remove this track."
 msgstr "Jelen sáv eltávolítása."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Idő (mp): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Dokk Pozíció"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Forgatási Léptetés:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Skála:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Típus:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Érvénytelen kiterjesztés."
+
+#: editor/animation_track_editor.cpp
+msgid "Easing:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Fogantyú Beállítása"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Fogantyú Beállítása"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Rádió Elem"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Újraindítás (mp):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Előtűnés (mp):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animációk:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1600,7 +1664,8 @@ msgid "Add Method Track Key"
 msgstr "Metódus Sáv Kulcs Hozzáadása"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "A metódus nem található az objektumban: "
 
 #: editor/animation_track_editor.cpp
@@ -2569,8 +2634,9 @@ msgstr "Hangbusz Elrendezés Megnyitása"
 msgid "There is no '%s' file."
 msgstr "Nincs '%s' fájl."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Elrendezés"
 
 #: editor/editor_audio_buses.cpp
@@ -5106,11 +5172,15 @@ msgid "Selected node is not a Viewport!"
 msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Size:"
 msgstr "Méret: "
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Oldal: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6075,10 +6145,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Projektkezelő"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6852,14 +6924,6 @@ msgid "Replace in Files"
 msgstr "Összes cseréje"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Keres: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Csere: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Összes cseréje"
@@ -7257,7 +7321,8 @@ msgid "Generating Lightmaps"
 msgstr "Fénytérképek Létrehozása"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Létrehozás a Következő Hálóhoz: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8093,10 +8158,12 @@ msgstr ""
 msgid "Directions"
 msgstr "Irányok"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Múlt"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Jövő"
@@ -8251,7 +8318,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Átmenet: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8266,11 +8334,6 @@ msgstr "AnimációFa"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Új név:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Skála:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9191,6 +9254,7 @@ msgstr ""
 msgid "Clear Custom Bones"
 msgstr "Egyéni csontok törlése"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9255,6 +9319,10 @@ msgstr "Kijelölés Keretezése"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Elrendezés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10020,7 +10088,8 @@ msgid "Volume"
 msgstr "Mennyiség"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Kibocsátási Forrás: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10403,13 +10472,6 @@ msgid "Instance:"
 msgstr "Példány:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Típus:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Megnyitás Szerkesztőben"
@@ -10417,10 +10479,6 @@ msgstr "Megnyitás Szerkesztőben"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "ForrásElőtöltö"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11138,13 +11196,17 @@ msgstr "Forgató Mód"
 msgid "Translate"
 msgstr "Fordítások"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr ""
+#, fuzzy
+msgid "Scaling:"
+msgstr "Skála:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
-msgstr ""
+#, fuzzy
+msgid "Translating:"
+msgstr "Fordítások:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -11165,12 +11227,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "Méret: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11691,15 +11747,16 @@ msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
+msgstr "Művelet"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Shrink (Pixels):"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
-msgstr ""
-
-#: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+msgid "Grow (Pixels):"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15767,8 +15824,9 @@ msgid "Attach Node Script"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
-msgstr ""
+#, fuzzy
+msgid "Remote %s:"
+msgstr "Eltávolítás"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16822,7 +16880,7 @@ msgid "Disabled GDNative Singleton"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+msgid "Libraries:"
 msgstr ""
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17708,7 +17766,8 @@ msgstr ""
 "értéke! Javítsa ki a node-ját."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Node egy érvénytelen szekvencia kimenettel tért vissza: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17716,7 +17775,7 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+msgid "Stack overflow with stack depth:"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -18084,7 +18143,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Beviteli típus nem iterálható: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18092,7 +18152,8 @@ msgid "Iterator became invalid"
 msgstr "Az iterátor érvénytelenné vált"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Az iterátor érvénytelenné vált: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18262,11 +18323,13 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Érvénytelen típusargumentum: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Érvénytelen argumentumok: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18279,11 +18342,13 @@ msgid "Var Name"
 msgstr "Név"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet nem található a szkriptben: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet nem található a szkriptben: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -20518,9 +20583,8 @@ msgid "Show Behind Parent"
 msgstr ""
 
 #: scene/2d/canvas_item.cpp
-#, fuzzy
 msgid "Show On Top"
-msgstr "Origó Megjelenítése"
+msgstr "Megjelenítés felül"
 
 #: scene/2d/canvas_item.cpp scene/2d/light_occluder_2d.cpp
 #: scene/2d/tile_map.cpp

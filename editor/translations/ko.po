@@ -337,7 +337,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "디코딩할 바이트가 모자라거나 잘못된 형식입니다."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "표현식의 입력 %i (전달되지 않음) 이(가) 올바르지 않습니다"
 
 #: core/math/expression.cpp
@@ -1035,6 +1036,7 @@ msgstr "고품질"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "블렌드 도형 최대 버퍼 크기 (KB)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "자유"
@@ -1051,7 +1053,7 @@ msgstr "거울"
 msgid "Time:"
 msgstr "시간:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "값:"
 
@@ -1292,8 +1294,73 @@ msgid "Remove this track."
 msgstr "이 트랙을 제거합니다."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "시간 (초): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "위치"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "회전"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "스케일:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "타입:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "잘못된 내보내기 템플릿:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "속도 완화"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "입력 핸들"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "출력 핸들"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "스트림"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "재시작 (초):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "페이드 인 (초):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "애니메이션:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1508,7 +1575,8 @@ msgid "Add Method Track Key"
 msgstr "메서드 트랙 키 추가"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "오브젝트에 메서드가 없음: "
 
 #: editor/animation_track_editor.cpp
@@ -2469,8 +2537,9 @@ msgstr "오디오 버스 레이아웃 열기"
 msgid "There is no '%s' file."
 msgstr "'%s' 파일이 없습니다."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "레이아웃"
 
 #: editor/editor_audio_buses.cpp
@@ -4943,11 +5012,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "선택된 노드는 뷰포트가 아닙니다!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "크기: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "크기:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "페이지: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5857,10 +5929,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "프로젝트 매니저"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6623,14 +6697,6 @@ msgid "Replace in Files"
 msgstr "모두 바꾸기"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "찾기: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "바꾸기: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "모두 바꾸기"
@@ -7028,7 +7094,8 @@ msgid "Generating Lightmaps"
 msgstr "라이트맵 생성 중"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "메시 용으로 생성 중: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7867,10 +7934,12 @@ msgstr "어니언 스키닝 설정"
 msgid "Directions"
 msgstr "방향"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "과거"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "미래"
@@ -8029,7 +8098,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "끝 애니메이션을 설정합니다. 이것은 하위 전환에 유용합니다."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "전환: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8044,11 +8114,6 @@ msgstr "애니메이션 트리"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "새 이름:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "스케일:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8958,6 +9023,7 @@ msgstr "노드에서 커스텀 본 만들기"
 msgid "Clear Custom Bones"
 msgstr "커스텀 본 지우기"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9022,6 +9088,10 @@ msgstr "프레임 선택"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "캔버스 스케일 미리보기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "레이아웃"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9794,7 +9864,8 @@ msgid "Volume"
 msgstr "볼륨"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "방출 소스: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10182,13 +10253,6 @@ msgid "Instance:"
 msgstr "인스턴스:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "타입:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "에디터에서 열기"
@@ -10196,10 +10260,6 @@ msgstr "에디터에서 열기"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "리소스 불러오기"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "리소스 프리로더"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10902,12 +10962,16 @@ msgstr "회전"
 msgid "Translate"
 msgstr "이동"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "크기 조절 중: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "이동 중: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10929,11 +10993,6 @@ msgstr "Pitch:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Yaw:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "크기:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11452,15 +11511,18 @@ msgid "Sprite"
 msgstr "스프라이트"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "단순화: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "수축 (픽셀): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "성장 (픽셀): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15630,7 +15692,8 @@ msgid "Attach Node Script"
 msgstr "노드 스크립트 붙이기"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "원격 "
 
 #: editor/script_editor_debugger.cpp
@@ -16689,7 +16752,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "비활성화된 GDNative 싱글톤"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "라이브러리: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17578,7 +17642,8 @@ msgstr ""
 "쳐주세요."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "잘못된 시퀀스 출력을 반환한 노드: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17587,7 +17652,8 @@ msgstr ""
 "시퀀스 비트를 발견했지만 스택 안의 노드에는 없습니다. 버그를 신고하세요!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "스택 깊이로 오버플로우한 스택: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17959,7 +18025,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "반복할 수 없는 입력 타입: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17967,7 +18034,8 @@ msgid "Iterator became invalid"
 msgstr "Iterator가 잘못되었습니다"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Iterator가 잘못됨: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18141,11 +18209,13 @@ msgid "Operator"
 msgstr "오버레이 연산자."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": 잘못된 인수 타입: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": 잘못된 인수: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18158,11 +18228,13 @@ msgid "Var Name"
 msgstr "이름"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet을 스크립트에서 찾을 수 없음: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet을 스크립트에서 찾을 수 없음: "
 
 #: modules/visual_script/visual_script_nodes.cpp

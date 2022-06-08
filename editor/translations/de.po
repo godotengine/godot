@@ -87,8 +87,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-30 16:17+0000\n"
-"Last-Translator: Tobias Jacobs <tobi@jacobs.rocks>\n"
+"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -386,7 +386,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nicht genügend Bytes zur Dekodierung oder ungültiges Format."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Ungültige Eingabe %i (nicht übergeben) im Ausdruck"
 
 #: core/math/expression.cpp
@@ -1085,6 +1086,7 @@ msgstr "Hohe Qualität"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "Blend-Shape Maximale Puffergröße (KB)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Kostenlos"
@@ -1101,7 +1103,7 @@ msgstr "Gespiegelt"
 msgid "Time:"
 msgstr "Zeit:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Wert:"
 
@@ -1215,11 +1217,11 @@ msgstr "Stream"
 
 #: editor/animation_track_editor.cpp
 msgid "Start Offset"
-msgstr "Beginn Offset"
+msgstr "Startversatz"
 
 #: editor/animation_track_editor.cpp
 msgid "End Offset"
-msgstr "Ende Offset"
+msgstr "Endeversatz"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1342,8 +1344,73 @@ msgid "Remove this track."
 msgstr "Diese Spur entfernen."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Zeit (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Position"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Rotation"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Skalierung:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Typ:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Ungültige Exportvorlage:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Glätten Ein-Aus"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Eingehender Handle"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Ausgehender Handle"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Stream"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Neu starten (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Einblenden (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animationen:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1558,7 +1625,8 @@ msgid "Add Method Track Key"
 msgstr "Methodenaufrufsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Methode nicht im Objekt gefunden: "
 
 #: editor/animation_track_editor.cpp
@@ -2532,8 +2600,9 @@ msgstr "Öffne Audiobus-Layout"
 msgid "There is no '%s' file."
 msgstr "Datei ‚%s‘ existiert nicht."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Layout"
 
 #: editor/editor_audio_buses.cpp
@@ -5051,11 +5120,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Ausgewähltes Node ist kein Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Größe: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Größe:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Seite: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5936,10 +6008,12 @@ msgstr "Hostname"
 msgid "Port"
 msgstr "Port"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Projektverwaltung"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Sorting Order"
 msgstr "Sortierreihenfolge"
@@ -6690,14 +6764,6 @@ msgid "Replace in Files"
 msgstr "In Dateien ersetzen"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Suche: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Ersetzen: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Alle ersetzen (KEIN RÜCKGÄNGIG MACHEN)"
 
@@ -7057,7 +7123,8 @@ msgid "Generating Lightmaps"
 msgstr "Generiere Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Generierung für Mesh: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7888,10 +7955,12 @@ msgstr "Zwiebelhaut-Einstellungen"
 msgid "Directions"
 msgstr "Richtungen"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Vergangenheit"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Zukunft"
@@ -8051,7 +8120,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "End-Animation festlegen. Hilfreich bei Sub-Transitionen."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Übergang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8066,11 +8136,6 @@ msgstr "AnimationTree"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Neuer Name:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Skalierung:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8984,6 +9049,7 @@ msgstr "Erstelle eigenständige(n) Knochen aus Node(s)"
 msgid "Clear Custom Bones"
 msgstr "Spezielle Knochen löschen"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9045,6 +9111,10 @@ msgstr "Auswahl einrahmen"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Vorschau Canvas-Skalierung"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9820,7 +9890,8 @@ msgid "Volume"
 msgstr "Volumen"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Emissionsquelle: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10177,7 +10248,7 @@ msgstr "Knochen mit Polygon synchronisieren"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
 msgid "Set cast_to"
-msgstr "Setze cast_to"
+msgstr "cast_to festlegen"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -10210,13 +10281,6 @@ msgid "Instance:"
 msgstr "Instanz:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Typ:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Im Editor öffnen"
@@ -10224,10 +10288,6 @@ msgstr "Im Editor öffnen"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Ressource laden"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Ressourcen-Vorlader"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10925,12 +10985,16 @@ msgstr "Rotierung"
 msgid "Translate"
 msgstr "Verschiebung"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Skalierung: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Verschiebe: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10952,11 +11016,6 @@ msgstr "Neigung:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Gierung:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Größe:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11482,15 +11541,18 @@ msgid "Sprite"
 msgstr "Bild"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Vereinfachung: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Schrumpfen (Pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Wachsen (Pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -12757,7 +12819,7 @@ msgstr "Trennung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Selected Tile"
-msgstr "Ausgewähltes Tile"
+msgstr "Ausgewählte Kachel"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
@@ -12786,23 +12848,23 @@ msgstr "Modulierung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tile Mode"
-msgstr "Tile Modus"
+msgstr "Kachelmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Autotile Bitmask Mode"
-msgstr "Autotile Bitmask Modus"
+msgstr "Autotile-Bitmask-Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Subtile Size"
-msgstr "Kachelgröße"
+msgstr "Subkachelgröße"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Subtile Spacing"
-msgstr "Subtile Abstand"
+msgstr "Subkachelabstand"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occluder Offset"
-msgstr "Abdeckung Versatz"
+msgstr "Verdeckungsversatz"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation Offset"
@@ -12814,7 +12876,7 @@ msgstr "Formabstand"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Shape Transform"
-msgstr "Form verändern"
+msgstr "Form-Transform"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Selected Collision"
@@ -12826,7 +12888,7 @@ msgstr "Ausgewählte Kollision nur in eine Richtung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Selected Collision One Way Margin"
-msgstr "Abstand der einseitigen ausgewählten Kollision"
+msgstr "Ausgewählter einseitiger Kollisionsabstand"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Selected Navigation"
@@ -12838,7 +12900,7 @@ msgstr "Ausgewählte Verdeckung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tileset Script"
-msgstr "Tileset Skript"
+msgstr "Tileset-Skript"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -13929,11 +13991,13 @@ msgstr "Soforteinsatz"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "Dieses Projekt durch alle festgelegten Exportvorlagen exportieren."
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
+"Alle Exportvorlagen müssen einen Export-Pfad festlegen damit „Alle "
+"exportieren“ funktioniert."
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -14080,37 +14144,32 @@ msgid "More Info..."
 msgstr "Mehr Infos…"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "Exportiere PCK/Zip"
+msgstr "PCK/Zip exportieren…"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Project..."
-msgstr "Projekt exportieren"
+msgstr "Projekt exportieren…"
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Alles exportieren"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Choose an export mode:"
-msgstr "Bitte einen leeren Ordner auswählen."
+msgstr "Export-Modus auswählen:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
-msgstr "Alles exportieren"
+msgstr "Alle exportieren…"
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr "ZIP-Datei"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Godot Project Pack"
-msgstr "Godot-Game-Pack"
+msgstr "Godot-Projekt-Pack"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -15243,11 +15302,11 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Enable Scene Unique Name"
-msgstr "Einzigartigen Namen der Szene aktivieren"
+msgstr "Szenen-eindeutigen Namen aktivieren"
 
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Disable Scene Unique Name"
-msgstr "Deaktiviere eindeutigen Szenennamen"
+msgstr "Szenen-eindeutigen Namen deaktivieren"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15323,7 +15382,7 @@ msgstr "Unter-Ressourcen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Access as Scene Unique Name"
-msgstr "Zugriff auf den eindeutigen Szenennamen"
+msgstr "Über Szenen-eindeutigen Namen zugreifen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15459,9 +15518,9 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
-"Der Node kann an jeder beliebigen Stelle in der Szene, unter der Verwendung "
-"des Prefix „%s“, im Node-Pfad aufgerufen werden.\n"
-"Klicke hier, um die Funktion zu deaktivieren."
+"Dieses Node kann an jeder beliebigen Stelle der Szene, unter der Verwendung "
+"des Präfix ‚%s‘ im Node-Pfad, aufgerufen werden.\n"
+"Zum deaktivieren, hier klicken."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15673,7 +15732,8 @@ msgid "Attach Node Script"
 msgstr "Node-Skript hinzufügen"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Fern "
 
 #: editor/script_editor_debugger.cpp
@@ -16217,7 +16277,7 @@ msgstr "Physikinterpolation"
 
 #: main/main.cpp
 msgid "Enable Warnings"
-msgstr "Aktiviere Warnhinweise"
+msgstr "Warnhinweise aktivieren"
 
 #: main/main.cpp
 msgid "Frame Delay Msec"
@@ -16649,7 +16709,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "GDNative Singleton wurde deaktiviert"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Bibliotheken: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17474,7 +17535,8 @@ msgstr ""
 "sein! Bitte entsprechendes Node anpassen."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Node gab ungültige Sequenzausgabe zurück: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17484,7 +17546,8 @@ msgstr ""
 "melden Sie den Bug!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Stack-Overflow mit Stack-Tiefe: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17854,7 +17917,8 @@ msgid "for (elem) in (input):"
 msgstr "for (Element) in (Eingabe):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Eingabetyp nicht wiederholbar: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17862,7 +17926,8 @@ msgid "Iterator became invalid"
 msgstr "Iterator wurde ungültig"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Iterator wurde ungültig: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18014,11 +18079,13 @@ msgid "Operator"
 msgstr "Operator"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Ungültiger Parameter vom Typ: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Ungültige Parameter: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18030,11 +18097,13 @@ msgid "Var Name"
 msgstr "Variablenname"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet nicht im Skript gefunden: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet nicht im Skript gefunden: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -22162,11 +22231,11 @@ msgstr "Z"
 
 #: scene/3d/physics_body.cpp
 msgid "Linear Limit Enabled"
-msgstr "Aktiviere lineares Limit"
+msgstr "Lineare Grenze aktiviert"
 
 #: scene/3d/physics_body.cpp
 msgid "Linear Spring Enabled"
-msgstr "Lineare Funktion aktivieren"
+msgstr "Lineare Feder aktiviert"
 
 #: scene/3d/physics_body.cpp
 msgid "Linear Spring Stiffness"
@@ -22670,11 +22739,11 @@ msgstr "Stellung kopieren"
 
 #: scene/3d/skeleton.cpp
 msgid "Bound Children"
-msgstr "Angebundene Komponenten"
+msgstr "Gebundene Komponenten"
 
 #: scene/3d/soft_body.cpp
 msgid "Pinned Points"
-msgstr "Fixiertes Element"
+msgstr "Angeheftete Elemente"
 
 #: scene/3d/soft_body.cpp
 msgid "Attachments"
@@ -22943,11 +23012,11 @@ msgstr "Auto-Neustarten"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Delay"
-msgstr "Zeitverzögerung (ms)"
+msgstr "Zeitverzögerung"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Random Delay"
-msgstr "Zufällige Zeitverzögerung (ms)"
+msgstr "Zufällige Zeitverzögerung"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Add Amount"
@@ -22959,7 +23028,7 @@ msgstr "Abbildungsmenge"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Seek Position"
-msgstr "Standortsuche"
+msgstr "Position aufsuchen"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Input Count"
@@ -24040,9 +24109,9 @@ msgid ""
 "Setting node name '%s' to be unique within scene for '%s', but it's already "
 "claimed by '%s'. This node is no longer set unique."
 msgstr ""
-"Der verwendete Node Name '%s' wurde als einzigartig in der Szene '%s' "
-"deklariert, jedoch wurde der Name bereits von '%s' verwendet. Der Node ist "
-"nicht mehr einzigartig."
+"Der verwendete Node-Name '%s' wurde als einzigartig in der Szene '%s' "
+"deklariert, jedoch wurde der Name bereits von '%s' verwendet. Das Node wird "
+"nicht mehr als einzigartig geführt."
 
 #: scene/main/node.cpp
 msgid "Name Num Separator"
@@ -24062,7 +24131,7 @@ msgstr "Pausiermodus"
 
 #: scene/main/node.cpp
 msgid "Physics Interpolation Mode"
-msgstr "Physikinterpolations Modus"
+msgstr "Physikinterpolationsmodus"
 
 #: scene/main/node.cpp
 msgid "Display Folded"
@@ -25851,7 +25920,7 @@ msgstr "Zuordnung"
 
 #: scene/resources/skin.cpp
 msgid "Bone"
-msgstr "Skelett"
+msgstr "Knochen"
 
 #: scene/resources/sky.cpp
 msgid "Radiance Size"
@@ -25983,7 +26052,7 @@ msgstr "Pause"
 
 #: scene/resources/texture.cpp
 msgid "Which Feed"
-msgstr "Welche Zulauf"
+msgstr "Welcher Zulauf"
 
 #: scene/resources/texture.cpp
 msgid "Camera Is Active"
@@ -26440,16 +26509,16 @@ msgid ""
 "Varyings which were assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr ""
-"Variationen, die der Funktion 'Vertex' zugewiesen wurden, dürfen der "
-"'fragment' oder 'licht' Funktion nicht neu zugewiesen werden."
+"Variationen, welche in einer ‚vertex‘-Funktion zugewiesen wurden, dürfen "
+"innerhalb ‚fragment‘- oder ‚light‘-Funktionen nicht erneut zugewiesen werden."
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which were assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
 msgstr ""
-"Variationen, die der Funktion 'Fragment' zugewiesen wurden, dürfen der "
-"'vertex' oder 'licht' Funktion nicht neu zugewiesen werden."
+"Variationen, welche in einer ‚fragment‘-Funktion zugewiesen wurden, dürfen "
+"innerhalb ‚vertex‘- oder ‚light‘-Funktionen nicht erneut zugewiesen werden."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
