@@ -403,7 +403,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "ليس هنالك بايتات كافية من أجل فك البايتات، أو الصيغة غير صحيحة."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "مدخلات خاطئة %i (لم يتم تمريره) في التعبير"
 
 #: core/math/expression.cpp
@@ -1162,6 +1163,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "فارغ"
@@ -1178,7 +1180,7 @@ msgstr "انعكاس"
 msgid "Time:"
 msgstr "الوقت:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "القيمة:"
 
@@ -1429,8 +1431,73 @@ msgid "Remove this track."
 msgstr "إزالة هذا المسار."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "الوقت(ثواني): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "مكان الرصيف"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "خطوة الدوران:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "تغيير الأبعاد:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "نوع:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "إدارة قوالب التصدير:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "تسارع بعد بداية بطيئة"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "حدد المعامل"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "حدد المعامل"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "عنصر خِيار"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "إعادة تشغيل (ثواني):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "تلاشي في البداية (ثواني):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "الرسومات المتحركة:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1646,7 +1713,8 @@ msgid "Add Method Track Key"
 msgstr "أضْف مفتاح لمقطع الدالة (Method Track)"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "دالة لم توجد في الكائن: "
 
 #: editor/animation_track_editor.cpp
@@ -2607,8 +2675,9 @@ msgstr "إفتح نسق مسار الصوت"
 msgid "There is no '%s' file."
 msgstr "لا يوجد ملف '%s'."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "المخطط"
 
 #: editor/editor_audio_buses.cpp
@@ -5109,11 +5178,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "العُقدة المختارة ليست إطار عرض Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "الحجم: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "الحجم:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "الصفحة: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6094,10 +6166,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "مدير المشروع"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6860,14 +6934,6 @@ msgid "Replace in Files"
 msgstr "إستبدل في كل المفات"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "جدْ: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "إستبدال: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "إستبدال الكل (لا رجوع)"
 
@@ -7264,7 +7330,8 @@ msgid "Generating Lightmaps"
 msgstr "انشاء خارطة الضوء"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "انشاء من اجل المجسم: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8103,10 +8170,12 @@ msgstr "إعدادت شفافية طبقات البصل"
 msgid "Directions"
 msgstr "الاتجاهات"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "الماضي"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "المستقبل"
@@ -8267,7 +8336,8 @@ msgstr ""
 "تحديد الرسومية المتحركة الخاصة بالنهاية. سيكون ذلك مفيداً للحركات الفرعية."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "الانتقال: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8282,11 +8352,6 @@ msgstr "شجرة التحريك"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "إسم جديد:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "تغيير الأبعاد:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9192,6 +9257,7 @@ msgstr "إنشاء عظمة (عظام) مخصوصة من عُقدة (عُقد)"
 msgid "Clear Custom Bones"
 msgstr "مسح العظام المخصوصة"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9256,6 +9322,10 @@ msgstr "تحديد الإطار"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "إظهار تحجيم اللوحة Canvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "المخطط"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10026,7 +10096,8 @@ msgid "Volume"
 msgstr "حجم"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "مصدر الانبعاث: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10416,13 +10487,6 @@ msgid "Instance:"
 msgstr "نمذجة:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "نوع:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "افتح في المُحرر"
@@ -10430,10 +10494,6 @@ msgstr "افتح في المُحرر"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "تحميل المورد"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "مورد محمل سلفاً"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11134,12 +11194,16 @@ msgstr "تدوير"
 msgid "Translate"
 msgstr "ترجم"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "يُحجم: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "يترجم: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11161,11 +11225,6 @@ msgstr "حدّة:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "ياو:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "الحجم:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11689,15 +11748,18 @@ msgid "Sprite"
 msgstr "رسومية"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "التبسيط: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "التقلص (Pixels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "التكبير (Pixels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15909,7 +15971,8 @@ msgid "Attach Node Script"
 msgstr "ألحق نص برمجي للعُقدة"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "من بعد "
 
 #: editor/script_editor_debugger.cpp
@@ -16974,7 +17037,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "تعطيل نمط البرمجة Singleton ل GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "مكتبات: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17871,7 +17935,8 @@ msgstr ""
 "أصلح العقدة من فضلك."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "أرجعت العُقدة تسلسلاً مُخرجاً غير صالح: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17879,7 +17944,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "عثر على تسلسل بت ولكن ليس العقدة في المكدس ,ارفع تقرير عن الخطأ!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "حدوث تجاوز للتكدس ( Stack overflow) مع عمق التكدس: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18254,7 +18320,8 @@ msgid "for (elem) in (input):"
 msgstr "لكل (عنصر) في (معلومات-الإدخال):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "نوع الإدخال غير متوقع: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18262,7 +18329,8 @@ msgid "Iterator became invalid"
 msgstr "أصبح المُكرر غير صالحاً"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "أصبح المُكرر غير صالحاً: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18435,11 +18503,13 @@ msgid "Operator"
 msgstr "مُشغل التراكم."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": معامل النوع غير صحيح: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": معاملات غير صالحة: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18452,11 +18522,13 @@ msgid "Var Name"
 msgstr "الأسم"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "لم يتم إيجاد VariableGet في النص البرمجي: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "لم يتم إيجاد (مُحدد المُتغير) VariableSet في النص البرمجي: "
 
 #: modules/visual_script/visual_script_nodes.cpp

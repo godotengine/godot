@@ -352,7 +352,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Ei tarpeeksi tavuja tavujen purkamiseksi tai virheellinen formaatti."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Virheellinen syöte %i (ei välitetty) lausekkeessa"
 
 #: core/math/expression.cpp
@@ -1111,6 +1112,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Vapauta"
@@ -1127,7 +1129,7 @@ msgstr "Peilaa"
 msgid "Time:"
 msgstr "Aika:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Arvo:"
 
@@ -1377,8 +1379,73 @@ msgid "Remove this track."
 msgstr "Poista tämä raita."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Aika (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Telakan sijainti"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Kierron välistys:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Skaalaus:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Tyyppi:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Virheellinen vientimalli:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Helpotus sisään-ulos"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Aseta kahva"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Aseta kahva"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Valintapainike"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Aloita uudelleen (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Häivytys sisään (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animaatiot:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1593,7 +1660,8 @@ msgid "Add Method Track Key"
 msgstr "Lisää metodikutsuraidan avainruutu"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Metodia ei löydy objektista: "
 
 #: editor/animation_track_editor.cpp
@@ -2559,8 +2627,9 @@ msgstr "Avaa ääniväylän asettelu"
 msgid "There is no '%s' file."
 msgstr "Tiedostoa '%s' ei ole."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Asettelu"
 
 #: editor/editor_audio_buses.cpp
@@ -5091,11 +5160,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Valittu solmu ei ole Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Koko: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Koko:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Sivu: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6077,10 +6149,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Projektinhallinta"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6851,14 +6925,6 @@ msgid "Replace in Files"
 msgstr "Korvaa tiedostoissa"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Etsi: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Korvaa: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Korvaa kaikki (EI VOI KUMOTA)"
 
@@ -7255,7 +7321,8 @@ msgid "Generating Lightmaps"
 msgstr "Luodaan Lightmappeja"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Luodaan meshille: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8102,10 +8169,12 @@ msgstr "Onion skinning -valinnat"
 msgid "Directions"
 msgstr "Suunnat"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Mennyt"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Tuleva"
@@ -8265,7 +8334,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Aseta loppuanimaatio. Tämä on hyödyllistä alisiirtymiä varten."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Siirtymä: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8280,11 +8350,6 @@ msgstr "Animaatiopuu"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Uusi nimi:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Skaalaus:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9200,6 +9265,7 @@ msgstr "Luo mukautetut luut solmuista"
 msgid "Clear Custom Bones"
 msgstr "Poista mukautetut luut"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9264,6 +9330,10 @@ msgstr "Rajaa valintaan"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Esikatsele kankaan skaalausta"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Asettelu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10040,7 +10110,8 @@ msgid "Volume"
 msgstr "Tilavuus"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Emission lähde: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10430,13 +10501,6 @@ msgid "Instance:"
 msgstr "Ilmentymä:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Tyyppi:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Avaa editorissa"
@@ -10444,10 +10508,6 @@ msgstr "Avaa editorissa"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Lataa resurssi"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Resurssien esilataaja"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11149,12 +11209,16 @@ msgstr "Kierrä"
 msgid "Translate"
 msgstr "Siirrä"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Skaalataan: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Siirretään: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11176,11 +11240,6 @@ msgstr "Nyökkäyskulma:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Kääntymiskulma:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Koko:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11702,15 +11761,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Yksinkertaistus: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Kutista (pikseleissä): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Suurrennus (pikseleissä): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15907,7 +15969,8 @@ msgid "Attach Node Script"
 msgstr "Liitä solmun skripti"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Etäinen "
 
 #: editor/script_editor_debugger.cpp
@@ -16965,7 +17028,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "GDNative singleton on poistettu käytöstä"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Kirjastot: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17861,7 +17925,8 @@ msgstr ""
 "korjaa solmusi."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Solmu palautti virheellisen jakson tulosteen: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17869,7 +17934,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "Jaksobitti löytyi, mutta solmua ei löydy pinosta, raportoi bugi!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Pinon ylivuoto pinosyvyydellä: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18240,7 +18306,8 @@ msgid "for (elem) in (input):"
 msgstr "kullekin (elementille) (syötteessä):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Syötetyyppi ei ole iteroitavissa: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18248,7 +18315,8 @@ msgid "Iterator became invalid"
 msgstr "Iteraattori muuttui epäkelvoksi"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Iteraattori muuttui epäkelvoksi: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18412,11 +18480,13 @@ msgid "Operator"
 msgstr "Iteraattori"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Virheellinen argumentti tyyppiä: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Virheelliset argumentit: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18429,11 +18499,13 @@ msgid "Var Name"
 msgstr "Nimi"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet ei löytynyt skriptistä: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet ei löytynyt skriptistä: "
 
 #: modules/visual_script/visual_script_nodes.cpp
