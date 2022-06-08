@@ -1217,7 +1217,7 @@ void EditorAudioBuses::_load_default_layout() {
 	}
 
 	edited_path = layout_path;
-	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
+	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_update_buses();
 	EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1233,7 +1233,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		}
 
 		edited_path = p_string;
-		file->set_text(String(TTR("Layout")) + ": " + p_string.get_file());
+		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_update_buses();
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1254,7 +1254,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		}
 
 		edited_path = p_string;
-		file->set_text(String(TTR("Layout")) + ": " + p_string.get_file());
+		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_update_buses();
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
 		call_deferred("_select_layout");
@@ -1288,7 +1288,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	file = memnew(Label);
 	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
-	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
+	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	file->set_clip_text(true);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);

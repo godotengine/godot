@@ -1427,7 +1427,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 				name = "Mesh " + itos(step);
 			}
 
-			progress2.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
+			progress2.step(TTR("Generating for Mesh:") + " " + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
 
 			int *ret_cache_data = cache_data;
 			unsigned int ret_cache_size = cache_size;

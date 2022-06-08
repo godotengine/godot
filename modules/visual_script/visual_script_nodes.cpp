@@ -1011,9 +1011,9 @@ public:
 				r_error_str = *p_outputs[0];
 			} else {
 				if (unary) {
-					r_error_str = String(op_names[op]) + RTR(": Invalid argument of type: ") + Variant::get_type_name(p_inputs[0]->get_type());
+					r_error_str = String(op_names[op]) + ": " + RTR("Invalid argument of type:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				} else {
-					r_error_str = String(op_names[op]) + RTR(": Invalid arguments: ") + "A: " + Variant::get_type_name(p_inputs[0]->get_type()) + "  B: " + Variant::get_type_name(p_inputs[1]->get_type());
+					r_error_str = String(op_names[op]) + ": " + RTR("Invalid arguments:") + " A: " + Variant::get_type_name(p_inputs[0]->get_type()) + ", B: " + Variant::get_type_name(p_inputs[1]->get_type());
 				}
 			}
 		}
@@ -1226,7 +1226,7 @@ public:
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
+			r_error_str = RTR("VariableGet not found in script:") + " '" + String(variable) + "'";
 			return 0;
 		}
 		return 0;
@@ -1336,7 +1336,7 @@ public:
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 		if (!instance->set_variable(variable, *p_inputs[0])) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-			r_error_str = RTR("VariableSet not found in script: ") + "'" + String(variable) + "'";
+			r_error_str = RTR("VariableSet not found in script:") + " '" + String(variable) + "'";
 		}
 
 		return 0;

@@ -4,7 +4,7 @@
 		Abstract base class for range-based controls.
 	</brief_description>
 	<description>
-		Range is a base class for [Control] nodes that change a floating-point [i]value[/i] between a [i]minimum[/i] and a [i]maximum[/i], using [i]step[/i] and [i]page[/i], for example a [ScrollBar].
+		Range is a base class for [Control] nodes that change a floating-point [member value] between a [member min_value] and [member max_value], using a configured [member step] and [member page] size. See e.g. [ScrollBar] and [Slider] for examples of higher level nodes using Range.
 	</description>
 	<tutorials>
 	</tutorials>
