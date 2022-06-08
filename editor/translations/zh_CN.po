@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-05-27 04:48+0000\n"
+"PO-Revision-Date: 2022-06-01 10:42+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -388,7 +388,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "解码字节数不够，或格式无效。"
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "表达式的输入 %i 无效（未传递）"
 
 #: core/math/expression.cpp
@@ -1086,6 +1087,7 @@ msgstr "高质量"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "混合形状最大缓冲区大小（KB）"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "自由"
@@ -1102,7 +1104,7 @@ msgstr "镜像"
 msgid "Time:"
 msgstr "时间："
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "值："
 
@@ -1343,8 +1345,73 @@ msgid "Remove this track."
 msgstr "移除该轨道。"
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "时间（秒）： "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "位置"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "旋转"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "缩放："
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "类型："
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "导出模板无效："
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "缓入缓出"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "入点手柄"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "出点手柄"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "流"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "重新开始（秒）："
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "淡入（秒）："
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "动画："
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1557,7 +1624,8 @@ msgid "Add Method Track Key"
 msgstr "添加方法轨道帧"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "对象方法未找到： "
 
 #: editor/animation_track_editor.cpp
@@ -2509,8 +2577,9 @@ msgstr "打开音频总线布局"
 msgid "There is no '%s' file."
 msgstr "文件 “%s” 不存在。"
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "布局"
 
 #: editor/editor_audio_buses.cpp
@@ -4929,11 +4998,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "选定节点不是 Viewport！"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "大小： "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "大小："
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "页： "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5812,10 +5884,12 @@ msgstr "主机"
 msgid "Port"
 msgstr "端口"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "项目管理器"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Sorting Order"
 msgstr "排序方式"
@@ -6547,14 +6621,6 @@ msgid "Replace in Files"
 msgstr "在文件中替换"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "查找： "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "替换： "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "全部替换（无法撤销）"
 
@@ -6914,7 +6980,8 @@ msgid "Generating Lightmaps"
 msgstr "正在生成光照贴图"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "正在生成网格： "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7723,10 +7790,12 @@ msgstr "洋葱皮选项"
 msgid "Directions"
 msgstr "方向"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "过去"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "未来"
@@ -7884,7 +7953,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "设置终点结束动画。适用于子过渡动画。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "过渡： "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -7899,11 +7969,6 @@ msgstr "动画树"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "新名称："
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "缩放："
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8797,6 +8862,7 @@ msgstr "从节点制作自定义骨骼"
 msgid "Clear Custom Bones"
 msgstr "清除自定义骨骼"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -8858,6 +8924,10 @@ msgstr "完整显示所选项"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "预览画布缩放"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "布局"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9618,7 +9688,8 @@ msgid "Volume"
 msgstr "体积"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "发射源： "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10003,13 +10074,6 @@ msgid "Instance:"
 msgstr "实例："
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "类型："
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "在编辑器中打开"
@@ -10017,10 +10081,6 @@ msgstr "在编辑器中打开"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "加载资源"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "预加载资源"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10710,12 +10770,16 @@ msgstr "旋转"
 msgid "Translate"
 msgstr "平移"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "缩放： "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "移动： "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10737,11 +10801,6 @@ msgstr "俯仰角："
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "偏航角："
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "大小："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11257,15 +11316,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "简化： "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "收缩（像素）： "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "扩展（像素）： "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -13640,11 +13702,11 @@ msgstr "可执行的"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "为定义的每一个预设导出该项目。"
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
-msgstr ""
+msgstr "所有预设必须都定义导出路径，才能进行“全部导出”。"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -13788,37 +13850,32 @@ msgid "More Info..."
 msgstr "更多信息..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "导出 PCK/ZIP"
+msgstr "导出 PCK/Zip..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Project..."
-msgstr "导出项目"
+msgstr "导出项目..."
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "全部导出"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Choose an export mode:"
-msgstr "请选择空文件夹。"
+msgstr "请选择导出模式："
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
-msgstr "全部导出"
+msgstr "全部导出..."
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr "ZIP 文件"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Godot Project Pack"
-msgstr "Godot 游戏包"
+msgstr "Godot 项目包"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -15325,7 +15382,8 @@ msgid "Attach Node Script"
 msgstr "设置节点的脚本"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "远程 "
 
 #: editor/script_editor_debugger.cpp
@@ -16301,7 +16359,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "禁用的 GDNative 单例"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "库： "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17118,7 +17177,8 @@ msgid ""
 msgstr "节点工作内存的第一个节点的返回值必须被赋值！请修正节点。"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "节点返回了一个无效的连续输出： "
 
 #: modules/visual_script/visual_script.cpp
@@ -17126,7 +17186,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "在非堆栈中的节点中找到连续比特，请回报 Bug！"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "堆栈深度溢出： "
 
 #: modules/visual_script/visual_script.cpp
@@ -17488,7 +17549,8 @@ msgid "for (elem) in (input):"
 msgstr "对 input 中的每一个 elem："
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "输入类型不可迭代： "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17496,7 +17558,8 @@ msgid "Iterator became invalid"
 msgstr "迭代器失效"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "迭代器失效： "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17648,11 +17711,13 @@ msgid "Operator"
 msgstr "操作符"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": 无效参数类型: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": 无效参数: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -17664,11 +17729,13 @@ msgid "Var Name"
 msgstr "变量名称"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "脚本中未找到 VariableGet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "脚本中未找到 VariableSet： "
 
 #: modules/visual_script/visual_script_nodes.cpp

@@ -348,7 +348,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "ডিকোডিং বাইট, বা অবৈধ বিন্যাসের জন্য পর্যাপ্ত পরিমাণে বাইট নেই।"
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "অবৈধ ইনপুট %i (পাস করা হয়নি) প্রকাশে"
 
 #: core/math/expression.cpp
@@ -1108,6 +1109,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "মুক্ত করে দিন"
@@ -1124,7 +1126,7 @@ msgstr "প্রতিবিম্ব"
 msgid "Time:"
 msgstr "সময়:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "মান:"
 
@@ -1375,8 +1377,73 @@ msgid "Remove this track."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "সময় (সেঃ): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "ড্ক পজিশন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "ঘূর্ণায়নের পদক্ষেপ:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "স্কেল/মাপ:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "ধরণ:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "এক্সপোর্টের টেমপ্লেটসমূহ ইন্সটল করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "আগমন-গমন সহজ/আলগা করন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "হ্যান্ডেল স্থাপন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "হ্যান্ডেল স্থাপন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "বস্তু যোগ করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "পুনরারম্ভ (সেঃ):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "অন্তঃস্থ ফেড/বিলীন (সেঃ):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "অ্যানিমেশনসমূহ"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1596,7 +1663,8 @@ msgid "Add Method Track Key"
 msgstr "Method Track Key যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Object এ Method পাওয়া যায় নি: "
 
 #: editor/animation_track_editor.cpp
@@ -2601,9 +2669,9 @@ msgstr "অডিও বাস লেআউট ওপেন করুন"
 msgid "There is no '%s' file."
 msgstr ""
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_audio_buses.cpp
 #, fuzzy
-msgid "Layout"
+msgid "Layout:"
 msgstr "লেআউট/নকশা সংরক্ষণ করুন"
 
 #: editor/editor_audio_buses.cpp
@@ -5245,12 +5313,15 @@ msgid "Selected node is not a Viewport!"
 msgstr "ইম্পোর্টের জন্য নোড(সমূহ) নির্বাচন করুন"
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
-msgid "Size: "
+msgid "Size:"
 msgstr "সেল (Cell)-এর আকার:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "পাতা: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6234,10 +6305,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "প্রজেক্ট ম্যানেজার"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -7067,16 +7140,6 @@ msgstr "সমস্তগুলি প্রতিস্থাপন করু�
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Find: "
-msgstr "সন্ধান করুন"
-
-#: editor/find_in_files.cpp
-#, fuzzy
-msgid "Replace: "
-msgstr "প্রতিস্থাপন করুন"
-
-#: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
 
@@ -7491,7 +7554,7 @@ msgstr "লাইট্ম্যাপে হস্তান্তর করু�
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
-msgid "Generating for Mesh: "
+msgid "Generating for Mesh:"
 msgstr "AABB উৎপন্ন করুন"
 
 #: editor/import/resource_importer_scene.cpp
@@ -8388,11 +8451,13 @@ msgstr "অ্যানিমেশনের সিদ্ধান্তসম�
 msgid "Directions"
 msgstr "অংশাদি:"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Past"
 msgstr "প্রতিলেপন/পেস্ট করুন"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Future"
@@ -8560,7 +8625,7 @@ msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Transition: "
+msgid "Transition:"
 msgstr "ট্র্যানজিশন/স্থানান্তরণ"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8577,11 +8642,6 @@ msgstr "অ্যানিমেশন"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "নতুন নাম:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "স্কেল/মাপ:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9565,6 +9625,7 @@ msgstr ""
 msgid "Clear Custom Bones"
 msgstr "বোন্‌/হাড় পরিষ্কার করুন"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9635,6 +9696,11 @@ msgstr "নির্বাচনকে ফ্রেমভূক্ত করু�
 #, fuzzy
 msgid "Preview Canvas Scale"
 msgstr "এটলাস/মানচিত্রাবলী প্রিভিউ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Layout"
+msgstr "লেআউট/নকশা সংরক্ষণ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10443,7 +10509,7 @@ msgstr "আয়তন"
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
-msgid "Emission Source: "
+msgid "Emission Source:"
 msgstr "Emission পূরণ:"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10861,13 +10927,6 @@ msgid "Instance:"
 msgstr "ইন্সট্যান্স:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "ধরণ:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "এডিটরে খুলুন"
@@ -10875,11 +10934,6 @@ msgstr "এডিটরে খুলুন"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "রিসোর্স লোড করুন"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
-msgid "ResourcePreloader"
-msgstr "রিসোর্স-এর পথ"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11655,14 +11709,16 @@ msgstr "প্রদেশ/রাজ্য"
 msgid "Translate"
 msgstr "স্থানান্তর (Translate):"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Scaling: "
+msgid "Scaling:"
 msgstr "স্কেল/মাপ:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Translating: "
+msgid "Translating:"
 msgstr "অনুবাদসমূহ:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11685,12 +11741,6 @@ msgstr "পিচ্‌"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "সেল (Cell)-এর আকার:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -12249,17 +12299,18 @@ msgid "Sprite"
 msgstr "ফ্রেমসমূহ স্তূপ করুন"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "সরলীকরণ: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Shrink (Pixels): "
+msgid "Shrink (Pixels):"
 msgstr "স্ন্যাপ (পিক্সেলসমূহ):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Grow (Pixels): "
+msgid "Grow (Pixels):"
 msgstr "স্ন্যাপ (পিক্সেলসমূহ):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -16670,7 +16721,7 @@ msgstr "নোড স্ক্রিপ্ট সংযুক্ত করুন
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
-msgid "Remote "
+msgid "Remote %s:"
 msgstr "অপসারণ করুন"
 
 #: editor/script_editor_debugger.cpp
@@ -17760,7 +17811,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "হাল-নাগাদকারী ঘূর্ণক নিষ্ক্রিয় করুন"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "লাইব্রেরি: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -18687,7 +18739,8 @@ msgstr ""
 "করে আপনার নোডটি মেরামত করুন।"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "নোড অনিয়মিত ক্রমের ফলাফল পাঠিয়েছে: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18696,7 +18749,8 @@ msgstr ""
 "ক্রম বিট (bit) পাওয়া গিয়েছে কিন্তু নোডটি স্ট্যাক/তাক-এ নেই, সমস্যাটি রিপোর্ট করুন!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "স্ট্যাক/তাক-এর গভীরতায় স্ট্যাক/তাক অধিপ্রবাহিত/প্লাবিত হয়েছে: "
 
 #: modules/visual_script/visual_script.cpp
@@ -19114,7 +19168,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "যোগান/ইনপুট-এর ধরণ পুনরাবৃত্তিমূলক নয়: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -19122,7 +19177,8 @@ msgid "Iterator became invalid"
 msgstr "পুনরাবৃত্তকারী অকার্যকর হয়ে পড়েছে"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "পুনরাবৃত্তকারী অকার্যকর হয়ে পড়েছে: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -19293,11 +19349,13 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": অগ্রহনযোগ্য মান/আর্গুমেন্ট-এর ধরণ: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": অগ্রহনযোগ্য মান/আর্গুমেন্ট-সমূহ: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -19310,11 +19368,13 @@ msgid "Var Name"
 msgstr "নাম"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "স্ক্রিপ্টে চলক-প্রাপক (VariableGet) পাওয়া যায়নি: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "স্ক্রিপ্টে চলক-স্থাপক (VariableSet) পাওয়া যায়নি: "
 
 #: modules/visual_script/visual_script_nodes.cpp

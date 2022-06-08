@@ -38,12 +38,14 @@
 # Hiroki Taira <hrk4649@gmail.com>, 2022.
 # Juto <mvobujd237@gmail.com>, 2022.
 # jp.owo.Manda <admin@alterbaum.net>, 2022.
+# KokiOgawa <mupimupicandy@gmail.com>, 2022.
+# cacapon <takuma.tsubo@amazingengine.co.jp>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-22 05:53+0000\n"
+"PO-Revision-Date: 2022-06-06 01:50+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -80,7 +82,7 @@ msgstr "コンポジターで垂直同期する"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "デルタスムージング"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
@@ -166,7 +168,7 @@ msgstr "エディターのヒント"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "エラーメッセージを表示"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -217,7 +219,7 @@ msgstr "メモリー"
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "制限"
 
 #: core/command_queue_mt.cpp
 msgid "Command Queue"
@@ -256,7 +258,7 @@ msgstr "ページサイズ"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "ページの先読み"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
@@ -323,8 +325,9 @@ msgid "Data Array"
 msgstr "データ配列"
 
 #: core/io/stream_peer_ssl.cpp
+#, fuzzy
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "ハンドシェイクを阻止すること"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
@@ -346,7 +349,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "デコードするにはバイトが足りないか、または無効な形式です。"
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "式中の無効な入力 %i (渡されていません)"
 
 #: core/math/expression.cpp
@@ -590,15 +594,16 @@ msgstr "stderrを無効化"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "非表示のプロジェクトデータディレクトリを使用"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "カスタムユーザディレクトリを使用"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "カスタムユーザディレクトリ名"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
@@ -659,11 +664,11 @@ msgstr "メインシーンの引数:"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "ファイル拡張子で検索"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "スクリプトテンプレートの検索パス"
 
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -672,7 +677,7 @@ msgstr "バージョンコントロール"
 
 #: core/project_settings.cpp
 msgid "Autoload On Startup"
-msgstr ""
+msgstr "起動時の自動読み込み"
 
 #: core/project_settings.cpp
 msgid "Plugin Name"
@@ -710,39 +715,41 @@ msgstr "パスにフォーカス"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Left"
-msgstr "左上"
+msgstr "左"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Right"
-msgstr "右上"
+msgstr "右"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "UI Up"
-msgstr ""
+msgstr "上"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Down"
-msgstr "下り"
+msgstr "下"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Page Up"
-msgstr "ページ: "
+msgstr "ページアップ"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "UI Page Down"
-msgstr ""
+msgstr "ページダウン"
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "ホーム"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI End"
-msgstr "終りに"
+msgstr "エンド"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -844,7 +851,7 @@ msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "遠距離マッチング"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
@@ -1029,7 +1036,7 @@ msgstr "オブジェクトごとのライト数の上限"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "サブサーフェススキャタリング"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1051,7 +1058,7 @@ msgstr "サーフェスを投入する"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
-msgstr ""
+msgstr "重量サンプル"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Voxel Cone Tracing"
@@ -1065,6 +1072,7 @@ msgstr "高品質"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "ブレンドシェイプのバッファサイズの上限 (KB)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "自由"
@@ -1081,7 +1089,7 @@ msgstr "ミラー"
 msgid "Time:"
 msgstr "時間:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "値:"
 
@@ -1331,8 +1339,73 @@ msgid "Remove this track."
 msgstr "このトラックを除去する。"
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "時間 (秒): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "位置"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "回転のステップ:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "スケール:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "型:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "無効なエクスポート テンプレート:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "イージング(In-Out)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "ハンドルを設定する"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "ハンドルを設定する"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "ストリーム"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "リスタート:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "フェードイン:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "アニメーション:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1547,7 +1620,8 @@ msgid "Add Method Track Key"
 msgstr "メソッドトラックキーの追加"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "オブジェクトにメソッドが見つかりません: "
 
 #: editor/animation_track_editor.cpp
@@ -2513,8 +2587,9 @@ msgstr "オーディオバスのレイアウトを開く"
 msgid "There is no '%s' file."
 msgstr "'%s' ファイルがありません。"
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "レイアウト"
 
 #: editor/editor_audio_buses.cpp
@@ -5015,11 +5090,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "選択したノードはビューポートではありません！"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "サイズ: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "サイズ:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "ページ: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5939,10 +6017,12 @@ msgstr "ホスト"
 msgid "Port"
 msgstr "ポート"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "プロジェクトマネージャー"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Sorting Order"
 msgstr "ソート順"
@@ -6694,14 +6774,6 @@ msgid "Replace in Files"
 msgstr "複数ファイル内で置換"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "検索: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "置換: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "すべて置換 (元に戻せません)"
 
@@ -7097,7 +7169,8 @@ msgid "Generating Lightmaps"
 msgstr "ライトマップの生成"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "メッシュの生成: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7935,10 +8008,12 @@ msgstr "オニオンスキンオプション"
 msgid "Directions"
 msgstr "方向"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "過去"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "未来"
@@ -8098,7 +8173,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "終了アニメーションを設定する。これはサブトランジションに便利です。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "トランジション: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8113,11 +8189,6 @@ msgstr "アニメーションツリー"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "新しい名前:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "スケール:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9031,6 +9102,7 @@ msgstr "ノードからカスタムボーンを作成"
 msgid "Clear Custom Bones"
 msgstr "カスタム ボーンをクリア"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9092,6 +9164,10 @@ msgstr "選択対象を全面に"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "キャンバススケールのプレビュー"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "レイアウト"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9866,7 +9942,8 @@ msgid "Volume"
 msgstr "ボリューム"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "放出源: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10253,13 +10330,6 @@ msgid "Instance:"
 msgstr "インスタンス:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "型:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "エディターで開く"
@@ -10267,10 +10337,6 @@ msgstr "エディターで開く"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "リソースを読み込む"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "ResourcePreloader"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10969,12 +11035,16 @@ msgstr "回転"
 msgid "Translate"
 msgstr "移動"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "縮尺: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "位置の変更: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10996,11 +11066,6 @@ msgstr "ピッチ:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "ヨー:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "サイズ:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11521,15 +11586,18 @@ msgid "Sprite"
 msgstr "スプライト"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "簡略化: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "縮小 (ピクセル): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "拡大(ピクセル): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15707,7 +15775,8 @@ msgid "Attach Node Script"
 msgstr "ノードにスクリプトをアタッチする"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "リモート "
 
 #: editor/script_editor_debugger.cpp
@@ -16723,7 +16792,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "無効なGDNativeシングルトン"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "ライブラリ: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17600,7 +17670,8 @@ msgstr ""
 "を修正してください。"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "ノードは無効なシーケンス出力を返しました: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17610,7 +17681,8 @@ msgstr ""
 "を！"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "スタックオーバーフロー発生 スタックの深さ: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17958,16 +18030,18 @@ msgstr "Return(戻り値)"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
 msgid "Condition"
-msgstr ""
+msgstr "コンディション"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
 msgid "While"
-msgstr ""
+msgstr "一方"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -17982,7 +18056,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "入力タイプは反復可能ではありません: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17990,12 +18065,13 @@ msgid "Iterator became invalid"
 msgstr "イテレーターが無効になりました"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "イテレーターが無効になりました: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "シーケンス"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "in order:"
@@ -18156,11 +18232,13 @@ msgid "Operator"
 msgstr "イテレータ"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ":無効な引数 引数の型: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": 無効な引数: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18173,11 +18251,13 @@ msgid "Var Name"
 msgstr "名前"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGetがスクリプト内にありません: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSetがスクリプト内にありません: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -26028,8 +26108,9 @@ msgid "Sky Contribution"
 msgstr ""
 
 #: scene/resources/environment.cpp
+#, fuzzy
 msgid "Fog"
-msgstr ""
+msgstr "Fog(霧)"
 
 #: scene/resources/environment.cpp
 #, fuzzy
