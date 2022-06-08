@@ -568,7 +568,7 @@ void TileMap::update_dirty_quadrants() {
 				if (shape.is_valid()) {
 					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.autotile_coord_x && shapes[j].autotile_coord.y == c.autotile_coord_y)) {
 						Transform2D xform;
-						xform.set_origin(offset.floor());
+						xform.set_origin(offset.floor() + tile_ofs);
 
 						Vector2 shape_ofs = shapes[j].shape_transform.get_origin();
 
@@ -617,7 +617,7 @@ void TileMap::update_dirty_quadrants() {
 
 				if (navpoly.is_valid()) {
 					Transform2D xform;
-					xform.set_origin(offset.floor() + q.pos);
+					xform.set_origin(offset.floor() + q.pos + tile_ofs);
 					_fix_cell_transform(xform, c, npoly_ofs, s);
 
 					RID region = Navigation2DServer::get_singleton()->region_create();
@@ -668,7 +668,7 @@ void TileMap::update_dirty_quadrants() {
 									}
 								}
 								Transform2D navxform;
-								navxform.set_origin(offset.floor());
+								navxform.set_origin(offset.floor() + tile_ofs);
 								_fix_cell_transform(navxform, c, npoly_ofs, s);
 
 								vs->canvas_item_set_transform(debug_navigation_item, navxform);
