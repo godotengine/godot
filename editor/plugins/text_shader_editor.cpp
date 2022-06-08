@@ -954,6 +954,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
+				tx->remove_secondary_carets();
 				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
