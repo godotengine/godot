@@ -817,11 +817,11 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 	Vector<Ref<AnimationNodeStateMachine>> parents = p_parents;
 
 	if (from_root) {
-		Ref<AnimationNodeStateMachine> prev = p_nodesm->get_prev_state_machine();
+		AnimationNodeStateMachine *prev = p_nodesm->get_prev_state_machine();
 
-		while (prev.is_valid()) {
+		while (prev != nullptr) {
 			parents.push_back(prev);
-			p_nodesm = prev;
+			p_nodesm = Ref<AnimationNodeStateMachine>(prev);
 			prev_path += "../";
 			prev = prev->get_prev_state_machine();
 		}
