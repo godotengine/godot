@@ -1,0 +1,34 @@
+diff --git a/thirdparty/freetype/src/smooth/ftgrays.c b/thirdparty/freetype/src/smooth/ftgrays.c
+index 622035aa79..5d9e1600b7 100644
+--- a/thirdparty/freetype/src/smooth/ftgrays.c
++++ b/thirdparty/freetype/src/smooth/ftgrays.c
+@@ -1907,6 +1907,9 @@ typedef ptrdiff_t  FT_PtrDist;
+     0                                        /* delta    */
+   )
+ 
++// -- GODOT start --
++  static volatile int _lto_dummy = 0;
++// -- GODOT end --
+ 
+   static int
+   gray_convert_glyph_inner( RAS_ARG,
+@@ -1928,6 +1931,9 @@ typedef ptrdiff_t  FT_PtrDist;
+                   ras.max_ey,
+                   ras.cell_null - ras.cell_free,
+                   ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
++// -- GODOT start --
++      _lto_dummy = error; // Prevents LTO from removing this branch.
++// -- GODOT end --
+     }
+     else
+     {
+@@ -1935,6 +1941,9 @@ typedef ptrdiff_t  FT_PtrDist;
+ 
+       FT_TRACE7(( "band [%d..%d]: to be bisected\n",
+                   ras.min_ey, ras.max_ey ));
++// -- GODOT start --
++      _lto_dummy = error; // Prevents LTO from removing this branch.
++// -- GODOT end --
+     }
+ 
+     return error;
