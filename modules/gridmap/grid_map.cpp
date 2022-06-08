@@ -535,7 +535,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				RID region = NavigationServer3D::get_singleton()->region_create();
 				NavigationServer3D::get_singleton()->region_set_layers(region, navigation_layers);
 				NavigationServer3D::get_singleton()->region_set_navmesh(region, navmesh);
-				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * mesh_library->get_item_navmesh_transform(c.item));
+				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
 				NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 				nm.region = region;
 			}
