@@ -174,6 +174,10 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer2D::region_create);
+	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer2D::region_set_enter_cost);
+	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer2D::region_get_enter_cost);
+	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer2D::region_set_travel_cost);
+	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer2D::region_get_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &NavigationServer2D::region_set_map);
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer2D::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_layers", "region", "layers"), &NavigationServer2D::region_set_layers);
@@ -239,6 +243,12 @@ Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
 RID FORWARD_0_C(region_create);
+
+void FORWARD_2_C(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid_to_rid, real_to_real);
+real_t FORWARD_1_C(region_get_enter_cost, RID, p_region, rid_to_rid);
+void FORWARD_2_C(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, rid_to_rid, real_to_real);
+real_t FORWARD_1_C(region_get_travel_cost, RID, p_region, rid_to_rid);
+
 void FORWARD_2_C(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
 void FORWARD_2_C(region_set_layers, RID, p_region, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
 uint32_t FORWARD_1_C(region_get_layers, RID, p_region, rid_to_rid);

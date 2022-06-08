@@ -41,6 +41,9 @@ class NavigationRegion3D : public Node3D {
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+
 	Node *debug_view = nullptr;
 	Thread bake_thread;
 
@@ -58,6 +61,12 @@ public:
 	uint32_t get_layers() const;
 
 	RID get_region_rid() const;
+
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
+
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;

@@ -73,6 +73,26 @@ uint32_t NavigationRegion3D::get_layers() const {
 	return NavigationServer3D::get_singleton()->region_get_layers(region);
 }
 
+void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
+	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
+	enter_cost = MAX(p_enter_cost, 0.0);
+	NavigationServer3D::get_singleton()->region_set_enter_cost(region, p_enter_cost);
+}
+
+real_t NavigationRegion3D::get_enter_cost() const {
+	return enter_cost;
+}
+
+void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
+	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
+	travel_cost = MAX(p_travel_cost, 0.0);
+	NavigationServer3D::get_singleton()->region_set_enter_cost(region, travel_cost);
+}
+
+real_t NavigationRegion3D::get_travel_cost() const {
+	return travel_cost;
+}
+
 RID NavigationRegion3D::get_region_rid() const {
 	return region;
 }
@@ -224,12 +244,20 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
+	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion3D::set_enter_cost);
+	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationRegion3D::get_enter_cost);
+
+	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationRegion3D::set_travel_cost);
+	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion3D::get_travel_cost);
+
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationRegion3D::bake_navigation_mesh, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationRegion3D::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_layers", "get_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 
 	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
@@ -243,6 +271,8 @@ void NavigationRegion3D::_navigation_changed() {
 NavigationRegion3D::NavigationRegion3D() {
 	set_notify_transform(true);
 	region = NavigationServer3D::get_singleton()->region_create();
+	NavigationServer3D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
+	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 }
 
 NavigationRegion3D::~NavigationRegion3D() {

@@ -98,6 +98,9 @@ class NavigationRegion2D : public Node2D {
 	RID region;
 	Ref<NavigationPolygon> navpoly;
 
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+
 	void _navpoly_changed();
 	void _map_changed(RID p_RID);
 
@@ -118,6 +121,12 @@ public:
 	uint32_t get_layers() const;
 
 	RID get_region_rid() const;
+
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
+
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
 
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;

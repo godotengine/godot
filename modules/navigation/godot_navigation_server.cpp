@@ -309,6 +309,36 @@ COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform) {
 	region->set_transform(p_transform);
 }
 
+COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_enter_cost < 0.0);
+
+	region->set_enter_cost(p_enter_cost);
+}
+
+real_t GodotNavigationServer::region_get_enter_cost(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_enter_cost();
+}
+
+COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_travel_cost < 0.0);
+
+	region->set_travel_cost(p_travel_cost);
+}
+
+real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_travel_cost();
+}
+
 COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);

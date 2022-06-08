@@ -97,6 +97,14 @@ public:
 	/// Creates a new region.
 	virtual RID region_create() const = 0;
 
+	/// Set the enter_cost of a region
+	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) const = 0;
+	virtual real_t region_get_enter_cost(RID p_region) const = 0;
+
+	/// Set the travel_cost of a region
+	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const = 0;
+	virtual real_t region_get_travel_cost(RID p_region) const = 0;
+
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const = 0;
 	virtual RID region_get_map(RID p_region) const = 0;
