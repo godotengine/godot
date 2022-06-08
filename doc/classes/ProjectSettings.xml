@@ -1384,10 +1384,10 @@
 		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>
-		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
