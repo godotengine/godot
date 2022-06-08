@@ -62,7 +62,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-05-24 13:02+0000\n"
+"PO-Revision-Date: 2022-06-08 06:47+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
@@ -15269,8 +15269,9 @@ msgstr ""
 "与可选的下一个字符的字偶距。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Draws a colored, unfilled circle. See also [method draw_arc], [method "
+"Draws a colored, filled circle. See also [method draw_arc], [method "
 "draw_polyline] and [method draw_polygon].\n"
 "[b]Note:[/b] Built-in antialiasing is not provided for [method draw_circle]. "
 "As a workaround, install the [url=https://github.com/godot-extended-"
@@ -17378,11 +17379,12 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "Constructs a color from a 32-bit integer in RGBA format (each byte "
 "represents a color channel).\n"
 "[codeblock]\n"
-"var c = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)\n"
+"var color = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)\n"
 "[/codeblock]"
 msgstr ""
 "从 RGBA 格式的 32 位整数构造颜色，每个字节代表一个颜色通道。\n"
@@ -17437,12 +17439,13 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "Returns the most contrasting color.\n"
 "[codeblock]\n"
-"var c = Color(0.3, 0.4, 0.9)\n"
-"var contrasted_color = c.contrasted() # Equivalent to RGBA(204, 229, 102, "
-"255)\n"
+"var color = Color(0.3, 0.4, 0.9)\n"
+"var contrasted_color = color.contrasted() # Equivalent to RGBA(204, 229, "
+"102, 255)\n"
 "[/codeblock]"
 msgstr ""
 "返回对比度最高的颜色。\n"
@@ -17468,12 +17471,13 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and "
 "[code]v[/code] are values between 0 and 1.\n"
 "[codeblock]\n"
-"var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, "
-"79, 0.8) or Color8(100, 151, 201, 0.8)\n"
+"var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, "
+"50, 79, 0.8) or Color8(100, 151, 201, 0.8)\n"
 "[/codeblock]"
 msgstr ""
 "从 HSV 配置文件中构建一个颜色。[code]h[/code]、[code]s[/code]和[code]v[/code]"
@@ -17493,12 +17497,13 @@ msgstr ""
 "可以用来确定颜色是亮色还是暗色。一般认为亮度小于 0.5 的颜色是暗色。"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "Returns the color's grayscale representation.\n"
 "The gray value is calculated as [code](r + g + b) / 3[/code].\n"
 "[codeblock]\n"
-"var c = Color(0.2, 0.45, 0.82)\n"
-"var gray = c.gray() # A value of 0.466667\n"
+"var color = Color(0.2, 0.45, 0.82)\n"
+"var gray = color.gray() # A value of 0.466667\n"
 "[/codeblock]"
 msgstr ""
 "返回颜色的灰度表示。\n"
@@ -17632,15 +17637,16 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "Returns the color's HTML hexadecimal color string in ARGB format (ex: "
 "[code]ff34f822[/code]).\n"
 "Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from "
 "the hexadecimal string.\n"
 "[codeblock]\n"
-"var c = Color(1, 1, 1, 0.5)\n"
-"var s1 = c.to_html() # Returns \"7fffffff\"\n"
-"var s2 = c.to_html(false) # Returns \"ffffff\"\n"
+"var color = Color(1, 1, 1, 0.5)\n"
+"var s1 = color.to_html() # Returns \"7fffffff\"\n"
+"var s2 = color.to_html(false) # Returns \"ffffff\"\n"
 "[/codeblock]"
 msgstr ""
 "返回 ARGB 格式的 HTML 十六进制颜色字符串（例如：[code]ff34f822[/code]）。\n"
@@ -17739,7 +17745,7 @@ msgstr "爱丽丝蓝。"
 
 #: doc/classes/Color.xml
 msgid "Antique white color."
-msgstr "古色古香的白色。"
+msgstr "古董白。"
 
 #: doc/classes/Color.xml
 msgid "Aqua color."
@@ -17787,7 +17793,7 @@ msgstr "癭木色。"
 
 #: doc/classes/Color.xml
 msgid "Cadet blue color."
-msgstr "军校学生的蓝色。"
+msgstr "军服蓝。"
 
 #: doc/classes/Color.xml
 msgid "Chartreuse color."
@@ -18111,7 +18117,7 @@ msgstr "鹿皮鞋颜色。"
 
 #: doc/classes/Color.xml
 msgid "Navajo white color."
-msgstr "那瓦伙族人白。"
+msgstr "纳瓦白。"
 
 #: doc/classes/Color.xml
 msgid "Navy blue color."
@@ -18119,7 +18125,7 @@ msgstr "藏青色。"
 
 #: doc/classes/Color.xml
 msgid "Old lace color."
-msgstr "旧蕾丝颜色。"
+msgstr "旧蕾丝色。"
 
 #: doc/classes/Color.xml
 msgid "Olive color."
@@ -22156,7 +22162,6 @@ msgid "A cryptographic key (RSA)."
 msgstr "加密密钥（RSA）。"
 
 #: doc/classes/CryptoKey.xml
-#, fuzzy
 msgid ""
 "The CryptoKey class represents a cryptographic key. Keys can be loaded and "
 "saved like any other [Resource].\n"
@@ -22164,11 +22169,11 @@ msgid ""
 "Crypto.generate_self_signed_certificate] and as private key in [method "
 "StreamPeerSSL.accept_stream] along with the appropriate certificate."
 msgstr ""
-"CryptoKey类表示加密密钥。可以像其他任何[Resource]一样加载和保存键。\n"
-"它们可用于通过[method Crypto.generate_self_signed_certificate]生成自签名"
-"[X509Certificate]，并可作为[method StreamPeerSSL.accept_stream]中的私钥以及相"
-"应的证书。\n"
-"[b]注意：[/b]在HTML5导出中不可用。"
+"CryptoKey 类表示加密密钥。密钥可以像其他任何 [Resource] 一样进行加载和保"
+"存。\n"
+"密钥可以通过 [method Crypto.generate_self_signed_certificate] 生成自签名 "
+"[X509Certificate]，并可作为 [method StreamPeerSSL.accept_stream] 中的私钥以及"
+"相应的证书。"
 
 #: doc/classes/CryptoKey.xml
 msgid ""
@@ -23840,7 +23845,6 @@ msgid "Dictionary type."
 msgstr "字典类型。"
 
 #: doc/classes/Dictionary.xml
-#, fuzzy
 msgid ""
 "Dictionary type. Associative container which contains values referenced by "
 "unique keys. Dictionaries are composed of pairs of keys (which must be "
@@ -26728,8 +26732,9 @@ msgstr ""
 "侧。"
 
 #: doc/classes/EditorPlugin.xml
+#, fuzzy
 msgid ""
-"Gets the Editor's dialogue used for making scripts.\n"
+"Gets the Editor's dialog used for making scripts.\n"
 "[b]Note:[/b] Users can configure it before use.\n"
 "[b]Warning:[/b] Removing and freeing this node will render a part of the "
 "editor useless and may cause a crash."
@@ -29666,11 +29671,13 @@ msgid "Low quality for the screen-space ambient occlusion effect (fastest)."
 msgstr "低质量的屏幕空间环境遮挡效果（最快）。"
 
 #: doc/classes/Environment.xml
-msgid "Low quality for the screen-space ambient occlusion effect."
+#, fuzzy
+msgid "Medium quality for the screen-space ambient occlusion effect."
 msgstr "低质量的屏幕空间环境遮挡效果。"
 
 #: doc/classes/Environment.xml
-msgid "Low quality for the screen-space ambient occlusion effect (slowest)."
+#, fuzzy
+msgid "High quality for the screen-space ambient occlusion effect (slowest)."
 msgstr "低质量的屏幕空间环境遮挡效果（最慢）。"
 
 #: doc/classes/Expression.xml
@@ -31738,7 +31745,6 @@ msgstr ""
 "code]，否则返回 [code]false[/code]。"
 
 #: doc/classes/Geometry.xml
-#, fuzzy
 msgid ""
 "Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and "
 "([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the "
@@ -31746,10 +31752,10 @@ msgid ""
 "[code]null[/code].\n"
 "[b]Note:[/b] The lines are specified using direction vectors, not end points."
 msgstr ""
-"检查两行（[code]from_a[/code]，[code]dir_a[/code]）和（[code]from_b[/code]，"
-"[code]dir_b[/code]）是否相交。如果是，则将相交点返回为[Vector2]。如果没有交"
-"叉，则返回一个空的[Variant]。\n"
-"[b]注意：[/b]线是使用方向向量而不是终点指定的。"
+"检查两条直线([code]from_a[/code], [code]dir_a[/code]) 和 ([code]from_b[/"
+"code], [code]dir_b[/code]) 是否相交。如果相交，则返回 [Vector2] 形式的相交"
+"点。如果不相交，则返回 [code]null[/code]。\n"
+"[b]注意：[/b]直线是使用方向向量而不是终点指定的。"
 
 #: doc/classes/Geometry.xml
 msgid ""
@@ -31906,16 +31912,15 @@ msgstr ""
 "交点的法线。"
 
 #: doc/classes/Geometry.xml
-#, fuzzy
 msgid ""
 "Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and "
 "([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point "
 "of intersection as [Vector2]. If no intersection takes place, returns "
 "[code]null[/code]."
 msgstr ""
-"检查两段（[code]from_a[/code], [code]to_a[/code]）和（[code]from_b[/code], "
-"[code]to_b[/code]）是否相交。如果是，返回相交点为[Vector2]。如果没有发生相"
-"交，返回一个空的[Variant]。"
+"检查两条线段 ([code]from_a[/code], [code]to_a[/code]) 和 ([code]from_b[/"
+"code], [code]to_b[/code]) 是否相交。如果相交，则返回 [Vector2] 形式的相交点。"
+"如果不相交，则返回 [code]null[/code]。"
 
 #: doc/classes/Geometry.xml
 msgid ""
@@ -33841,7 +33846,6 @@ msgid "Context to compute cryptographic hashes over multiple iterations."
 msgstr "在多次迭代中计算加密哈希的上下文。"
 
 #: doc/classes/HashingContext.xml
-#, fuzzy
 msgid ""
 "The HashingContext class provides an interface for computing cryptographic "
 "hashes over multiple iterations. This is useful for example when computing "
@@ -33894,8 +33898,7 @@ msgstr ""
 "    var res = ctx.finish()\n"
 "    # 以十六进制字符串和数组的形式打印结果。\n"
 "    printt(res.hex_encode(), Array(res))\n"
-"[/codeblock]\n"
-"[b]注意：[/b]这在导出为 HTML5 时是不可用的。"
+"[/codeblock]"
 
 #: doc/classes/HashingContext.xml
 msgid "Closes the current context, and return the computed hash."
@@ -44566,15 +44569,20 @@ msgid "Server interface for low-level 2D navigation access."
 msgstr "访问底层 2D 导航的服务器接口。"
 
 #: doc/classes/Navigation2DServer.xml
+#, fuzzy
 msgid ""
 "Navigation2DServer is the server responsible for all 2D navigation. It "
 "handles several objects, namely maps, regions and agents.\n"
 "Maps are made up of regions, which are made of navigation polygons. "
-"Together, they define the navigable areas in the 2D world. For two regions "
-"to be connected to each other, they must share a similar edge. An edge is "
-"considered connected to another if both of its two vertices are at a "
-"distance less than [member Navigation.edge_connection_margin] to the "
-"respective other edge's vertex.\n"
+"Together, they define the navigable areas in the 2D world.\n"
+"[b]Note:[/b] Most NavigationServer changes take effect after the next "
+"physics frame and not immediately. This includes all changes made to maps, "
+"regions or agents by navigation related Nodes in the SceneTree or made "
+"through scripts.\n"
+"For two regions to be connected to each other, they must share a similar "
+"edge. An edge is considered connected to another if both of its two vertices "
+"are at a distance less than [member Navigation.edge_connection_margin] to "
+"the respective other edge's vertex.\n"
 "To use the collision avoidance system, you may use agents. You can set an "
 "agent's target velocity, then the servers will emit a callback with a "
 "modified velocity.\n"
@@ -45386,7 +45394,7 @@ msgstr ""
 "染的停滞。一般而言，可解析对象的总数与它们各自的大小和复杂度之间应该达到平"
 "衡，防止出现帧率问题和超长的烘焙时间。合并后的网格后续会被交给 Recast 导航对"
 "象，通过在网格的包围区域周边创建体素世界，来检查原始几何体中适合 "
-"[Navigationmesh] 代理行走的地形。\n"
+"[NavigationMesh] 代理行走的地形。\n"
 "然后就会返回最终的导航网格，保存在 [NavigationMesh] 中，即可交付 "
 "[NavigationMeshInstance] 使用。"
 
@@ -45690,15 +45698,20 @@ msgid "Server interface for low-level 3D navigation access."
 msgstr "访问底层 3D 导航的服务器接口。"
 
 #: doc/classes/NavigationServer.xml
+#, fuzzy
 msgid ""
 "NavigationServer is the server responsible for all 3D navigation. It handles "
 "several objects, namely maps, regions and agents.\n"
 "Maps are made up of regions, which are made of navigation meshes. Together, "
-"they define the navigable areas in the 3D world. For two regions to be "
-"connected to each other, they must share a similar edge. An edge is "
-"considered connected to another if both of its two vertices are at a "
-"distance less than [member Navigation.edge_connection_margin] to the "
-"respective other edge's vertex.\n"
+"they define the navigable areas in the 3D world.\n"
+"[b]Note:[/b] Most NavigationServer changes take effect after the next "
+"physics frame and not immediately. This includes all changes made to maps, "
+"regions or agents by navigation related Nodes in the SceneTree or made "
+"through scripts.\n"
+"For two regions to be connected to each other, they must share a similar "
+"edge. An edge is considered connected to another if both of its two vertices "
+"are at a distance less than [member Navigation.edge_connection_margin] to "
+"the respective other edge's vertex.\n"
 "To use the collision avoidance system, you may use agents. You can set an "
 "agent's target velocity, then the servers will emit a callback with a "
 "modified velocity.\n"
@@ -47163,7 +47176,7 @@ msgid ""
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
 msgstr ""
-"如果这个 Node 设置了物理插值标志，则返回 [code]true[/code]（见 [method "
+"如果这个 Node 设置了物理插值标志，则返回 [code]true[/code]（见 [member "
 "physics_interpolation_mode]）。\n"
 "[b]注意：[/b]只有在设置了标志[b]并且[/b]该 [SceneTree] 启用了物理插值时，才会"
 "启用插值。可以使用 [method is_physics_interpolated_and_enabled] 进行检查。"
@@ -47177,7 +47190,7 @@ msgid ""
 "See [member SceneTree.physics_interpolation] and [member ProjectSettings."
 "physics/common/physics_interpolation]."
 msgstr ""
-"如果启用了物理插值（见 [method physics_interpolation_mode]）[b]并且[/b]该 "
+"如果启用了物理插值（见 [member physics_interpolation_mode]）[b]并且[/b]该 "
 "[SceneTree] 也启用了物理插值，则返回 [code]true[/code]。\n"
 "这是 [method is_physics_interpolated] 的简便版本，还会检查是否全局启用了物理"
 "插值。\n"
@@ -47445,7 +47458,6 @@ msgstr ""
 "[b]注意：[/b]这个函数应该在移动节点[b]之后[/b]调用，而不是之前。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Sends a remote procedure call request for the given [code]method[/code] to "
 "peers on the network (and locally), optionally sending all additional "
@@ -47465,7 +47477,7 @@ msgstr ""
 "可选择将所有附加参数作为参数发送给 RPC 调用的方法。调用请求将只被具有相同 "
 "[NodePath] 的节点接收，包括完全相同的节点名称。行为取决于给定方法的 RPC 配"
 "置，见 [method rpc_config]。方法在默认情况下不会暴露给 RPC。参阅 [method "
-"rset] 和[method rset_config] 的属性。返回一个空的 [Variant]。\n"
+"rset] 和[method rset_config] 的属性。返回 [code]null[/code]。\n"
 "[b]注意：[/b]只有在你从 [SceneTree] 收到 [code]connected_to_server[/code] 信"
 "号之后，你才能安全地在客户端使用 RPC。你还需要跟踪连接状态，可以通过 "
 "[code]server_disconnected[/code] 等 [SceneTree] 信号或者检查 [code]SceneTree."
@@ -47489,31 +47501,28 @@ msgstr ""
 "rset_config] 的属性。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
 "(see [method NetworkedMultiplayerPeer.set_target_peer]). Returns [code]null[/"
 "code]."
 msgstr ""
-"向由[code]peer_id[/code]确定的特定peer发送一个[method rpc]（见[method "
-"NetworkedMultiplayerPeer.set_target_peer]）。返回一个空的[Variant]。"
+"向由 [code]peer_id[/code] 确定的特定对等体发送一个 [method rpc]（见 [method "
+"NetworkedMultiplayerPeer.set_target_peer]）。返回 [code]null[/code]。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Sends a [method rpc] using an unreliable protocol. Returns [code]null[/code]."
-msgstr "使用一个不可靠的协议发送一个[method rpc]。返回一个空的[Variant]。"
+msgstr "使用不可靠的协议发送一个 [method rpc]。返回 [code]null[/code]。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
 "using an unreliable protocol (see [method NetworkedMultiplayerPeer."
 "set_target_peer]). Returns [code]null[/code]."
 msgstr ""
-"使用不可靠的协议（见[method NetworkedMultiplayerPeer.set_target_peer]）向由"
-"[code]peer_id[/code]标识的特定peer发送一个[method rpc]。返回一个空的"
-"[Variant]。"
+"使用不可靠的协议（见 [method NetworkedMultiplayerPeer.set_target_peer]）向由 "
+"[code]peer_id[/code] 标识的特定对等体发送一个 [method rpc]。返回 [code]null[/"
+"code]。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -48345,9 +48354,10 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/NodePath.xml
+#, fuzzy
 msgid ""
 "Gets the node name indicated by [code]idx[/code] (0 to [method "
-"get_name_count]).\n"
+"get_name_count] - 1).\n"
 "[codeblock]\n"
 "var node_path = NodePath(\"Path2D/PathFollow2D/Sprite\")\n"
 "print(node_path.get_name(0)) # Path2D\n"
@@ -51261,6 +51271,7 @@ msgstr ""
 "[b]注意：[/b]该方法在 HTML5、Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Requests the OS to open a resource with the most appropriate program. For "
 "example:\n"
@@ -51270,9 +51281,9 @@ msgid ""
 "web browser on the official Godot website.\n"
 "- [code]OS.shell_open(\"mailto:example@example.com\")[/code] opens the "
 "default email client with the \"To\" field set to [code]example@example.com[/"
-"code]. See [url=https://blog.escapecreative.com/customizing-mailto-"
-"links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields "
-"that can be added.\n"
+"code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The "
+"[code]mailto[/code] URL scheme[/url] for a list of fields that can be "
+"added.\n"
 "Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] "
 "or [code]user://[/code] path into a system path for use with this method.\n"
 "[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS "
@@ -56176,6 +56187,7 @@ msgid "A pooled array of bytes."
 msgstr "字节池数组。"
 
 #: doc/classes/PoolByteArray.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold bytes. Optimized for memory usage, "
 "does not fragment the memory.\n"
@@ -56186,7 +56198,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolByteArray()]\n"
 "array[0].push_back(123)\n"
-"print(array)  # [[]] (empty PoolByteArray within an empty Array)\n"
+"print(array)  # [[]] (empty PoolByteArray within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolByteArray] property must be [i]reassigned[/i] with "
 "[code]=[/code] for it to be changed:\n"
@@ -56198,6 +56210,24 @@ msgid ""
 "print(array)  # [[123]] (PoolByteArray with 1 element inside an Array)\n"
 "[/codeblock]"
 msgstr ""
+"专门为存储字节设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolByteArray] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 [Dictionary] "
+"中的 [PoolByteArray] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolByteArray()]\n"
+"array[0].push_back(123)\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolByteArray）\n"
+"[/codeblock]\n"
+"整个 [PoolByteArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
+"生变化：\n"
+"[codeblock]\n"
+"var array = [PoolByteArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(123)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[123]]（Array 中包含了含有 1 个元素的 PoolByteArray）\n"
+"[/codeblock]"
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -56362,11 +56392,11 @@ msgstr ""
 "负的索引都被认为是从数组的末端开始的。"
 
 #: doc/classes/PoolColorArray.xml
-#, fuzzy
 msgid "A pooled array of [Color]s."
 msgstr "[Color] 池数组。"
 
 #: doc/classes/PoolColorArray.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold [Color]. Optimized for memory usage, "
 "does not fragment the memory.\n"
@@ -56377,7 +56407,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolColorArray()]\n"
 "array[0].push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
-"print(array)  # [[]] (empty PoolColorArray within an empty Array)\n"
+"print(array)  # [[]] (empty PoolColorArray within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolColorArray] property must be [i]reassigned[/i] with "
 "[code]=[/code] for it to be changed:\n"
@@ -56390,6 +56420,25 @@ msgid ""
 "inside an Array)\n"
 "[/codeblock]"
 msgstr ""
+"专门为存储 [Color] 设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolColorArray] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 [Dictionary] "
+"中的 [PoolColorArray] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolColorArray()]\n"
+"array[0].push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolColorArray）\n"
+"[/codeblock]\n"
+"整个 [PoolColorArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
+"生变化：\n"
+"[codeblock]\n"
+"var array = [PoolColorArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(0.1, 0.2, 0.3, 0.4)]]（Array 中包含了含有 1 个元素的 "
+"PoolColorArray）\n"
+"[/codeblock]"
 
 #: doc/classes/PoolColorArray.xml
 msgid ""
@@ -56436,7 +56485,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolIntArray()]\n"
 "array[0].push_back(1234)\n"
-"print(array)  # [[]] (empty PoolIntArray within an empty Array)\n"
+"print(array)  # [[]] (empty PoolIntArray within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolIntArray] property must be [i]reassigned[/i] with "
 "[code]=[/code] for it to be changed:\n"
@@ -56453,9 +56502,25 @@ msgid ""
 "around. In comparison, [int] uses signed 64-bit integers which can hold much "
 "larger values."
 msgstr ""
-"专门用于保存整数值（[int]）的数组。对内存的使用进行了优化，不会使内存碎片"
-"化。\n"
-"[b]注意：[/b]这种类型是通过值传递的，而不是引用。\n"
+"专门为存储整数（[int]）设计的数组。针对内存使用进行了优化，不会产生内存碎"
+"片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolIntArray] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 [Dictionary] 中"
+"的 [PoolIntArray] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolIntArray()]\n"
+"array[0].push_back(1234)\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolIntArray）\n"
+"[/codeblock]\n"
+"整个 [PoolIntArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发生"
+"变化：\n"
+"[codeblock]\n"
+"var array = [PoolIntArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(1234)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[1234]]（Array 中包含了含有 1 个元素的 PoolIntArray）\n"
+"[/codeblock]\n"
 "[b]注意：[/b]这个类型仅限于有符号的 32 位整数，这意味着它只能在 [code]"
 "[-2^31, 2^31 - 1][/code] 的区间取值，即 [code][-2147483648, 2147483647][/"
 "code]。超过这些界限就会被包起来。相比之下，[int] 使用有符号的 64 位整数，可以"
@@ -56484,7 +56549,6 @@ msgid "Changes the int at the given index."
 msgstr "更改给定索引处的 int。"
 
 #: doc/classes/PoolRealArray.xml
-#, fuzzy
 msgid "A pooled array of real numbers ([float])."
 msgstr "实数（[float]）池数组。"
 
@@ -56500,7 +56564,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolRealArray()]\n"
 "array[0].push_back(12.34)\n"
-"print(array)  # [[]] (empty PoolRealArray within an empty Array)\n"
+"print(array)  # [[]] (empty PoolRealArray within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolRealArray] property must be [i]reassigned[/i] with "
 "[code]=[/code] for it to be changed:\n"
@@ -56519,8 +56583,24 @@ msgid ""
 "store [float]s will use roughly 6 times more memory compared to a "
 "[PoolRealArray]."
 msgstr ""
-"专门设计用于保存浮点值的数组。针对内存使用进行了优化，不会造成内存碎片。\n"
-"[b]注意：[/b]这种类型是按值传递而不是按引用传递。\n"
+"专门为存储浮点数设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolRealArray] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 [Dictionary] "
+"中的 [PoolRealArray] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolIntArray()]\n"
+"array[0].push_back(12.34)\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolRealArray）\n"
+"[/codeblock]\n"
+"整个 [PoolRealArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
+"生变化：\n"
+"[codeblock]\n"
+"var array = [PoolRealArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(12.34)\n"
+"array[0] = pool_array\n"
+"print(array)  # [[12.34]]（Array 中包含了含有 1 个元素的 PoolRealArray）\n"
+"[/codeblock]\n"
 "[b]注意：[/b]与 64 位原始 [float] 不同，存储在 [PoolRealArray] 中的数字是 32 "
 "位浮点数。这意味着与原始 [float] 相比，存储在 [PoolRealArray] 中的值具有较低"
 "的精度。如果您需要在数组中存储 64 位浮点数，请使用具有 [float] 元素的通用 "
@@ -56542,11 +56622,11 @@ msgid "Changes the float at the given index."
 msgstr "更改给定索引处的浮点数。"
 
 #: doc/classes/PoolStringArray.xml
-#, fuzzy
 msgid "A pooled array of [String]s."
 msgstr "[String] 池数组。"
 
 #: doc/classes/PoolStringArray.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold [String]s. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56557,7 +56637,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolStringArray()]\n"
 "array[0].push_back(\"hello\")\n"
-"print(array)  # [[]] (empty PoolStringArray within an empty Array)\n"
+"print(array)  # [[]] (empty PoolStringArray within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolStringArray] property must be [i]reassigned[/i] "
 "with [code]=[/code] for it to be changed:\n"
@@ -56569,6 +56649,24 @@ msgid ""
 "print(array)  # [[hello]] (PoolStringArray with 1 element inside an Array)\n"
 "[/codeblock]"
 msgstr ""
+"专门为存储 [String] 设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolStringArray] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 "
+"[Dictionary] 中的 [PoolStringArray] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolStringArray()]\n"
+"array[0].push_back(\"hello\")\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolStringArray）\n"
+"[/codeblock]\n"
+"整个 [PoolStringArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
+"发生变化：\n"
+"[codeblock]\n"
+"var array = [PoolStringArray()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(\"hello\")\n"
+"array[0] = pool_array\n"
+"print(array)  # [[hello]]（Array 中包含了含有 1 个元素的 PoolStringArray）\n"
+"[/codeblock]"
 
 #: doc/classes/PoolStringArray.xml
 msgid ""
@@ -56597,11 +56695,11 @@ msgid "Changes the [String] at the given index."
 msgstr "更改给定索引处的[String]。"
 
 #: doc/classes/PoolVector2Array.xml
-#, fuzzy
 msgid "A pooled array of [Vector2]s."
 msgstr "[Vector2] 池数组。"
 
 #: doc/classes/PoolVector2Array.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold [Vector2]. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56612,7 +56710,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolVector2Array()]\n"
 "array[0].push_back(Vector2(12, 34))\n"
-"print(array)  # [[]] (empty PoolVector2Array within an empty Array)\n"
+"print(array)  # [[]] (empty PoolVector2Array within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolVector2Array] property must be [i]reassigned[/i] "
 "with [code]=[/code] for it to be changed:\n"
@@ -56625,6 +56723,25 @@ msgid ""
 "Array)\n"
 "[/codeblock]"
 msgstr ""
+"专门为存储 [Vector2] 设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolVector2Array] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 "
+"[Dictionary] 中的 [PoolVector2Array] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolVector2Array()]\n"
+"array[0].push_back(Vector2(12, 34))\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolVector2Array）\n"
+"[/codeblock]\n"
+"整个 [PoolVector2Array] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
+"发生变化：\n"
+"[codeblock]\n"
+"var array = [PoolVector2Array()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Vector2(12, 34))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(12, 34)]]（Array 中包含了含有 1 个元素的 "
+"PoolVector2Array）\n"
+"[/codeblock]"
 
 #: doc/classes/PoolVector2Array.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
@@ -56655,6 +56772,7 @@ msgid "A pooled array of [Vector3]."
 msgstr "[Vector3] 池数组。"
 
 #: doc/classes/PoolVector3Array.xml
+#, fuzzy
 msgid ""
 "An array specifically designed to hold [Vector3]. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56665,7 +56783,7 @@ msgid ""
 "[codeblock]\n"
 "var array = [PoolVector3Array()]\n"
 "array[0].push_back(Vector3(12, 34, 56))\n"
-"print(array)  # [[]] (empty PoolVector3Array within an empty Array)\n"
+"print(array)  # [[]] (empty PoolVector3Array within an Array)\n"
 "[/codeblock]\n"
 "Instead, the entire [PoolVector3Array] property must be [i]reassigned[/i] "
 "with [code]=[/code] for it to be changed:\n"
@@ -56678,6 +56796,25 @@ msgid ""
 "Array)\n"
 "[/codeblock]"
 msgstr ""
+"专门为存储 [Vector3] 设计的数组。针对内存使用进行了优化，不会产生内存碎片。\n"
+"[b]注意：[/b]这个类型是按值传递的，不会按引用传递。也就是说，如果对某个类的 "
+"[PoolVector3Array] 类型的属性进行了[i]修改[/i]，或者对 [Array] 或 "
+"[Dictionary] 中的 [PoolVector3Array] 进行了修改，那么这些修改就会丢失：\n"
+"[codeblock]\n"
+"var array = [PoolVector3Array()]\n"
+"array[0].push_back(Vector3(12, 34, 56))\n"
+"print(array)  # [[]]（空 Array 中包含了空的 PoolVector3Array）\n"
+"[/codeblock]\n"
+"整个 [PoolVector3Array] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
+"发生变化：\n"
+"[codeblock]\n"
+"var array = [PoolVector3Array()]\n"
+"var pool_array = array[0]\n"
+"pool_array.push_back(Vector3(12, 34, 56))\n"
+"array[0] = pool_array\n"
+"print(array)  # [[(12, 34, 56)]]（Array 中包含了含有 1 个元素的 "
+"PoolVector3Array）\n"
+"[/codeblock]"
 
 #: doc/classes/PoolVector3Array.xml
 msgid ""
@@ -62390,10 +62527,12 @@ msgid "Abstract base class for range-based controls."
 msgstr "基于范围的控件的抽象基类。"
 
 #: doc/classes/Range.xml
+#, fuzzy
 msgid ""
 "Range is a base class for [Control] nodes that change a floating-point "
-"[i]value[/i] between a [i]minimum[/i] and a [i]maximum[/i], using [i]step[/"
-"i] and [i]page[/i], for example a [ScrollBar]."
+"[member value] between a [member min_value] and [member max_value], using a "
+"configured [member step] and [member page] size. See e.g. [ScrollBar] and "
+"[Slider] for examples of higher level nodes using Range."
 msgstr ""
 "Range是一个用于[Control]节点的基类，它在[i]最小值[/i]和[i]最大值[/i]之间改变"
 "一个浮点[i]值[/i]，用于[i]步进[/i]和[i]页面[/i]，例如[ScrollBar]。"
@@ -64947,39 +65086,39 @@ msgstr "锁定指定的线性或旋转轴。"
 #: doc/classes/RigidBody.xml
 #, fuzzy
 msgid ""
-"Damps RigidBody's rotational forces. If this value is different from -1.0 it "
-"will be added to any linear damp derived from the world or areas.\n"
+"Damps the body's rotational forces. If this value is different from -1.0 it "
+"will be added to any angular damp derived from the world or areas.\n"
 "See [member ProjectSettings.physics/3d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
-"实体的线性阻尼。不能小于-1.0。如果这个值与-1.0不同，任何从世界或区域派生的线"
-"性阻尼将被覆盖。\n"
-"关于阻尼的更多细节，请参阅[member ProjectSettings.physics/3d/"
-"default_linear_damp]。"
+"对 RigidBody 的旋转力进行阻尼运算。如果这个值与 -1.0 不同，将会追加到任何从世"
+"界或区域派生的线性阻尼中。\n"
+"关于阻尼的更多细节，请参阅 [member ProjectSettings.physics/3d/"
+"default_angular_damp]。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's rotation in the X axis."
-msgstr "锁定实体在X轴上的旋转。"
+msgstr "锁定实体在 X 轴上的旋转。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's rotation in the Y axis."
-msgstr "锁定实体在Y轴上的旋转。"
+msgstr "锁定实体在 Y 轴上的旋转。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's rotation in the Z axis."
-msgstr "锁定实体在Z轴上的旋转。"
+msgstr "锁定实体在 Z 轴上的旋转。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's movement in the X axis."
-msgstr "锁定实体在X轴上的移动。"
+msgstr "锁定实体在 X 轴上的移动。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's movement in the Y axis."
-msgstr "锁定实体在Y轴上的移动。"
+msgstr "锁定实体在 Y 轴上的移动。"
 
 #: doc/classes/RigidBody.xml
 msgid "Lock the body's movement in the Z axis."
-msgstr "锁定实体在Z轴上的移动。"
+msgstr "锁定实体在 Z 轴上的移动。"
 
 #: doc/classes/RigidBody.xml doc/classes/RigidBody2D.xml
 #: doc/classes/StaticBody.xml doc/classes/StaticBody2D.xml
@@ -65061,7 +65200,7 @@ msgid ""
 "Deprecated, use [member PhysicsMaterial.friction] instead via [member "
 "physics_material_override]."
 msgstr ""
-"实体的摩擦力，从 0（无摩擦）到 1（最大摩擦）。\n"
+"该实体的摩擦力，从 0（无摩擦）到 1（最大摩擦）。\n"
 "已废弃，请通过 [member physics_material_override] 使用 [member "
 "PhysicsMaterial.friction] 代替。"
 
@@ -65072,12 +65211,11 @@ msgid ""
 "example, a value of 1 will be normal gravity, 2 will apply double gravity, "
 "and 0.5 will apply half gravity to this object."
 msgstr ""
-"这与在[b]项目 > 项目设置 > Physics > 3d[/b] 中找到的全局 3D 重力设置相乘，产"
-"生 RigidBody 的重力。例如，1 的值将是正常的重力，2 将应用双倍的重力，0.5 将对"
-"这个物体应用一半的重力。"
+"这与在[b]项目 > 项目设置 > 物理 > 3D[/b] 中找到的全局 3D 重力设置相乘，产生 "
+"RigidBody 的重力。例如，1 的值将是正常的重力，2 将应用双倍的重力，0.5 将对这"
+"个物体应用一半的重力。"
 
 #: doc/classes/RigidBody.xml
-#, fuzzy
 msgid ""
 "The body's linear damp. Cannot be less than -1.0. If this value is different "
 "from -1.0 it will be added to any linear damp derived from the world or "
@@ -65085,9 +65223,9 @@ msgid ""
 "See [member ProjectSettings.physics/3d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
-"实体的线性阻尼。不能小于-1.0。如果这个值与-1.0不同，任何从世界或区域派生的线"
-"性阻尼将被覆盖。\n"
-"关于阻尼的更多细节，请参阅[member ProjectSettings.physics/3d/"
+"该实体的线性阻尼。不能小于 -1.0。如果这个值与 -1.0 不同，将会追加到任何从世界"
+"或区域派生的线性阻尼中。\n"
+"关于阻尼的更多细节，请参阅 [member ProjectSettings.physics/3d/"
 "default_linear_damp]。"
 
 #: doc/classes/RigidBody.xml
@@ -65385,7 +65523,6 @@ msgstr ""
 "话）。"
 
 #: doc/classes/RigidBody2D.xml
-#, fuzzy
 msgid ""
 "Damps the body's [member angular_velocity]. If [code]-1[/code], the body "
 "will use the [b]Default Angular Damp[/b] defined in [b]Project > Project "
@@ -65394,8 +65531,9 @@ msgid ""
 "See [member ProjectSettings.physics/2d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
-"对物体的 [member angular_velocity] 进行阻尼运算。如果为 [code]-1[/code]，物体"
-"将使用[b]项目 > 项目设置 > 物理 > 2D[/b] 中定义的[b]默认角度阻尼[/b]。\n"
+"对该实体的 [member angular_velocity] 进行阻尼运算。如果为 [code]-1[/code]，物"
+"体将使用[b]项目 > 项目设置 > 物理 > 2D[/b] 中定义的[b]默认角度阻尼[/b]。如果"
+"大于 [code]-1[/code]，会加入到项目默认值之上。\n"
 "有关阻尼的更多详细信息，请参阅 [member ProjectSettings.physics/2d/"
 "default_angular_damp]。"
 
@@ -65494,12 +65632,11 @@ msgid ""
 "this function allows you to set a custom value. Set 0 inertia to return to "
 "automatically computing it."
 msgstr ""
-"物体的惯性力矩。这就像质量，但对于旋转来说：它决定了旋转物体需要多大的力矩。"
-"惯性力矩通常是由质量和形状自动计算出来的，但是这个函数允许你设置一个自定义"
-"值。设置0惯性会切换回自动计算。"
+"该实体的惯性力矩。类似于质量，但是针对旋转的：它决定了旋转物体需要多大的力"
+"矩。惯性力矩通常是由质量和形状自动计算出来的，但是这个函数允许你设置一个自定"
+"义值。设置 0 惯性会切换回自动计算。"
 
 #: doc/classes/RigidBody2D.xml
-#, fuzzy
 msgid ""
 "Damps the body's [member linear_velocity]. If [code]-1[/code], the body will "
 "use the [b]Default Linear Damp[/b] in [b]Project > Project Settings > "
@@ -65508,9 +65645,9 @@ msgid ""
 "See [member ProjectSettings.physics/2d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
-"对物体的[member linear_velocity]进行阻尼运算。如果[code]-1[/code]，物体将使用"
-"[b]项目 > 项目设置 > Physics > 2d[/b] 中的 [b]Default Linear Damp[/b]（默认线"
-"性阻尼）。\n"
+"对该实体的 [member linear_velocity] 进行阻尼运算。如果为 [code]-1[/code]，物"
+"体将使用[b]项目 > 项目设置 > 物理 > 2D[/b] 中的[b]默认线性阻尼[/b]。如果大于 "
+"[code]-1[/code]，会加入到项目默认值之上。\n"
 "有关阻尼的更多详细信息，请参阅 [member ProjectSettings.physics/2d/"
 "default_linear_damp]。"
 
@@ -65521,21 +65658,21 @@ msgid ""
 "thread and runs at a different granularity. Use [method _integrate_forces] "
 "as your process loop for precise control of the body state."
 msgstr ""
-"物体的线速度，单位为像素每秒。可以偶尔使用，但是[b]不要每一帧都设置它[/b]，因"
-"为物理可能在另一个线程中运行，并且以不同的间隔。使用 [method "
+"该实体的线速度，单位为像素每秒。可以偶尔使用，但是[b]不要每一帧都设置它[/b]，"
+"因为物理可能在另一个线程中运行，并且以不同的间隔。使用 [method "
 "_integrate_forces] 作为你的进程循环，以精确控制物体状态。"
 
 #: doc/classes/RigidBody2D.xml
 msgid "The body's mode. See [enum Mode] for possible values."
-msgstr "物体的模式。可能的值见[enum Mode]。"
+msgstr "该实体的模式。可能的取值见 [enum Mode]。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
 "The body's weight based on its mass and the [b]Default Gravity[/b] value in "
 "[b]Project > Project Settings > Physics > 2d[/b]."
 msgstr ""
-"物体的重量基于其质量和[b]项目 > 项目设置 > Physics > 2d[/b] 中的 [b]Default "
-"Gravity[/b]（默认重力）值。"
+"该实体的重量，基于其质量和[b]项目 > 项目设置 > 物理 > 2D[/b] 中的[b]默认重力"
+"[/b]值。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -66995,6 +67132,7 @@ msgid "One-shot timer."
 msgstr "一次性定时器。"
 
 #: doc/classes/SceneTreeTimer.xml
+#, fuzzy
 msgid ""
 "A one-shot timer managed by the scene tree, which emits [signal timeout] on "
 "completion. See also [method SceneTree.create_timer].\n"
@@ -67006,7 +67144,8 @@ msgid ""
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "    print(\"Timer ended.\")\n"
 "[/codeblock]\n"
-"The timer will be automatically freed after its time elapses."
+"The timer will be automatically freed after its time elapses, so be aware "
+"that any reference you might have kept to it will become invalid."
 msgstr ""
 "由场景树管理的一次性定时器，它在完成时发[signal timeout] 信号。请参阅 "
 "[method SceneTree.create_timer]。\n"
@@ -79636,14 +79775,13 @@ msgid "Stops animation and removes all tweens."
 msgstr "停止动画，并删除所有补间。"
 
 #: doc/classes/Tween.xml
-#, fuzzy
 msgid ""
 "Resets a tween to its initial value (the one given, not the one before the "
 "tween), given its object and property/method pair. By default, all tweens "
 "are reset, unless [code]key[/code] is specified."
 msgstr ""
 "将补间重置到它的初始值，即给定的值，而不是补间之前的值，指定其对象和属性或方"
-"法的对。默认情况下，除非指定了[code]key[/code]，否则所有的补间都被移除。"
+"法的对。默认情况下，除非指定了[code]key[/code]，否则所有的补间都会被重置。"
 
 #: doc/classes/Tween.xml
 msgid ""
@@ -82286,9 +82424,10 @@ msgstr ""
 "是针对非常高端的系统，否则数值为4是最好的。"
 
 #: doc/classes/Viewport.xml
+#, fuzzy
 msgid ""
-"If [code]true[/code], the viewport will use [World] defined in [code]world[/"
-"code] property."
+"If [code]true[/code], the viewport will use a unique copy of the [World] "
+"defined in [member world]."
 msgstr ""
 "如果为 [code]true[/code]，该视窗将使用 [code]world[/code] 属性中定义的 "
 "[World]。"
@@ -82383,13 +82522,13 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid "If [code]true[/code], the size override affects stretch as well."
-msgstr "如果[code]true[/code]，尺寸重写也会影响拉伸。"
+msgstr "如果为 [code]true[/code]，尺寸重写也会影响拉伸。"
 
 #: doc/classes/Viewport.xml
 msgid ""
 "If [code]true[/code], the viewport should render its background as "
 "transparent."
-msgstr "如果 [code]true[/code]，视窗应使其背景渲染为透明。"
+msgstr "如果为 [code]true[/code]，该视窗应使其背景渲染为透明。"
 
 #: doc/classes/Viewport.xml
 msgid "The rendering mode of viewport."
@@ -82415,11 +82554,11 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid "The custom [World] which can be used as 3D environment source."
-msgstr "自定义的[World]，可以作为3D环境源。"
+msgstr "自定义的 [World]，可以作为 3D 环境源。"
 
 #: doc/classes/Viewport.xml
 msgid "The custom [World2D] which can be used as 2D environment source."
-msgstr "自定义的[World2D]，可以作为2D环境源。"
+msgstr "自定义的 [World2D]，可以作为 2D 环境源。"
 
 #: doc/classes/Viewport.xml
 msgid "Emitted when a Control node grabs keyboard focus."
@@ -86399,11 +86538,10 @@ msgid "Returns the value of a certain material's parameter."
 msgstr "返回特定材质的参数值。"
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Returns the default value for the param if available. Returns [code]null[/"
 "code] otherwise."
-msgstr "如果可用，返回参数的默认值。否则返回一个空的 [Variant]。"
+msgstr "如果可用，返回参数的默认值。否则返回 [code]null[/code]。"
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -87368,6 +87506,7 @@ msgid "Sets a viewport's canvas."
 msgstr "设置视窗的画布。"
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid ""
 "Copies viewport to a region of the screen specified by [code]rect[/code]. If "
 "[member Viewport.render_direct_to_screen] is [code]true[/code], then "
@@ -87385,7 +87524,7 @@ msgid ""
 "[/codeblock]\n"
 "Using this can result in significant optimization, especially on lower-end "
 "devices. However, it comes at the cost of having to manage your viewports "
-"manually. For a further optimization see, [method "
+"manually. For further optimization, see [method "
 "viewport_set_render_direct_to_screen]."
 msgstr ""
 "将视窗复制到屏幕上由[code]rect[/code]指定的区域。如果[member Viewport."
@@ -92408,7 +92547,6 @@ msgid "An X509 certificate (e.g. for SSL)."
 msgstr "X509 证书（例如用于 SSL）。"
 
 #: doc/classes/X509Certificate.xml
-#, fuzzy
 msgid ""
 "The X509Certificate class represents an X509 certificate. Certificates can "
 "be loaded and saved like any other [Resource].\n"
@@ -92421,8 +92559,7 @@ msgstr ""
 "加载和保存。\n"
 "它们可以作为 [method StreamPeerSSL.accept_stream] 中的服务器证书，与适当的 "
 "[CryptoKey] 一起使用，并指定通过 [method StreamPeerSSL.connect_to_stream] 连"
-"接到 SSL 服务器时应该接受的唯一证书。\n"
-"[b]注意：[/b]在 HTML5 导出中不可用。"
+"接到 SSL 服务器时应该接受的唯一证书。"
 
 #: doc/classes/X509Certificate.xml
 msgid "Loads a certificate from [code]path[/code] (\"*.crt\" file)."
