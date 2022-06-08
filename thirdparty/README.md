@@ -141,6 +141,11 @@ Files extracted from upstream source:
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
+Some changes have been made in order to prevent LTO from removing code.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
+
 
 ## glad
 
