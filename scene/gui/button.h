@@ -46,6 +46,7 @@ private:
 	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextParagraph::OverrunBehavior overrun_behavior = TextParagraph::OVERRUN_NO_TRIMMING;
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
@@ -70,6 +71,9 @@ public:
 
 	void set_text(const String &p_text);
 	String get_text() const;
+
+	void set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior);
+	TextParagraph::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
