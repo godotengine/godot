@@ -1547,10 +1547,11 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::COLOR: {
 			f->store_32(VARIANT_COLOR);
 			Color val = p_property;
-			f->store_real(val.r);
-			f->store_real(val.g);
-			f->store_real(val.b);
-			f->store_real(val.a);
+			// Color are always floats
+			f->store_float(val.r);
+			f->store_float(val.g);
+			f->store_float(val.b);
+			f->store_float(val.a);
 
 		} break;
 		case Variant::STRING_NAME: {
@@ -1685,7 +1686,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(len);
 			const float *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i]);
+				f->store_float(r[i]);
 			}
 
 		} break;
@@ -1743,10 +1744,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(len);
 			const Color *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].r);
-				f->store_real(r[i].g);
-				f->store_real(r[i].b);
-				f->store_real(r[i].a);
+				f->store_float(r[i].r);
+				f->store_float(r[i].g);
+				f->store_float(r[i].b);
+				f->store_float(r[i].a);
 			}
 
 		} break;
