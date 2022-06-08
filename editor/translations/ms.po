@@ -334,7 +334,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Bait tidak mencukupi untuk menyahkod bait, atau format tidak sah."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Input %i tidak sah (tidak lulus) dalam ungkapan"
 
 #: core/math/expression.cpp
@@ -1079,6 +1080,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Bebas"
@@ -1095,7 +1097,7 @@ msgstr "Cermin"
 msgid "Time:"
 msgstr "Masa:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Nilai:"
 
@@ -1344,8 +1346,71 @@ msgid "Remove this track."
 msgstr "Keluarkan trek ini."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Masa (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Kedudukan Dok"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Langkah Putaran:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Skala:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Nama kumpulan tidak sah."
+
+#: editor/animation_track_editor.cpp
+msgid "Easing:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Tetapkan Pemegang"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Tetapkan Pemegang"
+
+#: editor/animation_track_editor.cpp
+msgid "Stream:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Mula Semula (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Pudar Masuk (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Set Peralihan ke:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1560,7 +1625,8 @@ msgid "Add Method Track Key"
 msgstr "Tambah Kunci Trek Kaedah"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Kaedah tidak ditemui dalam objek: "
 
 #: editor/animation_track_editor.cpp
@@ -2530,8 +2596,9 @@ msgstr "Buka Susun Atur Bas Audio"
 msgid "There is no '%s' file."
 msgstr "Tiada fail '%s'."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Susun atur"
 
 #: editor/editor_audio_buses.cpp
@@ -5064,11 +5131,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Node yang dipilih bukan Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Saiz: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Saiz:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Halaman: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6022,10 +6092,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6779,14 +6851,6 @@ msgid "Replace in Files"
 msgstr "Gantikan dalam Fail-fail"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Cari: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Ganti: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Gantikan Semua (TIADA BUAT ASAL)"
 
@@ -7180,7 +7244,8 @@ msgid "Generating Lightmaps"
 msgstr "Menjana Peta Cahaya"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Menjana untuk Mesh: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8020,10 +8085,12 @@ msgstr "Pilihan Kulit Bawang"
 msgid "Directions"
 msgstr "Arah"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Sebelum"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Masa depan"
@@ -8182,7 +8249,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Tetapkan hujung animasi. Ini adalah berguna untuk sub-peralihan."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Peralihan: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8197,11 +8265,6 @@ msgstr "AnimationTree"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Nama baru:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Skala:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9112,6 +9175,7 @@ msgstr "Buat Tulang(-tulang) Tersuai dari Nod(-nod)"
 msgid "Clear Custom Bones"
 msgstr "Kosongkan Tulang Tersuai"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9175,6 +9239,10 @@ msgstr "Pemilihan Bingkai"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Pratonton Skala Kanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Susun atur"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9928,8 +9996,9 @@ msgid "Volume"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
-msgstr ""
+#, fuzzy
+msgid "Emission Source:"
+msgstr "Topeng Emission"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10311,23 +10380,12 @@ msgid "Instance:"
 msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
 msgstr ""
 
 #: editor/plugins/room_manager_editor_plugin.cpp
@@ -11029,13 +11087,17 @@ msgstr ""
 msgid "Translate"
 msgstr ""
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr ""
+#, fuzzy
+msgid "Scaling:"
+msgstr "Skala:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
-msgstr ""
+#, fuzzy
+msgid "Translating:"
+msgstr "Peralihan: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -11056,11 +11118,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Saiz:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11575,16 +11632,19 @@ msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
-msgstr ""
+#, fuzzy
+msgid "Simplification:"
+msgstr "Aksi"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
-msgstr ""
+#, fuzzy
+msgid "Shrink (Pixels):"
+msgstr "Piksel Pepejal"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
-msgstr ""
+#, fuzzy
+msgid "Grow (Pixels):"
+msgstr "Piksel Pepejal"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -15629,8 +15689,9 @@ msgid "Attach Node Script"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
-msgstr ""
+#, fuzzy
+msgid "Remote %s:"
+msgstr "Keluarkan"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16664,7 +16725,7 @@ msgid "Disabled GDNative Singleton"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+msgid "Libraries:"
 msgstr ""
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17539,7 +17600,7 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+msgid "Node returned an invalid sequence output:"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -17547,7 +17608,7 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+msgid "Stack overflow with stack depth:"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -17918,7 +17979,7 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+msgid "Input type not iterable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17926,7 +17987,7 @@ msgid "Iterator became invalid"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+msgid "Iterator became invalid:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18094,12 +18155,14 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
-msgstr ""
+#, fuzzy
+msgid "Invalid argument of type:"
+msgstr "Argumen tidak sah untuk binaan '%s'"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
-msgstr ""
+#, fuzzy
+msgid "Invalid arguments:"
+msgstr "Nama tidak sah."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -18111,12 +18174,14 @@ msgid "Var Name"
 msgstr "Nama"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
-msgstr ""
+#, fuzzy
+msgid "VariableGet not found in script:"
+msgstr "Kaedah tidak ditemui dalam objek: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
-msgstr ""
+#, fuzzy
+msgid "VariableSet not found in script:"
+msgstr "Kaedah tidak ditemui dalam objek: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy

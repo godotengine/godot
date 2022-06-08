@@ -329,7 +329,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Manquen bytes per a descodificar els bytes, o el format no és vàlid."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "L'entrada %i en l'expressió no és vàlida (no transmesa)"
 
 #: core/math/expression.cpp
@@ -1065,6 +1066,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Allibera"
@@ -1081,7 +1083,7 @@ msgstr "Emmiralla"
 msgid "Time:"
 msgstr "Temps:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Valor:"
 
@@ -1331,8 +1333,73 @@ msgid "Remove this track."
 msgstr "Treu la Pista."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Temps (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Posició"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Pas de la Rotació:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Escala:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Tipus:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Plantilla d'exportació no vàlida:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Esmorteeix Entrada-Sortida"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Estableix la Nansa"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Estableix la Nansa"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Element de ràdio"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Reinici (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Fosa d'entrada (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animacions:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1550,7 +1617,8 @@ msgid "Add Method Track Key"
 msgstr "Afegir Clau de Pista de Mètode"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "No s'ha trobat el mètode en l'objecte: "
 
 #: editor/animation_track_editor.cpp
@@ -2531,8 +2599,9 @@ msgstr "Obre un Disseny de Bus d'Àudio"
 msgid "There is no '%s' file."
 msgstr "No hi ha cap fitxer '%s'."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Desar Disseny"
 
 #: editor/editor_audio_buses.cpp
@@ -5087,11 +5156,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "El Node seleccionat no és una Vista!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Mida: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Mida:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Pàgina: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6076,10 +6148,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Gestor del Projecte"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6881,14 +6955,6 @@ msgid "Replace in Files"
 msgstr "Reemplaça-hoTot"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Cerca: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Reemplaça: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Reemplaça-hoTot"
@@ -7293,7 +7359,8 @@ msgid "Generating Lightmaps"
 msgstr "S'estan generant els Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "S'està generant per a la Malla: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8144,10 +8211,12 @@ msgstr "Opcions Paper Ceba"
 msgid "Directions"
 msgstr "Direccions"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Passat"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Futur"
@@ -8307,7 +8376,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Definiu l'animació final. Això és útil per a sub-transicions."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Transició: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8322,11 +8392,6 @@ msgstr "Arbre d'Animació"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Nou nom:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Escala:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9275,6 +9340,7 @@ msgstr "Crear os(sos) personalitzat(s) a partir de Node(s)"
 msgid "Clear Custom Bones"
 msgstr "Restablir Ossos Personalitzats"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9339,6 +9405,10 @@ msgstr "Enquadra la Selecció"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Vista prèvia de l'Escala del Llenç"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Desar Disseny"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10125,7 +10195,8 @@ msgid "Volume"
 msgstr "Volum"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Font d'Emissió: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10520,13 +10591,6 @@ msgid "Instance:"
 msgstr "Instància:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Tipus:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Obre en l'Editor"
@@ -10534,10 +10598,6 @@ msgstr "Obre en l'Editor"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Carrega un Recurs"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "ResourcePreloader"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -11268,12 +11328,16 @@ msgstr "Rotar"
 msgid "Translate"
 msgstr "Translació"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Escala: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Translació: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11296,11 +11360,6 @@ msgstr "commutador:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Mida:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11837,15 +11896,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Simplificació: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Redueix (Píxels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Engrandeix (Píxels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -16224,7 +16286,8 @@ msgid "Attach Node Script"
 msgstr "Adjunta un Script de Node"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Remot "
 
 #: editor/script_editor_debugger.cpp
@@ -17303,7 +17366,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Desactiva l'Indicador d'Actualització"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Biblioteques: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -18211,7 +18275,8 @@ msgstr ""
 "treball de nodes! Repareu el node."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "El node ha retornat un seqüencia de sortida que no és vàlida: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18221,7 +18286,8 @@ msgstr ""
 "el bug!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Pila desbordada (stack overflow) amb profunditat de Pila: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18619,7 +18685,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Tipus d'entrada no iterable: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18627,7 +18694,8 @@ msgid "Iterator became invalid"
 msgstr "L'Iterador ja no és vàlid"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "L'Iterador ja no és vàlid: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18801,11 +18869,13 @@ msgid "Operator"
 msgstr "Operador de superposició."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Argument no vàlid del tipus: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Arguments no vàlids: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18818,11 +18888,13 @@ msgid "Var Name"
 msgstr "Nom"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Variable Get no trobada en l'Script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "Variable Set no trobada en l'Script: "
 
 #: modules/visual_script/visual_script_nodes.cpp

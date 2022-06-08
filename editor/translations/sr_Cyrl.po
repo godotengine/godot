@@ -345,7 +345,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недовољно бајтова за дешифровање бајтова, или неважећи формат."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Неважећи унос %i (није прошао) у изразу"
 
 #: core/math/expression.cpp
@@ -1112,6 +1113,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Слободно"
@@ -1128,7 +1130,7 @@ msgstr "Огледало"
 msgid "Time:"
 msgstr "Време:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Вредност:"
 
@@ -1410,8 +1412,72 @@ msgstr "Обриши одабрану траку."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Time (s): "
+msgid "Time (s):"
 msgstr "X-Fade време (сек.):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Позиција панела"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Ротације корака:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Скала:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Тип:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Неважећи извозни нацрт:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Ублажавање У-Од"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Постави дршку"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Постави дршку"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Додај ствар"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Рестартовање (сек.):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Појављивање (сек.):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Анимације"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1656,7 +1722,7 @@ msgstr "Уметни траку и кључ"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Method not found in object: "
+msgid "Method not found in object:"
 msgstr "Метода није нађена у објекту:"
 
 #: editor/animation_track_editor.cpp
@@ -2692,8 +2758,9 @@ msgstr "Отвори распоред звучног баса"
 msgid "There is no '%s' file."
 msgstr "Нема '%s' фајла."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Распоред"
 
 #: editor/editor_audio_buses.cpp
@@ -5382,13 +5449,15 @@ msgid "Selected node is not a Viewport!"
 msgstr "Одабрани нод није Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
-msgid "Size: "
+msgid "Size:"
 msgstr "Величина:"
 
 #: editor/editor_properties_array_dict.cpp
 #, fuzzy
-msgid "Page: "
+msgid "Page:"
 msgstr "Страна:"
 
 #: editor/editor_properties_array_dict.cpp
@@ -6381,10 +6450,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Менаџер пројекта"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -7212,16 +7283,6 @@ msgstr "Замени све"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Find: "
-msgstr "Нађи"
-
-#: editor/find_in_files.cpp
-#, fuzzy
-msgid "Replace: "
-msgstr "Замени"
-
-#: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Замени све"
 
@@ -7634,7 +7695,7 @@ msgstr "Генерисање осног поравнаног граничнио�
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
-msgid "Generating for Mesh: "
+msgid "Generating for Mesh:"
 msgstr "Генерисање осног поравнаног граничниог оквира (AABB)"
 
 #: editor/import/resource_importer_scene.cpp
@@ -8557,10 +8618,12 @@ msgstr "Опције Слојевитог Обмотавања"
 msgid "Directions"
 msgstr "Смерови"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Прошлост"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Будућност"
@@ -8742,7 +8805,7 @@ msgstr "Постави крај анимације. Ово је корисно �
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Transition: "
+msgid "Transition:"
 msgstr "Прелаз:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8759,11 +8822,6 @@ msgstr "Анимација"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Ново име:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Скала:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9765,6 +9823,7 @@ msgstr "Направи Произвољне Кости од Чворова"
 msgid "Clear Custom Bones"
 msgstr "Обриши Кости"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9833,6 +9892,10 @@ msgstr "Ибор рама"
 #, fuzzy
 msgid "Preview Canvas Scale"
 msgstr "Преглед Величине Платна"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Распоред"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -10672,7 +10735,8 @@ msgid "Volume"
 msgstr "Запремина"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Извор емисије: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -11101,13 +11165,6 @@ msgid "Instance:"
 msgstr "Инстанца:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Тип:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 #, fuzzy
 msgid "Open in Editor"
@@ -11116,11 +11173,6 @@ msgstr "Отвори у Уреднику"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Учитај ресурс"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
-msgid "ResourcePreloader"
-msgstr "Ресурс"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -11912,12 +11964,16 @@ msgstr "Режим ротације"
 msgid "Translate"
 msgstr "Померај:"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Скала: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Померај: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11940,12 +11996,6 @@ msgstr "Лево-Десно"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "Величина:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -12508,17 +12558,17 @@ msgstr "Налепи оквир"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Simplification: "
+msgid "Simplification:"
 msgstr "Поједностављено:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Shrink (Pixels): "
+msgid "Shrink (Pixels):"
 msgstr "Умањи (Пиксели):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Grow (Pixels): "
+msgid "Grow (Pixels):"
 msgstr "Увећај (Пиксели):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -17375,7 +17425,8 @@ msgid "Attach Node Script"
 msgstr "Припој Чвор Скрипту"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Удаљени уређај "
 
 #: editor/script_editor_debugger.cpp
@@ -18507,7 +18558,7 @@ msgstr "Онемогућен GDNative Singleton"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
-msgid "Libraries: "
+msgid "Libraries:"
 msgstr "Библиотеке:"
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -19454,7 +19505,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
-msgid "Node returned an invalid sequence output: "
+msgid "Node returned an invalid sequence output:"
 msgstr "Члан вратио неважећи излаз секвенце:"
 
 #: modules/visual_script/visual_script.cpp
@@ -19464,7 +19515,7 @@ msgstr "Пронађена секвенца битова али не члан н
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
-msgid "Stack overflow with stack depth: "
+msgid "Stack overflow with stack depth:"
 msgstr "Преоптерећење наслаге са дубином наслаге:"
 
 #: modules/visual_script/visual_script.cpp
@@ -19874,7 +19925,7 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+msgid "Input type not iterable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -19882,7 +19933,7 @@ msgid "Iterator became invalid"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+msgid "Iterator became invalid:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -20057,12 +20108,14 @@ msgid "Operator"
 msgstr "Прекриј оператор."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
-msgstr ""
+#, fuzzy
+msgid "Invalid argument of type:"
+msgstr "Неважећи аргументи ка конструкту '%s'"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
-msgstr ""
+#, fuzzy
+msgid "Invalid arguments:"
+msgstr "Неважеће име."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -20074,12 +20127,13 @@ msgid "Var Name"
 msgstr "Име"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
-msgstr ""
+#, fuzzy
+msgid "VariableGet not found in script:"
+msgstr "СкупПроменљивих није нађен у скрипти:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
-msgid "VariableSet not found in script: "
+msgid "VariableSet not found in script:"
 msgstr "СкупПроменљивих није нађен у скрипти:"
 
 #: modules/visual_script/visual_script_nodes.cpp

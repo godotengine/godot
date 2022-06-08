@@ -329,7 +329,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Kulang na bytes para sa decoding bytes, o di-wastong format."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Di-wastong input %i (di naipasa) sa ekspresyon"
 
 #: core/math/expression.cpp
@@ -1068,6 +1069,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Walang Bayad"
@@ -1084,7 +1086,7 @@ msgstr "Salamin"
 msgid "Time:"
 msgstr "Oras:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Halaga:"
 
@@ -1333,8 +1335,69 @@ msgid "Remove this track."
 msgstr "Tanggalin ang track na ito."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Oras (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Idaong Ang Posisyon"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Mag-ikot"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Sukat:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Uri:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Di-wastong index ng uring %s para sa batayang uri %s"
+
+#: editor/animation_track_editor.cpp
+msgid "Easing:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "In-Handle:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Out-Handle:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Stream:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "(Mga) Muling Pagumpisa:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "(Mga) Palabong Pagpasok:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Mga Kabahagi ng Anim:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1552,7 +1615,8 @@ msgid "Add Method Track Key"
 msgstr "Magdagdag ng Method Track Key"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Hindi mahanap ang Method sa object: "
 
 #: editor/animation_track_editor.cpp
@@ -2515,8 +2579,9 @@ msgstr ""
 msgid "There is no '%s' file."
 msgstr "Walang file na '%s'."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Kaayusan"
 
 #: editor/editor_audio_buses.cpp
@@ -4908,11 +4973,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Ang piniling node ay hindi Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Laki: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Pahina: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5857,10 +5925,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6596,14 +6666,6 @@ msgid "Replace in Files"
 msgstr "Palitan Lahat"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr ""
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr ""
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Palitan Lahat"
@@ -6996,8 +7058,9 @@ msgid "Generating Lightmaps"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
-msgstr ""
+#, fuzzy
+msgid "Generating for Mesh:"
+msgstr "Pinapalitan ang pangalan ng folder:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -7816,10 +7879,12 @@ msgstr ""
 msgid "Directions"
 msgstr "Mga Direksyon"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Nakaraan"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Hinaharap"
@@ -7978,7 +8043,8 @@ msgstr ""
 "Itakda ang hulihan ng animasyon. Magagamit to para sa mga sub-transisyon."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Transisyon: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -7993,11 +8059,6 @@ msgstr "AnimationTree"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Bagong pangalan:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Sukat:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8896,6 +8957,7 @@ msgstr "Lumikha ng (Mga) Pasadyang Buto Galing sa (Mga) Node"
 msgid "Clear Custom Bones"
 msgstr "Alisin Ang Mga Pasadyang Buto"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -8958,6 +9020,10 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Kaayusan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9703,8 +9769,9 @@ msgid "Volume"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
-msgstr ""
+#, fuzzy
+msgid "Emission Source:"
+msgstr "Nakikitang Collision Shapes"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10086,23 +10153,12 @@ msgid "Instance:"
 msgstr "Instance:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Uri:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Buksan sa Editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
 msgstr ""
 
 #: editor/plugins/room_manager_editor_plugin.cpp
@@ -10794,13 +10850,17 @@ msgstr ""
 msgid "Translate"
 msgstr ""
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr ""
+#, fuzzy
+msgid "Scaling:"
+msgstr "Sukat:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
-msgstr ""
+#, fuzzy
+msgid "Translating:"
+msgstr "Transisyon: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -10820,11 +10880,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11335,15 +11390,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
-msgstr ""
+#, fuzzy
+msgid "Simplification:"
+msgstr "Animasyon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Palitiin (Pa-pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Palakihin (pa-Pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15337,8 +15395,9 @@ msgid "Attach Node Script"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
-msgstr ""
+#, fuzzy
+msgid "Remote %s:"
+msgstr "Alisin"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16358,7 +16417,8 @@ msgid "Disabled GDNative Singleton"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Mga Sanggunianan: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17223,7 +17283,7 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+msgid "Node returned an invalid sequence output:"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -17231,7 +17291,7 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+msgid "Stack overflow with stack depth:"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -17594,7 +17654,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Hindi iterable ang uri ng input: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17602,8 +17663,9 @@ msgid "Iterator became invalid"
 msgstr "Naging invalid ang Iterator"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
-msgstr ""
+#, fuzzy
+msgid "Iterator became invalid:"
+msgstr "Naging invalid ang Iterator"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
@@ -17768,12 +17830,14 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
-msgstr ""
+#, fuzzy
+msgid "Invalid argument of type:"
+msgstr "Di-wastong mga argument para i-construct ang '%s'"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
-msgstr ""
+#, fuzzy
+msgid "Invalid arguments:"
+msgstr "Di-wastong pangalan."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -17785,12 +17849,14 @@ msgid "Var Name"
 msgstr "Pangalan"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
-msgstr ""
+#, fuzzy
+msgid "VariableGet not found in script:"
+msgstr "Hindi mahanap ang Method sa object: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
-msgstr ""
+#, fuzzy
+msgid "VariableSet not found in script:"
+msgstr "Hindi mahanap ang Method sa object: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"

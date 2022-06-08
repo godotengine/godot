@@ -352,7 +352,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "ไบต์ไม่เพียงพอหรือรูปแบบไม่ถูกต้องสำหรับการถอดรหัสไบต์"
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "อินพุต %i ใน expression ไม่ถูกต้อง (ไม่ส่งผ่าน)"
 
 #: core/math/expression.cpp
@@ -1112,6 +1113,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "อิสระ"
@@ -1130,7 +1132,7 @@ msgstr "สะท้อน"
 msgid "Time:"
 msgstr "เวลา:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "ค่า:"
 
@@ -1383,8 +1385,73 @@ msgid "Remove this track."
 msgstr "ลบแทร็กนี้"
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "เวลา (วินาที): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "ตำแหน่งแผง"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "ช่วงองศา:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "อัตราส่วน:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "ประเภท:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "เทมเพลตส่งออกไม่ถูกต้อง:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "เข้า-ออกนุ่มนวล"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "ปรับขนาดรูปร่าง"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "ปรับขนาดรูปร่าง"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "ไอเทมเรดิโอ"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "เริ่มใหม่ (วิ):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "เฟดเข้า (วิ):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "แอนิเมชัน:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1602,7 +1669,8 @@ msgid "Add Method Track Key"
 msgstr "เพิ่มคีย์แทร็กเมธอด"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "ไม่พบเมธอดในออบเจกต์: "
 
 #: editor/animation_track_editor.cpp
@@ -2570,8 +2638,9 @@ msgstr "เปิดเลย์เอาต์ของบัสเสียง
 msgid "There is no '%s' file."
 msgstr "ไม่มีไฟล์ '%s'"
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "เลย์เอาต์"
 
 #: editor/editor_audio_buses.cpp
@@ -5068,11 +5137,15 @@ msgid "Selected node is not a Viewport!"
 msgstr "โหนดที่เลือกไม่ใช่วิวพอร์ต!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Size:"
 msgstr "ขนาด: "
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "หน้า: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6052,10 +6125,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "ตัวจัดการโปรเจกต์"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6837,14 +6912,6 @@ msgid "Replace in Files"
 msgstr "แทนที่ทั้งหมด"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "ค้นหา: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "แทนที่: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "แทนที่ทั้งหมด"
@@ -7242,7 +7309,8 @@ msgid "Generating Lightmaps"
 msgstr "กำลังสร้าง Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "สร้างสำหรับพื้นผิว: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8077,10 +8145,12 @@ msgstr "ตั้งค่าโอเนี่ยนสกิน"
 msgid "Directions"
 msgstr "ทิศทาง"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "อดีต"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "อนาคต"
@@ -8238,7 +8308,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "ตั้งตอนจบของทรานสิชัน นี่จะมีประโยชน์สำหรับทรานสิชันย่อย"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "ทรานสิชัน: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8253,11 +8324,6 @@ msgstr "ผังแอนิเมชัน"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "ชื่อใหม่:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "อัตราส่วน:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9166,6 +9232,7 @@ msgstr "สร้างโครงจากโหนด"
 msgid "Clear Custom Bones"
 msgstr "ลบโครง"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9230,6 +9297,10 @@ msgstr "ให้สิ่งที่เลือกเต็มจอ"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "ดูตัวอย่างขนาดแคนวาส"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "เลย์เอาต์"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10007,7 +10078,8 @@ msgid "Volume"
 msgstr "ระดับเสียง"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "แหล่งปะทุ: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10394,13 +10466,6 @@ msgid "Instance:"
 msgstr "อินสแตนซ์:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "ประเภท:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "เปิดในโปรแกรมแก้ไข"
@@ -10408,10 +10473,6 @@ msgstr "เปิดในโปรแกรมแก้ไข"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "โหลดรีซอร์ส"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "ตัวโหลดรีซอร์สล่วงหน้า"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -11134,12 +11195,16 @@ msgstr "รัฐ"
 msgid "Translate"
 msgstr "เคลื่อนย้าย:"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "อัตราส่วน: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "การเลื่อน: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11162,12 +11227,6 @@ msgstr "Pitch"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "ขนาด: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11699,15 +11758,18 @@ msgid "Sprite"
 msgstr "สไปรต์"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "ลดความซับซ้อน: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "หด (พิกเซล): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "ขยาย (พิกเซล): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15916,7 +15978,8 @@ msgid "Attach Node Script"
 msgstr "เชื่อมสคริปต์ให้โหนด"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "ควบคุม "
 
 #: editor/script_editor_debugger.cpp
@@ -16979,7 +17042,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "ปิดการทำงานซิงเกิลตัน GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "ไลบรารี: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17867,7 +17931,8 @@ msgid ""
 msgstr "ค่าที่คืนจะต้องกำหนดในหน่วยความจำทำงานแรก! กรุณาแก้ไขโหนด"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "โหนดคืนค่าผิดลำดับ: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17875,7 +17940,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "พบบิตลำดับแต่ไม่พบโหนดในสแตค กรุณารายงานข้อผิดพลาด!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "สแตคล้น ความสูงสแตค: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18245,7 +18311,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "ตัวแปรประเภทนี้ใช้วนซ้ำไม่ได้: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18253,7 +18320,8 @@ msgid "Iterator became invalid"
 msgstr "ตัววนซ้ำใช้ไม่ได้อีกต่อไป"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "ตัววนซ้ำใช้ไม่ได้: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18427,11 +18495,13 @@ msgid "Operator"
 msgstr "ดำเนินการ Overlay"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": ประเภทตัวแปรไม่ถูกต้อง: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": ตัวแปรไม่ถูกต้อง: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18444,11 +18514,13 @@ msgid "Var Name"
 msgstr "ชื่อ"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "ไม่พบ VariableGet ในสคริปต์: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "ไม่พบ VariableSet ในสคริปต์: "
 
 #: modules/visual_script/visual_script_nodes.cpp

@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-30 16:17+0000\n"
-"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
+"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -330,7 +330,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостатньо байтів для їх декодування або вказано некоректний формат."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Некоректні вхідні дані %i (не передано) у виразі"
 
 #: core/math/expression.cpp
@@ -1030,6 +1031,7 @@ msgstr "Висока якість"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "Макс. розмір буфера форми злиття (кБ)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Вільні"
@@ -1046,7 +1048,7 @@ msgstr "Віддзеркалені"
 msgid "Time:"
 msgstr "Час:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Значення:"
 
@@ -1128,9 +1130,8 @@ msgid "Value"
 msgstr "Значення"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "Кількість"
+msgstr "Кількість аргументів"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -1145,14 +1146,12 @@ msgid "Type"
 msgstr "Тип"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In Handle"
-msgstr "Встановити обробник"
+msgstr "Дескриптор входу"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out Handle"
-msgstr "Встановити обробник"
+msgstr "Дескриптор виходу"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1162,14 +1161,12 @@ msgid "Stream"
 msgstr "Потік"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Відступ точки обертання"
+msgstr "Початковий відступ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Гор. зміщення"
+msgstr "Кінцевий відступ"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1182,9 +1179,8 @@ msgid "Animation"
 msgstr "Анімація"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing"
-msgstr "Перейти у-з"
+msgstr "Пом'якшення"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1293,8 +1289,73 @@ msgid "Remove this track."
 msgstr "Вилучити цю доріжку."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Час (с): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Розташування"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Обертання"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Масштаб:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Тип:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Неправильний шаблон експорту:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Пом'якшення"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Дескриптор входу"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Дескриптор виходу"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Потік"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Перезапустити (сек.):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Наростання (с):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Анімації:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1509,7 +1570,8 @@ msgid "Add Method Track Key"
 msgstr "Додати ключ доріжки методів"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Не знайдено метод у об'єкті: "
 
 #: editor/animation_track_editor.cpp
@@ -2478,8 +2540,9 @@ msgstr "Відкрити компонування аудіо шини"
 msgid "There is no '%s' file."
 msgstr "Немає файла «%s»."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Макет"
 
 #: editor/editor_audio_buses.cpp
@@ -4982,11 +5045,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Позначений вузол не є панеллю перегляду!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Розмір: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Розмір:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Сторінка: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5871,10 +5937,12 @@ msgstr "Вузол"
 msgid "Port"
 msgstr "Порт"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Керування проєктами"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Sorting Order"
 msgstr "Режим упорядковування"
@@ -6625,14 +6693,6 @@ msgid "Replace in Files"
 msgstr "Замінити у файлах"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Знайти: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Замінити: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Замінити всі (БЕЗ СКАСУВАННЯ)"
 
@@ -6992,7 +7052,8 @@ msgid "Generating Lightmaps"
 msgstr "Створення карт освітлення"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Створення для сітки: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7821,10 +7882,12 @@ msgstr "Параметри калькування"
 msgid "Directions"
 msgstr "Напрямки"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Минулі"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Майбутні"
@@ -7984,7 +8047,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Встановити кінець анімації. Корисно для допоміжних переходів."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Перехід: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -7999,11 +8063,6 @@ msgstr "Дерево анімації"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Нова назва:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Масштаб:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8914,6 +8973,7 @@ msgstr "Створити нетипові кістки з вузлів"
 msgid "Clear Custom Bones"
 msgstr "Очистити нетипові кістки"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -8975,6 +9035,10 @@ msgstr "Кадрувати вибране"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Попередній перегляд масштабованого полотна"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9308,9 +9372,8 @@ msgid "Icon"
 msgstr "Піктограма"
 
 #: editor/plugins/item_list_editor_plugin.cpp
-#, fuzzy
 msgid "ID"
-msgstr "IOD"
+msgstr "Ідентифікатор"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -9745,7 +9808,8 @@ msgid "Volume"
 msgstr "Об'єм"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Джерело випромінювання: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10135,13 +10199,6 @@ msgid "Instance:"
 msgstr "Екземпляр:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Тип:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Відкрити в редакторі"
@@ -10149,10 +10206,6 @@ msgstr "Відкрити в редакторі"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Завантажити ресурс"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Передзавантажувач ресурсів"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10850,12 +10903,16 @@ msgstr "Обертати"
 msgid "Translate"
 msgstr "Пересунути"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Масштаб: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Перенесення: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10877,11 +10934,6 @@ msgstr "Тон:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Рискання:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Розмір:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11404,15 +11456,18 @@ msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Спрощення: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Стискання (пікселі): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Зростання (пікселі): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -12650,9 +12705,8 @@ msgid "This property can't be changed."
 msgstr "Значення цієї властивості не можна змінювати."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Options"
-msgstr "Параметри прив'язки"
+msgstr "Параметри прилипання"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp
@@ -12679,9 +12733,8 @@ msgid "Separation"
 msgstr "Розділення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Tile"
-msgstr "Позначено"
+msgstr "Позначена плитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
@@ -12694,9 +12747,8 @@ msgid "Texture"
 msgstr "Текстура"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tex Offset"
-msgstr "Відступ заголовка"
+msgstr "Відступ текстури"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
@@ -12710,49 +12762,40 @@ msgid "Modulate"
 msgstr "модуляція"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Mode"
-msgstr "Перемкнути режим"
+msgstr "Режим плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotile Bitmask Mode"
-msgstr "Режим бітової маски"
+msgstr "Режим бітової маски автоплитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Size"
-msgstr "Розмір обведення"
+msgstr "Розмір субтитрів"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Spacing"
-msgstr "Інтервал між рядками"
+msgstr "Інтервал субтитрів"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Offset"
-msgstr "Створено затінювальний полігон"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Offset"
-msgstr "Поведінка навігації"
+msgstr "Відступ навігації"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Offset"
-msgstr "Базове зміщення"
+msgstr "Відступ форми"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Transform"
-msgstr "Перетворення"
+msgstr "Перетворення форми"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision"
-msgstr "Зіткнення"
+msgstr "Позначене зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -12765,14 +12808,12 @@ msgid "Selected Collision One Way Margin"
 msgstr "Поле зіткнення BVH"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Navigation"
-msgstr "Видимі навігації"
+msgstr "Позначена навігація"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Occlusion"
-msgstr "Фокус позначення"
+msgstr "Позначене зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -15603,7 +15644,8 @@ msgid "Attach Node Script"
 msgstr "Долучити скрипт вузла"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Віддалений "
 
 #: editor/script_editor_debugger.cpp
@@ -16579,7 +16621,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Вимкнений одинак GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Бібліотеки: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17404,7 +17447,8 @@ msgstr ""
 "вузла! Будь ласка, виправте ваш вузол."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Вузлом повернуто некоректну послідовність даних: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17413,7 +17457,8 @@ msgstr ""
 "Виявлено біт послідовності, але не вузол у стеку. Повідомте про цю ваду!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Переповнення стека, глибина стека: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17782,7 +17827,8 @@ msgid "for (elem) in (input):"
 msgstr "для (elem) у (input):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Тип вводу не ітерабельний: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17790,7 +17836,8 @@ msgid "Iterator became invalid"
 msgstr "Ітератор став недійсним"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Ітератор став недійсним: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17943,11 +17990,13 @@ msgid "Operator"
 msgstr "Оператор"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Неправильний тип аргументу: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Неприпустимі аргументи: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -17959,11 +18008,13 @@ msgid "Var Name"
 msgstr "Назва змінної"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Не знайдено VariableGet у скрипті: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "Не знайдено VariableSet у скрипті: "
 
 #: modules/visual_script/visual_script_nodes.cpp

@@ -331,7 +331,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Không đủ byte để giải mã, hoặc định dạng không hợp lệ."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "Đầu vào %i không hợp lệ (không được thông qua) trong biểu thức"
 
 #: core/math/expression.cpp
@@ -1045,6 +1046,7 @@ msgstr "Chất lượng cao"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Tự do"
@@ -1061,7 +1063,7 @@ msgstr "Phản chiếu"
 msgid "Time:"
 msgstr "Thời gian:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Giá trị:"
 
@@ -1310,8 +1312,73 @@ msgid "Remove this track."
 msgstr "Bỏ track này."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Thời gian (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Vị trí"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Bước xoay:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Tỷ lệ:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Kiểu:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Bản mẫu xuất không hợp lệ:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Cảnh báo:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Đặt tay nắm"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Đặt tay nắm"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Trình nghe âm thanh"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Khởi động lại (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Mờ dần (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Các hoạt hình:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1525,7 +1592,8 @@ msgid "Add Method Track Key"
 msgstr "Thêm khoá Method Track"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Không tìm thấy phương thức trong đối tượng: "
 
 #: editor/animation_track_editor.cpp
@@ -2492,8 +2560,9 @@ msgstr "Mở bố cục Bus âm thanh"
 msgid "There is no '%s' file."
 msgstr "Không có tệp tin '%s'."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Bố cục"
 
 #: editor/editor_audio_buses.cpp
@@ -4946,11 +5015,15 @@ msgid "Selected node is not a Viewport!"
 msgstr "Nút được chọn không phải Cổng xem!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Size:"
 msgstr "Kích thước: "
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Trang: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -5889,10 +5962,12 @@ msgstr ""
 msgid "Port"
 msgstr "Cổng"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Trình quản lý Dự án"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6674,14 +6749,6 @@ msgid "Replace in Files"
 msgstr "Thay thế tất cả"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Tìm: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Thay thế: "
-
-#: editor/find_in_files.cpp
 #, fuzzy
 msgid "Replace All (NO UNDO)"
 msgstr "Thay thế tất cả"
@@ -7075,7 +7142,8 @@ msgid "Generating Lightmaps"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Tạo cho lưới: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -7911,10 +7979,12 @@ msgstr "Khung hình Liên tiếp"
 msgid "Directions"
 msgstr "Hướng đi"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Quá khứ"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Tương lai"
@@ -8074,7 +8144,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Đặt kết thúc hoạt ảnh. Hữu dụng cho sub-transitions."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Chuyển tiếp: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8089,11 +8160,6 @@ msgstr ""
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Tên mới:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Tỷ lệ:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9003,6 +9069,7 @@ msgstr "Tạo xương tuỳ chọn từ các nút"
 msgid "Clear Custom Bones"
 msgstr "Xoá sạch các xương tuỳ chỉnh"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9067,6 +9134,10 @@ msgstr "Lựa chọn khung hình"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Xem trước tỉ lệ bức vẽ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Bố cục"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9846,7 +9917,8 @@ msgid "Volume"
 msgstr "Âm lượng"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Nguồn phát ra: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10236,13 +10308,6 @@ msgid "Instance:"
 msgstr "Thế:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Kiểu:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Mở trong Trình biên soạn"
@@ -10250,10 +10315,6 @@ msgstr "Mở trong Trình biên soạn"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Nạp tài nguyên"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr ""
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -10979,13 +11040,17 @@ msgstr "Chế độ Xoay"
 msgid "Translate"
 msgstr "Bản dịch"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr ""
+#, fuzzy
+msgid "Scaling:"
+msgstr "Tỷ lệ:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
-msgstr ""
+#, fuzzy
+msgid "Translating:"
+msgstr "Bản dịch:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -11006,12 +11071,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
-msgid "Size:"
-msgstr "Kích thước: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11539,15 +11598,18 @@ msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Đơn giản hóa: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Thu nhỏ (Điểm ảnh): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Phóng to (Điểm ảnh): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15769,8 +15831,9 @@ msgid "Attach Node Script"
 msgstr "Đính kèm tập lệnh của nút"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
-msgstr ""
+#, fuzzy
+msgid "Remote %s:"
+msgstr "Từ xa"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16828,7 +16891,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Tắt đơn nhất GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Thư viện: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17720,7 +17784,8 @@ msgstr ""
 "nút! Sửa lại nút của bạn."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Nút trả về chuỗi không hợp lệ: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17729,7 +17794,8 @@ msgstr ""
 "Tìm thấy chuỗi bit nhưng không phải là nút trong ngăn xếp, báo cáo lỗi!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Tràn ngăn xếp ở ngăn xếp tầng: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18095,7 +18161,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Kiểu đầu vào không lặp được: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18103,7 +18170,8 @@ msgid "Iterator became invalid"
 msgstr "Trỏ lặp không còn hợp lệ"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Trỏ lặp không còn hợp lệ: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18275,11 +18343,13 @@ msgid "Operator"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Tham số có loại không hợp lệ: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Tham số không hợp lệ: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18292,12 +18362,13 @@ msgid "Var Name"
 msgstr "Tên"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "Không tìm thấy VariableGet trong tệp lệnh: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
-msgid "VariableSet not found in script: "
+msgid "VariableSet not found in script:"
 msgstr "Không tìm thấy VariableSet trong tệp lệnh: "
 
 #: modules/visual_script/visual_script_nodes.cpp

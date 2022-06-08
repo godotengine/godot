@@ -385,7 +385,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Baytları çözümlemek için yetersiz miktarda bayt ya da geçersiz format."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
+#, fuzzy
+msgid "Invalid input %d (not passed) in expression"
 msgstr "İfadede geçersiz giriş %i (geçersiz)"
 
 #: core/math/expression.cpp
@@ -1144,6 +1145,7 @@ msgstr ""
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr ""
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Ücretsiz"
@@ -1160,7 +1162,7 @@ msgstr "Ayna"
 msgid "Time:"
 msgstr "Süre:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Değer:"
 
@@ -1410,8 +1412,73 @@ msgid "Remove this track."
 msgstr "Bu izi sil."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
+#, fuzzy
+msgid "Time (s):"
 msgstr "Süre (sn): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Position:"
+msgstr "Pozisyon"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rotation:"
+msgstr "Dönme Adımı:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Ölçekle:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Tür:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "(Invalid, expected type: %s)"
+msgstr "Geçersiz Dışa Aktarım Şablonu:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Açılma Kararma"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Tutamacı Ayarla"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Tutamacı Ayarla"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Radyo Ögesi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Start (s):"
+msgstr "Yeniden Başlat (sn):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "End (s):"
+msgstr "Açılma (sn):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Clip:"
+msgstr "Animasyonlar:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1627,7 +1694,8 @@ msgid "Add Method Track Key"
 msgstr "Yöntem İz Anahtarı Ekle"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
+#, fuzzy
+msgid "Method not found in object:"
 msgstr "Metot, nesne içinde bulunamadı: "
 
 #: editor/animation_track_editor.cpp
@@ -2594,8 +2662,9 @@ msgstr "Audio Bus Yerleşim Düzenini Aç"
 msgid "There is no '%s' file."
 msgstr "'%s' dosyası bulunamadı."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Layout:"
 msgstr "Yerleşim Düzeni"
 
 #: editor/editor_audio_buses.cpp
@@ -5129,11 +5198,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Seçili düğüm bir Viewport değil!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Boyut: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Boyut:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
+#, fuzzy
+msgid "Page:"
 msgstr "Sayfa: "
 
 #: editor/editor_properties_array_dict.cpp
@@ -6116,10 +6188,12 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Proje Yöneticisi"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
@@ -6888,14 +6962,6 @@ msgid "Replace in Files"
 msgstr "Dosyaiçlerinde Değiştir"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Bul: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Değiştir: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Tümünü Değiştir (GERİ ALMA YOK)"
 
@@ -7292,7 +7358,8 @@ msgid "Generating Lightmaps"
 msgstr "Işık-haritaları Üretiliyor"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
+#, fuzzy
+msgid "Generating for Mesh:"
 msgstr "Örüntü için Üretiliyor: "
 
 #: editor/import/resource_importer_scene.cpp
@@ -8135,10 +8202,12 @@ msgstr "Araları Doldurma Seçenekleri"
 msgid "Directions"
 msgstr "Yönler"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Geçmiş"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Gelecek"
@@ -8300,7 +8369,8 @@ msgstr ""
 "olacaktır."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
+#, fuzzy
+msgid "Transition:"
 msgstr "Geçiş: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -8315,11 +8385,6 @@ msgstr "AnimasyonAğacı"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Yeni ad:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Ölçekle:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -9233,6 +9298,7 @@ msgstr "Düğüm[ler]den istenilen şekilde kemik[ler] yarat"
 msgid "Clear Custom Bones"
 msgstr "İsteğe bağlı kemikleri temizle"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9297,6 +9363,10 @@ msgstr "Çerçeve Seçimi"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Tuval Ölçeğini Önizle"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Yerleşim Düzeni"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -10068,7 +10138,8 @@ msgid "Volume"
 msgstr "Oylum"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
+#, fuzzy
+msgid "Emission Source:"
 msgstr "Emisyon Kaynağı: "
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -10457,13 +10528,6 @@ msgid "Instance:"
 msgstr "Örnek:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Tür:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Düzenleyicide Aç"
@@ -10471,10 +10535,6 @@ msgstr "Düzenleyicide Aç"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Kaynak Yükle"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "KaynakÖnyükleyici"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -11175,12 +11235,16 @@ msgstr "Döndür"
 msgid "Translate"
 msgstr "Çevir"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
+#, fuzzy
+msgid "Scaling:"
 msgstr "Ölçekleniyor: "
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
+#, fuzzy
+msgid "Translating:"
 msgstr "Çeviriliyor: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11202,11 +11266,6 @@ msgstr "Perde:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Sapma:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Boyut:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11727,15 +11786,18 @@ msgid "Sprite"
 msgstr "HayaliÇizimlik"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
+#, fuzzy
+msgid "Simplification:"
 msgstr "Sadeleştirme: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
+#, fuzzy
+msgid "Shrink (Pixels):"
 msgstr "Sıkıştır (Pikselleri): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
+#, fuzzy
+msgid "Grow (Pixels):"
 msgstr "Büyüt (Pikselleri): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -15917,7 +15979,8 @@ msgid "Attach Node Script"
 msgstr "Düğüm Betiği İliştir"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Uzak "
 
 #: editor/script_editor_debugger.cpp
@@ -16978,7 +17041,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "GDNative İskeleti Pasifleştirildi"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Kütüphaneler: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -17869,7 +17933,8 @@ msgstr ""
 "Lütfen düğümünüzü düzeltin."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Düğüm geçersiz bir dizi çıktısı döndürdü: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17877,7 +17942,8 @@ msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr "Bit dizisi bulundu fakat yığındaki düğüm değil, kusuru bildir!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Şu derinlikte yığın taşması: "
 
 #: modules/visual_script/visual_script.cpp
@@ -18247,7 +18313,8 @@ msgid "for (elem) in (input):"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Girdi türü yinelenebilir değil: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18255,7 +18322,8 @@ msgid "Iterator became invalid"
 msgstr "Yineleyici geçersiz durumda"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Yineleyici geçersiz durumda: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18424,11 +18492,13 @@ msgid "Operator"
 msgstr "Kaplama opeartörü."
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Şu tür için geçersiz değiştirgen: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Geçersiz değiştirgenler: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18441,11 +18511,13 @@ msgid "Var Name"
 msgstr "İsim"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet betikte bulunamadı: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet betikte bulunamadı: "
 
 #: modules/visual_script/visual_script_nodes.cpp
