@@ -519,7 +519,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::STRING: {
-			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
+			if (hint == PROPERTY_HINT_LOCALE_ID) {
+				List<String> names;
+				names.push_back(TTR("Locale..."));
+				names.push_back(TTR("Clear"));
+				config_action_buttons(names);
+
+			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				List<String> names;
 				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
@@ -1055,6 +1061,14 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 	}
 }
 
+void CustomPropertyEditor::_locale_selected(String p_locale) {
+	if (type == Variant::STRING && hint == PROPERTY_HINT_LOCALE_ID) {
+		v = p_locale;
+		emit_signal("variant_changed");
+		hide();
+	}
+}
+
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 	if (type == Variant::INT || type == Variant::REAL) {
 		float newval = 0;
@@ -1193,7 +1207,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		case Variant::STRING: {
 			if (hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				hide();
-
+			} else if (hint == PROPERTY_HINT_LOCALE_ID) {
+				locale->popup_locale_dialog();
 			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				if (p_which == 0) {
 					if (hint == PROPERTY_HINT_FILE) {
@@ -1751,6 +1766,7 @@ void CustomPropertyEditor::_bind_methods() {
 	ClassDB::bind_method("_range_modified", &CustomPropertyEditor::_range_modified);
 	ClassDB::bind_method("_action_pressed", &CustomPropertyEditor::_action_pressed);
 	ClassDB::bind_method("_file_selected", &CustomPropertyEditor::_file_selected);
+	ClassDB::bind_method("_locale_selected", &CustomPropertyEditor::_locale_selected);
 	ClassDB::bind_method("_type_create_selected", &CustomPropertyEditor::_type_create_selected);
 	ClassDB::bind_method("_node_path_selected", &CustomPropertyEditor::_node_path_selected);
 	ClassDB::bind_method("_color_changed", &CustomPropertyEditor::_color_changed);
@@ -1839,6 +1855,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	file->connect("file_selected", this, "_file_selected");
 	file->connect("dir_selected", this, "_file_selected");
+
+	locale = memnew(EditorLocaleDialog);
+	add_child(locale);
+	locale->hide();
+
+	locale->connect("locale_selected", this, "_locale_selected");
 
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));

@@ -320,6 +320,67 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	add_focusable(cancel_button);
 }
 
+//////////////////// LOCALE ////////////////////////
+
+void EditorPropertyLocale::_locale_selected(const String &p_locale) {
+	emit_changed(get_edited_property(), p_locale);
+	update_property();
+}
+
+void EditorPropertyLocale::_locale_pressed() {
+	if (!dialog) {
+		dialog = memnew(EditorLocaleDialog);
+		dialog->connect("locale_selected", this, "_locale_selected");
+		add_child(dialog);
+	}
+
+	String locale_code = get_edited_object()->get(get_edited_property());
+	dialog->set_locale(locale_code);
+	dialog->popup_locale_dialog();
+}
+
+void EditorPropertyLocale::update_property() {
+	String locale_code = get_edited_object()->get(get_edited_property());
+	locale->set_text(locale_code);
+	locale->set_tooltip(locale_code);
+}
+
+void EditorPropertyLocale::setup(const String &p_hint_text) {
+}
+
+void EditorPropertyLocale::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		locale_edit->set_icon(get_icon("Translation", "EditorIcons"));
+	}
+}
+
+void EditorPropertyLocale::_locale_focus_exited() {
+	_locale_selected(locale->get_text());
+}
+
+void EditorPropertyLocale::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_locale_selected"), &EditorPropertyLocale::_locale_selected);
+	ClassDB::bind_method(D_METHOD("_locale_pressed"), &EditorPropertyLocale::_locale_pressed);
+	ClassDB::bind_method(D_METHOD("_locale_focus_exited"), &EditorPropertyLocale::_locale_focus_exited);
+}
+
+EditorPropertyLocale::EditorPropertyLocale() {
+	HBoxContainer *locale_hb = memnew(HBoxContainer);
+	add_child(locale_hb);
+	locale = memnew(LineEdit);
+	locale_hb->add_child(locale);
+	locale->connect("text_submitted", this, "_locale_selected");
+	locale->connect("focus_exited", this, "_locale_focus_exited");
+	locale->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	locale_edit = memnew(Button);
+	locale_edit->set_clip_text(true);
+	locale_hb->add_child(locale_edit);
+	add_focusable(locale);
+	dialog = nullptr;
+	locale_edit->connect("pressed", this, "_locale_pressed");
+}
+
 ///////////////////// PATH /////////////////////////
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
@@ -2880,6 +2941,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
 				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
+			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
+				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
+				editor->setup(p_hint_text);
+				return editor;
 			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 				Vector<String> extensions = p_hint_text.split(",");
 				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE;

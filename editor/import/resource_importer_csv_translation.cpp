@@ -97,8 +97,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	Vector<Ref<Translation>> translations;
 
 	for (int i = 1; i < line.size(); i++) {
-		String locale = line[i];
-		ERR_FAIL_COND_V_MSG(!TranslationServer::is_locale_valid(locale), ERR_PARSE_ERROR, "Error importing CSV translation: '" + locale + "' is not a valid locale.");
+		String locale = TranslationServer::get_singleton()->standardize_locale(line[i]);
 
 		locales.push_back(locale);
 		Ref<Translation> translation;
