@@ -871,7 +871,7 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 	_rendering_update_layer(p_layer);
 
 	// Recreate the quadrants.
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
 		Vector2i qk = _coords_to_quadrant_coords(p_layer, Vector2i(E.key.x, E.key.y));
 
@@ -1925,9 +1925,9 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 
 	// Set the current cell tile (using integer position).
-	HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	Vector2i pk(p_coords);
-	HashMap<Vector2i, TileMapCell>::Iterator E = tile_map.find(pk);
+	RBMap<Vector2i, TileMapCell>::Element *E = tile_map.find(pk);
 
 	int source_id = p_source_id;
 	Vector2i atlas_coords = p_atlas_coords;
@@ -1983,12 +1983,12 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		} else {
 			ERR_FAIL_COND(!Q); // TileMapQuadrant should exist...
 
-			if (E->value.source_id == source_id && E->value.get_atlas_coords() == atlas_coords && E->value.alternative_tile == alternative_tile) {
+			if (E->value().source_id == source_id && E->value().get_atlas_coords() == atlas_coords && E->value().alternative_tile == alternative_tile) {
 				return; // Nothing changed.
 			}
 		}
 
-		TileMapCell &c = E->value;
+		TileMapCell &c = E->value();
 
 		c.source_id = source_id;
 		c.set_atlas_coords(atlas_coords);
@@ -2007,8 +2007,8 @@ int TileMap::get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_us
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSet::INVALID_SOURCE);
 
 	// Get a cell source id from position
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	RBMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSet::INVALID_SOURCE;
@@ -2026,8 +2026,8 @@ Vector2i TileMap::get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, b
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSetSource::INVALID_ATLAS_COORDS);
 
 	// Get a cell source id from position
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	RBMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
@@ -2045,8 +2045,8 @@ int TileMap::get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bo
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSetSource::INVALID_TILE_ALTERNATIVE);
 
 	// Get a cell source id from position
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	RBMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSetSource::INVALID_TILE_ALTERNATIVE;
@@ -2387,11 +2387,11 @@ void TileMap::set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector
 
 TileMapCell TileMap::get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileMapCell());
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	if (!tile_map.has(p_coords)) {
 		return TileMapCell();
 	} else {
-		TileMapCell c = tile_map.find(p_coords)->value;
+		TileMapCell c = tile_map.find(p_coords)->value();
 		if (p_use_proxies && tile_set.is_valid()) {
 			Array proxyed = tile_set->map_tile_proxy(c.source_id, c.get_atlas_coords(), c.alternative_tile);
 			c.source_id = proxyed[0];
@@ -2417,7 +2417,7 @@ void TileMap::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 
 	for (unsigned int i = 0; i < layers.size(); i++) {
-		const HashMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
+		const RBMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
 		RBSet<Vector2i> coords;
 		for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
 			TileSetSource *source = *tile_set->get_source(E.value.source_id);
@@ -2548,7 +2548,7 @@ Vector<int> TileMap::_get_tile_data(int p_layer) const {
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Vector<int>());
 
 	// Export tile data to raw format
-	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	const RBMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	Vector<int> data;
 	data.resize(tile_map.size() * 3);
 	int *w = data.ptrw();
@@ -3377,7 +3377,7 @@ Rect2 TileMap::get_used_rect() { // Not const because of cache
 		used_rect_cache = Rect2i();
 
 		for (unsigned int i = 0; i < layers.size(); i++) {
-			const HashMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
+			const RBMap<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
 			if (tile_map.size() > 0) {
 				if (first) {
 					used_rect_cache = Rect2i(tile_map.begin()->key.x, tile_map.begin()->key.y, 0, 0);

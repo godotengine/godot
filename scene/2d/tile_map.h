@@ -193,7 +193,7 @@ private:
 		int y_sort_origin = 0;
 		int z_index = 0;
 		RID canvas_item;
-		HashMap<Vector2i, TileMapCell> tile_map;
+		RBMap<Vector2i, TileMapCell> tile_map; // Using HashMap here causes significant performance problems, so RBMap is used instead.
 		HashMap<Vector2i, TileMapQuadrant> quadrant_map;
 		SelfList<TileMapQuadrant>::List dirty_quadrant_list;
 	};
