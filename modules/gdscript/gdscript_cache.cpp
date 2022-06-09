@@ -181,6 +181,12 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	script->set_script_path(p_path);
 	script->load_source_code(p_path);
 
+#ifdef TOOLS_ENABLED
+	script->set_edited(false);
+	uint64_t mt = FileAccess::get_modified_time(p_path);
+	script->set_last_modified_time(mt);
+#endif
+
 	singleton->shallow_gdscript_cache[p_path] = script.ptr();
 	return script;
 }
