@@ -789,7 +789,23 @@ void VisualServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
+	if (instance->layer_mask == p_mask) {
+		return;
+	}
+
 	instance->layer_mask = p_mask;
+
+	// update lights to show / hide shadows according to the new mask
+	if ((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+
+		if (geom->can_cast_shadows) {
+			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
+				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+				light->shadow_dirty = true;
+			}
+		}
+	}
 }
 
 void VisualServerScene::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
@@ -2427,7 +2443,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 	p_instance->lightmap_capture_data.write[0].a = interior ? 0.0f : 1.0f;
 }
 
-bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
+bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario, uint32_t p_visible_layers) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform light_transform = p_instance->transform;
@@ -2460,7 +2476,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				for (int i = 0; i < cull_count; i++) {
 					Instance *instance = instance_shadow_cull_result[i];
-					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 						continue;
 					}
 
@@ -2663,7 +2679,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				for (int j = 0; j < cull_count; j++) {
 					float min, max;
 					Instance *instance = instance_shadow_cull_result[j];
-					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 						cull_count--;
 						SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 						j--;
@@ -2720,7 +2736,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					for (int j = 0; j < cull_count; j++) {
 						Instance *instance = instance_shadow_cull_result[j];
-						if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+						if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 							cull_count--;
 							SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 							j--;
@@ -2772,7 +2788,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
 						Instance *instance = instance_shadow_cull_result[j];
-						if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+						if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 							cull_count--;
 							SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 							j--;
@@ -2807,7 +2823,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
 				Instance *instance = instance_shadow_cull_result[j];
-				if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+				if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 					cull_count--;
 					SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 					j--;
@@ -3169,7 +3185,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
 
 		for (int i = 0; i < directional_shadow_count; i++) {
-			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario, p_visible_layers);
 		}
 	}
 
@@ -3265,7 +3281,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			if (redraw) {
 				//must redraw!
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario, p_visible_layers);
 			}
 		}
 	}
