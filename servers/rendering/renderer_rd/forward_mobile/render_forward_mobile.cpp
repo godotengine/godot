@@ -485,8 +485,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	scene_state.ubo.viewport_size[0] = render_buffer->width;
-	scene_state.ubo.viewport_size[1] = render_buffer->height;
 	scene_state.ubo.directional_light_count = 0;
 	scene_state.ubo.opaque_prepass_threshold = 0.0;
 
@@ -565,6 +563,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	} else {
 		ERR_FAIL(); //bug?
 	}
+
+	scene_state.ubo.viewport_size[0] = screen_size.x;
+	scene_state.ubo.viewport_size[1] = screen_size.y;
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
