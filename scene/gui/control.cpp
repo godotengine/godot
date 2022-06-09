@@ -1563,6 +1563,12 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 	if (p_custom == data.custom_minimum_size) {
 		return;
 	}
+
+	if (isnan(p_custom.x) || isnan(p_custom.y)) {
+		// Prevent infinite loop.
+		return;
+	}
+
 	data.custom_minimum_size = p_custom;
 	update_minimum_size();
 }
