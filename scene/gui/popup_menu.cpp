@@ -243,6 +243,29 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	}
 }
 
+void PopupMenu::_parent_focused() {
+	if (is_embedded()) {
+		Point2 mouse_pos_adjusted;
+		Window *window_parent = Object::cast_to<Window>(get_parent()->get_viewport());
+		while (window_parent) {
+			if (!window_parent->is_embedded()) {
+				mouse_pos_adjusted += window_parent->get_position();
+				break;
+			}
+
+			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+		}
+
+		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
+		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
+		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
+			Popup::_parent_focused();
+		} else {
+			grab_focus();
+		}
+	}
+}
+
 void PopupMenu::_submenu_timeout() {
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);

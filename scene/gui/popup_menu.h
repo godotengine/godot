@@ -148,6 +148,8 @@ public:
 	// this value should be updated to reflect the new size.
 	static const int ITEM_PROPERTY_SIZE = 10;
 
+	virtual void _parent_focused() override;
+
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);

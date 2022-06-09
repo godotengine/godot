@@ -108,9 +108,7 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	// Hide after returning to process events, but only if we don't
-	// get popped up in the interim.
-	call_deferred(SNAME("_popup_conditional_hide"));
+	call_deferred(SNAME("hide"));
 }
 
 void Popup::_post_popup() {
@@ -118,15 +116,8 @@ void Popup::_post_popup() {
 	popped_up = true;
 }
 
-void Popup::_popup_conditional_hide() {
-	if (!popped_up) {
-		hide();
-	}
-}
-
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
-	ClassDB::bind_method(D_METHOD("_popup_conditional_hide"), &Popup::_popup_conditional_hide);
 }
 
 Rect2i Popup::_popup_adjust_rect() const {
