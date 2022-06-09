@@ -161,29 +161,6 @@ ViewportTexture::~ViewportTexture() {
 	}
 }
 
-/////////////////////////////////////
-
-// Aliases used to provide custom styles to tooltips in the default
-// theme and editor theme.
-// TooltipPanel is also used for custom tooltips, while TooltipLabel
-// is only relevant for default tooltips.
-
-class TooltipPanel : public PopupPanel {
-	GDCLASS(TooltipPanel, PopupPanel);
-
-public:
-	TooltipPanel() {}
-};
-
-class TooltipLabel : public Label {
-	GDCLASS(TooltipLabel, Label);
-
-public:
-	TooltipLabel() {}
-};
-
-/////////////////////////////////////
-
 void Viewport::_sub_window_update_order() {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		RS::get_singleton()->canvas_item_set_draw_index(gui.sub_windows[i].canvas_item, i);
@@ -1221,7 +1198,8 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	// Popup window which houses the tooltip content.
-	TooltipPanel *panel = memnew(TooltipPanel);
+	PopupPanel *panel = memnew(PopupPanel);
+	panel->set_theme_type_variation(SNAME("TooltipPanel"));
 
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
@@ -1229,7 +1207,8 @@ void Viewport::_gui_show_tooltip() {
 
 	// If no custom tooltip is given, use a default implementation.
 	if (!base_tooltip) {
-		gui.tooltip_label = memnew(TooltipLabel);
+		gui.tooltip_label = memnew(Label);
+		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
 		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
 		gui.tooltip_label->set_text(tooltip_text);
 		base_tooltip = gui.tooltip_label;
