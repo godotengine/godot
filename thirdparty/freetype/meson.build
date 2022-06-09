@@ -54,7 +54,8 @@ if get_option('builtin_freetype')
 
     _freetype_dep_defines = ['-DFT2_BUILD_LIBRARY',
                              '-DFT_CONFIG_OPTION_USE_PNG',
-                             '-DFT_CONFIG_OPTION_SYSTEM_ZLIB']
+                             '-DFT_CONFIG_OPTION_SYSTEM_ZLIB',
+                             '-DFT_CONFIG_OPTION_USE_BROTLI']
 
     _freetype_c_defines = []
     if PLATFORM == 'javascript'
