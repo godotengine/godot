@@ -91,7 +91,7 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_r
 	bool current_backward = signbit(p_time);
 
 	if (p_seek) {
-		step = p_time - time;
+		step = end_checked ? 0.0 : p_time - time; //Reset if stop.
 		time = p_time;
 	} else {
 		p_time *= backward ? -1.0 : 1.0;
@@ -128,6 +128,21 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_r
 			time = anim_size;
 		}
 		backward = false;
+	}
+
+	if (time != prev_time) {
+		end_checked = false;
+	}
+
+	// The first minima is taken as the value, and successive minima indicate that the animation has finished.
+	// The first minima may be 0 in a loop. Only non-zero values will affect the integral. That's OK.
+	if (end_checked) {
+		step = 0;
+	} else if (Math::is_zero_approx(step)) {
+		small_count++;
+		end_checked = small_count > 0;
+	} else {
+		small_count = 0;
 	}
 
 	if (play_mode == PLAY_MODE_FORWARD) {

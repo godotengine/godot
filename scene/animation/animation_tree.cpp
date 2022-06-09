@@ -965,6 +965,11 @@ void AnimationTree::_process_graph(double p_delta) {
 			bool calc_root = !seeked || as.seek_root;
 #endif // _3D_DISABLED
 
+			// Animation state check, available for all track types.
+			if (!seeked && delta == 0 && pingponged == 0) {
+				continue;
+			}
+
 			for (int i = 0; i < a->get_track_count(); i++) {
 				NodePath path = a->track_get_path(i);
 
@@ -1338,9 +1343,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (blend < CMP_EPSILON) {
 							continue; //nothing to blend
 						}
-						if (!seeked && Math::is_zero_approx(delta)) {
-							continue;
-						}
+
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						List<int> indices;

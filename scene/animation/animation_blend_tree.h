@@ -73,6 +73,8 @@ protected:
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
 	bool backward = false;
+	int small_count = 0;
+	bool end_checked = false;
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
