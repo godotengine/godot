@@ -62,6 +62,11 @@ protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif // DISABLE_DEPRECATED
+
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
 
