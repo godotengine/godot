@@ -54,7 +54,7 @@ if get_option('builtin_vulkan')
     _vulkan_incdirs = [include_directories('include', '.')]
 
     if get_option('use_volk')
-        _vulkan_cpp_dep_args += ['-DUSE_VOLK']
+        _vulkan_cpp_dep_args += ['-DVMA_STATIC_VULKAN_FUNCTIONS=1', '-DUSE_VOLK']
         _vulkan_lib_incdirs += include_directories('../volk')
         _vulkan_incdirs += include_directories('../volk')
     elif PLATFORM == 'android'
