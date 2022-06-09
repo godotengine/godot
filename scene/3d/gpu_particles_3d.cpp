@@ -631,7 +631,7 @@ GPUParticles3D::GPUParticles3D() {
 	set_randomness_ratio(0);
 	set_trail_length(0.3);
 	set_visibility_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
-	set_use_local_coordinates(true);
+	set_use_local_coordinates(false);
 	set_draw_passes(1);
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);

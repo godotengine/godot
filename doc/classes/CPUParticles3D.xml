@@ -224,8 +224,8 @@
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum linear acceleration.
 		</member>
-		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
-			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] used for each particle. If [code]null[/code], particles will be spheres.
