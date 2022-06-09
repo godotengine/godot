@@ -621,7 +621,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		//builtins
 
-		actions.renames["TIME"] = "scene_data.time";
+		actions.renames["TIME"] = "scene_data_block.data.time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
