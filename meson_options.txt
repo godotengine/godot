@@ -48,6 +48,7 @@ option('builtin_vulkan', type: 'boolean', value: true, description: 'Use the bui
 option('builtin_zlib', type: 'boolean', value: true, description: 'Use the built-in zlib library')
 option('builtin_zstd', type: 'boolean', value: true, description: 'Use the built-in zstd library')
 
+option('builtin_brotli', type: 'boolean', value: true, description: 'Use the built-in brotli library')
 option('builtin_harfbuzz', type: 'boolean', value: true, description: 'Use the built-in harfbuzz library')
 option('builtin_graphite', type: 'boolean', value: true, description: 'Use the built-in graphite library')
 option('builtin_icu', type: 'boolean', value: true, description: 'Use the built-in icu library')

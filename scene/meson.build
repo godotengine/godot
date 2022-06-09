@@ -1,5 +1,5 @@
 # thirdparty misc sources
-DEPENDENCIES += [ DEP_FREETYPE ]
+DEPENDENCIES += [ DEP_FREETYPE, DEP_BROTLI ]
 
 SOURCES += files([
     # C sources

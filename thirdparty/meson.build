@@ -2,6 +2,7 @@
 subdir('zlib')
 subdir('minizip')
 subdir('libpng')
+subdir('brotli')
 subdir('freetype')
 
 subdir('libogg')
