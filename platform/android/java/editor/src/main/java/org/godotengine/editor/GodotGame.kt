@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotGame.java                                                       */
+/*  GodotGame.kt                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.editor;
+package org.godotengine.editor
 
 /**
  * Drives the 'run project' window of the Godot Editor.
  */
-public class GodotGame extends GodotEditor {
-	protected boolean overrideOrientationRequest() {
-		return false;
-	}
+class GodotGame : GodotEditor() {
+	override fun overrideOrientationRequest() = false
 }
