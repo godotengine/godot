@@ -990,6 +990,18 @@
 			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
 			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
 		</member>
+		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
+			Default cell size for 2D navigation maps. See [method Navigation2DServer.map_set_cell_size].
+		</member>
+		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
+			Default edge connection margin for 2D navigation maps. See [method Navigation2DServer.map_set_edge_connection_margin].
+		</member>
+		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
+			Default cell size for 3D navigation maps. See [method NavigationServer.map_set_cell_size].
+		</member>
+		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
+			Default edge connection margin for 3D navigation maps. See [method NavigationServer.map_set_edge_connection_margin].
+		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
