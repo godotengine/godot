@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		2D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent2D] is physics safe.
+		[b]Note:[/b] After [method set_target_location] is used it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,7 +25,7 @@
 		<method name="get_nav_path" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<description>
-				Returns the path from start to finish in global coordinates.
+				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target location is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_location] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
 			</description>
 		</method>
 		<method name="get_nav_path_index" qualifiers="const">
@@ -36,7 +37,7 @@
 		<method name="get_next_location">
 			<return type="Vector2" />
 			<description>
-				Returns a [Vector2] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent.
+				Returns the next location in global coordinates that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent. The use of this function once every physics frame is required to update the internal path logic of the NavigationAgent.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
