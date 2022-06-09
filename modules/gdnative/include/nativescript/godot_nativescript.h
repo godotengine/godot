@@ -86,6 +86,11 @@ typedef enum {
 	GODOT_PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
 	GODOT_PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
 	GODOT_PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
+	GODOT_PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
+	GODOT_PROPERTY_HINT_NODE_PATH_VALID_TYPES,
+	GODOT_PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
+	GODOT_PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
+	GODOT_PROPERTY_HINT_LOCALE_ID,
 	GODOT_PROPERTY_HINT_MAX,
 } godot_property_hint;
 
