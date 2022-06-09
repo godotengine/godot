@@ -2771,7 +2771,10 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool accepted = false;
 
-	if (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || !pan_pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+	bool release_lmb = (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT); // Required to properly release some stuff (e.g. selection box) while panning.
+
+	if (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || !pan_pressed || release_lmb) {
 		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
 			//printf("Rulers and guides\n");
 		} else if ((accepted = editor->get_editor_plugins_over()->forward_gui_input(p_event))) {
