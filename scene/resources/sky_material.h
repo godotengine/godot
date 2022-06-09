@@ -127,6 +127,7 @@ private:
 	mutable bool shader_set = false;
 
 	bool filter = true;
+	float rotation_angle = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -137,6 +138,9 @@ public:
 
 	void set_filtering_enabled(bool p_enabled);
 	bool is_filtering_enabled() const;
+
+	void set_rotation_angle(float p_rotation_angle);
+	float get_rotation_angle() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;

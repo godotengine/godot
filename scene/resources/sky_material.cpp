@@ -381,6 +381,15 @@ bool PanoramaSkyMaterial::is_filtering_enabled() const {
 	return filter;
 }
 
+void PanoramaSkyMaterial::set_rotation_angle(float p_rotation_angle) {
+	rotation_angle = p_rotation_angle;
+	RS::get_singleton()->material_set_param(_get_material(), "rotation_angle", Math::deg2rad(rotation_angle) / Math_TAU);
+}
+
+float PanoramaSkyMaterial::get_rotation_angle() const {
+	return rotation_angle;
+}
+
 Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -405,11 +414,15 @@ void PanoramaSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSkyMaterial::set_panorama);
 	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSkyMaterial::get_panorama);
 
+	ClassDB::bind_method(D_METHOD("set_rotation_angle", "rotation_angle"), &PanoramaSkyMaterial::set_rotation_angle);
+	ClassDB::bind_method(D_METHOD("get_rotation_angle"), &PanoramaSkyMaterial::get_rotation_angle);
+
 	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
 	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_angle", PROPERTY_HINT_RANGE, "0,360,0.01,degrees"), "set_rotation_angle", "get_rotation_angle");
 }
 
 Mutex PanoramaSkyMaterial::shader_mutex;
@@ -435,9 +448,10 @@ void PanoramaSkyMaterial::_update_shader() {
 shader_type sky;
 
 uniform sampler2D source_panorama : %s, source_color, hint_default_black;
+uniform float rotation_angle = 0.0f;
 
 void sky() {
-	COLOR = texture(source_panorama, SKY_COORDS).rgb;
+	COLOR = texture(source_panorama, SKY_COORDS + vec2(rotation_angle, 0)).rgb;
 }
 )",
 																		  i ? "filter_linear" : "filter_nearest"));
