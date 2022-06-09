@@ -1165,6 +1165,9 @@ Rect2i Window::get_usable_parent_rect() const {
 	Rect2i parent;
 	if (is_embedded()) {
 		parent = _get_embedder()->get_visible_rect();
+	} else if (!get_parent_viewport() && is_embedding_subwindows()) {
+		// Root viewport in single window mode.
+		return get_visible_rect();
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
