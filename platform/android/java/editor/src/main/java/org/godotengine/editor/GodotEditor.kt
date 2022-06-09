@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotEditor.java                                                     */
+/*  GodotEditor.kt                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.editor;
+package org.godotengine.editor
 
-import org.godotengine.godot.FullScreenGodotApp;
-import org.godotengine.godot.utils.PermissionsUtil;
-
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Debug;
-
-import androidx.annotation.Nullable;
-import androidx.window.layout.WindowMetrics;
-import androidx.window.layout.WindowMetricsCalculator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.os.Debug
+import androidx.window.layout.WindowMetricsCalculator
+import org.godotengine.godot.FullScreenGodotApp
+import org.godotengine.godot.utils.PermissionsUtil
+import java.util.*
+import kotlin.math.min
 
 /**
  * Base class for the Godot Android Editor activities.
@@ -55,97 +49,98 @@ import java.util.List;
  *
  * It also plays the role of the primary editor window.
  */
-public class GodotEditor extends FullScreenGodotApp {
-	private static final boolean WAIT_FOR_DEBUGGER = false;
-	private static final String COMMAND_LINE_PARAMS = "command_line_params";
+open class GodotEditor : FullScreenGodotApp() {
 
-	private static final String EDITOR_ARG = "--editor";
-	private static final String PROJECT_MANAGER_ARG = "--project-manager";
+	companion object {
+		private const val WAIT_FOR_DEBUGGER = false
 
-	private final List<String> commandLineParams = new ArrayList<>();
+		private const val COMMAND_LINE_PARAMS = "command_line_params"
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		PermissionsUtil.requestManifestPermissions(this);
-
-		String[] params = getIntent().getStringArrayExtra(COMMAND_LINE_PARAMS);
-		updateCommandLineParams(params);
-
-		if (BuildConfig.BUILD_TYPE.equals("debug") && WAIT_FOR_DEBUGGER) {
-			Debug.waitForDebugger();
-		}
-		super.onCreate(savedInstanceState);
+		private const val EDITOR_ARG = "--editor"
+		private const val PROJECT_MANAGER_ARG = "--project-manager"
 	}
 
-	private void updateCommandLineParams(@Nullable String[] args) {
+	private val commandLineParams = ArrayList<String>()
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		PermissionsUtil.requestManifestPermissions(this)
+
+		val params = intent.getStringArrayExtra(COMMAND_LINE_PARAMS)
+		updateCommandLineParams(params)
+
+		if (BuildConfig.BUILD_TYPE == "debug" && WAIT_FOR_DEBUGGER) {
+			Debug.waitForDebugger()
+		}
+
+		super.onCreate(savedInstanceState)
+	}
+
+	private fun updateCommandLineParams(args: Array<String>?) {
 		// Update the list of command line params with the new args
-		commandLineParams.clear();
-		if (args != null && args.length > 0) {
-			commandLineParams.addAll(Arrays.asList(args));
+		commandLineParams.clear()
+		if (args != null && args.isNotEmpty()) {
+			commandLineParams.addAll(listOf(*args))
 		}
 	}
 
-	@Override
-	public List<String> getCommandLine() {
-		return commandLineParams;
-	}
+	override fun getCommandLine() = commandLineParams
 
-	@Override
-	public void onNewGodotInstanceRequested(String[] args) {
+	override fun onNewGodotInstanceRequested(args: Array<String>) {
 		// Parse the arguments to figure out which activity to start.
-		Class<?> targetClass = GodotGame.class;
+		var targetClass: Class<*> = GodotGame::class.java
+
 		// Whether we should launch the new godot instance in an adjacent window
 		// https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT
-		boolean launchAdjacent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode() || isLargeScreen());
+		var launchAdjacent =
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode || isLargeScreen)
 
-		for (String arg : args) {
-			if (EDITOR_ARG.equals(arg)) {
-				targetClass = GodotEditor.class;
-				launchAdjacent = false;
-				break;
+		for (arg in args) {
+			if (EDITOR_ARG == arg) {
+				targetClass = GodotEditor::class.java
+				launchAdjacent = false
+				break
 			}
 
-			if (PROJECT_MANAGER_ARG.equals(arg)) {
-				targetClass = GodotProjectManager.class;
-				launchAdjacent = false;
-				break;
+			if (PROJECT_MANAGER_ARG == arg) {
+				targetClass = GodotProjectManager::class.java
+				launchAdjacent = false
+				break
 			}
 		}
 
 		// Launch a new activity
-		Intent newInstance = new Intent(this, targetClass)
-									 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-									 .putExtra(COMMAND_LINE_PARAMS, args);
+		val newInstance = Intent(this, targetClass)
+			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			.putExtra(COMMAND_LINE_PARAMS, args)
 		if (launchAdjacent) {
-			newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+			newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 		}
-		startActivity(newInstance);
+		startActivity(newInstance)
 	}
 
-	protected boolean isLargeScreen() {
-		WindowMetrics metrics =
-				WindowMetricsCalculator.getOrCreate().computeMaximumWindowMetrics(this);
+	// Get the screen's density scale
+	protected val isLargeScreen: Boolean
+		// Get the minimum window size // Correspond to the EXPANDED window size class.
+		get() {
+			val metrics = WindowMetricsCalculator.getOrCreate().computeMaximumWindowMetrics(this)
 
-		// Get the screen's density scale
-		float scale = getResources().getDisplayMetrics().density;
+			// Get the screen's density scale
+			val scale = resources.displayMetrics.density
 
-		// Get the minimum window size
-		float minSize = Math.min(metrics.getBounds().width(), metrics.getBounds().height());
-		float minSizeDp = minSize / scale;
-		return minSizeDp >= 840f; // Correspond to the EXPANDED window size class.
-	}
+			// Get the minimum window size
+			val minSize = min(metrics.bounds.width(), metrics.bounds.height()).toFloat()
+			val minSizeDp = minSize / scale
+			return minSizeDp >= 840f // Correspond to the EXPANDED window size class.
+		}
 
-	@Override
-	public void setRequestedOrientation(int requestedOrientation) {
+	override fun setRequestedOrientation(requestedOrientation: Int) {
 		if (!overrideOrientationRequest()) {
-			super.setRequestedOrientation(requestedOrientation);
+			super.setRequestedOrientation(requestedOrientation)
 		}
 	}
 
 	/**
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
-	protected boolean overrideOrientationRequest() {
-		return true;
-	}
+	protected open fun overrideOrientationRequest() = true
 }
