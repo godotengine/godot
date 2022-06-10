@@ -312,7 +312,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						selection.end = text.length();
 						selection.double_click = true;
 						last_dblclk = 0;
-						caret_column = selection.begin;
+						set_caret_column(selection.begin);
 						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text);
 						}
@@ -327,7 +327,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								selection.begin = words[i];
 								selection.end = words[i + 1];
 								selection.double_click = true;
-								caret_column = selection.end;
+								set_caret_column(selection.end);
 								break;
 							}
 						}
