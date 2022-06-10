@@ -77,6 +77,8 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
 	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
 	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	// Work around issue about antialiased edges being blurrier (GH-35279).
+	style->set_anti_aliased(false);
 	return style;
 }
 
@@ -564,8 +566,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Styleboxes
 	// This is the most commonly used stylebox, variations should be made as duplicate of this
 	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size, corner_width);
-	// Work around issue about antialiased edges being blurrier (GH-35279).
-	style_default->set_anti_aliased(false);
 	style_default->set_border_width_all(border_width);
 	style_default->set_border_color(base_color);
 	style_default->set_draw_center(true);
@@ -1260,20 +1260,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "TextEdit", selection_color);
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
-	// CodeEdit
-	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
-	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
-	theme->set_stylebox("normal", "CodeEdit", style_widget);
-	theme->set_stylebox("focus", "CodeEdit", style_widget_hover);
-	theme->set_stylebox("read_only", "CodeEdit", style_widget_disabled);
-	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
-	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
-	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
-	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
-	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
-
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 
@@ -1610,7 +1596,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// ColorPresetButton
 	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2, 2);
-	preset_sb->set_anti_aliased(false);
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
 	theme->set_icon("preset_bg", "ColorPresetButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 	theme->set_icon("overbright_indicator", "ColorPresetButton", theme->get_icon(SNAME("OverbrightIndicator"), SNAME("EditorIcons")));
@@ -1736,7 +1721,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	// Now theme is loaded, apply it to CodeEdit.
-	theme->set_color("background_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/background_color"));
+	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
+	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
+	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(EDITOR_GET("text_editor/theme/highlighting/background_color"), widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y, corner_radius);
+	theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
+	theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
+	theme->set_stylebox("focus", "CodeEdit", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
+	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
+	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
+	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("completion_background_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
 	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));
