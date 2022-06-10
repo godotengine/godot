@@ -70,7 +70,8 @@ if get_option('builtin_freetype')
                                     _freetype_srcs,
                                     include_directories: _freetype_incdirs,
                                     c_args: _freetype_dep_defines + _freetype_c_defines,
-                                    dependencies: [DEP_ZLIB, DEP_LIBPNG], build_by_default: false)
+                                    dependencies: [DEP_ZLIB, DEP_LIBPNG, DEP_BROTLI],
+                                    build_by_default: false)
 
     DEP_FREETYPE = declare_dependency(link_with: _lib_freetype2,
                                       include_directories: _freetype_incdirs,

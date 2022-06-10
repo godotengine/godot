@@ -13,7 +13,8 @@ if get_option('builtin_brotli')
         include_directories: 'include',
     )
 
-    DEP_BROTLI = declare_dependency(link_with: lib_brotli)
+    DEP_BROTLI = declare_dependency(link_with: lib_brotli,
+                                    include_directories: 'include')
 
 else
     DEP_BROTLI = [
