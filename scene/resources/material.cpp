@@ -2971,6 +2971,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_transparency(TRANSPARENCY_DISABLED);
 	set_alpha_antialiasing(ALPHA_ANTIALIASING_OFF);
+	// Alpha scissor threshold of 0.5 matches the glTF specification and Label3D default.
+	// <https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_material_alphacutoff>
 	set_alpha_scissor_threshold(0.5);
 	set_alpha_hash_scale(1.0);
 	set_alpha_antialiasing_edge(0.3);
