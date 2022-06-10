@@ -676,7 +676,6 @@ private:
 	int camera_override_viewport_id;
 
 	void _init_indicators();
-	void _update_context_menu_stylebox();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
 	void _init_grid();
