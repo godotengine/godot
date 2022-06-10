@@ -36,6 +36,7 @@
 #include "core/string/print_string.h"
 #include "core/version.h"
 #include "main/main.h"
+#include "servers/display_server.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
@@ -136,6 +137,9 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	String msg;
 	if (ProjectSettings::get_singleton()) {
 		msg = GLOBAL_GET("debug/settings/crash_handler/message");
+		if (GLOBAL_GET("debug/file_logging/enable_file_logging")) {
+			log_path = ProjectSettings::get_singleton()->globalize_path(GLOBAL_GET("debug/file_logging/log_path"));
+		}
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.
@@ -143,8 +147,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
+	// Set window title while dumping the backtrace, as this can take 10+ seconds to finish.
+	DisplayServer::get_singleton()->window_set_title("ERROR: Program crashed, dumping backtrace...");
+
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed", __FUNCTION__));
+	print_error(vformat("%s: Program crashed.", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(GODOT_VERSION_HASH).is_empty()) {
@@ -228,8 +235,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
 
-	SymCleanup(process);
-
 	if (ScriptServer::are_languages_initialized()) {
 		Vector<Ref<ScriptBacktrace>> script_backtraces = ScriptServer::capture_script_backtraces(false);
 		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
@@ -240,6 +245,26 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			}
 		}
 	}
+
+	// Notify the user that backtrace dumping is finished.
+	DisplayServer::get_singleton()->window_set_title("ERROR: Program crashed, dumped backtrace");
+
+	// Show alert so the user is aware of the crash, even if the engine wasn't started with visible stdout/stderr.
+	// This must be done after printing the backtrace to prevent the process from being blocked too early (`OS::alert()` is blocking).
+	if (!log_path.is_empty()) {
+		// `fprintf()` is used instead of `print_error()`, as this printed line must not be present
+		// in the log file (it references the log file itself).
+		fprintf(stderr, "\nFind the log file for this session at:\n%s\n\n", log_path.utf8().get_data());
+
+		if (DisplayServer::get_singleton()->get_name() != "headless") {
+			OS::get_singleton()->alert(vformat("%s: Program crashed.\n\nFind the log file for this session at:\n%s\n\nClicking OK will open this log file. Please include the this log file's contents in bug reports.", __FUNCTION__, log_path), "Crash");
+			OS::get_singleton()->shell_open(log_path.utf8().get_data());
+		}
+	} else if (DisplayServer::get_singleton()->get_name() != "headless") {
+		OS::get_singleton()->alert(vformat("%s: Program crashed.", __FUNCTION__), "Crash");
+	}
+
+	SymCleanup(process);
 
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
