@@ -47,6 +47,8 @@ class World : public Resource {
 private:
 	RID space;
 	RID scenario;
+	RID navigation_map;
+
 	SpatialIndexer *indexer;
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
@@ -70,6 +72,7 @@ protected:
 public:
 	RID get_space() const;
 	RID get_scenario() const;
+	RID get_navigation_map() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
