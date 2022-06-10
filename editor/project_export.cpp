@@ -1003,9 +1003,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	mc->add_child(presets);
 	presets->connect("item_selected", this, "_edit_preset");
 	duplicate_preset = memnew(ToolButton);
+	duplicate_preset->set_tooltip(TTR("Duplicate"));
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect("pressed", this, "_duplicate_preset");
 	delete_preset = memnew(ToolButton);
+	delete_preset->set_tooltip(TTR("Delete"));
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", this, "_delete_preset");
 
