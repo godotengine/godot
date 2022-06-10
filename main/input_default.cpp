@@ -723,6 +723,10 @@ void InputDefault::set_use_input_buffering(bool p_enable) {
 	use_input_buffering = p_enable;
 }
 
+bool InputDefault::is_using_accumulated_input() {
+	return use_accumulated_input;
+}
+
 void InputDefault::set_use_accumulated_input(bool p_enable) {
 	use_accumulated_input = p_enable;
 }

@@ -40,7 +40,7 @@
 		<method name="flush_buffered_events">
 			<return type="void" />
 			<description>
-				Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input ([method set_use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
+				Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input ([member use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
 				The engine will already do this itself at key execution points (at least once per frame). However, this can be useful in advanced cases where you want precise control over the timing of event handling.
 			</description>
 		</method>
@@ -186,12 +186,6 @@
 			<return type="int" />
 			<description>
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together.
-			</description>
-		</method>
-		<method name="get_mouse_mode" qualifiers="const">
-			<return type="int" enum="Input.MouseMode" />
-			<description>
-				Returns the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="get_vector" qualifiers="const">
@@ -363,21 +357,6 @@
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
-		<method name="set_mouse_mode">
-			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="Input.MouseMode" />
-			<description>
-				Sets the mouse mode. See the constants for more information.
-			</description>
-		</method>
-		<method name="set_use_accumulated_input">
-			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
-			<description>
-				Enables or disables the accumulation of similar input events sent by the operating system. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
-				Input accumulation is enabled by default. It can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
-			</description>
-		</method>
 		<method name="start_joy_vibration">
 			<return type="void" />
 			<argument index="0" name="device" type="int" />
@@ -414,6 +393,15 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
+			Controls the mouse mode. See [enum MouseMode] for more information.
+		</member>
+		<member name="use_accumulated_input" type="bool" setter="set_use_accumulated_input" getter="is_using_accumulated_input">
+			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
+		</member>
+	</members>
 	<signals>
 		<signal name="joy_connection_changed">
 			<argument index="0" name="device" type="int" />
