@@ -147,9 +147,11 @@ struct SpatialIndexer {
 		for (Map<Camera *, CameraData>::Element *E = cameras.front(); E; E = E->next()) {
 			pass++;
 
+			// prepare camera info
 			Camera *c = E->key();
-
+			Vector3 cam_pos = c->get_global_transform().origin;
 			Vector<Plane> planes = c->get_frustum();
+			bool cam_is_ortho = c->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 
 			int culled = octree.cull_convex(planes, cull.ptrw(), cull.size());
 
@@ -160,6 +162,19 @@ struct SpatialIndexer {
 
 			for (int i = 0; i < culled; i++) {
 				//notifiers in frustum
+
+				// check and remove notifiers that have a max range
+				VisibilityNotifier &nt = *ptr[i];
+				if (nt.is_max_distance_active() && !cam_is_ortho) {
+					Vector3 offset = nt.get_world_aabb_center() - cam_pos;
+					if ((offset.length_squared() >= nt.get_max_distance_squared()) && !nt.inside_max_distance_leadin()) {
+						// unordered remove
+						cull.set(i, cull[culled - 1]);
+						culled--;
+						i--;
+						continue;
+					}
+				}
 
 				Map<VisibilityNotifier *, uint64_t>::Element *H = E->get().notifiers.find(ptr[i]);
 				if (!H) {
