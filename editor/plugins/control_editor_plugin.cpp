@@ -624,7 +624,7 @@ List<Control *> ControlEditorToolbar::_get_edited_controls(bool retrieve_locked,
 	List<Control *> selection;
 	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
 		Control *control = Object::cast_to<Control>(E.key);
-		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retrieve_locked || !_is_node_locked(control))) {
+		if (control && control->is_visible_in_tree() && (retrieve_locked || !_is_node_locked(control))) {
 			selection.push_back(control);
 		}
 	}
