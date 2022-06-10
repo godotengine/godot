@@ -9,32 +9,11 @@ float hash_3d(vec3 p) {
 	return hash_2d(vec2(hash_2d(p.xy), p.z));
 }
 
-float compute_alpha_hash_threshold(vec3 pos, float hash_scale) {
-	vec3 dx = dFdx(pos);
-	vec3 dy = dFdx(pos);
-	float delta_max_sqr = max(length(dx), length(dy));
-	float pix_scale = 1.0 / (hash_scale * delta_max_sqr);
-
-	vec2 pix_scales =
-			vec2(exp2(floor(log2(pix_scale))), exp2(ceil(log2(pix_scale))));
-
-	vec2 a_thresh = vec2(hash_3d(floor(pix_scales.x * pos.xyz)),
-			hash_3d(floor(pix_scales.y * pos.xyz)));
-
-	float lerp_factor = fract(log2(pix_scale));
-
-	float a_interp = (1.0 - lerp_factor) * a_thresh.x + lerp_factor * a_thresh.y;
-
-	float min_lerp = min(lerp_factor, 1.0 - lerp_factor);
-
-	vec3 cases = vec3(a_interp * a_interp / (2.0 * min_lerp * (1.0 - min_lerp)),
-			(a_interp - 0.5 * min_lerp) / (1.0 - min_lerp),
-			1.0 - ((1.0 - a_interp) * (1.0 - a_interp) / (2.0 * min_lerp * (1.0 - min_lerp))));
-
-	float alpha_hash_threshold =
-			(lerp_factor < (1.0 - min_lerp)) ? ((lerp_factor < min_lerp) ? cases.x : cases.y) : cases.z;
-
-	return clamp(alpha_hash_threshold, 0.0, 1.0);
+// Interleaved Gradient Noise
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+float compute_alpha_hash_threshold(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	return fract(magic.z * fract(dot(pos, magic.xy)));
 }
 
 #endif // ALPHA_HASH_USED

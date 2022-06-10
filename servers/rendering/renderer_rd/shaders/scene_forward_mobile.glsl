@@ -692,7 +692,7 @@ void main() {
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
-	if (alpha < compute_alpha_hash_threshold(vertex, alpha_hash_scale)) {
+	if (alpha < compute_alpha_hash_threshold(gl_FragCoord.xy)) {
 		discard;
 	}
 #endif // ALPHA_HASH_USED
