@@ -62,9 +62,17 @@ void SceneTreeDock::_quick_open() {
 void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (pending_click_select && mb.is_valid() && !mb->is_pressed() && (mb->get_button_index() == BUTTON_LEFT || mb->get_button_index() == BUTTON_RIGHT)) {
-		_push_item(pending_click_select);
-		pending_click_select = nullptr;
+	if (mb.is_valid() && (mb->get_button_index() == BUTTON_LEFT || mb->get_button_index() == BUTTON_RIGHT)) {
+		if (mb->is_pressed() && scene_tree->get_rect().has_point(mb->get_position())) {
+			tree_clicked = true;
+		} else if (!mb->is_pressed()) {
+			tree_clicked = false;
+		}
+
+		if (!mb->is_pressed() && pending_click_select) {
+			_push_item(pending_click_select);
+			pending_click_select = nullptr;
+		}
 	}
 }
 
@@ -1415,10 +1423,10 @@ void SceneTreeDock::_push_item(Object *p_object) {
 }
 
 void SceneTreeDock::_handle_select(Node *p_node) {
-	if ((Input::get_singleton()->get_mouse_button_mask() & (BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT)) != 0) {
+	if (tree_clicked) {
 		pending_click_select = p_node;
 	} else {
-		editor->push_item(p_node);
+		_push_item(p_node);
 	}
 }
 
@@ -3272,6 +3280,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
 	pending_click_select = nullptr;
+	tree_clicked = false;
 
 	VBoxContainer *vbc = this;
 

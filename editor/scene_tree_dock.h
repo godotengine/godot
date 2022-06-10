@@ -172,6 +172,7 @@ class SceneTreeDock : public VBoxContainer {
 	Node *edited_scene;
 	Node *pending_click_select;
 	EditorNode *editor;
+	bool tree_clicked;
 
 	VBoxContainer *create_root_dialog;
 	String selected_favorite_root;
