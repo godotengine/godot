@@ -114,6 +114,12 @@ void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const 
 	}
 }
 
+void AnimationLibrary::get_animations(HashMap<StringName, Ref<Animation>> *p_animations) const {
+	for (const KeyValue<StringName, Ref<Animation>> &E : animations) {
+		p_animations->insert(E.key, E.value);
+	}
+}
+
 void AnimationLibrary::_set_data(const Dictionary &p_data) {
 	animations.clear();
 	List<Variant> keys;

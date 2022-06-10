@@ -59,6 +59,7 @@ public:
 	bool has_animation(const StringName &p_name) const;
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
+	void get_animations(HashMap<StringName, Ref<Animation>> *p_animations) const;
 
 	AnimationLibrary();
 };
