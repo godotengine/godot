@@ -54,4 +54,4 @@ jobs:
 
       - name: Documentation checks
         run: |
-          doc/tools/make_rst.py --dry-run doc/classes modules
+          doc/tools/make_rst.py --dry-run --color doc/classes modules
