@@ -712,86 +712,6 @@ VisualShader::VaryingType VisualShader::get_varying_type(const String &p_name) {
 	return varyings[p_name].type;
 }
 
-void VisualShader::set_engine_version(const Dictionary &p_engine_version) {
-	ERR_FAIL_COND(!p_engine_version.has("major"));
-	ERR_FAIL_COND(!p_engine_version.has("minor"));
-	engine_version["major"] = p_engine_version["major"];
-	engine_version["minor"] = p_engine_version["minor"];
-}
-
-Dictionary VisualShader::get_engine_version() const {
-	return engine_version;
-}
-
-#ifndef DISABLE_DEPRECATED
-
-void VisualShader::update_engine_version(const Dictionary &p_new_version) {
-	if (engine_version.is_empty()) { // before 4.0
-		for (int i = 0; i < TYPE_MAX; i++) {
-			for (KeyValue<int, Node> &E : graph[i].nodes) {
-				Ref<VisualShaderNodeInput> input = Object::cast_to<VisualShaderNodeInput>(E.value.node.ptr());
-				if (input.is_valid()) {
-					if (input->get_input_name() == "side") {
-						input->set_input_name("front_facing");
-					}
-				}
-				Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr());
-				if (expression.is_valid()) {
-					for (int j = 0; j < expression->get_input_port_count(); j++) {
-						int type = expression->get_input_port_type(j);
-						if (type > 0) { // + PORT_TYPE_SCALAR_INT + PORT_TYPE_VECTOR_2D
-							type += 2;
-						}
-						expression->set_input_port_type(j, type);
-					}
-					for (int j = 0; j < expression->get_output_port_count(); j++) {
-						int type = expression->get_output_port_type(j);
-						if (type > 0) { // + PORT_TYPE_SCALAR_INT + PORT_TYPE_VECTOR_2D
-							type += 2;
-						}
-						expression->set_output_port_type(j, type);
-					}
-				}
-				Ref<VisualShaderNodeStep> step = Object::cast_to<VisualShaderNodeStep>(E.value.node.ptr());
-				if (step.is_valid()) {
-					int op_type = int(step->get_op_type());
-					if (int(op_type) > 0) { // + OP_TYPE_VECTOR_2D + OP_TYPE_VECTOR_2D_SCALAR
-						op_type += 2;
-					}
-					step->set_op_type(VisualShaderNodeStep::OpType(op_type));
-				}
-				Ref<VisualShaderNodeSmoothStep> sstep = Object::cast_to<VisualShaderNodeSmoothStep>(E.value.node.ptr());
-				if (sstep.is_valid()) {
-					int op_type = int(sstep->get_op_type());
-					if (int(op_type) > 0) { // + OP_TYPE_VECTOR_2D + OP_TYPE_VECTOR_2D_SCALAR
-						op_type += 2;
-					}
-					sstep->set_op_type(VisualShaderNodeSmoothStep::OpType(op_type));
-				}
-				Ref<VisualShaderNodeMix> mix = Object::cast_to<VisualShaderNodeMix>(E.value.node.ptr());
-				if (mix.is_valid()) {
-					int op_type = int(mix->get_op_type());
-					if (int(op_type) > 0) { // + OP_TYPE_VECTOR_2D + OP_TYPE_VECTOR_2D_SCALAR
-						op_type += 2;
-					}
-					mix->set_op_type(VisualShaderNodeMix::OpType(op_type));
-				}
-				Ref<VisualShaderNodeCompare> compare = Object::cast_to<VisualShaderNodeCompare>(E.value.node.ptr());
-				if (compare.is_valid()) {
-					int ctype = int(compare->get_comparison_type());
-					if (int(ctype) > 0) { // + CTYPE_SCALAR_INT + CTYPE_VECTOR_2D
-						ctype += 2;
-					}
-					compare->set_comparison_type(VisualShaderNodeCompare::ComparisonType(ctype));
-				}
-			}
-		}
-	}
-	set_engine_version(p_new_version);
-}
-
-#endif /* DISABLE_DEPRECATED */
-
 void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_id < 2);
@@ -2628,9 +2548,6 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &VisualShader::_get_node_connections);
 
-	ClassDB::bind_method(D_METHOD("set_engine_version", "version"), &VisualShader::set_engine_version);
-	ClassDB::bind_method(D_METHOD("get_engine_version"), &VisualShader::get_engine_version);
-
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
 
@@ -2641,7 +2558,6 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "engine_version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_engine_version", "get_engine_version");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 

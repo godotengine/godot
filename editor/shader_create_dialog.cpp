@@ -184,7 +184,6 @@ void ShaderCreateDialog::_create_new() {
 		Ref<VisualShader> visual_shader;
 		visual_shader.instantiate();
 		shader = visual_shader;
-		visual_shader->set_engine_version(Engine::get_singleton()->get_version_info());
 		visual_shader->set_mode(Shader::Mode(current_mode));
 	}
 
