@@ -2620,6 +2620,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		return OK;
 	}
 
+	bool has_warned = false;
 	Array meshes = state->json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
@@ -2692,11 +2693,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
 				has_vertex_color = true;
 			}
-			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
+			if (a.has("JOINTS_0")) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
 			}
-			ERR_CONTINUE(a.has("JOINTS_0") && a.has("JOINTS_1"));
-			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
+			if (a.has("WEIGHTS_1") && a.has("JOINTS_1")) {
+				if (!has_warned) {
+					WARN_PRINT("glTF: Meshes use more than 4 bone joints");
+					has_warned = true;
+				}
+			}
+			if (a.has("WEIGHTS_0")) {
 				Vector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
@@ -2718,7 +2724,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
 			}
-			ERR_CONTINUE(a.has("WEIGHTS_0") && a.has("WEIGHTS_1"));
 
 			if (p.has("indices")) {
 				Vector<int> indices = _decode_accessor_as_ints(state, p["indices"], false);
