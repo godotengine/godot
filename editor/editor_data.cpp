@@ -558,7 +558,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 		ss = p_node->get_scene_instance_state();
 	}
 
-	if (ss.is_valid()) {
+	while (ss.is_valid()) {
 		String path = ss->get_path();
 
 		if (!checked_paths.has(path)) {
@@ -569,17 +569,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 			checked_paths.insert(path);
 		}
-
-		// look for changes in parent of parent inherited and so on
-		// check if matches any of the open edited scenes
-		for (int i = 0; i < edited_scene.size(); i++) {
-			if (path == edited_scene[i].path) {
-				bool found = check_and_update_scene(i);
-				if (found) {
-					return true;
-				}
-			}
-		}
+		ss = ss->get_base_scene_state();
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -612,7 +602,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
-		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		bool inherit = edited_scene[p_idx].root->get_scene_inherited_state().is_valid();
+		Node *new_scene = pscene->instantiate(inherit ? PackedScene::GEN_EDIT_STATE_MAIN_INHERITED : PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene, false);
 
 		// Transfer selection.
