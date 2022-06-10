@@ -244,9 +244,9 @@ Point2 Node2D::get_global_position() const {
 }
 
 void Node2D::set_global_position(const Point2 &p_pos) {
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		Transform2D inv = pi->get_global_transform().affine_inverse();
+	CanvasItem *parent = get_parent_item();
+	if (parent) {
+		Transform2D inv = parent->get_global_transform().affine_inverse();
 		set_position(inv.xform(p_pos));
 	} else {
 		set_position(p_pos);
@@ -257,13 +257,33 @@ real_t Node2D::get_global_rotation() const {
 	return get_global_transform().get_rotation();
 }
 
-void Node2D::set_global_rotation(real_t p_radians) {
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		const real_t parent_global_rot = pi->get_global_transform().get_rotation();
-		set_rotation(p_radians - parent_global_rot);
+real_t Node2D::get_global_skew() const {
+	return get_global_transform().get_skew();
+}
+
+void Node2D::set_global_rotation(const real_t p_radians) {
+	CanvasItem *parent = get_parent_item();
+	if (parent) {
+		Transform2D parent_global_transform = parent->get_global_transform();
+		Transform2D new_transform = parent_global_transform * get_transform();
+		new_transform.set_rotation(p_radians);
+		new_transform = parent_global_transform.affine_inverse() * new_transform;
+		set_rotation(new_transform.get_rotation());
 	} else {
 		set_rotation(p_radians);
+	}
+}
+
+void Node2D::set_global_skew(const real_t p_radians) {
+	CanvasItem *parent = get_parent_item();
+	if (parent) {
+		Transform2D parent_global_transform = parent->get_global_transform();
+		Transform2D new_transform = parent_global_transform * get_transform();
+		new_transform.set_skew(p_radians);
+		new_transform = parent_global_transform.affine_inverse() * new_transform;
+		set_skew(new_transform.get_skew());
+	} else {
+		set_skew(p_radians);
 	}
 }
 
@@ -272,10 +292,13 @@ Size2 Node2D::get_global_scale() const {
 }
 
 void Node2D::set_global_scale(const Size2 &p_scale) {
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		const Size2 parent_global_scale = pi->get_global_transform().get_scale();
-		set_scale(p_scale / parent_global_scale);
+	CanvasItem *parent = get_parent_item();
+	if (parent) {
+		Transform2D parent_global_transform = parent->get_global_transform();
+		Transform2D new_transform = parent_global_transform * get_transform();
+		new_transform.set_scale(p_scale);
+		new_transform = parent_global_transform.affine_inverse() * new_transform;
+		set_scale(new_transform.get_scale());
 	} else {
 		set_scale(p_scale);
 	}
@@ -295,9 +318,9 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 }
 
 void Node2D::set_global_transform(const Transform2D &p_transform) {
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
+	CanvasItem *parent = get_parent_item();
+	if (parent) {
+		set_transform(parent->get_global_transform().affine_inverse() * p_transform);
 	} else {
 		set_transform(p_transform);
 	}
@@ -388,6 +411,8 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node2D::get_global_position);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node2D::set_global_rotation);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node2D::get_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_skew", "radians"), &Node2D::set_global_skew);
+	ClassDB::bind_method(D_METHOD("get_global_skew"), &Node2D::get_global_skew);
 	ClassDB::bind_method(D_METHOD("set_global_scale", "scale"), &Node2D::set_global_scale);
 	ClassDB::bind_method(D_METHOD("get_global_scale"), &Node2D::get_global_scale);
 
@@ -421,6 +446,7 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_scale", "get_global_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_skew", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_skew", "get_global_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 
 	ADD_GROUP("Ordering", "");

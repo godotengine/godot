@@ -102,6 +102,9 @@
 		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
 			Global scale.
 		</member>
+		<member name="global_skew" type="float" setter="set_global_skew" getter="get_global_skew">
+			Global skew in radians.
+		</member>
 		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
 			Global [Transform2D].
 		</member>
