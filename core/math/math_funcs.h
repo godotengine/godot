@@ -184,9 +184,15 @@ public:
 #endif
 	}
 
-	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
-	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ double abs(double g) {
+		return absd(g);
+	}
+	static _ALWAYS_INLINE_ float abs(float g) {
+		return absf(g);
+	}
+	static _ALWAYS_INLINE_ int abs(int g) {
+		return g > 0 ? g : -g;
+	}
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
@@ -229,14 +235,26 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ double deg2rad(double p_y) {
+		return p_y * (Math_PI / 180.0);
+	}
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) {
+		return p_y * (float)(Math_PI / 180.0);
+	}
 
-	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ double rad2deg(double p_y) {
+		return p_y * (180.0 / Math_PI);
+	}
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) {
+		return p_y * (float)(180.0 / Math_PI);
+	}
 
-	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
-	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) {
+		return p_from + (p_to - p_from) * p_weight;
+	}
+	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) {
+		return p_from + (p_to - p_from) * p_weight;
+	}
 
 	static _ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
 		return 0.5 *
@@ -264,11 +282,19 @@ public:
 		return p_from + distance * p_weight;
 	}
 
-	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
-	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
+	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
+	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
 
-	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
-	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
+	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
+	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 		if (is_equal_approx(p_from, p_to)) {
@@ -284,17 +310,33 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
-	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
-	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
 
-	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ double linear2db(double p_linear) {
+		return Math::log(p_linear) * 8.6858896380650365530225783783321;
+	}
+	static _ALWAYS_INLINE_ float linear2db(float p_linear) {
+		return Math::log(p_linear) * (float)8.6858896380650365530225783783321;
+	}
 
-	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ double db2linear(double p_db) {
+		return Math::exp(p_db * 0.11512925464970228420089957273422);
+	}
+	static _ALWAYS_INLINE_ float db2linear(float p_db) {
+		return Math::exp(p_db * (float)0.11512925464970228420089957273422);
+	}
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
+	static _ALWAYS_INLINE_ double round(double p_val) {
+		return ::round(p_val);
+	}
+	static _ALWAYS_INLINE_ float round(float p_val) {
+		return ::roundf(p_val);
+	}
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
@@ -334,8 +376,12 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ double randd() {
+		return (double)rand() / (double)Math::RANDOM_32BIT_MAX;
+	}
+	static _ALWAYS_INLINE_ float randf() {
+		return (float)rand() / (float)Math::RANDOM_32BIT_MAX;
+	}
 	static double randfn(double mean, double deviation);
 
 	static double random(double from, double to);
