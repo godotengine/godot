@@ -173,6 +173,7 @@ void EditorPropertyMultilineText::_bind_methods() {
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
@@ -2948,6 +2949,7 @@ void EditorPropertyNodePath::_bind_methods() {
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
+	hbc->add_theme_constant_override("separation", 0);
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);
@@ -3134,17 +3136,15 @@ void EditorPropertyResource::_update_property_bg() {
 		count_subinspectors = MIN(15, count_subinspectors);
 
 		add_theme_color_override("property_color", get_theme_color(SNAME("sub_inspector_property_color"), SNAME("Editor")));
-		add_theme_style_override("bg_selected", get_theme_stylebox("sub_inspector_property_bg_selected" + itos(count_subinspectors), SNAME("Editor")));
+		add_theme_style_override("bg_selected", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), SNAME("Editor")));
 		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), SNAME("Editor")));
 
-		add_theme_constant_override("font_offset", get_theme_constant(SNAME("sub_inspector_font_offset"), SNAME("Editor")));
 		add_theme_constant_override("v_separation", 0);
 	} else {
 		add_theme_color_override("property_color", get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 		add_theme_style_override("bg_selected", get_theme_stylebox(SNAME("bg_selected"), SNAME("EditorProperty")));
 		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("EditorProperty")));
 		add_theme_constant_override("v_separation", get_theme_constant(SNAME("v_separation"), SNAME("EditorProperty")));
-		add_theme_constant_override("font_offset", get_theme_constant(SNAME("font_offset"), SNAME("EditorProperty")));
 	}
 
 	updating_theme = false;
