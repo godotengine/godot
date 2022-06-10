@@ -179,7 +179,7 @@ License: Expat
 
 Files: ./thirdparty/etcpak/
 Comment: etcpak
-Copyright: 2013-2021, Bartosz Taudul
+Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
 Files: ./thirdparty/fonts/DroidSans*.woff2

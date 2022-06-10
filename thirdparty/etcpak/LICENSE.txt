@@ -1,6 +1,6 @@
 etcpak, an extremely fast ETC compression utility (https://github.com/wolfpld/etcpak)
 
-Copyright (c) 2013-2021, Bartosz Taudul <wolf@nereid.pl>
+Copyright (c) 2013-2022, Bartosz Taudul <wolf@nereid.pl>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
