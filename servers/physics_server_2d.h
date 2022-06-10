@@ -605,6 +605,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<PhysicsRayQueryParameters2D> create(Vector2 p_from, Vector2 p_to, uint32_t p_mask, const Vector<RID> &p_exclude);
 	const PhysicsDirectSpaceState2D::RayParameters &get_parameters() const { return parameters; }
 
 	void set_from(const Vector2 &p_from) { parameters.from = p_from; }
