@@ -224,7 +224,7 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
-	if (!shadow && (property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur" || property.name == "distance_fade_shadow")) {
+	if (!shadow && (property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_opacity" || property.name == "shadow_blur" || property.name == "distance_fade_shadow")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -299,6 +299,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_fog_fade", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_param", "get_param", PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BLUR);
 
 	ADD_GROUP("Distance Fade", "distance_fade_");
@@ -328,6 +329,7 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
@@ -375,6 +377,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
+	set_param(PARAM_SHADOW_OPACITY, 1.0);
 	set_param(PARAM_SHADOW_BLUR, 1.0);
 	set_param(PARAM_SHADOW_BIAS, 0.03);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);

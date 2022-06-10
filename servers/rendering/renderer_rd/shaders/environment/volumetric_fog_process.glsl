@@ -377,7 +377,7 @@ void main() {
 		for (uint i = 0; i < params.directional_light_count; i++) {
 			vec3 shadow_attenuation = vec3(1.0);
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -view_pos.z;
 
 				vec4 pssm_coord;
@@ -486,7 +486,7 @@ void main() {
 
 						vec3 light = omni_lights.data[light_index].color;
 
-						if (omni_lights.data[light_index].shadow_enabled) {
+						if (omni_lights.data[light_index].shadow_opacity > 0.001) {
 							//has shadow
 							vec4 uv_rect = omni_lights.data[light_index].atlas_rect;
 							vec2 flip_offset = omni_lights.data[light_index].direction.xy;
@@ -572,7 +572,7 @@ void main() {
 
 						vec3 light = spot_lights.data[light_index].color;
 
-						if (spot_lights.data[light_index].shadow_enabled) {
+						if (spot_lights.data[light_index].shadow_opacity > 0.001) {
 							//has shadow
 							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
 							vec2 flip_offset = spot_lights.data[light_index].direction.xy;

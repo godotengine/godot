@@ -88,6 +88,7 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
 	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RS::LIGHT_PARAM_SHADOW_OPACITY] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 0.1;
