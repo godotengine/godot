@@ -119,6 +119,7 @@
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
 			The node's scale. Unscaled value: [code](1, 1)[/code].
+			[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
