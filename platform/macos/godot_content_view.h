@@ -45,6 +45,14 @@
 
 #import <QuartzCore/CAMetalLayer.h>
 
+@interface GodotContentLayerDelegate : NSObject <CALayerDelegate> {
+	DisplayServer::WindowID window_id;
+}
+
+- (void)setWindowID:(DisplayServer::WindowID)wid;
+
+@end
+
 @interface GodotContentView : RootView <NSTextInputClient> {
 	DisplayServer::WindowID window_id;
 	NSTrackingArea *tracking_area;
@@ -53,12 +61,14 @@
 	bool mouse_down_control;
 	bool ignore_momentum_scroll;
 	bool last_pen_inverted;
+	id layer_delegate;
 }
 
 - (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
 - (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
 - (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index mask:(MouseButton)mask pressed:(bool)pressed;
 - (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)updateLayerDelegate;
 - (void)cancelComposition;
 
 @end
