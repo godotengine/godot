@@ -165,7 +165,7 @@ void SoftDynamicBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, PNAME("pinned_points")));
 
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
-		const String prefix = vformat("%s/%d", PNAME("attachments"), i);
+		const String prefix = vformat("%s/%d/", PNAME("attachments"), i);
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("point_index")));
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prefix + PNAME("offset")));
