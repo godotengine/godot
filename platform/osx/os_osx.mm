@@ -471,6 +471,20 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 @implementation GodotContentView
 
+- (void)drawRect:(NSRect)dirtyRect {
+	if (OS_OSX::singleton->get_main_loop() && OS_OSX::singleton->is_resizing) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+}
+
+- (void)setFrameSize:(NSSize)newSize {
+	[super setFrameSize:newSize];
+	[self setNeedsDisplay:YES]; // Force "drawRect" call.
+}
+
 + (void)initialize {
 	if (self == [GodotContentView class]) {
 		// nothing left to do here at the moment..
@@ -3356,10 +3370,10 @@ void OS_OSX::force_process_input() {
 }
 
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during resize / modal popups.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates triggered by window view resize.
+	// Prevent main loop from sleeping and redraw window during modal popup display.
+	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
 
-	if (get_singleton()->get_main_loop() && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD || !OS_OSX::singleton->is_resizing)) {
+	if (get_singleton()->get_main_loop() && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !OS_OSX::singleton->is_resizing) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
