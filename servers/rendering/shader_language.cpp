@@ -613,12 +613,16 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 					String str;
 					int i = 0;
+					bool digit_after_exp = false;
 
 					while (true) {
 						const char32_t symbol = String::char_lowercase(GETCHAR(i));
 						bool error = false;
 
 						if (is_digit(symbol)) {
+							if (exponent_found) {
+								digit_after_exp = true;
+							}
 							if (end_suffix_found) {
 								error = true;
 							}
@@ -683,7 +687,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
 					} else if (period_found || exponent_found || float_suffix_found) { // Float
-						if (exponent_found && (!is_digit(last_char) && last_char != 'f')) { // checks for eg: "2E", "2E-", "2E+"
+						if (exponent_found && (!digit_after_exp || (!is_digit(last_char) && last_char != 'f'))) { // Checks for eg: "2E", "2E-", "2E+" and 0ef, 0e+f, 0.0ef, 0.0e-f (exponent without digit after it).
 							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 						}
 						if (period_found) {
