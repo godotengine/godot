@@ -464,17 +464,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("{}.xml: Parse error while reading the file: {}".format(cur_file, e), state)
+            print_error("{}: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error('{}.xml: "version" attribute missing from "doc".'.format(cur_file), state)
+            print_error('{}: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error('{}.xml: Duplicate class "{}".'.format(cur_file, name), state)
+            print_error('{}: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
