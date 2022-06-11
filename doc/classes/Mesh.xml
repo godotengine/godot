@@ -215,12 +215,16 @@
 			[PackedVector2Array] for second UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
+			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; [constant ARRAY_FORMAT_CUSTOM0_SHIFT]) &amp; [constant ARRAY_FORMAT_CUSTOM_MASK])[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
+			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; [constant ARRAY_FORMAT_CUSTOM1_SHIFT]) &amp; [constant ARRAY_FORMAT_CUSTOM_MASK])[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
+			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; [constant ARRAY_FORMAT_CUSTOM2_SHIFT]) &amp; [constant ARRAY_FORMAT_CUSTOM_MASK])[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
+			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; [constant ARRAY_FORMAT_CUSTOM3_SHIFT]) &amp; [constant ARRAY_FORMAT_CUSTOM_MASK])[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Each element is a group of 4 numbers.
@@ -236,20 +240,28 @@
 			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA8_UNORM" value="0" enum="ArrayCustomFormat">
+			Indicates this custom channel contains unsigned normalized byte colors from 0 to 1, encoded as [PackedByteArray].
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA8_SNORM" value="1" enum="ArrayCustomFormat">
+			Indicates this custom channel contains signed normalized byte colors from -1 to 1, encoded as [PackedByteArray].
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_HALF" value="2" enum="ArrayCustomFormat">
+			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray]. Only red and green channels are used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA_HALF" value="3" enum="ArrayCustomFormat">
+			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray].
 		</constant>
 		<constant name="ARRAY_CUSTOM_R_FLOAT" value="4" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red green channel is used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_FLOAT" value="5" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red and green channels are used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGB_FLOAT" value="6" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red, green and blue channels are used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA_FLOAT" value="7" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array].
 		</constant>
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
 			Represents the size of the [enum ArrayCustomFormat] enum.
@@ -273,12 +285,16 @@
 			Mesh array contains second UV.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+			Mesh array contains custom channel index 0.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+			Mesh array contains custom channel index 1.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+			Mesh array contains custom channel index 2.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+			Mesh array contains custom channel index 3.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
 			Mesh array contains bones.
@@ -290,29 +306,40 @@
 			Mesh array uses indices.
 		</constant>
 		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
+			Mask of mesh channels permitted in blend shapes.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
+			Shift of first custom channel.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
+			Number of format bits per custom channel. See [enum ArrayCustomFormat].
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 0.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 1.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 2.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 3.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
+			Mask of custom format bits per custom channel. Must be shifted by one of the SHIFT constants. See [enum ArrayCustomFormat].
 		</constant>
 		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+			Shift of first compress flag. Compress flags should be passed to [method ArrayMesh.add_surface_from_arrays] and [method SurfaceTool.commit].
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+			Flag indices that the mesh data will use [code]GL_DYNAMIC_DRAW[/code] on GLES. Unused on Vulkan.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
+			Flag used to mark that the mesh contains up to 8 bone influences per vertex. This flag indicates that [constant ARRAY_BONES] and [constant ARRAY_WEIGHTS] elements will have double length.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.

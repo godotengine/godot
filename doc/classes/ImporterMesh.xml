@@ -39,6 +39,16 @@
 				Removes all surfaces and blend shapes from this [ImporterMesh].
 			</description>
 		</method>
+		<method name="generate_lods">
+			<return type="void" />
+			<argument index="0" name="normal_merge_angle" type="float" />
+			<argument index="1" name="normal_split_angle" type="float" />
+			<description>
+				Generates all lods for this ImporterMesh.
+				[code]normal_merge_angle[/code] and [code]normal_split_angle[/code] are in degrees and used in the same way as the importer settings in [code]lods[/code]. As a good default, use 25 and 60 respectively.
+				The number of generated lods can be accessed using [method get_surface_lod_count], and each LOD is available in [method get_surface_lod_size] and [method get_surface_lod_indices].
+			</description>
+		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int" />
 			<description>
