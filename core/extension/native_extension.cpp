@@ -295,9 +295,12 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 
 	GDNativeInitializationFunction initialization_function = (GDNativeInitializationFunction)entry_funcptr;
 
-	initialization_function(&gdnative_interface, this, &initialization);
-	level_initialized = -1;
-	return OK;
+	if (initialization_function(&gdnative_interface, this, &initialization)) {
+		level_initialized = -1;
+		return OK;
+	} else {
+		return FAILED;
+	}
 }
 
 void NativeExtension::close_library() {
