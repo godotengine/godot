@@ -1217,6 +1217,38 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 void SceneTree::_flush_delete_queue() {
 	_THREAD_SAFE_METHOD_
 
+	// This section is an optimization because nodes benefit immensely from being deleted
+	// in reverse order to their child count. This is partly due to ordered_remove(), and partly
+	// due to notifications being sent to children that are moved, further in the child list.
+
+	// Less need to apply this when deleting small numbers of nodes.
+	// This magic number is guessed .. to get most of the benefit while not checking through
+	// child lists when unnecessary (as this will have a cost).
+	if (delete_queue.size() > 128) {
+		for (const List<ObjectID>::Element *E = delete_queue.front(); E; E = E->next()) {
+			ObjectID id = E->get();
+
+			const Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+			if (node) {
+				Node *parent = node->get_parent();
+				if (parent) {
+					int num_children = parent->get_child_count();
+
+					// The optimization is primarily useful when there are large numbers of children.
+					// Again this magic number can be tweaked.
+					if (num_children > 128) {
+						for (int n = num_children - 1; n >= 0; n--) {
+							Node *child = parent->get_child(n);
+							if (child && child->is_queued_for_deletion()) {
+								memdelete(child);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	while (delete_queue.size()) {
 		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
 		if (obj) {
