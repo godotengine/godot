@@ -258,6 +258,8 @@ protected:
 			float inv_view_matrix[16];
 			float view_matrix[16];
 
+			float eye_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_eye_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 

@@ -597,6 +597,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
 		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
 		actions.renames["INV_VIEW_MATRIX"] = "scene_data.inv_view_matrix";
+		actions.renames["EYE_MATRIX"] = "scene_data.eye_matrix";
+		actions.renames["INV_EYE_MATRIX"] = "scene_data.inv_eye_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";

@@ -178,6 +178,8 @@ struct SceneData {
 	mat4 view_matrix;
 
 	// only used for multiview
+	mat4 eye_matrix_view[MAX_VIEWS];
+	mat4 inv_eye_matrix_view[MAX_VIEWS];
 	mat4 projection_matrix_view[MAX_VIEWS];
 	mat4 inv_projection_matrix_view[MAX_VIEWS];
 

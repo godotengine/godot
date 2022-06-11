@@ -251,9 +251,15 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 #endif
 
 #ifdef USE_MULTIVIEW
+	mat4 eye_matrix = scene_data.eye_matrix_view[ViewIndex];
+	mat4 inv_eye_matrix = scene_data.inv_eye_matrix_view[ViewIndex];
+	mat4 eye_view_matrix = eye_matrix * scene_data.view_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
 #else
+	const mat4 eye_matrix = mat4(1.0f);
+	const mat4 inv_eye_matrix = mat4(1.0f);
+	const mat4 eye_view_matrix = scene_data.view_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix;
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
 #endif //USE_MULTIVIEW
@@ -277,8 +283,8 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 
 	float roughness = 1.0;
 
-	mat4 modelview = scene_data.view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
+	mat4 modelview = eye_view_matrix * model_matrix;
+	mat3 modelview_normal = mat3(eye_view_matrix) * model_normal_matrix;
 
 	{
 #CODE : VERTEX
@@ -303,14 +309,14 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (eye_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
+	normal = (eye_view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (eye_view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (eye_view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -479,9 +485,13 @@ layout(location = 10) in flat uint instance_index_interp;
 
 #define model_matrix instances.data[draw_call.instance_index].transform
 #ifdef USE_MULTIVIEW
+#define eye_matrix scene_data.eye_matrix_view[ViewIndex]
+#define inv_eye_matrix scene_data.inv_eye_matrix_view[ViewIndex]
 #define projection_matrix scene_data.projection_matrix_view[ViewIndex]
 #define inv_projection_matrix scene_data.inv_projection_matrix_view[ViewIndex]
 #else
+#define eye_matrix mat4(1.0)
+#define inv_eye_matrix mat4(1.0)
 #define projection_matrix scene_data.projection_matrix
 #define inv_projection_matrix scene_data.inv_projection_matrix
 #endif
@@ -1065,7 +1075,7 @@ void fragment_shader(in SceneData scene_data) {
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = instances.data[instance_index].gi_offset;
 
-		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
+		vec3 wnormal = mat3(scene_data.inv_view_matrix * inv_eye_matrix) * normal;
 		const float c1 = 0.429043;
 		const float c2 = 0.511664;
 		const float c3 = 0.743125;
@@ -1119,9 +1129,9 @@ void fragment_shader(in SceneData scene_data) {
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normal;
-		vec3 cam_reflection = mat3(scene_data.inv_view_matrix) * reflect(-view, normal);
+		vec3 cam_pos = mat3(scene_data.inv_view_matrix * inv_eye_matrix) * vertex;
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix * inv_eye_matrix) * normal;
+		vec3 cam_reflection = mat3(scene_data.inv_view_matrix * inv_eye_matrix) * reflect(-view, normal);
 
 		//apply y-mult
 		cam_pos.y *= sdfgi.y_mult;
@@ -1877,7 +1887,7 @@ void fragment_shader(in SceneData scene_data) {
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix * inv_eye_matrix) * normalize(normal_interp);
 
 		float closest_dist = -1e20;
 

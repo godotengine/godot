@@ -90,6 +90,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODEL_NORMAL_MATRIX"] = ShaderLanguage::TYPE_MAT3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODELVIEW_MATRIX"] = ShaderLanguage::TYPE_MAT4;
@@ -149,6 +151,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["MODEL_NORMAL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT3);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
@@ -166,6 +170,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_EYE_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
