@@ -58,11 +58,14 @@ struct RenderDataRD {
 
 	// For stereo rendering
 	uint32_t view_count = 1;
+	Transform3D view_cam_matrix[RendererSceneRender::MAX_RENDER_VIEWS];
+	Transform3D view_eye_matrix[RendererSceneRender::MAX_RENDER_VIEWS];
 	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	Transform3D prev_cam_transform;
 	CameraMatrix prev_cam_projection;
 	Vector2 prev_taa_jitter;
+	Transform3D prev_view_eye_matrix[RendererSceneRender::MAX_RENDER_VIEWS];
 	CameraMatrix prev_view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	float z_near = 0.0;

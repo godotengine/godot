@@ -38,7 +38,8 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	main_transform = p_transform;
 	main_projection = p_projection;
 
-	view_offset[0] = Transform3D();
+	view_cam_matrix[0] = p_transform;
+	view_eye_matrix[0] = Transform3D();
 	view_projection[0] = p_projection;
 	taa_jitter = p_taa_jitter;
 }
@@ -176,7 +177,8 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	/////////////////////////////////////////////////////////////////////////////
 	// 3. Copy our view data
 	for (uint32_t v = 0; v < view_count; v++) {
-		view_offset[v] = main_transform_inv * p_transforms[v];
-		view_projection[v] = p_projections[v] * CameraMatrix(view_offset[v].inverse());
+		view_cam_matrix[v] = p_transforms[v];
+		view_eye_matrix[v] = main_transform_inv * p_transforms[v];
+		view_projection[v] = p_projections[v];
 	}
 }

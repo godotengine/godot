@@ -1923,11 +1923,12 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
-		render_data.view_projection[0] = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
+			render_data.view_cam_matrix[v] = p_camera_data->view_cam_matrix[v];
+			render_data.view_eye_matrix[v] = p_camera_data->view_eye_matrix[v];
 			render_data.view_projection[v] = p_camera_data->view_projection[v];
 		}
 

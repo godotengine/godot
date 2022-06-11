@@ -251,9 +251,15 @@ void main() {
 #endif
 
 #ifdef USE_MULTIVIEW
+	mat4 eye_matrix = scene_data.eye_matrix_view[ViewIndex];
+	mat4 inv_eye_matrix = scene_data.inv_eye_matrix_view[ViewIndex];
+	mat4 eye_view_matrix = eye_matrix * scene_data.view_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
 #else
+	const mat4 eye_matrix = mat4(1.0f);
+	const mat4 inv_eye_matrix = mat4(1.0f);
+	mat4 eye_view_matrix = scene_data.view_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix;
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
 #endif //USE_MULTIVIEW
@@ -277,8 +283,8 @@ void main() {
 
 	float roughness = 1.0;
 
-	mat4 modelview = scene_data.view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
+	mat4 modelview = eye_view_matrix * model_matrix;
+	mat3 modelview_normal = mat3(eye_view_matrix) * model_normal_matrix;
 
 	{
 #CODE : VERTEX
@@ -305,14 +311,14 @@ void main() {
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (eye_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
+	normal = (eye_view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (eye_view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (eye_view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -462,8 +468,12 @@ layout(location = 8) highp in float dp_clip;
 
 #define model_matrix draw_call.transform
 #ifdef USE_MULTIVIEW
+#define eye_matrix scene_data.eye_matrix_view[ViewIndex]
+#define inv_eye_matrix scene_data.inv_eye_matrix_view[ViewIndex]
 #define projection_matrix scene_data.projection_matrix_view[ViewIndex]
 #else
+#define eye_matrix mat4(1.0f)
+#define inv_eye_matrix mat4(1.0f)
 #define projection_matrix scene_data.projection_matrix
 #endif
 
@@ -970,7 +980,7 @@ void main() {
 	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = draw_call.gi_offset;
 
-		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
+		vec3 wnormal = mat3(scene_data.inv_view_matrix * scene_data.inv_eye_matrix) * normal;
 		const float c1 = 0.429043;
 		const float c2 = 0.511664;
 		const float c3 = 0.743125;

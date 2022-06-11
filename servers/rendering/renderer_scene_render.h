@@ -238,11 +238,12 @@ public:
 		bool vaspect;
 
 		// Main/center projection
-		Transform3D main_transform;
-		CameraMatrix main_projection;
+		Transform3D main_transform; // in mono, our camera matrix, in multiview, this is a transform centered between each view (and possibly moved back)
+		CameraMatrix main_projection; // in mono, this is our projection, in multiview, this is a projection that combines the frustrums of each view
 
-		Transform3D view_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-		CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+		Transform3D view_cam_matrix[RendererSceneRender::MAX_RENDER_VIEWS]; // Camera matrix for a view (main_transform * view_eye_matrix)
+		Transform3D view_eye_matrix[RendererSceneRender::MAX_RENDER_VIEWS]; // Eye matrix for a view (transform between our center transform and the eye)
+		CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS]; // Projection matrix for a view
 		Vector2 taa_jitter;
 
 		void set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2());

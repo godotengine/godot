@@ -391,6 +391,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 }
 
 float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
+	// vertex and normal are not relative to eye.
 #ifndef SHADOWS_DISABLED
 	if (omni_lights.data[idx].shadow_enabled) {
 		// there is a shadowmap
@@ -542,7 +543,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec3 binormal, vec3 tangent, float anisotropy,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
-	vec3 light_rel_vec = omni_lights.data[idx].position - vertex;
+	vec3 light_rel_vec = omni_lights.data[idx].position - center_vertex_interp;
 	float light_length = length(light_rel_vec);
 	float omni_attenuation = get_omni_attenuation(light_length, omni_lights.data[idx].inv_radius, omni_lights.data[idx].attenuation);
 	float light_attenuation = omni_attenuation;
@@ -562,7 +563,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec4 clamp_rect = omni_lights.data[idx].atlas_rect;
 
 		//redo shadowmapping, but shrink the model a bit to avoid arctifacts
-		vec4 splane = (omni_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * omni_lights.data[idx].transmittance_bias, 1.0));
+		vec4 splane = (omni_lights.data[idx].shadow_matrix * vec4(center_vertex_interp - normalize(center_normal_interp) * omni_lights.data[idx].transmittance_bias, 1.0));
 
 		float shadow_len = length(splane.xyz);
 		splane.xyz = normalize(splane.xyz);
@@ -588,7 +589,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 
 	if (sc_use_light_projector && omni_lights.data[idx].projector_rect != vec4(0.0)) {
-		vec3 local_v = (omni_lights.data[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
+		vec3 local_v = (omni_lights.data[idx].shadow_matrix * vec4(center_vertex_interp, 1.0)).xyz;
 		local_v = normalize(local_v);
 
 		vec4 atlas_rect = omni_lights.data[idx].projector_rect;
@@ -607,7 +608,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			vec2 proj_uv_ddx;
 			vec2 proj_uv_ddy;
 			{
-				vec3 local_v_ddx = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0)).xyz;
+				vec3 local_v_ddx = (omni_lights.data[idx].shadow_matrix * vec4(center_vertex_interp + vertex_ddx, 1.0)).xyz;
 				local_v_ddx = normalize(local_v_ddx);
 
 				if (local_v_ddx.z >= 0.0) {
@@ -621,7 +622,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 				proj_uv_ddx = local_v_ddx.xy * atlas_rect.zw - proj_uv;
 
-				vec3 local_v_ddy = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0)).xyz;
+				vec3 local_v_ddy = (omni_lights.data[idx].shadow_matrix * vec4(center_vertex_interp + vertex_ddy, 1.0)).xyz;
 				local_v_ddy = normalize(local_v_ddy);
 
 				if (local_v_ddy.z >= 0.0) {
@@ -670,6 +671,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 }
 
 float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
+	// vertex and normal are not relative to eye.
 #ifndef SHADOWS_DISABLED
 	if (spot_lights.data[idx].shadow_enabled) {
 		vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
@@ -783,7 +785,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
-	vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
+	vec3 light_rel_vec = spot_lights.data[idx].position - center_vertex_interp;
 	float light_length = length(light_rel_vec);
 	float spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
 	vec3 spot_dir = spot_lights.data[idx].direction;
@@ -805,7 +807,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	float transmittance_z = transmittance_depth;
 	transmittance_color.a *= light_attenuation;
 	{
-		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * spot_lights.data[idx].transmittance_bias, 1.0));
+		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(center_vertex_interp - normalize(center_normal_interp) * spot_lights.data[idx].transmittance_bias, 1.0));
 		splane /= splane.w;
 		splane.xy = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
@@ -823,18 +825,18 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif //LIGHT_TRANSMITTANCE_USED
 
 	if (sc_use_light_projector && spot_lights.data[idx].projector_rect != vec4(0.0)) {
-		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
+		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(center_vertex_interp, 1.0));
 		splane /= splane.w;
 
 		vec2 proj_uv = splane.xy * spot_lights.data[idx].projector_rect.zw;
 
 		if (sc_projector_use_mipmaps) {
 			//ensure we have proper mipmaps
-			vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0));
+			vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(center_vertex_interp + vertex_ddx, 1.0));
 			splane_ddx /= splane_ddx.w;
 			vec2 proj_uv_ddx = splane_ddx.xy * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
-			vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0));
+			vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(center_vertex_interp + vertex_ddy, 1.0));
 			splane_ddy /= splane_ddy.w;
 			vec2 proj_uv_ddy = splane_ddy.xy * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
@@ -871,7 +873,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
-	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
+	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(center_vertex_interp, 1.0)).xyz;
 
 	if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
 		return;
@@ -924,7 +926,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughnes
 		} break;
 		case REFLECTION_AMBIENT_ENVIRONMENT: {
 			//do nothing
-			vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
+			vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(center_normal_interp, 0.0)).xyz;
 
 			vec4 ambient_out;
 
