@@ -1217,20 +1217,77 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 void SceneTree::_flush_delete_queue() {
 	_THREAD_SAFE_METHOD_
 
-	while (delete_queue.size()) {
-		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
+	// Sorting the delete queue by child count (in respect to their parent)
+	// is an optimization because nodes benefit immensely from being deleted
+	// in reverse order to their child count. This is partly due to ordered_remove(), and partly
+	// due to notifications being sent to children that are moved, further in the child list.
+	struct ObjectIDComparator {
+		_FORCE_INLINE_ bool operator()(const DeleteQueueElement &p, const DeleteQueueElement &q) const {
+			return (p.child_list_id > q.child_list_id);
+		}
+	};
+
+	delete_queue.sort_custom<ObjectIDComparator>();
+
+	for (uint32_t e = 0; e < delete_queue.size(); e++) {
+		ObjectID id = delete_queue[e].id;
+		Object *obj = ObjectDB::get_instance(id);
 		if (obj) {
 			memdelete(obj);
 		}
-		delete_queue.pop_front();
 	}
+
+	delete_queue.clear();
 }
 
 void SceneTree::queue_delete(Object *p_object) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_NULL(p_object);
+
+	// Guard against the user queueing multiple times,
+	// which is unnecessary.
+	if (p_object->is_queued_for_deletion()) {
+		return;
+	}
+
 	p_object->_is_queued_for_deletion = true;
-	delete_queue.push_back(p_object->get_instance_id());
+
+	DeleteQueueElement e;
+	e.id = p_object->get_instance_id();
+
+	// Storing the list id within the parent allows us
+	// to sort the delete queue in reverse for more efficient
+	// deletion.
+	// Note that data.pos could alternatively be read during flush_delete_queue(),
+	// however reading it here avoids an extra lookup, and should be correct in most cases.
+	// And worst case if the child_list_id changes in the meantime, it will still work, it may just
+	// be slightly slower.
+	const Node *node = Object::cast_to<Node>(p_object);
+	if (node) {
+		e.child_list_id = node->data.pos;
+
+		// Have some grouping by parent object ID,
+		// so that children tend to be deleted together.
+		// This should be more cache friendly.
+		if (node->data.parent) {
+			ObjectID parent_id = node->data.parent->get_instance_id();
+
+			// Use a prime number to combine the group with the child id.
+			// Provided there are less than the prime number children in a node,
+			// there will be no collisions. Even if there are collisions, it is no problem.
+			uint32_t group = parent_id * 937;
+
+			// Rollover the group, we never want the group + the child id
+			// to overflow 31 bits
+			group &= ~(0b111 << 29);
+			e.child_list_id += (int32_t)group;
+		}
+	} else {
+		// For non-nodes, there is no point in sorting them.
+		e.child_list_id = -2;
+	}
+
+	delete_queue.push_back(e);
 }
 
 int SceneTree::get_node_count() const {
