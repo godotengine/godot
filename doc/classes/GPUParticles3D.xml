@@ -50,6 +50,12 @@
 				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
+		<method name="update_layer_mask">
+			<return type="void" />
+			<description>
+				Update layer mask of GPUParticles3D
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
