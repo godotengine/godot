@@ -213,6 +213,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["stdout"] = "stdout";
 	capitalize_string_remaps["sv"] = "SV";
 	capitalize_string_remaps["svg"] = "SVG";
+	capitalize_string_remaps["taa"] = "TAA";
 	capitalize_string_remaps["tcp"] = "TCP";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["url"] = "URL";
