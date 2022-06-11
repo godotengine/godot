@@ -41,6 +41,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
+#include <cstdint>
 
 class RenderingServerDefault : public RenderingServer {
 	enum {
@@ -490,6 +491,8 @@ public:
 	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform3D> &)
 
 	FUNC1(particles_request_process, RID)
+	FUNC2(particles_set_layer_mask, RID, uint32_t);
+	FUNC1RC(uint32_t, particles_get_layer_mask, RID);
 	FUNC1(particles_restart, RID)
 	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)

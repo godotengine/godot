@@ -157,6 +157,7 @@ struct Particles {
 	AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 	bool use_local_coords = true;
 	bool has_collision_cache = false;
+	uint32_t layer_mask;
 
 	bool has_sdf_collision = false;
 	Transform2D sdf_collision_transform;
@@ -436,6 +437,8 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask) override;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;

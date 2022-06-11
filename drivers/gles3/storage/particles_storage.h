@@ -94,6 +94,8 @@ public:
 	virtual AABB particles_get_aabb(RID p_particles) const override;
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) override;
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer) override;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const override;
 
 	virtual bool particles_get_emitting(RID p_particles) override;
 	virtual int particles_get_draw_passes(RID p_particles) const override;

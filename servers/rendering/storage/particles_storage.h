@@ -64,6 +64,8 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer) = 0;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
 

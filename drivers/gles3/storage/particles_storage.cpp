@@ -145,6 +145,13 @@ void ParticlesStorage::particles_set_draw_pass_mesh(RID p_particles, int p_pass,
 void ParticlesStorage::particles_request_process(RID p_particles) {
 }
 
+void ParticlesStorage::particles_set_layer_mask(RID p_particles, uint32_t layer_mask) {
+}
+
+uint32_t ParticlesStorage::particles_get_layer_mask(RID p_particles) const {
+	return 0;
+}
+
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 	return AABB();
 }

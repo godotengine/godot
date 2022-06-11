@@ -681,6 +681,9 @@ public:
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0; // This is only used for 2D, in 3D it's automatic.
 
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) = 0;
+
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const = 0;
 	/* PARTICLES COLLISION API */
 
 	virtual RID particles_collision_create() = 0;

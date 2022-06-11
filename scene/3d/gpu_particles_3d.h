@@ -113,6 +113,7 @@ public:
 	void set_collision_base_size(real_t p_ratio);
 	void set_trail_enabled(bool p_enabled);
 	void set_trail_length(double p_seconds);
+	void update_layer_mask();
 
 	bool is_emitting() const;
 	int get_amount() const;

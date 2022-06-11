@@ -499,6 +499,10 @@ GPUParticles3D::TransformAlign GPUParticles3D::get_transform_align() const {
 	return transform_align;
 }
 
+void GPUParticles3D::update_layer_mask() {
+	RS::get_singleton()->particles_set_layer_mask(particles, get_layer_mask());
+}
+
 void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles3D::set_amount);
@@ -547,6 +551,7 @@ void GPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles3D::restart);
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &GPUParticles3D::capture_aabb);
+	ClassDB::bind_method(D_METHOD("update_layer_mask"), &GPUParticles3D::update_layer_mask);
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles3D::set_sub_emitter);
 	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles3D::get_sub_emitter);
