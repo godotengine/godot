@@ -164,7 +164,11 @@ private:
 	void _update_font_oversampling(float p_ratio);
 	void _update_root_rect();
 
-	List<ObjectID> delete_queue;
+	struct DeleteQueueElement {
+		ObjectID id;
+		int32_t child_list_id;
+	};
+	LocalVector<DeleteQueueElement> delete_queue;
 
 	Map<UGCall, Vector<Variant>> unique_group_calls;
 	bool ugc_locked;
