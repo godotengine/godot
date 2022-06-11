@@ -2184,7 +2184,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_mode", "viewport", "scaling_3d_mode"), &RenderingServer::viewport_set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_scale", "viewport", "scale"), &RenderingServer::viewport_set_scaling_3d_scale);
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
-	ClassDB::bind_method(D_METHOD("viewport_set_fsr_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_fsr_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
@@ -2946,7 +2946,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
 	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
 	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/textures/default_filters/texture_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
@@ -2961,10 +2961,10 @@ void RenderingServer::init() {
 			PropertyInfo(Variant::FLOAT,
 					"rendering/scaling_3d/fsr_sharpness",
 					PROPERTY_HINT_RANGE, "0,2,0.1"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/fsr_mipmap_bias",
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/texture_mipmap_bias",
 			PropertyInfo(Variant::FLOAT,
-					"rendering/scaling_3d/fsr_mipmap_bias",
-					PROPERTY_HINT_RANGE, "-2,2,0.1"));
+					"rendering/textures/default_filters/texture_mipmap_bias",
+					PROPERTY_HINT_RANGE, "-2,2,0.001"));
 
 	GLOBAL_DEF("rendering/textures/decals/filter", DECAL_FILTER_LINEAR_MIPMAPS);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/decals/filter", PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Nearest+Mipmaps,Linear,Linear+Mipmaps,Linear+Mipmaps Anisotropic (Slow)"));

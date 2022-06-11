@@ -591,7 +591,7 @@ public:
 	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
-	FUNC2(viewport_set_fsr_mipmap_bias, RID, float)
+	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 

@@ -2434,7 +2434,7 @@ RID RasterizerSceneGLES3::render_buffers_create() {
 	return render_buffers_owner.make_rid(rb);
 }
 
-void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);

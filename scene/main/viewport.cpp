@@ -3631,17 +3631,17 @@ float Viewport::get_fsr_sharpness() const {
 	return fsr_sharpness;
 }
 
-void Viewport::set_fsr_mipmap_bias(float p_fsr_mipmap_bias) {
-	if (fsr_mipmap_bias == p_fsr_mipmap_bias) {
+void Viewport::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
+	if (texture_mipmap_bias == p_texture_mipmap_bias) {
 		return;
 	}
 
-	fsr_mipmap_bias = p_fsr_mipmap_bias;
-	RS::get_singleton()->viewport_set_fsr_mipmap_bias(viewport, p_fsr_mipmap_bias);
+	texture_mipmap_bias = p_texture_mipmap_bias;
+	RS::get_singleton()->viewport_set_texture_mipmap_bias(viewport, p_texture_mipmap_bias);
 }
 
-float Viewport::get_fsr_mipmap_bias() const {
-	return fsr_mipmap_bias;
+float Viewport::get_texture_mipmap_bias() const {
+	return texture_mipmap_bias;
 }
 
 #endif // _3D_DISABLED
@@ -3783,8 +3783,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fsr_sharpness", "fsr_sharpness"), &Viewport::set_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &Viewport::get_fsr_sharpness);
 
-	ClassDB::bind_method(D_METHOD("set_fsr_mipmap_bias", "fsr_mipmap_bias"), &Viewport::set_fsr_mipmap_bias);
-	ClassDB::bind_method(D_METHOD("get_fsr_mipmap_bias"), &Viewport::get_fsr_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("set_texture_mipmap_bias", "texture_mipmap_bias"), &Viewport::set_texture_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("get_texture_mipmap_bias"), &Viewport::get_texture_mipmap_bias);
 
 	ClassDB::bind_method(D_METHOD("set_vrs_mode", "mode"), &Viewport::set_vrs_mode);
 	ClassDB::bind_method(D_METHOD("get_vrs_mode"), &Viewport::get_vrs_mode);
@@ -3814,7 +3814,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Scaling 3D", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast)"), "set_scaling_3d_mode", "get_scaling_3d_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scaling_3d_scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), "set_scaling_3d_scale", "get_scaling_3d_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.1"), "set_fsr_mipmap_bias", "get_fsr_mipmap_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 #endif
 	ADD_GROUP("Variable Rate Shading", "vrs_");
@@ -3988,8 +3988,8 @@ Viewport::Viewport() {
 	float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
 	set_fsr_sharpness(fsr_sharpness);
 
-	float fsr_mipmap_bias = GLOBAL_GET("rendering/scaling_3d/fsr_mipmap_bias");
-	set_fsr_mipmap_bias(fsr_mipmap_bias);
+	float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
+	set_texture_mipmap_bias(texture_mipmap_bias);
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.

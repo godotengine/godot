@@ -2743,7 +2743,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 	return true;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -2754,11 +2754,9 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		p_internal_width = p_width;
 	}
 
-	if (p_width != p_internal_width) {
-		float fsr_mipmap_bias = -log2f(p_width / p_internal_width) + p_fsr_mipmap_bias;
-		material_storage->sampler_rd_configure_custom(fsr_mipmap_bias);
-		update_uniform_sets();
-	}
+	const float texture_mipmap_bias = -log2f(p_width / p_internal_width) + p_texture_mipmap_bias;
+	material_storage->sampler_rd_configure_custom(texture_mipmap_bias);
+	update_uniform_sets();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 
