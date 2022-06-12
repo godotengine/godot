@@ -2418,8 +2418,8 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	Node *copy = base->duplicate_from_editor(duplimap);
 
 	if (copy) {
-		for (int i = 0; i < copy->get_child_count(); i++) {
-			_set_node_owner_recursive(copy->get_child(i), copy);
+		for (int i = 0; i < copy->get_child_count(false); i++) {
+			_set_node_owner_recursive(copy->get_child(i, false), copy);
 		}
 
 		Ref<PackedScene> sdata = memnew(PackedScene);
@@ -2456,8 +2456,8 @@ void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner) {
 		p_node->set_owner(p_owner);
 	}
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_set_node_owner_recursive(p_node->get_child(i), p_owner);
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		_set_node_owner_recursive(p_node->get_child(i, false), p_owner);
 	}
 }
 
