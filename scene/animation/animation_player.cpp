@@ -1274,23 +1274,6 @@ void AnimationPlayer::_animation_set_cache_update() {
 }
 
 void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
-	{
-		int at_pos = -1;
-
-		for (uint32_t i = 0; i < animation_libraries.size(); i++) {
-			if (animation_libraries[i].name == p_library) {
-				at_pos = i;
-				break;
-			}
-		}
-
-		ERR_FAIL_COND(at_pos == -1);
-
-		ERR_FAIL_COND(!animation_libraries[at_pos].library->animations.has(p_name));
-
-		_ref_anim(animation_libraries[at_pos].library->animations[p_name]);
-	}
-
 	_animation_set_cache_update();
 }
 
@@ -1299,11 +1282,6 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 
 	if (!animation_set.has(name)) {
 		return; // No need to update because not the one from the library being used.
-	}
-
-	AnimationData animation_data = animation_set[name];
-	if (animation_data.animation_library == p_library) {
-		_unref_anim(animation_data.animation);
 	}
 
 	_animation_set_cache_update();
@@ -1401,10 +1379,7 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
 	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed).bind(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_name));
-
-	for (const KeyValue<StringName, Ref<Animation>> &K : ald.library->animations) {
-		_ref_anim(K.value);
-	}
+	ald.library->connect(SNAME("animation_changed"), callable_mp(this, &AnimationPlayer::_animation_changed));
 
 	_animation_set_cache_update();
 
@@ -1428,25 +1403,14 @@ void AnimationPlayer::remove_animation_library(const StringName &p_name) {
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
+	animation_libraries[at_pos].library->disconnect(SNAME("animation_changed"), callable_mp(this, &AnimationPlayer::_animation_changed));
 
 	stop();
-
-	for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[at_pos].library->animations) {
-		_unref_anim(K.value);
-	}
 
 	animation_libraries.remove_at(at_pos);
 	_animation_set_cache_update();
 
 	notify_property_list_changed();
-}
-
-void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect("changed", callable_mp(this, &AnimationPlayer::_animation_changed), CONNECT_REFERENCE_COUNTED);
-}
-
-void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->disconnect("changed", callable_mp(this, &AnimationPlayer::_animation_changed));
 }
 
 void AnimationPlayer::rename_animation_library(const StringName &p_name, const StringName &p_new_name) {
@@ -1799,7 +1763,7 @@ double AnimationPlayer::get_current_animation_length() const {
 	return playback.current.from->animation->get_length();
 }
 
-void AnimationPlayer::_animation_changed() {
+void AnimationPlayer::_animation_changed(const StringName &p_name) {
 	clear_caches();
 	emit_signal(SNAME("caches_cleared"));
 	if (is_playing()) {
