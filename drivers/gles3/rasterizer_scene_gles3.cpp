@@ -1161,7 +1161,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 		if (t) {
 			if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			t = t->get_ptr(); //resolve for proxies
@@ -1569,7 +1569,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(c.texture);
 
 					if (t->redraw_if_visible) {
-						VisualServerRaster::redraw_request();
+						VisualServerRaster::redraw_request(false);
 					}
 					t = t->get_ptr(); //resolve for proxies
 
