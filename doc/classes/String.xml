@@ -412,9 +412,9 @@
 		</method>
 		<method name="left" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="position" type="int" />
+			<argument index="0" name="length" type="int" />
 			<description>
-				Returns a number of characters from the left of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Returns a number of characters from the left of the string. If negative [code]length[/code] is used, the characters are counted downwards from [String]'s length.
 				Examples:
 				[codeblock]
 				print("sample text".left(3)) #prints "sam"
@@ -599,9 +599,9 @@
 		</method>
 		<method name="right" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="position" type="int" />
+			<argument index="0" name="length" type="int" />
 			<description>
-				Returns a number of characters from the right of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Returns a number of characters from the right of the string. If negative [code]length[/code] is used, the characters are counted downwards from [String]'s length.
 				Examples:
 				[codeblock]
 				print("sample text".right(3)) #prints "ext"

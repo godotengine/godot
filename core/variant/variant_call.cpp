@@ -1402,8 +1402,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, to_upper, sarray(), varray());
 	bind_method(String, to_lower, sarray(), varray());
 
-	bind_method(String, left, sarray("position"), varray());
-	bind_method(String, right, sarray("position"), varray());
+	bind_method(String, left, sarray("length"), varray());
+	bind_method(String, right, sarray("length"), varray());
 
 	bind_method(String, strip_edges, sarray("left", "right"), varray(true, true));
 	bind_method(String, strip_escapes, sarray(), varray());
