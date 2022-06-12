@@ -42,6 +42,8 @@ class AnimationLibrary : public Resource {
 
 	TypedArray<StringName> _get_animation_list() const;
 
+	void _animation_changed(const StringName &p_name);
+
 	friend class AnimationPlayer; //for faster access
 	HashMap<StringName, Ref<Animation>> animations;
 

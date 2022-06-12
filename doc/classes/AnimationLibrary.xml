@@ -65,6 +65,13 @@
 				Emitted when an [Animation] is added, under the key [param name].
 			</description>
 		</signal>
+		<signal name="animation_changed">
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Emitted when there's a change in one of the animations, e.g. tracks are added, moved or have changed paths. [param name] is the key of the animation that was changed.
+				See also [signal Resource.changed], which this acts as a relay for.
+			</description>
+		</signal>
 		<signal name="animation_removed">
 			<param index="0" name="name" type="StringName" />
 			<description>

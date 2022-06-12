@@ -291,9 +291,7 @@ private:
 		return ret;
 	}
 
-	void _animation_changed();
-	void _ref_anim(const Ref<Animation> &p_anim);
-	void _unref_anim(const Ref<Animation> &p_anim);
+	void _animation_changed(const StringName &p_name);
 
 	void _set_process(bool p_process, bool p_force = false);
 
