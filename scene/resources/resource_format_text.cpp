@@ -1695,7 +1695,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		takeover_paths = false;
 	}
 
-	// Save resources.
 	_find_resources(p_resource, true);
 
 	if (packed_scene.is_valid()) {

@@ -1615,31 +1615,60 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, HashSet<Ref<Resource>> &edited_resources) {
-	if (p_resource->is_edited()) {
-		edited_resources.insert(p_resource);
-		return true;
-	}
+bool _is_edited(const Variant &p_variant, HashSet<Ref<Resource>> &edited_resources, bool expect_resource_file = false) {
+	switch (p_variant.get_type()) {
+		case Variant::OBJECT: {
+			Ref<Resource> res = p_variant;
 
-	List<PropertyInfo> plist;
-
-	p_resource->get_property_list(&plist);
-
-	for (const PropertyInfo &E : plist) {
-		if (E.type == Variant::OBJECT && E.usage & PROPERTY_USAGE_STORAGE && !(E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
-			Ref<Resource> res = p_resource->get(E.name);
 			if (res.is_null()) {
-				continue;
+				return false;
 			}
-			if (res->get_path().is_resource_file()) { // Not a subresource, continue.
-				continue;
+
+			if (res->get_path().is_resource_file() != expect_resource_file) {
+				return false;
 			}
-			if (_find_edited_resources(res, edited_resources)) {
+
+			if (res->is_edited()) {
+				edited_resources.insert(res);
 				return true;
 			}
+
+			List<PropertyInfo> plist;
+			res->get_property_list(&plist);
+
+			for (const PropertyInfo &E : plist) {
+				if (E.usage & PROPERTY_USAGE_STORAGE) {
+					Variant v = res->get(E.name);
+					if (_is_edited(v, edited_resources)) {
+						return true;
+					}
+				}
+			}
+		} break;
+		case Variant::ARRAY: {
+			Array varray = p_variant;
+			int len = varray.size();
+			for (int i = 0; i < len; i++) {
+				const Variant &v = varray.get(i);
+				if (_is_edited(v, edited_resources)) {
+					return true;
+				}
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+			for (const Variant &E : keys) {
+				Variant v = d[E];
+				if (_is_edited(v, edited_resources)) {
+					return true;
+				}
+			}
+		} break;
+		default: {
 		}
 	}
-
 	return false;
 }
 
@@ -1657,11 +1686,7 @@ int EditorNode::_save_external_resources() {
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
 	for (const Ref<Resource> &res : cached) {
-		if (!res->get_path().is_resource_file()) {
-			continue;
-		}
-		// not only check if this resource is edited, check contained subresources too
-		if (_find_edited_resources(res, edited_subresources)) {
+		if (_is_edited(res, edited_subresources, true)) {
 			ResourceSaver::save(res->get_path(), res, flg);
 			saved++;
 		}
