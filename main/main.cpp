@@ -1765,14 +1765,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Load Boot Image");
 
-	Color clear = GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
+	Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
-		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
-		const String boot_logo_path = String(GLOBAL_DEF("application/boot_splash/image", String())).strip_edges();
-		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
-		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC("application/boot_splash/image", String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
 				PropertyInfo(Variant::STRING,
 						"application/boot_splash/image",
@@ -1797,10 +1797,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		const Color boot_bg_color =
-				GLOBAL_DEF("application/boot_splash/bg_color",
+				GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
 						(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #else
-		const Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
+		const Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
 			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
@@ -1832,7 +1832,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
-			GLOBAL_DEF("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
+			GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3)));
 
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
@@ -1958,9 +1958,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
 
-	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
-	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
-	GLOBAL_DEF("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
+	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
+	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
+	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
 	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image",
 			PropertyInfo(Variant::STRING,
 					"display/mouse_cursor/custom_image",
