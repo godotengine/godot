@@ -103,10 +103,10 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		String name = vformat("%s/%d/", PNAME("item"), E.key);
 		p_list->push_back(PropertyInfo(Variant::STRING, name + PNAME("name")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("mesh_transform")));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, name + PNAME("shapes")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("navmesh_transform")));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
