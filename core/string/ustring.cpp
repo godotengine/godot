@@ -3359,36 +3359,36 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
-String String::left(int p_pos) const {
-	if (p_pos < 0) {
-		p_pos = length() + p_pos;
+String String::left(int p_len) const {
+	if (p_len < 0) {
+		p_len = length() + p_len;
 	}
 
-	if (p_pos <= 0) {
+	if (p_len <= 0) {
 		return "";
 	}
 
-	if (p_pos >= length()) {
+	if (p_len >= length()) {
 		return *this;
 	}
 
-	return substr(0, p_pos);
+	return substr(0, p_len);
 }
 
-String String::right(int p_pos) const {
-	if (p_pos < 0) {
-		p_pos = length() + p_pos;
+String String::right(int p_len) const {
+	if (p_len < 0) {
+		p_len = length() + p_len;
 	}
 
-	if (p_pos <= 0) {
+	if (p_len <= 0) {
 		return "";
 	}
 
-	if (p_pos >= length()) {
+	if (p_len >= length()) {
 		return *this;
 	}
 
-	return substr(length() - p_pos);
+	return substr(length() - p_len);
 }
 
 char32_t String::unicode_at(int p_idx) const {
