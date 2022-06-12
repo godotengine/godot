@@ -1292,7 +1292,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 				}
 
 				if (t->redraw_if_visible) { //check before proxy, because this is usually used with proxies
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				t = t->get_ptr();
