@@ -25,7 +25,6 @@
 		- The larger the grid radius, the more coordinates and the more [SceneTree] groups are created. This can have a performance impact if too many groups are created.
 		- If the [ProximityGroup] node is transformed in any way (or is removed from the scene tree), the groupings will have to be recalculated. This can also have a performance impact.
 		- If your [member grid_radius] is smaller than [code]Vector3(1, 1, 1)[/code], it will be rounded up to [code]Vector3(1, 1, 1)[/code]. Therefore, small grid radius values may lead to unwanted groupings.
-		[/codeblock]
 		[b]Note:[/b] [ProximityGroup] will be removed in Godot 4.0 in favor of more effective and faster [VisibilityNotifier] functionality. For most use cases, [method Vector3.distance_to] or [method Vector3.distance_squared_to] are fast enough too, especially if you call them less often using a [Timer] node.
 	</description>
 	<tutorials>
