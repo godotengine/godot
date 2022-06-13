@@ -16,6 +16,7 @@
 	</tutorials>
 	<members>
 		<member name="camera_effects" type="CameraEffects" setter="set_camera_effects" getter="get_camera_effects">
+			The [CameraEffects] resource used by this [WorldEnvironment], defining the default properties. This [CameraEffects] resource will be used by all [Camera3D]s that do not define their own [CameraEffects].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.
