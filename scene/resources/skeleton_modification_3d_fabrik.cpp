@@ -228,7 +228,7 @@ Vector3 SkeletonModification3DFABRIK::chain_ball_constraint(int i) {
 
 Vector3 SkeletonModification3DFABRIK::get_angle_limited_unit_vector(const Vector3 &vec_to_limit, const Vector3 &vec_baseline, real_t angle_limit) {
 	// Get the angle between the two vectors
-	// Note: This will ALWAYS be a positive value between 0 and 180 degrees.
+	// Note: This will ALWAYS be a positive value between 0 and Pi.
 	float angle_between = get_angle_between(vec_baseline, vec_to_limit);
 
 	if (angle_between > angle_limit) {
@@ -237,7 +237,7 @@ Vector3 SkeletonModification3DFABRIK::get_angle_limited_unit_vector(const Vector
 		// Note: We do not have to worry about both vectors being the same or pointing in opposite directions
 		// because if they bones are the same direction they will not have an angle greater than the angle limit,
 		// and if they point opposite directions we will approach but not quite reach the precise max angle
-		// limit of π (I believe).
+		// limit of Pi (I believe).
 		Vector3 correction_axis = (vec_baseline.normalized().cross(vec_to_limit.normalized())).normalized();
 
 		// Our new vector is the baseline vector rotated by the max allowable angle about the correction axis
@@ -651,7 +651,9 @@ real_t SkeletonModification3DFABRIK::get_fabrik_joint_rotational_constraint(int 
 }
 
 void SkeletonModification3DFABRIK::set_fabrik_joint_rotational_constraint(int p_joint_idx, real_t p_rot) {
-	ERR_FAIL_COND_MSG(Math::abs(p_rot) > 180, "Ball-head constraint must be limited to [-180, +180]");
+	const int bone_chain_size = fabrik_data_chain.size();
+	ERR_FAIL_INDEX(p_joint_idx, bone_chain_size);
+	ERR_FAIL_COND_MSG(Math::abs(p_rot) > Math_PI, "Ball-head constraint must be limited to [-180, +180]");
 	fabrik_data_chain[p_joint_idx].rotational_constraint = p_rot;
 }
 
