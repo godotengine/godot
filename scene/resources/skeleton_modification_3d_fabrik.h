@@ -79,8 +79,8 @@ private:
 	void chain_apply();
 
 	Vector3 chain_ball_constraint(int i);
-	Vector3 getAngleLimitedUnitVectorDegs(const Vector3 &vecToLimit, const Vector3 &vecBaseline, real_t angleLimitDegs);
-	static real_t getAngleBetweenDegs(const Vector3 &vec1, const Vector3 &vec2);
+	Vector3 get_angle_limited_unit_vector(const Vector3 &vec_to_limit, const Vector3 &vec_baseline, real_t angle_limit);
+	static real_t get_angle_between(const Vector3 &vec1, const Vector3 &vec2);
 
 protected:
 	static void _bind_methods();
