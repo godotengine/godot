@@ -121,7 +121,7 @@ private:
 	void _make_dir_confirm();
 	void _go_up();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 
