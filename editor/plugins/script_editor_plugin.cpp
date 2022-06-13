@@ -940,50 +940,6 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 	disk_changed->hide();
 }
 
-void ScriptEditor::_reload_scripts() {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (!se) {
-			continue;
-		}
-
-		Ref<Resource> edited_res = se->get_edited_resource();
-
-		if (edited_res->is_built_in()) {
-			continue; //internal script, who cares
-		}
-
-		uint64_t last_date = edited_res->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
-
-		if (last_date == date) {
-			continue;
-		}
-
-		Ref<Script> script = edited_res;
-		if (script != nullptr) {
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(!rel_script.is_valid());
-			script->set_source_code(rel_script->get_source_code());
-			script->set_last_modified_time(rel_script->get_last_modified_time());
-			script->reload(true);
-		}
-
-		Ref<TextFile> text_file = edited_res;
-		if (text_file != nullptr) {
-			Error err;
-			Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
-			ERR_CONTINUE(!rel_text_file.is_valid());
-			text_file->set_text(rel_text_file->get_text());
-			text_file->set_last_modified_time(rel_text_file->get_last_modified_time());
-		}
-		se->reload_text();
-	}
-
-	disk_changed->hide();
-	_update_script_names();
-}
-
 void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -1077,7 +1033,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 
 	if (need_reload) {
 		if (!need_ask) {
-			script_editor->_reload_scripts();
+			script_editor->reload_scripts();
 			need_reload = false;
 		} else {
 			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.5);
@@ -2588,6 +2544,50 @@ void ScriptEditor::apply_scripts() const {
 	}
 }
 
+void ScriptEditor::reload_scripts() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!se) {
+			continue;
+		}
+
+		Ref<Resource> edited_res = se->get_edited_resource();
+
+		if (edited_res->is_built_in()) {
+			continue; //internal script, who cares
+		}
+
+		uint64_t last_date = edited_res->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
+
+		if (last_date == date) {
+			continue;
+		}
+
+		Ref<Script> script = edited_res;
+		if (script != nullptr) {
+			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+			ERR_CONTINUE(!rel_script.is_valid());
+			script->set_source_code(rel_script->get_source_code());
+			script->set_last_modified_time(rel_script->get_last_modified_time());
+			script->reload(true);
+		}
+
+		Ref<TextFile> text_file = edited_res;
+		if (text_file != nullptr) {
+			Error err;
+			Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
+			ERR_CONTINUE(!rel_text_file.is_valid());
+			text_file->set_text(rel_text_file->get_text());
+			text_file->set_last_modified_time(rel_text_file->get_last_modified_time());
+		}
+		se->reload_text();
+	}
+
+	disk_changed->hide();
+	_update_script_names();
+}
+
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
 	_menu_option(FILE_NEW);
 	script_create_dialog->config(p_base_name, p_base_path);
@@ -3918,7 +3918,7 @@ ScriptEditor::ScriptEditor() {
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
+		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts));
 		disk_changed->set_ok_button_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
