@@ -638,6 +638,102 @@
 		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
 			Default delay for touch events. This only affects iOS devices.
 		</member>
+		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/2d_navigation/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/2d_navigation/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/2d_navigation/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/2d_navigation/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/2d_navigation/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/2d_navigation/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/2d_navigation/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/2d_navigation/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/2d_navigation/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/2d_navigation/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/2d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/2d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/2d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/2d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/2d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/2d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/2d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/2d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/2d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/2d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/2d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
+		<member name="layer_names/2d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/2d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
+		</member>
+		<member name="layer_names/2d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
+		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/2d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/2d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/2d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/2d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
+		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1.
 		</member>
@@ -793,6 +889,102 @@
 		</member>
 		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 9.
+		</member>
+		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/3d_navigation/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/3d_navigation/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/3d_navigation/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/3d_navigation/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/3d_navigation/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/3d_navigation/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/3d_navigation/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/3d_navigation/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/3d_navigation/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/3d_navigation/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
+		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
+		</member>
+		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
+		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/3d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/3d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/3d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/3d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1.
@@ -990,17 +1182,27 @@
 			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
 			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
 		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_cell_height" type="float" setter="" getter="" default="1.0">
+			Default cell height for 2D navigation maps. See [method Navigation2DServer.map_set_cell_height].
+			[b]Note:[/b] Currently not implemented.
+		</member>
+		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method Navigation2DServer.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_edge_connection_margin" type="float" setter="" getter="" default="1.0">
 			Default edge connection margin for 2D navigation maps. See [method Navigation2DServer.map_set_edge_connection_margin].
+		</member>
+		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
+			Default cell height for 3D navigation maps. See [method NavigationServer.map_set_cell_height].
 		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer.map_set_cell_size].
 		</member>
 		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer.map_set_edge_connection_margin].
+		</member>
+		<member name="navigation/3d/default_map_up" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
+			Default map up vector for 3D navigation maps. See [method NavigationServer.map_set_up].
 		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.

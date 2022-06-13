@@ -45,7 +45,7 @@ class NavigationPolygon : public Resource {
 	Vector<PoolVector<Vector2>> outlines;
 
 	mutable Rect2 item_rect;
-	mutable bool rect_cache_dirty;
+	mutable bool rect_cache_dirty = true;
 
 	Mutex navmesh_generation;
 	// Navigation mesh
@@ -96,12 +96,18 @@ class Navigation2D;
 class NavigationPolygonInstance : public Node2D {
 	GDCLASS(NavigationPolygonInstance, Node2D);
 
-	bool enabled;
+	bool enabled = true;
 	RID region;
-	Navigation2D *navigation;
+	Navigation2D *navigation = nullptr;
 	Ref<NavigationPolygon> navpoly;
 
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+
+	uint32_t navigation_layers = 1;
+
 	void _navpoly_changed();
+	void _map_changed(RID p_map);
 
 protected:
 	void _notification(int p_what);
@@ -116,7 +122,16 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
 	RID get_region_rid() const;
+
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
+
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
 
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;

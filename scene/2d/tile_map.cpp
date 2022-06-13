@@ -62,6 +62,8 @@ void TileMap::_notification(int p_what) {
 			while (c) {
 				navigation = Object::cast_to<Navigation2D>(c);
 				if (navigation) {
+					// only for <3.5 backward compatibility
+					bake_navigation = true;
 					break;
 				}
 
@@ -87,7 +89,7 @@ void TileMap::_notification(int p_what) {
 			_update_quadrant_space(RID());
 			for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 				Quadrant &q = E->get();
-				if (navigation) {
+				if (bake_navigation) {
 					q.clear_navpoly();
 				}
 
@@ -154,7 +156,7 @@ void TileMap::_update_quadrant_transform() {
 	}
 
 	Transform2D nav_rel;
-	if (navigation) {
+	if (bake_navigation) {
 		nav_rel = get_relative_transform_to_parent(navigation);
 	}
 
@@ -168,7 +170,7 @@ void TileMap::_update_quadrant_transform() {
 			Physics2DServer::get_singleton()->body_set_state(q.body, Physics2DServer::BODY_STATE_TRANSFORM, xform);
 		}
 
-		if (navigation) {
+		if (bake_navigation) {
 			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
 				Navigation2DServer::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
 			}
@@ -336,7 +338,7 @@ void TileMap::update_dirty_quadrants() {
 	Physics2DServer *ps = Physics2DServer::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
 	Transform2D nav_rel;
-	if (navigation) {
+	if (bake_navigation) {
 		nav_rel = get_relative_transform_to_parent(navigation);
 	}
 
@@ -381,7 +383,7 @@ void TileMap::update_dirty_quadrants() {
 		}
 		int shape_idx = 0;
 
-		if (navigation) {
+		if (bake_navigation) {
 			q.clear_navpoly();
 		}
 
@@ -604,7 +606,7 @@ void TileMap::update_dirty_quadrants() {
 				vs->canvas_item_add_set_transform(debug_canvas_item, Transform2D());
 			}
 
-			if (navigation) {
+			if (bake_navigation) {
 				Ref<NavigationPolygon> navpoly;
 				Vector2 npoly_ofs;
 				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
@@ -621,7 +623,12 @@ void TileMap::update_dirty_quadrants() {
 					_fix_cell_transform(xform, c, npoly_ofs, s);
 
 					RID region = Navigation2DServer::get_singleton()->region_create();
-					Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					if (navigation) {
+						Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					} else {
+						Navigation2DServer::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+					}
+					Navigation2DServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 					Navigation2DServer::get_singleton()->region_set_transform(region, nav_rel * xform);
 					Navigation2DServer::get_singleton()->region_set_navpoly(region, navpoly);
 
@@ -818,7 +825,7 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 		dirty_quadrant_list.remove(&q.dirty_list);
 	}
 
-	if (navigation) {
+	if (bake_navigation) {
 		q.clear_navpoly();
 	}
 
@@ -1394,6 +1401,28 @@ float TileMap::get_collision_bounce() const {
 	return bounce;
 }
 
+void TileMap::set_bake_navigation(bool p_bake_navigation) {
+	bake_navigation = p_bake_navigation;
+	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+		_make_quadrant_dirty(E);
+	}
+}
+
+bool TileMap::is_baking_navigation() {
+	return bake_navigation;
+}
+
+void TileMap::set_navigation_layers(uint32_t p_navigation_layers) {
+	navigation_layers = p_navigation_layers;
+	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+		_make_quadrant_dirty(E);
+	}
+}
+
+uint32_t TileMap::get_navigation_layers() {
+	return navigation_layers;
+}
+
 uint32_t TileMap::get_collision_layer() const {
 	return collision_layer;
 }
@@ -1811,6 +1840,12 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_bounce", "value"), &TileMap::set_collision_bounce);
 	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &TileMap::get_collision_bounce);
 
+	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &TileMap::set_bake_navigation);
+	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &TileMap::is_baking_navigation);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &TileMap::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &TileMap::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &TileMap::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
@@ -1867,6 +1902,10 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Navigation", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	ADD_GROUP("Occluder", "occluder_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");

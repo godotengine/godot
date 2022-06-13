@@ -51,6 +51,8 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 	} else {
 		if (navigation) {
 			NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+		} else {
+			NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 		}
 	}
 
@@ -68,6 +70,35 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 
 bool NavigationMeshInstance::is_enabled() const {
 	return enabled;
+}
+
+void NavigationMeshInstance::set_navigation_layers(uint32_t p_navigation_layers) {
+	navigation_layers = p_navigation_layers;
+	NavigationServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+}
+
+uint32_t NavigationMeshInstance::get_navigation_layers() const {
+	return navigation_layers;
+}
+
+void NavigationMeshInstance::set_enter_cost(real_t p_enter_cost) {
+	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
+	enter_cost = MAX(p_enter_cost, 0.0);
+	NavigationServer::get_singleton()->region_set_enter_cost(region, p_enter_cost);
+}
+
+real_t NavigationMeshInstance::get_enter_cost() const {
+	return enter_cost;
+}
+
+void NavigationMeshInstance::set_travel_cost(real_t p_travel_cost) {
+	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
+	travel_cost = MAX(p_travel_cost, 0.0);
+	NavigationServer::get_singleton()->region_set_enter_cost(region, travel_cost);
+}
+
+real_t NavigationMeshInstance::get_travel_cost() const {
+	return travel_cost;
 }
 
 RID NavigationMeshInstance::get_region_rid() const {
@@ -90,6 +121,11 @@ void NavigationMeshInstance::_notification(int p_what) {
 				}
 
 				c = c->get_parent_spatial();
+			}
+
+			if (enabled && navigation == nullptr) {
+				// did not find a valid navigation node parent, fallback to default navigation map on world resource
+				NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
@@ -165,7 +201,7 @@ Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const {
 }
 
 struct BakeThreadsArgs {
-	NavigationMeshInstance *nav_region;
+	NavigationMeshInstance *nav_region = nullptr;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {
@@ -216,16 +252,8 @@ String NavigationMeshInstance::get_configuration_warning() const {
 	if (!navmesh.is_valid()) {
 		return TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
-	const Spatial *c = this;
-	while (c) {
-		if (Object::cast_to<Navigation>(c)) {
-			return String();
-		}
 
-		c = Object::cast_to<Spatial>(c->get_parent());
-	}
-
-	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	return String();
 }
 
 void NavigationMeshInstance::_bind_methods() {
@@ -235,13 +263,25 @@ void NavigationMeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshInstance::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationMeshInstance::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationMeshInstance::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationMeshInstance::get_region_rid);
+
+	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationMeshInstance::set_enter_cost);
+	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationMeshInstance::get_enter_cost);
+
+	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationMeshInstance::set_travel_cost);
+	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationMeshInstance::get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationMeshInstance::bake_navigation_mesh, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationMeshInstance::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "enter_cost"), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "travel_cost"), "set_travel_cost", "get_travel_cost");
 
 	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
@@ -255,6 +295,8 @@ void NavigationMeshInstance::_changed_callback(Object *p_changed, const char *p_
 NavigationMeshInstance::NavigationMeshInstance() {
 	set_notify_transform(true);
 	region = NavigationServer::get_singleton()->region_create();
+	NavigationServer::get_singleton()->region_set_enter_cost(region, get_enter_cost());
+	NavigationServer::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 	enabled = true;
 }
 

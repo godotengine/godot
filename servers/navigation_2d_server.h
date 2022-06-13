@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
-
 #ifndef NAVIGATION_2D_SERVER_H
 #define NAVIGATION_2D_SERVER_H
 
@@ -44,6 +40,8 @@ class Navigation2DServer : public Object {
 	GDCLASS(Navigation2DServer, Object);
 
 	static Navigation2DServer *singleton;
+
+	void _emit_map_changed(RID p_map);
 
 protected:
 	static void _bind_methods();
@@ -70,6 +68,10 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const;
 
+	/// Set the map cell height used to weld the navigation mesh polygons.
+	virtual void map_set_cell_height(RID p_map, real_t p_cell_height) const;
+	virtual real_t map_get_cell_height(RID p_map) const;
+
 	/// Set the map edge connection margin used to weld the compatible region edges.
 	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) const;
 
@@ -77,7 +79,7 @@ public:
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize) const;
+	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
@@ -88,15 +90,32 @@ public:
 	/// Creates a new region.
 	virtual RID region_create() const;
 
+	/// Set the enter_cost of a region
+	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) const;
+	virtual real_t region_get_enter_cost(RID p_region) const;
+
+	/// Set the travel_cost of a region
+	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const;
+	virtual real_t region_get_travel_cost(RID p_region) const;
+
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const;
 	virtual RID region_get_map(RID p_region) const;
+
+	/// Set the region's layers
+	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) const;
+	virtual uint32_t region_get_navigation_layers(RID p_region) const;
 
 	/// Set the global transformation of this region.
 	virtual void region_set_transform(RID p_region, Transform2D p_transform) const;
 
 	/// Set the navigation poly of this region.
 	virtual void region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const;
+
+	/// Get a list of a region's connection to other regions.
+	virtual int region_get_connections_count(RID p_region) const;
+	virtual Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const;
+	virtual Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const;
 
 	/// Creates the agent.
 	virtual RID agent_create() const;
@@ -165,4 +184,4 @@ public:
 	virtual ~Navigation2DServer();
 };
 
-#endif
+#endif // NAVIGATION_2D_SERVER_H

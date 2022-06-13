@@ -213,6 +213,24 @@ Array GridMap::get_collision_shapes() const {
 	return shapes;
 }
 
+void GridMap::set_bake_navigation(bool p_bake_navigation) {
+	bake_navigation = p_bake_navigation;
+	_recreate_octant_data();
+}
+
+bool GridMap::is_baking_navigation() {
+	return bake_navigation;
+}
+
+void GridMap::set_navigation_layers(uint32_t p_navigation_layers) {
+	navigation_layers = p_navigation_layers;
+	_recreate_octant_data();
+}
+
+uint32_t GridMap::get_navigation_layers() {
+	return navigation_layers;
+}
+
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
@@ -421,6 +439,18 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
 	}
 
+	// update transform for NavigationServer regions and navigation debugmesh instances
+	if (bake_navigation) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+			if (E->get().region.is_valid()) {
+				NavigationServer::get_singleton()->region_set_transform(E->get().region, get_global_transform() * E->get().xform);
+			}
+			if (E->get().navmesh_debug_instance.is_valid()) {
+				VS::get_singleton()->instance_set_transform(E->get().navmesh_debug_instance, get_global_transform() * E->get().xform);
+			}
+		}
+	}
+
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 		VS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
@@ -444,6 +474,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	//erase navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
 		NavigationServer::get_singleton()->free(E->get().region);
+		if (E->get().navmesh_debug_instance.is_valid()) {
+			VS::get_singleton()->free(E->get().navmesh_debug_instance);
+		}
 	}
 	g.navmesh_ids.clear();
 
@@ -523,12 +556,32 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::NavMesh nm;
 			nm.xform = xform * mesh_library->get_item_navmesh_transform(c.item);
 
-			if (navigation) {
+			if (bake_navigation) {
 				RID region = NavigationServer::get_singleton()->region_create();
+				NavigationServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 				NavigationServer::get_singleton()->region_set_navmesh(region, navmesh);
-				NavigationServer::get_singleton()->region_set_transform(region, navigation->get_global_transform() * nm.xform);
-				NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+				NavigationServer::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
+				if (navigation) {
+					NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+				} else {
+					NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
+				}
 				nm.region = region;
+
+				// add navigation debugmesh visual instances if debug is enabled
+				SceneTree *st = SceneTree::get_singleton();
+				if (st && st->is_debugging_navigation_hint()) {
+					if (!nm.navmesh_debug_instance.is_valid()) {
+						RID navmesh_debug_rid = navmesh->get_debug_mesh()->get_rid();
+						nm.navmesh_debug_instance = VS::get_singleton()->instance_create();
+						VS::get_singleton()->instance_set_base(nm.navmesh_debug_instance, navmesh_debug_rid);
+						VS::get_singleton()->mesh_surface_set_material(navmesh_debug_rid, 0, st->get_debug_navigation_material()->get_rid());
+					}
+					if (is_inside_tree()) {
+						VS::get_singleton()->instance_set_scenario(nm.navmesh_debug_instance, get_world()->get_scenario());
+						VS::get_singleton()->instance_set_transform(nm.navmesh_debug_instance, get_global_transform() * nm.xform);
+					}
+				}
 			}
 			g.navmesh_ids[E->get()] = nm;
 		}
@@ -614,16 +667,21 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
-	if (navigation && mesh_library.is_valid()) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
-			if (cell_map.has(F->key()) && F->get().region.is_valid() == false) {
-				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F->key()].item);
+	if (bake_navigation && mesh_library.is_valid()) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+			if (cell_map.has(E->key()) && E->get().region.is_valid() == false) {
+				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[E->key()].item);
 				if (nm.is_valid()) {
 					RID region = NavigationServer::get_singleton()->region_create();
+					NavigationServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 					NavigationServer::get_singleton()->region_set_navmesh(region, nm);
-					NavigationServer::get_singleton()->region_set_transform(region, navigation->get_global_transform() * F->get().xform);
-					NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
-					F->get().region = region;
+					NavigationServer::get_singleton()->region_set_transform(region, get_global_transform() * E->get().xform);
+					if (navigation) {
+						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					} else {
+						NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
+					}
+					E->get().region = region;
 				}
 			}
 		}
@@ -644,12 +702,14 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, RID());
 	}
 
-	if (navigation) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
-			if (F->get().region.is_valid()) {
-				NavigationServer::get_singleton()->free(F->get().region);
-				F->get().region = RID();
-			}
+	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+		if (E->get().region.is_valid()) {
+			NavigationServer::get_singleton()->free(E->get().region);
+			E->get().region = RID();
+		}
+		if (E->get().navmesh_debug_instance.is_valid()) {
+			VS::get_singleton()->free(E->get().navmesh_debug_instance);
+			E->get().navmesh_debug_instance = RID();
 		}
 	}
 }
@@ -675,7 +735,12 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 
 	// Erase navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
-		NavigationServer::get_singleton()->free(E->get().region);
+		if (E->get().region.is_valid()) {
+			NavigationServer::get_singleton()->free(E->get().region);
+		}
+		if (E->get().navmesh_debug_instance.is_valid()) {
+			VS::get_singleton()->free(E->get().navmesh_debug_instance);
+		}
 	}
 	g.navmesh_ids.clear();
 
@@ -855,6 +920,12 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 
+	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
+	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &GridMap::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -914,6 +985,8 @@ void GridMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
