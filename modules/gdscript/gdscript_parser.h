@@ -599,6 +599,9 @@ private:
 
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
 	bool _enter_indent_block(BlockNode *p_block = nullptr);
+	bool _enter_inner_class_indent_block();
+	bool _parse_colon();
+	bool _parse_indent_block_newlines(BlockNode *p_block = nullptr);
 	bool _parse_newline();
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
 	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
