@@ -237,11 +237,11 @@ Vector3 SkeletonModification3DFABRIK::get_angle_limited_unit_vector(const Vector
 		// Note: We do not have to worry about both vectors being the same or pointing in opposite directions
 		// because if they bones are the same direction they will not have an angle greater than the angle limit,
 		// and if they point opposite directions we will approach but not quite reach the precise max angle
-		// limit of 180.0f (I believe).
-		Vector3 correctionAxis = (vec_baseline.normalized().cross(vec_to_limit.normalized())).normalized();
+		// limit of π (I believe).
+		Vector3 correction_axis = (vec_baseline.normalized().cross(vec_to_limit.normalized())).normalized();
 
 		// Our new vector is the baseline vector rotated by the max allowable angle about the correction axis
-		return vec_baseline.rotated(correctionAxis, Math::rad2deg(angle_limit)).normalized();
+		return vec_baseline.rotated(correction_axis, Math::rad2deg(angle_limit)).normalized();
 	} else // Angle not greater than limit? Just return a normalised version of the vec_to_limit
 	{
 		// This may already BE normalised, but we have no way of knowing without calcing the length, so best be safe and normalise.
