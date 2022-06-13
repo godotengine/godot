@@ -7950,6 +7950,8 @@ void RasterizerStorageGLES3::render_info_end_capture() {
 	info.snap.material_switch_count = info.render.material_switch_count - info.snap.material_switch_count;
 	info.snap.surface_switch_count = info.render.surface_switch_count - info.snap.surface_switch_count;
 	info.snap.shader_rebind_count = info.render.shader_rebind_count - info.snap.shader_rebind_count;
+	info.snap.shader_compiles_started_count = info.render.shader_compiles_started_count - info.snap.shader_compiles_started_count;
+	info.snap.shader_compiles_in_progress_count = info.render.shader_compiles_in_progress_count - info.snap.shader_compiles_in_progress_count;
 	info.snap.vertices_count = info.render.vertices_count - info.snap.vertices_count;
 	info.snap._2d_item_count = info.render._2d_item_count - info.snap._2d_item_count;
 	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
@@ -7968,6 +7970,9 @@ int RasterizerStorageGLES3::get_captured_render_info(VS::RenderInfo p_info) {
 		} break;
 		case VS::INFO_SHADER_CHANGES_IN_FRAME: {
 			return info.snap.shader_rebind_count;
+		} break;
+		case VS::INFO_SHADER_COMPILES_IN_FRAME: {
+			return info.snap.shader_compiles_in_progress_count;
 		} break;
 		case VS::INFO_SURFACE_CHANGES_IN_FRAME: {
 			return info.snap.surface_switch_count;
@@ -7997,6 +8002,8 @@ uint64_t RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 			return info.render_final.material_switch_count;
 		case VS::INFO_SHADER_CHANGES_IN_FRAME:
 			return info.render_final.shader_rebind_count;
+		case VS::INFO_SHADER_COMPILES_IN_FRAME:
+			return info.render.shader_compiles_in_progress_count;
 		case VS::INFO_SURFACE_CHANGES_IN_FRAME:
 			return info.render_final.surface_switch_count;
 		case VS::INFO_DRAW_CALLS_IN_FRAME:

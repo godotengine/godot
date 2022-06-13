@@ -3719,28 +3719,34 @@
 		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
 			The amount of shader rebinds in the frame.
 		</constant>
-		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
+		<constant name="INFO_SHADER_COMPILES_IN_FRAME" value="4" enum="RenderInfo">
+			The peak amount of shaders that have been under compilation in the frame.
+			This is useful to know when asynchronous shader compilation has finished for the current shaders on screen.
+			[b]Note:[/b] For complete certainty, only assume there are no outstanding compilations when this value is zero for at least two frames in a row.
+			Unimplemented in the GLES2 rendering backend, always returns 0.
+		</constant>
+		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="5" enum="RenderInfo">
 			The amount of surface changes in the frame.
 		</constant>
-		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
+		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="6" enum="RenderInfo">
 			The amount of draw calls in frame.
 		</constant>
-		<constant name="INFO_2D_ITEMS_IN_FRAME" value="6" enum="RenderInfo">
+		<constant name="INFO_2D_ITEMS_IN_FRAME" value="7" enum="RenderInfo">
 			The amount of 2d items in the frame.
 		</constant>
-		<constant name="INFO_2D_DRAW_CALLS_IN_FRAME" value="7" enum="RenderInfo">
+		<constant name="INFO_2D_DRAW_CALLS_IN_FRAME" value="8" enum="RenderInfo">
 			The amount of 2d draw calls in frame.
 		</constant>
-		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="8" enum="RenderInfo">
+		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="9" enum="RenderInfo">
 			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
 		</constant>
-		<constant name="INFO_VIDEO_MEM_USED" value="9" enum="RenderInfo">
+		<constant name="INFO_VIDEO_MEM_USED" value="10" enum="RenderInfo">
 			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
-		<constant name="INFO_TEXTURE_MEM_USED" value="10" enum="RenderInfo">
+		<constant name="INFO_TEXTURE_MEM_USED" value="11" enum="RenderInfo">
 			The amount of texture memory used.
 		</constant>
-		<constant name="INFO_VERTEX_MEM_USED" value="11" enum="RenderInfo">
+		<constant name="INFO_VERTEX_MEM_USED" value="12" enum="RenderInfo">
 			The amount of vertex memory used.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">

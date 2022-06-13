@@ -164,6 +164,8 @@ public:
 			uint32_t material_switch_count;
 			uint32_t surface_switch_count;
 			uint32_t shader_rebind_count;
+			uint32_t shader_compiles_started_count;
+			uint32_t shader_compiles_in_progress_count;
 			uint32_t vertices_count;
 			uint32_t _2d_item_count;
 			uint32_t _2d_draw_call_count;
@@ -174,6 +176,8 @@ public:
 				material_switch_count = 0;
 				surface_switch_count = 0;
 				shader_rebind_count = 0;
+				shader_compiles_started_count = 0;
+				shader_compiles_in_progress_count = 0;
 				vertices_count = 0;
 				_2d_item_count = 0;
 				_2d_draw_call_count = 0;
@@ -1487,7 +1491,6 @@ public:
 		float time[4];
 		float delta;
 		uint64_t count;
-		int shader_compiles_started;
 
 	} frame;
 
