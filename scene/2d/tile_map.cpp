@@ -59,34 +59,22 @@ HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlap
 				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_SIDE;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_SIDE;
 				break;
-			case 4:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER;
-				break;
 			default:
 				ERR_FAIL_V(output);
 		}
 	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 		switch (bit) {
 			case 1:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_CORNER)] = TileSet::CELL_NEIGHBOR_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_CORNER;
-				break;
-			case 2:
 				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE;
 				break;
-			case 3:
+			case 2:
 				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_CORNER;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_LEFT_CORNER;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)] = TileSet::CELL_NEIGHBOR_TOP_CORNER;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
 				break;
-			case 4:
+			case 3:
 				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE;
 				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
 				break;
