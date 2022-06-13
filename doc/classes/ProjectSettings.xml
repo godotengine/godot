@@ -70,15 +70,18 @@
 		<method name="get_setting" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="String" />
+			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
-				Returns the value of a setting.
+				Returns the value of the setting identified by [param name]. If the setting doesn't exist and [param default_value] is specified, the value of [param default_value] is returned. Otherwise, [code]null[/code] is returned.
 				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting("application/config/name"))
+				print(ProjectSettings.get_setting("application/config/custom_description", "No description specified."))
 				[/gdscript]
 				[csharp]
 				GD.Print(ProjectSettings.GetSetting("application/config/name"));
+				GD.Print(ProjectSettings.GetSetting("application/config/custom_description", "No description specified."));
 				[/csharp]
 				[/codeblocks]
 			</description>
