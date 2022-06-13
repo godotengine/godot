@@ -4780,6 +4780,9 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	RID f = p_fonts[p_fb_index];
 	FontDataAdvanced *fd = font_owner.get_or_null(f);
+	ERR_FAIL_COND(!fd);
+	MutexLock lock(fd->mutex);
+
 	Vector2i fss = _get_size(fd, fs);
 	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
 	double scale = font_get_scale(f, fs);
