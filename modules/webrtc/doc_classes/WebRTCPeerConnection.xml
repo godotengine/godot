@@ -95,6 +95,13 @@
 				Call this method frequently (e.g. in [method Node._process] or [method Node._physics_process]) to properly receive signals.
 			</description>
 		</method>
+		<method name="set_default_extension" qualifiers="static">
+			<return type="void" />
+			<argument index="0" name="extension_class" type="StringName" />
+			<description>
+				Sets the [code]extension_class[/code] as the default [WebRTCPeerConnectionExtension] returned when creating a new [WebRTCPeerConnection].
+			</description>
+		</method>
 		<method name="set_local_description">
 			<return type="int" enum="Error" />
 			<argument index="0" name="type" type="String" />
