@@ -1788,6 +1788,7 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 		Particles *particle = particles_owner.get_or_null(p_particle);
 		if (particle->layer_mask & particles_collision->cull_mask) {
 			particle->collisions.insert(p_particles_collision);
+			particles_collision->rejected_particles.erase(p_particle);
 		}
 	}
 }
