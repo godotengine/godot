@@ -102,11 +102,13 @@ void ResourceImporterTexture::update_imports() {
 		}
 
 		if (E->get() & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+			print_line(vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."), String(E->key())));
 			cf->set_value("params", "compress/normal_map", 1);
 			changed = true;
 		}
 
 		if (E->get() & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d"))) {
+			print_line(vformat(TTR("%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap generation and VRAM texture compression."), String(E->key())));
 			cf->set_value("params", "detect_3d", false);
 			cf->set_value("params", "compress/mode", 2);
 			cf->set_value("params", "flags/repeat", true);
