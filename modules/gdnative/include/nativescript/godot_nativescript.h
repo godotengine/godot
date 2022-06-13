@@ -61,8 +61,10 @@ typedef enum {
 	GODOT_PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	GODOT_PROPERTY_HINT_LAYERS_2D_RENDER,
 	GODOT_PROPERTY_HINT_LAYERS_2D_PHYSICS,
+	GODOT_PROPERTY_HINT_LAYERS_2D_NAVIGATION,
 	GODOT_PROPERTY_HINT_LAYERS_3D_RENDER,
 	GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS,
+	GODOT_PROPERTY_HINT_LAYERS_3D_NAVIGATION,
 	GODOT_PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	GODOT_PROPERTY_HINT_DIR, ///< a directory path must be passed
 	GODOT_PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"

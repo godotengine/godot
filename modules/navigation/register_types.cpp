@@ -42,10 +42,6 @@
 #include "navigation_mesh_editor_plugin.h"
 #endif
 
-/**
-	@author AndreaCatania
-*/
-
 #ifndef _3D_DISABLED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
