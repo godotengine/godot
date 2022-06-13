@@ -3457,7 +3457,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 					angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
-					if (light_storage->light_has_shadow(base)) {
+					if (light_storage->light_has_shadow(base) && light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR) > 0.0) {
+						// Only enable PCSS-like soft shadows if blurring is enabled.
+						// Otherwise, performance would decrease with no visual difference.
 						r_directional_light_soft_shadows = true;
 					}
 				} else {
@@ -3736,7 +3738,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				RendererStorageRD::store_transform(proj, light_data.shadow_matrix);
 
-				if (size > 0.0) {
+				if (size > 0.0 && light_data.soft_shadow_scale > 0.0) {
+					// Only enable PCSS-like soft shadows if blurring is enabled.
+					// Otherwise, performance would decrease with no visual difference.
 					light_data.soft_shadow_size = size;
 				} else {
 					light_data.soft_shadow_size = 0.0;
@@ -3753,7 +3757,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				CameraMatrix shadow_mtx = bias * li->shadow_transform[0].camera * modelview;
 				RendererStorageRD::store_camera(shadow_mtx, light_data.shadow_matrix);
 
-				if (size > 0.0) {
+				if (size > 0.0 && light_data.soft_shadow_scale > 0.0) {
+					// Only enable PCSS-like soft shadows if blurring is enabled.
+					// Otherwise, performance would decrease with no visual difference.
 					CameraMatrix cm = li->shadow_transform[0].camera;
 					float half_np = cm.get_z_near() * Math::tan(Math::deg2rad(spot_angle));
 					light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
