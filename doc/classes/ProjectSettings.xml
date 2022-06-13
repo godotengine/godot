@@ -1320,7 +1320,7 @@
 			An override for [code]rendering/gles3/shaders/ubershader_cache_size_mb[/code], so a smaller maximum size can be configured for mobile platforms, where storage space is more limited.
 			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is set to [code]Asynchronous + Cache[/code].
 		</member>
-		<member name="rendering/gles3/shaders/shader_compilation_mode" type="int" setter="" getter="" default="0">
+		<member name="rendering/gles3/shaders/shader_compilation_mode" type="int" setter="" getter="" default="2">
 			If set to [code]Asynchronous[/code] and available on the target device, asynchronous compilation of shaders is enabled (in contrast to [code]Asynchronous[/code]).
 			That means that when a shader is first used under some new rendering situation, the game won't stall while such shader is being compiled. Instead, a fallback will be used and the real shader will be compiled in the background. Once the actual shader is compiled, it will be used the next times it's used to draw a frame.
 			Depending on the async mode configured for a given material/shader, the fallback will be an "ubershader" (the default) or just skip rendering any item it is applied to.

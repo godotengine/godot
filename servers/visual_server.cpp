@@ -2735,7 +2735,7 @@ VisualServer::VisualServer() {
 		force_shader_fallbacks = GLOBAL_GET("rendering/gles3/shaders/debug_shader_fallbacks");
 	}
 #endif
-	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode", 0);
+	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/shader_compilation_mode", PropertyInfo(Variant::INT, "rendering/gles3/shaders/shader_compilation_mode", PROPERTY_HINT_ENUM, "Synchronous,Asynchronous,Asynchronous + Cache"));
 	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode.mobile", 0);
 	GLOBAL_DEF("rendering/gles3/shaders/max_simultaneous_compiles", 2);
