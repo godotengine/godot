@@ -86,6 +86,25 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::F14                   ,"F14"},
 	{Key::F15                   ,"F15"},
 	{Key::F16                   ,"F16"},
+	{Key::F17                   ,"F17"},
+	{Key::F18                   ,"F18"},
+	{Key::F19                   ,"F19"},
+	{Key::F20                   ,"F20"},
+	{Key::F21                   ,"F21"},
+	{Key::F22                   ,"F22"},
+	{Key::F23                   ,"F23"},
+	{Key::F24                   ,"F24"},
+	{Key::F25                   ,"F25"},
+	{Key::F26                   ,"F26"},
+	{Key::F27                   ,"F27"},
+	{Key::F28                   ,"F28"},
+	{Key::F29                   ,"F29"},
+	{Key::F30                   ,"F30"},
+	{Key::F31                   ,"F31"},
+	{Key::F32                   ,"F32"},
+	{Key::F33                   ,"F33"},
+	{Key::F34                   ,"F34"},
+	{Key::F35                   ,"F35"},
 	{Key::KP_MULTIPLY           ,"Kp Multiply"},
 	{Key::KP_DIVIDE             ,"Kp Divide"},
 	{Key::KP_SUBTRACT           ,"Kp Subtract"},
@@ -333,6 +352,25 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::F14:
 		case Key::F15:
 		case Key::F16:
+		case Key::F17:
+		case Key::F18:
+		case Key::F19:
+		case Key::F20:
+		case Key::F21:
+		case Key::F22:
+		case Key::F23:
+		case Key::F24:
+		case Key::F25:
+		case Key::F26:
+		case Key::F27:
+		case Key::F28:
+		case Key::F29:
+		case Key::F30:
+		case Key::F31:
+		case Key::F32:
+		case Key::F33:
+		case Key::F34:
+		case Key::F35:
 		case Key::SUPER_L:
 		case Key::SUPER_R:
 		case Key::MENU:
