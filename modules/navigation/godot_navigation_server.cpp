@@ -36,10 +36,6 @@
 #include "navigation_mesh_generator.h"
 #endif
 
-/**
-	@author AndreaCatania
-*/
-
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.
@@ -113,17 +109,14 @@
 	}                                                                              \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
-GodotNavigationServer::GodotNavigationServer() :
-		NavigationServer(),
-		active(true) {
-}
+GodotNavigationServer::GodotNavigationServer() {}
 
 GodotNavigationServer::~GodotNavigationServer() {
 	flush_queries();
 }
 
 void GodotNavigationServer::add_command(SetCommand *command) const {
-	auto mut_this = const_cast<GodotNavigationServer *>(this);
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	{
 		MutexLock lock(commands_mutex);
 		mut_this->commands.push_back(command);
@@ -131,7 +124,7 @@ void GodotNavigationServer::add_command(SetCommand *command) const {
 }
 
 RID GodotNavigationServer::map_create() const {
-	auto mut_this = const_cast<GodotNavigationServer *>(this);
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	NavMap *space = memnew(NavMap);
 	RID rid = map_owner.make_rid(space);
@@ -140,27 +133,31 @@ RID GodotNavigationServer::map_create() const {
 }
 
 COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND(map == nullptr);
 
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
+			active_maps_update_id.push_back(map->get_map_update_id());
 		}
 	} else {
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		ERR_FAIL_COND(map_index < 0);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 	}
 }
 
 bool GodotNavigationServer::map_is_active(RID p_map) const {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == nullptr, false);
 
 	return active_maps.find(map) >= 0;
 }
 
 COMMAND_2(map_set_up, RID, p_map, Vector3, p_up) {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND(map == nullptr);
 
 	map->set_up(p_up);
@@ -174,7 +171,7 @@ Vector3 GodotNavigationServer::map_get_up(RID p_map) const {
 }
 
 COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size) {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND(map == nullptr);
 
 	map->set_cell_size(p_cell_size);
@@ -188,7 +185,7 @@ real_t GodotNavigationServer::map_get_cell_size(RID p_map) const {
 }
 
 COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height) {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND(map == nullptr);
 
 	map->set_cell_height(p_cell_height);
@@ -202,7 +199,7 @@ real_t GodotNavigationServer::map_get_cell_height(RID p_map) const {
 }
 
 COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin) {
-	NavMap *map = map_owner.get(p_map);
+	NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND(map == nullptr);
 
 	map->set_edge_connection_margin(p_connection_margin);
@@ -215,11 +212,11 @@ real_t GodotNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	return map->get_edge_connection_margin();
 }
 
-Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
-	NavMap *map = map_owner.get(p_map);
+Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
+	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize);
+	return map->get_path(p_origin, p_destination, p_optimize, p_layers);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -289,7 +286,7 @@ RID GodotNavigationServer::agent_get_map(RID p_agent) const {
 }
 
 RID GodotNavigationServer::region_create() const {
-	auto mut_this = const_cast<GodotNavigationServer *>(this);
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	NavRegion *reg = memnew(NavRegion);
 	RID rid = region_owner.make_rid(reg);
@@ -298,7 +295,7 @@ RID GodotNavigationServer::region_create() const {
 }
 
 COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
-	NavRegion *region = region_owner.get(p_region);
+	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
 	if (region->get_map() != nullptr) {
@@ -311,7 +308,7 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	}
 
 	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get(p_map);
+		NavMap *map = map_owner.getornull(p_map);
 		ERR_FAIL_COND(map == nullptr);
 
 		map->add_region(region);
@@ -320,14 +317,58 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 }
 
 COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform) {
-	NavRegion *region = region_owner.get(p_region);
+	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
 	region->set_transform(p_transform);
 }
 
+COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_enter_cost < 0.0);
+
+	region->set_enter_cost(p_enter_cost);
+}
+
+real_t GodotNavigationServer::region_get_enter_cost(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_enter_cost();
+}
+
+COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost) {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_travel_cost < 0.0);
+
+	region->set_travel_cost(p_travel_cost);
+}
+
+real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_travel_cost();
+}
+
+COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers) {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_navigation_layers(p_navigation_layers);
+}
+
+uint32_t GodotNavigationServer::region_get_navigation_layers(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_navigation_layers();
+}
+
 COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
-	NavRegion *region = region_owner.get(p_region);
+	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
 	region->set_mesh(p_nav_mesh);
@@ -343,8 +384,29 @@ void GodotNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node
 #endif
 }
 
+int GodotNavigationServer::region_get_connections_count(RID p_region) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, 0);
+
+	return region->get_connections_count();
+}
+
+Vector3 GodotNavigationServer::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_start(p_connection_id);
+}
+
+Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
+	NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(!region, Vector3());
+
+	return region->get_connection_pathway_end(p_connection_id);
+}
+
 RID GodotNavigationServer::agent_create() const {
-	auto mut_this = const_cast<GodotNavigationServer *>(this);
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	RvoAgent *agent = memnew(RvoAgent());
 	RID rid = agent_owner.make_rid(agent);
@@ -353,7 +415,7 @@ RID GodotNavigationServer::agent_create() const {
 }
 
 COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	if (agent->get_map()) {
@@ -367,7 +429,7 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	agent->set_map(nullptr);
 
 	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get(p_map);
+		NavMap *map = map_owner.getornull(p_map);
 		ERR_FAIL_COND(map == nullptr);
 
 		agent->set_map(map);
@@ -380,77 +442,77 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 }
 
 COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->neighborDist_ = p_dist;
 }
 
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxNeighbors_ = p_count;
 }
 
 COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->timeHorizon_ = p_time;
 }
 
 COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->radius_ = p_radius;
 }
 
 COMMAND_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxSpeed_ = p_max_speed;
 }
 
 COMMAND_2(agent_set_velocity, RID, p_agent, Vector3, p_velocity) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->velocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_target_velocity, RID, p_agent, Vector3, p_velocity) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->prefVelocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->position_ = RVO::Vector3(p_position.x, p_position.y, p_position.z);
 }
 
 COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->ignore_y_ = p_ignore;
 }
 
 bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND_V(agent == nullptr, false);
 
 	return agent->is_map_changed();
 }
 
 COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata) {
-	RvoAgent *agent = agent_owner.get(p_agent);
+	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->set_callback(p_receiver == nullptr ? 0 : p_receiver->get_instance_id(), p_method, p_udata);
@@ -466,7 +528,7 @@ COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_
 
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
-		NavMap *map = map_owner.get(p_object);
+		NavMap *map = map_owner.getornull(p_object);
 
 		// Removes any assigned region
 		std::vector<NavRegion *> regions = map->get_regions();
@@ -482,12 +544,14 @@ COMMAND_1(free, RID, p_object) {
 			agents[i]->set_map(nullptr);
 		}
 
-		active_maps.erase(map);
+		int map_index = active_maps.find(map);
+		active_maps.remove(map_index);
+		active_maps_update_id.remove(map_index);
 		map_owner.free(p_object);
 		memdelete(map);
 
 	} else if (region_owner.owns(p_object)) {
-		NavRegion *region = region_owner.get(p_object);
+		NavRegion *region = region_owner.getornull(p_object);
 
 		// Removes this region from the map if assigned
 		if (region->get_map() != nullptr) {
@@ -499,7 +563,7 @@ COMMAND_1(free, RID, p_object) {
 		memdelete(region);
 
 	} else if (agent_owner.owns(p_object)) {
-		RvoAgent *agent = agent_owner.get(p_object);
+		RvoAgent *agent = agent_owner.getornull(p_object);
 
 		// Removes this agent from the map if assigned
 		if (agent->get_map() != nullptr) {
@@ -516,7 +580,7 @@ COMMAND_1(free, RID, p_object) {
 }
 
 void GodotNavigationServer::set_active(bool p_active) const {
-	auto mut_this = const_cast<GodotNavigationServer *>(this);
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	mut_this->active = p_active;
 }
@@ -543,10 +607,18 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
 	MutexLock lock(operations_mutex);
-	for (int i(0); i < active_maps.size(); i++) {
+
+	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
+
+		// Emit a signal if a map changed.
+		const uint32_t new_map_update_id = active_maps[i]->get_map_update_id();
+		if (new_map_update_id != active_maps_update_id[i]) {
+			emit_signal("map_changed", active_maps[i]->get_self());
+			active_maps_update_id[i] = new_map_update_id;
+		}
 	}
 }
 

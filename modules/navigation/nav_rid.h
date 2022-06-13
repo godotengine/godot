@@ -33,10 +33,6 @@
 
 #include "core/rid.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class NavRid : public RID_Data {
 	RID self;
 

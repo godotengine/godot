@@ -160,6 +160,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this GridMap uses cell navmesh resources to create navigation regions.
+		</member>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
 			If [code]true[/code], grid items are centered on the X axis.
 		</member>
@@ -189,6 +192,9 @@
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			The navigation layers the GridMap generates its navigation regions in.
 		</member>
 		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
 			Overrides the default friction and bounce physics properties for the whole [GridMap].

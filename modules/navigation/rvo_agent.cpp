@@ -32,12 +32,7 @@
 
 #include "nav_map.h"
 
-/**
-	@author AndreaCatania
-*/
-
-RvoAgent::RvoAgent() :
-		map(NULL) {
+RvoAgent::RvoAgent() {
 	callback.id = ObjectID(0);
 }
 
@@ -70,7 +65,7 @@ void RvoAgent::dispatch_callback() {
 		return;
 	}
 	Object *obj = ObjectDB::get_instance(callback.id);
-	if (obj == NULL) {
+	if (obj == nullptr) {
 		callback.id = ObjectID(0);
 	}
 

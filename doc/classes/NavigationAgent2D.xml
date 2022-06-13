@@ -4,7 +4,7 @@
 		2D agent used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		2D agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO (Reciprocal Velocity Obstacles) collision avoidance. The agent needs navigation data to work correctly. This can be done by having the agent as a child of a [Navigation2D] node, or using [method set_navigation]. [NavigationAgent2D] is physics safe.
+		2D agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO (Reciprocal Velocity Obstacles) collision avoidance. The agent needs navigation data to work correctly. By default this node will register to the default [World2D] navigation map. If this node is a child of a [Navigation2D] node it will register to the navigation map of the navigation node or the function [method set_navigation] can be used to set the navigation node directly. [NavigationAgent2D] is physics safe.
 		[b]Note:[/b] After [method set_target_location] is used it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 	</description>
 	<tutorials>
@@ -107,6 +107,9 @@
 		</member>
 		<member name="max_speed" type="float" setter="set_max_speed" getter="get_max_speed" default="200.0">
 			The maximum speed that an agent can move.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining all navigation map layers the [NavigationAgent2D] belongs to. On path requests the agent will ignore navmeshes without at least one matching layer.
 		</member>
 		<member name="neighbor_dist" type="float" setter="set_neighbor_dist" getter="get_neighbor_dist" default="500.0">
 			The distance to search for other agents.

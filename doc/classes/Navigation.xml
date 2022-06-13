@@ -43,7 +43,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the object's [RID].
+				Returns the [RID] of the navigation map on the [NavigationServer].
 			</description>
 		</method>
 		<method name="get_simple_path" qualifiers="const">
@@ -57,19 +57,30 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.2">
+		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height to use for fields.
 		</member>
-		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.3">
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.25">
 			The XZ plane cell size to use for fields.
 		</member>
-		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="5.0">
+		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="0.25">
 			This value is used to detect the near edges to connect compatible regions.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining all navigation map layers the navigation can use on a [method Navigation.get_simple_path] path query.
 		</member>
 		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector" default="Vector3( 0, 1, 0 )">
 			Defines which direction is up. By default, this is [code](0, 1, 0)[/code], which is the world's "up" direction.
 		</member>
 	</members>
+	<signals>
+		<signal name="map_changed">
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Emitted when a navigation map is updated, when a region moves or is modified.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

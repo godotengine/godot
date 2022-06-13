@@ -66,7 +66,7 @@ protected:
 public:
 	RID get_canvas();
 	RID get_space();
-	RID get_navigation_map();
+	RID get_navigation_map() const;
 
 	Physics2DDirectSpaceState *get_direct_space_state();
 

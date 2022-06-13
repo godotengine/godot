@@ -40,10 +40,14 @@ class Navigation;
 class NavigationMeshInstance : public Spatial {
 	GDCLASS(NavigationMeshInstance, Spatial);
 
-	bool enabled;
+	bool enabled = true;
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+
+	uint32_t navigation_layers = 1;
 	Navigation *navigation = nullptr;
 	Node *debug_view = nullptr;
 	Thread bake_thread;
@@ -57,7 +61,16 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
 	RID get_region_rid() const;
+
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const;
+
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const;
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;

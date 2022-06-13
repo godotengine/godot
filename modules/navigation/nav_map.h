@@ -33,14 +33,12 @@
 
 #include "nav_rid.h"
 
+#include "core/map.h"
 #include "core/math/math_defs.h"
 #include "core/os/thread_work_pool.h"
 #include "nav_utils.h"
-#include <KdTree.h>
 
-/**
-	@author AndreaCatania
-*/
+#include <KdTree.h>
 
 class NavRegion;
 class RvoAgent;
@@ -48,18 +46,18 @@ class NavRegion;
 
 class NavMap : public NavRid {
 	/// Map Up
-	Vector3 up;
+	Vector3 up = Vector3(0, 1, 0);
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size and cell_height.
-	real_t cell_size;
-	real_t cell_height;
+	real_t cell_size = 0.25;
+	real_t cell_height = 0.25;
 
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin;
+	real_t edge_connection_margin = 0.25;
 
-	bool regenerate_polygons;
-	bool regenerate_links;
+	bool regenerate_polygons = true;
+	bool regenerate_links = true;
 
 	std::vector<NavRegion *> regions;
 
@@ -70,7 +68,7 @@ class NavMap : public NavRid {
 	RVO::KdTree rvo;
 
 	/// Is agent array modified?
-	bool agents_dirty;
+	bool agents_dirty = false;
 
 	/// All the Agents (even the controlled one)
 	std::vector<RvoAgent *> agents;
@@ -79,10 +77,10 @@ class NavMap : public NavRid {
 	std::vector<RvoAgent *> controlled_agents;
 
 	/// Physics delta time
-	real_t deltatime;
+	real_t deltatime = 0.0;
 
 	/// Change the id each time the map is updated.
-	uint32_t map_update_id;
+	uint32_t map_update_id = 0;
 
 	/// Pooled threads for computing steps
 	ThreadWorkPool step_work_pool;
@@ -113,7 +111,7 @@ public:
 
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
-	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const;
+	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
 	Vector3 get_closest_point(const Vector3 &p_point) const;
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;

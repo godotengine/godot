@@ -33,11 +33,8 @@
 
 #include "core/object.h"
 #include "nav_rid.h"
-#include <Agent.h>
 
-/**
-	@author AndreaCatania
-*/
+#include <Agent.h>
 
 class NavMap;
 
@@ -49,10 +46,10 @@ class RvoAgent : public NavRid {
 		Variant new_velocity;
 	};
 
-	NavMap *map;
+	NavMap *map = nullptr;
 	RVO::Agent agent;
 	AvoidanceComputedCallback callback;
-	uint32_t map_update_id;
+	uint32_t map_update_id = 0;
 
 public:
 	RvoAgent();

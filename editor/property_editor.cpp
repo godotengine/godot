@@ -419,7 +419,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				updating = false;
 				return false;
 
-			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				String basename;
 				switch (hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -428,11 +428,17 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					case PROPERTY_HINT_LAYERS_2D_PHYSICS:
 						basename = "layer_names/2d_physics";
 						break;
+					case PROPERTY_HINT_LAYERS_2D_NAVIGATION:
+						basename = "layer_names/2d_navigation";
+						break;
 					case PROPERTY_HINT_LAYERS_3D_RENDER:
 						basename = "layer_names/3d_render";
 						break;
 					case PROPERTY_HINT_LAYERS_3D_PHYSICS:
 						basename = "layer_names/3d_physics";
+						break;
+					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
+						basename = "layer_names/3d_navigation";
 						break;
 				}
 
@@ -1166,7 +1172,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			emit_signal("variant_changed");
 		} break;
 		case Variant::INT: {
-			if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				uint32_t f = v;
 				if (checks20[p_which]->is_pressed()) {
 					f |= (1 << p_which);

@@ -32,18 +32,20 @@
 
 #include "nav_map.h"
 
-/**
-	@author AndreaCatania
-*/
-
-NavRegion::NavRegion() :
-		map(NULL),
-		polygons_dirty(true) {
-}
-
 void NavRegion::set_map(NavMap *p_map) {
 	map = p_map;
 	polygons_dirty = true;
+	if (!map) {
+		connections.clear();
+	}
+}
+
+void NavRegion::set_navigation_layers(uint32_t p_navigation_layers) {
+	navigation_layers = p_navigation_layers;
+}
+
+uint32_t NavRegion::get_navigation_layers() const {
+	return navigation_layers;
 }
 
 void NavRegion::set_transform(Transform p_transform) {
@@ -54,6 +56,25 @@ void NavRegion::set_transform(Transform p_transform) {
 void NavRegion::set_mesh(Ref<NavigationMesh> p_mesh) {
 	mesh = p_mesh;
 	polygons_dirty = true;
+}
+
+int NavRegion::get_connections_count() const {
+	if (!map) {
+		return 0;
+	}
+	return connections.size();
+}
+
+Vector3 NavRegion::get_connection_pathway_start(int p_connection_id) const {
+	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
+	return connections[p_connection_id].pathway_start;
+}
+
+Vector3 NavRegion::get_connection_pathway_end(int p_connection_id) const {
+	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
+	return connections[p_connection_id].pathway_end;
 }
 
 bool NavRegion::sync() {
@@ -71,17 +92,19 @@ void NavRegion::update_polygons() {
 	polygons.clear();
 	polygons_dirty = false;
 
-	if (map == NULL) {
+	if (map == nullptr) {
 		return;
 	}
 
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return;
+	}
 
 	PoolVector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	PoolVector<Vector3>::Read vertices_r = vertices.read();
 
@@ -132,3 +155,7 @@ void NavRegion::update_polygons() {
 		}
 	}
 }
+
+NavRegion::NavRegion() {}
+
+NavRegion::~NavRegion() {}
