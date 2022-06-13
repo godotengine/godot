@@ -12,10 +12,10 @@
 	</methods>
 	<members>
 		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
-			The [code]curve[/code] rendered onto the texture.
+			The [Curve] that is rendered onto the texture.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
-			The width of the texture.
+			The width of the texture (in pixels). Higher values make it possible to represent high-frequency data better (such as sudden direction changes), at the cost of increased generation time and memory usage.
 		</member>
 	</members>
 	<constants>
