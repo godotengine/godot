@@ -53,7 +53,7 @@
 		<method name="update_layer_mask">
 			<return type="void" />
 			<description>
-				Update layer mask of GPUParticles3D
+				Update layer mask of GPUParticles3D which is used with cull_mask which help it interact with Particles Attractor and Collider.
 			</description>
 		</method>
 	</methods>
