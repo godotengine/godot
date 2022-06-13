@@ -283,7 +283,7 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 		real_t length = fabrik_data_chain[i].length / (current_trans.origin.distance_to(next_bone_trans.origin));
 
 		Vector3 newPoint = Vector3();
-		if (limit_rotation and i < final_joint_idx) {
+		if (limit_rotation && (i < final_joint_idx)) {
 			newPoint = chain_ball_constraint(i);
 		}
 
