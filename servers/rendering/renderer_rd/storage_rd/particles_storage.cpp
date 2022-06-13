@@ -460,6 +460,7 @@ void ParticlesStorage::particles_set_layer_mask(RID p_particles, uint32_t layer_
 		if (particle_collision) {
 			if (!(layer_mask & particle_collision->cull_mask)) {
 				particles->collisions.erase(p_collision);
+				particle_collision->rejected_particles.insert(p_particles);
 			}
 		}
 	}
@@ -679,9 +680,11 @@ RID ParticlesStorage::particles_get_draw_pass_mesh(RID p_particles, int p_pass) 
 void ParticlesStorage::particles_add_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ParticlesCollisionInstance *particles_collision_instance = particles_collision_instance_owner.get_or_null(p_particles_collision_instance);
+	ParticlesCollision* particles_collision = particles_collision_owner.get_or_null(particles_collision_instance->collision);
 	ERR_FAIL_COND(!particles);
-	if (particles->layer_mask & particles_collision_owner.get_or_null(particles_collision_instance->collision)->cull_mask) {
+	if (particles->layer_mask & particles_collision->cull_mask) {
 		particles->collisions.insert(p_particles_collision_instance);
+		particles_collision->rejected_particles.insert(p_particles);
 	}
 }
 
@@ -1781,6 +1784,14 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	for(auto& p_particle: particles_collision->rejected_particles)
+	{
+		Particles* particle = particles_owner.get_or_null(p_particle);
+		if(particle->layer_mask & particles_collision->cull_mask)
+		{
+			particle->collisions.insert(p_particles_collision);
+		}
+	}
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {

@@ -256,6 +256,7 @@ struct ParticlesCollision {
 	RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
 	RendererStorage::Dependency dependency;
+	HashSet<RID> rejected_particles;
 };
 
 struct ParticlesCollisionInstance {
