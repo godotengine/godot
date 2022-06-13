@@ -663,8 +663,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #else // LIGHT_ANISOTROPY_USED
 		float D = D_GGX(cNdotH, alpha_ggx);
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
-#endif // LIGHT_ANISOTROPY_USED
-	   // F
+#endif // LIGHT_ANISOTROPY_USED \
+		// F
 		float cLdotH5 = SchlickFresnel(cLdotH);
 		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
 
