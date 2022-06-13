@@ -111,31 +111,19 @@ Size2i Window::get_real_size() const {
 
 void Window::set_max_size(const Size2i &p_max_size) {
 	max_size = p_max_size;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_max_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		max_size = DisplayServer::get_singleton()->window_get_max_size(window_id);
-	}
 	return max_size;
 }
 
 void Window::set_min_size(const Size2i &p_min_size) {
 	min_size = p_min_size;
-	if (!wrap_controls && window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_min_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		min_size = DisplayServer::get_singleton()->window_get_min_size(window_id);
-	}
 	return min_size;
 }
 
@@ -621,6 +609,7 @@ void Window::_update_window_size() {
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	}
 
 	//update the viewport
