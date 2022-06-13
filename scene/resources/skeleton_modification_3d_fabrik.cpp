@@ -647,6 +647,8 @@ void SkeletonModification3DFABRIK::set_fabrik_joint_roll(int p_joint_idx, real_t
 }
 
 real_t SkeletonModification3DFABRIK::get_fabrik_joint_rotational_constraint(int p_joint_idx) const {
+	const int bone_chain_size = fabrik_data_chain.size();
+	ERR_FAIL_INDEX_V(p_joint_idx, bone_chain_size, 0.0);
 	return fabrik_data_chain[p_joint_idx].rotational_constraint;
 }
 
