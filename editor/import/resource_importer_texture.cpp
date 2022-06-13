@@ -104,13 +104,13 @@ void ResourceImporterTexture::update_imports() {
 			bool changed = false;
 
 			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
-				print_line(vformat("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded).", String(E.key)));
+				print_line(vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."), String(E.key)));
 				cf->set_value("params", "compress/normal_map", 1);
 				changed = true;
 			}
 
 			if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-				print_line(vformat("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s.", String(E.key), E.value.normal_path_for_roughness));
+				print_line(vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."), String(E.key), E.value.normal_path_for_roughness));
 				cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
 				cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
 				changed = true;
@@ -127,7 +127,7 @@ void ResourceImporterTexture::update_imports() {
 					cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
 					compress_string = "Basis Universal";
 				}
-				print_line(vformat("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s.", String(E.key), compress_string));
+				print_line(vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."), String(E.key), compress_string));
 				cf->set_value("params", "mipmaps/generate", true);
 				changed = true;
 			}
