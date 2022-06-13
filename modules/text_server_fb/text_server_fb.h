@@ -209,6 +209,7 @@ class TextServerFallback : public TextServerExtension {
 		PackedByteArray data;
 		const uint8_t *data_ptr;
 		size_t data_size;
+		int face_index = 0;
 
 		mutable ThreadWorkPool work_pool;
 
@@ -363,6 +364,11 @@ public:
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
+
+	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
+	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
+
+	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 
 	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
 	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;

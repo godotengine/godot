@@ -454,7 +454,11 @@ void DynamicFontImportSettings::_add_glyph_range_item(int32_t p_start, int32_t p
 void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_property) {
 	// Update font preview.
 
-	if (p_edited_property == "antialiased") {
+	if (p_edited_property == "face_index") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_face_index(import_settings_data->get("face_index"));
+		}
+	} else if (p_edited_property == "antialiased") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_antialiased(import_settings_data->get("antialiased"));
 		}
@@ -945,6 +949,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 void DynamicFontImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
+	main_settings["face_index"] = import_settings_data->get("face_index");
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
 	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
@@ -1299,6 +1304,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	import_settings_data->notify_property_list_changed();
 
 	if (font_preview->get_data_count() > 0) {
+		font_preview->get_data(0)->set_face_index(import_settings_data->get("face_index"));
 		font_preview->get_data(0)->set_antialiased(import_settings_data->get("antialiased"));
 		font_preview->get_data(0)->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
 		font_preview->get_data(0)->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
@@ -1360,6 +1366,7 @@ DynamicFontImportSettings *DynamicFontImportSettings::get_singleton() {
 DynamicFontImportSettings::DynamicFontImportSettings() {
 	singleton = this;
 
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "face_index"), 0));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
