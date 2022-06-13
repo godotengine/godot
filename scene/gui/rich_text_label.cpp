@@ -257,7 +257,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                                     \
 			if (align != ALIGN_FILL) {                                                                                                                                      \
 				if (line < l.offset_caches.size()) {                                                                                                                        \
-					wofs = l.offset_caches[line];                                                                                                                           \
+					wofs = margin + l.offset_caches[line];                                                                                                                  \
 				}                                                                                                                                                           \
 			}                                                                                                                                                               \
 		}                                                                                                                                                                   \
@@ -272,7 +272,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 #define ENSURE_WIDTH(m_width)                                                                                                                      \
 	if (p_mode == PROCESS_CACHE) {                                                                                                                 \
-		l.maximum_width = MAX(l.maximum_width, MIN(p_width, Math::ceil(wofs + m_width)));                                                          \
+		non_wrapped_w += m_width;                                                                                                                  \
+		l.maximum_width = MAX(l.maximum_width, Math::ceil(wofs + non_wrapped_w));                                                                  \
 		l.minimum_width = MAX(l.minimum_width, Math::ceil(m_width));                                                                               \
 	}                                                                                                                                              \
 	if (wofs - backtrack + m_width > p_width) {                                                                                                    \
@@ -326,6 +327,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	bool line_is_blank = true;
 	bool line_wrapped = false;
 	int fh = 0;
+	int non_wrapped_w = 0;
 
 	while (it) {
 		switch (it->type) {
@@ -747,7 +749,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						int ly = 0;
 
 						for (int i = 0; i < frame->lines.size(); i++) {
-							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
+							int w = _find_margin(frame->lines[i].from, p_base_font) + 1;
+							_process_line(frame, Point2(), ly, w, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 							table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
@@ -773,7 +776,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//assign actual widths
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns.write[i].width = table->columns[i].min_width;
-						if (table->columns[i].expand && total_ratio > 0) {
+						if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 							table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 						}
 						table->total_width += table->columns[i].width + hseparation;
