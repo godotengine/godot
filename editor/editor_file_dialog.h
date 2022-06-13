@@ -179,7 +179,7 @@ private:
 
 	void _delete_items();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
 	void _go_up();
 	void _go_back();

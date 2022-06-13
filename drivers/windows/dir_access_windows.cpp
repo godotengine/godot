@@ -159,8 +159,11 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	bool success;
 	int err;
 
-	p_dir = "\\\\?\\" + p_dir; //done according to
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
+	if (!p_dir.is_network_share_path()) {
+		p_dir = "\\\\?\\" + p_dir;
+		// Add "\\?\" to the path to extend max. path length past 248, if it's not a network share UNC path.
+		// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
+	}
 
 	success = CreateDirectoryW(p_dir.c_str(), NULL);
 	err = GetLastError();
@@ -343,6 +346,10 @@ uint64_t DirAccessWindows::get_space_left() {
 
 String DirAccessWindows::get_filesystem_type() const {
 	String path = fix_path(const_cast<DirAccessWindows *>(this)->get_current_dir());
+
+	if (path.is_network_share_path()) {
+		return "Network Share";
+	}
 
 	int unit_end = path.find(":");
 	ERR_FAIL_COND_V(unit_end == -1, String());
