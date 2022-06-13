@@ -132,8 +132,10 @@ public:
 	static bool parallel_compile_supported; // True if using natively supported asyncrhonous compilation
 
 	static bool async_hidden_forbidden;
-	static int *compiles_started_this_frame;
-	static int max_simultaneous_compiles;
+	static uint32_t *compiles_started_this_frame;
+	static uint32_t *max_frame_compiles_in_progress;
+	static uint32_t max_simultaneous_compiles;
+	static uint32_t active_compiles_count;
 #ifdef DEBUG_ENABLED
 	static bool log_active_async_compiles_count;
 #endif
@@ -142,8 +144,6 @@ public:
 	static void advance_async_shaders_compilation();
 
 private:
-	static int active_compiles_count;
-
 	union VersionKey {
 		static const uint32_t UBERSHADER_FLAG = ((uint32_t)1) << 31;
 		struct {

@@ -64,13 +64,14 @@ ThreadedCallableQueue<GLuint> *ShaderGLES3::compile_queue;
 bool ShaderGLES3::parallel_compile_supported;
 
 bool ShaderGLES3::async_hidden_forbidden;
-int *ShaderGLES3::compiles_started_this_frame;
-int ShaderGLES3::max_simultaneous_compiles;
+uint32_t *ShaderGLES3::compiles_started_this_frame;
+uint32_t *ShaderGLES3::max_frame_compiles_in_progress;
+uint32_t ShaderGLES3::max_simultaneous_compiles;
+uint32_t ShaderGLES3::active_compiles_count;
 #ifdef DEBUG_ENABLED
 bool ShaderGLES3::log_active_async_compiles_count;
 #endif
 
-int ShaderGLES3::active_compiles_count;
 uint64_t ShaderGLES3::current_frame;
 
 //#define DEBUG_SHADER
@@ -210,7 +211,6 @@ void ShaderGLES3::advance_async_shaders_compilation() {
 void ShaderGLES3::_log_active_compiles() {
 #ifdef DEBUG_ENABLED
 	if (log_active_async_compiles_count) {
-		ERR_FAIL_COND(active_compiles_count < 0);
 		if (parallel_compile_supported) {
 			print_line("Async. shader compiles: " + itos(active_compiles_count));
 		} else if (compile_queue) {
@@ -240,9 +240,9 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 				// These lead to nowhere unless other piece of code starts the compile process
 			} break;
 			case Version::COMPILE_STATUS_SOURCE_PROVIDED: {
-				int start_compiles_count = p_async_forbidden ? 2 : 0;
+				uint32_t start_compiles_count = p_async_forbidden ? 2 : 0;
 				if (!start_compiles_count) {
-					int free_async_slots = MAX(0, MIN(max_simultaneous_compiles - active_compiles_count, max_simultaneous_compiles - *compiles_started_this_frame));
+					uint32_t free_async_slots = MAX(0, MIN(max_simultaneous_compiles - active_compiles_count, max_simultaneous_compiles - *compiles_started_this_frame));
 					start_compiles_count = MIN(2, free_async_slots);
 				}
 				if (start_compiles_count >= 1) {
@@ -257,6 +257,7 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 						versions_compiling.add_last(&p_version->compiling_list);
 						// Vertex and fragment shaders take independent compile slots
 						active_compiles_count += start_compiles_count;
+						*max_frame_compiles_in_progress = MAX(*max_frame_compiles_in_progress, active_compiles_count);
 						_log_active_compiles();
 					}
 					(*compiles_started_this_frame) += start_compiles_count;
@@ -274,6 +275,7 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 					glCompileShader(p_version->ids.frag);
 					if (p_version->compiling_list.in_list()) {
 						active_compiles_count++;
+						*max_frame_compiles_in_progress = MAX(*max_frame_compiles_in_progress, active_compiles_count);
 						_log_active_compiles();
 					}
 					p_version->compile_status = Version::COMPILE_STATUS_COMPILING_VERTEX_AND_FRAGMENT;
@@ -299,6 +301,10 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 						glGetShaderiv(p_version->ids.vert, _EXT_COMPLETION_STATUS, &vertex_completed);
 						if (p_version->compiling_list.in_list()) {
 							active_compiles_count--;
+#ifdef DEV_ENABLED
+							CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
+							*max_frame_compiles_in_progress = MAX(*max_frame_compiles_in_progress, active_compiles_count);
 							_log_active_compiles();
 						}
 						p_version->compile_status = Version::COMPILE_STATUS_COMPILING_FRAGMENT;
@@ -322,6 +328,9 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 						if (p_version->compiling_list.in_list()) {
 							p_version->compiling_list.remove_from_list();
 							active_compiles_count--;
+#ifdef DEV_ENABLED
+							CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
 							_log_active_compiles();
 						}
 					}
@@ -334,6 +343,9 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 						p_version->compile_status = Version::COMPILE_STATUS_ERROR;
 						p_version->compiling_list.remove_from_list();
 						active_compiles_count--;
+#ifdef DEV_ENABLED
+						CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
 						_log_active_compiles();
 					} break;
 					case 0: { // In progress
@@ -361,6 +373,7 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 					if (!p_async_forbidden) {
 						versions_compiling.add_last(&p_version->compiling_list);
 						active_compiles_count++;
+						*max_frame_compiles_in_progress = MAX(*max_frame_compiles_in_progress, active_compiles_count);
 						_log_active_compiles();
 						(*compiles_started_this_frame)++;
 					}
@@ -425,6 +438,9 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 					if (p_version->compiling_list.in_list()) {
 						p_version->compiling_list.remove_from_list();
 						active_compiles_count--;
+#ifdef DEV_ENABLED
+						CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
 						_log_active_compiles();
 					}
 				}
@@ -818,6 +834,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version(bool &r_async_forbidden) 
 			v.compile_status = Version::COMPILE_STATUS_PROCESSING_AT_QUEUE;
 			versions_compiling.add_last(&v.compiling_list);
 			active_compiles_count++;
+			*max_frame_compiles_in_progress = MAX(*max_frame_compiles_in_progress, active_compiles_count);
 			_log_active_compiles();
 			(*compiles_started_this_frame)++;
 
@@ -1065,13 +1082,18 @@ void ShaderGLES3::_dispose_program(Version *p_version) {
 	if (p_version->compiling_list.in_list()) {
 		p_version->compiling_list.remove_from_list();
 		active_compiles_count--;
+#ifdef DEV_ENABLED
+		CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
 		if (p_version->compile_status == Version::COMPILE_STATUS_COMPILING_VERTEX_AND_FRAGMENT) {
 			active_compiles_count--;
+#ifdef DEV_ENABLED
+			CRASH_COND(active_compiles_count == UINT32_MAX);
+#endif
 		}
 		_log_active_compiles();
 	}
 	p_version->compile_status = Version::COMPILE_STATUS_ERROR;
-	ERR_FAIL_COND(active_compiles_count < 0);
 }
 
 GLint ShaderGLES3::get_uniform_location(const String &p_name) const {
