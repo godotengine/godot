@@ -312,7 +312,7 @@ private:
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
 		// booleans
 		uint64_t deep_parallax : 1;
-		uint64_t heightmap_corrected_z: 1;
+		uint64_t heightmap_corrected_z : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
 

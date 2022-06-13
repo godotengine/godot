@@ -965,7 +965,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
 			code += "		float layer_depth = 1.0 / num_layers;\n";
 			code += "		float current_layer_depth = 0.0;\n";
-			if(!heightmap_corrected_z) {
+			if (!heightmap_corrected_z) {
 				code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
 			} else {
 				code += "		vec2 P = view_dir.xy / view_dir.z * heightmap_scale;\n";
