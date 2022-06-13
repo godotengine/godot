@@ -217,6 +217,9 @@
 		<member name="grow_amount" type="float" setter="set_grow" getter="get_grow" default="0.0">
 			Grows object vertices in the direction of their normals.
 		</member>
+		<member name="heightmap_corrected_z" type="bool" setter="set_heightmap_corrected_z" getter="is_heightmap_corrected_z_enabled" default="true">
+			If [code]true[/code] applies a correction on the parallax effect to better represent depth under certain view angles. However it might introduce undesirable artifacts on boundaries.
+		</member>
 		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled" default="false">
 		</member>
 		<member name="heightmap_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
