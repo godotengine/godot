@@ -65,7 +65,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
+Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	// Find the start poly and the end poly on this map.
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
@@ -78,7 +78,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		const gd::Polygon &p = polygons[i];
 
 		// Only consider the polygon if it in a region with compatible layers.
-		if ((p_layers & p.owner->get_layers()) == 0) {
+		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
 			continue;
 		}
 
@@ -154,7 +154,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
-				if ((p_layers & connection.polygon->owner->get_layers()) == 0) {
+				if ((p_navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
 					continue;
 				}
 

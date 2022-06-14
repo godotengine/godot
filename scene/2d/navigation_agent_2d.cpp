@@ -61,8 +61,8 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_max_distance", "max_speed"), &NavigationAgent2D::set_path_max_distance);
 	ClassDB::bind_method(D_METHOD("get_path_max_distance"), &NavigationAgent2D::get_path_max_distance);
 
-	ClassDB::bind_method(D_METHOD("set_navigable_layers", "navigable_layers"), &NavigationAgent2D::set_navigable_layers);
-	ClassDB::bind_method(D_METHOD("get_navigable_layers"), &NavigationAgent2D::get_navigable_layers);
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationAgent2D::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationAgent2D::get_navigation_layers);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent2D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent2D::get_navigation_map);
@@ -89,7 +89,7 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px/s"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1,suffix:px"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -207,16 +207,16 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	}
 }
 
-void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
-	bool layers_changed = navigable_layers != p_layers;
-	navigable_layers = p_layers;
-	if (layers_changed) {
+void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
+	bool navigation_layers_changed = navigation_layers != p_navigation_layers;
+	navigation_layers = p_navigation_layers;
+	if (navigation_layers_changed) {
 		_request_repath();
 	}
 }
 
-uint32_t NavigationAgent2D::get_navigable_layers() const {
-	return navigable_layers;
+uint32_t NavigationAgent2D::get_navigation_layers() const {
+	return navigation_layers;
 }
 
 void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
@@ -383,9 +383,9 @@ void NavigationAgent2D::update_navigation() {
 
 	if (reload_path) {
 		if (map_override.is_valid()) {
-			navigation_path = NavigationServer2D::get_singleton()->map_get_path(map_override, o, target_location, true, navigable_layers);
+			navigation_path = NavigationServer2D::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
 		} else {
-			navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigable_layers);
+			navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigation_layers);
 		}
 		navigation_finished = false;
 		nav_path_index = 0;

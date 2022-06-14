@@ -166,7 +166,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer2D::map_get_cell_size);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer2D::map_set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_edge_connection_margin", "map"), &NavigationServer2D::map_get_edge_connection_margin);
-	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "layers"), &NavigationServer2D::map_get_path, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "navigation_layers"), &NavigationServer2D::map_get_path, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &NavigationServer2D::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &NavigationServer2D::map_get_closest_point_owner);
 
@@ -180,8 +180,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer2D::region_get_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &NavigationServer2D::region_set_map);
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer2D::region_get_map);
-	ClassDB::bind_method(D_METHOD("region_set_layers", "region", "layers"), &NavigationServer2D::region_set_layers);
-	ClassDB::bind_method(D_METHOD("region_get_layers", "region"), &NavigationServer2D::region_get_layers);
+	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer2D::region_set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer2D::region_get_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer2D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navpoly", "region", "nav_poly"), &NavigationServer2D::region_set_navpoly);
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer2D::region_get_connections_count);
@@ -250,8 +250,8 @@ void FORWARD_2_C(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, r
 real_t FORWARD_1_C(region_get_travel_cost, RID, p_region, rid_to_rid);
 
 void FORWARD_2_C(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
-void FORWARD_2_C(region_set_layers, RID, p_region, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
-uint32_t FORWARD_1_C(region_get_layers, RID, p_region, rid_to_rid);
+void FORWARD_2_C(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
+uint32_t FORWARD_1_C(region_get_navigation_layers, RID, p_region, rid_to_rid);
 void FORWARD_2_C(region_set_transform, RID, p_region, Transform2D, p_transform, rid_to_rid, trf2_to_trf3);
 
 void NavigationServer2D::region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const {
