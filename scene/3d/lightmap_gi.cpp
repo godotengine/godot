@@ -73,7 +73,7 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.size() <= 0);
+	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
