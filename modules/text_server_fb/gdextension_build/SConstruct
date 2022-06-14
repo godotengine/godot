@@ -22,12 +22,86 @@ opts = Variables([], ARGUMENTS)
 opts.Add(BoolVariable("brotli_enabled", "Use Brotli library", True))
 opts.Add(BoolVariable("freetype_enabled", "Use FreeType library", True))
 opts.Add(BoolVariable("msdfgen_enabled", "Use MSDFgen library (require FreeType)", True))
+opts.Add(BoolVariable("thorvg_enabled", "Use ThorVG library (require FreeType)", True))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 
 opts.Update(env)
 
 if not env["verbose"]:
     methods.no_verbose(sys, env)
+
+# ThorVG
+if env["thorvg_enabled"] and env["freetype_enabled"]:
+    env_tvg = env.Clone()
+    env_tvg.disable_warnings()
+
+    thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
+    thirdparty_tvg_sources = [
+        "src/lib/sw_engine/tvgSwFill.cpp",
+        "src/lib/sw_engine/tvgSwImage.cpp",
+        "src/lib/sw_engine/tvgSwMath.cpp",
+        "src/lib/sw_engine/tvgSwMemPool.cpp",
+        "src/lib/sw_engine/tvgSwRaster.cpp",
+        "src/lib/sw_engine/tvgSwRenderer.cpp",
+        "src/lib/sw_engine/tvgSwRle.cpp",
+        "src/lib/sw_engine/tvgSwShape.cpp",
+        "src/lib/sw_engine/tvgSwStroke.cpp",
+        "src/lib/tvgAccessor.cpp",
+        "src/lib/tvgBezier.cpp",
+        "src/lib/tvgCanvas.cpp",
+        "src/lib/tvgFill.cpp",
+        "src/lib/tvgGlCanvas.cpp",
+        "src/lib/tvgInitializer.cpp",
+        "src/lib/tvgLinearGradient.cpp",
+        "src/lib/tvgLoader.cpp",
+        "src/lib/tvgLzw.cpp",
+        "src/lib/tvgPaint.cpp",
+        "src/lib/tvgPicture.cpp",
+        "src/lib/tvgRadialGradient.cpp",
+        "src/lib/tvgRender.cpp",
+        "src/lib/tvgSaver.cpp",
+        "src/lib/tvgScene.cpp",
+        "src/lib/tvgShape.cpp",
+        "src/lib/tvgSwCanvas.cpp",
+        "src/lib/tvgTaskScheduler.cpp",
+        "src/loaders/external_png/tvgPngLoader.cpp",
+        "src/loaders/jpg/tvgJpgd.cpp",
+        "src/loaders/jpg/tvgJpgLoader.cpp",
+        "src/loaders/raw/tvgRawLoader.cpp",
+        "src/loaders/svg/tvgSvgCssStyle.cpp",
+        "src/loaders/svg/tvgSvgLoader.cpp",
+        "src/loaders/svg/tvgSvgPath.cpp",
+        "src/loaders/svg/tvgSvgSceneBuilder.cpp",
+        "src/loaders/svg/tvgSvgUtil.cpp",
+        "src/loaders/svg/tvgXmlParser.cpp",
+        "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
+        "src/loaders/tvg/tvgTvgLoader.cpp",
+        "src/savers/tvg/tvgTvgSaver.cpp",
+    ]
+    thirdparty_tvg_sources = [thirdparty_tvg_dir + file for file in thirdparty_tvg_sources]
+
+    env_tvg.Append(
+        CPPPATH=[
+            "../../../thirdparty/thorvg/inc",
+            "../../../thirdparty/thorvg/src/lib",
+            "../../../thirdparty/thorvg/src/lib/sw_engine",
+            "../../../thirdparty/thorvg/src/loaders/external_png",
+            "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/thorvg/src/loaders/raw",
+            "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/loaders/tvg",
+            "../../../thirdparty/thorvg/src/savers/tvg",
+            "../../../thirdparty/libpng",
+        ]
+    )
+    env.Append(CPPPATH=["../../../thirdparty/thorvg/inc", "../../../thirdparty/thorvg/src/lib"])
+    env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
+
+    lib = env_tvg.Library(
+        f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        thirdparty_tvg_sources,
+    )
+    env.Append(LIBS=[lib])
 
 # MSDFGEN
 if env["msdfgen_enabled"] and env["freetype_enabled"]:

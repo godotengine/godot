@@ -39,6 +39,9 @@ thirdparty_obj = []
 freetype_enabled = "freetype" in env.module_list
 msdfgen_enabled = "msdfgen" in env.module_list
 
+if "svg" in env.module_list:
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
     env_harfbuzz.disable_warnings()

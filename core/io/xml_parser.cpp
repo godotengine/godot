@@ -41,11 +41,11 @@ static inline bool _is_white_space(char c) {
 }
 
 //! sets the state that text was found. Returns true if set should be set
-bool XMLParser::_set_text(char *start, char *end) {
+bool XMLParser::_set_text(const char *start, const char *end) {
 	// check if text is more than 2 characters, and if not, check if there is
 	// only white space, so that this text won't be reported
 	if (end - start < 3) {
-		char *p = start;
+		const char *p = start;
 		for (; p != end; ++p) {
 			if (!_is_white_space(*p)) {
 				break;
@@ -92,7 +92,7 @@ void XMLParser::_parse_closing_xml_element() {
 void XMLParser::_ignore_definition() {
 	node_type = NODE_UNKNOWN;
 
-	char *F = P;
+	const char *F = P;
 	// move until end marked with '>' reached
 	while (*P && *P != '>') {
 		next_char();
@@ -123,8 +123,8 @@ bool XMLParser::_parse_cdata() {
 		return true;
 	}
 
-	char *cDataBegin = P;
-	char *cDataEnd = nullptr;
+	const char *cDataBegin = P;
+	const char *cDataEnd = nullptr;
 
 	// find end of CDATA
 	while (*P && !cDataEnd) {
@@ -152,9 +152,9 @@ void XMLParser::_parse_comment() {
 	node_type = NODE_COMMENT;
 	P += 1;
 
-	char *pEndOfInput = data + length;
-	char *pCommentBegin;
-	char *pCommentEnd;
+	const char *pEndOfInput = data + length;
+	const char *pCommentBegin;
+	const char *pCommentEnd;
 
 	if (P + 1 < pEndOfInput && P[0] == '-' && P[1] == '-') {
 		// Comment, use '-->' as end.
@@ -293,7 +293,7 @@ void XMLParser::_parse_opening_xml_element() {
 }
 
 void XMLParser::_parse_current_node() {
-	char *start = P;
+	const char *start = P;
 	node_offset = P - data;
 
 	// more forward until '<' found
@@ -458,15 +458,36 @@ bool XMLParser::is_empty() const {
 Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(p_buffer.size() == 0, ERR_INVALID_DATA);
 
-	if (data) {
-		memdelete_arr(data);
+	if (data_copy) {
+		memdelete_arr(data_copy);
+		data_copy = nullptr;
 	}
 
 	length = p_buffer.size();
-	data = memnew_arr(char, length + 1);
-	memcpy(data, p_buffer.ptr(), length);
-	data[length] = 0;
+	data_copy = memnew_arr(char, length + 1);
+	memcpy(data_copy, p_buffer.ptr(), length);
+	data_copy[length] = 0;
+	data = data_copy;
 	P = data;
+	current_line = 0;
+
+	return OK;
+}
+
+Error XMLParser::_open_buffer(const uint8_t *p_buffer, size_t p_size) {
+	ERR_FAIL_COND_V(p_size == 0, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(!p_buffer, ERR_INVALID_DATA);
+
+	if (data_copy) {
+		memdelete_arr(data_copy);
+		data_copy = nullptr;
+	}
+
+	length = p_size;
+	data = (const char *)p_buffer;
+	P = data;
+	current_line = 0;
+
 	return OK;
 }
 
@@ -479,13 +500,15 @@ Error XMLParser::open(const String &p_path) {
 	length = file->get_length();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);
 
-	if (data) {
-		memdelete_arr(data);
+	if (data_copy) {
+		memdelete_arr(data_copy);
+		data_copy = nullptr;
 	}
 
-	data = memnew_arr(char, length + 1);
-	file->get_buffer((uint8_t *)data, length);
-	data[length] = 0;
+	data_copy = memnew_arr(char, length + 1);
+	file->get_buffer((uint8_t *)data_copy, length);
+	data_copy[length] = 0;
+	data = data_copy;
 	P = data;
 	current_line = 0;
 
@@ -512,8 +535,9 @@ void XMLParser::skip_section() {
 }
 
 void XMLParser::close() {
-	if (data) {
+	if (data_copy) {
 		memdelete_arr(data);
+		data_copy = nullptr;
 	}
 	data = nullptr;
 	length = 0;
@@ -528,7 +552,8 @@ int XMLParser::get_current_line() const {
 }
 
 XMLParser::~XMLParser() {
-	if (data) {
-		memdelete_arr(data);
+	if (data_copy) {
+		memdelete_arr(data_copy);
+		data_copy = nullptr;
 	}
 }
