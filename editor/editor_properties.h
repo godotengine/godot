@@ -451,16 +451,19 @@ class EditorPropertyVector2 : public EditorProperty {
 	GDCLASS(EditorPropertyVector2, EditorProperty);
 	EditorSpinSlider *spin[2];
 	bool setting = false;
+	double ratio_xy = 1.0;
+	double ratio_yx = 1.0;
+	TextureButton *linked = nullptr;
+	void _update_ratio();
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
 	EditorPropertyVector2(bool p_force_wide = false);
 };
 
@@ -486,6 +489,14 @@ class EditorPropertyVector3 : public EditorProperty {
 	EditorSpinSlider *spin[3];
 	bool setting = false;
 	bool angle_in_radians = false;
+	double ratio_yx = 1.0;
+	double ratio_zx = 1.0;
+	double ratio_xy = 1.0;
+	double ratio_zy = 1.0;
+	double ratio_xz = 1.0;
+	double ratio_yz = 1.0;
+	TextureButton *linked = nullptr;
+	void _update_ratio();
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -497,7 +508,7 @@ public:
 	virtual void update_property() override;
 	virtual void update_using_vector(Vector3 p_vector);
 	virtual Vector3 get_vector();
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), bool p_angle_in_radians = false);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link = false, const String &p_suffix = String(), bool p_angle_in_radians = false);
 	EditorPropertyVector3(bool p_force_wide = false);
 };
 
@@ -505,16 +516,19 @@ class EditorPropertyVector2i : public EditorProperty {
 	GDCLASS(EditorPropertyVector2i, EditorProperty);
 	EditorSpinSlider *spin[2];
 	bool setting = false;
+	double ratio_xy = 1.0;
+	double ratio_yx = 1.0;
+	TextureButton *linked = nullptr;
+	void _update_ratio();
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix = String());
+	void setup(int p_min, int p_max, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
 	EditorPropertyVector2i(bool p_force_wide = false);
 };
 
@@ -539,6 +553,14 @@ class EditorPropertyVector3i : public EditorProperty {
 	GDCLASS(EditorPropertyVector3i, EditorProperty);
 	EditorSpinSlider *spin[3];
 	bool setting = false;
+	double ratio_yx = 1.0;
+	double ratio_zx = 1.0;
+	double ratio_xy = 1.0;
+	double ratio_zy = 1.0;
+	double ratio_xz = 1.0;
+	double ratio_yz = 1.0;
+	TextureButton *linked = nullptr;
+	void _update_ratio();
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -548,7 +570,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix = String());
+	void setup(int p_min, int p_max, bool p_no_slider, bool p_link = false, const String &p_suffix = String());
 	EditorPropertyVector3i(bool p_force_wide = false);
 };
 

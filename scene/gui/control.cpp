@@ -478,6 +478,10 @@ void Control::_validate_property(PropertyInfo &property) const {
 		}
 	}
 
+	if (property.name == "scale") {
+		property.hint = PROPERTY_HINT_LINK;
+	}
+
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
 	Node *parent_node = get_parent_control();
 	if (!parent_node) {
