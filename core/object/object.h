@@ -524,10 +524,10 @@ private:
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Array _get_signal_list() const;
-	Array _get_signal_connection_list(const String &p_signal) const;
+	Array _get_signal_connection_list(const StringName &p_signal) const;
 	Array _get_incoming_connections() const;
-	void _set_bind(const String &p_set, const Variant &p_value);
-	Variant _get_bind(const String &p_name) const;
+	void _set_bind(const StringName &p_set, const Variant &p_value);
+	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
