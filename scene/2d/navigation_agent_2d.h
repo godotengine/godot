@@ -45,7 +45,7 @@ class NavigationAgent2D : public Node {
 	RID map_override;
 
 	bool avoidance_enabled = false;
-	uint32_t navigable_layers = 1;
+	uint32_t navigation_layers = 1;
 
 	real_t target_desired_distance = 1.0;
 	real_t radius = 0.0;
@@ -85,8 +85,8 @@ public:
 
 	void set_agent_parent(Node *p_agent_parent);
 
-	void set_navigable_layers(uint32_t p_layers);
-	uint32_t get_navigable_layers() const;
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;

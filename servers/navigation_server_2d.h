@@ -75,7 +75,7 @@ public:
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_layers = 1) const;
+	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
@@ -99,8 +99,8 @@ public:
 	virtual RID region_get_map(RID p_region) const;
 
 	/// Set the region's layers
-	virtual void region_set_layers(RID p_region, uint32_t p_layers) const;
-	virtual uint32_t region_get_layers(RID p_region) const;
+	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) const;
+	virtual uint32_t region_get_navigation_layers(RID p_region) const;
 
 	/// Set the global transformation of this region.
 	virtual void region_set_transform(RID p_region, Transform2D p_transform) const;

@@ -65,8 +65,8 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_max_distance", "max_speed"), &NavigationAgent3D::set_path_max_distance);
 	ClassDB::bind_method(D_METHOD("get_path_max_distance"), &NavigationAgent3D::get_path_max_distance);
 
-	ClassDB::bind_method(D_METHOD("set_navigable_layers", "navigable_layers"), &NavigationAgent3D::set_navigable_layers);
-	ClassDB::bind_method(D_METHOD("get_navigable_layers"), &NavigationAgent3D::get_navigable_layers);
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationAgent3D::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationAgent3D::get_navigation_layers);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent3D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent3D::get_navigation_map);
@@ -95,7 +95,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1,suffix:m"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_y"), "set_ignore_y", "get_ignore_y");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -214,16 +214,16 @@ void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 	}
 }
 
-void NavigationAgent3D::set_navigable_layers(uint32_t p_layers) {
-	bool layers_changed = navigable_layers != p_layers;
-	navigable_layers = p_layers;
-	if (layers_changed) {
+void NavigationAgent3D::set_navigation_layers(uint32_t p_navigation_layers) {
+	bool navigation_layers_changed = navigation_layers != p_navigation_layers;
+	navigation_layers = p_navigation_layers;
+	if (navigation_layers_changed) {
 		_request_repath();
 	}
 }
 
-uint32_t NavigationAgent3D::get_navigable_layers() const {
-	return navigable_layers;
+uint32_t NavigationAgent3D::get_navigation_layers() const {
+	return navigation_layers;
 }
 
 void NavigationAgent3D::set_navigation_map(RID p_navigation_map) {
@@ -400,9 +400,9 @@ void NavigationAgent3D::update_navigation() {
 
 	if (reload_path) {
 		if (map_override.is_valid()) {
-			navigation_path = NavigationServer3D::get_singleton()->map_get_path(map_override, o, target_location, true, navigable_layers);
+			navigation_path = NavigationServer3D::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
 		} else {
-			navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true, navigable_layers);
+			navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true, navigation_layers);
 		}
 		navigation_finished = false;
 		nav_path_index = 0;
