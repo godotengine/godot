@@ -472,24 +472,33 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	String texfilter_str;
+	// Force linear filtering for the heightmap texture, as the heightmap effect
+	// looks broken with nearest-neighbor filtering (with and without Deep Parallax).
+	String texfilter_height_str;
 	switch (texture_filter) {
 		case TEXTURE_FILTER_NEAREST:
 			texfilter_str = "filter_nearest";
+			texfilter_height_str = "filter_linear";
 			break;
 		case TEXTURE_FILTER_LINEAR:
 			texfilter_str = "filter_linear";
+			texfilter_height_str = "filter_linear";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
 			texfilter_str = "filter_nearest_mipmap";
+			texfilter_height_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
 			texfilter_str = "filter_linear_mipmap";
+			texfilter_height_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
 			texfilter_str = "filter_nearest_mipmap_anisotropic";
+			texfilter_height_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
 			texfilter_str = "filter_linear_mipmap_anisotropic";
+			texfilter_height_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_MAX:
 			break; // Internal value, skip.
@@ -497,8 +506,10 @@ void BaseMaterial3D::_update_shader() {
 
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {
 		texfilter_str += ",repeat_enable";
+		texfilter_height_str += ",repeat_enable";
 	} else {
 		texfilter_str += ",repeat_disable";
+		texfilter_height_str += ",repeat_disable";
 	}
 
 	//must create a shader!
@@ -763,7 +774,7 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING]) {
-		code += "uniform sampler2D texture_heightmap : hint_default_black," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_heightmap : hint_default_black," + texfilter_height_str + ";\n";
 		code += "uniform float heightmap_scale;\n";
 		code += "uniform int heightmap_min_layers;\n";
 		code += "uniform int heightmap_max_layers;\n";
