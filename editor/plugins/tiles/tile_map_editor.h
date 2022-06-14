@@ -40,6 +40,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -327,12 +328,9 @@ private:
 	// Toolbar.
 	HBoxContainer *tile_map_toolbar = nullptr;
 
-	PopupMenu *layers_selection_popup = nullptr;
-	Button *layers_selection_button = nullptr;
-	Button *toogle_highlight_selected_layer_button = nullptr;
-	void _layers_selection_button_draw();
-	void _layers_selection_button_pressed();
-	void _layers_selection_id_pressed(int p_id);
+	OptionButton *layers_selection_button = nullptr;
+	Button *toggle_highlight_selected_layer_button = nullptr;
+	void _layers_selection_item_selected(int p_index);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
