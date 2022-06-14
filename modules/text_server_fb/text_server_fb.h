@@ -159,7 +159,7 @@ class TextServerFallback : public TextServerExtension {
 
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
-		HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> kerning_map;
+		HashMap<Vector2i, Vector2> kerning_map;
 
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Face face = nullptr;
