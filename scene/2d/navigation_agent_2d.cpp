@@ -64,6 +64,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigable_layers", "navigable_layers"), &NavigationAgent2D::set_navigable_layers);
 	ClassDB::bind_method(D_METHOD("get_navigable_layers"), &NavigationAgent2D::get_navigable_layers);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent2D::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent2D::get_navigation_map);
+
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent2D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent2D::get_target_location);
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent2D::get_next_location);
@@ -191,7 +194,11 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
-		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
+		if (map_override.is_valid()) {
+			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_override);
+		} else {
+			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
+		}
 		// create new avoidance callback if enabled
 		set_avoidance_enabled(avoidance_enabled);
 	} else {
@@ -210,6 +217,21 @@ void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
 
 uint32_t NavigationAgent2D::get_navigable_layers() const {
 	return navigable_layers;
+}
+
+void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
+	map_override = p_navigation_map;
+	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
+	_request_repath();
+}
+
+RID NavigationAgent2D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (agent_parent != nullptr) {
+		return agent_parent->get_world_2d()->get_navigation_map();
+	}
+	return RID();
 }
 
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
@@ -360,7 +382,11 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigable_layers);
+		if (map_override.is_valid()) {
+			navigation_path = NavigationServer2D::get_singleton()->map_get_path(map_override, o, target_location, true, navigable_layers);
+		} else {
+			navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigable_layers);
+		}
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal(SNAME("path_changed"));
