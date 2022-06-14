@@ -2764,10 +2764,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
 			cursor_set_line(row, true);
 			cursor_set_column(col);
-			if (row <= get_first_visible_line()) {
-				_scroll_lines_up();
-			} else if (row >= get_last_full_visible_line()) {
-				_scroll_lines_down();
+			if (!scroll_past_end_of_file_enabled) {
+				if (row <= get_first_visible_line()) {
+					_scroll_lines_up();
+				} else if (row >= get_last_full_visible_line()) {
+					_scroll_lines_down();
+				}
 			}
 			dragging_selection = true;
 			update();
