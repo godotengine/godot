@@ -197,20 +197,14 @@ def configure(env):
         env.Append(CPPDEFINES=["NO_THREADS"])
 
     if env["gdnative_enabled"]:
-        emcc_version = get_compiler_version(env)
-        major = int(emcc_version["major"])
-        minor = int(emcc_version["minor"])
-        patch = int(emcc_version["patch"])
-        if major < 2 or (major == 2 and minor == 0 and patch < 10):
-            print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % (major, minor, patch))
+        cc_version = get_compiler_version(env)
+        cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+        if cc_semver < (2, 0, 10):
+            print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
-        if (
-            env["threads_enabled"]
-            and major < 3
-            or (major == 3 and minor < 1)
-            or (major == 3 and minor == 1 and patch < 14)
-        ):
-            print("Threads and GDNative requires emscripten => 3.1.14, detected: %s.%s.%s" % (major, minor, patch))
+
+        if env["threads_enabled"] and cc_semver < (3, 1, 14):
+            print("Threads and GDNative requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
         env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
         env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
