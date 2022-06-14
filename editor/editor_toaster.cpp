@@ -234,6 +234,16 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 		to_delete[i]->queue_delete();
 		toasts.erase(to_delete[i]);
 	}
+
+	if (toasts.is_empty()) {
+		main_button->set_tooltip(TTR("No notifications."));
+		main_button->set_modulate(Color(0.5, 0.5, 0.5));
+		main_button->set_disabled(true);
+	} else {
+		main_button->set_tooltip(TTR("Show notifications."));
+		main_button->set_modulate(Color(1, 1, 1));
+		main_button->set_disabled(false);
+	}
 }
 
 void EditorToaster::_draw_button() {
@@ -508,6 +518,9 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
+	main_button->set_tooltip(TTR("No notifications."));
+	main_button->set_modulate(Color(0.5, 0.5, 0.5));
+	main_button->set_disabled(true);
 	main_button->set_flat(true);
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
@@ -521,6 +534,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
+	disable_notifications_button->set_tooltip(TTR("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(false));
 	disable_notifications_panel->add_child(disable_notifications_button);
