@@ -178,7 +178,7 @@ void ParallaxBackground::_bind_methods() {
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_offset", "get_scroll_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_base_offset"), "set_scroll_base_offset", "get_scroll_base_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_base_scale"), "set_scroll_base_scale", "get_scroll_base_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_base_scale", PROPERTY_HINT_LINK), "set_scroll_base_scale", "get_scroll_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_limit_begin"), "set_limit_begin", "get_limit_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_limit_end"), "set_limit_end", "get_limit_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_ignore_camera_zoom"), "set_ignore_camera_zoom", "is_ignore_camera_zoom");
