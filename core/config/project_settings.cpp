@@ -283,6 +283,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
 			}
+			_queue_changed();
 			return true;
 		}
 
@@ -324,6 +325,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
+	_queue_changed();
 	return true;
 }
 
@@ -422,6 +424,22 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
 		}
 	}
+}
+
+void ProjectSettings::_queue_changed() {
+	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+		return;
+	}
+	is_changed = true;
+	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+}
+
+void ProjectSettings::_emit_changed() {
+	if (!is_changed) {
+		return;
+	}
+	is_changed = false;
+	emit_signal("settings_changed");
 }
 
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
@@ -1225,6 +1243,8 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+
+	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 
 void ProjectSettings::_add_builtin_input_map() {

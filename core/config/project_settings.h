@@ -45,6 +45,8 @@ class ProjectSettings : public Object {
 	_THREAD_SAFE_CLASS_
 	friend class TestProjectSettingsInternalsAccessor;
 
+	bool is_changed = false;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
@@ -114,6 +116,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	void _queue_changed();
+	void _emit_changed();
 
 	static ProjectSettings *singleton;
 
