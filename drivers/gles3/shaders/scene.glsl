@@ -2,8 +2,11 @@
 #[modes]
 
 mode_color = #define BASE_PASS
+mode_color_instancing = #define BASE_PASS \n#define USE_INSTANCING
 mode_additive = #define USE_ADDITIVE_LIGHTING
+mode_additive_instancing = #define USE_ADDITIVE_LIGHTING \n#define USE_INSTANCING
 mode_depth = #define MODE_RENDER_DEPTH
+mode_depth_instancing = #define MODE_RENDER_DEPTH \n#define USE_INSTANCING
 
 #[specializations]
 
@@ -43,8 +46,6 @@ ARRAY_CUSTOM2 = 8,
 ARRAY_CUSTOM3 = 9,
 ARRAY_BONES = 10, // RGBA16UI (x2 if 8 weights)
 ARRAY_WEIGHTS = 11, // RGBA16UNORM (x2 if 8 weights)
-ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xFFFF.
-ARRAY_MAX = 13
 */
 
 /* INPUT ATTRIBS */
@@ -94,6 +95,13 @@ layout(location = 10) in uvec4 bone_attrib;
 
 #if defined(WEIGHTS_USED)
 layout(location = 11) in vec4 weight_attrib;
+#endif
+
+#ifdef USE_INSTANCING
+layout(location = 12) in highp vec4 instance_xform0;
+layout(location = 13) in highp vec4 instance_xform1;
+layout(location = 14) in highp vec4 instance_xform2;
+layout(location = 15) in highp uvec4 instance_color_custom_data; // Color packed into xy, Custom data into zw.
 #endif
 
 layout(std140) uniform GlobalVariableData { //ubo:1
@@ -195,6 +203,10 @@ void main() {
 	highp vec3 vertex = vertex_attrib;
 
 	highp mat4 model_matrix = world_transform;
+#ifdef USE_INSTANCING
+	highp mat4 m = mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0));
+	model_matrix = model_matrix * transpose(m);
+#endif
 
 #ifdef NORMAL_USED
 	vec3 normal = normal_attrib * 2.0 - 1.0;
@@ -209,6 +221,10 @@ void main() {
 
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
+#ifdef USE_INSTANCING
+	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+	color_interp *= instance_color;
+#endif
 #endif
 
 #if defined(UV_USED)
@@ -229,7 +245,11 @@ void main() {
 	highp mat4 projection_matrix = scene_data.projection_matrix;
 	highp mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
 
+#ifdef USE_INSTANCING
+	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+#else
 	vec4 instance_custom = vec4(0.0);
+#endif
 
 	// Using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)

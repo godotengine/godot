@@ -491,7 +491,7 @@ void RasterizerSceneGLES3::_geometry_instance_update(GeometryInstance *p_geometr
 				}
 			}
 
-			ginstance->instance_count = 1;
+			ginstance->instance_count = -1;
 
 		} break;
 
@@ -2200,6 +2200,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	GLES3::SceneMaterialData *prev_material_data = nullptr;
 	GLES3::SceneShaderData *prev_shader = nullptr;
 	GeometryInstanceGLES3 *prev_inst = nullptr;
+	SceneShaderGLES3::ShaderVariant prev_variant = SceneShaderGLES3::ShaderVariant::MODE_COLOR;
 
 	SceneShaderGLES3::ShaderVariant shader_variant = SceneShaderGLES3::MODE_COLOR; // Assigned to silence wrong -Wmaybe-initialized.
 
@@ -2386,12 +2387,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			prev_vertex_array_gl = vertex_array_gl;
 		}
 
-		bool use_index_buffer = false;
+		bool use_index_buffer = index_array_gl != 0;
 		if (prev_index_array_gl != index_array_gl) {
 			if (index_array_gl != 0) {
 				// Bind index each time so we can use LODs
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_gl);
-				use_index_buffer = true;
 			}
 			prev_index_array_gl = index_array_gl;
 		}
@@ -2406,8 +2406,13 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			prev_material_data = material_data;
 		}
 
-		if (prev_shader != shader) {
-			material_storage->shaders.scene_shader.version_bind_shader(shader->version, shader_variant);
+		SceneShaderGLES3::ShaderVariant instance_variant = shader_variant;
+		if (inst->instance_count > 0) {
+			instance_variant = SceneShaderGLES3::ShaderVariant(1 + int(shader_variant));
+		}
+
+		if (prev_shader != shader || prev_variant != instance_variant) {
+			material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant);
 			float opaque_prepass_threshold = 0.0;
 			if (p_pass_mode == PASS_MODE_DEPTH) {
 				opaque_prepass_threshold = 0.99;
@@ -2415,33 +2420,69 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				opaque_prepass_threshold = 0.1;
 			}
 
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, shader_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant);
 
 			prev_shader = shader;
+			prev_variant = instance_variant;
 		}
 
-		if (prev_inst != inst) {
+		if (prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) {
 			// Rebind the light indices.
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, shader_variant);
-			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, shader_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_count, shader->version, instance_variant);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_count, shader->version, instance_variant);
 
 			if (inst->omni_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, shader_variant), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::OMNI_LIGHT_INDICES, shader->version, instance_variant), inst->omni_light_count, inst->omni_light_gl_cache.ptr());
 			}
 
 			if (inst->spot_light_count) {
-				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, shader_variant), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
+				glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::SPOT_LIGHT_INDICES, shader->version, instance_variant), inst->spot_light_count, inst->spot_light_gl_cache.ptr());
 			}
 
 			prev_inst = inst;
 		}
 
-		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, shader_variant);
+		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant);
+		if (inst->instance_count > 0) {
+			// Using MultiMesh.
+			// Bind instance buffers.
 
-		if (use_index_buffer) {
-			glDrawElements(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+			GLuint multimesh_buffer = mesh_storage->multimesh_get_gl_buffer(inst->data->base);
+			glBindBuffer(GL_ARRAY_BUFFER, multimesh_buffer);
+			uint32_t multimesh_stride = mesh_storage->multimesh_get_stride(inst->data->base);
+			glEnableVertexAttribArray(12);
+			glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+			glVertexAttribDivisor(12, 1);
+			glEnableVertexAttribArray(13);
+			glVertexAttribPointer(13, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
+			glVertexAttribDivisor(13, 1);
+			glEnableVertexAttribArray(14);
+			glVertexAttribPointer(14, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 8));
+			glVertexAttribDivisor(14, 1);
+
+			if (mesh_storage->multimesh_uses_colors(inst->data->base) || mesh_storage->multimesh_uses_custom_data(inst->data->base)) {
+				glEnableVertexAttribArray(15);
+				glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(mesh_storage->multimesh_get_color_offset(inst->data->base) * sizeof(float)));
+				glVertexAttribDivisor(15, 1);
+			}
+			if (use_index_buffer) {
+				glDrawElementsInstanced(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+			} else {
+				glDrawArraysInstanced(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), inst->instance_count);
+			}
 		} else {
-			glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface));
+			// Using regular Mesh.
+			if (use_index_buffer) {
+				glDrawElements(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+			} else {
+				glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface));
+			}
+		}
+		if (inst->instance_count > 0) {
+			glDisableVertexAttribArray(12);
+			glDisableVertexAttribArray(13);
+			glDisableVertexAttribArray(14);
+			glDisableVertexAttribArray(15);
 		}
 	}
 }
@@ -2811,6 +2852,9 @@ void sky() {
 #ifdef GLES_OVER_GL
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
+
+	// MultiMesh may read from color when color is disabled, so make sure that the color defaults to white instead of black;
+	glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {

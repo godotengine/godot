@@ -277,7 +277,7 @@ private:
 		int32_t shader_parameters_offset = -1;
 
 		uint32_t layer_mask = 1;
-		uint32_t instance_count = 0;
+		int32_t instance_count = 0;
 
 		RID mesh_instance;
 		bool can_sdfgi = false;

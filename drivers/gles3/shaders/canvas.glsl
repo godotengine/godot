@@ -23,10 +23,9 @@ layout(location = 11) in vec4 weight_attrib;
 
 #ifdef USE_INSTANCING
 
-layout(location = 5) in highp vec4 instance_xform0;
-layout(location = 6) in highp vec4 instance_xform1;
-layout(location = 7) in lowp vec4 instance_color;
-layout(location = 8) in highp vec4 instance_custom_data;
+layout(location = 1) in highp vec4 instance_xform0;
+layout(location = 2) in highp vec4 instance_xform1;
+layout(location = 5) in highp uvec4 instance_color_custom_data; // Color packed into xy, custom_data packed into zw for compatibility with 3D
 
 #endif
 
@@ -98,8 +97,9 @@ void main() {
 	vec4 bone_weights = weight_attrib;
 
 #ifdef USE_INSTANCING
+	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
 	color *= instance_color;
-	instance_custom = instance_custom_data;
+	instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
 #endif
 
 #else

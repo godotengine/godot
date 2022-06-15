@@ -98,6 +98,9 @@ public:
 		}
 	}
 
+	// Buffer size is specified in bytes
+	static Vector<uint8_t> buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size);
+
 	struct Resources {
 		GLuint mipmap_blur_fbo;
 		GLuint mipmap_blur_color;
@@ -295,27 +298,9 @@ public:
 		return String();
 	}
 
-	//bool validate_framebuffer(); // Validate currently bound framebuffer, does not touch global state
-	String get_framebuffer_error(GLenum p_status);
-
 	RasterizerStorageGLES3();
 	~RasterizerStorageGLES3();
 };
-
-inline String RasterizerStorageGLES3::get_framebuffer_error(GLenum p_status) {
-#if defined(DEBUG_ENABLED) && defined(GLES_OVER_GL)
-	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
-	}
-#endif
-	return itos(p_status);
-}
 
 #endif // GLES3_ENABLED
 
