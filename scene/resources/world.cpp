@@ -257,6 +257,7 @@ void World::_update(uint64_t p_frame) {
 RID World::get_space() const {
 	return space;
 }
+
 RID World::get_scenario() const {
 	return scenario;
 }
@@ -342,9 +343,12 @@ World::World() {
 	PhysicsServer::get_singleton()->area_set_param(space, PhysicsServer::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/3d/default_angular_damp", 0.1));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::REAL, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
+	// Create default navigation map
 	navigation_map = NavigationServer::get_singleton()->map_create();
 	NavigationServer::get_singleton()->map_set_active(navigation_map, true);
+	NavigationServer::get_singleton()->map_set_up(navigation_map, GLOBAL_DEF("navigation/3d/default_map_up", Vector3(0, 1, 0)));
 	NavigationServer::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.25));
+	NavigationServer::get_singleton()->map_set_cell_height(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_height", 0.25));
 	NavigationServer::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25));
 
 #ifdef _3D_DISABLED

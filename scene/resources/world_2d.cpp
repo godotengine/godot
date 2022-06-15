@@ -327,7 +327,7 @@ RID World2D::get_space() {
 	return space;
 }
 
-RID World2D::get_navigation_map() {
+RID World2D::get_navigation_map() const {
 	return navigation_map;
 }
 
@@ -367,11 +367,12 @@ World2D::World2D() {
 	Physics2DServer::get_singleton()->area_set_param(space, Physics2DServer::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/2d/default_angular_damp", 1.0));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_angular_damp", PropertyInfo(Variant::REAL, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
-	// Create and configure the navigation_map to be more friendly with pixels than meters.
+	// Create default navigation map
 	navigation_map = Navigation2DServer::get_singleton()->map_create();
 	Navigation2DServer::get_singleton()->map_set_active(navigation_map, true);
-	Navigation2DServer::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 1));
-	Navigation2DServer::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1));
+	Navigation2DServer::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 1.0));
+	Navigation2DServer::get_singleton()->map_set_cell_height(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_height", 1.0));
+	Navigation2DServer::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1.0));
 
 	indexer = memnew(SpatialIndexer2D);
 }
