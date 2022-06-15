@@ -1720,10 +1720,12 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 		name = base_name + " " + itos(base);
 	}
 
+	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+
 	updating = true;
 	undo_redo->create_action(TTR("Node Renamed"));
-	undo_redo->add_do_method(state_machine.ptr(), "rename_node", prev_name, name);
-	undo_redo->add_undo_method(state_machine.ptr(), "rename_node", name, prev_name);
+	undo_redo->add_do_method(state_machine.ptr(), "rename_node", prev_name, name, playback);
+	undo_redo->add_undo_method(state_machine.ptr(), "rename_node", name, prev_name, playback);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();

@@ -158,6 +158,24 @@ StringName AnimationNodeStateMachinePlayback::get_current_node() const {
 	return current;
 }
 
+void AnimationNodeStateMachinePlayback::rename(const StringName &p_name, const StringName &p_new_name) {
+	if (current == p_name) {
+		current = p_new_name;
+	}
+
+	if (current_transition.to == p_name) {
+		current_transition.to = p_new_name;
+	}
+
+	if (current_transition.from == p_name) {
+		current_transition.from = p_new_name;
+	}
+
+	if (current_transition.next == p_name) {
+		current_transition.next = p_new_name;
+	}
+}
+
 StringName AnimationNodeStateMachinePlayback::get_blend_from_node() const {
 	return fading_from;
 }
@@ -755,7 +773,7 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 	emit_signal(SNAME("tree_changed"));
 }
 
-void AnimationNodeStateMachine::rename_node(const StringName &p_name, const StringName &p_new_name) {
+void AnimationNodeStateMachine::rename_node(const StringName &p_name, const StringName &p_new_name, Ref<AnimationNodeStateMachinePlayback> playback) {
 	ERR_FAIL_COND(!states.has(p_name));
 	ERR_FAIL_COND(states.has(p_new_name));
 	ERR_FAIL_COND(!can_edit_node(p_name));
@@ -771,11 +789,17 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].local_from == p_name) {
 			_rename_transition(transitions[i].from, String(transitions[i].from).replace_first(p_name, p_new_name));
+			transitions.write[i].local_from = p_new_name;
 		}
 
 		if (transitions[i].local_to == p_name) {
 			_rename_transition(transitions[i].to, String(transitions[i].to).replace_first(p_name, p_new_name));
+			transitions.write[i].local_to = p_new_name;
 		}
+	}
+
+	if (playback.is_valid()) {
+		playback->rename(p_name, p_new_name);
 	}
 
 	emit_signal("tree_changed");

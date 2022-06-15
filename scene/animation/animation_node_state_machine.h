@@ -124,6 +124,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 
+	void rename(const StringName &p_name, const StringName &p_new_name);
+
 protected:
 	static void _bind_methods();
 
@@ -198,7 +200,7 @@ public:
 	void replace_node(const StringName &p_name, Ref<AnimationNode> p_node);
 	Ref<AnimationNode> get_node(const StringName &p_name) const;
 	void remove_node(const StringName &p_name);
-	void rename_node(const StringName &p_name, const StringName &p_new_name);
+	void rename_node(const StringName &p_name, const StringName &p_new_name, Ref<AnimationNodeStateMachinePlayback> playback);
 	bool has_node(const StringName &p_name) const;
 	StringName get_node_name(const Ref<AnimationNode> &p_node) const;
 	void get_node_list(List<StringName> *r_nodes) const;

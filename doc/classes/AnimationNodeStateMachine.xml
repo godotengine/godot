@@ -134,6 +134,7 @@
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="new_name" type="StringName" />
+			<argument index="2" name="arg2" type="AnimationNodeStateMachinePlayback" />
 			<description>
 				Renames the given node.
 			</description>
