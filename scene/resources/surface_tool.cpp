@@ -315,19 +315,17 @@ void SurfaceTool::set_uv2(const Vector2 &p_uv2) {
 	last_uv2 = p_uv2;
 }
 
-void SurfaceTool::set_custom(int p_index, const Color &p_custom) {
-	ERR_FAIL_INDEX(p_index, RS::ARRAY_CUSTOM_COUNT);
+void SurfaceTool::set_custom(int p_channel_index, const Color &p_custom) {
+	ERR_FAIL_INDEX(p_channel_index, RS::ARRAY_CUSTOM_COUNT);
 	ERR_FAIL_COND(!begun);
-	ERR_FAIL_COND(last_custom_format[p_index] == CUSTOM_MAX);
+	ERR_FAIL_COND(last_custom_format[p_channel_index] == CUSTOM_MAX);
 	static const uint32_t mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
-	static const uint32_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
-	ERR_FAIL_COND(!first && !(format & mask[p_index]));
+	ERR_FAIL_COND(!first && !(format & mask[p_channel_index]));
 
 	if (first) {
-		format |= mask[p_index];
-		format |= last_custom_format[p_index] << shift[p_index];
+		format |= mask[p_channel_index];
 	}
-	last_custom[p_index] = p_custom;
+	last_custom[p_channel_index] = p_custom;
 }
 
 void SurfaceTool::set_bones(const Vector<int> &p_bones) {
@@ -689,7 +687,7 @@ Array SurfaceTool::commit_to_arrays() {
 	return a;
 }
 
-Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_flags) {
+Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_compress_flags) {
 	Ref<ArrayMesh> mesh;
 	if (p_existing.is_valid()) {
 		mesh = p_existing;
@@ -707,7 +705,15 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 
 	Array a = commit_to_arrays();
 
-	mesh->add_surface_from_arrays(primitive, a, Array(), Dictionary(), p_flags);
+	uint32_t compress_flags = (p_compress_flags >> RS::ARRAY_COMPRESS_FLAGS_BASE) << RS::ARRAY_COMPRESS_FLAGS_BASE;
+	static const uint32_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		if (last_custom_format[i] != CUSTOM_MAX) {
+			compress_flags |= last_custom_format[i] << shift[i];
+		}
+	}
+
+	mesh->add_surface_from_arrays(primitive, a, Array(), Dictionary(), compress_flags);
 
 	if (material.is_valid()) {
 		mesh->surface_set_material(surface, material);
@@ -988,9 +994,6 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
 		if (format & custom_mask[j]) {
 			CustomFormat new_format = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
-			if (last_custom_format[j] != CUSTOM_MAX && last_custom_format[j] != new_format) {
-				WARN_PRINT(vformat("Custom %d format %d mismatch when appending format %d", j, last_custom_format[j], new_format));
-			}
 			last_custom_format[j] = new_format;
 		}
 	}
@@ -1220,22 +1223,24 @@ SurfaceTool::SkinWeightCount SurfaceTool::get_skin_weight_count() const {
 	return skin_weights;
 }
 
-void SurfaceTool::set_custom_format(int p_index, CustomFormat p_format) {
-	ERR_FAIL_INDEX(p_index, RS::ARRAY_CUSTOM_COUNT);
-	ERR_FAIL_COND(begun);
-	last_custom_format[p_index] = p_format;
+void SurfaceTool::set_custom_format(int p_channel_index, CustomFormat p_format) {
+	ERR_FAIL_INDEX(p_channel_index, RS::ARRAY_CUSTOM_COUNT);
+	ERR_FAIL_COND(!begun);
+	ERR_FAIL_INDEX(p_format, CUSTOM_MAX + 1);
+	last_custom_format[p_channel_index] = p_format;
 }
 
-Mesh::PrimitiveType SurfaceTool::get_primitive() const {
+Mesh::PrimitiveType SurfaceTool::get_primitive_type() const {
 	return primitive;
 }
-SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, RS::ARRAY_CUSTOM_COUNT, CUSTOM_MAX);
-	return last_custom_format[p_index];
+SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_channel_index) const {
+	ERR_FAIL_INDEX_V(p_channel_index, RS::ARRAY_CUSTOM_COUNT, CUSTOM_MAX);
+	return last_custom_format[p_channel_index];
 }
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(optimize_vertex_cache_func == nullptr);
 	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
 	LocalVector old_index_array = index_array;
@@ -1243,8 +1248,8 @@ void SurfaceTool::optimize_indices_for_cache() {
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
 
-float SurfaceTool::get_max_axis_length() const {
-	ERR_FAIL_COND_V(vertex_array.size() == 0, 0);
+AABB SurfaceTool::get_aabb() const {
+	ERR_FAIL_COND_V(vertex_array.size() == 0, AABB());
 
 	AABB aabb;
 	for (uint32_t i = 0; i < vertex_array.size(); i++) {
@@ -1255,7 +1260,7 @@ float SurfaceTool::get_max_axis_length() const {
 		}
 	}
 
-	return aabb.get_longest_axis_size();
+	return aabb;
 }
 Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_count) {
 	Vector<int> lod;
@@ -1288,8 +1293,8 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin_weight_count", "count"), &SurfaceTool::set_skin_weight_count);
 	ClassDB::bind_method(D_METHOD("get_skin_weight_count"), &SurfaceTool::get_skin_weight_count);
 
-	ClassDB::bind_method(D_METHOD("set_custom_format", "index", "format"), &SurfaceTool::set_custom_format);
-	ClassDB::bind_method(D_METHOD("get_custom_format", "index"), &SurfaceTool::get_custom_format);
+	ClassDB::bind_method(D_METHOD("set_custom_format", "channel_index", "format"), &SurfaceTool::set_custom_format);
+	ClassDB::bind_method(D_METHOD("get_custom_format", "channel_index"), &SurfaceTool::get_custom_format);
 
 	ClassDB::bind_method(D_METHOD("begin", "primitive"), &SurfaceTool::begin);
 
@@ -1301,7 +1306,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv2", "uv2"), &SurfaceTool::set_uv2);
 	ClassDB::bind_method(D_METHOD("set_bones", "bones"), &SurfaceTool::set_bones);
 	ClassDB::bind_method(D_METHOD("set_weights", "weights"), &SurfaceTool::set_weights);
-	ClassDB::bind_method(D_METHOD("set_custom", "index", "custom"), &SurfaceTool::set_custom);
+	ClassDB::bind_method(D_METHOD("set_custom", "channel_index", "custom_color"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
 
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
@@ -1315,11 +1320,11 @@ void SurfaceTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 
-	ClassDB::bind_method(D_METHOD("get_max_axis_length"), &SurfaceTool::get_max_axis_length);
+	ClassDB::bind_method(D_METHOD("get_aabb"), &SurfaceTool::get_aabb);
 	ClassDB::bind_method(D_METHOD("generate_lod", "nd_threshold", "target_index_count"), &SurfaceTool::generate_lod, DEFVAL(3));
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
-	ClassDB::bind_method(D_METHOD("get_primitive"), &SurfaceTool::get_primitive);
+	ClassDB::bind_method(D_METHOD("get_primitive_type"), &SurfaceTool::get_primitive_type);
 
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
