@@ -1018,7 +1018,11 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	String base_name = animations_to_add[p_index];
+	// Animations may have / characters in their names, so only keep the part
+	// after a / as the initial node name.
+	Vector<String> path = String(animations_to_add[p_index]).split("/");
+	String base_name = path.get(path.size() - 1);
+
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
