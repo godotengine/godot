@@ -243,7 +243,7 @@ bool ShaderGLES3::_process_program_state(Version *p_version, bool p_async_forbid
 				uint32_t start_compiles_count = p_async_forbidden ? 2 : 0;
 				if (!start_compiles_count) {
 					uint32_t used_async_slots = MAX(active_compiles_count, *compiles_started_this_frame);
-					uint32_t free_async_slots = used_async_slots < active_compiles_count ? active_compiles_count - used_async_slots : 0;
+					uint32_t free_async_slots = used_async_slots < max_simultaneous_compiles ? max_simultaneous_compiles - used_async_slots : 0;
 					start_compiles_count = MIN(2, free_async_slots);
 				}
 				if (start_compiles_count >= 1) {
