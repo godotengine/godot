@@ -30,6 +30,92 @@
 
 #include "path_3d.h"
 
+Path3D::Path3D() {
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_debugging_paths_hint()) {
+		debug_instance = RS::get_singleton()->instance_create();
+		set_notify_transform(true);
+		_update_debug_mesh();
+	}
+}
+
+Path3D::~Path3D() {
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->free(debug_instance);
+	}
+	if (debug_mesh.is_valid()) {
+		RS::get_singleton()->free(debug_mesh->get_rid());
+	}
+}
+
+void Path3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			SceneTree *st = SceneTree::get_singleton();
+			if (st && st->is_debugging_paths_hint()) {
+				_update_debug_mesh();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			SceneTree *st = SceneTree::get_singleton();
+			if (st && st->is_debugging_paths_hint()) {
+				RS::get_singleton()->instance_set_visible(debug_instance, false);
+			}
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (is_inside_tree() && debug_instance.is_valid()) {
+				RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+			}
+		} break;
+	}
+}
+
+void Path3D::_update_debug_mesh() {
+	SceneTree *st = SceneTree::get_singleton();
+	if (!(st && st->is_debugging_paths_hint())) {
+		return;
+	}
+
+	if (!debug_mesh.is_valid()) {
+		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	}
+
+	if (!(curve.is_valid())) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
+	}
+	if (curve->get_point_count() < 2) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
+	}
+
+	Vector<Vector3> vertex_array;
+
+	for (int i = 1; i < curve->get_point_count(); i++) {
+		Vector3 line_end = curve->get_point_position(i);
+		Vector3 line_start = curve->get_point_position(i - 1);
+		vertex_array.push_back(line_start);
+		vertex_array.push_back(line_end);
+	}
+
+	Array mesh_array;
+	mesh_array.resize(Mesh::ARRAY_MAX);
+	mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
+
+	debug_mesh->clear_surfaces();
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, mesh_array);
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
+	RS::get_singleton()->mesh_surface_set_material(debug_mesh->get_rid(), 0, st->get_debug_paths_material()->get_rid());
+	if (is_inside_tree()) {
+		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+		RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
+	}
+}
+
 void Path3D::_curve_changed() {
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		update_gizmos();
@@ -47,6 +133,10 @@ void Path3D::_curve_changed() {
 				child->update_configuration_warnings();
 			}
 		}
+	}
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_debugging_paths_hint()) {
+		_update_debug_mesh();
 	}
 }
 

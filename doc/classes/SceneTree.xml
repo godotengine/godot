@@ -221,6 +221,9 @@
 		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint" default="false">
 			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
 		</member>
+		<member name="debug_paths_hint" type="bool" setter="set_debug_paths_hint" getter="is_debugging_paths_hint" default="false">
+			If [code]true[/code], curves from [Path2D] and [Path3D] nodes will be visible when running the game from the editor for debugging purposes.
+		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
 		</member>
