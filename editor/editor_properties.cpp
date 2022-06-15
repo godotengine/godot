@@ -2353,8 +2353,8 @@ void EditorPropertyNodePath::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_selected"), &EditorPropertyNodePath::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_assign"), &EditorPropertyNodePath::_node_assign);
 	ClassDB::bind_method(D_METHOD("_node_clear"), &EditorPropertyNodePath::_node_clear);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
