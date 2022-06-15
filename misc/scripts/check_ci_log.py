@@ -25,6 +25,8 @@ if (
     file_contents.find("Program crashed with signal") != -1
     or file_contents.find("Dumping the backtrace") != -1
     or file_contents.find("Segmentation fault (core dumped)") != -1
+    or file_contents.find("Aborted (core dumped)") != -1
+    or file_contents.find("terminate called without an active exception") != -1
 ):
     print("FATAL ERROR: Godot has been crashed.")
     sys.exit(1)
