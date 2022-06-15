@@ -36,38 +36,14 @@
 class Label : public Control {
 	GDCLASS(Label, Control);
 
-public:
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
-	enum VisibleCharactersBehavior {
-		VC_CHARS_BEFORE_SHAPING,
-		VC_CHARS_AFTER_SHAPING,
-		VC_GLYPHS_AUTO,
-		VC_GLYPHS_LTR,
-		VC_GLYPHS_RTL,
-	};
-
 private:
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
-	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	bool clip = false;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
 	bool uppercase = false;
 
@@ -85,7 +61,7 @@ private:
 
 	float percent_visible = 1.0;
 
-	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
@@ -130,14 +106,14 @@ public:
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
 
-	VisibleCharactersBehavior get_visible_characters_behavior() const;
-	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
@@ -146,8 +122,8 @@ public:
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
@@ -165,9 +141,5 @@ public:
 	Label(const String &p_text = String());
 	~Label();
 };
-
-VARIANT_ENUM_CAST(Label::AutowrapMode);
-VARIANT_ENUM_CAST(Label::OverrunBehavior);
-VARIANT_ENUM_CAST(Label::VisibleCharactersBehavior);
 
 #endif

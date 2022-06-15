@@ -3998,7 +3998,7 @@ TileMapEditor::TileMapEditor() {
 	// Layer selector.
 	layers_selection_button = memnew(OptionButton);
 	layers_selection_button->set_custom_minimum_size(Size2(200, 0));
-	layers_selection_button->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
+	layers_selection_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	layers_selection_button->set_tooltip(TTR("TileMap Layers"));
 	layers_selection_button->connect("item_selected", callable_mp(this, &TileMapEditor::_layers_selection_item_selected));
 	tile_map_toolbar->add_child(layers_selection_button);

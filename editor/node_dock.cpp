@@ -134,7 +134,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	select_a_node->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	add_child(select_a_node);
 }
 

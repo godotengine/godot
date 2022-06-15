@@ -155,11 +155,6 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 
-	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
-	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
-
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_DEPTH_TEST);
@@ -514,16 +509,16 @@ void Label3D::_shape() {
 
 		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
-			case AUTOWRAP_WORD_SMART:
+			case TextServer::AUTOWRAP_WORD_SMART:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_WORD:
+			case TextServer::AUTOWRAP_WORD:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_ARBITRARY:
+			case TextServer::AUTOWRAP_ARBITRARY:
 				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_OFF:
+			case TextServer::AUTOWRAP_OFF:
 				break;
 		}
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
@@ -885,7 +880,7 @@ Color Label3D::get_outline_modulate() const {
 	return outline_modulate;
 }
 
-void Label3D::set_autowrap_mode(Label3D::AutowrapMode p_mode) {
+void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
 		dirty_lines = true;
@@ -893,7 +888,7 @@ void Label3D::set_autowrap_mode(Label3D::AutowrapMode p_mode) {
 	}
 }
 
-Label3D::AutowrapMode Label3D::get_autowrap_mode() const {
+TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 

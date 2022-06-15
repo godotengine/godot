@@ -4851,7 +4851,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 
 	///////////////////////////////////////
 	// POPUP MENU
@@ -5008,7 +5008,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	}
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);

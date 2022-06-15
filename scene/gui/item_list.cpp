@@ -1550,7 +1550,7 @@ bool ItemList::has_auto_height() const {
 	return auto_height;
 }
 
-void ItemList::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior) {
+void ItemList::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (text_overrun_behavior != p_behavior) {
 		text_overrun_behavior = p_behavior;
 		for (int i = 0; i < items.size(); i++) {
@@ -1561,7 +1561,7 @@ void ItemList::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavi
 	}
 }
 
-TextParagraph::OverrunBehavior ItemList::get_text_overrun_behavior() const {
+TextServer::OverrunBehavior ItemList::get_text_overrun_behavior() const {
 	return text_overrun_behavior;
 }
 

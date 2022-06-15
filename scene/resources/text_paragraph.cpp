@@ -129,12 +129,6 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
-
-	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
 }
 
 void TextParagraph::_shape_lines() {
@@ -190,26 +184,26 @@ void TextParagraph::_shape_lines() {
 			lines_rid.push_back(line);
 		}
 
-		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
-		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIM;
+		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
-				case OVERRUN_TRIM_WORD_ELLIPSIS:
+				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags |= TextServer::OVERRUN_TRIM;
 					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
 					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
 					break;
-				case OVERRUN_TRIM_ELLIPSIS:
+				case TextServer::OVERRUN_TRIM_ELLIPSIS:
 					overrun_flags |= TextServer::OVERRUN_TRIM;
 					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
 					break;
-				case OVERRUN_TRIM_WORD:
+				case TextServer::OVERRUN_TRIM_WORD:
 					overrun_flags |= TextServer::OVERRUN_TRIM;
 					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
 					break;
-				case OVERRUN_TRIM_CHAR:
+				case TextServer::OVERRUN_TRIM_CHAR:
 					overrun_flags |= TextServer::OVERRUN_TRIM;
 					break;
-				case OVERRUN_NO_TRIMMING:
+				case TextServer::OVERRUN_NO_TRIMMING:
 					break;
 			}
 		}
@@ -451,7 +445,7 @@ uint16_t TextParagraph::get_flags() const {
 	return flags;
 }
 
-void TextParagraph::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior) {
+void TextParagraph::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	_THREAD_SAFE_METHOD_
 
 	if (overrun_behavior != p_behavior) {
@@ -460,7 +454,7 @@ void TextParagraph::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_b
 	}
 }
 
-TextParagraph::OverrunBehavior TextParagraph::get_text_overrun_behavior() const {
+TextServer::OverrunBehavior TextParagraph::get_text_overrun_behavior() const {
 	return overrun_behavior;
 }
 
