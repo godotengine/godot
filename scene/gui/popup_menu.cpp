@@ -1274,6 +1274,11 @@ Ref<Shortcut> PopupMenu::get_item_shortcut(int p_idx) const {
 	return items[p_idx].shortcut;
 }
 
+int PopupMenu::get_item_horizontal_offset(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
+	return items[p_idx].h_ofs;
+}
+
 int PopupMenu::get_item_state(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), -1);
 	return items[p_idx].state;
@@ -1339,7 +1344,7 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 	control->update();
 }
 
-void PopupMenu::set_item_h_offset(int p_idx, int p_offset) {
+void PopupMenu::set_item_horizontal_offset(int p_idx, int p_offset) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
 	}
@@ -1862,6 +1867,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_as_radio_checkable", "index", "enable"), &PopupMenu::set_item_as_radio_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "index", "tooltip"), &PopupMenu::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "index", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_item_horizontal_offset", "index", "offset"), &PopupMenu::set_item_horizontal_offset);
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
 
@@ -1887,6 +1893,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_shortcut_disabled", "index"), &PopupMenu::is_item_shortcut_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "index"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
+	ClassDB::bind_method(D_METHOD("get_item_horizontal_offset", "index"), &PopupMenu::get_item_horizontal_offset);
 
 	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);

@@ -186,7 +186,7 @@ public:
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
-	void set_item_h_offset(int p_idx, int p_offset);
+	void set_item_horizontal_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
@@ -212,6 +212,7 @@ public:
 	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
+	int get_item_horizontal_offset(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
 	void set_current_index(int p_idx);
