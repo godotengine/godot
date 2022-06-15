@@ -84,8 +84,7 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	add_child(input_event_text);
 
-	open_config_button = memnew(Button);
-	open_config_button->set_text(TTR("Configure"));
+	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
 	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	add_child(open_config_button);
 
