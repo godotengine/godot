@@ -62,7 +62,7 @@ static inline uint32_t hash_djb2(const char *p_cstr) {
 	uint32_t c;
 
 	while ((c = *chr++)) {
-		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		hash = ((hash << 5) + hash) ^ c; /* hash * 33 ^ c */
 	}
 
 	return hash;
@@ -72,14 +72,14 @@ static inline uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32
 	uint32_t hash = p_prev;
 
 	for (int i = 0; i < p_len; i++) {
-		hash = ((hash << 5) + hash) + p_buff[i]; /* hash * 33 + c */
+		hash = ((hash << 5) + hash) ^ p_buff[i]; /* hash * 33 ^ c */
 	}
 
 	return hash;
 }
 
 static inline uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
-	return ((p_prev << 5) + p_prev) + p_in;
+	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
 /**
@@ -115,7 +115,7 @@ static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) 
 		u.d = p_in;
 	}
 
-	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
+	return ((p_prev << 5) + p_prev) ^ hash_one_uint64(u.i);
 }
 
 template <class T>
@@ -144,11 +144,11 @@ static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 538
 		u.d = p_in;
 	}
 
-	return ((p_prev << 5) + p_prev) + u.i;
+	return ((p_prev << 5) + p_prev) ^ u.i;
 }
 
 static inline uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {
-	return ((p_prev << 5) + p_prev) + p_in;
+	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
 template <class T>
