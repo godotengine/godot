@@ -128,6 +128,7 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 			return;
 		}
 	}
+	ERR_FAIL_NULL(p_script->implicit_initializer);
 	p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
 }
 
