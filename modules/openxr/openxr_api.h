@@ -225,7 +225,7 @@ protected:
 	// helper method to get a valid Transform3D from an openxr space location
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
-	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 r_angular_velocity);
+	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
 public:
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
@@ -247,7 +247,7 @@ public:
 	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; };
 
 	Size2 get_recommended_target_size();
-	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, const Vector3 &r_angular_velocity);
+	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, CameraMatrix &p_camera_matrix);
 	bool process();
@@ -285,7 +285,7 @@ public:
 	bool get_action_bool(RID p_action, RID p_tracker);
 	float get_action_float(RID p_action, RID p_tracker);
 	Vector2 get_action_vector2(RID p_action, RID p_tracker);
-	XRPose::TrackingConfidence get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, const Vector3 &r_angular_velocity);
+	XRPose::TrackingConfidence get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool trigger_haptic_pulse(RID p_action, RID p_tracker, float p_frequency, float p_amplitude, XrDuration p_duration_ns);
 
 	OpenXRAPI();
