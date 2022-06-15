@@ -2852,7 +2852,7 @@ Vector2 TextServerAdvanced::font_get_kerning(const RID &p_font_rid, int64_t p_si
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
 
-	const HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> &kern = fd->cache[size]->kerning_map;
+	const HashMap<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
 
 	if (kern.has(p_glyph_pair)) {
 		if (fd->msdf) {

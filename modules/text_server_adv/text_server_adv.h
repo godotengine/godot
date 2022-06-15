@@ -191,7 +191,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
-		HashMap<Vector2i, Vector2, VariantHasher, VariantComparator> kerning_map;
+		HashMap<Vector2i, Vector2> kerning_map;
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
