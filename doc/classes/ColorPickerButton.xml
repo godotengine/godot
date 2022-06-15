@@ -83,9 +83,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			[FontConfig] of the [ColorPickerButton]'s text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [ColorPickerButton]'s text.
-		</theme_item>
 		<theme_item name="bg" data_type="icon" type="Texture2D">
 			The background of the color preview rect on the button.
 		</theme_item>

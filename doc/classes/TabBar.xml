@@ -323,9 +323,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			The font used to draw tab names.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the tab names.
-		</theme_item>
 		<theme_item name="close" data_type="icon" type="Texture2D">
 			The icon for the close button (see [member tab_close_display_policy]).
 		</theme_item>

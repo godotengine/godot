@@ -253,11 +253,10 @@
 			<return type="void" />
 			<argument index="0" name="string" type="String" />
 			<argument index="1" name="font" type="FontConfig" />
-			<argument index="2" name="size" type="int" />
-			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="5" name="outline_size" type="int" default="0" />
-			<argument index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)" />
+			<argument index="2" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="4" name="outline_size" type="int" default="0" />
+			<argument index="5" name="outline_color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
 				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
 			</description>
@@ -274,12 +273,6 @@
 			<argument index="0" name="font" type="FontConfig" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
-			</description>
-		</method>
-		<method name="push_font_size">
-			<return type="void" />
-			<argument index="0" name="font_size" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_hint">
@@ -586,49 +579,47 @@
 		</constant>
 		<constant name="ITEM_FONT" value="4" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FONT_SIZE" value="5" enum="ItemType">
+		<constant name="ITEM_FONT_FEATURES" value="5" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FONT_FEATURES" value="6" enum="ItemType">
+		<constant name="ITEM_COLOR" value="6" enum="ItemType">
 		</constant>
-		<constant name="ITEM_COLOR" value="7" enum="ItemType">
+		<constant name="ITEM_OUTLINE_SIZE" value="7" enum="ItemType">
 		</constant>
-		<constant name="ITEM_OUTLINE_SIZE" value="8" enum="ItemType">
+		<constant name="ITEM_OUTLINE_COLOR" value="8" enum="ItemType">
 		</constant>
-		<constant name="ITEM_OUTLINE_COLOR" value="9" enum="ItemType">
+		<constant name="ITEM_UNDERLINE" value="9" enum="ItemType">
 		</constant>
-		<constant name="ITEM_UNDERLINE" value="10" enum="ItemType">
+		<constant name="ITEM_STRIKETHROUGH" value="10" enum="ItemType">
 		</constant>
-		<constant name="ITEM_STRIKETHROUGH" value="11" enum="ItemType">
+		<constant name="ITEM_PARAGRAPH" value="11" enum="ItemType">
 		</constant>
-		<constant name="ITEM_PARAGRAPH" value="12" enum="ItemType">
+		<constant name="ITEM_INDENT" value="12" enum="ItemType">
 		</constant>
-		<constant name="ITEM_INDENT" value="13" enum="ItemType">
+		<constant name="ITEM_LIST" value="13" enum="ItemType">
 		</constant>
-		<constant name="ITEM_LIST" value="14" enum="ItemType">
+		<constant name="ITEM_TABLE" value="14" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TABLE" value="15" enum="ItemType">
+		<constant name="ITEM_FADE" value="15" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FADE" value="16" enum="ItemType">
+		<constant name="ITEM_SHAKE" value="16" enum="ItemType">
 		</constant>
-		<constant name="ITEM_SHAKE" value="17" enum="ItemType">
+		<constant name="ITEM_WAVE" value="17" enum="ItemType">
 		</constant>
-		<constant name="ITEM_WAVE" value="18" enum="ItemType">
+		<constant name="ITEM_TORNADO" value="18" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TORNADO" value="19" enum="ItemType">
+		<constant name="ITEM_RAINBOW" value="19" enum="ItemType">
 		</constant>
-		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
+		<constant name="ITEM_BGCOLOR" value="20" enum="ItemType">
 		</constant>
-		<constant name="ITEM_BGCOLOR" value="21" enum="ItemType">
+		<constant name="ITEM_FGCOLOR" value="21" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FGCOLOR" value="22" enum="ItemType">
+		<constant name="ITEM_META" value="22" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="23" enum="ItemType">
+		<constant name="ITEM_HINT" value="23" enum="ItemType">
 		</constant>
-		<constant name="ITEM_HINT" value="24" enum="ItemType">
+		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
 		</constant>
-		<constant name="ITEM_DROPCAP" value="25" enum="ItemType">
-		</constant>
-		<constant name="ITEM_CUSTOMFX" value="26" enum="ItemType">
+		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
@@ -706,21 +697,6 @@
 		</theme_item>
 		<theme_item name="normal_font" data_type="font" type="FontConfig">
 			The default text font.
-		</theme_item>
-		<theme_item name="bold_font_size" data_type="font_size" type="int">
-			The font size used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
-			The font size used for bold italics text.
-		</theme_item>
-		<theme_item name="italics_font_size" data_type="font_size" type="int">
-			The font size used for italics text.
-		</theme_item>
-		<theme_item name="mono_font_size" data_type="font_size" type="int">
-			The font size used for monospace text.
-		</theme_item>
-		<theme_item name="normal_font_size" data_type="font_size" type="int">
-			The default text font size.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The background used when the [RichTextLabel] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.

@@ -74,7 +74,7 @@ int Label::get_line_height(int p_line) const {
 		}
 		return h;
 	} else {
-		return font->get_height(get_theme_font_size(SNAME("font_size")));
+		return font->get_height();
 	}
 }
 
@@ -92,18 +92,17 @@ void Label::_shape() {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
 		const Ref<FontConfig> &font = get_theme_font(SNAME("font"));
-		int font_size = get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
 		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
 			text = text.substr(0, visible_chars);
 		}
 		if (dirty) {
-			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font->get_size(), font->get_opentype_features(), language);
 		} else {
 			int spans = TS->shaped_get_span_count(text_rid);
 			for (int i = 0; i < spans; i++) {
-				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
+				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font->get_size(), font->get_opentype_features());
 			}
 		}
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
@@ -553,7 +552,7 @@ Size2 Label::get_minimum_size() const {
 	Size2 min_size = minsize;
 
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))));
+	min_size.height = MAX(min_size.height, font->get_height());
 
 	Size2 min_style = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
 	if (autowrap_mode != AUTOWRAP_OFF) {

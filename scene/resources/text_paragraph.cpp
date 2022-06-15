@@ -60,10 +60,10 @@ void TextParagraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextParagraph::set_bidi_override);
 
-	ClassDB::bind_method(D_METHOD("set_dropcap", "text", "font", "font_size", "dropcap_margins", "language"), &TextParagraph::set_dropcap, DEFVAL(Rect2()), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_dropcap", "text", "font", "dropcap_margins", "language"), &TextParagraph::set_dropcap, DEFVAL(Rect2()), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("clear_dropcap"), &TextParagraph::clear_dropcap);
 
-	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextParagraph::add_string, DEFVAL(""), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "language", "meta"), &TextParagraph::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
 
@@ -348,12 +348,12 @@ TextServer::Orientation TextParagraph::get_orientation() const {
 	return TS->shaped_text_get_orientation(rid);
 }
 
-bool TextParagraph::set_dropcap(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const Rect2 &p_dropcap_margins, const String &p_language) {
+bool TextParagraph::set_dropcap(const String &p_text, const Ref<FontConfig> &p_font, const Rect2 &p_dropcap_margins, const String &p_language) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
-	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
+	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_font->get_rids(), p_font->get_size(), p_font->get_opentype_features(), p_language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(dropcap_rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
 	}
@@ -368,10 +368,10 @@ void TextParagraph::clear_dropcap() {
 	lines_dirty = true;
 }
 
-bool TextParagraph::add_string(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
+bool TextParagraph::add_string(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language, const Variant &p_meta) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
-	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
+	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font->get_size(), p_font->get_opentype_features(), p_language, p_meta);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
 	}
@@ -924,10 +924,10 @@ void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_
 	return TS->shaped_text_draw_outline(lines_rid[p_line], p_canvas, ofs, -1, -1, p_outline_size, p_color);
 }
 
-TextParagraph::TextParagraph(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+TextParagraph::TextParagraph(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
-		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
+		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font->get_size(), p_font->get_opentype_features(), p_language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
 		}

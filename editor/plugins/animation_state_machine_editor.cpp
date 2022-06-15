@@ -1163,7 +1163,6 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
 
 	Ref<FontConfig> font = get_theme_font(SNAME("title_font"), SNAME("GraphNode"));
-	int font_size = get_theme_font_size(SNAME("title_font_size"), SNAME("GraphNode"));
 	Color font_color = get_theme_color(SNAME("title_color"), SNAME("GraphNode"));
 	Ref<Texture2D> play = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
 	Ref<Texture2D> edit = get_theme_icon(SNAME("Edit"), SNAME("EditorIcons"));
@@ -1224,9 +1223,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = selected_nodes.has(E) ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1).width;
 		s.width += strsize;
-		s.height += MAX(font->get_height(font_size), play->get_height());
+		s.height += MAX(font->get_height(), play->get_height());
 		s.width += sep + play->get_width();
 
 		if (needs_editor) {
@@ -1379,7 +1378,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = selected_nodes.has(name) ? style_selected : style;
-		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1).width;
 		NodeRect &nr = node_rects.write[i];
 
 		Vector2 offset = nr.node.position;
@@ -1417,10 +1416,10 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		offset.x += sep + play->get_width();
 
-		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
-		nr.name.size = Vector2(strsize, font->get_height(font_size));
+		nr.name.position = offset + Vector2(0, (h - font->get_height()) / 2).floor();
+		nr.name.size = Vector2(strsize, font->get_height());
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent()), name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_color);
 		offset.x += strsize + sep;
 
 		if (needs_editor) {

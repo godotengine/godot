@@ -1386,15 +1386,14 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	float font_height = font->get_height(font_size);
+	float font_height = font->get_height();
 
 	float width = 0;
 	float height = top_padding + btm_padding;
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1).x);
 			height += font_height;
 		}
 	}
@@ -1422,8 +1421,7 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	float font_height = font->get_height(font_size);
+	float font_height = font->get_height();
 
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
@@ -1437,7 +1435,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
-					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size,
+					HORIZONTAL_ALIGNMENT_LEFT, -1,
 					notch_color);
 		}
 	}

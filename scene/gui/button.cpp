@@ -62,7 +62,7 @@ Size2 Button::get_minimum_size() const {
 	}
 	if (!xl_text.is_empty()) {
 		Ref<FontConfig> font = get_theme_font(SNAME("font"));
-		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		float font_height = font->get_height();
 		minsize.height = MAX(font_height, minsize.height);
 	}
 
@@ -350,7 +350,6 @@ void Button::_notification(int p_what) {
 
 void Button::_shape() {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	text_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -358,7 +357,7 @@ void Button::_shape() {
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	text_buf->add_string(xl_text, font, font_size, language);
+	text_buf->add_string(xl_text, font, language);
 	text_buf->set_text_overrun_behavior(overrun_behavior);
 }
 

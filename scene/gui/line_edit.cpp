@@ -448,7 +448,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
 				_ensure_menu();
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")))) / 2);
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height()) / 2);
 				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
 				menu->popup();
@@ -913,7 +913,7 @@ void LineEdit::_notification(int p_what) {
 
 					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
 						// No carets, add one at the start.
-						int h = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
+						int h = get_theme_font(SNAME("font"))->get_height();
 						int y = style->get_offset().y + (y_area - h) / 2;
 						if (rtl) {
 							caret.l_dir = TextServer::DIRECTION_RTL;
@@ -1647,12 +1647,11 @@ void LineEdit::clear_internal() {
 Size2 LineEdit::get_minimum_size() const {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	Size2 min_size;
 
 	// Minimum size of text.
-	float em_space_size = font->get_char_size('M', font_size).x;
+	float em_space_size = font->get_char_size('M').x;
 	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
 
 	if (expand_to_text_length) {
@@ -1660,7 +1659,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + em_space_size);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
+	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height());
 
 	// Take icons into account.
 	int icon_max_width = 0;
@@ -2117,9 +2116,8 @@ void LineEdit::_shape() {
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
 	const Ref<FontConfig> &font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 	ERR_FAIL_COND(font.is_null());
-	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
+	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font->get_size(), font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 	}

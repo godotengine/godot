@@ -300,7 +300,6 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 void TabBar::_shape(int p_tab) {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	tabs.write[p_tab].xl_text = atr(tabs[p_tab].text);
 	tabs.write[p_tab].text_buf->clear();
@@ -311,7 +310,7 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, font_size, tabs[p_tab].language);
+	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, tabs[p_tab].language);
 }
 
 void TabBar::_notification(int p_what) {

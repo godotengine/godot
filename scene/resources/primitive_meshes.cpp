@@ -2373,7 +2373,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
 		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font->get_size(), font->get_opentype_features(), language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
@@ -2394,7 +2394,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	} else if (dirty_font) {
 		int spans = TS->shaped_get_span_count(text_rid);
 		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
+			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font->get_size(), font->get_opentype_features());
 		}
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -2667,9 +2667,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &TextMesh::set_font);
 	ClassDB::bind_method(D_METHOD("get_font"), &TextMesh::get_font);
 
-	ClassDB::bind_method(D_METHOD("set_font_size", "font_size"), &TextMesh::set_font_size);
-	ClassDB::bind_method(D_METHOD("get_font_size"), &TextMesh::get_font_size);
-
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &TextMesh::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextMesh::get_depth);
 
@@ -2703,7 +2700,6 @@ void TextMesh::_bind_methods() {
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "FontConfig"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 
@@ -2827,19 +2823,6 @@ Ref<FontConfig> TextMesh::_get_font_or_default() const {
 
 	// If they don't exist, use any type to return the default/empty value.
 	return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-}
-
-void TextMesh::set_font_size(int p_size) {
-	if (font_size != p_size) {
-		font_size = CLAMP(p_size, 1, 127);
-		dirty_font = true;
-		dirty_cache = true;
-		_request_update();
-	}
-}
-
-int TextMesh::get_font_size() const {
-	return font_size;
 }
 
 void TextMesh::set_depth(real_t p_depth) {

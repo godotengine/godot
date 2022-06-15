@@ -795,7 +795,6 @@ void EditorNode::_notification(int p_what) {
 
 			for (int i = 0; i < main_editor_buttons.size(); i++) {
 				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
-				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
 
 			HashSet<String> updated_textfile_extensions;
@@ -3260,7 +3259,6 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		}
 
 		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
-		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
@@ -6730,7 +6728,6 @@ EditorNode::EditorNode() {
 	rendering_driver->set_focus_mode(Control::FOCUS_NONE);
 	rendering_driver->connect("item_selected", callable_mp(this, &EditorNode::_rendering_driver_selected));
 	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 	right_menu_hb->add_child(rendering_driver);
 

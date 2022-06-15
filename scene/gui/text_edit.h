@@ -157,7 +157,6 @@ private:
 
 		mutable Vector<Line> text;
 		Ref<FontConfig> font;
-		int font_size = -1;
 		int font_height = 0;
 
 		String language;
@@ -178,7 +177,6 @@ private:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
 		void set_font(const Ref<FontConfig> &p_font);
-		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
 
@@ -520,7 +518,6 @@ private:
 	Ref<Texture2D> space_icon;
 
 	Ref<FontConfig> font;
-	int font_size = 16;
 	Color font_color = Color(1, 1, 1);
 	Color font_readonly_color = Color(1, 1, 1);
 	Color font_placeholder_color = Color(1, 1, 1, 0.6);

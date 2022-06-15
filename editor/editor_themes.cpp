@@ -1209,7 +1209,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
-	int stylebox_offset = theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height(theme->get_font_size(SNAME("tab_selected"), SNAME("TabContainer"))) + theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height + theme->get_stylebox(SNAME("panel"), SNAME("TabContainer"))->get_default_margin(SIDE_TOP);
+	int stylebox_offset = theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height() + theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height + theme->get_stylebox(SNAME("panel"), SNAME("TabContainer"))->get_default_margin(SIDE_TOP);
 	style_panel_invisible_top->set_expand_margin_size(SIDE_TOP, -stylebox_offset);
 	style_panel_invisible_top->set_default_margin(SIDE_TOP, 0);
 	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
@@ -1313,7 +1313,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("title_height", "Window", 24 * EDSCALE);
 	theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
 	theme->set_font("title_font", "Window", theme->get_font(SNAME("title"), SNAME("EditorFonts")));
-	theme->set_font_size("title_font_size", "Window", theme->get_font_size(SNAME("title_size"), SNAME("EditorFonts")));
 
 	// Complex window (currently only Editor Settings and Project Settings)
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
@@ -1733,7 +1732,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Now theme is loaded, apply it to CodeEdit.
 	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
-	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(EDITOR_GET("text_editor/theme/highlighting/background_color"), widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y, corner_radius);
 	theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
 	theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);

@@ -53,9 +53,6 @@
 		<member name="font" type="FontConfig" setter="set_font" getter="get_font">
 			Font configuration used to display text.
 		</member>
-		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
-			Font size of the [Label3D]'s text.
-		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>

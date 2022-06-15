@@ -614,16 +614,6 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			l.clear();
-			Theme::get_default()->get_font_size_list(cname, &l);
-			for (const StringName &E : l) {
-				DocData::ThemeItemDoc tid;
-				tid.name = E;
-				tid.type = "int";
-				tid.data_type = "font_size";
-				c.theme_properties.push_back(tid);
-			}
-
-			l.clear();
 			Theme::get_default()->get_icon_list(cname, &l);
 			for (const StringName &E : l) {
 				DocData::ThemeItemDoc tid;

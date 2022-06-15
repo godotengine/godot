@@ -110,7 +110,6 @@ private:
 		Vector<Button> buttons;
 
 		Ref<FontConfig> custom_font;
-		int custom_font_size = -1;
 
 		Cell() {
 			text_buf.instantiate();
@@ -298,9 +297,6 @@ public:
 	void set_custom_font(int p_column, const Ref<FontConfig> &p_font);
 	Ref<FontConfig> get_custom_font(int p_column) const;
 
-	void set_custom_font_size(int p_column, int p_font_size);
-	int get_custom_font_size(int p_column) const;
-
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);
 	Color get_custom_bg_color(int p_column) const;
@@ -478,8 +474,6 @@ private:
 	struct Cache {
 		Ref<FontConfig> font;
 		Ref<FontConfig> tb_font;
-		int font_size = 0;
-		int tb_font_size = 0;
 		Ref<StyleBox> bg;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;

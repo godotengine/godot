@@ -473,7 +473,6 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 	}
 
 	font_preview_label->add_theme_font_override("font", font_preview);
-	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
 	font_preview_label->update();
 }
 
@@ -752,6 +751,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 	int col = 0;
 
 	Ref<FontConfig> font_main_big = font_main->duplicate();
+	font_main_big->set_size(font_main->get_size() * 2);
 
 	for (int32_t c = p_start; c <= p_end; c++) {
 		if (col == 0) {
@@ -780,7 +780,6 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 		item->set_selectable(col + 1, true);
 
 		item->set_custom_font(col + 1, font_main_big);
-		item->set_custom_font_size(col + 1, get_theme_font_size(SNAME("font_size")) * 2);
 
 		col++;
 		if (col == 16) {
@@ -945,6 +944,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	font_preview.instantiate();
 	font_preview->set_font(dfont_preview);
+	font_preview->set_size(200 * EDSCALE);
 
 	String font_name = vformat("%s (%s)", dfont_preview->get_font_name(), dfont_preview->get_font_style_name());
 	String sample;
@@ -1096,7 +1096,6 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_font()->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
-	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
 	font_preview_label->update();
 
 	_variations_validate();

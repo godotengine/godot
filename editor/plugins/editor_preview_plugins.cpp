@@ -821,6 +821,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	Ref<FontConfig> sampled_font;
 	sampled_font.instantiate();
 	sampled_font->set_font(res);
+	sampled_font->set_size(50);
 
 	String sample;
 	static const String sample_base = U"12漢字ԱբΑαАбΑαאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐAb😀";
@@ -832,7 +833,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	if (sample.is_empty()) {
 		sample = sampled_font->get_supported_chars().substr(0, 6);
 	}
-	Vector2 size = sampled_font->get_string_size(sample, HORIZONTAL_ALIGNMENT_LEFT, -1, 50);
+	Vector2 size = sampled_font->get_string_size(sample, HORIZONTAL_ALIGNMENT_LEFT, -1);
 
 	Vector2 pos;
 
@@ -841,7 +842,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	const Color c = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
-	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
+	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, Color(fg, fg, fg));
 
 	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 

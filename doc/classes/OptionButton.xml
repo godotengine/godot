@@ -247,9 +247,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			[FontConfig] of the [OptionButton]'s text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [OptionButton]'s text.
-		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.
 		</theme_item>

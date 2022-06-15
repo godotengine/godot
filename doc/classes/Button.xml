@@ -122,9 +122,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			[FontConfig] of the [Button]'s text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [Button]'s text.
-		</theme_item>
 		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is disabled.
 		</theme_item>

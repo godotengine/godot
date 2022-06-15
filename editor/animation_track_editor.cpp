@@ -1494,7 +1494,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 			int zoomw = key_range;
@@ -1577,10 +1576,10 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			int decimals = 2;
 			bool step_found = false;
 
-			const float period_width = font->get_char_size('.', font_size).width;
-			float max_digit_width = font->get_char_size('0', font_size).width;
+			const float period_width = font->get_char_size('.').width;
+			float max_digit_width = font->get_char_size('0').width;
 			for (int i = 1; i <= 9; i++) {
-				const float digit_width = font->get_char_size('0' + i, font_size).width;
+				const float digit_width = font->get_char_size('0' + i).width;
 				max_digit_width = MAX(digit_width, max_digit_width);
 			}
 			const int max_sc = int(Math::ceil(zoomw / scale));
@@ -1627,8 +1626,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						if (frame != prev_frame && i >= prev_frame_ofs) {
 							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
-							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 5 * EDSCALE;
+							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height()) / 2 + font->get_ascent()).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, sub ? color_time_dec : color_time_sec);
+							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1).x + 5 * EDSCALE;
 						}
 					}
 				}
@@ -1645,7 +1644,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 					if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 						int scd = sc < 0 ? prev_sc : sc;
 						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
-						draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+						draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height()) / 2 + font->get_ascent()).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, sub ? color_time_dec : color_time_sec);
 					}
 				}
 			}
@@ -1673,8 +1672,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = add_track->get_minimum_size();
 	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	ms.height = MAX(ms.height, font->get_height(font_size));
+	ms.height = MAX(ms.height, font->get_height());
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"))->get_width() + 2;
 	return ms;
 }
@@ -1975,7 +1973,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color linecolor = color;
@@ -2039,9 +2036,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				path_rect = Rect2(ofs, 0, limit - ofs - hsep, get_size().height);
 
-				Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
+				Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height()) / 2 + font->get_ascent());
 				string_pos = string_pos.floor();
-				draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - hsep, font_size, text_color);
+				draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - hsep, text_color);
 
 				draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 			}
@@ -2334,7 +2331,6 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 		Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		color.a = 0.5;
 
@@ -2359,7 +2355,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
 		if (limit > 0) {
-			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
+			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height()) / 2 + font->get_ascent()), text, HORIZONTAL_ALIGNMENT_LEFT, limit, color);
 		}
 	}
 
@@ -2457,10 +2453,9 @@ NodePath AnimationTrackEdit::get_path() const {
 Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
-	int max_h = MAX(texture->get_height(), font->get_height(font_size));
+	int max_h = MAX(texture->get_height(), font->get_height());
 	max_h = MAX(max_h, get_key_height());
 
 	return Vector2(1, max_h + separation);
@@ -3266,7 +3261,6 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			int separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
@@ -3290,7 +3284,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			int ofs = 0;
 			draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 			ofs += separation + icon->get_width();
-			draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
+			draw_string(font, Point2(ofs, int(get_size().height - font->get_height()) / 2 + font->get_ascent()), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, color);
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 
@@ -3312,10 +3306,9 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
-	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
+	return Vector2(0, MAX(font->get_height(), icon->get_height()) + separation);
 }
 
 void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {

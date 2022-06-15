@@ -47,9 +47,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			The [FontConfig] to use for the [CheckBox] text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [CheckBox]'s text.
-		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			The check icon to display when the [CheckBox] is checked.
 		</theme_item>

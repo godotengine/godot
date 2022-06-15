@@ -74,9 +74,6 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &Label3D::set_font);
 	ClassDB::bind_method(D_METHOD("get_font"), &Label3D::get_font);
 
-	ClassDB::bind_method(D_METHOD("set_font_size", "size"), &Label3D::set_font_size);
-	ClassDB::bind_method(D_METHOD("get_font_size"), &Label3D::get_font_size);
-
 	ClassDB::bind_method(D_METHOD("set_outline_size", "outline_size"), &Label3D::set_outline_size);
 	ClassDB::bind_method(D_METHOD("get_outline_size"), &Label3D::get_outline_size);
 
@@ -136,7 +133,6 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_modulate"), "set_outline_modulate", "get_outline_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "FontConfig"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
@@ -429,7 +425,7 @@ void Label3D::_shape() {
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
 		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font->get_size(), font->get_opentype_features(), language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
@@ -448,7 +444,7 @@ void Label3D::_shape() {
 	} else if (dirty_font) {
 		int spans = TS->shaped_get_span_count(text_rid);
 		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
+			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font->get_size(), font->get_opentype_features());
 		}
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -767,18 +763,6 @@ Ref<FontConfig> Label3D::_get_font_or_default() const {
 		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
 	}
 	return f;
-}
-
-void Label3D::set_font_size(int p_size) {
-	if (font_size != p_size) {
-		font_size = p_size;
-		dirty_font = true;
-		_queue_update();
-	}
-}
-
-int Label3D::get_font_size() const {
-	return font_size;
 }
 
 void Label3D::set_outline_size(int p_size) {

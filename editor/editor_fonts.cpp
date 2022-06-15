@@ -173,6 +173,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	default_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	default_fc->set_size(default_font_size);
 
 	Ref<FontConfig> default_fc_msdf;
 	default_fc_msdf.instantiate();
@@ -191,6 +192,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	default_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	default_fc_msdf->set_size(default_font_size);
 
 	Ref<FontConfig> bold_fc;
 	bold_fc.instantiate();
@@ -224,6 +226,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	bold_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	bold_fc->set_size(default_font_size);
 
 	Ref<FontConfig> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
@@ -257,6 +260,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	bold_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	bold_fc_msdf->set_size(default_font_size);
 
 	Ref<FontConfig> mono_fc;
 	mono_fc.instantiate();
@@ -289,77 +293,91 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	mono_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	mono_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
-
-	Ref<FontConfig> italic_fc = default_fc->duplicate();
-	italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+	mono_fc->set_size(default_font_size);
 
 	// Setup theme.
 
 	p_theme->set_default_font(default_fc); // Default theme font config.
-	p_theme->set_default_font_size(default_font_size);
 
-	// Main font.
+	// Main font configs.
 
 	p_theme->set_font("main", "EditorFonts", default_fc);
 	p_theme->set_font("main_msdf", "EditorFonts", default_fc_msdf);
-	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
-
 	p_theme->set_font("bold", "EditorFonts", bold_fc);
 	p_theme->set_font("main_bold_msdf", "EditorFonts", bold_fc_msdf);
-	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
 
-	// Title font.
+	// Title font configs.
+	Ref<FontConfig> bold_fc_title = bold_fc->duplicate();
+	bold_fc_title->set_size(default_font_size + 1 * EDSCALE);
 
-	p_theme->set_font("title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	Ref<FontConfig> bold_fc_large = bold_fc->duplicate();
+	bold_fc_large->set_size(default_font_size + 3 * EDSCALE);
 
-	p_theme->set_font("main_button_font", "EditorFonts", bold_fc);
-	p_theme->set_font_size("main_button_font_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("title", "EditorFonts", bold_fc_title);
+	p_theme->set_font("main_button_font", "EditorFonts", bold_fc_title);
 
 	p_theme->set_font("font", "Label", default_fc);
 
 	p_theme->set_type_variation("HeaderSmall", "Label");
 	p_theme->set_font("font", "HeaderSmall", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderSmall", default_font_size);
 
 	p_theme->set_type_variation("HeaderMedium", "Label");
-	p_theme->set_font("font", "HeaderMedium", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderMedium", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("font", "HeaderMedium", bold_fc_title);
 
 	p_theme->set_type_variation("HeaderLarge", "Label");
-	p_theme->set_font("font", "HeaderLarge", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+	p_theme->set_font("font", "HeaderLarge", bold_fc_large);
 
-	// Documentation fonts
-	p_theme->set_font_size("doc_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
-	p_theme->set_font("doc", "EditorFonts", default_fc);
-	p_theme->set_font("doc_bold", "EditorFonts", bold_fc);
-	p_theme->set_font("doc_italic", "EditorFonts", italic_fc);
-	p_theme->set_font_size("doc_title_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
-	p_theme->set_font("doc_title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("doc_source_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
-	p_theme->set_font("doc_source", "EditorFonts", mono_fc);
-	p_theme->set_font_size("doc_keyboard_size", "EditorFonts", (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("doc_keyboard", "EditorFonts", mono_fc);
+	// Documentation font configs.
+	Ref<FontConfig> default_fc_doc = default_fc->duplicate();
+	default_fc_doc->set_size(int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 
-	// Ruler font
-	p_theme->set_font_size("rulers_size", "EditorFonts", 8 * EDSCALE);
-	p_theme->set_font("rulers", "EditorFonts", default_fc);
+	Ref<FontConfig> bold_fc_doc = bold_fc->duplicate();
+	bold_fc_doc->set_size(int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 
-	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", "EditorFonts", 14 * EDSCALE);
-	p_theme->set_font("rotation_control", "EditorFonts", default_fc);
+	Ref<FontConfig> italic_fc_doc = default_fc->duplicate();
+	italic_fc_doc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+	italic_fc_doc->set_size(int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 
-	// Code font
-	p_theme->set_font_size("source_size", "EditorFonts", int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
-	p_theme->set_font("source", "EditorFonts", mono_fc);
+	Ref<FontConfig> bold_fc_doc_title = bold_fc->duplicate();
+	bold_fc_doc_title->set_size(int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
 
-	p_theme->set_font_size("expression_size", "EditorFonts", (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("expression", "EditorFonts", mono_fc);
+	Ref<FontConfig> mono_fc_doc_source = mono_fc->duplicate();
+	mono_fc_doc_source->set_size(int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
 
-	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
-	p_theme->set_font("output_source", "EditorFonts", mono_fc);
+	Ref<FontConfig> mono_fc_doc_keyboard = mono_fc->duplicate();
+	mono_fc_doc_keyboard->set_size((int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
 
-	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
-	p_theme->set_font("status_source", "EditorFonts", mono_fc);
+	p_theme->set_font("doc", "EditorFonts", default_fc_doc);
+	p_theme->set_font("doc_bold", "EditorFonts", bold_fc_doc);
+	p_theme->set_font("doc_italic", "EditorFonts", italic_fc_doc);
+	p_theme->set_font("doc_title", "EditorFonts", bold_fc_doc_title);
+	p_theme->set_font("doc_source", "EditorFonts", mono_fc_doc_source);
+	p_theme->set_font("doc_keyboard", "EditorFonts", mono_fc_doc_keyboard);
+
+	// Ruler font config.
+	Ref<FontConfig> default_fc_rulers = default_fc->duplicate();
+	default_fc_rulers->set_size(8 * EDSCALE);
+	p_theme->set_font("rulers", "EditorFonts", default_fc_rulers);
+
+	// Rotation widget font config.
+	Ref<FontConfig> default_fc_rotation_control = default_fc->duplicate();
+	default_fc_rotation_control->set_size(14 * EDSCALE);
+	p_theme->set_font("rotation_control", "EditorFonts", default_fc_rotation_control);
+
+	// Code font configs.
+	Ref<FontConfig> mono_fc_source = mono_fc->duplicate();
+	mono_fc_source->set_size(int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
+	p_theme->set_font("source", "EditorFonts", mono_fc_source);
+
+	Ref<FontConfig> mono_fc_expression = mono_fc->duplicate();
+	mono_fc_expression->set_size((int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", "EditorFonts", mono_fc_expression);
+
+	Ref<FontConfig> mono_fc_output_source = mono_fc->duplicate();
+	mono_fc_output_source->set_size(int(EDITOR_GET("run/output/font_size")) * EDSCALE);
+	p_theme->set_font("output_source", "EditorFonts", mono_fc_output_source);
+
+	Ref<FontConfig> mono_fc_status_source = mono_fc->duplicate();
+	mono_fc_status_source->set_size(default_font_size);
+	p_theme->set_font("status_source", "EditorFonts", mono_fc_status_source);
 }

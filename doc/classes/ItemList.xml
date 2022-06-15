@@ -465,9 +465,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			[FontConfig] of the item's text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the item's text.
-		</theme_item>
 		<theme_item name="bg" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
 		</theme_item>

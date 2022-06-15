@@ -81,7 +81,6 @@ class ThemeItemImportTree : public VBoxContainer {
 	List<TreeItem *> tree_color_items;
 	List<TreeItem *> tree_constant_items;
 	List<TreeItem *> tree_font_items;
-	List<TreeItem *> tree_font_size_items;
 	List<TreeItem *> tree_icon_items;
 	List<TreeItem *> tree_stylebox_items;
 
@@ -112,13 +111,6 @@ class ThemeItemImportTree : public VBoxContainer {
 	Button *select_full_fonts_button = nullptr;
 	Button *deselect_all_fonts_button = nullptr;
 	Label *total_selected_fonts_label = nullptr;
-
-	TextureRect *select_font_sizes_icon = nullptr;
-	Label *select_font_sizes_label = nullptr;
-	Button *select_all_font_sizes_button = nullptr;
-	Button *select_full_font_sizes_button = nullptr;
-	Button *deselect_all_font_sizes_button = nullptr;
-	Label *total_selected_font_sizes_label = nullptr;
 
 	TextureRect *select_icons_icon = nullptr;
 	Label *select_icons_label = nullptr;
@@ -203,7 +195,6 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	Button *edit_items_add_color = nullptr;
 	Button *edit_items_add_constant = nullptr;
 	Button *edit_items_add_font = nullptr;
-	Button *edit_items_add_font_size = nullptr;
 	Button *edit_items_add_icon = nullptr;
 	Button *edit_items_add_stylebox = nullptr;
 	Button *edit_items_remove_class = nullptr;
@@ -341,7 +332,6 @@ class ThemeTypeEditor : public MarginContainer {
 	VBoxContainer *color_items_list = nullptr;
 	VBoxContainer *constant_items_list = nullptr;
 	VBoxContainer *font_items_list = nullptr;
-	VBoxContainer *font_size_items_list = nullptr;
 	VBoxContainer *icon_items_list = nullptr;
 	VBoxContainer *stylebox_items_list = nullptr;
 
@@ -383,7 +373,6 @@ class ThemeTypeEditor : public MarginContainer {
 
 	void _color_item_changed(Color p_value, String p_item_name);
 	void _constant_item_changed(float p_value, String p_item_name);
-	void _font_size_item_changed(float p_value, String p_item_name);
 	void _edit_resource_item(Ref<Resource> p_resource, bool p_edit);
 	void _font_item_changed(Ref<FontConfig> p_value, String p_item_name);
 	void _icon_item_changed(Ref<Texture2D> p_value, String p_item_name);

@@ -397,9 +397,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			Font used for the text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [LineEdit]'s text.
-		</theme_item>
 		<theme_item name="clear" data_type="icon" type="Texture2D">
 			Texture for the clear button. See [member clear_button_enabled].
 		</theme_item>

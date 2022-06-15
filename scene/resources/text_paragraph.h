@@ -99,10 +99,10 @@ public:
 	void set_custom_punctuation(const String &p_punct);
 	String get_custom_punctuation() const;
 
-	bool set_dropcap(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const Rect2 &p_dropcap_margins = Rect2(), const String &p_language = "");
+	bool set_dropcap(const String &p_text, const Ref<FontConfig> &p_font, const Rect2 &p_dropcap_margins = Rect2(), const String &p_language = "");
 	void clear_dropcap();
 
-	bool add_string(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
+	bool add_string(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER);
 
@@ -158,7 +158,7 @@ public:
 
 	Mutex &get_mutex() const { return _thread_safe_; };
 
-	TextParagraph(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
+	TextParagraph(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };

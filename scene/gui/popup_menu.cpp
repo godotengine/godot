@@ -117,7 +117,7 @@ int PopupMenu::_get_item_height(int p_item) const {
 
 	int text_height = items[p_item].text_buf->get_size().height;
 	if (text_height == 0 && !items[p_item].separator) {
-		text_height = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
+		text_height = get_theme_font(SNAME("font"))->get_height();
 	}
 
 	int separator_height = 0;
@@ -753,18 +753,17 @@ void PopupMenu::_shape_item(int p_item) {
 		items.write[p_item].text_buf->clear();
 
 		Ref<FontConfig> font = get_theme_font(items[p_item].separator ? SNAME("font_separator") : SNAME("font"));
-		int font_size = get_theme_font_size(items[p_item].separator ? SNAME("font_separator_size") : SNAME("font_size"));
 
 		if (items[p_item].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_item].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		} else {
 			items.write[p_item].text_buf->set_direction((TextServer::Direction)items[p_item].text_direction);
 		}
-		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].language);
+		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, items[p_item].language);
 
 		items.write[p_item].accel_text_buf->clear();
 		items.write[p_item].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		items.write[p_item].accel_text_buf->add_string(_get_accel_text(items.write[p_item]), font, font_size);
+		items.write[p_item].accel_text_buf->add_string(_get_accel_text(items.write[p_item]), font);
 		items.write[p_item].dirty = false;
 	}
 }

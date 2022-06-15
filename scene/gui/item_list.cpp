@@ -43,7 +43,7 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.language);
+	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {

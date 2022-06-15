@@ -55,14 +55,6 @@ void TextEdit::Text::set_font(const Ref<FontConfig> &p_font) {
 	is_dirty = true;
 }
 
-void TextEdit::Text::set_font_size(int p_font_size) {
-	if (font_size == p_font_size) {
-		return;
-	}
-	font_size = p_font_size;
-	is_dirty = true;
-}
-
 void TextEdit::Text::set_tab_size(int p_tab_size) {
 	if (tab_size == p_tab_size) {
 		return;
@@ -183,14 +175,14 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
 		if (p_text_changed) {
-			text.write[p_line].data_buf->add_string(p_ime_text, font, font_size, language);
+			text.write[p_line].data_buf->add_string(p_ime_text, font, language);
 		}
 		if (!p_bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), p_bidi_override);
 		}
 	} else {
 		if (p_text_changed) {
-			text.write[p_line].data_buf->add_string(text[p_line].data, font, font_size, language);
+			text.write[p_line].data_buf->add_string(text[p_line].data, font, language);
 		}
 		if (!text[p_line].bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), text[p_line].bidi_override);
@@ -201,7 +193,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 		RID r = text.write[p_line].data_buf->get_rid();
 		int spans = TS->shaped_get_span_count(r);
 		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
+			TS->shaped_set_span_update_font(r, i, font->get_rids(), font->get_size(), font->get_opentype_features());
 		}
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(r, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
@@ -211,7 +203,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	// Apply tab align.
 	if (tab_size > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size(' ', font_size).width * tab_size);
+		tabs.push_back(font->get_char_size(' ').width * tab_size);
 		text.write[p_line].data_buf->tab_align(tabs);
 	}
 
@@ -250,7 +242,7 @@ void TextEdit::Text::invalidate_all_lines() {
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
-				tabs.push_back(font->get_char_size(' ', font_size).width * tab_size);
+				tabs.push_back(font->get_char_size(' ').width * tab_size);
 				text.write[i].data_buf->tab_align(tabs);
 			}
 			// Tabs have changes, force width update.
@@ -272,8 +264,8 @@ void TextEdit::Text::invalidate_font() {
 	max_width = -1;
 	line_height = -1;
 
-	if (font.is_valid() && font_size > 0) {
-		font_height = font->get_height(font_size);
+	if (font.is_valid()) {
+		font_height = font->get_height();
 	}
 
 	for (int i = 0; i < text.size(); i++) {
@@ -290,8 +282,8 @@ void TextEdit::Text::invalidate_all() {
 	max_width = -1;
 	line_height = -1;
 
-	if (font.is_valid() && font_size > 0) {
-		font_height = font->get_height(font_size);
+	if (font.is_valid()) {
+		font_height = font->get_height();
 	}
 
 	for (int i = 0; i < text.size(); i++) {
@@ -968,7 +960,7 @@ void TextEdit::_notification(int p_what) {
 
 						// Give visual indication of empty selected line.
 						if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
-							float char_w = font->get_char_size(' ', font_size).width;
+							float char_w = font->get_char_size(' ').width;
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), selection_color);
 							} else {
@@ -1008,7 +1000,7 @@ void TextEdit::_notification(int p_what) {
 
 									Ref<TextLine> tl;
 									tl.instantiate();
-									tl->add_string(text, font, font_size);
+									tl->add_string(text, font);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
 									if (outline_size > 0 && outline_color.a > 0) {
@@ -1154,8 +1146,8 @@ void TextEdit::_notification(int p_what) {
 									} else if (rect.position.x + rect.size.x > xmargin_end) {
 										rect.size.x = xmargin_end - rect.position.x;
 									}
-									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(font->get_underline_position(font_size));
-									rect.size.y = MAX(1, font->get_underline_thickness(font_size));
+									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(font->get_underline_position());
+									rect.size.y = MAX(1, font->get_underline_thickness());
 									draw_rect(rect, color);
 								}
 
@@ -1217,7 +1209,7 @@ void TextEdit::_notification(int p_what) {
 									if (brace_open_mismatch) {
 										current_color = brace_mismatch_color;
 									}
-									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
+									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness());
 									draw_rect(rect, current_color);
 								}
 
@@ -1226,7 +1218,7 @@ void TextEdit::_notification(int p_what) {
 									if (brace_close_mismatch) {
 										current_color = brace_mismatch_color;
 									}
-									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
+									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness());
 									draw_rect(rect, current_color);
 								}
 							}
@@ -1296,7 +1288,7 @@ void TextEdit::_notification(int p_what) {
 								ts_caret = TS->shaped_text_get_carets(rid, caret.column);
 							} else {
 								// No carets, add one at the start.
-								int h = font->get_height(font_size);
+								int h = font->get_height();
 								if (rtl) {
 									ts_caret.l_dir = TextServer::DIRECTION_RTL;
 									ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
@@ -1317,7 +1309,7 @@ void TextEdit::_notification(int p_what) {
 								if (draw_caret || drag_caret_force_displayed) {
 									if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 										//Block or underline caret, draw trailing carets at full height.
-										int h = font->get_height(font_size);
+										int h = font->get_height();
 
 										if (ts_caret.t_caret != Rect2()) {
 											if (overtype_mode) {
@@ -1350,7 +1342,7 @@ void TextEdit::_notification(int p_what) {
 												ts_caret.l_caret.size.y = caret_width;
 											}
 											if (ts_caret.l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
-												ts_caret.l_caret.size.x = font->get_char_size('m', font_size).x;
+												ts_caret.l_caret.size.x = font->get_char_size('m').x;
 											} else {
 												ts_caret.l_caret.size.x = 3 * caret_width;
 											}
@@ -2559,7 +2551,7 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 }
 
 void TextEdit::_update_placeholder() {
-	if (font.is_null() || font_size <= 0) {
+	if (font.is_null()) {
 		return; // Not in tree?
 	}
 
@@ -2568,7 +2560,7 @@ void TextEdit::_update_placeholder() {
 	placeholder_data_buf->set_width(text.get_width());
 	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
-	placeholder_data_buf->add_string(placeholder_text, font, font_size, language);
+	placeholder_data_buf->add_string(placeholder_text, font, language);
 
 	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_text);
 	if (placeholder_bidi_override.is_empty()) {
@@ -2577,13 +2569,13 @@ void TextEdit::_update_placeholder() {
 
 	if (get_tab_size() > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size(' ', font_size).width * get_tab_size());
+		tabs.push_back(font->get_char_size(' ').width * get_tab_size());
 		placeholder_data_buf->tab_align(tabs);
 	}
 
 	// Update height.
 	const int wrap_amount = placeholder_data_buf->get_line_count() - 1;
-	placeholder_line_height = font->get_height(font_size);
+	placeholder_line_height = font->get_height();
 	for (int i = 0; i <= wrap_amount; i++) {
 		placeholder_line_height = MAX(placeholder_line_height, placeholder_data_buf->get_line_size(i).y);
 	}
@@ -2626,7 +2618,6 @@ void TextEdit::_update_caches() {
 	space_icon = get_theme_icon(SNAME("space"));
 
 	font = get_theme_font(SNAME("font"));
-	font_size = get_theme_font_size(SNAME("font_size"));
 	font_color = get_theme_color(SNAME("font_color"));
 	font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
 	font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
@@ -2650,7 +2641,6 @@ void TextEdit::_update_caches() {
 	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(font);
-	text.set_font_size(font_size);
 	text.invalidate_font();
 	_update_placeholder();
 

@@ -94,7 +94,6 @@ private:
 	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
 	float width = 500.0;
 
-	int font_size = 16;
 	Ref<FontConfig> font_override;
 	mutable Ref<FontConfig> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
@@ -176,9 +175,6 @@ public:
 	void set_font(const Ref<FontConfig> &p_font);
 	Ref<FontConfig> get_font() const;
 	Ref<FontConfig> _get_font_or_default() const;
-
-	void set_font_size(int p_size);
-	int get_font_size() const;
 
 	void set_outline_size(int p_size);
 	int get_outline_size() const;

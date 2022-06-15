@@ -55,7 +55,7 @@ void TextLine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
-	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextLine::add_string, DEFVAL(""), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "language", "meta"), &TextLine::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
 
@@ -198,9 +198,9 @@ void TextLine::set_bidi_override(const Array &p_override) {
 	dirty = true;
 }
 
-bool TextLine::add_string(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
+bool TextLine::add_string(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language, const Variant &p_meta) {
 	ERR_FAIL_COND_V(p_font.is_null(), false);
-	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
+	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font->get_size(), p_font->get_opentype_features(), p_language, p_meta);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
 	}
@@ -414,10 +414,10 @@ int TextLine::hit_test(float p_coords) const {
 	return TS->shaped_text_hit_test_position(rid, p_coords);
 }
 
-TextLine::TextLine(const String &p_text, const Ref<FontConfig> &p_font, int p_font_size, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+TextLine::TextLine(const String &p_text, const Ref<FontConfig> &p_font, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
-		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
+		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font->get_size(), p_font->get_opentype_features(), p_language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
 		}

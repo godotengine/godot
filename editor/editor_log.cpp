@@ -67,7 +67,6 @@ void EditorLog::_update_theme() {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
 	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
 	Ref<FontConfig> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));

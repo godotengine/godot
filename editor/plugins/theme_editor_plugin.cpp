@@ -56,14 +56,12 @@ void ThemeItemImportTree::_update_items_tree() {
 	int color_amount = 0;
 	int constant_amount = 0;
 	int font_amount = 0;
-	int font_size_amount = 0;
 	int icon_amount = 0;
 	int stylebox_amount = 0;
 
 	tree_color_items.clear();
 	tree_constant_items.clear();
 	tree_font_items.clear();
-	tree_font_size_items.clear();
 	tree_icon_items.clear();
 	tree_stylebox_items.clear();
 
@@ -148,14 +146,6 @@ void ThemeItemImportTree::_update_items_tree() {
 
 					item_list = &tree_font_items;
 					font_amount += filtered_names.size();
-					break;
-
-				case Theme::DATA_TYPE_FONT_SIZE:
-					data_type_node->set_icon(0, get_theme_icon(SNAME("FontSize"), SNAME("EditorIcons")));
-					data_type_node->set_text(0, TTR("Font Sizes"));
-
-					item_list = &tree_font_size_items;
-					font_size_amount += filtered_names.size();
 					break;
 
 				case Theme::DATA_TYPE_ICON:
@@ -251,20 +241,6 @@ void ThemeItemImportTree::_update_items_tree() {
 		select_all_fonts_button->set_visible(false);
 		select_full_fonts_button->set_visible(false);
 		deselect_all_fonts_button->set_visible(false);
-	}
-
-	if (font_size_amount > 0) {
-		Array arr;
-		arr.push_back(font_size_amount);
-		select_font_sizes_label->set_text(TTRN("One font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
-		select_all_font_sizes_button->set_visible(true);
-		select_full_font_sizes_button->set_visible(true);
-		deselect_all_font_sizes_button->set_visible(true);
-	} else {
-		select_font_sizes_label->set_text(TTR("No font sizes found."));
-		select_all_font_sizes_button->set_visible(false);
-		select_full_font_sizes_button->set_visible(false);
-		deselect_all_font_sizes_button->set_visible(false);
 	}
 
 	if (icon_amount > 0) {
@@ -399,10 +375,6 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 
 		case Theme::DATA_TYPE_FONT:
 			total_selected_items_label = total_selected_fonts_label;
-			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
-			total_selected_items_label = total_selected_font_sizes_label;
 			break;
 
 		case Theme::DATA_TYPE_ICON:
@@ -566,10 +538,6 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_font_items;
 			break;
 
-		case Theme::DATA_TYPE_FONT_SIZE:
-			item_list = &tree_font_size_items;
-			break;
-
 		case Theme::DATA_TYPE_ICON:
 			item_list = &tree_icon_items;
 			break;
@@ -619,10 +587,6 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 
 		case Theme::DATA_TYPE_FONT:
 			item_list = &tree_font_items;
-			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
-			item_list = &tree_font_size_items;
 			break;
 
 		case Theme::DATA_TYPE_ICON:
@@ -676,10 +640,6 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 
 		case Theme::DATA_TYPE_FONT:
 			item_list = &tree_font_items;
-			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
-			item_list = &tree_font_size_items;
 			break;
 
 		case Theme::DATA_TYPE_ICON:
@@ -756,10 +716,6 @@ void ThemeItemImportTree::_import_selected() {
 						item_value = Ref<FontConfig>();
 						break;
 
-					case Theme::DATA_TYPE_FONT_SIZE:
-						item_value = -1;
-						break;
-
 					case Theme::DATA_TYPE_ICON:
 						item_value = Ref<Texture2D>();
 						break;
@@ -816,7 +772,6 @@ void ThemeItemImportTree::reset_item_tree() {
 	total_selected_colors_label->hide();
 	total_selected_constants_label->hide();
 	total_selected_fonts_label->hide();
-	total_selected_font_sizes_label->hide();
 	total_selected_icons_label->hide();
 	total_selected_styleboxes_label->hide();
 
@@ -859,11 +814,6 @@ void ThemeItemImportTree::_notification(int p_what) {
 			deselect_all_fonts_button->set_icon(get_theme_icon(SNAME("ThemeDeselectAll"), SNAME("EditorIcons")));
 			select_all_fonts_button->set_icon(get_theme_icon(SNAME("ThemeSelectAll"), SNAME("EditorIcons")));
 			select_full_fonts_button->set_icon(get_theme_icon(SNAME("ThemeSelectFull"), SNAME("EditorIcons")));
-
-			select_font_sizes_icon->set_texture(get_theme_icon(SNAME("FontSize"), SNAME("EditorIcons")));
-			deselect_all_font_sizes_button->set_icon(get_theme_icon(SNAME("ThemeDeselectAll"), SNAME("EditorIcons")));
-			select_all_font_sizes_button->set_icon(get_theme_icon(SNAME("ThemeSelectAll"), SNAME("EditorIcons")));
-			select_full_font_sizes_button->set_icon(get_theme_icon(SNAME("ThemeSelectFull"), SNAME("EditorIcons")));
 
 			select_icons_icon->set_texture(get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 			deselect_all_icons_button->set_icon(get_theme_icon(SNAME("ThemeDeselectAll"), SNAME("EditorIcons")));
@@ -947,13 +897,6 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	select_full_fonts_button = memnew(Button);
 	total_selected_fonts_label = memnew(Label);
 
-	select_font_sizes_icon = memnew(TextureRect);
-	select_font_sizes_label = memnew(Label);
-	deselect_all_font_sizes_button = memnew(Button);
-	select_all_font_sizes_button = memnew(Button);
-	select_full_font_sizes_button = memnew(Button);
-	total_selected_font_sizes_label = memnew(Label);
-
 	select_icons_icon = memnew(TextureRect);
 	select_icons_label = memnew(Label);
 	deselect_all_icons_button = memnew(Button);
@@ -1024,20 +967,6 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_all_items_tooltip = TTR("Select all visible font items.");
 				select_full_items_tooltip = TTR("Select all visible font items and their data.");
 				deselect_all_items_tooltip = TTR("Deselect all visible font items.");
-				break;
-
-			case Theme::DATA_TYPE_FONT_SIZE:
-				select_items_icon = select_font_sizes_icon;
-				select_items_label = select_font_sizes_label;
-				deselect_all_items_button = deselect_all_font_sizes_button;
-				select_all_items_button = select_all_font_sizes_button;
-				select_full_items_button = select_full_font_sizes_button;
-				total_selected_items_label = total_selected_font_sizes_label;
-
-				items_title = TTR("Font sizes");
-				select_all_items_tooltip = TTR("Select all visible font size items.");
-				select_full_items_tooltip = TTR("Select all visible font size items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible font size items.");
 				break;
 
 			case Theme::DATA_TYPE_ICON:
@@ -1249,7 +1178,6 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_color->set_disabled(false);
 		edit_items_add_constant->set_disabled(false);
 		edit_items_add_font->set_disabled(false);
-		edit_items_add_font_size->set_disabled(false);
 		edit_items_add_icon->set_disabled(false);
 		edit_items_add_stylebox->set_disabled(false);
 
@@ -1263,7 +1191,6 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_color->set_disabled(true);
 		edit_items_add_constant->set_disabled(true);
 		edit_items_add_font->set_disabled(true);
-		edit_items_add_font_size->set_disabled(true);
 		edit_items_add_icon->set_disabled(true);
 		edit_items_add_stylebox->set_disabled(true);
 
@@ -1371,29 +1298,6 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(font_root);
-				item->set_text(0, E);
-				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
-			}
-
-			has_any_items = true;
-		}
-	}
-
-	{ // Font sizes.
-		names.clear();
-		edited_theme->get_font_size_list(p_item_type, &names);
-
-		if (names.size() > 0) {
-			TreeItem *font_size_root = edit_items_tree->create_item(root);
-			font_size_root->set_metadata(0, Theme::DATA_TYPE_FONT_SIZE);
-			font_size_root->set_icon(0, get_theme_icon(SNAME("FontSize"), SNAME("EditorIcons")));
-			font_size_root->set_text(0, TTR("Font Sizes"));
-			font_size_root->add_button(0, get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Size Items"));
-
-			names.sort_custom<StringName::AlphCompare>();
-			for (const StringName &E : names) {
-				TreeItem *item = edit_items_tree->create_item(font_size_root);
 				item->set_text(0, E);
 				item->add_button(0, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
@@ -1533,10 +1437,6 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 		case Theme::DATA_TYPE_FONT:
 			ur->add_do_method(*edited_theme, "set_font", p_item_name, p_item_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", p_item_name, p_item_type);
-			break;
-		case Theme::DATA_TYPE_FONT_SIZE:
-			ur->add_do_method(*edited_theme, "set_font_size", p_item_name, p_item_type, -1);
-			ur->add_undo_method(*edited_theme, "clear_font_size", p_item_name, p_item_type);
 			break;
 		case Theme::DATA_TYPE_COLOR:
 			ur->add_do_method(*edited_theme, "set_color", p_item_name, p_item_type, Color());
@@ -1727,9 +1627,6 @@ void ThemeItemEditorDialog::_open_add_theme_item_dialog(int p_data_type) {
 		case Theme::DATA_TYPE_FONT:
 			edit_theme_item_dialog->set_title(TTR("Add Font Item"));
 			break;
-		case Theme::DATA_TYPE_FONT_SIZE:
-			edit_theme_item_dialog->set_title(TTR("Add Font Size Item"));
-			break;
 		case Theme::DATA_TYPE_ICON:
 			edit_theme_item_dialog->set_title(TTR("Add Icon Item"));
 			break;
@@ -1762,9 +1659,6 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 			break;
 		case Theme::DATA_TYPE_FONT:
 			edit_theme_item_dialog->set_title(TTR("Rename Font Item"));
-			break;
-		case Theme::DATA_TYPE_FONT_SIZE:
-			edit_theme_item_dialog->set_title(TTR("Rename Font Size Item"));
 			break;
 		case Theme::DATA_TYPE_ICON:
 			edit_theme_item_dialog->set_title(TTR("Rename Icon Item"));
@@ -1859,7 +1753,6 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_add_color->set_icon(get_theme_icon(SNAME("Color"), SNAME("EditorIcons")));
 			edit_items_add_constant->set_icon(get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons")));
 			edit_items_add_font->set_icon(get_theme_icon(SNAME("Font"), SNAME("EditorIcons")));
-			edit_items_add_font_size->set_icon(get_theme_icon(SNAME("FontSize"), SNAME("EditorIcons")));
 			edit_items_add_icon->set_icon(get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 			edit_items_add_stylebox->set_icon(get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
 
@@ -1960,13 +1853,6 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_add_font->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font);
 	edit_items_add_font->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT));
-
-	edit_items_add_font_size = memnew(Button);
-	edit_items_add_font_size->set_tooltip(TTR("Add Font Size Item"));
-	edit_items_add_font_size->set_flat(true);
-	edit_items_add_font_size->set_disabled(true);
-	edit_items_toolbar->add_child(edit_items_add_font_size);
-	edit_items_add_font_size->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT_SIZE));
 
 	edit_items_add_icon = memnew(Button);
 	edit_items_add_icon->set_tooltip(TTR("Add Icon Item"));
@@ -2558,39 +2444,6 @@ void ThemeTypeEditor::_update_type_items() {
 		}
 	}
 
-	// Fonts sizes.
-	{
-		for (int i = font_size_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = font_size_items_list->get_child(i);
-			node->queue_delete();
-			font_size_items_list->remove_child(node);
-		}
-
-		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
-		for (const KeyValue<StringName, bool> &E : font_size_items) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
-			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-			item_editor->set_min(-100000);
-			item_editor->set_max(100000);
-			item_editor->set_step(1);
-			item_editor->set_allow_lesser(true);
-			item_editor->set_allow_greater(true);
-			item_control->add_child(item_editor);
-
-			if (E.value) {
-				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed), varray(E.key));
-			} else {
-				item_editor->set_value(Theme::get_default()->get_font_size(E.key, edited_type));
-				item_editor->set_editable(false);
-			}
-
-			_add_focusable(item_editor);
-			font_size_items_list->add_child(item_control);
-		}
-	}
-
 	// Icons.
 	{
 		for (int i = icon_items_list->get_child_count() - 1; i >= 0; i--) {
@@ -2779,15 +2632,6 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_font_size_list(default_type, &names);
-		for (const StringName &E : names) {
-			if (!new_snapshot->has_font_size(E, edited_type)) {
-				new_snapshot->set_font_size(E, edited_type, Theme::get_default()->get_font_size(E, edited_type));
-			}
-		}
-	}
-	{
-		names.clear();
 		Theme::get_default()->get_color_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_color(E, edited_type)) {
@@ -2843,10 +2687,6 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 			ur->add_do_method(*edited_theme, "set_font", item_name, edited_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", item_name, edited_type);
 		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "set_font_size", item_name, edited_type, -1);
-			ur->add_undo_method(*edited_theme, "clear_font_size", item_name, edited_type);
-		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "set_icon", item_name, edited_type, Ref<Texture2D>());
 			ur->add_undo_method(*edited_theme, "clear_icon", item_name, edited_type);
@@ -2887,10 +2727,6 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 		case Theme::DATA_TYPE_FONT: {
 			ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<FontConfig>());
 			ur->add_undo_method(*edited_theme, "clear_font", p_item_name, edited_type);
-		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, Theme::get_default()->get_font_size(p_item_name, edited_type));
-			ur->add_undo_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "set_icon", p_item_name, edited_type, Ref<Texture2D>());
@@ -3001,10 +2837,6 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 			ur->add_do_method(*edited_theme, "rename_font", p_item_name, new_name, edited_type);
 			ur->add_undo_method(*edited_theme, "rename_font", new_name, p_item_name, edited_type);
 		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "rename_font_size", p_item_name, new_name, edited_type);
-			ur->add_undo_method(*edited_theme, "rename_font_size", new_name, p_item_name, edited_type);
-		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "rename_icon", p_item_name, new_name, edited_type);
 			ur->add_undo_method(*edited_theme, "rename_icon", new_name, p_item_name, edited_type);
@@ -3053,14 +2885,6 @@ void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) 
 	ur->create_action(TTR("Set Constant Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
-	ur->commit_action();
-}
-
-void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Set Font Size Item in Theme"));
-	ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, p_value);
-	ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
 	ur->commit_action();
 }
 
@@ -3291,10 +3115,9 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(0, get_theme_icon(SNAME("Color"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(1, get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(2, get_theme_icon(SNAME("Font"), SNAME("EditorIcons")));
-			data_type_tabs->set_tab_icon(3, get_theme_icon(SNAME("FontSize"), SNAME("EditorIcons")));
-			data_type_tabs->set_tab_icon(4, get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
-			data_type_tabs->set_tab_icon(5, get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
-			data_type_tabs->set_tab_icon(6, get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+			data_type_tabs->set_tab_icon(3, get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
+			data_type_tabs->set_tab_icon(4, get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
+			data_type_tabs->set_tab_icon(5, get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
 			type_variation_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
@@ -3339,7 +3162,6 @@ void ThemeTypeEditor::select_type(String p_type_name) {
 		edited_theme->add_icon_type(edited_type);
 		edited_theme->add_stylebox_type(edited_type);
 		edited_theme->add_font_type(edited_type);
-		edited_theme->add_font_size_type(edited_type);
 		edited_theme->add_color_type(edited_type);
 		edited_theme->add_constant_type(edited_type);
 
@@ -3400,7 +3222,6 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);
 	font_items_list = _create_item_list(Theme::DATA_TYPE_FONT);
-	font_size_items_list = _create_item_list(Theme::DATA_TYPE_FONT_SIZE);
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
 	stylebox_items_list = _create_item_list(Theme::DATA_TYPE_STYLEBOX);
 

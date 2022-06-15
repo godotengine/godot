@@ -1965,6 +1965,9 @@ void FontConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &FontConfig::set_font);
 	ClassDB::bind_method(D_METHOD("get_font"), &FontConfig::get_font);
 
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &FontConfig::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &FontConfig::get_size);
+
 	ClassDB::bind_method(D_METHOD("set_variation_opentype", "coords"), &FontConfig::set_variation_opentype);
 	ClassDB::bind_method(D_METHOD("get_variation_opentype"), &FontConfig::get_variation_opentype);
 
@@ -1989,20 +1992,20 @@ void FontConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rids"), &FontConfig::get_rids);
 	ClassDB::bind_method(D_METHOD("set_cache_capacity", "single_line", "multi_line"), &FontConfig::set_cache_capacity);
 
-	ClassDB::bind_method(D_METHOD("get_height", "font_size"), &FontConfig::get_height, DEFVAL(DEFAULT_FONT_SIZE));
-	ClassDB::bind_method(D_METHOD("get_ascent", "font_size"), &FontConfig::get_ascent, DEFVAL(DEFAULT_FONT_SIZE));
-	ClassDB::bind_method(D_METHOD("get_descent", "font_size"), &FontConfig::get_descent, DEFVAL(DEFAULT_FONT_SIZE));
-	ClassDB::bind_method(D_METHOD("get_underline_position", "font_size"), &FontConfig::get_underline_position, DEFVAL(DEFAULT_FONT_SIZE));
-	ClassDB::bind_method(D_METHOD("get_underline_thickness", "font_size"), &FontConfig::get_underline_thickness, DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("get_height"), &FontConfig::get_height);
+	ClassDB::bind_method(D_METHOD("get_ascent"), &FontConfig::get_ascent);
+	ClassDB::bind_method(D_METHOD("get_descent"), &FontConfig::get_descent);
+	ClassDB::bind_method(D_METHOD("get_underline_position"), &FontConfig::get_underline_position);
+	ClassDB::bind_method(D_METHOD("get_underline_thickness"), &FontConfig::get_underline_thickness);
 
-	ClassDB::bind_method(D_METHOD("get_string_size", "text", "alignment", "width", "font_size", "flags", "direction", "orientation"), &FontConfig::get_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "alignment", "width", "font_size", "max_lines", "flags", "direction", "orientation"), &FontConfig::get_multiline_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("get_string_size", "text", "alignment", "width", "flags", "direction", "orientation"), &FontConfig::get_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "alignment", "width", "max_lines", "flags", "direction", "orientation"), &FontConfig::get_multiline_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
-	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "alignment", "width", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "alignment", "width", "max_lines", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
-	ClassDB::bind_method(D_METHOD("draw_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_string_outline", "canvas_item", "pos", "text", "alignment", "width", "size", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "max_lines", "size", "modulate", "flags", "direction", "orientation"), &FontConfig::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontConfig::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontConfig::get_supported_chars);
@@ -2012,6 +2015,7 @@ void FontConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "size", "modulate"), &FontConfig::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_size", "get_size");
 
 	ADD_GROUP("Variation", "variation");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), "set_variation_opentype", "get_variation_opentype");
@@ -2365,6 +2369,17 @@ Ref<Font> FontConfig::get_font() const {
 	return font;
 }
 
+void FontConfig::set_size(int p_size) {
+	if (font_size != p_size) {
+		font_size = p_size;
+		_font_changed();
+	}
+}
+
+int FontConfig::get_size() const {
+	return font_size;
+}
+
 void FontConfig::set_variation_opentype(const Dictionary &p_coords) {
 	if (variation.opentype != p_coords) {
 		variation.opentype = p_coords;
@@ -2453,50 +2468,49 @@ void FontConfig::set_cache_capacity(int p_single_line, int p_multi_line) {
 	cache_wrap.set_capacity(p_multi_line);
 }
 
-real_t FontConfig::get_height(int p_font_size) const {
+real_t FontConfig::get_height() const {
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids[i], font_size) + TS->font_get_descent(rids[i], font_size));
 	}
 	return ret + extra_spacing[TextServer::SPACING_BOTTOM] + extra_spacing[TextServer::SPACING_TOP];
 }
 
-real_t FontConfig::get_ascent(int p_font_size) const {
+real_t FontConfig::get_ascent() const {
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids[i], font_size));
 	}
 	return ret + extra_spacing[TextServer::SPACING_TOP];
 }
 
-real_t FontConfig::get_descent(int p_font_size) const {
+real_t FontConfig::get_descent() const {
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_descent(rids[i], font_size));
 	}
 	return ret + extra_spacing[TextServer::SPACING_BOTTOM];
 }
 
-real_t FontConfig::get_underline_position(int p_font_size) const {
+real_t FontConfig::get_underline_position() const {
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_position(rids[i], font_size));
 	}
 	return ret + extra_spacing[TextServer::SPACING_TOP];
 }
 
-real_t FontConfig::get_underline_thickness(int p_font_size) const {
+real_t FontConfig::get_underline_thickness() const {
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], font_size));
 	}
 	return ret;
 }
 
 // Drawing string.
-Size2 FontConfig::get_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+Size2 FontConfig::get_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
@@ -2511,15 +2525,14 @@ Size2 FontConfig::get_string_size(const String &p_text, HorizontalAlignment p_al
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
-		buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		buffer->add_string(p_text, Ref<FontConfig>(this));
 		cache.insert(hash, buffer);
 	}
 	return buffer->get_size();
 }
 
-Size2 FontConfig::get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+Size2 FontConfig::get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_max_lines, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 	hash = hash_djb2_one_64(p_flags, hash);
 	hash = hash_djb2_one_64(p_direction, hash);
@@ -2532,7 +2545,7 @@ Size2 FontConfig::get_multiline_string_size(const String &p_text, HorizontalAlig
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
 		lines_buffer->set_orientation(p_orientation);
-		lines_buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		lines_buffer->add_string(p_text, Ref<FontConfig>(this));
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_flags(p_flags);
 		cache_wrap.insert(hash, lines_buffer);
@@ -2544,9 +2557,8 @@ Size2 FontConfig::get_multiline_string_size(const String &p_text, HorizontalAlig
 	return lines_buffer->get_size();
 }
 
-void FontConfig::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void FontConfig::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
@@ -2559,7 +2571,7 @@ void FontConfig::draw_string(RID p_canvas_item, const Point2 &p_pos, const Strin
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
-		buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		buffer->add_string(p_text, Ref<FontConfig>(this));
 		cache.insert(hash, buffer);
 	}
 
@@ -2577,9 +2589,8 @@ void FontConfig::draw_string(RID p_canvas_item, const Point2 &p_pos, const Strin
 	buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void FontConfig::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void FontConfig::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_max_lines, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 	hash = hash_djb2_one_64(p_flags, hash);
 	hash = hash_djb2_one_64(p_direction, hash);
@@ -2592,7 +2603,7 @@ void FontConfig::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, c
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
 		lines_buffer->set_orientation(p_orientation);
-		lines_buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		lines_buffer->add_string(p_text, Ref<FontConfig>(this));
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_flags(p_flags);
 		cache_wrap.insert(hash, lines_buffer);
@@ -2611,9 +2622,8 @@ void FontConfig::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, c
 	lines_buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void FontConfig::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void FontConfig::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_size, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
@@ -2626,7 +2636,7 @@ void FontConfig::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, con
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
-		buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		buffer->add_string(p_text, Ref<FontConfig>(this));
 		cache.insert(hash, buffer);
 	}
 
@@ -2644,9 +2654,8 @@ void FontConfig::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, con
 	buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate);
 }
 
-void FontConfig::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void FontConfig::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_max_lines, int p_size, const Color &p_modulate, uint16_t p_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 	hash = hash_djb2_one_64(p_flags, hash);
 	hash = hash_djb2_one_64(p_direction, hash);
@@ -2659,7 +2668,7 @@ void FontConfig::draw_multiline_string_outline(RID p_canvas_item, const Point2 &
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
 		lines_buffer->set_orientation(p_orientation);
-		lines_buffer->add_string(p_text, Ref<FontConfig>(this), p_font_size);
+		lines_buffer->add_string(p_text, Ref<FontConfig>(this));
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_flags(p_flags);
 		cache_wrap.insert(hash, lines_buffer);
@@ -2702,33 +2711,33 @@ String FontConfig::get_supported_chars() const {
 }
 
 // Drawing char.
-Size2 FontConfig::get_char_size(char32_t p_char, int p_font_size) const {
+Size2 FontConfig::get_char_size(char32_t p_char) const {
 	for (int i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			return Size2(TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x, get_height(p_font_size));
+			int32_t glyph = TS->font_get_glyph_index(rids[i], font_size, p_char, 0);
+			return Size2(TS->font_get_glyph_advance(rids[i], font_size, glyph).x, get_height());
 		}
 	}
 	return Size2();
 }
 
-real_t FontConfig::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, const Color &p_modulate) const {
+real_t FontConfig::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, const Color &p_modulate) const {
 	for (int i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph(rids[i], p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+			int32_t glyph = TS->font_get_glyph_index(rids[i], font_size, p_char, 0);
+			TS->font_draw_glyph(rids[i], p_canvas_item, font_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids[i], font_size, glyph).x;
 		}
 	}
 	return 0.f;
 }
 
-real_t FontConfig::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, int p_size, const Color &p_modulate) const {
+real_t FontConfig::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_size, const Color &p_modulate) const {
 	for (int i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph_outline(rids[i], p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+			int32_t glyph = TS->font_get_glyph_index(rids[i], font_size, p_char, 0);
+			TS->font_draw_glyph_outline(rids[i], p_canvas_item, font_size, p_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids[i], font_size, glyph).x;
 		}
 	}
 	return 0.f;

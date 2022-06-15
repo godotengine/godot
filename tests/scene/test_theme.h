@@ -47,7 +47,6 @@ public:
 		{ Theme::DATA_TYPE_COLOR, Color() },
 		{ Theme::DATA_TYPE_CONSTANT, 42 },
 		{ Theme::DATA_TYPE_FONT, Ref<FontConfig>(memnew(FontConfig)) },
-		{ Theme::DATA_TYPE_FONT_SIZE, 42 },
 		{ Theme::DATA_TYPE_ICON, Ref<Texture>(memnew(ImageTexture)) },
 		{ Theme::DATA_TYPE_STYLEBOX, Ref<StyleBox>(memnew(StyleBoxFlat)) },
 	};
@@ -61,7 +60,6 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Good theme type names") {
 		"", // Empty name.
 		"CapitalizedName",
 		"snake_cased_name",
-		"42",
 		"_Underscore_",
 	};
 

@@ -997,7 +997,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		}
 
 		expression_box->add_theme_font_override("font", editor->get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-		expression_box->add_theme_font_size_override("font_size", editor->get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
 		expression_box->add_theme_color_override("font_color", text_color);
 		expression_syntax_highlighter->set_number_color(number_color);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
@@ -3729,7 +3728,6 @@ void VisualShaderEditor::_notification(int p_what) {
 				}
 
 				preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-				preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
 				preview_text->add_theme_color_override("font_color", text_color);
 				syntax_highlighter->set_number_color(number_color);
 				syntax_highlighter->set_symbol_color(symbol_color);
@@ -3745,7 +3743,6 @@ void VisualShaderEditor::_notification(int p_what) {
 
 				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 				error_label->add_theme_color_override("font_color", error_color);
 			}
 

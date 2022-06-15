@@ -34,7 +34,6 @@
 
 void LinkButton::_shape() {
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	text_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -43,7 +42,7 @@ void LinkButton::_shape() {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
-	text_buf->add_string(xl_text, font, font_size, language);
+	text_buf->add_string(xl_text, font, language);
 }
 
 void LinkButton::set_text(const String &p_text) {

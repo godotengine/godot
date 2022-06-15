@@ -1246,9 +1246,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			Sets the default [FontConfig].
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Sets default font size.
-		</theme_item>
 		<theme_item name="space" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for space text characters.
 		</theme_item>

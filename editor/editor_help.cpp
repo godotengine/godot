@@ -180,8 +180,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
 	Ref<FontConfig> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
-	real_t char_width = doc_code_font->get_char_size('x', font_size).width;
+	real_t char_width = doc_code_font->get_char_size('x').width;
 	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
@@ -904,7 +903,6 @@ void EditorHelp::_update_doc() {
 		data_type_names["color"] = TTR("Colors");
 		data_type_names["constant"] = TTR("Constants");
 		data_type_names["font"] = TTR("Fonts");
-		data_type_names["font_size"] = TTR("Font Sizes");
 		data_type_names["icon"] = TTR("Icons");
 		data_type_names["style"] = TTR("Styles");
 

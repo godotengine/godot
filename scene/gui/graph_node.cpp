@@ -425,7 +425,6 @@ void GraphNode::_notification(int p_what) {
 
 void GraphNode::_shape() {
 	Ref<FontConfig> font = get_theme_font(SNAME("title_font"));
-	int font_size = get_theme_font_size(SNAME("title_font_size"));
 
 	title_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -433,7 +432,7 @@ void GraphNode::_shape() {
 	} else {
 		title_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	title_buf->add_string(title, font, font_size, language);
+	title_buf->add_string(title, font, language);
 }
 
 #ifdef TOOLS_ENABLED

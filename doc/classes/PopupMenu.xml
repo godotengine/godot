@@ -584,12 +584,6 @@
 		<theme_item name="font_separator" data_type="font" type="FontConfig">
 			[FontConfig] used for the labeled separator.
 		</theme_item>
-		<theme_item name="font_separator_size" data_type="font_size" type="int">
-			Font size of the labeled separator.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the menu items.
-		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked checkbox items.
 		</theme_item>

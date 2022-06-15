@@ -921,12 +921,11 @@ void FontPreview::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			// Draw font name (style).
 			Ref<FontConfig> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-			font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + 2 * EDSCALE), name, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, font_size, text_color);
+			font->draw_string(get_canvas_item(), Point2(0, font->get_height() + 2 * EDSCALE), name, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, text_color);
 
 			// Draw font preview.
-			Vector2 pos = Vector2(0, font->get_height(font_size)) + (get_size() - Vector2(0, font->get_height(font_size)) - line->get_size()) / 2;
+			Vector2 pos = Vector2(0, font->get_height()) + (get_size() - Vector2(0, font->get_height()) - line->get_size()) / 2;
 			line->draw(get_canvas_item(), pos, text_color);
 
 			// Draw font baseline.
@@ -948,6 +947,7 @@ void FontPreview::set_data(const Ref<Font> &p_data) {
 	Ref<FontConfig> f;
 	f.instantiate();
 	f->set_font(p_data);
+	f->set_size(50);
 
 	line->clear();
 	name = vformat("%s (%s)", p_data->get_font_name(), p_data->get_font_style_name());
@@ -962,7 +962,7 @@ void FontPreview::set_data(const Ref<Font> &p_data) {
 		if (sample.is_empty()) {
 			sample = p_data->get_supported_chars().substr(0, 6);
 		}
-		line->add_string(sample, f, 50);
+		line->add_string(sample, f);
 	}
 
 	update();

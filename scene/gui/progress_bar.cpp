@@ -36,14 +36,13 @@ Size2 ProgressBar::get_minimum_size() const {
 	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 	Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
 	Ref<FontConfig> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	Size2 minimum_size = bg->get_minimum_size();
 	minimum_size.height = MAX(minimum_size.height, fg->get_minimum_size().height);
 	minimum_size.width = MAX(minimum_size.width, fg->get_minimum_size().width);
 	if (percent_visible) {
 		String txt = "100%";
-		TextLine tl = TextLine(txt, font, font_size);
+		TextLine tl = TextLine(txt, font);
 		minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
 		minimum_size.width = MAX(minimum_size.width, 1);
@@ -58,7 +57,6 @@ void ProgressBar::_notification(int p_what) {
 			Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 			Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
 			Ref<FontConfig> font = get_theme_font(SNAME("font"));
-			int font_size = get_theme_font_size(SNAME("font_size"));
 			Color font_color = get_theme_color(SNAME("font_color"));
 
 			draw_style_box(bg, Rect2(Point2(), get_size()));
@@ -102,7 +100,7 @@ void ProgressBar::_notification(int p_what) {
 
 			if (percent_visible) {
 				String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
-				TextLine tl = TextLine(txt, font, font_size);
+				TextLine tl = TextLine(txt, font);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 				Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 				int outline_size = get_theme_constant(SNAME("outline_size"));

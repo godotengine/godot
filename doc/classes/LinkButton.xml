@@ -65,9 +65,6 @@
 		<theme_item name="font" data_type="font" type="FontConfig">
 			[FontConfig] of the [LinkButton]'s text.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [LinkButton]'s text.
-		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			[StyleBox] used when the [LinkButton] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
