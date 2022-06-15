@@ -90,6 +90,7 @@ struct Mesh {
 		struct LOD {
 			float edge_length = 0.0;
 			uint32_t index_count = 0;
+			uint32_t index_buffer_size = 0;
 			GLuint index_buffer;
 		};
 
