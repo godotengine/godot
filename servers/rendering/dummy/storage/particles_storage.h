@@ -85,6 +85,8 @@ public:
 	virtual bool particles_get_emitting(RID p_particles) override { return false; }
 	virtual int particles_get_draw_passes(RID p_particles) const override { return 0; }
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) override {}
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const override { return 0; }
 
 	virtual void particles_add_collision(RID p_particles, RID p_instance) override {}
 	virtual void particles_remove_collision(RID p_particles, RID p_instance) override {}

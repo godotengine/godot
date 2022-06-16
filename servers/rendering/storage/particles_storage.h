@@ -97,6 +97,9 @@ public:
 
 	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) = 0;
 
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) = 0;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const = 0;
+
 	virtual void update_particles() = 0;
 
 	/* PARTICLES COLLISION */

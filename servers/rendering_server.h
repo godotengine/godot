@@ -636,6 +636,8 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) = 0;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const = 0;
 
 	enum ParticlesTransformAlign {
 		PARTICLES_TRANSFORM_ALIGN_DISABLED,

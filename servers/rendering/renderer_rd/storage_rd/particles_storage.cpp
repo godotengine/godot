@@ -842,6 +842,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			}
 			ParticlesCollision *pc = particles_collision_owner.get_or_null(pci->collision);
 			ERR_CONTINUE(!pc);
+			if (!(pc->cull_mask & p_particles->layer_mask)) {
+				continue;
+			}
 
 			Transform3D to_collider = pci->transform;
 			if (p_particles->use_local_coords) {
@@ -1110,6 +1113,20 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	}
 
 	RD::get_singleton()->compute_list_end();
+}
+
+void ParticlesStorage::particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->layer_mask = layer_mask_value;
+}
+
+uint32_t ParticlesStorage::particles_get_layer_mask(RID p_particles) const {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	if (!particles) {
+		return 0;
+	}
+	return particles->layer_mask;
 }
 
 void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) {

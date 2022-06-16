@@ -30,6 +30,7 @@
 
 #include "visual_instance_3d.h"
 
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/scene_string_names.h"
 
 AABB VisualInstance3D::get_aabb() const {
@@ -87,6 +88,10 @@ RID VisualInstance3D::_get_visual_instance_rid() const {
 void VisualInstance3D::set_layer_mask(uint32_t p_mask) {
 	layers = p_mask;
 	RenderingServer::get_singleton()->instance_set_layer_mask(instance, p_mask);
+	GPUParticles3D *gpuparticles3d = Object::cast_to<GPUParticles3D>(this);
+	if (gpuparticles3d) {
+		gpuparticles3d->update_layer_mask(p_mask);
+	}
 }
 
 uint32_t VisualInstance3D::get_layer_mask() const {

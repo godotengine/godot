@@ -31,6 +31,7 @@
 #include "gpu_particles_3d.h"
 
 #include "scene/resources/particles_material.h"
+#include "servers/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -499,6 +500,10 @@ GPUParticles3D::TransformAlign GPUParticles3D::get_transform_align() const {
 	return transform_align;
 }
 
+void GPUParticles3D::update_layer_mask(uint32_t p_mask) {
+	RenderingServer::get_singleton()->particles_set_layer_mask(particles, p_mask);
+}
+
 void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles3D::set_amount);
@@ -561,6 +566,7 @@ void GPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_transform_align", "align"), &GPUParticles3D::set_transform_align);
 	ClassDB::bind_method(D_METHOD("get_transform_align"), &GPUParticles3D::get_transform_align);
+	ClassDB::bind_method(D_METHOD("update_layer_mask", "mask"), &GPUParticles3D::update_layer_mask);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.

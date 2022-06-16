@@ -50,6 +50,13 @@
 				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
+		<method name="update_layer_mask">
+			<return type="void" />
+			<argument index="0" name="mask" type="int" />
+			<description>
+				Update the layer mask which help GPUParticles3D interact with Collider and Attractor via cull_musk
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">

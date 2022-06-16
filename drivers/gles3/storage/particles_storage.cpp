@@ -130,6 +130,13 @@ void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, doub
 void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 }
 
+void ParticlesStorage::particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) {
+}
+
+uint32_t ParticlesStorage::particles_get_layer_mask(RID p_particles) const {
+	return 0;
+}
+
 void ParticlesStorage::particles_restart(RID p_particles) {
 }
 

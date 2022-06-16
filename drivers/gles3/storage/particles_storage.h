@@ -76,6 +76,8 @@ public:
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override;
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
+	virtual void particles_set_layer_mask(RID p_particles, uint32_t layer_mask_value) override;
+	virtual uint32_t particles_get_layer_mask(RID p_particles) const override;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
 
