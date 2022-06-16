@@ -1193,6 +1193,20 @@ void RendererViewport::viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::V
 	RSG::texture_storage->render_target_set_sdf_size_and_scale(viewport->render_target, p_size, p_scale);
 }
 
+RID RendererViewport::viewport_find_from_screen_attachment(DisplayServer::WindowID p_id) const {
+	RID *rids = nullptr;
+	uint32_t rid_count = viewport_owner.get_rid_count();
+	rids = (RID *)alloca(sizeof(RID *) * rid_count);
+	viewport_owner.fill_owned_buffer(rids);
+	for (uint32_t i = 0; i < rid_count; i++) {
+		Viewport *viewport = viewport_owner.get_or_null(rids[i]);
+		if (viewport->viewport_to_screen == p_id) {
+			return rids[i];
+		}
+	}
+	return RID();
+}
+
 bool RendererViewport::free(RID p_rid) {
 	if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);

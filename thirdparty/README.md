@@ -254,6 +254,7 @@ Files generated from upstream source:
 Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
+- `jpge*.{c,h}`
 
 
 ## libogg

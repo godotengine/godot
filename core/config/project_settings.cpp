@@ -41,7 +41,6 @@
 #include "core/os/keyboard.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-
 #include "modules/modules_enabled.gen.h" // For mono.
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";

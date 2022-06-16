@@ -58,6 +58,7 @@ class OS {
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
+	bool _writing_movie = false;
 
 	CompositeLogger *_logger = nullptr;
 
