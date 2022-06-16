@@ -66,8 +66,6 @@ bool AudioEffectRecordInstance::process_silence() const {
 }
 
 void AudioEffectRecordInstance::_io_thread_process() {
-	thread_active = true;
-
 	while (is_recording) {
 		//Check: The current recording has been requested to stop
 		if (!base->recording_active) {
@@ -81,8 +79,6 @@ void AudioEffectRecordInstance::_io_thread_process() {
 			OS::get_singleton()->delay_usec(500);
 		}
 	}
-
-	thread_active = false;
 }
 
 void AudioEffectRecordInstance::_io_store_buffer() {
@@ -126,9 +122,7 @@ void AudioEffectRecordInstance::finish() {
 #ifdef NO_THREADS
 	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
 #else
-	if (thread_active) {
-		io_thread.wait_to_finish();
-	}
+	io_thread.wait_to_finish();
 #endif
 }
 
