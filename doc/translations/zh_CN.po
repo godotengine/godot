@@ -38,7 +38,7 @@
 # SimonChang <simon_chang@foxmail.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
 # suplife <2634557184@qq.com>, 2021.
-# Magian <magian1127@gmail.com>, 2021.
+# Magian <magian1127@gmail.com>, 2021, 2022.
 # ji233 <27987772@qq.com>, 2021.
 # 沈士超 <shenshichao920@hotmail.com>, 2021.
 # MisakaRua <1150235785@qq.com>, 2021.
@@ -62,8 +62,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-08 06:47+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2022-06-13 03:39+0000\n"
+"Last-Translator: Magian <magian1127@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -4244,6 +4244,13 @@ msgid ""
 "Hints that an integer property is a bitmask using the optionally named 2D "
 "physics layers."
 msgstr "提示一个整数属性是一个掩码，使用着具备或不具备命名的2D物理层。"
+
+#: doc/classes/@GlobalScope.xml
+#, fuzzy
+msgid ""
+"Hints that an integer property is a bitmask using the optionally named 2D "
+"navigation layers."
+msgstr "提示一个整数属性是一个掩码，使用着具备或不具备命名的2D渲染层。"
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -10392,7 +10399,7 @@ msgstr ""
 "astar.connect_points(1, 2, false)\n"
 "[/codeblock]"
 
-#: doc/classes/AStar.xml
+#: doc/classes/AStar.xml doc/classes/AStar2D.xml
 msgid ""
 "Deletes the segment between the given points. If [code]bidirectional[/code] "
 "is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/"
@@ -10663,8 +10670,15 @@ msgstr ""
 "如果已经存在一个给定 [code]id[/code] 的点，它的位置和权重将被更新为给定值。"
 
 #: doc/classes/AStar2D.xml
-msgid "Returns whether there is a connection/segment between the given points."
-msgstr "返回给定点之间是否有连接/分割。"
+#, fuzzy
+msgid ""
+"Returns whether there is a connection/segment between the given points. If "
+"[code]bidirectional[/code] is [code]false[/code], returns whether movement "
+"from [code]id[/code] to [code]to_id[/code] is possible through this segment."
+msgstr ""
+"返回两个给定点是否通过线段直接连接。如果 [code]bidirectional[/code] 为 "
+"[code]false[/code]，则返回是否可以通过此段从 [code]id[/code] 到 [code]to_id[/"
+"code] 进行移动。"
 
 #: doc/classes/AStar2D.xml
 msgid ""
@@ -10681,16 +10695,12 @@ msgstr ""
 "在给定的点之间创建一个分段。如果 [code]bidirectional[/code] 为 [code]false[/"
 "code]，则只允许从 [code]id[/code] 到 [code]to_id[/code] 之间的移动，不允许反"
 "方向移动。\n"
-"(codeblock)\n"
+"[codeblock]\n"
 "var astar = AStar2D.new()\n"
 "astar.add_point(1, Vector2(1, 1))\n"
 "astar.add_point(2, Vector2(0, 5))\n"
 "astar.connect_points(1, 2, false)\n"
 "[/codeblock]"
-
-#: doc/classes/AStar2D.xml
-msgid "Deletes the segment between the given points."
-msgstr "删除给定点之间的线段。"
 
 #: doc/classes/AStar2D.xml
 msgid ""
@@ -10938,13 +10948,16 @@ msgid "Captures audio from an audio bus in real-time."
 msgstr "从音频总线上实时捕捉音频。"
 
 #: doc/classes/AudioEffectCapture.xml
+#, fuzzy
 msgid ""
 "AudioEffectCapture is an AudioEffect which copies all audio frames from the "
 "attached audio effect bus into its internal ring buffer.\n"
 "Application code should consume these audio frames from this ring buffer "
 "using [method get_buffer] and process it as needed, for example to capture "
 "data from a microphone, implement application defined effects, or to "
-"transmit audio over the network."
+"transmit audio over the network. When capturing audio data from a "
+"microphone, the format of the samples will be stereo 32-bit floating point "
+"PCM."
 msgstr ""
 "音频效果捕获是一种音频效果，可将所附音频效果总线的所有音频帧复制到其内部环缓"
 "冲器中。\n"
@@ -15269,7 +15282,6 @@ msgstr ""
 "与可选的下一个字符的字偶距。"
 
 #: doc/classes/CanvasItem.xml
-#, fuzzy
 msgid ""
 "Draws a colored, filled circle. See also [method draw_arc], [method "
 "draw_polyline] and [method draw_polygon].\n"
@@ -15279,7 +15291,7 @@ msgid ""
 "create an AntialiasedRegularPolygon2D node. That node relies on a texture "
 "with custom mipmaps to perform antialiasing."
 msgstr ""
-"绘制未填充的彩色圆形。另请参阅 [method draw_arc]、[method draw_polyline]、"
+"绘制填充的彩色圆形。另请参阅 [method draw_arc]、[method draw_polyline]、"
 "[method draw_polygon]。\n"
 "[b]注意：[/b]由于实现的原因，内置的抗锯齿无法在透明多边形上得到正确的效果，并"
 "且可能无法在某些平台上正常工作。作为替代方案，请安装[url=https://github.com/"
@@ -16800,7 +16812,7 @@ msgstr ""
 "返回是否设置了碰撞掩码 [member collision_mask] 的指定位[code]bit[/code]。"
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
-#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
+#: doc/classes/Navigation2D.xml
 msgid "Returns the object's [RID]."
 msgstr "返回对象的 [RID]。"
 
@@ -17379,7 +17391,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Constructs a color from a 32-bit integer in RGBA format (each byte "
 "represents a color channel).\n"
@@ -17389,7 +17400,7 @@ msgid ""
 msgstr ""
 "从 RGBA 格式的 32 位整数构造颜色，每个字节代表一个颜色通道。\n"
 "[codeblock]\n"
-"var c = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)\n"
+"var color = Color(274) # 类似 Color(0.0, 0.0, 0.004, 0.07)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -17439,7 +17450,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the most contrasting color.\n"
 "[codeblock]\n"
@@ -17450,9 +17460,8 @@ msgid ""
 msgstr ""
 "返回对比度最高的颜色。\n"
 "[codeblock]\n"
-"var c = Color(0.3, 0.4, 0.9)\n"
-"var contrasted_color = c.contrasted() # Equivalent to RGBA(204, 229, 102, "
-"255)\n"
+"var color = Color(0.3, 0.4, 0.9)\n"
+"var contrasted_color = color.contrasted() # 等价于 RGBA(204, 229, 102, 255)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -17471,7 +17480,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and "
 "[code]v[/code] are values between 0 and 1.\n"
@@ -17480,11 +17488,11 @@ msgid ""
 "50, 79, 0.8) or Color8(100, 151, 201, 0.8)\n"
 "[/codeblock]"
 msgstr ""
-"从 HSV 配置文件中构建一个颜色。[code]h[/code]、[code]s[/code]和[code]v[/code]"
-"是0和1之间的值。\n"
+"从 HSV 配置文件中构建一个颜色。[code]h[/code]、[code]s[/code] 和 [code]v[/"
+"code] 是 0 和 1 之间的值。\n"
 "[codeblock]\n"
-"var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, "
-"79, 0.8) or Color8(100, 151, 201, 0.8)\n"
+"var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # 等价于 HSV(210, 50, 79, "
+"0.8) 或 Color8(100, 151, 201, 0.8)\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -17497,7 +17505,6 @@ msgstr ""
 "可以用来确定颜色是亮色还是暗色。一般认为亮度小于 0.5 的颜色是暗色。"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color's grayscale representation.\n"
 "The gray value is calculated as [code](r + g + b) / 3[/code].\n"
@@ -17509,8 +17516,8 @@ msgstr ""
 "返回颜色的灰度表示。\n"
 "灰度值计算为 [code](r + g + b) / 3[/code]。\n"
 "[codeblock]\n"
-"var c = Color(0.2, 0.45, 0.82)\n"
-"var gray = c.gray() # A value of 0.466667\n"
+"var color = Color(0.2, 0.45, 0.82)\n"
+"var gray = color.gray() # 值为 0.466667\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -17637,7 +17644,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid ""
 "Returns the color's HTML hexadecimal color string in ARGB format (ex: "
 "[code]ff34f822[/code]).\n"
@@ -17653,9 +17659,9 @@ msgstr ""
 "将 [code]with_alpha[/code] 设置为 [code]false[/code] 将十六进制字符串中的 "
 "Alpha 排除在外。\n"
 "[codeblock]\n"
-"var c = Color(1, 1, 1, 0.5)\n"
-"var s1 = c.to_html() # 返回 \"7fffffff\"\n"
-"var s2 = c.to_html(false) # 返回 \"ffffff\"\n"
+"var color = Color(1, 1, 1, 0.5)\n"
+"var s1 = color.to_html() # 返回 \"7fffffff\"\n"
+"var s2 = color.to_html(false) # 返回 \"ffffff\"\n"
 "[/codeblock]"
 
 #: doc/classes/Color.xml
@@ -23722,12 +23728,16 @@ msgid ""
 msgstr "渲染提供给它的[Curve]。简化了绘制曲线和/或保存为图像文件的任务。"
 
 #: doc/classes/CurveTexture.xml
-msgid "The [code]curve[/code] rendered onto the texture."
+#, fuzzy
+msgid "The [Curve] that is rendered onto the texture."
 msgstr "渲染到纹理上的[code]curve[/code]。"
 
 #: doc/classes/CurveTexture.xml
-msgid "The width of the texture."
-msgstr "纹理的宽度。"
+msgid ""
+"The width of the texture (in pixels). Higher values make it possible to "
+"represent high-frequency data better (such as sudden direction changes), at "
+"the cost of increased generation time and memory usage."
+msgstr ""
 
 #: doc/classes/CylinderMesh.xml
 msgid "Class representing a cylindrical [PrimitiveMesh]."
@@ -24144,6 +24154,13 @@ msgstr ""
 #: doc/classes/Dictionary.xml
 msgid "Returns the list of keys in the [Dictionary]."
 msgstr "返回[Dictionary]中的键列表。"
+
+#: doc/classes/Dictionary.xml
+msgid ""
+"Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, "
+"duplicate keys will not be copied over, unless [code]overwrite[/code] is "
+"[code]true[/code]."
+msgstr ""
 
 #: doc/classes/Dictionary.xml
 msgid "Returns the number of keys in the dictionary."
@@ -26732,7 +26749,6 @@ msgstr ""
 "侧。"
 
 #: doc/classes/EditorPlugin.xml
-#, fuzzy
 msgid ""
 "Gets the Editor's dialog used for making scripts.\n"
 "[b]Note:[/b] Users can configure it before use.\n"
@@ -26745,12 +26761,24 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
-"Gets the state of your plugin editor. This is used when saving the scene (so "
-"state is kept when opening it again) and for switching tabs (so state can be "
-"restored when the tab returns)."
+"Override this method to provide a state data you want to be saved, like view "
+"position, grid settings, folding, etc. This is used when saving the scene "
+"(so state is kept when opening it again) and for switching tabs (so state "
+"can be restored when the tab returns). This data is automatically saved for "
+"each scene in an [code]editstate[/code] file in the editor metadata folder. "
+"If you want to store global (scene-independent) editor data for your plugin, "
+"you can use [method get_window_layout] instead.\n"
+"Use [method set_state] to restore your saved state.\n"
+"[b]Note:[/b] This method should not be used to save important settings that "
+"should persist with the project.\n"
+"[b]Note:[/b] You must implement [method get_plugin_name] for the state to be "
+"stored and restored correctly.\n"
+"[codeblock]\n"
+"func get_state():\n"
+"    var state = {\"zoom\": zoom, \"preferred_color\": my_color}\n"
+"    return state\n"
+"[/codeblock]"
 msgstr ""
-"获取插件编辑器的状态。这用于保存场景时（从而再次打开时，它的状态被保持）和切"
-"换标签（从而状态能够当拉片返回恢复）时使用。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26762,12 +26790,19 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
-"Gets the GUI layout of the plugin. This is used to save the project's editor "
-"layout when [method queue_save_layout] is called or the editor layout was "
-"changed(For example changing the position of a dock)."
+"Override this method to provide the GUI layout of the plugin or any other "
+"data you want to be stored. This is used to save the project's editor layout "
+"when [method queue_save_layout] is called or the editor layout was changed "
+"(for example changing the position of a dock). The data is stored in the "
+"[code]editor_layout.cfg[/code] file in the editor metadata directory.\n"
+"Use [method set_window_layout] to restore your saved layout.\n"
+"[codeblock]\n"
+"func get_window_layout(configuration):\n"
+"    configuration.set_value(\"MyPlugin\", \"window_position\", $Window."
+"position)\n"
+"    configuration.set_value(\"MyPlugin\", \"icon_color\", $Icon.modulate)\n"
+"[/codeblock]"
 msgstr ""
-"获取插件的GUI布局。当调用[method queue_save_layout]更改了编辑器布局（例如，更"
-"改停靠点的位置）时或保存项目的编辑器布局。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26895,12 +26930,31 @@ msgstr ""
 "用。"
 
 #: doc/classes/EditorPlugin.xml
-msgid "Restore the state saved by [method get_state]."
-msgstr "恢复[method get_state]保存的状态。"
+msgid ""
+"Restore the state saved by [method get_state]. This method is called when "
+"the current scene tab is changed in the editor.\n"
+"[b]Note:[/b] Your plugin must implement [method get_plugin_name], otherwise "
+"it will not be recognized and this method will not be called.\n"
+"[codeblock]\n"
+"func set_state(data):\n"
+"    zoom = data.get(\"zoom\", 1.0)\n"
+"    preferred_color = data.get(\"my_color\", Color.white)\n"
+"[/codeblock]"
+msgstr ""
 
 #: doc/classes/EditorPlugin.xml
-msgid "Restore the plugin GUI layout saved by [method get_window_layout]."
-msgstr "恢复[method get_window_layout]保存的插件GUI布局。"
+msgid ""
+"Restore the plugin GUI layout and data saved by [method get_window_layout]. "
+"This method is called for every plugin on editor startup. Use the provided "
+"[code]configuration[/code] file to read your saved data.\n"
+"[codeblock]\n"
+"func set_window_layout(configuration):\n"
+"    $Window.position = configuration.get_value(\"MyPlugin\", "
+"\"window_position\", Vector2())\n"
+"    $Icon.modulate = configuration.get_value(\"MyPlugin\", \"icon_color\", "
+"Color.white)\n"
+"[/codeblock]"
+msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28818,7 +28872,7 @@ msgstr ""
 "[b]警告：[/b]如果你在项目的任意位置将其设置为 [code]false[/code]，重要的错误"
 "信息可能会被隐藏，即使它们是由其他脚本触发。如果在 [code]tool[/code] 脚本中把"
 "这个设置为 [code]false[/code]，这也会影响到编辑器本身。在确保错误信息被启用之"
-"前，[i]不[/i]报告错误（默认情况下）。\n"
+"前，[i]请勿[/i]报告错误（因为默认情况下是会的）。\n"
 "[b]注意：[/b]当从编辑器运行一个项目时，这个属性不影响编辑器的错误选项卡。"
 
 #: doc/classes/Engine.xml
@@ -29671,14 +29725,12 @@ msgid "Low quality for the screen-space ambient occlusion effect (fastest)."
 msgstr "低质量的屏幕空间环境遮挡效果（最快）。"
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "Medium quality for the screen-space ambient occlusion effect."
-msgstr "低质量的屏幕空间环境遮挡效果。"
+msgstr "中等质量的屏幕空间环境遮挡效果。"
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "High quality for the screen-space ambient occlusion effect (slowest)."
-msgstr "低质量的屏幕空间环境遮挡效果（最慢）。"
+msgstr "高质量的屏幕空间环境遮挡效果（最慢）。"
 
 #: doc/classes/Expression.xml
 msgid "A class that stores an expression you can execute."
@@ -31006,13 +31058,14 @@ msgid ""
 "set_script] extends an existing object, if that object's class matches one "
 "of the script's base classes."
 msgstr ""
-"用GDScript编程语言实现的脚本。该脚本扩展了实例化该对象后其所有对象的功能。\n"
+"用 GDScript 编程语言实现的脚本。该脚本扩展了实例化该对象后其所有对象的功"
+"能。\n"
 "[method new] 创建脚本的新实例。如果一个对象的类与脚本的基类之一匹配，则 "
 "[method Object.set_script] 会扩展该对象。"
 
 #: modules/gdscript/doc_classes/GDScript.xml
 msgid "Returns byte code for the script source code."
-msgstr "返回脚本源代码的字节(byte)码。"
+msgstr "返回脚本源代码的字节码。"
 
 #: modules/gdscript/doc_classes/GDScript.xml
 msgid ""
@@ -31058,10 +31111,10 @@ msgid ""
 "script have survived up to that point."
 msgstr ""
 "检查函数调用是否可以被恢复。如果函数状态已经被恢复，则不存在这种情况。\n"
-"如果[code]extended_check[/code]被启用，它还会检查相关的脚本和对象是否仍然存"
-"在。扩展检查是在调试模式下作为[method GDScriptFunctionState.resume]的一部分进"
-"行的，但是如果你知道你可能在不确定对象和/或脚本已经存活到那个点的情况下尝试恢"
-"复，你可以使用这个。"
+"如果 [code]extended_check[/code] 被启用，它还会检查相关的脚本和对象是否仍然存"
+"在。扩展检查是在调试模式下作为 [method GDScriptFunctionState.resume] 的一部分"
+"进行的，但是如果你知道你可能在不确定对象和/或脚本已经存活到那个点的情况下尝试"
+"恢复，你可以使用这个。"
 
 #: modules/gdscript/doc_classes/GDScriptFunctionState.xml
 msgid ""
@@ -31099,7 +31152,7 @@ msgid ""
 "The lower, the longer an impulse from one side takes to travel to the other "
 "side."
 msgstr ""
-"X轴上的旋转阻尼量。\n"
+"X 轴上的旋转阻尼量。\n"
 "越低，来自一侧的冲力到达另一侧的时间越长。"
 
 #: doc/classes/Generic6DOFJoint.xml
@@ -31117,35 +31170,35 @@ msgstr ""
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The maximum amount of force that can occur, when rotating around the X axis."
-msgstr "绕X轴旋转时所能产生的最大力。"
+msgstr "绕 X 轴旋转时所能产生的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in negative direction to break loose and rotate around "
 "the X axis."
-msgstr "负方向的最小旋转，以挣脱并围绕X轴旋转。"
+msgstr "负方向的最小旋转，以挣脱并围绕 X 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The amount of rotational restitution across the X axis. The lower, the more "
 "restitution occurs."
-msgstr "X轴上的旋转恢复量。值越低，恢复量越大。"
+msgstr "X 轴上的旋转恢复量。值越低，恢复量越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed of all rotations across the X axis."
-msgstr "跨越X轴的所有旋转的速度。"
+msgstr "跨越 X 轴的所有旋转的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in positive direction to break loose and rotate around "
 "the X axis."
-msgstr "正方向的最小旋转，以挣脱并绕X轴旋转。"
+msgstr "正方向的最小旋转，以挣脱并绕 X 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The amount of rotational damping across the Y axis. The lower, the more "
 "dampening occurs."
-msgstr "Y轴上的旋转阻尼量。值越低，旋转的阻尼就越大。"
+msgstr "Y 轴上的旋转阻尼量。值越低，旋转的阻尼就越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], rotation across the Y axis is limited."
@@ -31156,41 +31209,41 @@ msgid ""
 "When rotating across the Y axis, this error tolerance factor defines how "
 "much the correction gets slowed down. The lower, the slower."
 msgstr ""
-"当在Y轴上旋转时，这个误差容限系数定义了修正的速度被减慢的程度。值越低，旋转越"
-"慢。"
+"当在 Y 轴上旋转时，这个误差容限系数定义了修正的速度被减慢的程度。值越低，旋转"
+"越慢。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The maximum amount of force that can occur, when rotating around the Y axis."
-msgstr "围绕Y轴旋转时，可能发生的最大力。"
+msgstr "围绕 Y 轴旋转时，可能发生的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in negative direction to break loose and rotate around "
 "the Y axis."
-msgstr "负方向的最小旋转，以挣脱并围绕Y轴旋转。"
+msgstr "负方向的最小旋转，以挣脱并围绕 Y 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The amount of rotational restitution across the Y axis. The lower, the more "
 "restitution occurs."
-msgstr "跨越Y轴的旋转恢复量。越低，发生的恢复量越大。"
+msgstr "跨越 Y 轴的旋转恢复量。越低，发生的恢复量越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed of all rotations across the Y axis."
-msgstr "跨越Y轴的所有旋转的速度。"
+msgstr "跨越 Y 轴的所有旋转的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in positive direction to break loose and rotate around "
 "the Y axis."
-msgstr "正方向的最小旋转，以挣脱并绕Y轴旋转。"
+msgstr "正方向的最小旋转，以挣脱并绕 Y 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The amount of rotational damping across the Z axis. The lower, the more "
 "dampening occurs."
-msgstr "跨越Z轴的旋转阻尼量。值越低，阻尼就越多。"
+msgstr "跨越 Z 轴的旋转阻尼量。值越低，阻尼就越多。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], rotation across the Z axis is limited."
@@ -31201,35 +31254,35 @@ msgid ""
 "When rotating across the Z axis, this error tolerance factor defines how "
 "much the correction gets slowed down. The lower, the slower."
 msgstr ""
-"当在Z轴上旋转时，这个误差容限系数定义了修正的速度被减慢的程度。值越低，旋转越"
-"慢。"
+"当在 Z 轴上旋转时，这个误差容限系数定义了修正的速度被减慢的程度。值越低，旋转"
+"越慢。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The maximum amount of force that can occur, when rotating around the Z axis."
-msgstr "围绕Z轴旋转时，可能发生的最角度。"
+msgstr "围绕 Z 轴旋转时，可能发生的最角度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in negative direction to break loose and rotate around "
 "the Z axis."
-msgstr "负方向的最小旋转，以挣脱并围绕Z轴旋转。"
+msgstr "负方向的最小旋转，以挣脱并围绕 Z 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The amount of rotational restitution across the Z axis. The lower, the more "
 "restitution occurs."
-msgstr "跨越Z轴的旋转恢复量。越低，发生的恢复量越大。"
+msgstr "跨越 Z 轴的旋转恢复量。越低，发生的恢复量越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed of all rotations across the Z axis."
-msgstr "跨越Z轴的所有旋转的速度。"
+msgstr "跨越 Z 轴的所有旋转的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "The minimum rotation in positive direction to break loose and rotate around "
 "the Z axis."
-msgstr "正方向的最小旋转，并绕Z轴旋转。"
+msgstr "正方向的最小旋转，并绕 Z 轴旋转。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], a rotating motor at the X axis is enabled."
@@ -31237,11 +31290,11 @@ msgstr "如果为 [code]true[/code]，则启用 X 轴的旋转马达。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Maximum acceleration for the motor at the X axis."
-msgstr "在X轴旋转的最大加速度。"
+msgstr "在 X 轴旋转的最大加速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Target speed for the motor at the X axis."
-msgstr "X轴上电机的目标速度。"
+msgstr "X 轴上电机的目标速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], a rotating motor at the Y axis is enabled."
@@ -31249,11 +31302,11 @@ msgstr "如果为 [code]true[/code]，则启用 Y 轴的旋转马达。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Maximum acceleration for the motor at the Y axis."
-msgstr "电机在X轴的最大加速度。"
+msgstr "电机在 X 轴的最大加速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Target speed for the motor at the Y axis."
-msgstr "电机在Y轴的目标速度。"
+msgstr "电机在 Y 轴的目标速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], a rotating motor at the Z axis is enabled."
@@ -31261,15 +31314,15 @@ msgstr "如果为 [code]true[/code]，则启用 Z 轴的旋转马达。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Maximum acceleration for the motor at the Z axis."
-msgstr "电机在Z轴的最大加速度。"
+msgstr "电机在 Z 轴的最大加速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "Target speed for the motor at the Z axis."
-msgstr "Z轴上电机的目标速度。"
+msgstr "Z 轴上电机的目标速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The amount of damping that happens at the X motion."
-msgstr "发生在X运动的阻尼量。"
+msgstr "发生在 X 运动的阻尼量。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], the linear motion across the X axis is limited."
@@ -31283,13 +31336,13 @@ msgstr "轴心点的 X 轴之间的最小差异。"
 msgid ""
 "The amount of restitution on the X axis movement. The lower, the more "
 "momentum gets lost."
-msgstr "X轴运动的恢复量。越低，动量损失越大。"
+msgstr "X 轴运动的恢复量。越低，动量损失越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "A factor applied to the movement across the X axis. The lower, the slower "
 "the movement."
-msgstr "应用于X轴上移动的一个系数。值越低，移动的就越慢。"
+msgstr "应用于 X 轴上移动的一个系数。值越低，移动的就越慢。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The maximum difference between the pivot points' X axis."
@@ -31297,7 +31350,7 @@ msgstr "轴心点的 X 轴之间的最大差异。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The amount of damping that happens at the Y motion."
-msgstr "发生在Y运动的阻尼量。"
+msgstr "发生在 Y 运动的阻尼量。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], the linear motion across the Y axis is limited."
@@ -31311,13 +31364,13 @@ msgstr "轴心点的 Y 轴之间的最小差异。"
 msgid ""
 "The amount of restitution on the Y axis movement. The lower, the more "
 "momentum gets lost."
-msgstr "Y轴运动的恢复量。值越低，动量损失越大。"
+msgstr "Y 轴运动的恢复量。值越低，动量损失越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "A factor applied to the movement across the Y axis. The lower, the slower "
 "the movement."
-msgstr "应用于Y轴上移动的一个系数。值越低，移动的就越慢。"
+msgstr "应用于 Y 轴上移动的一个系数。值越低，移动的就越慢。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The maximum difference between the pivot points' Y axis."
@@ -31325,7 +31378,7 @@ msgstr "轴心点的 Y 轴之间的最大差异。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The amount of damping that happens at the Z motion."
-msgstr "发生在Z运动的阻尼量。"
+msgstr "发生在 Z 运动的阻尼量。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "If [code]true[/code], the linear motion across the Z axis is limited."
@@ -31339,13 +31392,13 @@ msgstr "轴心点的 Z 轴之间的最小差异。"
 msgid ""
 "The amount of restitution on the Z axis movement. The lower, the more "
 "momentum gets lost."
-msgstr "Y轴运动的恢复量。越低，动量损失越大。"
+msgstr "Y 轴运动的恢复量。越低，动量损失越大。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
 "A factor applied to the movement across the Z axis. The lower, the slower "
 "the movement."
-msgstr "适用于跨Z轴移动的一个系数。值越低，移动的就越慢。"
+msgstr "适用于跨 Z 轴移动的一个系数。值越低，移动的就越慢。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The maximum difference between the pivot points' Z axis."
@@ -31363,11 +31416,11 @@ msgstr ""
 msgid ""
 "The maximum force the linear motor can apply on the X axis while trying to "
 "reach the target velocity."
-msgstr "当尝试达到目标速度时，线性马达可以在X轴上应用的最大力。"
+msgstr "当尝试达到目标速度时，线性马达可以在 X 轴上应用的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed that the linear motor will attempt to reach on the X axis."
-msgstr "线性马达在X轴上尝试达到的速度。"
+msgstr "线性马达在 X 轴上尝试达到的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
@@ -31381,11 +31434,11 @@ msgstr ""
 msgid ""
 "The maximum force the linear motor can apply on the Y axis while trying to "
 "reach the target velocity."
-msgstr "直线电机在试图达到目标速度时可施加在Y轴上的最大力。"
+msgstr "直线电机在试图达到目标速度时可施加在 Y 轴上的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed that the linear motor will attempt to reach on the Y axis."
-msgstr "线性马达在Y轴上将会达到的速度。"
+msgstr "线性马达在 Y 轴上将会达到的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
@@ -31399,11 +31452,11 @@ msgstr ""
 msgid ""
 "The maximum force the linear motor can apply on the Z axis while trying to "
 "reach the target velocity."
-msgstr "当试图达到目标速度时，线性马达可以在X轴上应用的最大力。"
+msgstr "当试图达到目标速度时，线性马达可以在 X 轴上应用的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid "The speed that the linear motor will attempt to reach on the Z axis."
-msgstr "线性马达在Z轴上试图达到的速度。"
+msgstr "线性马达在 Z 轴上试图达到的速度。"
 
 #: doc/classes/Generic6DOFJoint.xml doc/classes/PhysicsServer.xml
 msgid "The minimum difference between the pivot points' axes."
@@ -31460,7 +31513,7 @@ msgstr "所有跨轴旋转的速度。"
 msgid ""
 "The amount of rotational damping across the axes. The lower, the more "
 "dampening occurs."
-msgstr "跨越Z轴的旋转阻尼量。值越低，发生的阻尼就越多。"
+msgstr "跨越 Z 轴的旋转阻尼量。值越低，发生的阻尼就越多。"
 
 #: doc/classes/Generic6DOFJoint.xml doc/classes/PhysicsServer.xml
 msgid ""
@@ -31471,7 +31524,7 @@ msgstr "在各轴上的旋转恢复量。值越低，发生的恢复量越大。
 #: doc/classes/Generic6DOFJoint.xml doc/classes/PhysicsServer.xml
 msgid ""
 "The maximum amount of force that can occur, when rotating around the axes."
-msgstr "围绕Z轴旋转时，可能发生的最大力。"
+msgstr "围绕 Z 轴旋转时，可能发生的最大力。"
 
 #: doc/classes/Generic6DOFJoint.xml
 msgid ""
@@ -31507,7 +31560,7 @@ msgstr "如果启用，则存在跨这些轴的线性马达。"
 
 #: doc/classes/Generic6DOFJoint.xml doc/classes/HingeJoint.xml
 msgid "Represents the size of the [enum Flag] enum."
-msgstr "表示[enum Flag]枚举的大小。"
+msgstr "表示 [enum Flag] 枚举的大小。"
 
 #: doc/classes/Geometry.xml
 msgid "Helper node to calculate generic geometry operations."
@@ -32763,12 +32816,14 @@ msgid "Gradient-filled texture."
 msgstr "渐变填充纹理。"
 
 #: doc/classes/GradientTexture.xml
+#, fuzzy
 msgid ""
 "GradientTexture uses a [Gradient] to fill the texture data. The gradient "
 "will be filled from left to right using colors obtained from the gradient. "
 "This means the texture does not necessarily represent an exact copy of the "
 "gradient, but instead an interpolation of samples obtained from the gradient "
-"at fixed steps (see [member width])."
+"at fixed steps (see [member width]). See also [GradientTexture2D] and "
+"[CurveTexture]."
 msgstr ""
 "GradientTexture使用[Gradient]来填充纹理数据。渐变将使用从中获得的颜色从左到右"
 "填充。这意味着纹理不一定代表渐变的精确副本，而是以固定的步长从渐变中获得的样"
@@ -32787,13 +32842,15 @@ msgid "Gradient-filled 2D texture."
 msgstr "使用渐变填充的 2D 纹理。"
 
 #: doc/classes/GradientTexture2D.xml
+#, fuzzy
 msgid ""
 "The texture uses a [Gradient] to fill the texture data in 2D space. The "
 "gradient is filled according to the specified [member fill] and [member "
 "repeat] types using colors obtained from the gradient. The texture does not "
 "necessarily represent an exact copy of the gradient, but instead an "
 "interpolation of samples obtained from the gradient at fixed steps (see "
-"[member width] and [member height])."
+"[member width] and [member height]). See also [GradientTexture] and "
+"[CurveTexture]."
 msgstr ""
 "该纹理使用 [Gradient] 渐变来填充 2D 空间纹理数据。渐变会根据 [member fill] "
 "和 [member repeat] 类型，使用从渐变中获取的颜色进行填充。该纹理未必精确表示该"
@@ -33732,6 +33789,13 @@ msgstr ""
 "[code]pos[/code] 应该使用 GridMap 的本地坐标空间。"
 
 #: modules/gridmap/doc_classes/GridMap.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], this GridMap uses cell navmesh resources to create "
+"navigation regions."
+msgstr "如果[code]true[/code]，根据流程相关通知更新动画。"
+
+#: modules/gridmap/doc_classes/GridMap.xml
 msgid "If [code]true[/code], grid items are centered on the X axis."
 msgstr "如果为 [code]true[/code]，则网格项以 X 轴为中心。"
 
@@ -33791,6 +33855,10 @@ msgstr ""
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "The assigned [MeshLibrary]."
 msgstr "指定的 [MeshLibrary]。"
+
+#: modules/gridmap/doc_classes/GridMap.xml
+msgid "The navigation layers the GridMap generates its navigation regions in."
+msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid ""
@@ -36914,10 +36982,11 @@ msgid ""
 msgstr "在映射数据库中添加新的映射条目（SDL2 格式）。可选更新已连接的设备。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Sends all input events which are in the current buffer to the game loop. "
 "These events may have been buffered as a result of accumulated input "
-"([method set_use_accumulated_input]) or agile input flushing ([member "
+"([member use_accumulated_input]) or agile input flushing ([member "
 "ProjectSettings.input_devices/buffering/agile_event_flushing]).\n"
 "The engine will already do this itself at key execution points (at least "
 "once per frame). However, this can be useful in advanced cases where you "
@@ -37111,10 +37180,6 @@ msgid ""
 msgstr ""
 "将鼠标按键作为一个比特掩码返回。如果多个鼠标按钮同时被按下，这些位会被加在一"
 "起。"
-
-#: doc/classes/Input.xml
-msgid "Returns the mouse mode. See the constants for more information."
-msgstr "返回鼠标模式。有关更多信息，请参阅常量。"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -37399,30 +37464,6 @@ msgstr ""
 "[b]注意：[/b]在 Android 和 iOS 上，这个值可立即被硬件传感器的值所覆盖。"
 
 #: doc/classes/Input.xml
-msgid "Sets the mouse mode. See the constants for more information."
-msgstr "设置鼠标模式。有关更多信息，请参阅常量。"
-
-#: doc/classes/Input.xml
-msgid ""
-"Enables or disables the accumulation of similar input events sent by the "
-"operating system. When input accumulation is enabled, all input events "
-"generated during a frame will be merged and emitted when the frame is done "
-"rendering. Therefore, this limits the number of input method calls per "
-"second to the rendering FPS.\n"
-"Input accumulation is enabled by default. It can be disabled to get slightly "
-"more precise/reactive input at the cost of increased CPU usage. In "
-"applications where drawing freehand lines is required, input accumulation "
-"should generally be disabled while the user is drawing the line to get "
-"results that closely follow the actual input."
-msgstr ""
-"启用或禁用操作系统发送的类似输入事件的累积。当启用输入累积时，在一帧中产生的"
-"所有输入事件将被合并，并在该帧完成渲染时发出。因此，这限制了每秒的输入方法调"
-"用次数，使之与渲染FPS相一致。\n"
-"输入累加在默认情况下是启用的。它可以被禁用，将以增加CPU使用率为代价，获得稍微"
-"更精确及更灵敏的输入。在需要自由绘制线条的应用中，一般应用在用户绘制线条时禁"
-"用输入累加，以获得紧跟实际输入的结果。"
-
-#: doc/classes/Input.xml
 msgid ""
 "Starts to vibrate the joypad. Joypads usually come with two rumble motors, a "
 "strong and a weak one. [code]weak_magnitude[/code] is the strength of the "
@@ -37470,6 +37511,32 @@ msgstr ""
 "将鼠标位置设为指定的向量，单位为像素，以游戏窗口的左上角作为原点。\n"
 "鼠标位置会被限制在屏幕分辨率内，如果 [enum MouseMode] 为 [constant "
 "MOUSE_MODE_CONFINED] 时则是限制在游戏窗口内。"
+
+#: doc/classes/Input.xml
+#, fuzzy
+msgid "Controls the mouse mode. See [enum MouseMode] for more information."
+msgstr "设置鼠标模式。有关更多信息，请参阅常量。"
+
+#: doc/classes/Input.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], similar input events sent by the operating system are "
+"accumulated. When input accumulation is enabled, all input events generated "
+"during a frame will be merged and emitted when the frame is done rendering. "
+"Therefore, this limits the number of input method calls per second to the "
+"rendering FPS.\n"
+"Input accumulation can be disabled to get slightly more precise/reactive "
+"input at the cost of increased CPU usage. In applications where drawing "
+"freehand lines is required, input accumulation should generally be disabled "
+"while the user is drawing the line to get results that closely follow the "
+"actual input."
+msgstr ""
+"启用或禁用操作系统发送的类似输入事件的累积。当启用输入累积时，在一帧中产生的"
+"所有输入事件将被合并，并在该帧完成渲染时发出。因此，这限制了每秒的输入方法调"
+"用次数，使之与渲染FPS相一致。\n"
+"输入累加在默认情况下是启用的。它可以被禁用，将以增加CPU使用率为代价，获得稍微"
+"更精确及更灵敏的输入。在需要自由绘制线条的应用中，一般应用在用户绘制线条时禁"
+"用输入累加，以获得紧跟实际输入的结果。"
 
 #: doc/classes/Input.xml
 msgid "Emitted when a joypad device has been connected or disconnected."
@@ -38194,13 +38261,14 @@ msgid "Input event type for mouse motion events."
 msgstr "鼠标移动事件的输入事件类型。"
 
 #: doc/classes/InputEventMouseMotion.xml
+#, fuzzy
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
 "[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, call [method Input."
-"set_use_accumulated_input] with [code]false[/code] to make events emitted as "
-"often as possible. If you use InputEventMouseMotion to draw lines, consider "
+"at most. If you need more precise input reporting, set [member Input."
+"use_accumulated_input] to [code]false[/code] to make events emitted as often "
+"as possible. If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -43487,10 +43555,12 @@ msgid "Node used for displaying a [Mesh] in 2D."
 msgstr "用于在2D中显示[Mesh]的节点。"
 
 #: doc/classes/MeshInstance2D.xml
+#, fuzzy
 msgid ""
-"Node used for displaying a [Mesh] in 2D. Can be constructed from an existing "
-"[Sprite] via a tool in the editor toolbar. Select \"Sprite\" then \"Convert "
-"to Mesh2D\", select settings in popup and press \"Create Mesh2D\"."
+"Node used for displaying a [Mesh] in 2D. A [MeshInstance2D] can be "
+"automatically created from an existing [Sprite] via a tool in the editor "
+"toolbar. Select the [Sprite] node, then choose [b]Sprite > Convert to "
+"MeshInstance2D[/b] at the top of the 2D editor viewport."
 msgstr ""
 "用于在2D中显示[Mesh]的节点。可以通过编辑器工具栏上的工具从现有的[Sprite]构"
 "建。选择 \"Sprite\"，然后选择 \"转换为Mesh2D\"，在弹出的窗口中选择设置并按下 "
@@ -44492,6 +44562,11 @@ msgstr ""
 "导航网格之间的交点。如果找到多个交点，则返回最接近线段起点的交点。"
 
 #: doc/classes/Navigation.xml
+#, fuzzy
+msgid "Returns the [RID] of the navigation map on the [NavigationServer]."
+msgstr "返回这个代理在 [NavigationServer] 上的 [RID]。"
+
+#: doc/classes/Navigation.xml
 msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the "
@@ -44517,11 +44592,23 @@ msgstr "该值用于检测相近的边界，连接兼容的地区。"
 
 #: doc/classes/Navigation.xml
 msgid ""
+"A bitfield determining all navigation map layers the navigation can use on a "
+"[method Navigation.get_simple_path] path query."
+msgstr ""
+
+#: doc/classes/Navigation.xml
+msgid ""
 "Defines which direction is up. By default, this is [code](0, 1, 0)[/code], "
 "which is the world's \"up\" direction."
 msgstr ""
 "定义了向上的方向。默认情况下，这是[code](0,1,0)[/code]，这是世界的“向上”方"
 "向。"
+
+#: doc/classes/Navigation.xml doc/classes/Navigation2DServer.xml
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Emitted when a navigation map is updated, when a region moves or is modified."
+msgstr ""
 
 #: doc/classes/Navigation2D.xml
 msgid "2D navigation and pathfinding node."
@@ -44564,6 +44651,12 @@ msgstr ""
 msgid "The XY plane cell size to use for fields."
 msgstr "用于字段的 XZ 平面单元尺寸。"
 
+#: doc/classes/Navigation2D.xml
+msgid ""
+"A bitfield determining all navigation map layers the navigation can use on a "
+"[method Navigation2D.get_simple_path] path query."
+msgstr ""
+
 #: doc/classes/Navigation2DServer.xml
 msgid "Server interface for low-level 2D navigation access."
 msgstr "访问底层 2D 导航的服务器接口。"
@@ -44581,8 +44674,12 @@ msgid ""
 "through scripts.\n"
 "For two regions to be connected to each other, they must share a similar "
 "edge. An edge is considered connected to another if both of its two vertices "
-"are at a distance less than [member Navigation.edge_connection_margin] to "
-"the respective other edge's vertex.\n"
+"are at a distance less than navigation map [code]edge_connection_margin[/"
+"code] to the respective other edge's vertex.\n"
+"You may assign navigation layers to regions with [method Navigation2DServer."
+"region_set_navigation_layers], which then can be checked upon when "
+"requesting a path with [method Navigation2DServer.map_get_path]. This allows "
+"allowing or forbidding some areas to 2D objects.\n"
 "To use the collision avoidance system, you may use agents. You can set an "
 "agent's target velocity, then the servers will emit a callback with a "
 "modified velocity.\n"
@@ -44597,7 +44694,11 @@ msgstr ""
 "Navigation2DServer 是负责所有 2D 导航的服务器，处理的对象有地图（map）、地区"
 "（region）、代理（agent）。\n"
 "地图是由地区组成的，地区又由导航多边形组成。它们一同构成了 2D 世界中的可导航"
-"区域。两个地区必须共有一条相似的边界（edge）才能相连。如果一条边界的两个顶点"
+"区域。\n"
+"[b]注意：[/b]NavigationServer 的大多数修改都要在下一个物理帧之后生效，不是立"
+"即生效的。SceneTree 中导航相关的节点对地图、地区、代理作出的修改也是如此，通"
+"过脚本作出的修改亦然。\n"
+"两个地区必须共有一条相似的边界（edge）才能相连。如果一条边界的两个顶点"
 "（vertex）与另一条边界的对应顶点的距离小于 [member Navigation."
 "edge_connection_margin]，则认为这两条边界相连。\n"
 "要使用防撞系统，可以使用代理。你可以设置代理的目标速度，服务器就会使用修正后"
@@ -44622,8 +44723,18 @@ msgid "Returns [code]true[/code] if the map got changed the previous frame."
 msgstr "如果地图在上一帧发生了改变，则返回 [code]true[/code]。"
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-msgid "Callback called at the end of the RVO process."
-msgstr "在 RVO 处理末尾调用的回调。"
+msgid ""
+"Callback called at the end of the RVO process. If a callback is created "
+"manually and the agent is placed on a navigation map it will calculate "
+"avoidance for the agent and dispatch the calculated [code]safe_velocity[/"
+"code] to the [code]receiver[/code] object with a signal to the chosen "
+"[code]method[/code] name.\n"
+"[b]Note:[/b] Created callbacks are always processed independently of the "
+"SceneTree state as long as the agent is on a navigation map and not freed. "
+"To disable the dispatch of a callback from an agent use [method "
+"agent_set_callback] again with a [code]null[/code] object as the "
+"[code]receiver[/code]."
+msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Puts the agent in the map."
@@ -44693,6 +44804,11 @@ msgid ""
 "requested navigation [code]map[/code]."
 msgstr "返回所有与请求的导航地图 [code]map[/code] 关联的导航代理的 [RID]。"
 
+#: doc/classes/Navigation2DServer.xml
+#, fuzzy
+msgid "Returns the map cell height. [b]Note:[/b] Currently not implemented."
+msgstr "获取被解析文件中的当前行（目前未实现）。"
+
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Returns the map cell size."
 msgstr "返回地图的单元格大小。"
@@ -44716,8 +44832,11 @@ msgid ""
 msgstr "返回地图的边界连接边距。边界连接边距是用于连接两个地区的距离。"
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-msgid "Returns the navigation path to reach the destination from the origin."
-msgstr "返回从原点到终点的导航路径。"
+msgid ""
+"Returns the navigation path to reach the destination from the origin. "
+"[code]navigation_layers[/code] is a bitmask of all region layers that are "
+"allowed to be in the path."
+msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
@@ -44732,6 +44851,13 @@ msgstr "如果地图处于活动状态，则返回 [code]true[/code]。"
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Sets the map active."
 msgstr "设置地图的激活态。"
+
+#: doc/classes/Navigation2DServer.xml
+#, fuzzy
+msgid ""
+"Set the map cell height used to weld the navigation mesh polygons. [b]Note:[/"
+"b] Currently not implemented."
+msgstr "设置用于焊接导航网格多边形的地图单元格高度。"
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Set the map cell size used to weld the navigation mesh polygons."
@@ -44748,13 +44874,60 @@ msgstr "创建一个新的地区。"
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
+"Returns the ending point of a connection door. [code]connection[/code] is an "
+"index between 0 and the return value of [method "
+"region_get_connections_count]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the starting point of a connection door. [code]connection[/code] is "
+"an index between 0 and the return value of [method "
+"region_get_connections_count]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid ""
+"Returns how many connections this [code]region[/code] has with other regions "
+"in the map."
+msgstr "返回 [code]点[/code]在平面上的正交投影。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the [code]enter_cost[/code] of this [code]region[/code]."
+msgstr "如果给定的信号 [code]signal[/code] 存在，则返回 [code]true[/code]。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
 "Returns the navigation map [RID] the requested [code]region[/code] is "
 "currently assigned to."
 msgstr "返回请求的导航地区 [code]region[/code] 所关联的导航地图的 [RID]。"
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the region's navigation layers."
+msgstr "返回该项的导航网格。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the [code]travel_cost[/code] of this [code]region[/code]."
+msgstr "如果给定的信号 [code]signal[/code] 存在，则返回 [code]true[/code]。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the [code]enter_cost[/code] for this [code]region[/code]."
+msgstr "为具有给定[code]id[/code]的点设置[code]position[/code]。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Sets the map for the region."
 msgstr "设置该地区的地图。"
+
+#: doc/classes/Navigation2DServer.xml
+msgid ""
+"Set the region's navigation layers. This allows selecting regions from a "
+"path request (when using [method Navigation2DServer.map_get_path])."
+msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Sets the navigation mesh for the region."
@@ -44763,6 +44936,11 @@ msgstr "设置该地图的导航网格。"
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Sets the global transformation for the region."
 msgstr "设置该地区的全局变换。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the [code]travel_cost[/code] for this [code]region[/code]."
+msgstr "为具有给定[code]id[/code]的点设置[code]position[/code]。"
 
 #: doc/classes/NavigationAgent.xml
 msgid "3D agent used in navigation for collision avoidance."
@@ -44773,14 +44951,17 @@ msgid ""
 "3D agent that is used in navigation to reach a location while avoiding "
 "static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
 "(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
-"navigation data to work correctly. This can be done by having the agent as a "
-"child of a [Navigation] node, or using [method set_navigation]. "
-"[NavigationAgent] is physics safe."
+"navigation data to work correctly. By default this node will register to the "
+"default [World] navigation map. If this node is a child of a [Navigation] "
+"node it will register to the navigation map of the navigation node or the "
+"function [method set_navigation] can be used to set the navigation node "
+"directly. [NavigationAgent] is physics safe.\n"
+"[b]Note:[/b] After [method set_target_location] is used it is required to "
+"use the [method get_next_location] function once every physics frame to "
+"update the internal path logic of the NavigationAgent. The returned vector "
+"position from this function should be used as the next movement position for "
+"the agent's parent Node."
 msgstr ""
-"导航中使用的 3D 代理，可以在前往某个位置时躲避静态和动态障碍物。躲避动态障碍"
-"物使用的是 RVO（Reciprocal Velocity Obstacles，相对速度障碍物）防撞算法。代理"
-"需要导航数据才能正确工作。可以通过让代理成为 [Navigation] 节点的子项实现，也"
-"可以使用 [method set_navigation]。[NavigationAgent] 是物理安全的。"
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
@@ -44801,8 +44982,16 @@ msgstr ""
 "可能发生变化。因此，最好每一帧都检查一下。"
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
-msgid "Returns the path from start to finish in global coordinates."
-msgstr "返回从起点到终点的路径，使用全局坐标。"
+msgid ""
+"Returns this agent's current path from start to finish in global "
+"coordinates. The path only updates when the target location is changed or "
+"the agent requires a repath. The path array is not intended to be used in "
+"direct path movement as the agent has its own internal path logic that would "
+"get corrupted by changing the path array manually. Use the intended [method "
+"get_next_location] once every physics frame to receive the next path point "
+"for the agents movement as this function also updates the internal path "
+"logic."
+msgstr ""
 
 #: doc/classes/NavigationAgent.xml
 msgid ""
@@ -44816,13 +45005,27 @@ msgid ""
 "system."
 msgstr "返回该代理的导航系统所使用的 [Navigation] 节点。"
 
-#: doc/classes/NavigationAgent.xml
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
-"Returns a [Vector3] in global coordinates, that can be moved to, making sure "
-"that there are no static objects in the way. If the agent does not have a "
-"navigation path, it will return the origin of the agent's parent."
+"Returns the [RID] of the navigation map for this NavigationAgent node. This "
+"function returns always the map set on the NavigationAgent node and not the "
+"map of the abstract agent on the NavigationServer. If the agent map is "
+"changed directly with the NavigationServer API the NavigationAgent node will "
+"not be aware of the map change. Use [method set_navigation_map] to change "
+"the navigation map for the NavigationAgent and also update the agent on the "
+"NavigationServer."
 msgstr ""
-"返回可以移动至的 [Vector3] 全局坐标，确保中途没有静态物体阻挡。如果代理没有导"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns the next location in global coordinates that can be moved to, making "
+"sure that there are no static objects in the way. If the agent does not have "
+"a navigation path, it will return the position of the agent's parent. The "
+"use of this function once every physics frame is required to update the "
+"internal path logic of the NavigationAgent."
+msgstr ""
+"返回可以移动至的 [Vector2] 全局坐标，确保中途没有静态物体阻挡。如果代理没有导"
 "航路径，则会返回代理父节点的原点。"
 
 #: doc/classes/NavigationAgent.xml
@@ -44870,6 +45073,12 @@ msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
+"Sets the [RID] of the navigation map this NavigationAgent node should use "
+"and also updates the [code]agent[/code] on the NavigationServer."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
 "Sets the user desired final location. This will clear the current navigation "
 "path."
 msgstr "设置用户期望的终点位置。会将当前导航路径清空。"
@@ -44884,8 +45093,14 @@ msgstr ""
 "会触发 [signal velocity_computed] 信号。"
 
 #: doc/classes/NavigationAgent.xml
-msgid "The agent height offset to match the navigation mesh height."
-msgstr "代理的高度偏移量，用于匹配导航网格的高度。"
+msgid ""
+"The NavigationAgent height offset is subtracted from the y-axis value of any "
+"vector path position for this NavigationAgent. The NavigationAgent height "
+"offset does not change or influence the navigation mesh or pathfinding query "
+"result. Additional navigation maps that use regions with navigation meshes "
+"that the developer baked with appropriate agent radius or height values are "
+"required to support different-sized agents."
+msgstr ""
 
 #: doc/classes/NavigationAgent.xml
 msgid ""
@@ -44915,6 +45130,13 @@ msgstr "代理所需考虑的最大邻居数。"
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "The maximum speed that an agent can move."
 msgstr "代理所能达到的最大移动速度。"
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationAgent] "
+"belongs to. On path requests the agent will ignore navmeshes without at "
+"least one matching layer."
+msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "The distance to search for other agents."
@@ -44986,14 +45208,17 @@ msgid ""
 "2D agent that is used in navigation to reach a location while avoiding "
 "static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
 "(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
-"navigation data to work correctly. This can be done by having the agent as a "
-"child of a [Navigation2D] node, or using [method set_navigation]. "
-"[NavigationAgent2D] is physics safe."
+"navigation data to work correctly. By default this node will register to the "
+"default [World2D] navigation map. If this node is a child of a "
+"[Navigation2D] node it will register to the navigation map of the navigation "
+"node or the function [method set_navigation] can be used to set the "
+"navigation node directly. [NavigationAgent2D] is physics safe.\n"
+"[b]Note:[/b] After [method set_target_location] is used it is required to "
+"use the [method get_next_location] function once every physics frame to "
+"update the internal path logic of the NavigationAgent. The returned vector "
+"position from this function should be used as the next movement position for "
+"the agent's parent Node."
 msgstr ""
-"导航中使用的 2D 代理，可以在前往某个位置时躲避静态和动态障碍物。躲避动态障碍"
-"物使用的是 RVO（Reciprocal Velocity Obstacles，相对速度障碍物）防撞算法。代理"
-"需要导航数据才能正确工作。可以通过让代理成为 [Navigation2D] 节点的子项实现，"
-"也可以使用 [method set_navigation]。[NavigationAgent2D] 是物理安全的。"
 
 #: doc/classes/NavigationAgent2D.xml
 msgid ""
@@ -45006,15 +45231,6 @@ msgid ""
 "Returns the [Navigation2D] node that the agent is using for its navigation "
 "system."
 msgstr "返回该代理的导航系统所使用的 [Navigation2D] 节点。"
-
-#: doc/classes/NavigationAgent2D.xml
-msgid ""
-"Returns a [Vector2] in global coordinates, that can be moved to, making sure "
-"that there are no static objects in the way. If the agent does not have a "
-"navigation path, it will return the position of the agent's parent."
-msgstr ""
-"返回可以移动至的 [Vector2] 全局坐标，确保中途没有静态物体阻挡。如果代理没有导"
-"航路径，则会返回代理父节点的原点。"
 
 #: doc/classes/NavigationAgent2D.xml
 msgid "Returns the [RID] of this agent on the [Navigation2DServer]."
@@ -45042,6 +45258,13 @@ msgstr ""
 "velocity_computed] 信号的连接收到安全速度 Vector2 [code]safe_velocity[/"
 "code]。为避障处理注册大量代理会对性能有显著影响，应该只在当前有需要的代理上启"
 "用。"
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationAgent2D] "
+"belongs to. On path requests the agent will ignore navmeshes without at "
+"least one matching layer."
+msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid "A mesh to approximate the walkable areas and obstacles."
@@ -45074,9 +45297,10 @@ msgid ""
 msgstr "通过根据 [Mesh] 设置顶点和索引来初始化导航网格。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
-"Returns whether the specified [code]bit[/code] of the [member geometry/"
-"collision_mask] is set."
+"Returns whether the specified [code]bit[/code] of the [member "
+"geometry_collision_mask] is set."
 msgstr "返回[member geometry/collision_mask]的指定[code]bit[/code]是否被设置。"
 
 #: doc/classes/NavigationMesh.xml doc/classes/NavigationPolygon.xml
@@ -45096,11 +45320,12 @@ msgid ""
 msgstr "返回包含用于创建多边形的所有顶点的[PoolVector3Array]。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the [member geometry/collision_mask].\n"
+"code] in the [member geometry_collision_mask].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the [member geometry/collision_mask]."
+"code] in the [member geometry_collision_mask]."
 msgstr ""
 "如果 [code]value[/code] 为 [code]true[/code]，则在 [member geometry/"
 "collision_mask] 中设置指定的 [code]bit[/code]。\n"
@@ -45114,20 +45339,22 @@ msgid ""
 msgstr "设置顶点，然后使用 [method add_polygon] 方法创建多边形。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The minimum floor to ceiling height that will still allow the floor area to "
 "be considered walkable.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/height]."
+"multiple of [member cell_height]."
 msgstr ""
 "地板到天花板的最小高度，仍然允许被认为是可行走的地板。\n"
 "[b]注意：[/b]烘焙时，这个值会向上取整到最接近的 [member cell/height] 的倍数。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The minimum ledge height that is considered to still be traversable.\n"
 "[b]Note:[/b] While baking, this value will be rounded down to the nearest "
-"multiple of [member cell/height]."
+"multiple of [member cell_height]."
 msgstr ""
 "被认为仍可穿越的最小墙壁高度。\n"
 "[b]注意：[/b]烘焙时，该值将向下舍入到最接近的 [member cell/height] 的倍数。"
@@ -45137,11 +45364,12 @@ msgid "The maximum slope that is considered walkable, in degrees."
 msgstr "认为可行走的最大坡度，单位是度。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The distance to erode/shrink the walkable area of the heightfield away from "
 "obstructions.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/size]."
+"multiple of [member cell_size]."
 msgstr ""
 "侵蚀/缩小远离障碍物的高度场的可行走区域距离。\n"
 "[b]注意：[/b]烘焙时，这个值会向上取整到最接近的 [member cell/size] 的倍数。"
@@ -45168,38 +45396,42 @@ msgid ""
 msgstr "简化轮廓的边界边缘应偏离原始原始轮廓的最大距离。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The maximum allowed length for contour edges along the border of the mesh.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/size]."
+"multiple of [member cell_size]."
 msgstr ""
 "沿网格边界的轮廓的最大允许长度。\n"
 "[b]注意：[/b]烘焙时，这个值会向上取整到最接近的[member cell/size]的倍数。"
-
-#: doc/classes/NavigationMesh.xml
-msgid ""
-"If [code]true[/code], marks walkable spans as not walkable if the clearance "
-"above the span is less than [member agent/height]."
-msgstr ""
-"如果为 [code]true[/code]，如果跨度上方的间隙小于 [member agent/height]，则将"
-"可行走范围标记为不可行走。"
 
 #: doc/classes/NavigationMesh.xml
 msgid "If [code]true[/code], marks spans that are ledges as non-walkable."
 msgstr "如果为 [code]true[/code]，则标记边缘间的跨度为不可行走。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], marks non-walkable spans as walkable if their maximum "
-"is within [member agent/max_climb] of a walkable neighbor."
+"is within [member agent_max_climb] of a walkable neighbor."
 msgstr ""
 "如果为 [code]true[/code]，如果它们的最大值在可行走邻域的 [member agent/"
 "max_climb] 内，则将不可行走范围标记为可行走。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], marks walkable spans as not walkable if the clearance "
+"above the span is less than [member agent_height]."
+msgstr ""
+"如果为 [code]true[/code]，如果跨度上方的间隙小于 [member agent/height]，则将"
+"可行走范围标记为不可行走。"
+
+#: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The physics layers to scan for static colliders.\n"
-"Only used when [member geometry/parsed_geometry_type] is [constant "
+"Only used when [member geometry_parsed_geometry_type] is [constant "
 "PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH]."
 msgstr ""
 "用于扫描静态碰撞的物理层。\n"
@@ -45220,9 +45452,10 @@ msgid ""
 msgstr "烘焙时使用的几何体的源。参阅 [enum SourceGeometryMode]。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "The name of the group to scan for geometry.\n"
-"Only used when [member geometry/source_geometry_mode] is [constant "
+"Only used when [member geometry_source_geometry_mode] is [constant "
 "SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant "
 "SOURCE_GEOMETRY_GROUPS_EXPLICIT]."
 msgstr ""
@@ -45296,9 +45529,10 @@ msgstr ""
 "将网格实例解析为几何体。这包括 [MeshInstance]、[CSGShape] 和 [GridMap] 节点。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "Parses [StaticBody] colliders as geometry. The collider should be in any of "
-"the layers specified by [member geometry/collision_mask]."
+"the layers specified by [member geometry_collision_mask]."
 msgstr ""
 "将 [StaticBody] 碰撞器解析为几何体。碰撞器应位于 [member geometry/"
 "collision_mask] 指定的任何层中。"
@@ -45321,17 +45555,19 @@ msgid ""
 msgstr "递归扫描 [NavigationMeshInstance] 的子节点以获取几何体。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "Scans nodes in a group and their child nodes recursively for geometry. The "
-"group is specified by [member geometry/source_group_name]."
+"group is specified by [member geometry_source_group_name]."
 msgstr ""
 "以递归方式扫描组中的节点及其子节点以获取几何图形。该组由 [member geometry/"
 "source_group_name] 指定。"
 
 #: doc/classes/NavigationMesh.xml
+#, fuzzy
 msgid ""
 "Uses nodes in a group for geometry. The group is specified by [member "
-"geometry/source_group_name]."
+"geometry_source_group_name]."
 msgstr ""
 "使用一个组中的节点进行几何运算。该组由 [member geometry/source_group_name] 指"
 "定。"
@@ -45399,12 +45635,13 @@ msgstr ""
 "[NavigationMeshInstance] 使用。"
 
 #: doc/classes/NavigationMeshGenerator.xml
+#, fuzzy
 msgid ""
 "Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child "
 "nodes under the provided [code]root_node[/code] or a specific group of nodes "
 "for potential source geometry. The parse behavior can be controlled with the "
-"[member NavigationMesh.geometry/parsed_geometry_type] and [member "
-"NavigationMesh.geometry/source_geometry_mode] properties on the "
+"[member NavigationMesh.geometry_parsed_geometry_type] and [member "
+"NavigationMesh.geometry_source_geometry_mode] properties on the "
 "[NavigationMesh] resource."
 msgstr ""
 "将导航数据烘焙至提供的 [code]nav_mesh[/code] 中。解析的是提供的根节点 "
@@ -45425,11 +45662,22 @@ msgstr "[NavigationMesh] 的一个实例。"
 #: doc/classes/NavigationMeshInstance.xml
 msgid ""
 "An instance of a [NavigationMesh]. It tells the [Navigation] node what can "
-"be navigated and what cannot, based on the [NavigationMesh] resource. This "
-"should be a child of a [Navigation] node."
+"be navigated and what cannot, based on the [NavigationMesh] resource.\n"
+"By default this node will register to the default [World] navigation map. If "
+"this node is a child of a [Navigation] node it will register to the "
+"navigation map of the navigation node.\n"
+"Two regions can be connected to each other if they share a similar edge. You "
+"can set the minimum distance between two vertices required to connect two "
+"edges by using [method NavigationServer.map_set_edge_connection_margin].\n"
+"[b]Note:[/b] Overlapping two regions' navmeshes is not enough for connecting "
+"two regions. They must share a similar edge.\n"
+"The cost of entering this region from another region can be controlled with "
+"the [member enter_cost] value.\n"
+"[b]Note[/b]: This value is not added to the path cost when the start "
+"position is already inside this region.\n"
+"The cost of traveling distances inside this region can be controlled with "
+"the [member travel_cost] multiplier."
 msgstr ""
-"[NavigationMesh] 的一个实例。它会根据 [NavigationMesh] 资源，告知 "
-"[Navigation] 节点什么可以导航、什么不可以。应该是 [Navigation] 节点的子节点。"
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid ""
@@ -45466,8 +45714,32 @@ msgid "Determines if the [NavigationMeshInstance] is enabled or disabled."
 msgstr "决定该 [NavigationMeshInstance] 已启用还是已禁用。"
 
 #: doc/classes/NavigationMeshInstance.xml
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"When pathfinding enters this regions navmesh from another regions navmesh "
+"the [code]enter_cost[/code] value is added to the path distance for "
+"determining the shortest path."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationMesh] "
+"belongs to. On path requests with [method NavigationServer.map_get_path] "
+"navmeshes without matching layers will be ignored and the navigation map "
+"will only proximity merge different navmeshes with matching layers."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
 msgid "The [NavigationMesh] resource to use."
 msgstr "使用的 [NavigationMesh] 资源。"
+
+#: doc/classes/NavigationMeshInstance.xml
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"When pathfinding moves inside this regions navmesh the traveled distances "
+"are multiplied with [code]travel_cost[/code] for determining the shortest "
+"path."
+msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid "Notifies when the navigation mesh bake operation is completed."
@@ -45482,11 +45754,14 @@ msgid "3D obstacle used in navigation for collision avoidance."
 msgstr "在导航中用于防撞的 3D 障碍物。"
 
 #: doc/classes/NavigationObstacle.xml
+#, fuzzy
 msgid ""
 "3D obstacle used in navigation for collision avoidance. The obstacle needs "
 "navigation data to work correctly. This can be done by having the obstacle "
 "as a child of a [Navigation] node, or using [method set_navigation]. "
-"[NavigationObstacle] is physics safe."
+"[NavigationObstacle] is physics safe.\n"
+"[b]Note:[/b] Obstacles are intended as a last resort option for constantly "
+"moving objects that cannot be (re)baked to a navigation mesh efficiently."
 msgstr ""
 "导航中用于防撞的 3D 障碍物。障碍物需要导航数据才能正确工作。可以通过让障碍物"
 "成为 [Navigation] 节点的子项实现，也可以使用 [method set_navigation]。"
@@ -45528,11 +45803,14 @@ msgid "2D obstacle used in navigation for collision avoidance."
 msgstr "在导航中用于防撞的 2D 障碍物。"
 
 #: doc/classes/NavigationObstacle2D.xml
+#, fuzzy
 msgid ""
 "2D obstacle used in navigation for collision avoidance. The obstacle needs "
 "navigation data to work correctly. This can be done by having the obstacle "
 "as a child of a [Navigation2D] node, or using [method set_navigation]. "
-"[NavigationObstacle2D] is physics safe."
+"[NavigationObstacle2D] is physics safe.\n"
+"[b]Note:[/b] Obstacles are intended as a last resort option for constantly "
+"moving objects that cannot be (re)baked to a navigation mesh efficiently."
 msgstr ""
 "导航中用于防撞的 2D 障碍物。障碍物需要导航数据才能正确工作。可以通过让障碍物"
 "成为 [Navigation2D] 节点的子项实现，也可以使用 [method set_navigation]。"
@@ -45643,6 +45921,14 @@ msgstr "清除多边形数组，但不清除轮廓和顶点数组。"
 
 #: doc/classes/NavigationPolygon.xml
 msgid ""
+"Returns the [NavigationMesh] resulting from this navigation polygon. This "
+"navmesh can be used to update the navmesh of a region with the [method "
+"NavigationServer.region_set_navmesh] API directly (as 2D uses the 3D server "
+"behind the scene)."
+msgstr ""
+
+#: doc/classes/NavigationPolygon.xml
+msgid ""
 "Returns a [PoolVector2Array] containing the vertices of an outline that was "
 "created in the editor or by script."
 msgstr "返回[PoolVector2Array]，包含在编辑器中或通过脚本创建的轮廓的顶点。"
@@ -45683,6 +45969,31 @@ msgstr ""
 "make_polygons_from_outlines] 来更新多边形。"
 
 #: doc/classes/NavigationPolygonInstance.xml
+#, fuzzy
+msgid "A region of the 2D navigation map."
+msgstr "烘焙导航网格。"
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"A region of the navigation map. It tells the [Navigation2DServer] what can "
+"be navigated and what cannot, based on its [NavigationPolygon] resource.\n"
+"By default this node will register to the default [World2D] navigation map. "
+"If this node is a child of a [Navigation2D] node it will register to the "
+"navigation map of the navigation node.\n"
+"Two regions can be connected to each other if they share a similar edge. You "
+"can set the minimum distance between two vertices required to connect two "
+"edges by using [method Navigation2DServer.map_set_edge_connection_margin].\n"
+"[b]Note:[/b] Overlapping two regions' polygons is not enough for connecting "
+"two regions. They must share a similar edge.\n"
+"The pathfinding cost of entering this region from another region can be "
+"controlled with the [member enter_cost] value.\n"
+"[b]Note[/b]: This value is not added to the path cost when the start "
+"position is already inside this region.\n"
+"The pathfinding cost of traveling distances inside this region can be "
+"controlled with the [member travel_cost] multiplier."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
 msgid ""
 "Returns the [RID] of this region on the [Navigation2DServer]. Combined with "
 "[method Navigation2DServer.map_get_closest_point_owner] can be used to "
@@ -45693,12 +46004,29 @@ msgstr ""
 "Navigation2DServer.map_get_closest_point_owner] 组合使用，获取合并后的导航图"
 "中与某个点最接近的 [NavigationPolygonInstance]。"
 
+#: doc/classes/NavigationPolygonInstance.xml
+#, fuzzy
+msgid "Determines if the [NavigationPolygonInstance] is enabled or disabled."
+msgstr "决定该 [NavigationMeshInstance] 已启用还是已禁用。"
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationPolygon] "
+"belongs to. On path requests with [method Navigation2DServer.map_get_path] "
+"navmeshes without matching layers will be ignored and the navigation map "
+"will only proximity merge different navmeshes with matching layers."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
+#, fuzzy
+msgid "The [NavigationPolygon] resource to use."
+msgstr "使用的 [NavigationMesh] 资源。"
+
 #: doc/classes/NavigationServer.xml
 msgid "Server interface for low-level 3D navigation access."
 msgstr "访问底层 3D 导航的服务器接口。"
 
 #: doc/classes/NavigationServer.xml
-#, fuzzy
 msgid ""
 "NavigationServer is the server responsible for all 3D navigation. It handles "
 "several objects, namely maps, regions and agents.\n"
@@ -45726,7 +46054,11 @@ msgstr ""
 "NavigationServer 是负责所有 3D 导航的服务器，处理的对象有地图（map）、地区"
 "（region）、代理（agent）。\n"
 "地图是由地区组成的，地区又由导航网格组成。它们一同构成了 3D 世界中的可导航区"
-"域。两个地区必须共有一条相似的边界（edge）才能相连。如果一条边界的两个顶点"
+"域。\n"
+"[b]注意：[/b]NavigationServer 的大多数修改都要在下一个物理帧之后生效，不是立"
+"即生效的。SceneTree 中导航相关的节点对地图、地区、代理作出的修改也是如此，通"
+"过脚本作出的修改亦然。\n"
+"两个地区必须共有一条相似的边界（edge）才能相连。如果一条边界的两个顶点"
 "（vertex）与另一条边界的对应顶点的距离小于 [member Navigation."
 "edge_connection_margin]，则认为这两条边界相连。\n"
 "要使用防撞系统，可以使用代理。你可以设置代理的目标速度，服务器就会使用修正后"
@@ -45783,6 +46115,12 @@ msgstr ""
 #: doc/classes/NavigationServer.xml
 msgid "Bakes the navigation mesh."
 msgstr "烘焙导航网格。"
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Set the region's navigation layers. This allows selecting regions from a "
+"path request (when using [method NavigationServer.map_get_path])."
+msgstr ""
 
 #: doc/classes/NavigationServer.xml
 msgid "Control activation of this server."
@@ -48165,8 +48503,14 @@ msgid "Rotation in degrees, relative to the node's parent."
 msgstr "旋转角度，相对于父节点。"
 
 #: doc/classes/Node2D.xml
-msgid "The node's scale. Unscaled value: [code](1, 1)[/code]."
-msgstr "节点的缩放。未缩放时为：[code](1, 1)[/code]。"
+msgid ""
+"The node's scale. Unscaled value: [code](1, 1)[/code].\n"
+"[b]Note:[/b] Negative X scales in 2D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, negative scales on the X axis will be "
+"changed to negative scales on the Y axis and a rotation of 180 degrees when "
+"decomposed."
+msgstr ""
 
 #: doc/classes/Node2D.xml
 msgid "Local [Transform2D]."
@@ -48354,7 +48698,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/NodePath.xml
-#, fuzzy
 msgid ""
 "Gets the node name indicated by [code]idx[/code] (0 to [method "
 "get_name_count] - 1).\n"
@@ -48365,7 +48708,7 @@ msgid ""
 "print(node_path.get_name(2)) # Sprite\n"
 "[/codeblock]"
 msgstr ""
-"获取由 [code]idx[/code]（0 到 [method get_name_count]）指示的节点名称。\n"
+"获取由 [code]idx[/code]（0 到 [method get_name_count] - 1）指示的节点名称。\n"
 "[codeblock]\n"
 "var node_path = NodePath(\"Path2D/PathFollow2D/Sprite\")\n"
 "print(node_path.get_name(0)) # Path2D\n"
@@ -51028,11 +51371,16 @@ msgstr ""
 msgid ""
 "Moves the file or directory to the system's recycle bin. See also [method "
 "Directory.remove].\n"
+"The method takes only global paths, so you may need to use [method "
+"ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/"
+"code] as it will not work in exported project.\n"
 "[b]Note:[/b] If the user has disabled the recycle bin on their system, the "
-"file will be permanently deleted instead."
+"file will be permanently deleted instead.\n"
+"[codeblock]\n"
+"var file_to_remove = \"user://slot1.sav\"\n"
+"OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))\n"
+"[/codeblock]"
 msgstr ""
-"将文件或目录移动到系统的回收站。另请参阅 [method Directory.remove]。\n"
-"[b]注意：[/b]如果用户禁用了系统的回收站，那么这个文件就会被永久删除。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51149,11 +51497,12 @@ msgid ""
 "[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment "
 "variable names are case-sensitive on all platforms except Windows."
 msgstr ""
-"将环境变量[code]variable[/code]的值设置为[code]value[/code]。在运行[method "
-"set_environment]后，环境变量将被设置为Godot进程和任何用[method execute]执行的"
-"进程。环境变量将[i]不[/i]持续存在于Godot进程终止后运行的进程中。\n"
-"[b]注意：[/b]仔细检查[code]variable[/code]的大小写。除Windows外，环境变量名称"
-"在所有平台上都是区分大小写的。"
+"将环境变量 [code]variable[/code] 的值设置为 [code]value[/code]。在运行 "
+"[method set_environment] 后，环境变量将被设置为 Godot 进程和任何用 [method "
+"execute] 执行的进程。环境变量[i]不会[/i]持续存在于 Godot 进程终止后运行的进程"
+"中。\n"
+"[b]注意：[/b]仔细检查 [code]variable[/code] 的大小写。除 Windows 外，环境变量"
+"名称在所有平台上都是区分大小写的。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51271,7 +51620,6 @@ msgstr ""
 "[b]注意：[/b]该方法在 HTML5、Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid ""
 "Requests the OS to open a resource with the most appropriate program. For "
 "example:\n"
@@ -51296,8 +51644,8 @@ msgstr ""
 "器打开 Godot 官方网站。\n"
 "- [code]OS.shell_open(\"mailto:example@example.com\")[/code] 会打开默认电子邮"
 "件客户端并将“收件人”字段设置为 [code]example@example.com[/code]。其他支持自定"
-"义的字段见 [url=https://blog.escapecreative.com/customizing-mailto-links/]自"
-"定义 [code]mailto:[/code] 链接[/url] 。\n"
+"义的字段见 [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - "
+"[code]mailto[/code] URL 方案[/url]。\n"
 "可以使用 [method ProjectSettings.globalize_path] 将 [code]res://[/code] 和 "
 "[code]user://[/code] 路径转换为本方法所使用的系统路径。\n"
 "[b]注意：[/b]本方法在 Android、iOS、HTML5、Linux、macOS、以及 Windows 上实"
@@ -56187,7 +56535,6 @@ msgid "A pooled array of bytes."
 msgstr "字节池数组。"
 
 #: doc/classes/PoolByteArray.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold bytes. Optimized for memory usage, "
 "does not fragment the memory.\n"
@@ -56217,7 +56564,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolByteArray()]\n"
 "array[0].push_back(123)\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolByteArray）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolByteArray）\n"
 "[/codeblock]\n"
 "整个 [PoolByteArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
 "生变化：\n"
@@ -56396,7 +56743,6 @@ msgid "A pooled array of [Color]s."
 msgstr "[Color] 池数组。"
 
 #: doc/classes/PoolColorArray.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold [Color]. Optimized for memory usage, "
 "does not fragment the memory.\n"
@@ -56427,7 +56773,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolColorArray()]\n"
 "array[0].push_back(Color(0.1, 0.2, 0.3, 0.4))\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolColorArray）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolColorArray）\n"
 "[/codeblock]\n"
 "整个 [PoolColorArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
 "生变化：\n"
@@ -56474,7 +56820,6 @@ msgid "A pooled array of integers ([int])."
 msgstr "整数（[int]）池数组。"
 
 #: doc/classes/PoolIntArray.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold integer values ([int]). Optimized for "
 "memory usage, does not fragment the memory.\n"
@@ -56510,7 +56855,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolIntArray()]\n"
 "array[0].push_back(1234)\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolIntArray）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolIntArray）\n"
 "[/codeblock]\n"
 "整个 [PoolIntArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发生"
 "变化：\n"
@@ -56553,7 +56898,6 @@ msgid "A pooled array of real numbers ([float])."
 msgstr "实数（[float]）池数组。"
 
 #: doc/classes/PoolRealArray.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold floating-point values. Optimized for "
 "memory usage, does not fragment the memory.\n"
@@ -56590,7 +56934,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolIntArray()]\n"
 "array[0].push_back(12.34)\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolRealArray）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolRealArray）\n"
 "[/codeblock]\n"
 "整个 [PoolRealArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会发"
 "生变化：\n"
@@ -56626,7 +56970,6 @@ msgid "A pooled array of [String]s."
 msgstr "[String] 池数组。"
 
 #: doc/classes/PoolStringArray.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold [String]s. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56656,7 +56999,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolStringArray()]\n"
 "array[0].push_back(\"hello\")\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolStringArray）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolStringArray）\n"
 "[/codeblock]\n"
 "整个 [PoolStringArray] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
 "发生变化：\n"
@@ -56699,7 +57042,6 @@ msgid "A pooled array of [Vector2]s."
 msgstr "[Vector2] 池数组。"
 
 #: doc/classes/PoolVector2Array.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold [Vector2]. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56730,7 +57072,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolVector2Array()]\n"
 "array[0].push_back(Vector2(12, 34))\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolVector2Array）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolVector2Array）\n"
 "[/codeblock]\n"
 "整个 [PoolVector2Array] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
 "发生变化：\n"
@@ -56772,7 +57114,6 @@ msgid "A pooled array of [Vector3]."
 msgstr "[Vector3] 池数组。"
 
 #: doc/classes/PoolVector3Array.xml
-#, fuzzy
 msgid ""
 "An array specifically designed to hold [Vector3]. Optimized for memory "
 "usage, does not fragment the memory.\n"
@@ -56803,7 +57144,7 @@ msgstr ""
 "[codeblock]\n"
 "var array = [PoolVector3Array()]\n"
 "array[0].push_back(Vector3(12, 34, 56))\n"
-"print(array)  # [[]]（空 Array 中包含了空的 PoolVector3Array）\n"
+"print(array)  # [[]]（Array 中包含了空的 PoolVector3Array）\n"
 "[/codeblock]\n"
 "整个 [PoolVector3Array] 属性必须使用 [code]=[/code] 进行[i]重新赋值[/i]，才会"
 "发生变化：\n"
@@ -58333,8 +58674,8 @@ msgid ""
 "[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/"
 "code] will still be read to override the project settings."
 msgstr ""
-"指定一个文件来覆盖项目设置。比如说。[code]user://custom_settings.cfg[/code]。"
-"参见 [ProjectSettings] 顶部类描述中的“Overriding”以获取更多信息。\n"
+"指定一个文件来覆盖项目设置。例如：[code]user://custom_settings.cfg[/code]。参"
+"见 [ProjectSettings] 顶部类描述中的“Overriding”以获取更多信息。\n"
 "[b]注意：[/b]不管这个设置的值如何，[code]res://override.cfg[/code] 仍然会被读"
 "取来覆盖项目设置。"
 
@@ -58380,8 +58721,8 @@ msgid ""
 "Icon set in [code].ico[/code] format used on Windows to set the game's icon. "
 "This is done automatically on start by calling [method OS.set_native_icon]."
 msgstr ""
-"以[code].ico[/code]格式设置的图标，在Windows上用于设置游戏的图标。这在启动时"
-"通过调用[method OS.set_native_icon]自动完成。"
+"以 [code].ico[/code] 格式设置的图标，在 Windows 上用于设置游戏的图标。这在启"
+"动时通过调用 [method OS.set_native_icon] 自动完成。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -58876,8 +59217,17 @@ msgstr ""
 "用警告。"
 
 #: doc/classes/ProjectSettings.xml
-msgid "Message to be displayed before the backtrace when the engine crashes."
-msgstr "当引擎崩溃时，在回溯之前显示的消息。"
+msgid ""
+"Message to be displayed before the backtrace when the engine crashes. By "
+"default, this message is only used in exported projects due to the editor-"
+"only override applied to this setting."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Editor-only override for [member debug/settings/crash_handler/message]. Does "
+"not affect exported projects in debug or release mode."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -59485,6 +59835,198 @@ msgid "Default delay for touch events. This only affects iOS devices."
 msgstr "触摸事件的默认延迟（单位为秒）。仅影响 iOS 设备。"
 
 #: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 1. If left empty, the layer will "
+"display as \"Layer 1\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 10. If left empty, the layer will "
+"display as \"Layer 10\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 11. If left empty, the layer will "
+"display as \"Layer 11\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 12. If left empty, the layer will "
+"display as \"Layer 12\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 13. If left empty, the layer will "
+"display as \"Layer 13\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 14. If left empty, the layer will "
+"display as \"Layer 14\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 15. If left empty, the layer will "
+"display as \"Layer 15\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 16. If left empty, the layer will "
+"display as \"Layer 16\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 17. If left empty, the layer will "
+"display as \"Layer 17\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 18. If left empty, the layer will "
+"display as \"Layer 18\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 19. If left empty, the layer will "
+"display as \"Layer 19\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 2. If left empty, the layer will "
+"display as \"Layer 2\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 20. If left empty, the layer will "
+"display as \"Layer 20\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 21. If left empty, the layer will "
+"display as \"Layer 21\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 22. If left empty, the layer will "
+"display as \"Layer 22\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 23. If left empty, the layer will "
+"display as \"Layer 23\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 24. If left empty, the layer will "
+"display as \"Layer 24\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 25. If left empty, the layer will "
+"display as \"Layer 25\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 26. If left empty, the layer will "
+"display as \"Layer 26\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 27. If left empty, the layer will "
+"display as \"Layer 27\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 28. If left empty, the layer will "
+"display as \"Layer 28\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 29. If left empty, the layer will "
+"display as \"Layer 29\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 3. If left empty, the layer will "
+"display as \"Layer 3\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 30. If left empty, the layer will "
+"display as \"Layer 30\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 31. If left empty, the layer will "
+"display as \"Layer 31\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 32. If left empty, the layer will "
+"display as \"Layer 32\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 4. If left empty, the layer will "
+"display as \"Layer 4\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 5. If left empty, the layer will "
+"display as \"Layer 5\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 6. If left empty, the layer will "
+"display as \"Layer 6\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 7. If left empty, the layer will "
+"display as \"Layer 7\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 8. If left empty, the layer will "
+"display as \"Layer 8\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 9. If left empty, the layer will "
+"display as \"Layer 9\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 2D physics layer 1."
 msgstr "2D 物理层 1 的可选名称。"
 
@@ -59691,6 +60233,198 @@ msgstr "2D 渲染层 8 的可选名称。"
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 2D render layer 9."
 msgstr "2D 渲染层 9 的可选名称。"
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 1. If left empty, the layer will "
+"display as \"Layer 1\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 10. If left empty, the layer will "
+"display as \"Layer 10\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 11. If left empty, the layer will "
+"display as \"Layer 11\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 12. If left empty, the layer will "
+"display as \"Layer 12\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 13. If left empty, the layer will "
+"display as \"Layer 13\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 14. If left empty, the layer will "
+"display as \"Layer 14\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 15. If left empty, the layer will "
+"display as \"Layer 15\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 16. If left empty, the layer will "
+"display as \"Layer 16\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 17. If left empty, the layer will "
+"display as \"Layer 17\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 18. If left empty, the layer will "
+"display as \"Layer 18\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 19. If left empty, the layer will "
+"display as \"Layer 19\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 2. If left empty, the layer will "
+"display as \"Layer 2\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 20. If left empty, the layer will "
+"display as \"Layer 20\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 21. If left empty, the layer will "
+"display as \"Layer 21\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 22. If left empty, the layer will "
+"display as \"Layer 22\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 23. If left empty, the layer will "
+"display as \"Layer 23\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 24. If left empty, the layer will "
+"display as \"Layer 24\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 25. If left empty, the layer will "
+"display as \"Layer 25\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 26. If left empty, the layer will "
+"display as \"Layer 26\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 27. If left empty, the layer will "
+"display as \"Layer 27\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 28. If left empty, the layer will "
+"display as \"Layer 28\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 29. If left empty, the layer will "
+"display as \"Layer 29\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 3. If left empty, the layer will "
+"display as \"Layer 3\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 30. If left empty, the layer will "
+"display as \"Layer 30\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 31. If left empty, the layer will "
+"display as \"Layer 31\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 32. If left empty, the layer will "
+"display as \"Layer 32\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 4. If left empty, the layer will "
+"display as \"Layer 4\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 5. If left empty, the layer will "
+"display as \"Layer 5\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 6. If left empty, the layer will "
+"display as \"Layer 6\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 7. If left empty, the layer will "
+"display as \"Layer 7\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 8. If left empty, the layer will "
+"display as \"Layer 8\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 9. If left empty, the layer will "
+"display as \"Layer 9\"."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 1."
@@ -59971,6 +60705,49 @@ msgstr ""
 "误消息，不会打断项目的运行。\n"
 "[b]注意：[/b]编辑器中，未处理异常策略始终会被设为“Log Error”，包括在编辑器中"
 "执行的 C# [code]tool[/code] 脚本和编辑器插件代码。"
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell height for 2D navigation maps. See [method Navigation2DServer."
+"map_set_cell_height].\n"
+"[b]Note:[/b] Currently not implemented."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell size for 2D navigation maps. See [method Navigation2DServer."
+"map_set_cell_size]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default edge connection margin for 2D navigation maps. See [method "
+"Navigation2DServer.map_set_edge_connection_margin]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell height for 3D navigation maps. See [method NavigationServer."
+"map_set_cell_height]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell size for 3D navigation maps. See [method NavigationServer."
+"map_set_cell_size]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default edge connection margin for 3D navigation maps. See [method "
+"NavigationServer.map_set_edge_connection_margin]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default map up vector for 3D navigation maps. See [method NavigationServer."
+"map_set_up]."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -61791,8 +62568,8 @@ msgid ""
 msgstr ""
 "如果为 [code]true[/code]，纹理导入器将使用 BPTC 算法导入 VRAM 压缩的纹理。此"
 "纹理压缩算法仅在桌面平台得到支持，并且仅在使用 GLES3 渲染器时才受支持。\n"
-"[b]注意：[/b]更改此设置不会[i]不[/i]影响之前已经导入的纹理。要将此设置应用于"
-"已导入的纹理，请退出编辑器，删除位于项目文件夹内的 [code].import/[/code] 文件"
+"[b]注意：[/b]更改此设置[i]不会[/i]影响之前已经导入的纹理。要将此设置应用于已"
+"导入的纹理，请退出编辑器，删除位于项目文件夹内的 [code].import/[/code] 文件"
 "夹，然后重新启动编辑器（参阅 [member application/config/"
 "use_hidden_project_data_directory]）。"
 
@@ -61965,6 +62742,7 @@ msgid "General-purpose 3D proximity detection node."
 msgstr "通用的 3D 邻近检测节点。"
 
 #: doc/classes/ProximityGroup.xml
+#, fuzzy
 msgid ""
 "General-purpose proximity detection node. [ProximityGroup] can be used for "
 "[i]approximate[/i] distance checks, which are faster than exact distance "
@@ -62022,7 +62800,6 @@ msgid ""
 "- If your [member grid_radius] is smaller than [code]Vector3(1, 1, 1)[/"
 "code], it will be rounded up to [code]Vector3(1, 1, 1)[/code]. Therefore, "
 "small grid radius values may lead to unwanted groupings.\n"
-"[/codeblock]\n"
 "[b]Note:[/b] [ProximityGroup] will be removed in Godot 4.0 in favor of more "
 "effective and faster [VisibilityNotifier] functionality. For most use cases, "
 "[method Vector3.distance_to] or [method Vector3.distance_squared_to] are "
@@ -62072,7 +62849,6 @@ msgstr ""
 "- 如果你的 [member grid_radius] 比 [code]Vector3(1, 1, 1)[/code] 小，就会被舍"
 "入到 [code]Vector3(1, 1, 1)[/code]。因此，较小的网格半径可能会导致意外的分"
 "组。\n"
-"[/codeblock]\n"
 "[b]注意：[/b]Godot 4.0 会移除 [ProximityGroup]，使用更高效、快速的 "
 "[VisibilityNotifier] 功能。对于大多数情况，[method Vector3.distance_to] 和 "
 "[method Vector3.distance_squared_to] 都足够快了，尤其是在使用 [Timer] 节点减"
@@ -62479,17 +63255,17 @@ msgid ""
 msgstr ""
 "根据给定的种子值初始化随机数生成器状态。给定的种子将提供可重复的伪随机数序"
 "列。\n"
-"[b]注：[/b] RNG 没有雪崩效应，可以输出相似的随机流给定相似的种子。如果种子来"
+"[b]注意：[/b]RNG 没有雪崩效应，可以输出相似的随机流给定相似的种子。如果种子来"
 "自外部，请考虑使用哈希函数来提高种子质量。\n"
-"[b]注：[/b]设置这个属性会产生改变内部[member state]的副作用，所以一定要在修改"
-"[member state][i]之前[/i]初始化种子：\n"
+"[b]注意：[/b]设置这个属性会产生改变内部 [member state] 的副作用，所以一定要在"
+"修改 [member state] [i]之前[/i]初始化种子：\n"
 "[codeblock]\n"
 "var rng = RandomNumberGenerator.new()\n"
 "rng.seed = hash(\"Godot\")\n"
-"rng.state = 100 # Restore to some previously saved state.\n"
+"rng.state = 100 # 恢复之前保存的某个状态。\n"
 "[/codeblock]\n"
-"[b]警告：[/b]该属性的getter返回之前的[member state]，而不是初始种子值，这将在"
-"Godot 4.0中修复。"
+"[b]警告：[/b]该属性的 getter 返回之前的 [member state]，而不是初始种子值，这"
+"将在 Godot 4.0 中修复。"
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
@@ -62527,15 +63303,16 @@ msgid "Abstract base class for range-based controls."
 msgstr "基于范围的控件的抽象基类。"
 
 #: doc/classes/Range.xml
-#, fuzzy
 msgid ""
 "Range is a base class for [Control] nodes that change a floating-point "
 "[member value] between a [member min_value] and [member max_value], using a "
 "configured [member step] and [member page] size. See e.g. [ScrollBar] and "
 "[Slider] for examples of higher level nodes using Range."
 msgstr ""
-"Range是一个用于[Control]节点的基类，它在[i]最小值[/i]和[i]最大值[/i]之间改变"
-"一个浮点[i]值[/i]，用于[i]步进[/i]和[i]页面[/i]，例如[ScrollBar]。"
+"Range 是一些 [Control] 节点的基类，这些节点能够将浮点值 [member value] 在最小"
+"值 [member min_value] 和最大值 [member max_value] 之间进行调整，并且能够对步"
+"长 [member step] 和分页大小 [member page] 进行设置。使用 Range 的更高级节点示"
+"例请参考 [ScrollBar] 和 [Slider]。"
 
 #: doc/classes/Range.xml
 msgid ""
@@ -64841,6 +65618,26 @@ msgid "Makes text fill width."
 msgstr "使文本填充宽度。"
 
 #: doc/classes/RichTextLabel.xml
+#, fuzzy
+msgid "Aligns top of the inline image to the top of the text."
+msgstr "盒子的高度，从盒子的中心开始测量。"
+
+#: doc/classes/RichTextLabel.xml
+#, fuzzy
+msgid "Aligns center of the inline image to the center of the text."
+msgstr "将子项与容器的中心对齐。"
+
+#: doc/classes/RichTextLabel.xml
+#, fuzzy
+msgid "Aligns bottom of the inline image to the baseline of the text."
+msgstr "盒子的高度，从盒子的中心开始测量。"
+
+#: doc/classes/RichTextLabel.xml
+#, fuzzy
+msgid "Aligns bottom of the inline image to the bottom of the text."
+msgstr "将子控件与容器的末端对齐，右侧或底部。"
+
+#: doc/classes/RichTextLabel.xml
 msgid "Each list item has a number marker."
 msgstr "每个列表项都有一个数字标记。"
 
@@ -65084,15 +65881,14 @@ msgid "Locks the specified linear or rotational axis."
 msgstr "锁定指定的线性或旋转轴。"
 
 #: doc/classes/RigidBody.xml
-#, fuzzy
 msgid ""
 "Damps the body's rotational forces. If this value is different from -1.0 it "
 "will be added to any angular damp derived from the world or areas.\n"
 "See [member ProjectSettings.physics/3d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
-"对 RigidBody 的旋转力进行阻尼运算。如果这个值与 -1.0 不同，将会追加到任何从世"
-"界或区域派生的线性阻尼中。\n"
+"对该实体的旋转力进行阻尼运算。如果这个值与 -1.0 不同，将会追加到任何从世界或"
+"区域派生的角度阻尼中。\n"
 "关于阻尼的更多细节，请参阅 [member ProjectSettings.physics/3d/"
 "default_angular_damp]。"
 
@@ -67144,8 +67940,8 @@ msgid ""
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "    print(\"Timer ended.\")\n"
 "[/codeblock]\n"
-"The timer will be automatically freed after its time elapses, so be aware "
-"that any reference you might have kept to it will become invalid."
+"The timer will be dereferenced after its time elapses. To preserve the "
+"timer, you can keep a reference to it. See [Reference]."
 msgstr ""
 "由场景树管理的一次性定时器，它在完成时发[signal timeout] 信号。请参阅 "
 "[method SceneTree.create_timer]。\n"
@@ -67157,7 +67953,8 @@ msgstr ""
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "    print(\"计时器结束。\")\n"
 "[/codeblock]\n"
-"时间结束后，该计时器将被自动释放。"
+"时间结束后，该计时器将被自动释放，所以请注意，你所保留的任何对它的引用届时都"
+"会失效。"
 
 #: doc/classes/SceneTreeTimer.xml
 msgid "The time remaining (in seconds)."
@@ -69400,8 +70197,13 @@ msgid ""
 msgstr "旋转部分局部变换为度，按YXZ-Euler角格式指定(X角、Y角、Z角)。"
 
 #: doc/classes/Spatial.xml
-msgid "Scale part of the local transformation."
-msgstr "局部变换的缩放部分。"
+msgid ""
+"Scale part of the local transformation.\n"
+"[b]Note:[/b] Mixed negative scales in 3D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, the scale values will either be all "
+"positive or all negative."
+msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid "Local space [Transform] of this node, with respect to the parent node."
@@ -76903,6 +77705,11 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/TileMap.xml
+#, fuzzy
+msgid "If [code]true[/code], this TileMap bakes a navigation region."
+msgstr "为 [code]true[/code] 时存在指定名称的动画。"
+
+#: doc/classes/TileMap.xml
 msgid "If [code]true[/code], the cell's UVs will be clipped."
 msgstr "如果[code]true[/code]，单元格的UV将被剪裁。"
 
@@ -77033,6 +77840,10 @@ msgstr ""
 #: doc/classes/TileMap.xml
 msgid "The TileMap orientation mode. See [enum Mode] for possible values."
 msgstr "图块地图的方向模式。有关可能的值，参阅[enum Mode]。"
+
+#: doc/classes/TileMap.xml
+msgid "The navigation layers the TileMap generates its navigation regions in."
+msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid ""
@@ -78387,10 +79198,13 @@ msgstr ""
 #: doc/classes/Transform2D.xml
 msgid ""
 "Returns a copy of the transform scaled by the given [code]scale[/code] "
-"factor, using matrix multiplication."
+"factor, using matrix multiplication.\n"
+"[b]Note:[/b] Negative X scales in 2D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, negative scales on the X axis will be "
+"changed to negative scales on the Y axis and a rotation of 180 degrees when "
+"decomposed."
 msgstr ""
-"返回该变换的副本，使用矩阵乘法将其用给定的缩放系数 [code]scale[/code] 进行缩"
-"放。"
 
 #: doc/classes/Transform2D.xml
 msgid ""
@@ -82424,13 +83238,12 @@ msgstr ""
 "是针对非常高端的系统，否则数值为4是最好的。"
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the viewport will use a unique copy of the [World] "
 "defined in [member world]."
 msgstr ""
-"如果为 [code]true[/code]，该视窗将使用 [code]world[/code] 属性中定义的 "
-"[World]。"
+"如果为 [code]true[/code]，该视窗将使用 [member world] 中定义的 [World] 的唯一"
+"副本。"
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -82986,6 +83799,16 @@ msgstr ""
 #: doc/classes/VisibilityNotifier.xml
 msgid "The VisibilityNotifier's bounding box."
 msgstr "VisibilityNotifier的边界框。"
+
+#: doc/classes/VisibilityNotifier.xml
+msgid ""
+"In addition to checking whether a node is on screen or within a [Camera]'s "
+"view, VisibilityNotifier can also optionally check whether a node is within "
+"a specified maximum distance when using a [Camera] with perspective "
+"projection. This is useful for throttling the performance requirements of "
+"nodes that are far away.\n"
+"[b]Note:[/b] This feature will be disabled if set to 0.0."
+msgstr ""
 
 #: doc/classes/VisibilityNotifier.xml
 msgid "Emitted when the VisibilityNotifier enters a [Camera]'s view."
@@ -87506,7 +88329,6 @@ msgid "Sets a viewport's canvas."
 msgstr "设置视窗的画布。"
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Copies viewport to a region of the screen specified by [code]rect[/code]. If "
 "[member Viewport.render_direct_to_screen] is [code]true[/code], then "
@@ -87527,10 +88349,10 @@ msgid ""
 "manually. For further optimization, see [method "
 "viewport_set_render_direct_to_screen]."
 msgstr ""
-"将视窗复制到屏幕上由[code]rect[/code]指定的区域。如果[member Viewport."
-"render_direct_to_screen]是[code]true[/code]，那么视窗就不会使用帧缓冲器，视窗"
+"将视窗复制到屏幕上由 [code]rect[/code] 指定的区域。如果 [member Viewport."
+"render_direct_to_screen] 为 [code]true[/code]，那么视窗就不会使用帧缓冲，视窗"
 "的内容会直接渲染到屏幕上。然而，请注意，根视窗是最后绘制的，因此它将在屏幕上"
-"绘制。因此，你必须将根视窗设置为一个不覆盖你所附加的这个视窗的区域。\n"
+"绘制。相应地，你就必须将根视窗设置为一个不覆盖你所附加的这个视窗的区域。\n"
 "例如，你可以用以下代码将根视窗设置为完全不渲染。\n"
 "[codeblock]\n"
 "func _ready():\n"
@@ -87538,7 +88360,7 @@ msgstr ""
 "    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))\n"
 "[/codeblock]\n"
 "使用这个方法可以带来明显的优化，特别是在低端设备上。然而，它的代价是必须手动"
-"管理你的视窗。对于进一步的优化，请看，[method "
+"管理你的视窗。进一步的优化请参阅 [method "
 "viewport_set_render_direct_to_screen]。"
 
 #: doc/classes/VisualServer.xml
@@ -88453,6 +89275,16 @@ msgstr "框架中修改材质的数量。"
 #: doc/classes/VisualServer.xml
 msgid "The amount of shader rebinds in the frame."
 msgstr "帧中重新绑定的着色器数量。"
+
+#: doc/classes/VisualServer.xml
+msgid ""
+"The peak amount of shaders that have been under compilation in the frame.\n"
+"This is useful to know when asynchronous shader compilation has finished for "
+"the current shaders on screen.\n"
+"[b]Note:[/b] For complete certainty, only assume there are no outstanding "
+"compilations when this value is zero for at least two frames in a row.\n"
+"Unimplemented in the GLES2 rendering backend, always returns 0."
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "The amount of surface changes in the frame."
@@ -91716,8 +92548,9 @@ msgid ""
 "can set this to a valid [X509Certificate] to be provided as additional CA "
 "chain information during the SSL handshake."
 msgstr ""
-"当使用SSL时，你可以将其设置为一个有效的[X509Certificate]，作为SSL握手过程中额"
-"外的CA链信息提供。参阅[member private_key]和[member ssl_certificate]。"
+"当使用 SSL 时，你可以将其设置为一个有效的 [X509Certificate]，作为 SSL 握手过"
+"程中额外的 CA 链信息提供。请参阅 [member private_key] 和 [member "
+"ssl_certificate]。"
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
@@ -91752,23 +92585,23 @@ msgid ""
 "to achieve the clean close. See [method WebSocketPeer.close] for more "
 "details."
 msgstr ""
-"当一个客户端要求彻底关闭时触发。你应该继续轮询，直到你得到一个具有相同"
-"[code]id[/code]的[signal client_disconnected]信号，以实现彻底关闭。请参阅"
-"[method WebSocketPeer.close]以了解更多细节。"
+"当一个客户端要求彻底关闭时触发。你应该继续轮询，直到你得到一个具有相同 "
+"[code]id[/code] 的 [signal client_disconnected] 信号，以实现彻底关闭。更多细"
+"节请参阅 [method WebSocketPeer.close]。"
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
 "Emitted when a new client connects. \"protocol\" will be the sub-protocol "
 "agreed with the client."
-msgstr "当新的客户端连接时触发。\"协议\" 将是与客户端达成的子协议。"
+msgstr "当新的客户端连接时触发。“protocol”将是与客户端达成的子协议。"
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
 "Emitted when a client disconnects. [code]was_clean_close[/code] will be "
 "[code]true[/code] if the connection was shutdown cleanly."
 msgstr ""
-"当客户端断开连接时触发。如果连接被彻底关闭[code]was_clean_close[/code] 将是"
-"[code]true[/code] 。"
+"当客户端断开连接时触发。如果连接被彻底关闭，[code]was_clean_close[/code] 将"
+"是 [code]true[/code] 。"
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
@@ -91777,7 +92610,7 @@ msgid ""
 "multiplayer peer."
 msgstr ""
 "当收到一个新消息时触发。\n"
-"[b]注意：[/b]这个信号在用作高级多人对等的时候，[i]不[/i]触发。"
+"[b]注意：[/b]这个信号在用作高级多人对等的时候，[i]不会[/i]触发。"
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid "AR/VR interface using WebXR."
@@ -91958,7 +92791,7 @@ msgstr ""
 "\n"
 "func _on_Button_pressed():\n"
 "    if not vr_supported:\n"
-"        OS.alert(\"Your browser doesn't support VR\")\n"
+"        OS.alert(\"你的浏览器不支持 VR\")\n"
 "        return\n"
 "\n"
 "    # 获得沉浸式的VR体验，而不是AR（'immersive-ar'）\n"
@@ -91983,12 +92816,12 @@ msgstr ""
 "    # _webxr_session_started()或_webxr_session_failed()方法被调用时，才知道它"
 "是否真的成功或失败。\n"
 "    if not webxr_interface.initialize():\n"
-"        OS.alert(\"Failed to initialize\")\n"
+"        OS.alert(\"初始化失败\")\n"
 "        return\n"
 "\n"
 "func _webxr_session_started():\n"
 "    $Button.visible = false\n"
-"    # 这告诉Godot开始进行渲染。\n"
+"    # 让 Godot 开始进行渲染。\n"
 "    get_viewport().arvr = true\n"
 "    # 这将是您从上面请求的类型中最终得到的引用空间类型。\n"
 "    # 如果你想让游戏在'bounded-floor'和 'local-floor' 中有一点不同，\n"
@@ -92003,7 +92836,7 @@ msgstr ""
 "    get_viewport().arvr = false\n"
 "\n"
 "func _webxr_session_failed(message):\n"
-"    OS.alert(\"Failed to initialize: \" + message)\n"
+"    OS.alert(\"初始化失败：\" + message)\n"
 "[/codeblock]\n"
 "有几种方法来处理“controller”控制器的输入。\n"
 "- 使用 [ARVRController] 节点和它们的 [signal ARVRController.button_pressed] "
@@ -92438,10 +93271,11 @@ msgid "Class that has everything pertaining to a world."
 msgstr "拥有与世界相关的一切的类。"
 
 #: doc/classes/World.xml
+#, fuzzy
 msgid ""
 "Class that has everything pertaining to a world. A physics space, a visual "
-"scenario and a sound space. Spatial nodes register their resources into the "
-"current world."
+"scenario, a navigation map and a sound space. Spatial nodes register their "
+"resources into the current world."
 msgstr ""
 "拥有与世界相关的一切的类。物理空间、视觉场景和声音空间。空间节点将其资源注册"
 "到当前世界中。"
@@ -92465,6 +93299,12 @@ msgstr ""
 "fallback_environment。"
 
 #: doc/classes/World.xml
+#, fuzzy
+msgid ""
+"The [RID] of this world's navigation map. Used by the [NavigationServer]."
+msgstr "返回这个代理在 [NavigationServer] 上的 [RID]。"
+
+#: doc/classes/World.xml
 msgid "The World's visual scenario."
 msgstr "世界的视觉场景。"
 
@@ -92477,10 +93317,11 @@ msgid "Class that has everything pertaining to a 2D world."
 msgstr "拥有与 2D 世界有关的所有内容的类。"
 
 #: doc/classes/World2D.xml
+#, fuzzy
 msgid ""
 "Class that has everything pertaining to a 2D world. A physics space, a "
-"visual scenario and a sound space. 2D nodes register their resources into "
-"the current 2D world."
+"visual scenario, a navigation map and a sound space. 2D nodes register their "
+"resources into the current 2D world."
 msgstr ""
 "拥有与 2D 世界有关一切的类。一个物理空间、一个可视化场景和一个声音空间。2D 节"
 "点将其资源注册到当前的 2D 世界中。"
@@ -92499,6 +93340,12 @@ msgid ""
 msgstr ""
 "直接访问世界物理二维空间状态。用于查询当前和潜在的碰撞。使用多线程物理时，访"
 "问仅限于主线程中的 [code]_physics_process(delta)[/code]。"
+
+#: doc/classes/World2D.xml
+#, fuzzy
+msgid ""
+"The [RID] of this world's navigation map. Used by the [Navigation2DServer]."
+msgstr "返回这个代理在 [Navigation2DServer] 上的 [RID]。"
 
 #: doc/classes/World2D.xml
 msgid ""
