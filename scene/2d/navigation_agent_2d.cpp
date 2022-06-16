@@ -67,6 +67,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationAgent2D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationAgent2D::get_navigation_layers);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent2D::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent2D::get_navigation_map);
+
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent2D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent2D::get_target_location);
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent2D::get_next_location);
@@ -156,12 +159,9 @@ void NavigationAgent2D::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			agent_parent = nullptr;
+			set_agent_parent(nullptr);
 			set_navigation(nullptr);
 			set_physics_process_internal(false);
-			// Want to call ready again when the node enters the tree again. We're not using enter_tree notification because
-			// the navigation map may not be ready at that time. This fixes issues with taking the agent out of the scene tree.
-			request_ready();
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
@@ -218,11 +218,13 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
-		if (navigation == nullptr) {
+		if (map_override.is_valid()) {
+			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), map_override);
+		} else if (navigation != nullptr) {
+			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), navigation->get_rid());
+		} else {
 			// no navigation node found in parent nodes, use default navigation map from world resource
 			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
-		} else {
-			Navigation2DServer::get_singleton()->agent_set_map(get_rid(), navigation->get_rid());
 		}
 		// create new avoidance callback if enabled
 		set_avoidance_enabled(avoidance_enabled);
@@ -261,6 +263,23 @@ void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
 
 uint32_t NavigationAgent2D::get_navigation_layers() const {
 	return navigation_layers;
+}
+
+void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
+	map_override = p_navigation_map;
+	Navigation2DServer::get_singleton()->agent_set_map(agent, map_override);
+	_request_repath();
+}
+
+RID NavigationAgent2D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (navigation != nullptr) {
+		return navigation->get_rid();
+	} else if (agent_parent != nullptr) {
+		return agent_parent->get_world_2d()->get_navigation_map();
+	}
+	return RID();
 }
 
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
@@ -377,7 +396,7 @@ void NavigationAgent2D::update_navigation() {
 	if (agent_parent == nullptr) {
 		return;
 	}
-	if (navigation == nullptr) {
+	if (!agent_parent->is_inside_tree()) {
 		return;
 	}
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
@@ -409,7 +428,13 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = Navigation2DServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
+		if (map_override.is_valid()) {
+			navigation_path = Navigation2DServer::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
+		} else if (navigation != nullptr) {
+			navigation_path = Navigation2DServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
+		} else {
+			navigation_path = Navigation2DServer::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigation_layers);
+		}
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");

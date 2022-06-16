@@ -40,6 +40,12 @@
 				Returns the [Navigation] node that the agent is using for its navigation system.
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map for this NavigationAgent node. This function returns always the map set on the NavigationAgent node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationAgent node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationAgent and also update the agent on the NavigationServer.
+			</description>
+		</method>
 		<method name="get_next_location">
 			<return type="Vector3" />
 			<description>
@@ -81,6 +87,13 @@
 			<argument index="0" name="navigation" type="Node" />
 			<description>
 				Sets the [Navigation] node used by the agent. Useful when you don't want to make the agent a child of a [Navigation] node.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<argument index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
 		<method name="set_target_location">
