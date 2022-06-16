@@ -32,13 +32,15 @@
 # Lee Minhak <minarihak@gmail.com>, 2022.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
 # Taehun Yun <yooontehoon@naver.com>, 2022.
+# vrSono <global.sonogong@gmail.com>, 2022.
+# Seonghyeon Cho <seonghyeoncho96@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-30 16:17+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2022-06-12 13:19+0000\n"
+"Last-Translator: Seonghyeon Cho <seonghyeoncho96@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -230,9 +232,10 @@ msgid "Data"
 msgstr "데이터"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp main/main.cpp
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
+#: scene/gui/file_dialog.cpp
 msgid "Network"
 msgstr "네트워크"
 
@@ -337,9 +340,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "디코딩할 바이트가 모자라거나 잘못된 형식입니다."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "표현식의 입력 %i (전달되지 않음) 이(가) 올바르지 않습니다"
+msgstr "표현식의 입력 %d (전달되지 않음) 이(가) 올바르지 않습니다"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -381,6 +383,16 @@ msgstr "메시지 대기열"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "최대 크기(KB)"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Mouse Mode"
+msgstr "이동 모드"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Use Accumulated Input"
+msgstr "입력 삭제"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -561,7 +573,8 @@ msgstr "서술"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-#: main/main.cpp
+#: main/main.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp
 msgid "Run"
 msgstr "실행"
 
@@ -769,7 +782,8 @@ msgid "Quality"
 msgstr "품질"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
+#: servers/visual_server.cpp
 msgid "Filters"
 msgstr "필터"
 
@@ -1294,19 +1308,16 @@ msgid "Remove this track."
 msgstr "이 트랙을 제거합니다."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "시간 (초): "
+msgstr "시간 (초):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "위치"
+msgstr "위치:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "회전"
+msgstr "회전:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1323,44 +1334,36 @@ msgid "Type:"
 msgstr "타입:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "잘못된 내보내기 템플릿:"
+msgstr "(인식불가. 예상한 타입: %s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing:"
-msgstr "속도 완화"
+msgstr "Easing:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In-Handle:"
-msgstr "입력 핸들"
+msgstr "입력 핸들:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out-Handle:"
-msgstr "출력 핸들"
+msgstr "출력 핸들:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Stream:"
-msgstr "스트림"
+msgstr "스트림:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "재시작 (초):"
+msgstr "시작 (초):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "페이드 인 (초):"
+msgstr "종료 (초):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "애니메이션:"
+msgstr "애니메이션 클립:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1575,9 +1578,8 @@ msgid "Add Method Track Key"
 msgstr "메서드 트랙 키 추가"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
-msgstr "오브젝트에 메서드가 없음: "
+msgstr "오브젝트에 메서드가 없음:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2185,8 +2187,8 @@ msgid "Open"
 msgstr "열기"
 
 #: editor/dependency_editor.cpp
-msgid "Owners Of:"
-msgstr "소유자:"
+msgid "Owners of: %s (Total: %d)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2485,7 +2487,7 @@ msgid "Bus Options"
 msgstr "버스 옵션"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/project_export.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "복제"
 
@@ -2538,9 +2540,8 @@ msgid "There is no '%s' file."
 msgstr "'%s' 파일이 없습니다."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "레이아웃"
+msgstr "레이아웃:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2742,6 +2743,25 @@ msgid "Choose"
 msgstr "선택"
 
 #: editor/editor_export.cpp
+msgid "Project export for platform:"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed with errors."
+msgstr "파일 경로 완성"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed sucessfully."
+msgstr "패키지를 성공적으로 설치했습니다!"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed."
+msgstr "실패함:"
+
+#: editor/editor_export.cpp
 msgid "Storing File:"
 msgstr "저장하려는 파일:"
 
@@ -2752,6 +2772,31 @@ msgstr "예상 경로에서 내보내기 템플릿을 찾을 수 없습니다:"
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "패킹 중"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save PCK"
+msgstr "다른 이름으로 저장"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Cannot create file \"%s\"."
+msgstr "폴더를 만들 수 없습니다."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to export project files."
+msgstr "프로젝트 파일을 내보낼 수 없었습니다"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Can't open file to read from path \"%s\"."
+msgstr "파일을 쓰기 모드로 열 수 없음:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save ZIP"
+msgstr "다른 이름으로 저장"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2870,9 +2915,31 @@ msgstr "커스텀 디버그 템플릿을 찾을 수 없습니다."
 msgid "Custom release template not found."
 msgstr "커스텀 릴리스 템플릿을 찾을 수 없습니다."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Prepare Template"
+msgstr "템플릿 관리"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist."
+msgstr "주어진 내보내기 경로가 없음:"
+
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-msgid "Template file not found:"
+#, fuzzy
+msgid "Template file not found: \"%s\"."
 msgstr "템플릿 파일을 찾을 수 없습니다:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to copy export template."
+msgstr "잘못된 내보내기 템플릿:"
+
+#: editor/editor_export.cpp platform/windows/export/export.cpp
+#: platform/x11/export/export.cpp
+#, fuzzy
+msgid "PCK Embedding"
+msgstr "패딩"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3045,9 +3112,9 @@ msgid "Import"
 msgstr "가져오기"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
-#: platform/android/export/export.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#: platform/windows/export/export.cpp
+#: platform/android/export/export.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Export"
 msgstr "내보내기"
 
@@ -5018,9 +5085,8 @@ msgid "Size:"
 msgstr "크기:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "페이지: "
+msgstr "페이지:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5113,6 +5179,11 @@ msgstr ""
 "이 플랫폼을 위한 실행할 수 있는 내보내기 프리셋이 없습니다.\n"
 "내보내기 메뉴에서 실행할 수 있는 프리셋을 추가하거나 기존 프리셋을 실행할 수 "
 "있도록 정의해주세요."
+
+#: editor/editor_run_native.cpp
+#, fuzzy
+msgid "Project Run"
+msgstr "프로젝트"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5367,7 +5438,9 @@ msgid "Draw Spaces"
 msgstr "공백 사용"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
+#: scene/main/scene_tree.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
 msgid "Navigation"
 msgstr "네비게이션"
 
@@ -5535,7 +5608,7 @@ msgstr "타입 힌트 추가"
 
 #: editor/editor_settings.cpp
 msgid "Use Single Quotes"
-msgstr "단일 인용 사용"
+msgstr "홑따옴표 사용"
 
 #: editor/editor_settings.cpp
 msgid "Show Help Index"
@@ -5694,9 +5767,8 @@ msgid "Warped Mouse Panning"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Navigation Feel"
-msgstr "내비게이션 모드"
+msgstr "내비게이션 감도"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Sensitivity"
@@ -5752,42 +5824,36 @@ msgid "Freelook Speed Zoom Link"
 msgstr "자유 시점 속도 수정자"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Color"
-msgstr "색상 선택"
+msgstr "격자 색상"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Guides Color"
-msgstr "색상 선택"
+msgstr "가이드 색상"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Smart Snapping Line Color"
-msgstr "스마트 스냅"
+msgstr "스마트 스냅 라인 색상"
 
 #: editor/editor_settings.cpp
 msgid "Bone Width"
-msgstr ""
+msgstr "본 너비"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Color 1"
-msgstr "색상 항목 이름 바꾸기"
+msgstr "본 색상 1"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Color 2"
-msgstr "색상 항목 이름 바꾸기"
+msgstr "본 색상 2"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Selected Color"
-msgstr "선택된 프로필 구성:"
+msgstr "선택된 본 색상"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
-msgstr ""
+msgstr "본 IK 색상"
 
 #: editor/editor_settings.cpp
 msgid "Bone Outline Color"
@@ -5889,14 +5955,12 @@ msgid "Auto Save"
 msgstr "자동 저장"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "씬을 실행하기 전에 저장..."
+msgstr "실행하기 전에 저장"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Font Size"
-msgstr "정면 뷰"
+msgstr "폰트 크기"
 
 #: editor/editor_settings.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
@@ -6826,7 +6890,7 @@ msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
-#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#: scene/gui/control.cpp
 #, fuzzy
 msgid "Filter"
 msgstr "필터:"
@@ -7121,6 +7185,18 @@ msgstr "`post_import()` 메서드에서 Node에서 상속받은 오브젝트를 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "저장 중..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used as a normal map in 3D. Enabling red-green "
+"texture compression to reduce memory usage (blue channel is discarded)."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
+"generation and VRAM texture compression."
+msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -10098,6 +10174,7 @@ msgid "Points"
 msgstr "점"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "폴리곤"
 
@@ -11479,7 +11556,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "잘못된 지오메트리. 메시로 대체할 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to Mesh2D"
+#, fuzzy
+msgid "Convert to MeshInstance2D"
 msgstr "Mesh2D로 변환"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -12474,8 +12552,7 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/texture.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/texture.cpp
 msgid "Region"
 msgstr "영역"
 
@@ -13997,33 +14074,8 @@ msgid "Delete preset '%s'?"
 msgstr "'%s' 프리셋을 삭제하시겠습니까?"
 
 #: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"Export templates seem to be missing or invalid."
-msgstr ""
-"'%s' 플랫폼에 프로젝트를 내보낼 수 없습니다.\n"
-"내보내기 템플릿이 누락되거나 잘못된 것 같습니다."
-
-#: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"This might be due to a configuration issue in the export preset or your "
-"export settings."
-msgstr ""
-"'%s' 플랫폼에 프로젝트를 내보낼 수 없습니다.\n"
-"내보내기 프리셋이나 내보내기 설정의 문제인 것 같습니다."
-
-#: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "모두 내보내기"
-
-#: editor/project_export.cpp
-msgid "The given export path doesn't exist:"
-msgstr "주어진 내보내기 경로가 없음:"
-
-#: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "이 플랫폼의 내보내기 템플릿이 누락됨/손상됨:"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -14168,6 +14220,11 @@ msgstr "Godot 게임 팩"
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "이 플랫폼에 대한 내보내기 템플릿이 누락됨:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Project Export"
+msgstr "프로젝트 창립자"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -16574,7 +16631,7 @@ msgstr ""
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#: scene/3d/collision_polygon.cpp
 #, fuzzy
 msgid "Polygon"
 msgstr "폴리곤"
@@ -17197,7 +17254,6 @@ msgid "Use In Baked Light"
 msgstr "라이트맵 굽기"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#: scene/resources/navigation_mesh.cpp
 msgid "Cell"
 msgstr ""
 
@@ -17226,6 +17282,19 @@ msgstr "중앙"
 #: scene/resources/material.cpp
 msgid "Mask"
 msgstr ""
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Bake Navigation"
+msgstr "네비게이션"
+
+#: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
+#: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Navigation Layers"
+msgstr "내비게이션 감도"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -18785,10 +18854,6 @@ msgid "Could not execute on device."
 msgstr "기기에서 실행할 수 없었습니다."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unable to find the 'apksigner' tool."
-msgstr "'apksigner' 툴을 찾을 수 없습니다."
-
-#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -18904,12 +18969,17 @@ msgstr "\"Export AAB\"는 \"Use Custom Build\"가 활성화된 경우에만 유�
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
+#: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Code Signing"
+msgstr "시그널"
+
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"'apksigner' could not be found.\n"
-"Please check the command is available in the Android SDK build-tools "
-"directory.\n"
-"The resulting %s is unsigned."
+"'apksigner' could not be found. Please check that the command is available "
+"in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 "'apksigner'를 찾을 수 없었습니다.\n"
 "명령이 Android SDK build-tools 디렉토리에서 사용 가능한지 확인해주세요.\n"
@@ -18926,6 +18996,11 @@ msgstr "출시 %s에 서명 중..."
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr "keystore를 찾을 수 없어, 내보낼 수 없었습니다."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Could not start apksigner executable."
+msgstr "하위 프로세스를 시작할 수 없습니다!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18956,7 +19031,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "잘못된 파일이름입니다! Android APK는 *.apk 확장자가 필요합니다."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unsupported export format!\n"
+#, fuzzy
+msgid "Unsupported export format!"
 msgstr "지원되지 않는 내보내기 형식입니다!\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18968,10 +19044,9 @@ msgstr ""
 "(Project)' 메뉴에서 다시 설치해주세요."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Android build version mismatch:\n"
-"   Template installed: %s\n"
-"   Godot Version: %s\n"
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 "Android 빌드 버전이 맞지 않음:\n"
@@ -18980,13 +19055,15 @@ msgstr ""
 "'프로젝트' 메뉴에서 Android 빌드 템플릿을 다시 설치해주세요."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name"
+"Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "res://android/build/res/*.xml 파일을 프로젝트 이름으로 덮어쓸 수 없습니다"
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files to gradle project\n"
+#, fuzzy
+msgid "Could not export project files to gradle project."
 msgstr "프로젝트 파일을 gradle 프로젝트로 내보낼 수 없었습니다\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18998,8 +19075,9 @@ msgid "Building Android Project (gradle)"
 msgstr "Android 프로젝트 빌드 중 (gradle)"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Building of Android project failed, check output for the error.\n"
+"Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Android 프로젝트의 빌드에 실패했습니다, 출력된 오류를 확인하세요.\n"
@@ -19018,7 +19096,8 @@ msgstr ""
 "트 디렉토리를 확인하세요."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Package not found: %s"
+#, fuzzy
+msgid "Package not found: \"%s\"."
 msgstr "패키지를 찾을 수 없음: %s"
 
 #: platform/android/export/export_plugin.cpp
@@ -19026,17 +19105,16 @@ msgid "Creating APK..."
 msgstr "APK를 만드는 중..."
 
 #: platform/android/export/export_plugin.cpp
-msgid ""
-"Could not find template APK to export:\n"
-"%s"
+#, fuzzy
+msgid "Could not find template APK to export: \"%s\"."
 msgstr ""
 "내보낼 템플릿 APK를 찾을 수 없음:\n"
 "%s"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Missing libraries in the export template for the selected architectures: "
-"%s.\n"
+"Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
@@ -19050,7 +19128,8 @@ msgid "Adding files..."
 msgstr "파일을 추가하는 중..."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files"
+#, fuzzy
+msgid "Could not export project files."
 msgstr "프로젝트 파일을 내보낼 수 없었습니다"
 
 #: platform/android/export/export_plugin.cpp
@@ -19293,6 +19372,17 @@ msgstr "노드 잘라내기"
 msgid "Custom BG Color"
 msgstr "노드 잘라내기"
 
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Prepare Templates"
+msgstr "템플릿 관리"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Export template not found."
+msgstr "커스텀 릴리스 템플릿을 찾을 수 없습니다."
+
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr "App Store 팀 ID를 지정하지 않았습니다 - 프로젝트를 구성할 수 없습니다."
@@ -19314,20 +19404,33 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "내보낸 HTML을 시스템의 기본 브라우저를 사용하여 실행합니다."
 
 #: platform/javascript/export/export.cpp
-msgid "Could not open template for export:"
+#, fuzzy
+msgid "Could not open template for export: \"%s\"."
 msgstr "내보내기 템플릿을 열 수 없음:"
 
 #: platform/javascript/export/export.cpp
-msgid "Invalid export template:"
+#, fuzzy
+msgid "Invalid export template: \"%s\"."
 msgstr "잘못된 내보내기 템플릿:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not write file:"
+#, fuzzy
+msgid "Could not write file: \"%s\"."
 msgstr "파일에 쓸 수 없음:"
 
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Icon Creation"
+msgstr "여백 설정"
+
 #: platform/javascript/export/export.cpp
-msgid "Could not read file:"
+#, fuzzy
+msgid "Could not read file: \"%s\"."
 msgstr "파일을 읽을 수 없음:"
+
+#: platform/javascript/export/export.cpp
+msgid "PWA"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19404,15 +19507,18 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Could not read HTML shell:"
+#, fuzzy
+msgid "Could not read HTML shell: \"%s\"."
 msgstr "HTML shell을 읽을 수 없음:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not create HTTP server directory:"
+#, fuzzy
+msgid "Could not create HTTP server directory: %s."
 msgstr "HTTP 서버 디렉토리를 만들 수 없음:"
 
 #: platform/javascript/export/export.cpp
-msgid "Error starting HTTP server:"
+#, fuzzy
+msgid "Error starting HTTP server: %d."
 msgstr "HTTP 서버를 시작하는 중 오류:"
 
 #: platform/javascript/export/export.cpp
@@ -19712,9 +19818,28 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open icon file \"%s\"."
+msgstr "프로젝트 파일을 내보낼 수 없었습니다"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start xcrun executable."
+msgstr "하위 프로세스를 시작할 수 없습니다!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization failed."
+msgstr "현지화"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization request UUID: \"%s\""
+msgstr ""
+
+#: platform/osx/export/export.cpp
 msgid ""
-"Note: The notarization process generally takes less than an hour. When the "
-"process is completed, you'll receive an email."
+"The notarization process generally takes less than an hour. When the process "
+"is completed, you'll receive an email."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -19730,9 +19855,59 @@ msgid ""
 msgstr ""
 
 #: platform/osx/export/export.cpp
+msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign require regex module."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
 msgid "No identity found."
 msgstr "아이콘을 찾을 수 없습니다."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Cannot sign file %s."
+msgstr "파일 저장 중 오류: %s"
+
+#: platform/osx/export/export.cpp
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "DMG Creation"
+msgstr "방향"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start hdiutil executable."
+msgstr "하위 프로세스를 시작할 수 없습니다!"
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed - file exists."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed."
+msgstr ""
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19741,10 +19916,15 @@ msgstr "썸네일 만드는 중"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
-msgid "Could not find template app to export:"
+msgid "Could not find template app to export: \"%s\"."
 msgstr ""
 "내보낼 템플릿 APK를 찾을 수 없음:\n"
 "%s"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid export format."
+msgstr "잘못된 내보내기 템플릿:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19754,7 +19934,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid ""
-"Requested template binary '%s' not found. It might be missing from your "
+"Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
 
@@ -19793,6 +19973,16 @@ msgstr ""
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
 msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "ZIP Creation"
+msgstr "프로젝트"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open file to read from path \"%s\"."
+msgstr "프로젝트 파일을 gradle 프로젝트로 내보낼 수 없었습니다\n"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20110,6 +20300,11 @@ msgid "Debug Algorithm"
 msgstr "디버거"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "임시 파일을 제거할 수 없음:"
+
+#: platform/windows/export/export.cpp
 msgid "Identity Type"
 msgstr ""
 
@@ -20157,6 +20352,70 @@ msgid "Trademarks"
 msgstr ""
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Resources Modification"
+msgstr "무작위 회전:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "keystore를 찾을 수 없어, 내보낼 수 없었습니다."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find wine executable at \"%s\"."
+msgstr "keystore를 찾을 수 없어, 내보낼 수 없었습니다."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start rcedit executable, configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"rcedit failed to modify executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "keystore를 찾을 수 없어, 내보낼 수 없었습니다."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "keystore를 찾을 수 없어, 내보낼 수 없었습니다."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid identity type."
+msgstr "잘못된 식별자:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid timestamp server."
+msgstr "올바르지 않은 이름입니다."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start signtool executable, configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Signtool failed to sign executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "임시 파일을 제거할 수 없음:"
+
+#: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
@@ -20178,6 +20437,23 @@ msgid "Invalid product version:"
 msgstr "잘못된 제품 GUID."
 
 #: platform/windows/export/export.cpp
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+#, fuzzy
+msgid "Failed to open executable file \"%s\"."
+msgstr "잘못된 확장자."
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable file header corrupted."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable \"pck\" section not found."
+msgstr ""
+
+#: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Windows"
 msgstr "새 창"
@@ -20192,6 +20468,10 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
+msgstr ""
+
+#: platform/x11/export/export.cpp
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
@@ -20318,7 +20598,8 @@ msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
-#: scene/3d/visual_instance.cpp scene/resources/material.cpp
+#: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 #, fuzzy
 msgid "Max Distance"
 msgstr "거리 선택:"
@@ -21182,16 +21463,18 @@ msgstr ""
 "속성을 설정하거나 폴리곤을 그려주세요."
 
 #: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance는 Navigation2D 노드의 자식이나 손주에 있어야 합니"
-"다. 이것은 내비게이션 데이터만을 제공합니다."
-
-#: scene/2d/navigation_polygon.cpp
 msgid "Navpoly"
 msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Enter Cost"
+msgstr "아래쪽 중앙"
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Travel Cost"
+msgstr "진행"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -22423,14 +22706,6 @@ msgstr "[무시]"
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr ""
-
-#: scene/3d/navigation_mesh_instance.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance는 Navigation 노드의 자식이나 손주에 있어야 합니다. 이"
-"것은 내비게이션 데이터만 제공합니다."
 
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 #, fuzzy
@@ -24914,9 +25189,8 @@ msgid "Draw 2D Outlines"
 msgstr "윤곽선 만들기"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "방향"
+msgstr "반사"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -25163,6 +25437,16 @@ msgstr " (물리)"
 #, fuzzy
 msgid "3D Physics"
 msgstr " (물리)"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Navigation"
+msgstr "네비게이션"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Navigation"
+msgstr "네비게이션"
 
 #: scene/register_scene_types.cpp
 msgid "Use hiDPI"
@@ -26591,7 +26875,7 @@ msgstr "전환: "
 msgid "Refraction"
 msgstr "간격:"
 
-#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/material.cpp
 msgid "Detail"
 msgstr ""
 
@@ -26676,7 +26960,12 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
-msgid "Sample Partition Type"
+msgid "Sampling"
+msgstr "크기 조절 중: "
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Partition Type"
 msgstr "변수 타입 설정"
 
 #: scene/resources/navigation_mesh.cpp
@@ -26694,8 +26983,13 @@ msgid "Source Group Name"
 msgstr "소스"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Agent"
+msgid "Cells"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Agents"
+msgstr "메인 씬 인수:"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -26707,11 +27001,16 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
+msgid "Regions"
+msgstr "영역"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
 msgid "Merge Size"
 msgstr "씬에서 병합하기"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Edge"
+msgid "Edges"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
@@ -26722,6 +27021,11 @@ msgstr "오류"
 #: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Details"
+msgstr "디폴트 보이기"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -26742,7 +27046,7 @@ msgid "Ledge Spans"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Filter Walkable Low Height Spans"
+msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -27159,6 +27463,11 @@ msgid "Scenario"
 msgstr "씬"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Navigation Map"
+msgstr "네비게이션"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
@@ -27175,6 +27484,26 @@ msgstr "왼쪽 선형"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
 msgstr ""
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Default Map Up"
+msgstr "기본 부동 소수점 단계"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Size"
+msgstr "디폴트 미리보기"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Height"
+msgstr "테스트"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Edge Connection Margin"
+msgstr "연결 변경:"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
