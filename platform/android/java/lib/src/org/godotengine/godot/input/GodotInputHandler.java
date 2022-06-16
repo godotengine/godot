@@ -186,6 +186,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
 				final int godotJoyId = mJoystickIds.get(deviceId);
 				Joystick joystick = mJoysticksDevices.get(deviceId);
+				if (joystick == null) {
+					return true;
+				}
 
 				for (int i = 0; i < joystick.axes.size(); i++) {
 					final int axis = joystick.axes.get(i);
