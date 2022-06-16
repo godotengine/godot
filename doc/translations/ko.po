@@ -14,12 +14,13 @@
 # 신동규 <rlsl0422@gmail.com>, 2021.
 # whatthesamuel <alex01763@gmail.com>, 2021.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
+# vrSono <global.sonogong@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-05-31 22:35+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2022-06-13 03:39+0000\n"
+"Last-Translator: vrSono <global.sonogong@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ko/>\n"
 "Language: ko\n"
@@ -70,21 +71,20 @@ msgid "Method Descriptions"
 msgstr "메서드 설명"
 
 #: doc/tools/make_rst.py
-#, fuzzy
 msgid "Theme Property Descriptions"
-msgstr "속성 설명"
+msgstr "테마 속성 설명"
 
 #: doc/tools/make_rst.py
 msgid "Inherits:"
-msgstr ""
+msgstr "상속:"
 
 #: doc/tools/make_rst.py
 msgid "Inherited By:"
-msgstr ""
+msgstr "파생:"
 
 #: doc/tools/make_rst.py
 msgid "(overrides %s)"
-msgstr ""
+msgstr "(%s를 덮어씀)"
 
 #: doc/tools/make_rst.py
 msgid "Default"
@@ -105,34 +105,38 @@ msgstr "Getter"
 #: doc/tools/make_rst.py
 msgid ""
 "This method should typically be overridden by the user to have any effect."
-msgstr ""
+msgstr "이 메서드는 일반적으로 사용자가 재정의해야 영향을 미칩니다."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method has no side effects. It doesn't modify any of the instance's "
 "member variables."
-msgstr ""
+msgstr "이 메서드는 인스턴스의 멤버변수를 수정하지 않습니다."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method accepts any number of arguments after the ones described here."
 msgstr ""
+"이 메서드는 여기 설명된 인수 뒤에 얼마든지 많은 인수를 받을 수 있습니다."
 
 #: doc/tools/make_rst.py
 msgid "This method is used to construct a type."
-msgstr ""
+msgstr "이 메서드는 타입을 만드는 데 사용됩니다."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method doesn't need an instance to be called, so it can be called "
 "directly using the class name."
 msgstr ""
+"이 메서드의 호출에는 인스턴스가 필요 없기 때문에 클래스 이름을 통해 직접 호출"
+"될 수 있습니다."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method describes a valid operator to use with this type as left-hand "
 "operand."
 msgstr ""
+"이 메서드는 이 타입을 왼쪽 피연산자로 사용하는 유효한 연산자를 알려줍니다."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
@@ -187,7 +191,6 @@ msgstr ""
 "지원하는 색 이름은 [Color]에서 정의한 상수와 같다."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the absolute value of parameter [code]s[/code] (i.e. positive "
 "value).\n"
@@ -195,13 +198,12 @@ msgid ""
 "a = abs(-1) # a is 1\n"
 "[/codeblock]"
 msgstr ""
-"[code]s[/code] 매개변수의 절대값을 리턴한다(즉, 양수 값)\n"
+"매개변수 [code]s[/code]의 절대값을 리턴한다(즉, 양수 값)\n"
 "[codeblock]\n"
 "a = abs(-1) # a 는 1\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of "
 "cosine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -212,15 +214,16 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"[code]s[/code]의 arc cosine 값을 래디언으로 리턴한다. [code]s[/code]의 코사"
-"인 각도를 얻고 싶으면 다음과 같이 사용한다.\n"
+"[code]s[/code]의 arc cosine 값을 라디안으로 반환한다. 코사인[code]s[/code]의 "
+"각도를 얻기 위해 사용한다. [code]s[/code]는 [code]-1.0[/code] 이상 "
+"[code]1.0[/code] 이하이어야 한다. 그렇지 않으면 [method acos]는 [constance "
+"NAN]을 반환한다.\n"
 "[codeblock]\n"
 "# c 는 0.523599 또는 rad2deg(s) 을 사용하여 변환하면 30 도\n"
 "c = acos(0.866025)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc sine of [code]s[/code] in radians. Use to get the angle of "
 "sine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -231,15 +234,16 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"[code]s[/code]의 arc sine 값을 래디언으로 리턴한다. [code]s[/code]의 코사인 "
-"각도를 얻고 싶으면 다음과 같이 사용한다.\n"
+"[code]s[/code]의 arc sine 값을 라디안으로 반환한다. 사인[code]s[/code]의 각도"
+"를 얻기 위해 사용한다. [code]s[/code]는 [code]-1.0[/code]이상 [code]1.0[/"
+"code]이하 이어야 한다. 그렇지 않으면 [method asin]은 [constant NAN]을 반환한"
+"다.\n"
 "[codeblock]\n"
 "# s 는 0.523599 또는 rad2deg(s) 을 사용하여 변환하면 30 도\n"
 "a = acos(0.5)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Asserts that the [code]condition[/code] is [code]true[/code]. If the "
 "[code]condition[/code] is [code]false[/code], an error is generated. When "
@@ -266,13 +270,17 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "[code]condition[/code] 이 [code]true[/code] 인지 확인한다. [code]condition[/"
-"code] 이 [code]false[/code] 이면, 오류가 발생하고 사용자가 다시 시작할 때까"
-"지 프로그램이 정지된다. 디버그 빌드나 에디터에서 게임이 실행될 때만 실행된"
-"다. 디버깅 목적으로만 사용하고, 개발 중에 상태가 [code]true[/code] 인지 확인"
-"할 수 있게 한다.\n"
-"옵션으로 [code]message[/code] 인수를 넣으면 \"Assertion failed\" 메시지를 보"
-"여준다. assertion이 실패한 원인에 대한 추가적인 상세 정보를 제공하려면 이것"
-"을 사용하면 된다.\n"
+"code] 이 [code]false[/code] 이면 오류가 발생한다. 에디터에서 실행한 경우, 실"
+"행 중인 프로젝트는 사용자가 재개할 때까지 정지된다. 이것은 프로젝트 개발자나 "
+"애드온 사용자에게 [method push_error]보다 더 강한 방식으로 오류를 알리는 데 "
+"사용될 수 있다. \n"
+"[b]주의:[/b] 성능을 위해, [method assert]의 코드는 디버그 빌드나 프로젝트를 "
+"에디터에서 실행한 경우에만 수행된다. [method assert] 호출에 따라 작업 내용이 "
+"달라지는 코드를 작성해서는 안 된다. 그렇지 않으면, 릴리즈 모드로 내보낸 프로"
+"젝트가 다르게 작동할 것이다.\n"
+"옵션으로 [code]message[/code] 인수를 넣으면, 기본 \"Assertion failed\" 메시지"
+"에 추가로 표시된다. assertion이 실패한 원인에 대한 추가적인 상세 정보를 제공"
+"하려면 이것을 사용하면 된다.\n"
 "[codeblock]\n"
 "# 항상 속도가 0에서 20 사이이길 원한다면\n"
 "speed = -10\n"
@@ -355,6 +363,13 @@ msgid ""
 "[/codeblock]\n"
 "See also [method floor], [method round], [method stepify], and [int]."
 msgstr ""
+"[code]s[/code]를 올림하여, [code]s[/code]보다 작지 않은 가장 작은 정수를 반"
+"환.\n"
+"[codeblock]\n"
+"a = ceil(1.45)  # a 는 2.0\n"
+"a = ceil(1.001) # a 는 2.0\n"
+"[/codeblock]\n"
+"관련 정보 [method floor], [method round], [method stepify], [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -367,6 +382,13 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
+"유니코드 값(ASCII코드와 호환됨)에 해당하는 문자를 String으로 반환.\n"
+"[codeblock]\n"
+"a = char(65)      # a 는 \"A\"\n"
+"a = char(65 + 32) # a 는 \"a\"\n"
+"a = char(8364)    # a 는 \"€\"\n"
+"[/codeblock]\n"
+"[method ord]와 반대의 기능을 하는 함수이다."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -378,6 +400,13 @@ msgid ""
 "a = clamp(15, 1, 20)   # a is 15\n"
 "[/codeblock]"
 msgstr ""
+"[code]value[/code]의 범위를 제한하여 [code]min[/code]보다 작지 않고, "
+"[code]max[/code]보다 크지 않은 값을 반환.\n"
+"[codeblock]\n"
+"a = clamp(1000, 1, 20) # a 는 20\n"
+"a = clamp(-10, 1, 20)  # a 는 1\n"
+"a = clamp(15, 1, 20)   # a 는 15\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -392,9 +421,18 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
+"타입을 변환하는 함수. [code]type[/code] 매개변수는 [enum Variant.Type] 의 값"
+"을 받음.\n"
+"[codeblock]\n"
+"a = Vector2(1, 0)\n"
+"# 1이 출력됨\n"
+"print(a.length())\n"
+"a = convert(a, TYPE_STRING)\n"
+"# \"(1, 0)\"문자열의 길이가 6이기 때문에 6이 출력됨\n"
+"print(a.length())\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the cosine of angle [code]s[/code] in radians.\n"
 "[codeblock]\n"
@@ -402,34 +440,31 @@ msgid ""
 "a = cos(PI)  # a is -1.0\n"
 "[/codeblock]"
 msgstr ""
-"[code]s[/code] 매개변수의 절대값을 리턴한다(즉, 양수 값)\n"
+"라디안 각도 [code]s[/code] 의 코사인을 반환.\n"
 "[codeblock]\n"
-"# a 는 1\n"
-"a = abs(-1)\n"
+"a = cos(TAU) # a 는 1.0\n"
+"a = cos(PI)  # a 는 -1.0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the hyperbolic cosine of [code]s[/code] in radians.\n"
 "[codeblock]\n"
 "print(cosh(1)) # Prints 1.543081\n"
 "[/codeblock]"
 msgstr ""
-"[code]s[/code] 매개변수의 절대값을 리턴한다(즉, 양수 값)\n"
+"라디안 각도 [code]s[/code]의 쌍곡코사인(hyperbolic cosine)을 반환.\n"
 "[codeblock]\n"
-"# a 는 1\n"
-"a = abs(-1)\n"
+"print(cosh(1)) # 1.543081이 출력됨\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid "Converts from decibels to linear energy (audio)."
 msgstr "데시벨에서 선형 에너지(오디오)로 변환합니다."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Deprecated alias for [method step_decimals]."
-msgstr ""
+msgstr "[method step_decimals]의 더 이상 사용되지 않는 별칭."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -441,6 +476,14 @@ msgid ""
 "a = dectime(60, 10, 0.1)) # a is 59.0\n"
 "[/codeblock]"
 msgstr ""
+"[b]주의:[/b] [code]dectime[/code] 는 더 이상 사용되지 않으며 Godot 4.0에서 삭"
+"제될 것 입니다. 대신, [method move_toward]를 사용하세요.\n"
+"\n"
+"[code]value[/code]에서 [code]step[/code] * [code]amount[/code]를 뺀 값을 반"
+"환.\n"
+"[codeblock]\n"
+"a = dectime(60, 10, 0.1)) # a 는 59.0\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -3503,6 +3546,12 @@ msgstr ""
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 2D "
 "physics layers."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"Hints that an integer property is a bitmask using the optionally named 2D "
+"navigation layers."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -8497,7 +8546,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/AStar.xml
+#: doc/classes/AStar.xml doc/classes/AStar2D.xml
 msgid ""
 "Deletes the segment between the given points. If [code]bidirectional[/code] "
 "is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/"
@@ -8696,7 +8745,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AStar2D.xml
-msgid "Returns whether there is a connection/segment between the given points."
+msgid ""
+"Returns whether there is a connection/segment between the given points. If "
+"[code]bidirectional[/code] is [code]false[/code], returns whether movement "
+"from [code]id[/code] to [code]to_id[/code] is possible through this segment."
 msgstr ""
 
 #: doc/classes/AStar2D.xml
@@ -8710,10 +8762,6 @@ msgid ""
 "astar.add_point(2, Vector2(0, 5))\n"
 "astar.connect_points(1, 2, false)\n"
 "[/codeblock]"
-msgstr ""
-
-#: doc/classes/AStar2D.xml
-msgid "Deletes the segment between the given points."
 msgstr ""
 
 #: doc/classes/AStar2D.xml
@@ -8901,7 +8949,9 @@ msgid ""
 "Application code should consume these audio frames from this ring buffer "
 "using [method get_buffer] and process it as needed, for example to capture "
 "data from a microphone, implement application defined effects, or to "
-"transmit audio over the network."
+"transmit audio over the network. When capturing audio data from a "
+"microphone, the format of the samples will be stereo 32-bit floating point "
+"PCM."
 msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
@@ -13751,7 +13801,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
-#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
+#: doc/classes/Navigation2D.xml
 msgid "Returns the object's [RID]."
 msgstr ""
 
@@ -19269,11 +19319,15 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CurveTexture.xml
-msgid "The [code]curve[/code] rendered onto the texture."
-msgstr ""
+#, fuzzy
+msgid "The [Curve] that is rendered onto the texture."
+msgstr "매개변수의 사인 값을 반환합니다."
 
 #: doc/classes/CurveTexture.xml
-msgid "The width of the texture."
+msgid ""
+"The width of the texture (in pixels). Higher values make it possible to "
+"represent high-frequency data better (such as sudden direction changes), at "
+"the cost of increased generation time and memory usage."
 msgstr ""
 
 #: doc/classes/CylinderMesh.xml
@@ -19556,6 +19610,13 @@ msgstr ""
 
 #: doc/classes/Dictionary.xml
 msgid "Returns the list of keys in the [Dictionary]."
+msgstr ""
+
+#: doc/classes/Dictionary.xml
+msgid ""
+"Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, "
+"duplicate keys will not be copied over, unless [code]overwrite[/code] is "
+"[code]true[/code]."
 msgstr ""
 
 #: doc/classes/Dictionary.xml
@@ -21560,9 +21621,23 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
-"Gets the state of your plugin editor. This is used when saving the scene (so "
-"state is kept when opening it again) and for switching tabs (so state can be "
-"restored when the tab returns)."
+"Override this method to provide a state data you want to be saved, like view "
+"position, grid settings, folding, etc. This is used when saving the scene "
+"(so state is kept when opening it again) and for switching tabs (so state "
+"can be restored when the tab returns). This data is automatically saved for "
+"each scene in an [code]editstate[/code] file in the editor metadata folder. "
+"If you want to store global (scene-independent) editor data for your plugin, "
+"you can use [method get_window_layout] instead.\n"
+"Use [method set_state] to restore your saved state.\n"
+"[b]Note:[/b] This method should not be used to save important settings that "
+"should persist with the project.\n"
+"[b]Note:[/b] You must implement [method get_plugin_name] for the state to be "
+"stored and restored correctly.\n"
+"[codeblock]\n"
+"func get_state():\n"
+"    var state = {\"zoom\": zoom, \"preferred_color\": my_color}\n"
+"    return state\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
@@ -21573,9 +21648,18 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
-"Gets the GUI layout of the plugin. This is used to save the project's editor "
-"layout when [method queue_save_layout] is called or the editor layout was "
-"changed(For example changing the position of a dock)."
+"Override this method to provide the GUI layout of the plugin or any other "
+"data you want to be stored. This is used to save the project's editor layout "
+"when [method queue_save_layout] is called or the editor layout was changed "
+"(for example changing the position of a dock). The data is stored in the "
+"[code]editor_layout.cfg[/code] file in the editor metadata directory.\n"
+"Use [method set_window_layout] to restore your saved layout.\n"
+"[codeblock]\n"
+"func get_window_layout(configuration):\n"
+"    configuration.set_value(\"MyPlugin\", \"window_position\", $Window."
+"position)\n"
+"    configuration.set_value(\"MyPlugin\", \"icon_color\", $Icon.modulate)\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
@@ -21688,11 +21772,30 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
-msgid "Restore the state saved by [method get_state]."
+msgid ""
+"Restore the state saved by [method get_state]. This method is called when "
+"the current scene tab is changed in the editor.\n"
+"[b]Note:[/b] Your plugin must implement [method get_plugin_name], otherwise "
+"it will not be recognized and this method will not be called.\n"
+"[codeblock]\n"
+"func set_state(data):\n"
+"    zoom = data.get(\"zoom\", 1.0)\n"
+"    preferred_color = data.get(\"my_color\", Color.white)\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
-msgid "Restore the plugin GUI layout saved by [method get_window_layout]."
+msgid ""
+"Restore the plugin GUI layout and data saved by [method get_window_layout]. "
+"This method is called for every plugin on editor startup. Use the provided "
+"[code]configuration[/code] file to read your saved data.\n"
+"[codeblock]\n"
+"func set_window_layout(configuration):\n"
+"    $Window.position = configuration.get_value(\"MyPlugin\", "
+"\"window_position\", Vector2())\n"
+"    $Icon.modulate = configuration.get_value(\"MyPlugin\", \"icon_color\", "
+"Color.white)\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
@@ -26339,7 +26442,8 @@ msgid ""
 "will be filled from left to right using colors obtained from the gradient. "
 "This means the texture does not necessarily represent an exact copy of the "
 "gradient, but instead an interpolation of samples obtained from the gradient "
-"at fixed steps (see [member width])."
+"at fixed steps (see [member width]). See also [GradientTexture2D] and "
+"[CurveTexture]."
 msgstr ""
 
 #: doc/classes/GradientTexture.xml
@@ -26361,7 +26465,8 @@ msgid ""
 "repeat] types using colors obtained from the gradient. The texture does not "
 "necessarily represent an exact copy of the gradient, but instead an "
 "interpolation of samples obtained from the gradient at fixed steps (see "
-"[member width] and [member height])."
+"[member width] and [member height]). See also [GradientTexture] and "
+"[CurveTexture]."
 msgstr ""
 
 #: doc/classes/GradientTexture2D.xml
@@ -27169,6 +27274,12 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
+msgid ""
+"If [code]true[/code], this GridMap uses cell navmesh resources to create "
+"navigation regions."
+msgstr ""
+
+#: modules/gridmap/doc_classes/GridMap.xml
 msgid "If [code]true[/code], grid items are centered on the X axis."
 msgstr ""
 
@@ -27216,6 +27327,10 @@ msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "The assigned [MeshLibrary]."
+msgstr ""
+
+#: modules/gridmap/doc_classes/GridMap.xml
+msgid "The navigation layers the GridMap generates its navigation regions in."
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
@@ -29617,7 +29732,7 @@ msgstr ""
 msgid ""
 "Sends all input events which are in the current buffer to the game loop. "
 "These events may have been buffered as a result of accumulated input "
-"([method set_use_accumulated_input]) or agile input flushing ([member "
+"([member use_accumulated_input]) or agile input flushing ([member "
 "ProjectSettings.input_devices/buffering/agile_event_flushing]).\n"
 "The engine will already do this itself at key execution points (at least "
 "once per frame). However, this can be useful in advanced cases where you "
@@ -29763,10 +29878,6 @@ msgstr ""
 msgid ""
 "Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at "
 "the same time, the bits are added together."
-msgstr ""
-
-#: doc/classes/Input.xml
-msgid "Returns the mouse mode. See the constants for more information."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -29963,24 +30074,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-msgid "Sets the mouse mode. See the constants for more information."
-msgstr ""
-
-#: doc/classes/Input.xml
-msgid ""
-"Enables or disables the accumulation of similar input events sent by the "
-"operating system. When input accumulation is enabled, all input events "
-"generated during a frame will be merged and emitted when the frame is done "
-"rendering. Therefore, this limits the number of input method calls per "
-"second to the rendering FPS.\n"
-"Input accumulation is enabled by default. It can be disabled to get slightly "
-"more precise/reactive input at the cost of increased CPU usage. In "
-"applications where drawing freehand lines is required, input accumulation "
-"should generally be disabled while the user is drawing the line to get "
-"results that closely follow the actual input."
-msgstr ""
-
-#: doc/classes/Input.xml
 msgid ""
 "Starts to vibrate the joypad. Joypads usually come with two rumble motors, a "
 "strong and a weak one. [code]weak_magnitude[/code] is the strength of the "
@@ -30013,6 +30106,24 @@ msgid ""
 "Mouse position is clipped to the limits of the screen resolution, or to the "
 "limits of the game window if [enum MouseMode] is set to [constant "
 "MOUSE_MODE_CONFINED]."
+msgstr ""
+
+#: doc/classes/Input.xml
+msgid "Controls the mouse mode. See [enum MouseMode] for more information."
+msgstr ""
+
+#: doc/classes/Input.xml
+msgid ""
+"If [code]true[/code], similar input events sent by the operating system are "
+"accumulated. When input accumulation is enabled, all input events generated "
+"during a frame will be merged and emitted when the frame is done rendering. "
+"Therefore, this limits the number of input method calls per second to the "
+"rendering FPS.\n"
+"Input accumulation can be disabled to get slightly more precise/reactive "
+"input at the cost of increased CPU usage. In applications where drawing "
+"freehand lines is required, input accumulation should generally be disabled "
+"while the user is drawing the line to get results that closely follow the "
+"actual input."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -30587,9 +30698,9 @@ msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
 "[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, call [method Input."
-"set_use_accumulated_input] with [code]false[/code] to make events emitted as "
-"often as possible. If you use InputEventMouseMotion to draw lines, consider "
+"at most. If you need more precise input reporting, set [member Input."
+"use_accumulated_input] to [code]false[/code] to make events emitted as often "
+"as possible. If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -34901,9 +35012,10 @@ msgstr ""
 
 #: doc/classes/MeshInstance2D.xml
 msgid ""
-"Node used for displaying a [Mesh] in 2D. Can be constructed from an existing "
-"[Sprite] via a tool in the editor toolbar. Select \"Sprite\" then \"Convert "
-"to Mesh2D\", select settings in popup and press \"Create Mesh2D\"."
+"Node used for displaying a [Mesh] in 2D. A [MeshInstance2D] can be "
+"automatically created from an existing [Sprite] via a tool in the editor "
+"toolbar. Select the [Sprite] node, then choose [b]Sprite > Convert to "
+"MeshInstance2D[/b] at the top of the 2D editor viewport."
 msgstr ""
 
 #: doc/classes/MeshInstance2D.xml
@@ -35708,6 +35820,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation.xml
+#, fuzzy
+msgid "Returns the [RID] of the navigation map on the [NavigationServer]."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/Navigation.xml
 msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the "
@@ -35730,8 +35847,20 @@ msgstr ""
 
 #: doc/classes/Navigation.xml
 msgid ""
+"A bitfield determining all navigation map layers the navigation can use on a "
+"[method Navigation.get_simple_path] path query."
+msgstr ""
+
+#: doc/classes/Navigation.xml
+msgid ""
 "Defines which direction is up. By default, this is [code](0, 1, 0)[/code], "
 "which is the world's \"up\" direction."
+msgstr ""
+
+#: doc/classes/Navigation.xml doc/classes/Navigation2DServer.xml
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Emitted when a navigation map is updated, when a region moves or is modified."
 msgstr ""
 
 #: doc/classes/Navigation2D.xml
@@ -35768,6 +35897,12 @@ msgstr ""
 msgid "The XY plane cell size to use for fields."
 msgstr ""
 
+#: doc/classes/Navigation2D.xml
+msgid ""
+"A bitfield determining all navigation map layers the navigation can use on a "
+"[method Navigation2D.get_simple_path] path query."
+msgstr ""
+
 #: doc/classes/Navigation2DServer.xml
 msgid "Server interface for low-level 2D navigation access."
 msgstr ""
@@ -35784,8 +35919,12 @@ msgid ""
 "through scripts.\n"
 "For two regions to be connected to each other, they must share a similar "
 "edge. An edge is considered connected to another if both of its two vertices "
-"are at a distance less than [member Navigation.edge_connection_margin] to "
-"the respective other edge's vertex.\n"
+"are at a distance less than navigation map [code]edge_connection_margin[/"
+"code] to the respective other edge's vertex.\n"
+"You may assign navigation layers to regions with [method Navigation2DServer."
+"region_set_navigation_layers], which then can be checked upon when "
+"requesting a path with [method Navigation2DServer.map_get_path]. This allows "
+"allowing or forbidding some areas to 2D objects.\n"
 "To use the collision avoidance system, you may use agents. You can set an "
 "agent's target velocity, then the servers will emit a callback with a "
 "modified velocity.\n"
@@ -35813,7 +35952,17 @@ msgid "Returns [code]true[/code] if the map got changed the previous frame."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-msgid "Callback called at the end of the RVO process."
+msgid ""
+"Callback called at the end of the RVO process. If a callback is created "
+"manually and the agent is placed on a navigation map it will calculate "
+"avoidance for the agent and dispatch the calculated [code]safe_velocity[/"
+"code] to the [code]receiver[/code] object with a signal to the chosen "
+"[code]method[/code] name.\n"
+"[b]Note:[/b] Created callbacks are always processed independently of the "
+"SceneTree state as long as the agent is on a navigation map and not freed. "
+"To disable the dispatch of a callback from an agent use [method "
+"agent_set_callback] again with a [code]null[/code] object as the "
+"[code]receiver[/code]."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
@@ -35883,6 +36032,10 @@ msgid ""
 "requested navigation [code]map[/code]."
 msgstr ""
 
+#: doc/classes/Navigation2DServer.xml
+msgid "Returns the map cell height. [b]Note:[/b] Currently not implemented."
+msgstr ""
+
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Returns the map cell size."
@@ -35907,7 +36060,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-msgid "Returns the navigation path to reach the destination from the origin."
+msgid ""
+"Returns the navigation path to reach the destination from the origin. "
+"[code]navigation_layers[/code] is a bitmask of all region layers that are "
+"allowed to be in the path."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
@@ -35926,6 +36082,12 @@ msgstr "매개변수의 코사인 값을 반환합니다."
 msgid "Sets the map active."
 msgstr "매개변수의 아크사인 값을 반환합니다."
 
+#: doc/classes/Navigation2DServer.xml
+msgid ""
+"Set the map cell height used to weld the navigation mesh polygons. [b]Note:[/"
+"b] Currently not implemented."
+msgstr ""
+
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Set the map cell size used to weld the navigation mesh polygons."
 msgstr ""
@@ -35941,14 +36103,60 @@ msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
+"Returns the ending point of a connection door. [code]connection[/code] is an "
+"index between 0 and the return value of [method "
+"region_get_connections_count]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the starting point of a connection door. [code]connection[/code] is "
+"an index between 0 and the return value of [method "
+"region_get_connections_count]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns how many connections this [code]region[/code] has with other regions "
+"in the map."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the [code]enter_cost[/code] of this [code]region[/code]."
+msgstr "두 벡터의 나머지를 반환합니다."
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
 "Returns the navigation map [RID] the requested [code]region[/code] is "
 "currently assigned to."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
+msgid "Returns the region's navigation layers."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the [code]travel_cost[/code] of this [code]region[/code]."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the [code]enter_cost[/code] for this [code]region[/code]."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
 msgid "Sets the map for the region."
 msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/Navigation2DServer.xml
+msgid ""
+"Set the region's navigation layers. This allows selecting regions from a "
+"path request (when using [method Navigation2DServer.map_get_path])."
+msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
@@ -35959,6 +36167,11 @@ msgstr "매개변수의 반대 값을 반환합니다."
 msgid "Sets the global transformation for the region."
 msgstr ""
 
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the [code]travel_cost[/code] for this [code]region[/code]."
+msgstr "매개변수의 사인 값을 반환합니다."
+
 #: doc/classes/NavigationAgent.xml
 msgid "3D agent used in navigation for collision avoidance."
 msgstr ""
@@ -35968,9 +36181,16 @@ msgid ""
 "3D agent that is used in navigation to reach a location while avoiding "
 "static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
 "(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
-"navigation data to work correctly. This can be done by having the agent as a "
-"child of a [Navigation] node, or using [method set_navigation]. "
-"[NavigationAgent] is physics safe."
+"navigation data to work correctly. By default this node will register to the "
+"default [World] navigation map. If this node is a child of a [Navigation] "
+"node it will register to the navigation map of the navigation node or the "
+"function [method set_navigation] can be used to set the navigation node "
+"directly. [NavigationAgent] is physics safe.\n"
+"[b]Note:[/b] After [method set_target_location] is used it is required to "
+"use the [method get_next_location] function once every physics frame to "
+"update the internal path logic of the NavigationAgent. The returned vector "
+"position from this function should be used as the next movement position for "
+"the agent's parent Node."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
@@ -35988,7 +36208,15 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
-msgid "Returns the path from start to finish in global coordinates."
+msgid ""
+"Returns this agent's current path from start to finish in global "
+"coordinates. The path only updates when the target location is changed or "
+"the agent requires a repath. The path array is not intended to be used in "
+"direct path movement as the agent has its own internal path logic that would "
+"get corrupted by changing the path array manually. Use the intended [method "
+"get_next_location] once every physics frame to receive the next path point "
+"for the agents movement as this function also updates the internal path "
+"logic."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
@@ -36004,11 +36232,24 @@ msgid ""
 "system."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
-"Returns a [Vector3] in global coordinates, that can be moved to, making sure "
-"that there are no static objects in the way. If the agent does not have a "
-"navigation path, it will return the origin of the agent's parent."
+"Returns the [RID] of the navigation map for this NavigationAgent node. This "
+"function returns always the map set on the NavigationAgent node and not the "
+"map of the abstract agent on the NavigationServer. If the agent map is "
+"changed directly with the NavigationServer API the NavigationAgent node will "
+"not be aware of the map change. Use [method set_navigation_map] to change "
+"the navigation map for the NavigationAgent and also update the agent on the "
+"NavigationServer."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the next location in global coordinates that can be moved to, making "
+"sure that there are no static objects in the way. If the agent does not have "
+"a navigation path, it will return the position of the agent's parent. The "
+"use of this function once every physics frame is required to update the "
+"internal path logic of the NavigationAgent."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
@@ -36050,6 +36291,12 @@ msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
+"Sets the [RID] of the navigation map this NavigationAgent node should use "
+"and also updates the [code]agent[/code] on the NavigationServer."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
 "Sets the user desired final location. This will clear the current navigation "
 "path."
 msgstr ""
@@ -36062,7 +36309,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
-msgid "The agent height offset to match the navigation mesh height."
+msgid ""
+"The NavigationAgent height offset is subtracted from the y-axis value of any "
+"vector path position for this NavigationAgent. The NavigationAgent height "
+"offset does not change or influence the navigation mesh or pathfinding query "
+"result. Additional navigation maps that use regions with navigation meshes "
+"that the developer baked with appropriate agent radius or height values are "
+"required to support different-sized agents."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml
@@ -36087,6 +36340,13 @@ msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "The maximum speed that an agent can move."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationAgent] "
+"belongs to. On path requests the agent will ignore navmeshes without at "
+"least one matching layer."
 msgstr ""
 
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
@@ -36151,9 +36411,16 @@ msgid ""
 "2D agent that is used in navigation to reach a location while avoiding "
 "static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
 "(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
-"navigation data to work correctly. This can be done by having the agent as a "
-"child of a [Navigation2D] node, or using [method set_navigation]. "
-"[NavigationAgent2D] is physics safe."
+"navigation data to work correctly. By default this node will register to the "
+"default [World2D] navigation map. If this node is a child of a "
+"[Navigation2D] node it will register to the navigation map of the navigation "
+"node or the function [method set_navigation] can be used to set the "
+"navigation node directly. [NavigationAgent2D] is physics safe.\n"
+"[b]Note:[/b] After [method set_target_location] is used it is required to "
+"use the [method get_next_location] function once every physics frame to "
+"update the internal path logic of the NavigationAgent. The returned vector "
+"position from this function should be used as the next movement position for "
+"the agent's parent Node."
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
@@ -36167,13 +36434,6 @@ msgstr "매개변수의 아크사인 값을 반환합니다."
 msgid ""
 "Returns the [Navigation2D] node that the agent is using for its navigation "
 "system."
-msgstr ""
-
-#: doc/classes/NavigationAgent2D.xml
-msgid ""
-"Returns a [Vector2] in global coordinates, that can be moved to, making sure "
-"that there are no static objects in the way. If the agent does not have a "
-"navigation path, it will return the position of the agent's parent."
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
@@ -36195,6 +36455,13 @@ msgid ""
 "with a signal connection to [signal velocity_computed]. Avoidance processing "
 "with many registered agents has a significant performance cost and should "
 "only be enabled on agents that currently require it."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationAgent2D] "
+"belongs to. On path requests the agent will ignore navmeshes without at "
+"least one matching layer."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36227,8 +36494,8 @@ msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
-"Returns whether the specified [code]bit[/code] of the [member geometry/"
-"collision_mask] is set."
+"Returns whether the specified [code]bit[/code] of the [member "
+"geometry_collision_mask] is set."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml doc/classes/NavigationPolygon.xml
@@ -36251,9 +36518,9 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the [member geometry/collision_mask].\n"
+"code] in the [member geometry_collision_mask].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the [member geometry/collision_mask]."
+"code] in the [member geometry_collision_mask]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml doc/classes/NavigationPolygon.xml
@@ -36267,14 +36534,14 @@ msgid ""
 "The minimum floor to ceiling height that will still allow the floor area to "
 "be considered walkable.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/height]."
+"multiple of [member cell_height]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "The minimum ledge height that is considered to still be traversable.\n"
 "[b]Note:[/b] While baking, this value will be rounded down to the nearest "
-"multiple of [member cell/height]."
+"multiple of [member cell_height]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36286,7 +36553,7 @@ msgid ""
 "The distance to erode/shrink the walkable area of the heightfield away from "
 "obstructions.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/size]."
+"multiple of [member cell_size]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36314,13 +36581,7 @@ msgstr ""
 msgid ""
 "The maximum allowed length for contour edges along the border of the mesh.\n"
 "[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell/size]."
-msgstr ""
-
-#: doc/classes/NavigationMesh.xml
-msgid ""
-"If [code]true[/code], marks walkable spans as not walkable if the clearance "
-"above the span is less than [member agent/height]."
+"multiple of [member cell_size]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36330,13 +36591,19 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "If [code]true[/code], marks non-walkable spans as walkable if their maximum "
-"is within [member agent/max_climb] of a walkable neighbor."
+"is within [member agent_max_climb] of a walkable neighbor."
+msgstr ""
+
+#: doc/classes/NavigationMesh.xml
+msgid ""
+"If [code]true[/code], marks walkable spans as not walkable if the clearance "
+"above the span is less than [member agent_height]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "The physics layers to scan for static colliders.\n"
-"Only used when [member geometry/parsed_geometry_type] is [constant "
+"Only used when [member geometry_parsed_geometry_type] is [constant "
 "PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH]."
 msgstr ""
 
@@ -36355,7 +36622,7 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "The name of the group to scan for geometry.\n"
-"Only used when [member geometry/source_geometry_mode] is [constant "
+"Only used when [member geometry_source_geometry_mode] is [constant "
 "SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant "
 "SOURCE_GEOMETRY_GROUPS_EXPLICIT]."
 msgstr ""
@@ -36418,7 +36685,7 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "Parses [StaticBody] colliders as geometry. The collider should be in any of "
-"the layers specified by [member geometry/collision_mask]."
+"the layers specified by [member geometry_collision_mask]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36440,13 +36707,13 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "Scans nodes in a group and their child nodes recursively for geometry. The "
-"group is specified by [member geometry/source_group_name]."
+"group is specified by [member geometry_source_group_name]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
 "Uses nodes in a group for geometry. The group is specified by [member "
-"geometry/source_group_name]."
+"geometry_source_group_name]."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -36496,8 +36763,8 @@ msgid ""
 "Bakes navigation data to the provided [code]nav_mesh[/code] by parsing child "
 "nodes under the provided [code]root_node[/code] or a specific group of nodes "
 "for potential source geometry. The parse behavior can be controlled with the "
-"[member NavigationMesh.geometry/parsed_geometry_type] and [member "
-"NavigationMesh.geometry/source_geometry_mode] properties on the "
+"[member NavigationMesh.geometry_parsed_geometry_type] and [member "
+"NavigationMesh.geometry_source_geometry_mode] properties on the "
 "[NavigationMesh] resource."
 msgstr ""
 
@@ -36515,8 +36782,21 @@ msgstr ""
 #: doc/classes/NavigationMeshInstance.xml
 msgid ""
 "An instance of a [NavigationMesh]. It tells the [Navigation] node what can "
-"be navigated and what cannot, based on the [NavigationMesh] resource. This "
-"should be a child of a [Navigation] node."
+"be navigated and what cannot, based on the [NavigationMesh] resource.\n"
+"By default this node will register to the default [World] navigation map. If "
+"this node is a child of a [Navigation] node it will register to the "
+"navigation map of the navigation node.\n"
+"Two regions can be connected to each other if they share a similar edge. You "
+"can set the minimum distance between two vertices required to connect two "
+"edges by using [method NavigationServer.map_set_edge_connection_margin].\n"
+"[b]Note:[/b] Overlapping two regions' navmeshes is not enough for connecting "
+"two regions. They must share a similar edge.\n"
+"The cost of entering this region from another region can be controlled with "
+"the [member enter_cost] value.\n"
+"[b]Note[/b]: This value is not added to the path cost when the start "
+"position is already inside this region.\n"
+"The cost of traveling distances inside this region can be controlled with "
+"the [member travel_cost] multiplier."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
@@ -36545,7 +36825,31 @@ msgid "Determines if the [NavigationMeshInstance] is enabled or disabled."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"When pathfinding enters this regions navmesh from another regions navmesh "
+"the [code]enter_cost[/code] value is added to the path distance for "
+"determining the shortest path."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationMesh] "
+"belongs to. On path requests with [method NavigationServer.map_get_path] "
+"navmeshes without matching layers will be ignored and the navigation map "
+"will only proximity merge different navmeshes with matching layers."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
 msgid "The [NavigationMesh] resource to use."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"When pathfinding moves inside this regions navmesh the traveled distances "
+"are multiplied with [code]travel_cost[/code] for determining the shortest "
+"path."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
@@ -36565,7 +36869,9 @@ msgid ""
 "3D obstacle used in navigation for collision avoidance. The obstacle needs "
 "navigation data to work correctly. This can be done by having the obstacle "
 "as a child of a [Navigation] node, or using [method set_navigation]. "
-"[NavigationObstacle] is physics safe."
+"[NavigationObstacle] is physics safe.\n"
+"[b]Note:[/b] Obstacles are intended as a last resort option for constantly "
+"moving objects that cannot be (re)baked to a navigation mesh efficiently."
 msgstr ""
 
 #: doc/classes/NavigationObstacle.xml
@@ -36606,7 +36912,9 @@ msgid ""
 "2D obstacle used in navigation for collision avoidance. The obstacle needs "
 "navigation data to work correctly. This can be done by having the obstacle "
 "as a child of a [Navigation2D] node, or using [method set_navigation]. "
-"[NavigationObstacle2D] is physics safe."
+"[NavigationObstacle2D] is physics safe.\n"
+"[b]Note:[/b] Obstacles are intended as a last resort option for constantly "
+"moving objects that cannot be (re)baked to a navigation mesh efficiently."
 msgstr ""
 
 #: doc/classes/NavigationObstacle2D.xml
@@ -36687,6 +36995,14 @@ msgstr ""
 
 #: doc/classes/NavigationPolygon.xml
 msgid ""
+"Returns the [NavigationMesh] resulting from this navigation polygon. This "
+"navmesh can be used to update the navmesh of a region with the [method "
+"NavigationServer.region_set_navmesh] API directly (as 2D uses the 3D server "
+"behind the scene)."
+msgstr ""
+
+#: doc/classes/NavigationPolygon.xml
+msgid ""
 "Returns a [PoolVector2Array] containing the vertices of an outline that was "
 "created in the editor or by script."
 msgstr ""
@@ -36723,11 +37039,51 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationPolygonInstance.xml
+msgid "A region of the 2D navigation map."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"A region of the navigation map. It tells the [Navigation2DServer] what can "
+"be navigated and what cannot, based on its [NavigationPolygon] resource.\n"
+"By default this node will register to the default [World2D] navigation map. "
+"If this node is a child of a [Navigation2D] node it will register to the "
+"navigation map of the navigation node.\n"
+"Two regions can be connected to each other if they share a similar edge. You "
+"can set the minimum distance between two vertices required to connect two "
+"edges by using [method Navigation2DServer.map_set_edge_connection_margin].\n"
+"[b]Note:[/b] Overlapping two regions' polygons is not enough for connecting "
+"two regions. They must share a similar edge.\n"
+"The pathfinding cost of entering this region from another region can be "
+"controlled with the [member enter_cost] value.\n"
+"[b]Note[/b]: This value is not added to the path cost when the start "
+"position is already inside this region.\n"
+"The pathfinding cost of traveling distances inside this region can be "
+"controlled with the [member travel_cost] multiplier."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
 msgid ""
 "Returns the [RID] of this region on the [Navigation2DServer]. Combined with "
 "[method Navigation2DServer.map_get_closest_point_owner] can be used to "
 "identify the [NavigationPolygonInstance] closest to a point on the merged "
 "navigation map."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid "Determines if the [NavigationPolygonInstance] is enabled or disabled."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid ""
+"A bitfield determining all navigation map layers the [NavigationPolygon] "
+"belongs to. On path requests with [method Navigation2DServer.map_get_path] "
+"navmeshes without matching layers will be ignored and the navigation map "
+"will only proximity merge different navmeshes with matching layers."
+msgstr ""
+
+#: doc/classes/NavigationPolygonInstance.xml
+msgid "The [NavigationPolygon] resource to use."
 msgstr ""
 
 #: doc/classes/NavigationServer.xml
@@ -36806,6 +37162,12 @@ msgstr ""
 
 #: doc/classes/NavigationServer.xml
 msgid "Bakes the navigation mesh."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Set the region's navigation layers. This allows selecting regions from a "
+"path request (when using [method NavigationServer.map_get_path])."
 msgstr ""
 
 #: doc/classes/NavigationServer.xml
@@ -38697,7 +39059,13 @@ msgid "Rotation in degrees, relative to the node's parent."
 msgstr ""
 
 #: doc/classes/Node2D.xml
-msgid "The node's scale. Unscaled value: [code](1, 1)[/code]."
+msgid ""
+"The node's scale. Unscaled value: [code](1, 1)[/code].\n"
+"[b]Note:[/b] Negative X scales in 2D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, negative scales on the X axis will be "
+"changed to negative scales on the Y axis and a rotation of 180 degrees when "
+"decomposed."
 msgstr ""
 
 #: doc/classes/Node2D.xml
@@ -40799,8 +41167,15 @@ msgstr ""
 msgid ""
 "Moves the file or directory to the system's recycle bin. See also [method "
 "Directory.remove].\n"
+"The method takes only global paths, so you may need to use [method "
+"ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/"
+"code] as it will not work in exported project.\n"
 "[b]Note:[/b] If the user has disabled the recycle bin on their system, the "
-"file will be permanently deleted instead."
+"file will be permanently deleted instead.\n"
+"[codeblock]\n"
+"var file_to_remove = \"user://slot1.sav\"\n"
+"OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -47167,7 +47542,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
-msgid "Message to be displayed before the backtrace when the engine crashes."
+msgid ""
+"Message to be displayed before the backtrace when the engine crashes. By "
+"default, this message is only used in exported projects due to the editor-"
+"only override applied to this setting."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Editor-only override for [member debug/settings/crash_handler/message]. Does "
+"not affect exported projects in debug or release mode."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47637,6 +48021,198 @@ msgid "Default delay for touch events. This only affects iOS devices."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 1. If left empty, the layer will "
+"display as \"Layer 1\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 10. If left empty, the layer will "
+"display as \"Layer 10\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 11. If left empty, the layer will "
+"display as \"Layer 11\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 12. If left empty, the layer will "
+"display as \"Layer 12\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 13. If left empty, the layer will "
+"display as \"Layer 13\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 14. If left empty, the layer will "
+"display as \"Layer 14\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 15. If left empty, the layer will "
+"display as \"Layer 15\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 16. If left empty, the layer will "
+"display as \"Layer 16\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 17. If left empty, the layer will "
+"display as \"Layer 17\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 18. If left empty, the layer will "
+"display as \"Layer 18\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 19. If left empty, the layer will "
+"display as \"Layer 19\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 2. If left empty, the layer will "
+"display as \"Layer 2\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 20. If left empty, the layer will "
+"display as \"Layer 20\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 21. If left empty, the layer will "
+"display as \"Layer 21\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 22. If left empty, the layer will "
+"display as \"Layer 22\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 23. If left empty, the layer will "
+"display as \"Layer 23\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 24. If left empty, the layer will "
+"display as \"Layer 24\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 25. If left empty, the layer will "
+"display as \"Layer 25\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 26. If left empty, the layer will "
+"display as \"Layer 26\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 27. If left empty, the layer will "
+"display as \"Layer 27\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 28. If left empty, the layer will "
+"display as \"Layer 28\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 29. If left empty, the layer will "
+"display as \"Layer 29\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 3. If left empty, the layer will "
+"display as \"Layer 3\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 30. If left empty, the layer will "
+"display as \"Layer 30\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 31. If left empty, the layer will "
+"display as \"Layer 31\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 32. If left empty, the layer will "
+"display as \"Layer 32\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 4. If left empty, the layer will "
+"display as \"Layer 4\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 5. If left empty, the layer will "
+"display as \"Layer 5\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 6. If left empty, the layer will "
+"display as \"Layer 6\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 7. If left empty, the layer will "
+"display as \"Layer 7\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 8. If left empty, the layer will "
+"display as \"Layer 8\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 2D navigation layer 9. If left empty, the layer will "
+"display as \"Layer 9\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 2D physics layer 1."
 msgstr ""
 
@@ -47842,6 +48418,198 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 2D render layer 9."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 1. If left empty, the layer will "
+"display as \"Layer 1\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 10. If left empty, the layer will "
+"display as \"Layer 10\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 11. If left empty, the layer will "
+"display as \"Layer 11\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 12. If left empty, the layer will "
+"display as \"Layer 12\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 13. If left empty, the layer will "
+"display as \"Layer 13\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 14. If left empty, the layer will "
+"display as \"Layer 14\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 15. If left empty, the layer will "
+"display as \"Layer 15\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 16. If left empty, the layer will "
+"display as \"Layer 16\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 17. If left empty, the layer will "
+"display as \"Layer 17\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 18. If left empty, the layer will "
+"display as \"Layer 18\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 19. If left empty, the layer will "
+"display as \"Layer 19\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 2. If left empty, the layer will "
+"display as \"Layer 2\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 20. If left empty, the layer will "
+"display as \"Layer 20\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 21. If left empty, the layer will "
+"display as \"Layer 21\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 22. If left empty, the layer will "
+"display as \"Layer 22\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 23. If left empty, the layer will "
+"display as \"Layer 23\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 24. If left empty, the layer will "
+"display as \"Layer 24\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 25. If left empty, the layer will "
+"display as \"Layer 25\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 26. If left empty, the layer will "
+"display as \"Layer 26\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 27. If left empty, the layer will "
+"display as \"Layer 27\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 28. If left empty, the layer will "
+"display as \"Layer 28\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 29. If left empty, the layer will "
+"display as \"Layer 29\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 3. If left empty, the layer will "
+"display as \"Layer 3\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 30. If left empty, the layer will "
+"display as \"Layer 30\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 31. If left empty, the layer will "
+"display as \"Layer 31\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 32. If left empty, the layer will "
+"display as \"Layer 32\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 4. If left empty, the layer will "
+"display as \"Layer 4\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 5. If left empty, the layer will "
+"display as \"Layer 5\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 6. If left empty, the layer will "
+"display as \"Layer 6\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 7. If left empty, the layer will "
+"display as \"Layer 7\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 8. If left empty, the layer will "
+"display as \"Layer 8\"."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Optional name for the 3D navigation layer 9. If left empty, the layer will "
+"display as \"Layer 9\"."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -48108,6 +48876,49 @@ msgid ""
 "[b]Note:[/b] The unhandled exception policy is always set to \"Log Error\" "
 "in the editor, which also includes C# [code]tool[/code] scripts running "
 "within the editor as well as editor plugin code."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell height for 2D navigation maps. See [method Navigation2DServer."
+"map_set_cell_height].\n"
+"[b]Note:[/b] Currently not implemented."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell size for 2D navigation maps. See [method Navigation2DServer."
+"map_set_cell_size]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default edge connection margin for 2D navigation maps. See [method "
+"Navigation2DServer.map_set_edge_connection_margin]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell height for 3D navigation maps. See [method NavigationServer."
+"map_set_cell_height]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default cell size for 3D navigation maps. See [method NavigationServer."
+"map_set_cell_size]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default edge connection margin for 3D navigation maps. See [method "
+"NavigationServer.map_set_edge_connection_margin]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default map up vector for 3D navigation maps. See [method NavigationServer."
+"map_set_up]."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49614,7 +50425,6 @@ msgid ""
 "- If your [member grid_radius] is smaller than [code]Vector3(1, 1, 1)[/"
 "code], it will be rounded up to [code]Vector3(1, 1, 1)[/code]. Therefore, "
 "small grid radius values may lead to unwanted groupings.\n"
-"[/codeblock]\n"
 "[b]Note:[/b] [ProximityGroup] will be removed in Godot 4.0 in favor of more "
 "effective and faster [VisibilityNotifier] functionality. For most use cases, "
 "[method Vector3.distance_to] or [method Vector3.distance_squared_to] are "
@@ -51763,6 +52573,22 @@ msgid "Makes text fill width."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
+msgid "Aligns top of the inline image to the top of the text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
+msgid "Aligns center of the inline image to the center of the text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
+msgid "Aligns bottom of the inline image to the baseline of the text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
+msgid "Aligns bottom of the inline image to the bottom of the text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
 msgid "Each list item has a number marker."
 msgstr ""
 
@@ -53500,8 +54326,8 @@ msgid ""
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "    print(\"Timer ended.\")\n"
 "[/codeblock]\n"
-"The timer will be automatically freed after its time elapses, so be aware "
-"that any reference you might have kept to it will become invalid."
+"The timer will be dereferenced after its time elapses. To preserve the "
+"timer, you can keep a reference to it. See [Reference]."
 msgstr ""
 
 #: doc/classes/SceneTreeTimer.xml
@@ -55222,7 +56048,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
-msgid "Scale part of the local transformation."
+msgid ""
+"Scale part of the local transformation.\n"
+"[b]Note:[/b] Mixed negative scales in 3D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, the scale values will either be all "
+"positive or all negative."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -61334,6 +62165,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TileMap.xml
+#, fuzzy
+msgid "If [code]true[/code], this TileMap bakes a navigation region."
+msgstr "매개변수의 코사인 값을 반환합니다."
+
+#: doc/classes/TileMap.xml
 msgid "If [code]true[/code], the cell's UVs will be clipped."
 msgstr ""
 
@@ -61437,6 +62273,10 @@ msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid "The TileMap orientation mode. See [enum Mode] for possible values."
+msgstr ""
+
+#: doc/classes/TileMap.xml
+msgid "The navigation layers the TileMap generates its navigation regions in."
 msgstr ""
 
 #: doc/classes/TileMap.xml
@@ -62571,7 +63411,12 @@ msgstr ""
 #: doc/classes/Transform2D.xml
 msgid ""
 "Returns a copy of the transform scaled by the given [code]scale[/code] "
-"factor, using matrix multiplication."
+"factor, using matrix multiplication.\n"
+"[b]Note:[/b] Negative X scales in 2D are not decomposable from the "
+"transformation matrix. Due to the way scale is represented with "
+"transformation matrices in Godot, negative scales on the X axis will be "
+"changed to negative scales on the Y axis and a rotation of 180 degrees when "
+"decomposed."
 msgstr ""
 
 #: doc/classes/Transform2D.xml
@@ -66307,6 +67152,16 @@ msgstr ""
 
 #: doc/classes/VisibilityNotifier.xml
 msgid "The VisibilityNotifier's bounding box."
+msgstr ""
+
+#: doc/classes/VisibilityNotifier.xml
+msgid ""
+"In addition to checking whether a node is on screen or within a [Camera]'s "
+"view, VisibilityNotifier can also optionally check whether a node is within "
+"a specified maximum distance when using a [Camera] with perspective "
+"projection. This is useful for throttling the performance requirements of "
+"nodes that are far away.\n"
+"[b]Note:[/b] This feature will be disabled if set to 0.0."
 msgstr ""
 
 #: doc/classes/VisibilityNotifier.xml
@@ -71072,6 +71927,16 @@ msgid "The amount of shader rebinds in the frame."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+msgid ""
+"The peak amount of shaders that have been under compilation in the frame.\n"
+"This is useful to know when asynchronous shader compilation has finished for "
+"the current shaders on screen.\n"
+"[b]Note:[/b] For complete certainty, only assume there are no outstanding "
+"compilations when this value is zero for at least two frames in a row.\n"
+"Unimplemented in the GLES2 rendering backend, always returns 0."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
 msgid "The amount of surface changes in the frame."
 msgstr ""
 
@@ -74272,8 +75137,8 @@ msgstr ""
 #: doc/classes/World.xml
 msgid ""
 "Class that has everything pertaining to a world. A physics space, a visual "
-"scenario and a sound space. Spatial nodes register their resources into the "
-"current world."
+"scenario, a navigation map and a sound space. Spatial nodes register their "
+"resources into the current world."
 msgstr ""
 
 #: doc/classes/World.xml
@@ -74293,6 +75158,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/World.xml
+#, fuzzy
+msgid ""
+"The [RID] of this world's navigation map. Used by the [NavigationServer]."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: doc/classes/World.xml
 msgid "The World's visual scenario."
 msgstr ""
 
@@ -74307,8 +75178,8 @@ msgstr ""
 #: doc/classes/World2D.xml
 msgid ""
 "Class that has everything pertaining to a 2D world. A physics space, a "
-"visual scenario and a sound space. 2D nodes register their resources into "
-"the current 2D world."
+"visual scenario, a navigation map and a sound space. 2D nodes register their "
+"resources into the current 2D world."
 msgstr ""
 
 #: doc/classes/World2D.xml
@@ -74323,6 +75194,12 @@ msgid ""
 "current and potential collisions. When using multi-threaded physics, access "
 "is limited to [code]_physics_process(delta)[/code] in the main thread."
 msgstr ""
+
+#: doc/classes/World2D.xml
+#, fuzzy
+msgid ""
+"The [RID] of this world's navigation map. Used by the [Navigation2DServer]."
+msgstr "매개변수의 사인 값을 반환합니다."
 
 #: doc/classes/World2D.xml
 msgid ""
@@ -74537,4 +75414,4 @@ msgstr ""
 #: doc/classes/YSort.xml
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
-msgstr ""
+msgstr "[code]"
