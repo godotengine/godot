@@ -54,13 +54,6 @@ public:
 		ALPHA_CUT_OPAQUE_PREPASS
 	};
 
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
 private:
 	real_t pixel_size = 0.01;
 	bool flags[FLAG_MAX] = {};
@@ -91,7 +84,7 @@ private:
 	String xl_text;
 	bool uppercase = false;
 
-	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	float width = 500.0;
 
 	int font_size = 16;
@@ -200,8 +193,8 @@ public:
 	void set_outline_modulate(const Color &p_color);
 	Color get_outline_modulate() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -234,7 +227,6 @@ public:
 	~Label3D();
 };
 
-VARIANT_ENUM_CAST(Label3D::AutowrapMode);
 VARIANT_ENUM_CAST(Label3D::DrawFlags);
 VARIANT_ENUM_CAST(Label3D::AlphaCutMode);
 

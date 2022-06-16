@@ -35,7 +35,7 @@
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();
-	if (clip_text || overrun_behavior != TextParagraph::OVERRUN_NO_TRIMMING) {
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		minsize.width = 0;
 	}
 
@@ -292,9 +292,9 @@ void Button::_notification(int p_what) {
 				icon_ofs.x = 0.0;
 			}
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-			text_buf->set_width((clip_text || overrun_behavior != TextParagraph::OVERRUN_NO_TRIMMING) ? text_clip : -1);
+			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
 
-			int text_width = MAX(1, (clip_text || overrun_behavior != TextParagraph::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
+			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
@@ -367,7 +367,7 @@ void Button::_shape() {
 	text_buf->set_text_overrun_behavior(overrun_behavior);
 }
 
-void Button::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior) {
+void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (overrun_behavior != p_behavior) {
 		overrun_behavior = p_behavior;
 		_shape();
@@ -377,7 +377,7 @@ void Button::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior
 	}
 }
 
-TextParagraph::OverrunBehavior Button::get_text_overrun_behavior() const {
+TextServer::OverrunBehavior Button::get_text_overrun_behavior() const {
 	return overrun_behavior;
 }
 

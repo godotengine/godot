@@ -413,7 +413,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyphs", "shaped"), &TextServer::_shaped_text_get_ellipsis_glyphs_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyph_count", "shaped"), &TextServer::shaped_text_get_ellipsis_glyph_count);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIMMING));
+	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIM));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_objects", "shaped"), &TextServer::shaped_text_get_objects);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_object_rect", "shaped", "key"), &TextServer::shaped_text_get_object_rect);
@@ -470,6 +470,12 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(JUSTIFICATION_AFTER_LAST_TAB);
 	BIND_ENUM_CONSTANT(JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 
+	/* AutowrapMode */
+	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
+	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
+
 	/* LineBreakFlag */
 	BIND_ENUM_CONSTANT(BREAK_NONE);
 	BIND_ENUM_CONSTANT(BREAK_MANDATORY);
@@ -477,8 +483,22 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(BREAK_GRAPHEME_BOUND);
 	BIND_ENUM_CONSTANT(BREAK_WORD_BOUND_ADAPTIVE);
 
-	/* TextOverrunFlag */
+	/* VisibleCharactersBehavior */
+	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
+	BIND_ENUM_CONSTANT(VC_CHARS_AFTER_SHAPING);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_AUTO);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_LTR);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_RTL);
+
+	/* OverrunBehavior */
 	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
+
+	/* TextOverrunFlag */
+	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIM);
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM);
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ONLY);
 	BIND_ENUM_CONSTANT(OVERRUN_ADD_ELLIPSIS);

@@ -1455,7 +1455,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
 	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
+	font_preview_label->set_autowrap_mode(TextServer::AUTOWRAP_ARBITRARY);
 	font_preview_label->set_clip_text(true);
 	font_preview_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	font_preview_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1475,7 +1475,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_description = memnew(Label);
 	page2_description->set_text(TTR("Add font size, variation coordinates, and extra spacing combinations to pre-render:"));
 	page2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page2_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page2_vb->add_child(page2_description);
 
 	HSplitContainer *page2_hb = memnew(HSplitContainer);
@@ -1527,7 +1527,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page3_description = memnew(Label);
 	page3_description->set_text(TTR("Enter a text to shape and add all required glyphs to pre-render list:"));
 	page3_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page3_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page3_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page3_vb->add_child(page3_description);
 
 	HBoxContainer *ot_hb = memnew(HBoxContainer);
@@ -1584,7 +1584,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page4_description = memnew(Label);
 	page4_description->set_text(TTR("Add or remove additional glyphs from the character map to pre-render list:\nNote: Some stylistic alternatives and glyph variants do not have one-to-one correspondence to character, and not shown in this map, use \"Glyphs from the text\" to add these."));
 	page4_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page4_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page4_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page4_vb->add_child(page4_description);
 
 	HSplitContainer *glyphs_split = memnew(HSplitContainer);
@@ -1635,7 +1635,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_description = memnew(Label);
 	page5_description->set_text(TTR("Add or remove language and script support overrides, to control fallback font selection order:"));
 	page5_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page5_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page5_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page5_vb->add_child(page5_description);
 
 	HBoxContainer *hb_lang = memnew(HBoxContainer);

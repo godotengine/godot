@@ -426,16 +426,16 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
 	switch (autowrap_mode) {
-		case AUTOWRAP_WORD_SMART:
+		case TextServer::AUTOWRAP_WORD_SMART:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
 			break;
-		case AUTOWRAP_WORD:
+		case TextServer::AUTOWRAP_WORD:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
 			break;
-		case AUTOWRAP_ARBITRARY:
+		case TextServer::AUTOWRAP_ARBITRARY:
 			autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
 			break;
-		case AUTOWRAP_OFF:
+		case TextServer::AUTOWRAP_OFF:
 			break;
 	}
 
@@ -462,7 +462,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
-		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters <= 0) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters <= 0) {
 			break;
 		}
 		switch (it->type) {
@@ -501,7 +501,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				Dictionary font_ftr = _find_font_features(it);
 				String lang = _find_language(it);
 				String tx = t->text;
-				if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
+				if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
 					tx = tx.substr(0, remaining_characters);
 				}
 				remaining_characters -= tx.length();
@@ -707,9 +707,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
 
-	bool trim_chars = (visible_characters >= 0) && (visible_chars_behavior == VC_CHARS_AFTER_SHAPING);
-	bool trim_glyphs_ltr = (visible_characters >= 0) && ((visible_chars_behavior == VC_GLYPHS_LTR) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && !lrtl));
-	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == VC_GLYPHS_RTL) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && lrtl));
+	bool trim_chars = (visible_characters >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
+	bool trim_glyphs_ltr = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !lrtl));
+	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && lrtl));
 	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
 	int visible_glyphs = total_glyphs * percent_visible;
 
@@ -4752,7 +4752,7 @@ String RichTextLabel::get_language() const {
 	return language;
 }
 
-void RichTextLabel::set_autowrap_mode(RichTextLabel::AutowrapMode p_mode) {
+void RichTextLabel::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		_stop_thread();
 
@@ -4763,7 +4763,7 @@ void RichTextLabel::set_autowrap_mode(RichTextLabel::AutowrapMode p_mode) {
 	}
 }
 
-RichTextLabel::AutowrapMode RichTextLabel::get_autowrap_mode() const {
+TextServer::AutowrapMode RichTextLabel::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
@@ -4778,7 +4778,7 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 			visible_characters = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
-		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			main->first_invalid_line.store(0); //invalidate ALL
 			_validate_line_caches();
 		}
@@ -5032,11 +5032,6 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
-	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
-	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
-
 	BIND_ENUM_CONSTANT(LIST_NUMBERS);
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
 	BIND_ENUM_CONSTANT(LIST_ROMAN);
@@ -5069,19 +5064,13 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ITEM_HINT);
 	BIND_ENUM_CONSTANT(ITEM_DROPCAP);
 	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
-
-	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
-	BIND_ENUM_CONSTANT(VC_CHARS_AFTER_SHAPING);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_AUTO);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_LTR);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_RTL);
 }
 
-RichTextLabel::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
+TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
 	return visible_chars_behavior;
 }
 
-void RichTextLabel::set_visible_characters_behavior(RichTextLabel::VisibleCharactersBehavior p_behavior) {
+void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior) {
 	if (visible_chars_behavior != p_behavior) {
 		_stop_thread();
 
@@ -5105,7 +5094,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				percent_visible = (float)p_visible / (float)total_char_count;
 			}
 		}
-		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			main->first_invalid_line.store(0); //invalidate ALL
 			_validate_line_caches();
 		}
