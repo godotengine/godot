@@ -35,7 +35,6 @@
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
-#include "core/templates/pair.h"
 
 /**
 	A* pathfinding algorithm.
