@@ -271,10 +271,14 @@ namespace Godot
         /// Returns a normalized value considering the given range.
         /// This is the opposite of <see cref="Lerp(real_t, real_t, real_t)"/>.
         /// </summary>
-        /// <param name="from">The interpolated value.</param>
+        /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting value of the inverse interpolation.</returns>
+        /// <param name="weight">The interpolated value.</param>
+        /// <returns>
+        /// The resulting value of the inverse interpolation.
+        /// The returned value will be between 0.0 and 1.0 if <paramref name="weight"/> is
+        /// between <paramref name="from"/> and <paramref name="to"/> (inclusive).
+        /// </returns>
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
             return (weight - from) / (to - from);
@@ -522,6 +526,21 @@ namespace Godot
         public static real_t Rad2Deg(real_t rad)
         {
             return rad * _rad2DegConst;
+        }
+
+        /// <summary>
+        /// Maps a <paramref name="value"/> from [<paramref name="inFrom"/>, <paramref name="inTo"/>]
+        /// to [<paramref name="outFrom"/>, <paramref name="outTo"/>].
+        /// </summary>
+        /// <param name="value">The value to map.</param>
+        /// <param name="inFrom">The start value for the input interpolation.</param>
+        /// <param name="inTo">The destination value for the input interpolation.</param>
+        /// <param name="outFrom">The start value for the output interpolation.</param>
+        /// <param name="outTo">The destination value for the output interpolation.</param>
+        /// <returns>The resulting mapped value mapped.</returns>
+        public static real_t RangeLerp(real_t value, real_t inFrom, real_t inTo, real_t outFrom, real_t outTo)
+        {
+            return Lerp(outFrom, outTo, InverseLerp(inFrom, inTo, value));
         }
 
         /// <summary>
