@@ -5115,12 +5115,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.cam_projection = p_camera_data->main_projection;
-		render_data.view_projection[0] = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
 		render_data.taa_jitter = p_camera_data->taa_jitter;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
+			render_data.view_eye_offset[v] = p_camera_data->view_offset[v].origin;
 			render_data.view_projection[v] = p_camera_data->view_projection[v];
 		}
 

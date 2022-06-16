@@ -1542,6 +1542,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		projection = correction * p_render_data->view_projection[v];
 		RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix_view[v]);
 		RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix_view[v]);
+
+		scene_state.ubo.eye_offset[v][0] = p_render_data->view_eye_offset[v].x;
+		scene_state.ubo.eye_offset[v][1] = p_render_data->view_eye_offset[v].y;
+		scene_state.ubo.eye_offset[v][2] = p_render_data->view_eye_offset[v].z;
+		scene_state.ubo.eye_offset[v][3] = 0.0;
 	}
 
 	scene_state.ubo.z_far = p_render_data->z_far;

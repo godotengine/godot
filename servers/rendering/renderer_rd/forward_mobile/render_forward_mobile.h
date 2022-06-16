@@ -260,6 +260,7 @@ protected:
 
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
 
 			float viewport_size[2];
 			float screen_pixel_size[2];
