@@ -65,8 +65,9 @@ void RvoAgent::dispatch_callback() {
 		return;
 	}
 	Object *obj = ObjectDB::get_instance(callback.id);
-	if (obj == nullptr) {
+	if (!obj) {
 		callback.id = ObjectID(0);
+		return;
 	}
 
 	Variant::CallError responseCallError;
