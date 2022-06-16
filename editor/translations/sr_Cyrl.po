@@ -228,9 +228,10 @@ msgid "Data"
 msgstr ""
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp main/main.cpp
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
+#: scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Network"
 msgstr "Мрежни Осматрач"
@@ -390,6 +391,16 @@ msgstr ""
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr ""
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Mouse Mode"
+msgstr "Режим померања"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Use Accumulated Input"
+msgstr "Обриши улаз"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -595,7 +606,8 @@ msgstr "Опис"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-#: main/main.cpp
+#: main/main.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp
 msgid "Run"
 msgstr "Покрени"
 
@@ -828,7 +840,8 @@ msgid "Quality"
 msgstr ""
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
+#: servers/visual_server.cpp
 #, fuzzy
 msgid "Filters"
 msgstr "Филтери..."
@@ -2389,8 +2402,8 @@ msgid "Open"
 msgstr "Отвори"
 
 #: editor/dependency_editor.cpp
-msgid "Owners Of:"
-msgstr "Власници:"
+msgid "Owners of: %s (Total: %d)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -2705,7 +2718,7 @@ msgid "Bus Options"
 msgstr "Поставке баса"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/project_export.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Дуплирај"
 
@@ -2975,6 +2988,25 @@ msgid "Choose"
 msgstr "Одабери"
 
 #: editor/editor_export.cpp
+msgid "Project export for platform:"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed with errors."
+msgstr "Копирај Путању Чвора"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed sucessfully."
+msgstr "Пакет је инсталиран успешно!"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed."
+msgstr "Неуспех:"
+
+#: editor/editor_export.cpp
 msgid "Storing File:"
 msgstr "Складиштење датотеке:"
 
@@ -2986,6 +3018,31 @@ msgstr "Извозни образац није нађен на очекиван�
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Паковање"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save PCK"
+msgstr "Сачувај као"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Cannot create file \"%s\"."
+msgstr "Неуспех при прављењу директоријума."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to export project files."
+msgstr "Неуспело уписивање фајла:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Can't open file to read from path \"%s\"."
+msgstr "Не могу отворити датотеку за писање:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save ZIP"
+msgstr "Сачувај као"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3116,10 +3173,31 @@ msgstr "Шаблонска датотека није пронађена:\n"
 msgid "Custom release template not found."
 msgstr "Прилагођени образци објаве нису пронађени."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Prepare Template"
+msgstr "Управљај извозним шаблонима"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist."
+msgstr "Путања не постоји."
+
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Template file not found:"
+msgid "Template file not found: \"%s\"."
 msgstr "Шаблонска датотека није пронађена:\n"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to copy export template."
+msgstr "Неважећи извозни нацрт:"
+
+#: editor/editor_export.cpp platform/windows/export/export.cpp
+#: platform/x11/export/export.cpp
+#, fuzzy
+msgid "PCK Embedding"
+msgstr " Пуњење"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3316,9 +3394,9 @@ msgid "Import"
 msgstr "Увоз"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
-#: platform/android/export/export.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#: platform/windows/export/export.cpp
+#: platform/android/export/export.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Export"
 msgstr "Извоз"
 
@@ -5567,6 +5645,11 @@ msgstr ""
 "Нису пронађене поставке извоза за ову платформу.\n"
 "Молим, додајте поставке у менију за извоз."
 
+#: editor/editor_run_native.cpp
+#, fuzzy
+msgid "Project Run"
+msgstr "Пројекат"
+
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
 msgstr "Пиши логику у _run() методи."
@@ -5852,7 +5935,9 @@ msgid "Draw Spaces"
 msgstr "Позиви цртања"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
+#: scene/main/scene_tree.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
 #, fuzzy
 msgid "Navigation"
 msgstr "Направи навигациону мрежу"
@@ -7425,7 +7510,7 @@ msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
-#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#: scene/gui/control.cpp
 #, fuzzy
 msgid "Filter"
 msgstr "Филтери..."
@@ -7721,6 +7806,18 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Чување..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used as a normal map in 3D. Enabling red-green "
+"texture compression to reduce memory usage (blue channel is discarded)."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
+"generation and VRAM texture compression."
+msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -10989,6 +11086,7 @@ msgid "Points"
 msgstr "Помери тачку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Polygons"
 msgstr "Полигон->UV"
@@ -12518,7 +12616,7 @@ msgstr "Неважећа геометрија, неуспеша замена с�
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Convert to Mesh2D"
+msgid "Convert to MeshInstance2D"
 msgstr "Претвори у велика слова"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -13640,8 +13738,7 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Одабери претходни облик, под-плочицу, или плочицу."
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/texture.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/texture.cpp
 #, fuzzy
 msgid "Region"
 msgstr "Режим ротације"
@@ -15427,37 +15524,8 @@ msgstr "Обриши поставку „%s“?"
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"Export templates seem to be missing or invalid."
-msgstr ""
-"Неуспешан извоз пројекта за плазформу '%s'.\n"
-"Изгледа да недостају извозни нацрти или нису исправни."
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"This might be due to a configuration issue in the export preset or your "
-"export settings."
-msgstr ""
-"Неуспешан извоз пројекта за платформу '%s'.\n"
-"Ово може бити због проблема са подешавањима у извозним поставкама или твојим "
-"извозним подешавањима."
-
-#: editor/project_export.cpp
-#, fuzzy
 msgid "Exporting All"
 msgstr "Извоз"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "The given export path doesn't exist:"
-msgstr "Путања не постоји."
-
-#: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Извозни шаблони за ову платформу или нису пронађени или су искварене:"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -15613,6 +15681,11 @@ msgstr "Годот Игра Паковање"
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Извозни шаблони за ову платформу нису пронађени:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Project Export"
+msgstr "Оснивачи пројекта"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -18367,7 +18440,7 @@ msgstr ""
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#: scene/3d/collision_polygon.cpp
 #, fuzzy
 msgid "Polygon"
 msgstr "Полигон->UV"
@@ -19016,7 +19089,6 @@ msgid "Use In Baked Light"
 msgstr "Изпеци МапеСенчења"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#: scene/resources/navigation_mesh.cpp
 msgid "Cell"
 msgstr ""
 
@@ -19045,6 +19117,19 @@ msgstr "Средина"
 #: scene/resources/material.cpp
 msgid "Mask"
 msgstr ""
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Bake Navigation"
+msgstr "Направи навигациону мрежу"
+
+#: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
+#: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Navigation Layers"
+msgstr "Направи навигациону мрежу"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -20698,10 +20783,6 @@ msgid "Could not execute on device."
 msgstr "Неуспех при прављењу директоријума."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unable to find the 'apksigner' tool."
-msgstr ""
-
-#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -20822,12 +20903,16 @@ msgstr ""
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
+#: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Code Signing"
+msgstr "Сигнали"
+
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"'apksigner' could not be found.\n"
-"Please check the command is available in the Android SDK build-tools "
-"directory.\n"
-"The resulting %s is unsigned."
+"'apksigner' could not be found. Please check that the command is available "
+"in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -20845,6 +20930,11 @@ msgstr ""
 #, fuzzy
 msgid "Could not find keystore, unable to export."
 msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Could not start apksigner executable."
+msgstr "Не могу покренути подпроцес!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -20877,7 +20967,7 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unsupported export format!\n"
+msgid "Unsupported export format!"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -20892,9 +20982,7 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"Android build version mismatch:\n"
-"   Template installed: %s\n"
-"   Godot Version: %s\n"
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 "Верзија Android изградње се не подудара:\n"
@@ -20904,12 +20992,12 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name"
+"Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
-msgid "Could not export project files to gradle project\n"
+msgid "Could not export project files to gradle project."
 msgstr "Неуспешна измена project.godot-а у путањи пројекта."
 
 #: platform/android/export/export_plugin.cpp
@@ -20925,7 +21013,7 @@ msgstr "Изградња Android Пројекта (gradle)"
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"Building of Android project failed, check output for the error.\n"
+"Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Изградња Android пројекта неуспешна, провери излаз за грешке.\n"
@@ -20943,7 +21031,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
-msgid "Package not found: %s"
+msgid "Package not found: \"%s\"."
 msgstr "Анимација није нађена: '%s'"
 
 #: platform/android/export/export_plugin.cpp
@@ -20953,15 +21041,12 @@ msgstr "Прављење контура..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
-msgid ""
-"Could not find template APK to export:\n"
-"%s"
+msgid "Could not find template APK to export: \"%s\"."
 msgstr "Неуспешно отварање нацрта за извоз:"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"Missing libraries in the export template for the selected architectures: "
-"%s.\n"
+"Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
@@ -20973,7 +21058,7 @@ msgstr "Додавање %s..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
-msgid "Could not export project files"
+msgid "Could not export project files."
 msgstr "Неуспело уписивање фајла:"
 
 #: platform/android/export/export_plugin.cpp
@@ -21217,6 +21302,17 @@ msgstr "Направи чвор"
 msgid "Custom BG Color"
 msgstr "Направи чвор"
 
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Prepare Templates"
+msgstr "Управљај извозним шаблонима"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Export template not found."
+msgstr "Прилагођени образци објаве нису пронађени."
+
 #: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -21245,23 +21341,32 @@ msgstr "Покрени извезени HTML у уобичајеном прет�
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Could not open template for export:"
+msgid "Could not open template for export: \"%s\"."
 msgstr "Неуспешно отварање нацрта за извоз:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Invalid export template:"
+msgid "Invalid export template: \"%s\"."
 msgstr "Неважећи извозни нацрт:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Could not write file:"
+msgid "Could not write file: \"%s\"."
 msgstr "Неуспело уписивање фајла:"
+
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Icon Creation"
+msgstr "Постави дршку"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Could not read file:"
+msgid "Could not read file: \"%s\"."
 msgstr "Неуспело уписивање фајла:"
+
+#: platform/javascript/export/export.cpp
+msgid "PWA"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -21339,17 +21444,17 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Could not read HTML shell:"
+msgid "Could not read HTML shell: \"%s\"."
 msgstr "Неуспешно читаље произвољне  HTML шкољке:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Could not create HTTP server directory:"
+msgid "Could not create HTTP server directory: %s."
 msgstr "Неуспех при прављењу директоријума."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Error starting HTTP server:"
+msgid "Error starting HTTP server: %d."
 msgstr "Грешка памћена сцена."
 
 #: platform/javascript/export/export.cpp
@@ -21649,9 +21754,28 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open icon file \"%s\"."
+msgstr "Неуспело уписивање фајла:"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start xcrun executable."
+msgstr "Не могу покренути подпроцес!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization failed."
+msgstr "Локализација"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization request UUID: \"%s\""
+msgstr ""
+
+#: platform/osx/export/export.cpp
 msgid ""
-"Note: The notarization process generally takes less than an hour. When the "
-"process is completed, you'll receive an email."
+"The notarization process generally takes less than an hour. When the process "
+"is completed, you'll receive an email."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -21667,9 +21791,59 @@ msgid ""
 msgstr ""
 
 #: platform/osx/export/export.cpp
+msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign require regex module."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
 msgid "No identity found."
 msgstr "Није пронађено!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Cannot sign file %s."
+msgstr "Грешка при чувању TileSet!"
+
+#: platform/osx/export/export.cpp
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "DMG Creation"
+msgstr "Смерови"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start hdiutil executable."
+msgstr "Не могу покренути подпроцес!"
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed - file exists."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed."
+msgstr ""
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -21678,8 +21852,13 @@ msgstr "Прављење приказа"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
-msgid "Could not find template app to export:"
+msgid "Could not find template app to export: \"%s\"."
 msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid export format."
+msgstr "Неважећи извозни нацрт:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -21689,7 +21868,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid ""
-"Requested template binary '%s' not found. It might be missing from your "
+"Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
 
@@ -21728,6 +21907,16 @@ msgstr ""
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
 msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "ZIP Creation"
+msgstr "Пројекат"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open file to read from path \"%s\"."
+msgstr "Неуспешна измена project.godot-а у путањи пројекта."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -22056,6 +22245,11 @@ msgid "Debug Algorithm"
 msgstr "Дебагер"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Неуспех при чувању теме:"
+
+#: platform/windows/export/export.cpp
 msgid "Identity Type"
 msgstr ""
 
@@ -22103,6 +22297,70 @@ msgid "Trademarks"
 msgstr ""
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Resources Modification"
+msgstr "Насумична ротација:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find wine executable at \"%s\"."
+msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start rcedit executable, configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"rcedit failed to modify executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "Неуспешно отварање нацрта за извоз:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid identity type."
+msgstr "Неважећи идентификатор:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid timestamp server."
+msgstr "Неважеће име."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start signtool executable, configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Signtool failed to sign executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Неуспех при чувању теме:"
+
+#: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
@@ -22124,6 +22382,23 @@ msgid "Invalid product version:"
 msgstr "Неважећи GUID продукт."
 
 #: platform/windows/export/export.cpp
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+#, fuzzy
+msgid "Failed to open executable file \"%s\"."
+msgstr "Мора се користити важећа екстензија."
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable file header corrupted."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable \"pck\" section not found."
+msgstr ""
+
+#: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Windows"
 msgstr "Нов Прозор"
@@ -22138,6 +22413,10 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
+msgstr ""
+
+#: platform/x11/export/export.cpp
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
@@ -22268,7 +22547,8 @@ msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
-#: scene/3d/visual_instance.cpp scene/resources/material.cpp
+#: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 #, fuzzy
 msgid "Max Distance"
 msgstr "Одабери Одстојање:"
@@ -23143,17 +23423,18 @@ msgstr ""
 "радио. Молимо постави особину или нацртај многоугао."
 
 #: scene/2d/navigation_polygon.cpp
-#, fuzzy
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"ИнстанцаНавигационогМногоугла мора бити дете или прадете Навигација2Д чвору. "
-"Само обезбеђује навигационе податке."
-
-#: scene/2d/navigation_polygon.cpp
 msgid "Navpoly"
 msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Enter Cost"
+msgstr "Средина Доле"
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Travel Cost"
+msgstr "Путуј"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -24420,15 +24701,6 @@ msgstr "(игнориши)"
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr ""
-
-#: scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"НавМрежнаИнстанца мора бити дете или прадете Навигационог чвора. Само "
-"обезбећује навигационе податке."
 
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 #, fuzzy
@@ -27178,6 +27450,16 @@ msgid "3D Physics"
 msgstr "Слика физике %"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Navigation"
+msgstr "Направи навигациону мрежу"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Navigation"
+msgstr "Направи навигациону мрежу"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -28605,7 +28887,7 @@ msgstr "Прелаз:"
 msgid "Refraction"
 msgstr "Одвојеност:"
 
-#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/material.cpp
 msgid "Detail"
 msgstr ""
 
@@ -28690,7 +28972,12 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
-msgid "Sample Partition Type"
+msgid "Sampling"
+msgstr "Скала: "
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Partition Type"
 msgstr "Постави Врсту Променљиве"
 
 #: scene/resources/navigation_mesh.cpp
@@ -28708,8 +28995,13 @@ msgid "Source Group Name"
 msgstr "Извор"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Agent"
+msgid "Cells"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Agents"
+msgstr "Аргументи Главне Сцене"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -28721,11 +29013,16 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
+msgid "Regions"
+msgstr "Режим ротације"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
 msgid "Merge Size"
 msgstr "Споји од сцене"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Edge"
+msgid "Edges"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
@@ -28736,6 +29033,11 @@ msgstr "Грешка"
 #: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Details"
+msgstr "Учитај уобичајено"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -28756,7 +29058,7 @@ msgid "Ledge Spans"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Filter Walkable Low Height Spans"
+msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -29174,6 +29476,11 @@ msgid "Scenario"
 msgstr "Сцена"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Navigation Map"
+msgstr "Направи навигациону мрежу"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
@@ -29190,6 +29497,26 @@ msgstr "Леви линеарни"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
 msgstr ""
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Default Map Up"
+msgstr "Уобичајено"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Size"
+msgstr "Преглед"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Height"
+msgstr "Тестирање"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Edge Connection Margin"
+msgstr "Повезивање не успешно"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"

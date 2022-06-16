@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"PO-Revision-Date: 2022-06-12 13:19+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -222,9 +222,10 @@ msgid "Data"
 msgstr "Дані"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp main/main.cpp
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
+#: scene/gui/file_dialog.cpp
 msgid "Network"
 msgstr "Мережа"
 
@@ -330,9 +331,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостатньо байтів для їх декодування або вказано некоректний формат."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Некоректні вхідні дані %i (не передано) у виразі"
+msgstr "Некоректні вхідні дані %d (не передано) у виразі"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -376,6 +376,16 @@ msgstr "Черга повідомлень"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "Макс. розмір (кБ)"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Mouse Mode"
+msgstr "Режим переміщення"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Use Accumulated Input"
+msgstr "Видалити введення"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -556,7 +566,8 @@ msgstr "Опис"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-#: main/main.cpp
+#: main/main.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp
 msgid "Run"
 msgstr "Запустити"
 
@@ -764,7 +775,8 @@ msgid "Quality"
 msgstr "Якість"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
+#: servers/visual_server.cpp
 msgid "Filters"
 msgstr "Фільтри"
 
@@ -1289,19 +1301,16 @@ msgid "Remove this track."
 msgstr "Вилучити цю доріжку."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Час (с): "
+msgstr "Час (с):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Розташування"
+msgstr "Розташування:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Обертання"
+msgstr "Обертання:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1318,44 +1327,36 @@ msgid "Type:"
 msgstr "Тип:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Неправильний шаблон експорту:"
+msgstr "(Некоректний, очікуваний тип: %s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing:"
-msgstr "Пом'якшення"
+msgstr "Пом'якшення:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In-Handle:"
-msgstr "Дескриптор входу"
+msgstr "Дескриптор входу:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out-Handle:"
-msgstr "Дескриптор виходу"
+msgstr "Дескриптор виходу:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Stream:"
-msgstr "Потік"
+msgstr "Потік:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Перезапустити (сек.):"
+msgstr "Початок (сек.):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "Наростання (с):"
+msgstr "Кінець (сек.):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "Анімації:"
+msgstr "Кліп анімації:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1570,9 +1571,8 @@ msgid "Add Method Track Key"
 msgstr "Додати ключ доріжки методів"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
-msgstr "Не знайдено метод у об'єкті: "
+msgstr "Не знайдено метод у об'єкті:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2184,8 +2184,8 @@ msgid "Open"
 msgstr "Відкрити"
 
 #: editor/dependency_editor.cpp
-msgid "Owners Of:"
-msgstr "Власники:"
+msgid "Owners of: %s (Total: %d)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2488,7 +2488,7 @@ msgid "Bus Options"
 msgstr "Параметри шини"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/project_export.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Дублювати"
 
@@ -2541,9 +2541,8 @@ msgid "There is no '%s' file."
 msgstr "Немає файла «%s»."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Макет"
+msgstr "Компонування:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2745,6 +2744,25 @@ msgid "Choose"
 msgstr "Оберіть"
 
 #: editor/editor_export.cpp
+msgid "Project export for platform:"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed with errors."
+msgstr "Повні шляхи до файлів"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed sucessfully."
+msgstr "Пакунок успішно встановлено!"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed."
+msgstr "Не вдалося:"
+
+#: editor/editor_export.cpp
 msgid "Storing File:"
 msgstr "Збереження файлу:"
 
@@ -2755,6 +2773,31 @@ msgstr "У очікуваному каталозі не знайдено шаб�
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Пакування"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save PCK"
+msgstr "Зберегти як"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Cannot create file \"%s\"."
+msgstr "Неможливо створити теку."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to export project files."
+msgstr "Не вдалося експортувати файли проєкту"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Can't open file to read from path \"%s\"."
+msgstr "Неможливо відкрити файл для запису:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save ZIP"
+msgstr "Зберегти як"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2873,9 +2916,31 @@ msgstr "Нетипового шаблону діагностики не знай
 msgid "Custom release template not found."
 msgstr "Нетипового шаблону випуску не знайдено."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Prepare Template"
+msgstr "Керування шаблонами"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist."
+msgstr "Вказаного шляху для експортування не існує:"
+
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-msgid "Template file not found:"
+#, fuzzy
+msgid "Template file not found: \"%s\"."
 msgstr "Файл шаблону не знайдено:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to copy export template."
+msgstr "Неправильний шаблон експорту:"
+
+#: editor/editor_export.cpp platform/windows/export/export.cpp
+#: platform/x11/export/export.cpp
+#, fuzzy
+msgid "PCK Embedding"
+msgstr "Фаска"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3056,9 +3121,9 @@ msgid "Import"
 msgstr "Імпорт"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
-#: platform/android/export/export.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#: platform/windows/export/export.cpp
+#: platform/android/export/export.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Export"
 msgstr "Експортування"
 
@@ -5051,9 +5116,8 @@ msgid "Size:"
 msgstr "Розмір:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "Сторінка: "
+msgstr "Сторінка:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5149,6 +5213,11 @@ msgstr ""
 "цієї платформи.\n"
 "Будь ласка, додайте придатний до використання набір параметрів за допомогою "
 "меню «Експорт» або визначне наявний набір як придатний до використання."
+
+#: editor/editor_run_native.cpp
+#, fuzzy
+msgid "Project Run"
+msgstr "Проєкт"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5405,7 +5474,9 @@ msgid "Draw Spaces"
 msgstr "Візуалізація пробілів"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
+#: scene/main/scene_tree.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
 msgid "Navigation"
 msgstr "Навігація"
 
@@ -6818,7 +6889,7 @@ msgstr "Повторення"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
-#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#: scene/gui/control.cpp
 msgid "Filter"
 msgstr "Фільтр"
 
@@ -7052,9 +7123,8 @@ msgid "Generating Lightmaps"
 msgstr "Створення карт освітлення"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh:"
-msgstr "Створення для сітки: "
+msgstr "Створення для сітки:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -7079,6 +7149,18 @@ msgstr "Повернули об'єкт, що походить від Node, у м
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Збереження..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used as a normal map in 3D. Enabling red-green "
+"texture compression to reduce memory usage (blue channel is discarded)."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
+"generation and VRAM texture compression."
+msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -8047,9 +8129,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Встановити кінець анімації. Корисно для допоміжних переходів."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition:"
-msgstr "Перехід: "
+msgstr "Перехід:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Play Mode:"
@@ -9808,9 +9889,8 @@ msgid "Volume"
 msgstr "Об'єм"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source:"
-msgstr "Джерело випромінювання: "
+msgstr "Джерело випромінювання:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10043,6 +10123,7 @@ msgid "Points"
 msgstr "Точки"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "Полігони"
 
@@ -10905,15 +10986,13 @@ msgstr "Пересунути"
 
 #. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scaling:"
-msgstr "Масштаб: "
+msgstr "Масштаб:"
 
 #. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translating:"
-msgstr "Перенесення: "
+msgstr "Перенесення:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -11424,7 +11503,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некоректна геометрія, неможливо замінити сіткою."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to Mesh2D"
+#, fuzzy
+msgid "Convert to MeshInstance2D"
 msgstr "Перетворити на Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -11456,19 +11536,16 @@ msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Simplification:"
-msgstr "Спрощення: "
+msgstr "Спрощення:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels):"
-msgstr "Стискання (пікселі): "
+msgstr "Стискання (пікселі):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Grow (Pixels):"
-msgstr "Зростання (пікселі): "
+msgstr "Зростання (пікселі):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -12410,8 +12487,7 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Вибір попередньої форми, підплитки або плитки."
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/texture.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/texture.cpp
 msgid "Region"
 msgstr "Область"
 
@@ -12779,7 +12855,7 @@ msgstr "Інтервал субтитрів"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occluder Offset"
-msgstr ""
+msgstr "Зсув покриття"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation Offset"
@@ -12816,9 +12892,8 @@ msgid "Selected Occlusion"
 msgstr "Позначене зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tileset Script"
-msgstr "Filter Script (Фільтрувальний скрипт)"
+msgstr "Скрипт набору плиток"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
@@ -13908,46 +13983,21 @@ msgstr "Активний"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "Експортувати проєкт для усіх визначених наборів."
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
+"Щоб можна було скористатися пунктом «Експортувати усе», має бути визначено "
+"шлях для експортування для усіх наборів."
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Вилучити набір «%s»?"
 
 #: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"Export templates seem to be missing or invalid."
-msgstr ""
-"Не вдалося експортувати проєкт для платформи «%s».\n"
-"Здається, шаблони експортування пропущено або вони є некоректними."
-
-#: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"This might be due to a configuration issue in the export preset or your "
-"export settings."
-msgstr ""
-"Не вдалося експортувати проєкт для платформи «%s».\n"
-"Причиною може бути помилка у налаштуваннях у наборі налаштувань для "
-"експортування або параметрах експортування."
-
-#: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Експортування усього"
-
-#: editor/project_export.cpp
-msgid "The given export path doesn't exist:"
-msgstr "Вказаного шляху для експортування не існує:"
-
-#: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr ""
-"Не вистачає шаблонів експортування для платформи або шаблони пошкоджено:"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -14059,41 +14109,41 @@ msgid "More Info..."
 msgstr "Додаткова інформація…"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "Експортувати PCK/Zip"
+msgstr "Експортувати PCK/Zip…"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Project..."
-msgstr "Експортувати проєкт"
+msgstr "Експортувати проєкт…"
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Експортувати усе"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Choose an export mode:"
-msgstr "Будь ласка, виберіть порожню теку."
+msgstr "Виберіть режим експортування:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
-msgstr "Експортувати усе"
+msgstr "Експортувати усе…"
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
 msgstr "Файл ZIP"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Godot Project Pack"
-msgstr "Пакунок гри Godot"
+msgstr "Пакунок проєкту Godot"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Немає шаблонів експортування для цієї платформи:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Project Export"
+msgstr "Засновники проєкту"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -15644,9 +15694,8 @@ msgid "Attach Node Script"
 msgstr "Долучити скрипт вузла"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote %s:"
-msgstr "Віддалений "
+msgstr "Віддалений %s:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16461,7 +16510,7 @@ msgstr "Сторони Кільця"
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#: scene/3d/collision_polygon.cpp
 msgid "Polygon"
 msgstr "Багатокутник"
 
@@ -16531,7 +16580,7 @@ msgstr "Перемикання сервера"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Verify"
-msgstr ""
+msgstr "Перевірка DTLS"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Hostname"
@@ -16621,9 +16670,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Вимкнений одинак GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Libraries:"
-msgstr "Бібліотеки: "
+msgstr "Бібліотеки:"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 msgid "Class Name"
@@ -16648,7 +16696,7 @@ msgstr "Скрипт"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
-msgstr ""
+msgstr "Колір визначення функції"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Node Path Color"
@@ -16664,11 +16712,11 @@ msgstr "вважати попередження помилками"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Exclude Addons"
-msgstr ""
+msgstr "Виключити додатки"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Autocomplete Setters And Getters"
-msgstr ""
+msgstr "Автоматичне доповнення встановлювачів і отримувачів"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -17018,7 +17066,6 @@ msgid "Use In Baked Light"
 msgstr "Використовувати у запеченому світлі"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#: scene/resources/navigation_mesh.cpp
 msgid "Cell"
 msgstr "Мобільний"
 
@@ -17043,6 +17090,19 @@ msgstr "Центр за Z"
 #: scene/resources/material.cpp
 msgid "Mask"
 msgstr "Маска"
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Bake Navigation"
+msgstr "Навігація"
+
+#: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
+#: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Navigation Layers"
+msgstr "Поведінка навігації"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -17447,9 +17507,8 @@ msgstr ""
 "вузла! Будь ласка, виправте ваш вузол."
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Node returned an invalid sequence output:"
-msgstr "Вузлом повернуто некоректну послідовність даних: "
+msgstr "Вузлом повернуто некоректну послідовність даних:"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -17457,9 +17516,8 @@ msgstr ""
 "Виявлено біт послідовності, але не вузол у стеку. Повідомте про цю ваду!"
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Stack overflow with stack depth:"
-msgstr "Переповнення стека, глибина стека: "
+msgstr "Переповнення стека, глибина стека:"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Visual Script"
@@ -17827,18 +17885,16 @@ msgid "for (elem) in (input):"
 msgstr "для (elem) у (input):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Input type not iterable:"
-msgstr "Тип вводу не ітерабельний: "
+msgstr "Ітерація за вхідним типом неможлива:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
 msgstr "Ітератор став недійсним"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Iterator became invalid:"
-msgstr "Ітератор став недійсним: "
+msgstr "Ітератор став некоректним:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
@@ -17990,14 +18046,12 @@ msgid "Operator"
 msgstr "Оператор"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid argument of type:"
-msgstr ": Неправильний тип аргументу: "
+msgstr "Некоректний тип аргументу:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid arguments:"
-msgstr ": Неприпустимі аргументи: "
+msgstr "Некоректні аргументи:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -18008,14 +18062,12 @@ msgid "Var Name"
 msgstr "Назва змінної"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableGet not found in script:"
-msgstr "Не знайдено VariableGet у скрипті: "
+msgstr "Не знайдено VariableGet у скрипті:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableSet not found in script:"
-msgstr "Не знайдено VariableSet у скрипті: "
+msgstr "Не знайдено VariableSet у скрипті:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"
@@ -18502,10 +18554,6 @@ msgid "Could not execute on device."
 msgstr "Не вдалося виконати на пристрої."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unable to find the 'apksigner' tool."
-msgstr "Не вдалося знайти програму apksigner."
-
-#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -18640,12 +18688,17 @@ msgstr ""
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr "Версія «SDK цілі» має бути більшою або рівною за версію «Мін. SDK»."
 
+#: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Code Signing"
+msgstr "DMG із підписуванням коду"
+
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"'apksigner' could not be found.\n"
-"Please check the command is available in the Android SDK build-tools "
-"directory.\n"
-"The resulting %s is unsigned."
+"'apksigner' could not be found. Please check that the command is available "
+"in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 "Не вдалося знайти «apksigner».\n"
 "Будь ласка, перевірте, чи є програма доступною у каталозі build-tools набору "
@@ -18663,6 +18716,11 @@ msgstr "Підписування випуску %s…"
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Could not start apksigner executable."
+msgstr "Не вдалося запустити підпроцес!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18696,7 +18754,8 @@ msgstr ""
 "Некоректна назва файла! Пакунок Android APK повинен мати суфікс назви *.apk."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unsupported export format!\n"
+#, fuzzy
+msgid "Unsupported export format!"
 msgstr "Непідтримуваний формат експортування!\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18709,10 +18768,9 @@ msgstr ""
 "допомогою меню «Проєкт»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Android build version mismatch:\n"
-"   Template installed: %s\n"
-"   Godot Version: %s\n"
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 "Невідповідність версія для збирання для Android:\n"
@@ -18722,13 +18780,15 @@ msgstr ""
 "меню «Проєкт»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name"
+"Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "Не вдалося перезаписати файли res://android/build/res/*.xml із назвою проєкту"
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files to gradle project\n"
+#, fuzzy
+msgid "Could not export project files to gradle project."
 msgstr "Не вдалося експортувати файли проєкту до проєкту gradle\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18740,8 +18800,9 @@ msgid "Building Android Project (gradle)"
 msgstr "Збирання проєкту Android (gradle)"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Building of Android project failed, check output for the error.\n"
+"Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Не вдалося виконати збирання проєкту Android. Ознайомтеся із виведеними "
@@ -18762,7 +18823,8 @@ msgstr ""
 "дані можна знайти у каталозі проєкту gradle."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Package not found: %s"
+#, fuzzy
+msgid "Package not found: \"%s\"."
 msgstr "Пакунок не знайдено: %s"
 
 #: platform/android/export/export_plugin.cpp
@@ -18770,17 +18832,16 @@ msgid "Creating APK..."
 msgstr "Створення APK…"
 
 #: platform/android/export/export_plugin.cpp
-msgid ""
-"Could not find template APK to export:\n"
-"%s"
+#, fuzzy
+msgid "Could not find template APK to export: \"%s\"."
 msgstr ""
 "Не вдалося знайти шаблон APK для експортування:\n"
 "%s"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Missing libraries in the export template for the selected architectures: "
-"%s.\n"
+"Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
@@ -18793,7 +18854,8 @@ msgid "Adding files..."
 msgstr "Додавання файлів…"
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files"
+#, fuzzy
+msgid "Could not export project files."
 msgstr "Не вдалося експортувати файли проєкту"
 
 #: platform/android/export/export_plugin.cpp
@@ -19028,6 +19090,17 @@ msgstr "Нетиповий колір тла"
 msgid "Custom BG Color"
 msgstr "Нетиповий колір тла"
 
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Prepare Templates"
+msgstr "Керування шаблонами"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Export template not found."
+msgstr "Нетипового шаблону випуску не знайдено."
+
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
@@ -19050,20 +19123,33 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Виконати експортований HTML у браузері за умовчанням системи."
 
 #: platform/javascript/export/export.cpp
-msgid "Could not open template for export:"
+#, fuzzy
+msgid "Could not open template for export: \"%s\"."
 msgstr "Не вдалося відкрити шаблон для експорту:"
 
 #: platform/javascript/export/export.cpp
-msgid "Invalid export template:"
+#, fuzzy
+msgid "Invalid export template: \"%s\"."
 msgstr "Неправильний шаблон експорту:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not write file:"
+#, fuzzy
+msgid "Could not write file: \"%s\"."
 msgstr "Не вдалося записати файл:"
 
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Icon Creation"
+msgstr "Поле піктограми"
+
 #: platform/javascript/export/export.cpp
-msgid "Could not read file:"
+#, fuzzy
+msgid "Could not read file: \"%s\"."
 msgstr "Не вдалося прочитати файл:"
+
+#: platform/javascript/export/export.cpp
+msgid "PWA"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Variant"
@@ -19134,15 +19220,18 @@ msgid "Icon 512 X 512"
 msgstr "Піктограма 512⨯12"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not read HTML shell:"
+#, fuzzy
+msgid "Could not read HTML shell: \"%s\"."
 msgstr "Не вдалося прочитати оболонку HTML:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not create HTTP server directory:"
+#, fuzzy
+msgid "Could not create HTTP server directory: %s."
 msgstr "Не вдалося створити каталог на сервері HTTP:"
 
 #: platform/javascript/export/export.cpp
-msgid "Error starting HTTP server:"
+#, fuzzy
+msgid "Error starting HTTP server: %d."
 msgstr "Помилка під час спроби запуску сервера HTTP:"
 
 #: platform/javascript/export/export.cpp
@@ -19407,9 +19496,29 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open icon file \"%s\"."
+msgstr "Не вдалося експортувати файли проєкту"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start xcrun executable."
+msgstr "Не вдалося запустити підпроцес!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization failed."
+msgstr "Засвідчення"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization request UUID: \"%s\""
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
 msgid ""
-"Note: The notarization process generally takes less than an hour. When the "
-"process is completed, you'll receive an email."
+"The notarization process generally takes less than an hour. When the process "
+"is completed, you'll receive an email."
 msgstr ""
 "Зауваження: процедура засвідчення, загалом, триває не більше години. Щойно "
 "процедуру буде завершено, ви отримаєте повідомлення електронною поштою."
@@ -19431,16 +19540,81 @@ msgstr ""
 "програми (необов'язкова процедура):"
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+"Використання часових позначок є несумісним із одноразовим підписом — його "
+"буде вимкнено!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+"Стійке середовище запуску є несумісним із одноразовим підписом — його буде "
+"вимкнено!"
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign require regex module."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
 msgstr "Не знайдено профілю."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Cannot sign file %s."
+msgstr "Помилка під час збереження файла: %s"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+"У цій операційній системі не передбачено підтримки відносних символічних "
+"посилань. Експортований проєкт може виявитися непрацездатним!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "DMG Creation"
+msgstr "Напрямок"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start hdiutil executable."
+msgstr "Не вдалося запустити підпроцес!"
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed - file exists."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed."
+msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Creating app bundle"
 msgstr "Створюємо комплект програми"
 
 #: platform/osx/export/export.cpp
-msgid "Could not find template app to export:"
+#, fuzzy
+msgid "Could not find template app to export: \"%s\"."
 msgstr "Не вдалося знайти програму-шаблон для експортування:"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid export format."
+msgstr "Неправильний шаблон експорту:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19451,8 +19625,9 @@ msgstr ""
 "посилань. Експортований проєкт може виявитися непрацездатним!"
 
 #: platform/osx/export/export.cpp
+#, fuzzy
 msgid ""
-"Requested template binary '%s' not found. It might be missing from your "
+"Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
 "Не знайдено двійкового файла шаблона «%s». Ймовірно, його немає у вашому "
@@ -19497,6 +19672,16 @@ msgstr ""
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
 msgstr "Надсилаємо архів для засвідчення"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "ZIP Creation"
+msgstr "Проєкція"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open file to read from path \"%s\"."
+msgstr "Не вдалося експортувати файли проєкту до проєкту gradle\n"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -19835,6 +20020,11 @@ msgid "Debug Algorithm"
 msgstr "Алгоритм діагностики"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Не вдалося вилучити тимчасовий файл:"
+
+#: platform/windows/export/export.cpp
 msgid "Identity Type"
 msgstr "Тип профілю"
 
@@ -19875,6 +20065,78 @@ msgid "Trademarks"
 msgstr "Торгівельні марки"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Resources Modification"
+msgstr "Імпульсні сповіщення"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find wine executable at \"%s\"."
+msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid ""
+"Could not start rcedit executable, configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit)."
+msgstr ""
+"Щоб мати змогу змінювати піктограму або дані щодо програми, має бути "
+"налаштовано інструмент rcedit у параметрах редактора (Експорт > Windows > "
+"Rcedit)."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"rcedit failed to modify executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid identity type."
+msgstr "Тип профілю"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid timestamp server."
+msgstr "Некоректна назва."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid ""
+"Could not start signtool executable, configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool)."
+msgstr ""
+"Щоб мати змогу змінювати піктограму або дані щодо програми, має бути "
+"налаштовано інструмент rcedit у параметрах редактора (Експорт > Windows > "
+"Rcedit)."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Signtool failed to sign executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Не вдалося вилучити тимчасовий файл:"
+
+#: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
@@ -19896,6 +20158,23 @@ msgid "Invalid product version:"
 msgstr "Некоректна версія продукту:"
 
 #: platform/windows/export/export.cpp
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+#, fuzzy
+msgid "Failed to open executable file \"%s\"."
+msgstr "Некоректний виконуваний файл."
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable file header corrupted."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable \"pck\" section not found."
+msgstr ""
+
+#: platform/windows/export/export.cpp
 msgid "Windows"
 msgstr "Вікна"
 
@@ -19910,6 +20189,10 @@ msgstr ""
 #: platform/windows/export/export.cpp
 msgid "Wine"
 msgstr "Вино"
+
+#: platform/x11/export/export.cpp
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
+msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/texture.cpp
@@ -20021,7 +20304,8 @@ msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
-#: scene/3d/visual_instance.cpp scene/resources/material.cpp
+#: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 msgid "Max Distance"
 msgstr "Макс. відстань"
 
@@ -20799,16 +21083,18 @@ msgstr ""
 "намалюйте багатокутник."
 
 #: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance має бути дочірнім елементом вузла Navigation2D або "
-"елементом ще нижчої підпорядкованості. Він надає лише навігаційні дані."
-
-#: scene/2d/navigation_polygon.cpp
 msgid "Navpoly"
 msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Enter Cost"
+msgstr "За центром внизу"
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Travel Cost"
+msgstr "Подорож"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -21922,14 +22208,6 @@ msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr "NavigationAgent можна використовувати лише під просторовим вузлом."
 
-#: scene/3d/navigation_mesh_instance.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance має бути дочірнім елементом вузла Navigation або "
-"елементом ще нижчої підпорядкованості. Він надає лише навігаційні дані."
-
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 msgid "NavMesh"
 msgstr "NavMesh"
@@ -22974,9 +23252,8 @@ msgid "Delay"
 msgstr "Затримка торкання"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Random Delay"
-msgstr "Випадковий нахил:"
+msgstr "Випадкова затримка"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
@@ -24396,6 +24673,16 @@ msgid "3D Physics"
 msgstr "Просторова фізика"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Navigation"
+msgstr "Навігація"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Navigation"
+msgstr "Навігація"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr "Використовувати hiDPI"
 
@@ -25644,7 +25931,7 @@ msgstr "Перехід"
 msgid "Refraction"
 msgstr "Заломлення"
 
-#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/material.cpp
 msgid "Detail"
 msgstr "Подробиці"
 
@@ -25719,7 +26006,13 @@ msgid "Visible Instance Count"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Sample Partition Type"
+#, fuzzy
+msgid "Sampling"
+msgstr "Масштаб:"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Partition Type"
 msgstr "Встановити базовий тип змінної"
 
 #: scene/resources/navigation_mesh.cpp
@@ -25735,7 +26028,13 @@ msgid "Source Group Name"
 msgstr "Назва групи джерел"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Agent"
+#, fuzzy
+msgid "Cells"
+msgstr "Мобільний"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Agents"
 msgstr "АГЕНТ"
 
 #: scene/resources/navigation_mesh.cpp
@@ -25747,11 +26046,17 @@ msgid "Max Slope"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Regions"
+msgstr "Область"
+
+#: scene/resources/navigation_mesh.cpp
 msgid "Merge Size"
 msgstr "Об'єднати зі сцени"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Edge"
+#, fuzzy
+msgid "Edges"
 msgstr "Край"
 
 #: scene/resources/navigation_mesh.cpp
@@ -25761,6 +26066,11 @@ msgstr "Помилка"
 #: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Details"
+msgstr "Подробиці"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Sample Distance"
@@ -25779,7 +26089,7 @@ msgid "Ledge Spans"
 msgstr "Розміри планки"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Filter Walkable Low Height Spans"
+msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -26153,6 +26463,11 @@ msgid "Scenario"
 msgstr "Сценарій"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Navigation Map"
+msgstr "Навігація"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
@@ -26167,6 +26482,26 @@ msgstr "Лівий лінійний"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
 msgstr ""
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Default Map Up"
+msgstr "Типовий крок пересування"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Size"
+msgstr "Розмір комірки"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Height"
+msgstr "Висота комірки"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Edge Connection Margin"
+msgstr "Поле з'єднання ребер"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
