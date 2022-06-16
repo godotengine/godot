@@ -441,8 +441,11 @@
 		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
 			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
-		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on https://github.com/godotengine/godot/issues&quot;">
-			Message to be displayed before the backtrace when the engine crashes.
+		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
+			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
+		</member>
+		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
+			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.

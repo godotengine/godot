@@ -603,7 +603,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
-			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
