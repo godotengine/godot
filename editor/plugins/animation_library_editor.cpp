@@ -419,12 +419,12 @@ void AnimationLibraryEditor::_item_renamed() {
 	}
 }
 
-void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_button) {
+void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_item->get_parent() == tree->get_root()) {
 		// Library
 		StringName lib_name = p_item->get_metadata(0);
 		Ref<AnimationLibrary> al = player->call("get_animation_library", lib_name);
-		switch (p_button) {
+		switch (p_id) {
 			case LIB_BUTTON_ADD: {
 				add_library_dialog->set_title(TTR("Animation Name:"));
 				add_library_name->set_text("");
