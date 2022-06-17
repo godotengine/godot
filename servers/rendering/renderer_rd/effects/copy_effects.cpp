@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "copy_effects.h"
+#include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "thirdparty/misc/cubemap_coeffs.h"
 
 using namespace RendererRD;
 
@@ -123,16 +125,157 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 			}
 		}
 	}
+
+	{
+		// Initialize copier
+		Vector<String> copy_modes;
+		copy_modes.push_back("\n");
+
+		cube_to_dp.shader.initialize(copy_modes);
+
+		cube_to_dp.shader_version = cube_to_dp.shader.version_create();
+		RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0);
+		RD::PipelineDepthStencilState dss;
+		dss.enable_depth_test = true;
+		dss.depth_compare_operator = RD::COMPARE_OP_ALWAYS;
+		dss.enable_depth_write = true;
+		cube_to_dp.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
+	}
+
+	{
+		//Initialize cubemap downsampler
+		Vector<String> cubemap_downsampler_modes;
+		cubemap_downsampler_modes.push_back("");
+
+		if (prefer_raster_effects) {
+			cubemap_downsampler.raster_shader.initialize(cubemap_downsampler_modes);
+
+			cubemap_downsampler.shader_version = cubemap_downsampler.raster_shader.version_create();
+
+			cubemap_downsampler.raster_pipeline.setup(cubemap_downsampler.raster_shader.version_get_shader(cubemap_downsampler.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		} else {
+			cubemap_downsampler.compute_shader.initialize(cubemap_downsampler_modes);
+
+			cubemap_downsampler.shader_version = cubemap_downsampler.compute_shader.version_create();
+
+			cubemap_downsampler.compute_pipeline = RD::get_singleton()->compute_pipeline_create(cubemap_downsampler.compute_shader.version_get_shader(cubemap_downsampler.shader_version, 0));
+			cubemap_downsampler.raster_pipeline.clear();
+		}
+	}
+
+	{
+		// Initialize cubemap filter
+		filter.use_high_quality = GLOBAL_GET("rendering/reflections/sky_reflections/fast_filter_high_quality");
+
+		Vector<String> cubemap_filter_modes;
+		cubemap_filter_modes.push_back("\n#define USE_HIGH_QUALITY\n");
+		cubemap_filter_modes.push_back("\n#define USE_LOW_QUALITY\n");
+		cubemap_filter_modes.push_back("\n#define USE_HIGH_QUALITY\n#define USE_TEXTURE_ARRAY\n");
+		cubemap_filter_modes.push_back("\n#define USE_LOW_QUALITY\n#define USE_TEXTURE_ARRAY\n");
+
+		if (filter.use_high_quality) {
+			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(high_quality_coeffs));
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(high_quality_coeffs), &high_quality_coeffs[0]);
+		} else {
+			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(low_quality_coeffs));
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(low_quality_coeffs), &low_quality_coeffs[0]);
+		}
+
+		if (prefer_raster_effects) {
+			filter.raster_shader.initialize(cubemap_filter_modes);
+
+			// array variants are not supported in raster
+			filter.raster_shader.set_variant_enabled(FILTER_MODE_HIGH_QUALITY_ARRAY, false);
+			filter.raster_shader.set_variant_enabled(FILTER_MODE_LOW_QUALITY_ARRAY, false);
+
+			filter.shader_version = filter.raster_shader.version_create();
+
+			for (int i = 0; i < FILTER_MODE_MAX; i++) {
+				if (filter.raster_shader.is_variant_enabled(i)) {
+					filter.raster_pipelines[i].setup(filter.raster_shader.version_get_shader(filter.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+				} else {
+					filter.raster_pipelines[i].clear();
+				}
+			}
+
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.append_id(filter.coefficient_buffer);
+				uniforms.push_back(u);
+			}
+			filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.raster_shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
+		} else {
+			filter.compute_shader.initialize(cubemap_filter_modes);
+			filter.shader_version = filter.compute_shader.version_create();
+
+			for (int i = 0; i < FILTER_MODE_MAX; i++) {
+				filter.compute_pipelines[i] = RD::get_singleton()->compute_pipeline_create(filter.compute_shader.version_get_shader(filter.shader_version, i));
+				filter.raster_pipelines[i].clear();
+			}
+
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.append_id(filter.coefficient_buffer);
+				uniforms.push_back(u);
+			}
+			filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.compute_shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
+		}
+	}
+
+	{
+		// Initialize roughness
+		Vector<String> cubemap_roughness_modes;
+		cubemap_roughness_modes.push_back("");
+
+		if (prefer_raster_effects) {
+			roughness.raster_shader.initialize(cubemap_roughness_modes);
+
+			roughness.shader_version = roughness.raster_shader.version_create();
+
+			roughness.raster_pipeline.setup(roughness.raster_shader.version_get_shader(roughness.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+
+		} else {
+			roughness.compute_shader.initialize(cubemap_roughness_modes);
+
+			roughness.shader_version = roughness.compute_shader.version_create();
+
+			roughness.compute_pipeline = RD::get_singleton()->compute_pipeline_create(roughness.compute_shader.version_get_shader(roughness.shader_version, 0));
+			roughness.raster_pipeline.clear();
+		}
+	}
 }
 
 CopyEffects::~CopyEffects() {
 	if (prefer_raster_effects) {
 		blur_raster.shader.version_free(blur_raster.shader_version);
+		cubemap_downsampler.raster_shader.version_free(cubemap_downsampler.shader_version);
+		filter.raster_shader.version_free(filter.shader_version);
+		roughness.raster_shader.version_free(roughness.shader_version);
 	} else {
 		copy.shader.version_free(copy.shader_version);
+		cubemap_downsampler.compute_shader.version_free(cubemap_downsampler.shader_version);
+		filter.compute_shader.version_free(filter.shader_version);
+		roughness.compute_shader.version_free(roughness.shader_version);
+	}
+
+	RD::get_singleton()->free(filter.coefficient_buffer);
+
+	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+		RD::get_singleton()->free(filter.image_uniform_set);
+	}
+
+	if (RD::get_singleton()->uniform_set_is_valid(filter.uniform_set)) {
+		RD::get_singleton()->free(filter.uniform_set);
 	}
 
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
+	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 
 	singleton = nullptr;
 }
@@ -680,4 +823,263 @@ void CopyEffects::set_color(RID p_dest_texture, const Color &p_color, const Rect
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_region.size.width, p_region.size.height, 1);
 	RD::get_singleton()->compute_list_end();
+}
+
+void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	CopyToDPPushConstant push_constant;
+	push_constant.screen_rect[0] = p_rect.position.x;
+	push_constant.screen_rect[1] = p_rect.position.y;
+	push_constant.screen_rect[2] = p_rect.size.width;
+	push_constant.screen_rect[3] = p_rect.size.height;
+	push_constant.z_far = p_z_far;
+	push_constant.z_near = p_z_near;
+	push_constant.texel_size[0] = 1.0f / p_dst_size.x;
+	push_constant.texel_size[1] = 1.0f / p_dst_size.y;
+	push_constant.texel_size[0] *= p_dp_flip ? -1.0f : 1.0f; // Encode dp flip as x size sign
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
+
+	RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, cube_to_dp.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_TRANSFER);
+}
+
+void CopyEffects::cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute based cubemap downsample with the mobile renderer.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	cubemap_downsampler.push_constant.face_size = p_size.x;
+	cubemap_downsampler.push_constant.face_id = 0; // we render all 6 sides to each layer in one call
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_cubemap(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_cubemap }));
+	RD::Uniform u_dest_cubemap(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_dest_cubemap }));
+
+	RID shader = cubemap_downsampler.compute_shader.version_get_shader(cubemap_downsampler.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, cubemap_downsampler.compute_pipeline);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_cubemap), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_dest_cubemap), 1);
+
+	int x_groups = (p_size.x - 1) / 8 + 1;
+	int y_groups = (p_size.y - 1) / 8 + 1;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &cubemap_downsampler.push_constant, sizeof(CubemapDownsamplerPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 6); // one z_group for each face
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void CopyEffects::cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, const Size2i &p_size) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use raster based cubemap downsample with the clustered renderer.");
+	ERR_FAIL_COND_MSG(p_face_id >= 6, "Raster implementation of cubemap downsample must process one side at a time.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	cubemap_downsampler.push_constant.face_size = p_size.x;
+	cubemap_downsampler.push_constant.face_id = p_face_id;
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_cubemap(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_cubemap }));
+
+	RID shader = cubemap_downsampler.raster_shader.version_get_shader(cubemap_downsampler.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, cubemap_downsampler.raster_pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_cubemap), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &cubemap_downsampler.push_constant, sizeof(CubemapDownsamplerPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void CopyEffects::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute based cubemap filter with the mobile renderer.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	Vector<RD::Uniform> uniforms;
+	for (int i = 0; i < p_dest_cubemap.size(); i++) {
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+		u.binding = i;
+		u.append_id(p_dest_cubemap[i]);
+		uniforms.push_back(u);
+	}
+	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+		RD::get_singleton()->free(filter.image_uniform_set);
+	}
+	filter.image_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.compute_shader.version_get_shader(filter.shader_version, 0), 2);
+
+	// setup our uniforms
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_cubemap(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_mipmap_sampler, p_source_cubemap }));
+
+	int mode = p_use_array ? FILTER_MODE_HIGH_QUALITY_ARRAY : FILTER_MODE_HIGH_QUALITY;
+	mode = filter.use_high_quality ? mode : mode + 1;
+
+	RID shader = filter.compute_shader.version_get_shader(filter.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter.compute_pipelines[mode]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_cubemap), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.uniform_set, 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.image_uniform_set, 2);
+
+	int x_groups = p_use_array ? 1792 : 342; // (128 * 128 * 7) / 64 : (128*128 + 64*64 + 32*32 + 16*16 + 8*8 + 4*4 + 2*2) / 64
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, 6, 1); // one y_group for each face
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void CopyEffects::cubemap_filter_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_mip_level) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use raster based cubemap filter with the clustered renderer.");
+	ERR_FAIL_COND_MSG(p_face_id >= 6, "Raster implementation of cubemap filter must process one side at a time.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	// TODO implement!
+	CubemapFilterRasterPushConstant push_constant;
+	push_constant.mip_level = p_mip_level;
+	push_constant.face_id = p_face_id;
+
+	// setup our uniforms
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_cubemap(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_mipmap_sampler, p_source_cubemap }));
+
+	CubemapFilterMode mode = filter.use_high_quality ? FILTER_MODE_HIGH_QUALITY : FILTER_MODE_LOW_QUALITY;
+
+	RID shader = filter.raster_shader.version_get_shader(filter.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, filter.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_cubemap), 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, filter.uniform_set, 1);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CubemapFilterRasterPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void CopyEffects::cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute based cubemap roughness with the mobile renderer.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
+
+	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
+	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.use_direct_write = p_roughness == 0.0;
+	roughness.push_constant.face_size = p_size;
+
+	// setup our uniforms
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_mipmap_sampler, p_source_rd_texture }));
+	RD::Uniform u_dest_texture(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_dest_texture }));
+
+	RID shader = roughness.compute_shader.version_get_shader(filter.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, roughness.compute_pipeline);
+
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_dest_texture), 1);
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	int x_groups = (p_size - 1) / 8 + 1;
+	int y_groups = (p_size - 1) / 8 + 1;
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, p_face_id > 9 ? 6 : 1);
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void CopyEffects::cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use raster based cubemap roughness with the clustered renderer.");
+	ERR_FAIL_COND_MSG(p_face_id >= 6, "Raster implementation of cubemap roughness must process one side at a time.");
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
+
+	roughness.push_constant.face_id = p_face_id;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
+	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.use_direct_write = p_roughness == 0.0;
+	roughness.push_constant.face_size = p_size;
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
+
+	RID shader = roughness.raster_shader.version_get_shader(filter.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, roughness.raster_pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
 }
