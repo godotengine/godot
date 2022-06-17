@@ -29,7 +29,8 @@ if PLATFORM == 'windows'
         'key_mapping_windows.cpp',
         'os_windows.cpp',
         'vulkan_context_win.cpp',
-        'windows_terminal_logger.cpp'
+        'windows_terminal_logger.cpp',
+        'tts_windows.cpp',
     ])
 
     # get all of our dependencies
