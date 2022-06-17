@@ -519,7 +519,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		Ref<AnimationLibrary> al = player->call("get_animation_library", lib_name);
 		Ref<Animation> anim = al->get_animation(anim_name);
 		ERR_FAIL_COND(!anim.is_valid());
-		switch (p_button) {
+		switch (p_id) {
 			case ANIM_BUTTON_COPY: {
 				if (anim->get_name() == "") {
 					anim->set_name(anim_name); // Keep the name around
