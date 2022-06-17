@@ -70,7 +70,6 @@ class MaterialEditor : public Control {
 	Ref<Material> material;
 
 	void _button_pressed(Node *p_button);
-	bool first_enter;
 
 protected:
 	void _notification(int p_what);
