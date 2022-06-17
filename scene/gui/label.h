@@ -32,6 +32,7 @@
 #define LABEL_H
 
 #include "scene/gui/control.h"
+#include "scene/resources/label_settings.h"
 
 class Label : public Control {
 	GDCLASS(Label, Control);
@@ -65,8 +66,11 @@ private:
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
 
+	Ref<LabelSettings> settings;
+
 	void _update_visible();
 	void _shape();
+	void _invalidate();
 
 protected:
 	void _notification(int p_what);
@@ -84,6 +88,9 @@ public:
 
 	void set_text(const String &p_string);
 	String get_text() const;
+
+	void set_label_settings(const Ref<LabelSettings> &p_settings);
+	Ref<LabelSettings> get_label_settings() const;
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
