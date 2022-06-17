@@ -65,6 +65,15 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<CompressedTexture2D
 	}
 
 	singleton->make_flags[path].flags |= MAKE_3D_FLAG;
+
+	// For small textures, don't use VRAM compression as it decreases quality too much compared to the memory saved.
+	// The minimum size for VRAM compression is defined on each axis.
+	// It is then squared to handle non-square input texture sizes in a more human-readable manner.
+	const float minimum_size = float(GLOBAL_GET("rendering/textures/vram_compression/minimum_size"));
+	if (p_tex->get_width() * p_tex->get_height() >= int(Math::pow(minimum_size, 2.0f) - CMP_EPSILON)) {
+		// Texture is larger than `minimum_size × minimum_size` pixels (if square).
+		singleton->make_flags[path].flags |= MAKE_VRAM_COMPRESS_FLAG;
+	}
 }
 
 void ResourceImporterTexture::_texture_reimport_normal(const Ref<CompressedTexture2D> &p_tex) {
@@ -103,7 +112,33 @@ void ResourceImporterTexture::update_imports() {
 
 			bool changed = false;
 
-			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+			if (E.value.flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
+				if (E.value.flags & MAKE_VRAM_COMPRESS_FLAG) {
+					// Texture is large enough to benefit from VRAM compression.
+					const int compress_to = cf->get_value("params", "detect_3d/compress_to");
+					String compress_string;
+					if (compress_to == 1) {
+						cf->set_value("params", "compress/mode", COMPRESS_VRAM_COMPRESSED);
+						compress_string = "VRAM Compressed (S3TC/ETC/BPTC)";
+					} else if (compress_to == 2) {
+						cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
+						compress_string = "Basis Universal";
+					}
+					print_line(vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."), String(E.key), compress_string));
+				} else {
+					print_line(vformat(TTR("%s: Small texture detected as used in 3D. Enabling mipmap generation but not VRAM compression."), String(E.key)));
+				}
+
+				cf->set_value("params", "mipmaps/generate", true);
+				cf->set_value("params", "detect_3d/compress_to", 0);
+
+				changed = true;
+			}
+
+			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0 && int(cf->get_value("params", "compress/mode")) != COMPRESS_LOSSLESS) {
+				// Normal map compression is not available for textures with Lossless compression.
+				// This is ignored in the importer, but printing a message about normal map compression
+				// being enabled in this case is misleading.
 				print_line(vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."), String(E.key)));
 				cf->set_value("params", "compress/normal_map", 1);
 				changed = true;
@@ -113,22 +148,6 @@ void ResourceImporterTexture::update_imports() {
 				print_line(vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."), String(E.key), E.value.normal_path_for_roughness));
 				cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
 				cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
-				changed = true;
-			}
-
-			if (E.value.flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
-				const int compress_to = cf->get_value("params", "detect_3d/compress_to");
-				String compress_string;
-				cf->set_value("params", "detect_3d/compress_to", 0);
-				if (compress_to == 1) {
-					cf->set_value("params", "compress/mode", COMPRESS_VRAM_COMPRESSED);
-					compress_string = "VRAM Compressed (S3TC/ETC/BPTC)";
-				} else if (compress_to == 2) {
-					cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
-					compress_string = "Basis Universal";
-				}
-				print_line(vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."), String(E.key), compress_string));
-				cf->set_value("params", "mipmaps/generate", true);
 				changed = true;
 			}
 
