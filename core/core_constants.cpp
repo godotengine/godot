@@ -42,19 +42,19 @@ struct _CoreConstant {
 	bool ignore_value_in_docs = false;
 #endif
 	const char *name = nullptr;
-	int value = 0;
+	int64_t value = 0;
 
 	_CoreConstant() {}
 
 #ifdef DEBUG_METHODS_ENABLED
-	_CoreConstant(const StringName &p_enum_name, const char *p_name, int p_value, bool p_ignore_value_in_docs = false) :
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false) :
 			enum_name(p_enum_name),
 			ignore_value_in_docs(p_ignore_value_in_docs),
 			name(p_name),
 			value(p_value) {
 	}
 #else
-	_CoreConstant(const char *p_name, int p_value) :
+	_CoreConstant(const char *p_name, int64_t p_value) :
 			name(p_name),
 			value(p_value) {
 	}
@@ -73,13 +73,13 @@ static Vector<_CoreConstant> _global_constants;
 
 // This just binds enum classes as if they were regular enum constants.
 #define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_name), #m_name, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_name), #m_name, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int)m_enum::m_member, true));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true));
 
 #define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
 	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant));
@@ -103,13 +103,13 @@ static Vector<_CoreConstant> _global_constants;
 
 // This just binds enum classes as if they were regular enum constants.
 #define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_name, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_name, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
 	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
@@ -772,6 +772,6 @@ const char *CoreConstants::get_global_constant_name(int p_idx) {
 	return _global_constants[p_idx].name;
 }
 
-int CoreConstants::get_global_constant_value(int p_idx) {
+int64_t CoreConstants::get_global_constant_value(int p_idx) {
 	return _global_constants[p_idx].value;
 }

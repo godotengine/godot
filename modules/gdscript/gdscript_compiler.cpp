@@ -312,7 +312,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					// Class C++ integer constant.
 					if (nc) {
 						bool success = false;
-						int constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
+						int64_t constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
 						if (success) {
 							return codegen.add_constant(constant);
 						}

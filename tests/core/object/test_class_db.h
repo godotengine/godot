@@ -46,7 +46,7 @@ struct TypeReference {
 
 struct ConstantData {
 	String name;
-	int value = 0;
+	int64_t value = 0;
 };
 
 struct EnumData {
@@ -743,7 +743,7 @@ void add_exposed_classes(Context &r_context) {
 				TEST_FAIL_COND(String(constant_name).find("::") != -1,
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				int *value = class_info->constant_map.getptr(constant_name);
+				int64_t *value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
@@ -765,7 +765,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.find("::") != -1,
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int *value = class_info->constant_map.getptr(StringName(E));
+			int64_t *value = class_info->constant_map.getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
