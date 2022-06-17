@@ -307,6 +307,12 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
+		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		</member>
+		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
+		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
