@@ -33,7 +33,7 @@
 			Determines if the [NavigationRegion3D] is enabled or disabled.
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this regions navmesh from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this region's navmesh from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the region belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
@@ -42,7 +42,7 @@
 			The [NavigationMesh] resource to use.
 		</member>
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
-			When pathfinding moves inside this regions navmesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
+			When pathfinding moves inside this region's navmesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
 		</member>
 	</members>
 	<signals>
