@@ -1582,7 +1582,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 					if (!found) {
 						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-						error_str = RTR("Found sequence bit but not the node in the stack, report bug!");
+						error_str = RTR("Found sequence bit but not the node in the stack (please report).");
 						error = true;
 						break;
 					}
@@ -1594,7 +1594,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					// Check for stack overflow.
 					if (flow_stack_pos + 1 >= flow_max) {
 						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-						error_str = RTR("Stack overflow with stack depth:") + " " + itos(output);
+						error_str = vformat(RTR("Stack overflow (stack size: %s). Check for infinite recursion in your script."), output);
 						error = true;
 						break;
 					}
