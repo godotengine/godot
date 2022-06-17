@@ -1792,6 +1792,10 @@ void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
 void EditorNode::restart_editor() {
 	exiting = true;
 
+	if (editor_run.get_status() != EditorRun::STATUS_STOP) {
+		editor_run.stop();
+	}
+
 	String to_reopen;
 	if (get_tree()->get_edited_scene_root()) {
 		to_reopen = get_tree()->get_edited_scene_root()->get_scene_file_path();
