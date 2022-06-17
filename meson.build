@@ -57,6 +57,8 @@ if PLATFORM == 'windows'
     add_project_arguments(
         '-DWINVER=' + get_option('windows_version'),
         '-D_WIN32_WINNT=' + get_option('windows_version'),
+        '-DTYPED_METHOD_BIND',
+        '-DWINDOWS_ENABLED',
         language: ['c', 'cpp']
     )
 endif
