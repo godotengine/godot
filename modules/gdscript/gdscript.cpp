@@ -1254,6 +1254,10 @@ GDScript::~GDScript() {
 		memdelete(E.value);
 	}
 
+	if (implicit_initializer) {
+		memdelete(implicit_initializer);
+	}
+
 	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
 		GDScriptCache::remove_script(get_path());
 	}

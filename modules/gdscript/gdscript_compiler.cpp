@@ -2140,7 +2140,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 #endif
 	}
 
-	if (!p_for_lambda) {
+	if (!is_implicit_initializer && !p_for_lambda) {
 		p_script->member_functions[func_name] = gd_function;
 	}
 
@@ -2208,11 +2208,15 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
 		memdelete(E.value);
 	}
+	if (p_script->implicit_initializer) {
+		memdelete(p_script->implicit_initializer);
+	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
 	p_script->member_info.clear();
 	p_script->_signals.clear();
 	p_script->initializer = nullptr;
+	p_script->implicit_initializer = nullptr;
 
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
