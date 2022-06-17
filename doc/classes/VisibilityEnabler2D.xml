@@ -59,10 +59,10 @@
 			This enabler will stop [Particles2D] nodes.
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3" enum="Enabler">
-			This enabler will stop the parent's _process function.
+			This enabler will stop the parent's [method Node._process] function.
 		</constant>
 		<constant name="ENABLER_PARENT_PHYSICS_PROCESS" value="4" enum="Enabler">
-			This enabler will stop the parent's _physics_process function.
+			This enabler will stop the parent's [method Node._physics_process] function.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5" enum="Enabler">
 			This enabler will stop [AnimatedSprite] nodes animations.

@@ -236,7 +236,7 @@
 			<argument index="0" name="a" type="Variant" />
 			<argument index="1" name="b" type="Variant" />
 			<description>
-				Compares two values by checking their actual contents, recursing into any `Array` or `Dictionary` up to its deepest level.
+				Compares two values by checking their actual contents, recursing into any [Array] or [Dictionary] up to its deepest level.
 				This compares to [code]==[/code] in a number of ways:
 				- For [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/code], [code]Object[/code] and [code]RID[/code] both [code]deep_equal[/code] and [code]==[/code] work the same.
 				- For [code]Dictionary[/code], [code]==[/code] considers equality if, and only if, both variables point to the very same [code]Dictionary[/code], with no recursion or awareness of the contents at all.
