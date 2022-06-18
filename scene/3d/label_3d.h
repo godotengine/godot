@@ -76,7 +76,29 @@ private:
 		RID material;
 	};
 
-	HashMap<uint64_t, SurfaceData> surfaces;
+	struct SurfaceKey {
+		uint64_t texture_id;
+		int32_t priority;
+		int32_t outline_size;
+
+		bool operator==(const SurfaceKey &p_b) const {
+			return (texture_id == p_b.texture_id) && (priority == p_b.priority) && (outline_size == p_b.outline_size);
+		}
+
+		SurfaceKey(uint64_t p_texture_id, int p_priority, int p_outline_size) {
+			texture_id = p_texture_id;
+			priority = p_priority;
+			outline_size = p_outline_size;
+		}
+	};
+
+	struct SurfaceKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const SurfaceKey &p_a) {
+			return hash_murmur3_buffer(&p_a, sizeof(SurfaceKey));
+		}
+	};
+
+	HashMap<SurfaceKey, SurfaceData, SurfaceKeyHasher> surfaces;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
