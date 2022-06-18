@@ -387,6 +387,7 @@ class InputEventMouseMotion : public InputEventMouse {
 	float pressure;
 	Vector2 relative;
 	Vector2 speed;
+	bool pen_inverted;
 
 protected:
 	static void _bind_methods();
@@ -397,6 +398,9 @@ public:
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
+
+	void set_pen_inverted(bool p_inverted);
+	bool get_pen_inverted() const;
 
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;

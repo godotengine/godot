@@ -490,6 +490,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						last_tilt = Vector2();
 					}
 
+					last_pen_inverted = packet.pkStatus & TPS_INVERT;
+
 					POINT coords;
 					GetCursorPos(&coords);
 					ScreenToClient(hWnd, &coords);
@@ -504,6 +506,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 					mm->set_alt(alt_mem);
 
+					mm->set_pen_inverted(last_pen_inverted);
 					mm->set_pressure(last_pressure);
 					mm->set_tilt(last_tilt);
 
@@ -631,6 +634,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 
+			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
+
 			if (pen_info.penMask & PEN_MASK_PRESSURE) {
 				mm->set_pressure((float)pen_info.pressure / 1024);
 			} else {
@@ -742,14 +747,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} else {
 					last_tilt = Vector2();
 					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+					last_pen_inverted = false;
 				}
 			} else {
 				last_tilt = Vector2();
 				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				last_pen_inverted = false;
 			}
 
 			mm->set_pressure(last_pressure);
 			mm->set_tilt(last_tilt);
+			mm->set_pen_inverted(last_pen_inverted);
 
 			mm->set_button_mask(last_button_state);
 
@@ -1478,8 +1486,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if ((get_current_tablet_driver() == "wintab") && wintab_available) {
 		wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
 		wtlc.lcOptions |= CXO_MESSAGES;
-		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-		wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+		wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+		wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 		wtlc.lcPktMode = 0;
 		wtlc.lcOutOrgX = 0;
 		wtlc.lcOutExtX = wtlc.lcInExtX;
@@ -1507,6 +1515,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	last_pressure = 0;
 	last_pressure_update = 0;
 	last_tilt = Vector2();
+	last_pen_inverted = false;
 
 #if defined(OPENGL_ENABLED)
 
@@ -3823,8 +3832,8 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 			if ((p_driver == "wintab") && wintab_available) {
 				wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
 				wtlc.lcOptions |= CXO_MESSAGES;
-				wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-				wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+				wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+				wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 				wtlc.lcPktMode = 0;
 				wtlc.lcOutOrgX = 0;
 				wtlc.lcOutExtX = wtlc.lcInExtX;
