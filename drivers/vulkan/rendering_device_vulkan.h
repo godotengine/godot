@@ -457,17 +457,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		uint32_t hash() const {
 			int vdc = vertex_formats.size();
-			uint32_t h = hash_djb2_one_32(vdc);
+			uint32_t h = hash_murmur3_one_32(vdc);
 			const VertexAttribute *ptr = vertex_formats.ptr();
 			for (int i = 0; i < vdc; i++) {
 				const VertexAttribute &vd = ptr[i];
-				h = hash_djb2_one_32(vd.location, h);
-				h = hash_djb2_one_32(vd.offset, h);
-				h = hash_djb2_one_32(vd.format, h);
-				h = hash_djb2_one_32(vd.stride, h);
-				h = hash_djb2_one_32(vd.frequency, h);
+				h = hash_murmur3_one_32(vd.location, h);
+				h = hash_murmur3_one_32(vd.offset, h);
+				h = hash_murmur3_one_32(vd.format, h);
+				h = hash_murmur3_one_32(vd.stride, h);
+				h = hash_murmur3_one_32(vd.frequency, h);
 			}
-			return h;
+			return hash_fmix32(h);
 		}
 	};
 

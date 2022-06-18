@@ -71,7 +71,7 @@ GDScriptRPCCallable::GDScriptRPCCallable(Object *p_object, const StringName &p_m
 	object = p_object;
 	method = p_method;
 	h = method.hash();
-	h = hash_djb2_one_64(object->get_instance_id(), h);
+	h = hash_murmur3_one_64(object->get_instance_id(), h);
 	node = Object::cast_to<Node>(object);
 	ERR_FAIL_COND_MSG(!node, "RPC can only be defined on class that extends Node.");
 }

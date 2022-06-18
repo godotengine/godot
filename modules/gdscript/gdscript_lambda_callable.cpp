@@ -91,7 +91,7 @@ GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptF
 	function = p_function;
 	captures = p_captures;
 
-	h = (uint32_t)hash_djb2_one_64((uint64_t)this);
+	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
 
 bool GDScriptLambdaSelfCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -161,7 +161,7 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, G
 	function = p_function;
 	captures = p_captures;
 
-	h = (uint32_t)hash_djb2_one_64((uint64_t)this);
+	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
 
 GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
@@ -169,5 +169,5 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptF
 	function = p_function;
 	captures = p_captures;
 
-	h = (uint32_t)hash_djb2_one_64((uint64_t)this);
+	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }

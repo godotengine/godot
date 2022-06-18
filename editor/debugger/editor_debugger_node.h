@@ -72,7 +72,7 @@ private:
 
 		static uint32_t hash(const Breakpoint &p_val) {
 			uint32_t h = HashMapHasherDefault::hash(p_val.source);
-			return hash_djb2_one_32(p_val.line, h);
+			return hash_murmur3_one_32(p_val.line, h);
 		}
 		bool operator==(const Breakpoint &p_b) const {
 			return (line == p_b.line && source == p_b.source);

@@ -110,12 +110,12 @@ class LightmapperRD : public Lightmapper {
 
 	struct EdgeHash {
 		_FORCE_INLINE_ static uint32_t hash(const Edge &p_edge) {
-			uint32_t h = hash_djb2_one_float(p_edge.a.x);
-			h = hash_djb2_one_float(p_edge.a.y, h);
-			h = hash_djb2_one_float(p_edge.a.z, h);
-			h = hash_djb2_one_float(p_edge.b.x, h);
-			h = hash_djb2_one_float(p_edge.b.y, h);
-			h = hash_djb2_one_float(p_edge.b.z, h);
+			uint32_t h = hash_murmur3_one_float(p_edge.a.x);
+			h = hash_murmur3_one_float(p_edge.a.y, h);
+			h = hash_murmur3_one_float(p_edge.a.z, h);
+			h = hash_murmur3_one_float(p_edge.b.x, h);
+			h = hash_murmur3_one_float(p_edge.b.y, h);
+			h = hash_murmur3_one_float(p_edge.b.z, h);
 			return h;
 		}
 	};
@@ -146,15 +146,15 @@ class LightmapperRD : public Lightmapper {
 
 	struct VertexHash {
 		_FORCE_INLINE_ static uint32_t hash(const Vertex &p_vtx) {
-			uint32_t h = hash_djb2_one_float(p_vtx.position[0]);
-			h = hash_djb2_one_float(p_vtx.position[1], h);
-			h = hash_djb2_one_float(p_vtx.position[2], h);
-			h = hash_djb2_one_float(p_vtx.uv[0], h);
-			h = hash_djb2_one_float(p_vtx.uv[1], h);
-			h = hash_djb2_one_float(p_vtx.normal_xy[0], h);
-			h = hash_djb2_one_float(p_vtx.normal_xy[1], h);
-			h = hash_djb2_one_float(p_vtx.normal_z, h);
-			return h;
+			uint32_t h = hash_murmur3_one_float(p_vtx.position[0]);
+			h = hash_murmur3_one_float(p_vtx.position[1], h);
+			h = hash_murmur3_one_float(p_vtx.position[2], h);
+			h = hash_murmur3_one_float(p_vtx.uv[0], h);
+			h = hash_murmur3_one_float(p_vtx.uv[1], h);
+			h = hash_murmur3_one_float(p_vtx.normal_xy[0], h);
+			h = hash_murmur3_one_float(p_vtx.normal_xy[1], h);
+			h = hash_murmur3_one_float(p_vtx.normal_z, h);
+			return hash_fmix32(h);
 		}
 	};
 

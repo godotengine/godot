@@ -1170,19 +1170,19 @@ uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
 	ERR_FAIL_COND_V(!method, 0);
-	uint32_t hash = hash_djb2_one_32(method->is_const);
-	hash = hash_djb2_one_32(method->is_static, hash);
-	hash = hash_djb2_one_32(method->is_vararg, hash);
-	hash = hash_djb2_one_32(method->has_return_type, hash);
+	uint32_t hash = hash_murmur3_one_32(method->is_const);
+	hash = hash_murmur3_one_32(method->is_static, hash);
+	hash = hash_murmur3_one_32(method->is_vararg, hash);
+	hash = hash_murmur3_one_32(method->has_return_type, hash);
 	if (method->has_return_type) {
-		hash = hash_djb2_one_32(method->return_type, hash);
+		hash = hash_murmur3_one_32(method->return_type, hash);
 	}
-	hash = hash_djb2_one_32(method->argument_count, hash);
+	hash = hash_murmur3_one_32(method->argument_count, hash);
 	for (int i = 0; i < method->argument_count; i++) {
-		hash = method->get_argument_type(i);
+		hash = hash_murmur3_one_32(method->get_argument_type(i), hash);
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 }
 
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
