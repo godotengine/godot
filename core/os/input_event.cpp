@@ -597,6 +597,14 @@ float InputEventMouseMotion::get_pressure() const {
 	return pressure;
 }
 
+void InputEventMouseMotion::set_pen_inverted(bool p_inverted) {
+	pen_inverted = p_inverted;
+}
+
+bool InputEventMouseMotion::get_pen_inverted() const {
+	return pen_inverted;
+}
+
 void InputEventMouseMotion::set_relative(const Vector2 &p_relative) {
 	relative = p_relative;
 }
@@ -628,6 +636,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_position(l);
 	mm->set_pressure(get_pressure());
+	mm->set_pen_inverted(get_pen_inverted());
 	mm->set_tilt(get_tilt());
 	mm->set_global_position(g);
 
@@ -660,7 +669,7 @@ String InputEventMouseMotion::as_text() const {
 			button_mask_string = itos(get_button_mask());
 			break;
 	}
-	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + "), pressure=(" + rtos(get_pressure()) + "), tilt=(" + String(get_tilt()) + ")";
+	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + "), pressure=(" + rtos(get_pressure()) + "), tilt=(" + String(get_tilt()) + "), pen_inverted=(" + rtos(get_pen_inverted()) + ")";
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -708,6 +717,9 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMouseMotion::set_pressure);
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMouseMotion::get_pressure);
 
+	ClassDB::bind_method(D_METHOD("set_pen_inverted", "pen_inverted"), &InputEventMouseMotion::set_pen_inverted);
+	ClassDB::bind_method(D_METHOD("get_pen_inverted"), &InputEventMouseMotion::get_pen_inverted);
+
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
@@ -716,12 +728,14 @@ void InputEventMouseMotion::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }
 
 InputEventMouseMotion::InputEventMouseMotion() {
 	pressure = 0;
+	pen_inverted = false;
 }
 
 ////////////////////////////////////////

@@ -15,6 +15,10 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="pen_inverted" type="bool" setter="set_pen_inverted" getter="get_pen_inverted" default="false">
+			Returns [code]true[/code] when using the eraser end of a stylus pen.
+			[b]Note:[/b] This property is implemented on Linux, macOS and Windows.
+		</member>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
 			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].
 		</member>
