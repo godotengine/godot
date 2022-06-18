@@ -180,6 +180,7 @@ struct SceneData {
 	// only used for multiview
 	mat4 projection_matrix_view[MAX_VIEWS];
 	mat4 inv_projection_matrix_view[MAX_VIEWS];
+	vec4 eye_offset[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
@@ -250,7 +251,7 @@ struct SceneData {
 
 	bool pancake_shadows;
 	vec2 taa_jitter;
-	uvec2 pad;
+	uvec2 pad2;
 };
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {

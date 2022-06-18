@@ -869,7 +869,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 view, vec3 vertex, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
@@ -877,7 +877,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughnes
 		return;
 	}
 
-	vec3 ref_vec = normalize(reflect(vertex, normal));
+	vec3 ref_vec = normalize(reflect(-view, normal));
 
 	vec3 inner_pos = abs(local_pos / box_extents);
 	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));

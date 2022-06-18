@@ -100,6 +100,7 @@ struct RenderDataGLES3 {
 
 	// For stereo rendering
 	uint32_t view_count = 1;
+	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS];
 	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	float z_near = 0.0;
