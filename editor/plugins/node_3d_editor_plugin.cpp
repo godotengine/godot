@@ -2406,6 +2406,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
+	const float sharpen_intensity = GLOBAL_GET("rendering/anti_aliasing/quality/sharpen_intensity");
+	viewport->set_sharpen_intensity(sharpen_intensity);
 
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);

@@ -1387,6 +1387,9 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	const float sharpen_intensity = GLOBAL_GET("rendering/anti_aliasing/quality/sharpen_intensity");
+	root->set_sharpen_intensity(sharpen_intensity);
+
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 

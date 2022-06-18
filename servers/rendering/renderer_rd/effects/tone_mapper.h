@@ -83,6 +83,9 @@ private:
 		float pixel_size[2]; //  8 - 104
 		uint32_t use_fxaa; //  4 - 108
 		uint32_t use_debanding; //  4 - 112
+
+		uint32_t pad[3]; // 12 - 128
+		float sharpen_intensity; //  4 - 116
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -139,6 +142,7 @@ public:
 
 		bool use_fxaa = false;
 		bool use_debanding = false;
+		float sharpen_intensity = 0.0;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
 	};

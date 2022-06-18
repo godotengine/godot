@@ -1158,7 +1158,7 @@ public:
 	/* Render Buffers */
 
 	PASS0R(RID, render_buffers_create)
-	PASS13(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, bool, uint32_t)
+	PASS14(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, bool, float, uint32_t)
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */

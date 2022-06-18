@@ -299,6 +299,7 @@ private:
 	float fsr_sharpness = 0.2f;
 	float fsr_mipmap_bias = 0.0f;
 	bool use_debanding = false;
+	float sharpen_intensity = 0.0;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
@@ -534,6 +535,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
+
+	void set_sharpen_intensity(float p_intensity);
+	float get_sharpen_intensity() const;
 
 	void set_mesh_lod_threshold(float p_pixels);
 	float get_mesh_lod_threshold() const;
