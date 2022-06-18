@@ -45,12 +45,12 @@ class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value = 0;
+		int64_t value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
 
-		ConstantInterface(const String &p_name, const String &p_proxy_name, int p_value) {
+		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value) {
 			name = p_name;
 			proxy_name = p_proxy_name;
 			value = p_value;

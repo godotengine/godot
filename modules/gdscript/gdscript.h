@@ -368,7 +368,7 @@ public:
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
-			_debug_error = "Stack Overflow (Stack Size: " + itos(_debug_max_call_stack) + ")";
+			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
 			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}

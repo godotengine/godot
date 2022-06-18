@@ -201,6 +201,13 @@
 				Returns the accelerator of the item at the given [code]index[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
+		<method name="get_item_horizontal_offset" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [code]index[/code].
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<argument index="0" name="index" type="int" />
@@ -393,6 +400,14 @@
 			<argument index="1" name="disabled" type="bool" />
 			<description>
 				Enables/disables the item at the given [code]index[/code]. When it is disabled, it can't be selected and its action can't be invoked.
+			</description>
+		</method>
+		<method name="set_item_horizontal_offset">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="offset" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_icon">

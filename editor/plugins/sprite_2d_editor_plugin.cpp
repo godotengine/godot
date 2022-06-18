@@ -546,7 +546,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_child(memnew(Label(TTR("Simplification: "))));
+	hb->add_child(memnew(Label(TTR("Simplification:"))));
 	simplification = memnew(SpinBox);
 	simplification->set_min(0.01);
 	simplification->set_max(10.00);
@@ -554,7 +554,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	simplification->set_value(2);
 	hb->add_child(simplification);
 	hb->add_spacer();
-	hb->add_child(memnew(Label(TTR("Shrink (Pixels): "))));
+	hb->add_child(memnew(Label(TTR("Shrink (Pixels):"))));
 	shrink_pixels = memnew(SpinBox);
 	shrink_pixels->set_min(0);
 	shrink_pixels->set_max(10);
@@ -562,7 +562,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	shrink_pixels->set_value(0);
 	hb->add_child(shrink_pixels);
 	hb->add_spacer();
-	hb->add_child(memnew(Label(TTR("Grow (Pixels): "))));
+	hb->add_child(memnew(Label(TTR("Grow (Pixels):"))));
 	grow_pixels = memnew(SpinBox);
 	grow_pixels->set_min(0);
 	grow_pixels->set_max(10);

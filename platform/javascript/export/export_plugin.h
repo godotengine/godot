@@ -61,19 +61,16 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		EXPORT_MODE_NORMAL = 0,
 		EXPORT_MODE_THREADS = 1,
 		EXPORT_MODE_GDNATIVE = 2,
+		EXPORT_MODE_THREADS_GDNATIVE = 3,
 	};
 
 	String _get_template_name(ExportMode p_mode, bool p_debug) const {
 		String name = "webassembly";
-		switch (p_mode) {
-			case EXPORT_MODE_THREADS:
-				name += "_threads";
-				break;
-			case EXPORT_MODE_GDNATIVE:
-				name += "_gdnative";
-				break;
-			default:
-				break;
+		if (p_mode & EXPORT_MODE_GDNATIVE) {
+			name += "_gdnative";
+		}
+		if (p_mode & EXPORT_MODE_THREADS) {
+			name += "_threads";
 		}
 		if (p_debug) {
 			name += "_debug.zip";

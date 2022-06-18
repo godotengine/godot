@@ -260,7 +260,9 @@ void Array::push_back(const Variant &p_value) {
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
+	for (int i = 0; i < p_array.size(); ++i) {
+		ERR_FAIL_COND(!_p->typed.validate(p_array[i], "append_array"));
+	}
 	_p->array.append_array(p_array._p->array);
 }
 
@@ -499,6 +501,50 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 	}
 
 	return ret;
+}
+
+bool Array::any(const Callable &p_callable) const {
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'any': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			// Return as early as possible when one of the conditions is `true`.
+			// This improves performance compared to relying on `filter(...).size() >= 1`.
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Array::all(const Callable &p_callable) const {
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'all': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (!(result.operator bool())) {
+			// Return as early as possible when one of the inverted conditions is `false`.
+			// This improves performance compared to relying on `filter(...).size() >= array_size().`.
+			return false;
+		}
+	}
+
+	return true;
 }
 
 struct _ArrayVariantSort {

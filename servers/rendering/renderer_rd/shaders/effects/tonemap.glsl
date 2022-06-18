@@ -448,16 +448,17 @@ void main() {
 
 	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
+	if (params.use_fxaa) {
+		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
+		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
+	}
+
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 		}
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
-	}
-
-	if (params.use_fxaa) {
-		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 #endif
 

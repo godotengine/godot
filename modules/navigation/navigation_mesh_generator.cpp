@@ -450,6 +450,31 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.detailSampleDist = MAX(p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_nav_mesh->get_cell_height() * p_nav_mesh->get_detail_sample_max_error();
 
+	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_nav_mesh->get_agent_height())) {
+		WARN_PRINT("Property agent_height is ceiled to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableClimb * cfg.ch, p_nav_mesh->get_agent_max_climb())) {
+		WARN_PRINT("Property agent_max_climb is floored to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableRadius * cfg.cs, p_nav_mesh->get_agent_radius())) {
+		WARN_PRINT("Property agent_radius is ceiled to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxEdgeLen * cfg.cs, p_nav_mesh->get_edge_max_length())) {
+		WARN_PRINT("Property edge_max_length is rounded to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.minRegionArea, p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size())) {
+		WARN_PRINT("Property region_min_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size())) {
+		WARN_PRINT("Property region_merge_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_nav_mesh->get_verts_per_poly())) {
+		WARN_PRINT("Property verts_per_poly is converted to int and loses precision.");
+	}
+	if (p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance() < 0.1f) {
+		WARN_PRINT("Property detail_sample_distance is clamped to 0.1 world units as the resulting value from multiplying with cell_size is too low.");
+	}
+
 	cfg.bmin[0] = bmin[0];
 	cfg.bmin[1] = bmin[1];
 	cfg.bmin[2] = bmin[2];

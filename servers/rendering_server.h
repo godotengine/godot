@@ -877,11 +877,13 @@ public:
 
 	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
 
+	virtual void viewport_set_use_taa(RID p_viewport, bool p_use_taa) = 0;
+
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
-	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
+	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
 
 	enum ViewportOcclusionCullingBuildQuality {
@@ -933,6 +935,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
+		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;

@@ -243,15 +243,30 @@
 				- The alternative tile identifier [code]alternative_tile[/code] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
 			</description>
 		</method>
-		<method name="set_cells_from_surrounding_terrains">
+		<method name="set_cells_terrain_connect">
 			<return type="void" />
 			<argument index="0" name="layer" type="int" />
 			<argument index="1" name="cells" type="Vector2i[]" />
 			<argument index="2" name="terrain_set" type="int" />
-			<argument index="3" name="ignore_empty_terrains" type="bool" default="true" />
+			<argument index="3" name="terrain" type="int" />
+			<argument index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
-				Updates all the cells in the [code]cells[/code] coordinates array and replace them by tiles that matches the surrounding cells terrains. Only cells form the given [code]terrain_set[/code] are considered.
-				If [code]ignore_empty_terrains[/code] is true, zones with no terrain defined are ignored to select the tiles.
+				Update all the cells in the [code]cells[/code] coordinates array so that they use the given [code]terrain[/code] for the given [code]terrain_set[/code]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				[b]Note:[/b] To work correctly, [code]set_cells_terrain_connect[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+			</description>
+		</method>
+		<method name="set_cells_terrain_path">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="path" type="Vector2i[]" />
+			<argument index="2" name="terrain_set" type="int" />
+			<argument index="3" name="terrain" type="int" />
+			<argument index="4" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Update all the cells in the [code]cells[/code] coordinates array so that they use the given [code]terrain[/code] for the given [code]terrain_set[/code]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
+				If [code]ignore_empty_terrains[/code] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				[b]Note:[/b] To work correctly, [code]set_cells_terrain_path[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
 		<method name="set_layer_enabled">

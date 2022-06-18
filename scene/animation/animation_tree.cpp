@@ -919,7 +919,6 @@ void AnimationTree::_process_graph(double p_delta) {
 		state.valid = true;
 		state.invalid_reasons = "";
 		state.animation_states.clear(); //will need to be re-created
-		state.valid = true;
 		state.player = player;
 		state.last_pass = process_pass;
 		state.tree = this;

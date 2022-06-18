@@ -325,7 +325,7 @@
 		</method>
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="property" type="String" />
+			<argument index="0" name="property" type="StringName" />
 			<description>
 				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
@@ -399,7 +399,7 @@
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="signal" type="String" />
+			<argument index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [code]signal[/code].
 			</description>
@@ -490,7 +490,7 @@
 		</method>
 		<method name="set">
 			<return type="void" />
-			<argument index="0" name="property" type="String" />
+			<argument index="0" name="property" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
 				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.

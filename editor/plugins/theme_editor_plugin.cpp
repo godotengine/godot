@@ -1119,7 +1119,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 			select_icons_warning = memnew(Label);
 			select_icons_warning->set_text(TTR("Caution: Adding icon data may considerably increase the size of your Theme resource."));
-			select_icons_warning->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+			select_icons_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 			select_icons_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			select_icons_warning_hb->add_child(select_icons_warning);
 		}
@@ -2021,7 +2021,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_message->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	edit_items_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	edit_items_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	edit_items_message->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	edit_items_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	edit_items_tree->add_child(edit_items_message);
 
 	edit_theme_item_dialog = memnew(ConfirmationDialog);
@@ -3443,7 +3443,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
 	type_variation_locked->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	type_variation_locked->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	type_variation_locked->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
 	type_variation_locked->hide();
 

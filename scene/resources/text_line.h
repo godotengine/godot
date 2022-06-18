@@ -39,15 +39,6 @@
 class TextLine : public RefCounted {
 	GDCLASS(TextLine, RefCounted);
 
-public:
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
 private:
 	RID rid;
 	int spacing_top = 0;
@@ -58,7 +49,7 @@ private:
 	float width = -1.0;
 	uint16_t flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
-	OverrunBehavior overrun_behavior = OVERRUN_TRIM_ELLIPSIS;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
 	Vector<float> tab_stops;
 
@@ -98,8 +89,8 @@ public:
 	void set_flags(uint16_t p_flags);
 	uint16_t get_flags() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -124,7 +115,5 @@ public:
 	TextLine();
 	~TextLine();
 };
-
-VARIANT_ENUM_CAST(TextLine::OverrunBehavior);
 
 #endif // TEXT_LINE_H

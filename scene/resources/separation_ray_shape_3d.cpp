@@ -80,7 +80,7 @@ void SeparationRayShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape3D::set_slide_on_slope);
 	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape3D::get_slide_on_slope);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 

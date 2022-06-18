@@ -454,7 +454,11 @@ void DynamicFontImportSettings::_add_glyph_range_item(int32_t p_start, int32_t p
 void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_property) {
 	// Update font preview.
 
-	if (p_edited_property == "antialiased") {
+	if (p_edited_property == "face_index") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_face_index(import_settings_data->get("face_index"));
+		}
+	} else if (p_edited_property == "antialiased") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_antialiased(import_settings_data->get("antialiased"));
 		}
@@ -625,7 +629,7 @@ void DynamicFontImportSettings::_change_text_opts() {
 
 void DynamicFontImportSettings::_glyph_clear() {
 	selected_glyphs.clear();
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 	_range_selected();
 }
 
@@ -654,7 +658,7 @@ void DynamicFontImportSettings::_glyph_text_selected() {
 			}
 		}
 		TS->free_rid(text_rid);
-		label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+		label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 	}
 	_range_selected();
 }
@@ -681,7 +685,7 @@ void DynamicFontImportSettings::_glyph_selected() {
 			item->clear_custom_bg_color(glyph_table->get_selected_column());
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 
 	item = glyph_tree->get_selected();
 	ERR_FAIL_NULL(item);
@@ -769,7 +773,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			col = 0;
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 }
 
 bool DynamicFontImportSettings::_char_update(int32_t p_char) {
@@ -945,6 +949,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 void DynamicFontImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
+	main_settings["face_index"] = import_settings_data->get("face_index");
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
 	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
@@ -1292,13 +1297,14 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 			}
 		}
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(selected_glyphs.size()));
 
 	import_settings_data->options = options_general;
 	inspector_general->edit(import_settings_data.ptr());
 	import_settings_data->notify_property_list_changed();
 
 	if (font_preview->get_data_count() > 0) {
+		font_preview->get_data(0)->set_face_index(import_settings_data->get("face_index"));
 		font_preview->get_data(0)->set_antialiased(import_settings_data->get("antialiased"));
 		font_preview->get_data(0)->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
 		font_preview->get_data(0)->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
@@ -1360,6 +1366,7 @@ DynamicFontImportSettings *DynamicFontImportSettings::get_singleton() {
 DynamicFontImportSettings::DynamicFontImportSettings() {
 	singleton = this;
 
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "face_index"), 0));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
@@ -1448,7 +1455,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
 	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
+	font_preview_label->set_autowrap_mode(TextServer::AUTOWRAP_ARBITRARY);
 	font_preview_label->set_clip_text(true);
 	font_preview_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	font_preview_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1468,7 +1475,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_description = memnew(Label);
 	page2_description->set_text(TTR("Add font size, variation coordinates, and extra spacing combinations to pre-render:"));
 	page2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page2_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page2_vb->add_child(page2_description);
 
 	HSplitContainer *page2_hb = memnew(HSplitContainer);
@@ -1520,7 +1527,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page3_description = memnew(Label);
 	page3_description->set_text(TTR("Enter a text to shape and add all required glyphs to pre-render list:"));
 	page3_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page3_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page3_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page3_vb->add_child(page3_description);
 
 	HBoxContainer *ot_hb = memnew(HBoxContainer);
@@ -1556,7 +1563,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	label_glyphs = memnew(Label);
 	text_hb->add_child(label_glyphs);
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(0));
+	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(0));
 	label_glyphs->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 
 	Button *btn_fill = memnew(Button);
@@ -1577,7 +1584,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page4_description = memnew(Label);
 	page4_description->set_text(TTR("Add or remove additional glyphs from the character map to pre-render list:\nNote: Some stylistic alternatives and glyph variants do not have one-to-one correspondence to character, and not shown in this map, use \"Glyphs from the text\" to add these."));
 	page4_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page4_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page4_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page4_vb->add_child(page4_description);
 
 	HSplitContainer *glyphs_split = memnew(HSplitContainer);
@@ -1628,7 +1635,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_description = memnew(Label);
 	page5_description->set_text(TTR("Add or remove language and script support overrides, to control fallback font selection order:"));
 	page5_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	page5_description->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	page5_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	page5_vb->add_child(page5_description);
 
 	HBoxContainer *hb_lang = memnew(HBoxContainer);

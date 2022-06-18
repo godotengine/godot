@@ -65,7 +65,7 @@
 		<constant name="FUNC_CEIL" value="16" enum="Function">
 			Finds the nearest integer that is greater than or equal to the parameter. Translates to [code]ceil(x)[/code] in the Godot Shader Language.
 		</constant>
-		<constant name="FUNC_FRAC" value="17" enum="Function">
+		<constant name="FUNC_FRACT" value="17" enum="Function">
 			Computes the fractional part of the argument. Translates to [code]fract(x)[/code] in the Godot Shader Language.
 		</constant>
 		<constant name="FUNC_SATURATE" value="18" enum="Function">

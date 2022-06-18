@@ -1573,7 +1573,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	frame = memnew(SpinBox);
 	hb->add_child(frame);
-	frame->set_custom_minimum_size(Size2(60, 0));
+	frame->set_custom_minimum_size(Size2(80, 0) * EDSCALE);
 	frame->set_stretch_ratio(2);
 	frame->set_step(0.0001);
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
@@ -1639,8 +1639,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning = memnew(MenuButton);
 	onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
+	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
 	onion_skinning->get_popup()->set_item_checked(-1, true);
+	// TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 	onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
 	onion_skinning->get_popup()->add_separator(TTR("Depth"));
 	onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);

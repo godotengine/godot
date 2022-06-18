@@ -164,7 +164,7 @@
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PackedInt32Array" />
+			<return type="PackedInt64Array" />
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
 			<description>
@@ -207,7 +207,7 @@
 			</description>
 		</method>
 		<method name="get_point_connections">
-			<return type="PackedInt32Array" />
+			<return type="PackedInt64Array" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				Returns an array with the IDs of the points that form the connection with the given point.

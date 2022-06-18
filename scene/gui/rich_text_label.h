@@ -40,13 +40,6 @@ class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
 public:
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
 	enum ListType {
 		LIST_NUMBERS,
 		LIST_LETTERS,
@@ -84,14 +77,6 @@ public:
 		ITEM_CUSTOMFX
 	};
 
-	enum VisibleCharactersBehavior {
-		VC_CHARS_BEFORE_SHAPING,
-		VC_CHARS_AFTER_SHAPING,
-		VC_GLYPHS_AUTO,
-		VC_GLYPHS_LTR,
-		VC_GLYPHS_RTL,
-	};
-
 	enum MenuItems {
 		MENU_COPY,
 		MENU_SELECT_ALL,
@@ -117,6 +102,10 @@ private:
 		int char_count = 0;
 
 		Line() { text_buf.instantiate(); }
+
+		_FORCE_INLINE_ float get_height(float line_separation) const {
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
+		}
 	};
 
 	struct Item {
@@ -380,7 +369,7 @@ private:
 
 	VScrollBar *vscroll = nullptr;
 
-	AutowrapMode autowrap_mode = AUTOWRAP_WORD_SMART;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	bool scroll_visible = false;
 	bool scroll_follow = false;
@@ -456,7 +445,7 @@ private:
 
 	int visible_characters = -1;
 	float percent_visible = 1.0;
-	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
@@ -503,6 +492,8 @@ private:
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
+
+	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -658,8 +649,8 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
@@ -677,8 +668,8 @@ public:
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
 
-	VisibleCharactersBehavior get_visible_characters_behavior() const;
-	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
 	void set_effects(Array p_effects);
 	Array get_effects();
@@ -692,9 +683,7 @@ public:
 	~RichTextLabel();
 };
 
-VARIANT_ENUM_CAST(RichTextLabel::AutowrapMode);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
-VARIANT_ENUM_CAST(RichTextLabel::VisibleCharactersBehavior);
 
 #endif // RICH_TEXT_LABEL_H

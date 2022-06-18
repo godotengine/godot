@@ -62,10 +62,5 @@
 			<description>
 			</description>
 		</method>
-		<method name="make_default">
-			<return type="void" />
-			<description>
-			</description>
-		</method>
 	</methods>
 </class>

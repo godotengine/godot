@@ -118,7 +118,7 @@ will limit its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (f128369e64a5f4715de8125b325e4fe7debb5194, 2022)
+- Version: 1.0 (a77d5a37ddf48034cee8aeb9e8792a623c265b4c, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -166,6 +166,11 @@ Files extracted from upstream source:
   * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
+
+Some changes have been made in order to prevent LTO from removing code.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
 
 
 ## glslang
@@ -340,7 +345,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (8a7d69caa68f778cb559f1879b6beb7987c8c6b7, 2022)
+- Version: git (ea4558d1c0f217f1d67ed7fe0b07896ece88ae18, 2022)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -431,6 +436,15 @@ Collection of single-file libraries used in Godot components.
 - `FastNoiseLite.h}`
   * Upstream: https://github.com/Auburn/FastNoiseLite
   * Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022) + custom changes
+  * License: MIT
+- `ok_color.h`
+  * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h
+  * Version: git (d69831edb90ffdcd08b7e64da3c5405acd48ad2c, 2022)
+  * License: MIT
+  * Modifications: License included in header.
+- `ok_color_shader.h`
+  * https://www.shadertoy.com/view/7sK3D1
+  * Version: 2021-09-13
   * License: MIT
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
@@ -695,7 +709,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.1-development (2022-03-28), commit `5b598e0a359381d7e2a94149210a1b7642024ae5`
+Version: 3.0.1 (2022-06-10), commit `cfdc0f8775ab3258a3b9c4e47d8ce4b6f52a5441`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.

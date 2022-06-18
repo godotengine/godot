@@ -3035,7 +3035,7 @@
 				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
 				[/gdscript]
 				[/codeblocks]
-				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
+				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For further optimization, see [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
 		<method name="viewport_create">
@@ -3338,6 +3338,14 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="enable" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="viewport_set_use_taa">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], use Temporal Anti-Aliasing.
 			</description>
 		</method>
 		<method name="viewport_set_use_xr">
@@ -4104,6 +4112,8 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>

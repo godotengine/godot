@@ -103,6 +103,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated), varray(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated), varray(id));
 	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested), varray(id));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -267,40 +268,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			}
 			server->poll();
 
-			// Errors and warnings
-			int error_count = 0;
-			int warning_count = 0;
-			_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-				error_count += dbg->get_error_count();
-				warning_count += dbg->get_warning_count();
-			});
-
-			if (error_count != last_error_count || warning_count != last_warning_count) {
-				_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-					dbg->update_tabs();
-				});
-
-				if (error_count == 0 && warning_count == 0) {
-					debugger_button->set_text(TTR("Debugger"));
-					debugger_button->remove_theme_color_override("font_color");
-					debugger_button->set_icon(Ref<Texture2D>());
-				} else {
-					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-					if (error_count >= 1 && warning_count >= 1) {
-						debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
-						// Use error color to represent the highest level of severity reported.
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-					} else if (error_count >= 1) {
-						debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-					} else {
-						debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
-						debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-					}
-				}
-				last_error_count = error_count;
-				last_warning_count = warning_count;
-			}
+			_update_errors();
 
 			// Remote scene tree update
 			remote_scene_tree_timeout -= get_process_delta_time();
@@ -358,6 +326,42 @@ void EditorDebuggerNode::_notification(int p_what) {
 				debugger->update_live_edit_root();
 			}
 		} break;
+	}
+}
+
+void EditorDebuggerNode::_update_errors() {
+	int error_count = 0;
+	int warning_count = 0;
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		error_count += dbg->get_error_count();
+		warning_count += dbg->get_warning_count();
+	});
+
+	if (error_count != last_error_count || warning_count != last_warning_count) {
+		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+			dbg->update_tabs();
+		});
+
+		if (error_count == 0 && warning_count == 0) {
+			debugger_button->set_text(TTR("Debugger"));
+			debugger_button->remove_theme_color_override("font_color");
+			debugger_button->set_icon(Ref<Texture2D>());
+		} else {
+			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			if (error_count >= 1 && warning_count >= 1) {
+				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+				// Use error color to represent the highest level of severity reported.
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			} else if (error_count >= 1) {
+				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			} else {
+				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			}
+		}
+		last_error_count = error_count;
+		last_warning_count = warning_count;
 	}
 }
 

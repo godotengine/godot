@@ -72,11 +72,13 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	style->set_bg_color(p_color);
 	// Adjust level of detail based on the corners' effective sizes.
 	style->set_corner_detail(Math::ceil(1.5 * p_corner_width * EDSCALE));
-	style->set_corner_radius_all(p_corner_width);
+	style->set_corner_radius_all(p_corner_width * EDSCALE);
 	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
 	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
 	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	// Work around issue about antialiased edges being blurrier (GH-35279).
+	style->set_anti_aliased(false);
 	return style;
 }
 
@@ -564,8 +566,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Styleboxes
 	// This is the most commonly used stylebox, variations should be made as duplicate of this
 	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size, corner_width);
-	// Work around issue about antialiased edges being blurrier (GH-35279).
-	style_default->set_anti_aliased(false);
 	style_default->set_border_width_all(border_width);
 	style_default->set_border_color(base_color);
 	style_default->set_draw_center(true);
@@ -691,6 +691,21 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
 	style_canvas_editor_info->set_expand_margin_size_all(4 * EDSCALE);
 	theme->set_stylebox("CanvasItemInfoOverlay", "EditorStyles", style_canvas_editor_info);
+
+	// 2D and 3D contextual toolbar.
+	// Use a custom stylebox to make contextual menu items stand out from the rest.
+	// This helps with editor usability as contextual menu items change when selecting nodes,
+	// even though it may not be immediately obvious at first.
+	Ref<StyleBoxFlat> toolbar_stylebox = memnew(StyleBoxFlat);
+	toolbar_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
+	toolbar_stylebox->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
+	toolbar_stylebox->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+	toolbar_stylebox->set_anti_aliased(false);
+	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
+	toolbar_stylebox->set_border_color(accent_color);
+	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+	toolbar_stylebox->set_default_margin(SIDE_BOTTOM, 0);
+	theme->set_stylebox("ContextualToolbar", "EditorStyles", toolbar_stylebox);
 
 	// Script Editor
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
@@ -910,6 +925,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 
+	// Sub-inspectors
 	for (int i = 0; i < 16; i++) {
 		Color si_base_color = accent_color;
 
@@ -917,51 +933,53 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
 		si_base_color = accent_color.lerp(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
 
-		Ref<StyleBoxFlat> sub_inspector_bg;
-
-		sub_inspector_bg = make_flat_stylebox(dark_color_1.lerp(si_base_color, 0.08), 2, 0, 2, 2);
-
-		sub_inspector_bg->set_border_width(SIDE_LEFT, 2);
-		sub_inspector_bg->set_border_width(SIDE_RIGHT, 2);
-		sub_inspector_bg->set_border_width(SIDE_BOTTOM, 2);
-		sub_inspector_bg->set_border_width(SIDE_TOP, 2);
-		sub_inspector_bg->set_default_margin(SIDE_LEFT, 3);
-		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 3);
-		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 10);
-		sub_inspector_bg->set_default_margin(SIDE_TOP, 5);
+		// Sub-inspector background.
+		Ref<StyleBoxFlat> sub_inspector_bg = style_default->duplicate();
+		sub_inspector_bg->set_bg_color(dark_color_1.lerp(si_base_color, 0.08));
+		sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		sub_inspector_bg->set_draw_center(true);
+		sub_inspector_bg->set_default_margin(SIDE_LEFT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_TOP, 4 * EDSCALE);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
 		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
 
-		Ref<StyleBoxFlat> bg_color;
-		bg_color.instantiate();
-		bg_color->set_bg_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		bg_color->set_border_width_all(0);
-
-		Ref<StyleBoxFlat> bg_color_selected;
-		bg_color_selected.instantiate();
-		bg_color_selected->set_border_width_all(0);
-		bg_color_selected->set_bg_color(si_base_color * Color(0.8, 0.8, 0.8, 0.8));
+		// EditorProperty background while it has a sub-inspector open.
+		Ref<StyleBoxFlat> bg_color = make_flat_stylebox(si_base_color * Color(0.7, 0.7, 0.7, 0.8), 0, 0, 0, 0, corner_radius);
+		bg_color->set_anti_aliased(false);
+		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 		theme->set_stylebox("sub_inspector_property_bg" + itos(i), "Editor", bg_color);
-		theme->set_stylebox("sub_inspector_property_bg_selected" + itos(i), "Editor", bg_color_selected);
 	}
 
 	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
-	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
 
 	// EditorSpinSlider.
 	theme->set_color("label_color", "EditorSpinSlider", font_color);
 	theme->set_color("read_only_label_color", "EditorSpinSlider", font_readonly_color);
 
+	Ref<StyleBoxFlat> editor_spin_label_bg = style_default->duplicate();
+	editor_spin_label_bg->set_bg_color(dark_color_3);
+	editor_spin_label_bg->set_border_width_all(0);
+	theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
+
+	// EditorProperty
 	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
 	style_property_bg->set_bg_color(highlight_color);
 	style_property_bg->set_border_width_all(0);
 
+	Ref<StyleBoxFlat> style_property_child_bg = style_default->duplicate();
+	style_property_child_bg->set_bg_color(dark_color_2);
+	style_property_child_bg->set_border_width_all(0);
+
 	theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
 	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
 	theme->set_constant("v_separation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_color("warning_color", "EditorProperty", warning_color);
 	theme->set_color("property_color", "EditorProperty", property_color);
@@ -974,6 +992,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_property_group_note->set_bg_color(property_group_note_color);
 	theme->set_stylebox("bg_group_note", "EditorProperty", style_property_group_note);
 
+	// EditorInspectorSection
 	Color inspector_section_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.35);
 	theme->set_color("font_color", "EditorInspectorSection", inspector_section_color);
 
@@ -1076,11 +1095,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 
+	// EditorInspectorCategory
 	Ref<StyleBoxFlat> category_bg = style_default->duplicate();
-	// Make Trees easier to distinguish from other controls by using a darker background color.
 	category_bg->set_bg_color(prop_category_color);
 	category_bg->set_border_color(prop_category_color);
-	theme->set_stylebox("prop_category_style", "Editor", category_bg);
+	theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
@@ -1241,20 +1260,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "TextEdit", selection_color);
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
-	// CodeEdit
-	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
-	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
-	theme->set_stylebox("normal", "CodeEdit", style_widget);
-	theme->set_stylebox("focus", "CodeEdit", style_widget_hover);
-	theme->set_stylebox("read_only", "CodeEdit", style_widget_disabled);
-	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
-	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
-	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
-	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
-	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
-
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 
@@ -1277,6 +1282,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("v_separation", "HFlowContainer", default_margin_size * EDSCALE);
 	theme->set_constant("h_separation", "VFlowContainer", default_margin_size * EDSCALE);
 	theme->set_constant("v_separation", "VFlowContainer", default_margin_size * EDSCALE);
+
+	// Custom theme type for MarginContainer with 4px margins.
+	theme->set_type_variation("MarginContainer4px", "MarginContainer");
+	theme->set_constant("margin_left", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_top", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_right", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_bottom", "MarginContainer4px", 4 * EDSCALE);
 
 	// Window
 
@@ -1405,7 +1417,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_pressed_color", "LinkButton", accent_color);
 	theme->set_color("font_disabled_color", "LinkButton", font_disabled_color);
 
-	// TooltipPanel
+	// TooltipPanel + TooltipLabel
+	// TooltipPanel is also used for custom tooltips, while TooltipLabel
+	// is only relevant for default tooltips.
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	style_tooltip->set_shadow_size(0);
 	style_tooltip->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE * 0.5);
@@ -1589,7 +1603,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// ColorPresetButton
 	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2, 2);
-	preset_sb->set_anti_aliased(false);
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
 	theme->set_icon("preset_bg", "ColorPresetButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 	theme->set_icon("overbright_indicator", "ColorPresetButton", theme->get_icon(SNAME("OverbrightIndicator"), SNAME("EditorIcons")));
@@ -1620,7 +1633,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("preview_picker_label", "ThemeEditor", theme_preview_picker_label_sb);
 
 	// Dictionary editor add item.
-	theme->set_stylebox("DictionaryAddItem", "EditorStyles", make_flat_stylebox(prop_subsection_color, 4, 4, 4, 4, corner_radius));
+	// Expand to the left and right by 4px to compensate for the dictionary editor margins.
+	Ref<StyleBoxFlat> style_dictionary_add_item = make_flat_stylebox(prop_subsection_color, 0, 4, 0, 4, corner_radius);
+	style_dictionary_add_item->set_expand_margin_size(SIDE_LEFT, 4 * EDSCALE);
+	style_dictionary_add_item->set_expand_margin_size(SIDE_RIGHT, 4 * EDSCALE);
+	theme->set_stylebox("DictionaryAddItem", "EditorStyles", style_dictionary_add_item);
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
@@ -1715,7 +1732,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	// Now theme is loaded, apply it to CodeEdit.
-	theme->set_color("background_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/background_color"));
+	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
+	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
+	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(EDITOR_GET("text_editor/theme/highlighting/background_color"), widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y, corner_radius);
+	theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
+	theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
+	theme->set_stylebox("focus", "CodeEdit", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
+	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
+	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
+	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("completion_background_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
 	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));

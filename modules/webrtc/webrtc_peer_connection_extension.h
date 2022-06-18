@@ -44,8 +44,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void make_default();
-
 	virtual ConnectionState get_connection_state() const override;
 
 	virtual Error initialize(Dictionary p_config = Dictionary()) override;

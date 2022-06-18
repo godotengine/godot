@@ -107,7 +107,7 @@
 			<return type="StringName" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
+				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count] - 1).
 				[codeblocks]
 				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D")
@@ -155,6 +155,12 @@
 			<description>
 				Gets the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
 				For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:load_path"[/code] has 2 subnames.
+			</description>
+		</method>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the 32-bit hash value representing the [NodePath]'s contents.
 			</description>
 		</method>
 		<method name="is_absolute" qualifiers="const">

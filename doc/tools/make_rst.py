@@ -4,7 +4,9 @@
 
 import argparse
 import os
+import platform
 import re
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
@@ -55,9 +57,11 @@ BASE_STRINGS = [
 ]
 strings_l10n = {}
 
+STYLES = {}
+
 
 def print_error(error, state):  # type: (str, State) -> None
-    print("ERROR: {}".format(error))
+    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
     state.num_errors += 1
 
 
@@ -399,10 +403,26 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 
 
 def main():  # type: () -> None
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://bugs.python.org/issue29059>
+    if platform.system().lower() == "windows":
+        from ctypes import windll, c_int, byref
+
+        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+        mode = c_int(0)
+        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+        mode = c_int(mode.value | 4)
+        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
+    parser.add_argument(
+        "--color",
+        action="store_true",
+        help="If passed, force colored output even if stdout is not a TTY (useful for continuous integration).",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -411,6 +431,13 @@ def main():  # type: () -> None
         help="If passed, no output will be generated and XML files are only checked for errors.",
     )
     args = parser.parse_args()
+
+    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    STYLES["red"] = "\x1b[91m" if should_color else ""
+    STYLES["green"] = "\x1b[92m" if should_color else ""
+    STYLES["bold"] = "\x1b[1m" if should_color else ""
+    STYLES["regular"] = "\x1b[22m" if should_color else ""
+    STYLES["reset"] = "\x1b[0m" if should_color else ""
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -464,17 +491,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("{}.xml: Parse error while reading the file: {}".format(cur_file, e), state)
+            print_error("{}: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error('{}.xml: "version" attribute missing from "doc".'.format(cur_file), state)
+            print_error('{}: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error('{}.xml: Duplicate class "{}".'.format(cur_file, name), state)
+            print_error('{}: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
@@ -499,16 +526,22 @@ def main():  # type: () -> None
         make_rst_class(class_def, state, args.dry_run, args.output)
 
     if state.num_errors == 0:
-        print("No errors found in the class reference XML.")
+        print("{}No errors found in the class reference XML.{}".format(STYLES["green"], STYLES["reset"]))
         if not args.dry_run:
             print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         if state.num_errors >= 2:
             print(
-                "%d errors were found in the class reference XML. Please check the messages above." % state.num_errors
+                "{}{} errors were found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], state.num_errors, STYLES["reset"]
+                )
             )
         else:
-            print("1 error was found in the class reference XML. Please check the messages above.")
+            print(
+                "{}1 error was found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], STYLES["reset"]
+                )
+            )
         exit(1)
 
 

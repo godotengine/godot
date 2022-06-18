@@ -265,6 +265,7 @@ public:
 
 	class TerrainsPattern {
 		bool valid = false;
+		int terrain = -1;
 		int bits[TileSet::CELL_NEIGHBOR_MAX];
 		bool is_valid_bit[TileSet::CELL_NEIGHBOR_MAX];
 
@@ -277,11 +278,14 @@ public:
 		bool operator<(const TerrainsPattern &p_terrains_pattern) const;
 		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
 
-		void set_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain);
-		int get_terrain(TileSet::CellNeighbor p_peering_bit) const;
+		void set_terrain(int p_terrain);
+		int get_terrain() const;
 
-		void set_terrains_from_array(Array p_terrains);
-		Array get_terrains_as_array() const;
+		void set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain);
+		int get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const;
+
+		void from_array(Array p_terrains);
+		Array as_array() const;
 
 		TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set);
 		TerrainsPattern() {}
@@ -333,7 +337,8 @@ private:
 	};
 	Vector<TerrainSet> terrain_sets;
 
-	HashMap<TerrainMode, HashMap<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
+	HashMap<TerrainMode, Ref<ArrayMesh>> terrain_meshes;
+	HashMap<TerrainMode, HashMap<CellNeighbor, Ref<ArrayMesh>>> terrain_peering_bits_meshes;
 	bool terrain_bits_meshes_dirty = true;
 
 	LocalVector<RBMap<TileSet::TerrainsPattern, RBSet<TileMapCell>>> per_terrain_pattern_tiles; // Cached data.
@@ -371,17 +376,20 @@ private:
 	RBMap<Array, Array> alternative_level_proxies;
 
 	// Helpers
-	Vector<Point2> _get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
-	Vector<Point2> _get_square_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
-	Vector<Point2> _get_square_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_terrain_polygon(Vector2i p_size);
+	Vector<Point2> _get_square_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_corner_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
 
-	Vector<Point2> _get_isometric_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
-	Vector<Point2> _get_isometric_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
-	Vector<Point2> _get_isometric_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_terrain_polygon(Vector2i p_size);
+	Vector<Point2> _get_isometric_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_corner_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
 
-	Vector<Point2> _get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	Vector<Point2> _get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	Vector<Point2> _get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_terrain_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_half_offset_corner_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_half_offset_side_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit);
 
 protected:
 	static void _bind_methods();
@@ -454,8 +462,8 @@ public:
 	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
 	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
 	Color get_terrain_color(int p_terrain_set, int p_terrain_index) const;
-	bool is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const;
-	bool is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
+	bool is_valid_terrain_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const;
+	bool is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
 	int get_navigation_layers_count() const;
@@ -516,7 +524,8 @@ public:
 	Vector<Vector2> get_tile_shape_polygon();
 	void draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 
-	Vector<Point2> get_terrain_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit);
+	Vector<Point2> get_terrain_polygon(int p_terrain_set);
+	Vector<Point2> get_terrain_peering_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit);
 	void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, const TileData *p_tile_data);
 	Vector<Vector<Ref<Texture2D>>> generate_terrains_icons(Size2i p_size);
 
@@ -798,6 +807,7 @@ private:
 
 	// Terrain
 	int terrain_set = -1;
+	int terrain = -1;
 	int terrain_peering_bits[16] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 	// Navigation
@@ -887,9 +897,11 @@ public:
 	// Terrain
 	void set_terrain_set(int p_terrain_id);
 	int get_terrain_set() const;
-	void set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_id);
-	int get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
-	bool is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
+	void set_terrain(int p_terrain_id);
+	int get_terrain() const;
+	void set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain_id);
+	int get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const;
+	bool is_valid_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const;
 
 	TileSet::TerrainsPattern get_terrains_pattern() const; // Not exposed.
 

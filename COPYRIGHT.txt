@@ -131,6 +131,11 @@ Comment: Intel ASSAO and related files
 Copyright: 2016, Intel Corporation
 License: Expat
 
+Files: ./servers/rendering/renderer_rd/shaders/taa_resolve.glsl
+Comment: Temporal Anti-Aliasing resolve implementation
+Copyright: 2016, Panos Karabelas
+License: Expat
+
 Files: ./thirdparty/amd-fsr/
 Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
@@ -174,7 +179,7 @@ License: Expat
 
 Files: ./thirdparty/etcpak/
 Comment: etcpak
-Copyright: 2013-2021, Bartosz Taudul
+Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
 Files: ./thirdparty/fonts/DroidSans*.woff2
@@ -320,6 +325,12 @@ Files: ./thirdparty/misc/mikktspace.c
 Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
+
+Files: ./thirdparty/misc/ok_color.h
+ ./thirdparty/misc/ok_color_shader.h
+Comment: OK Lab color space
+Copyright: 2021, Björn Ottosson
+License: Expat
 
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite

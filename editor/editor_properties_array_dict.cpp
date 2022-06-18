@@ -217,11 +217,11 @@ void EditorPropertyArray::update_property() {
 	if (array.get_type() == Variant::NIL) {
 		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -241,15 +241,19 @@ void EditorPropertyArray::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size: ")));
+			Label *label = memnew(Label(TTR("Size:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbox->add_child(label);
 
@@ -343,6 +347,7 @@ void EditorPropertyArray::update_property() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
+			prop->set_use_folding(is_using_folding());
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -372,11 +377,11 @@ void EditorPropertyArray::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -687,7 +692,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	property_vbox = nullptr;
 	size_slider = nullptr;
 	button_add_item = nullptr;
@@ -791,11 +796,11 @@ void EditorPropertyDictionary::update_property() {
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -812,10 +817,14 @@ void EditorPropertyDictionary::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -998,6 +1007,7 @@ void EditorPropertyDictionary::update_property() {
 					} else {
 						EditorPropertyResource *editor = memnew(EditorPropertyResource);
 						editor->setup(object.ptr(), prop_name, "Resource");
+						editor->set_use_folding(is_using_folding());
 						prop = editor;
 					}
 
@@ -1116,11 +1126,11 @@ void EditorPropertyDictionary::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -1188,7 +1198,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
 	change_type = memnew(PopupMenu);
@@ -1250,11 +1260,11 @@ void EditorPropertyLocalizableString::update_property() {
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -1271,10 +1281,14 @@ void EditorPropertyLocalizableString::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1351,11 +1365,11 @@ void EditorPropertyLocalizableString::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -1410,7 +1424,7 @@ EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
 	updating = false;

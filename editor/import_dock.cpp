@@ -685,7 +685,7 @@ ImportDock::ImportDock() {
 
 	select_a_resource = memnew(Label);
 	select_a_resource->set_text(TTR("Select a resource file in the filesystem or in the inspector to adjust import settings."));
-	select_a_resource->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_resource->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

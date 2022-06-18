@@ -2788,106 +2788,50 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 		// math types
 		case VECTOR2: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector2 *>(_data._mem)->x);
-			return hash_djb2_one_float(reinterpret_cast<const Vector2 *>(_data._mem)->y, hash);
+			return hash_murmur3_32(reinterpret_cast<const Vector2 *>(_data._mem), sizeof(Vector2));
 		} break;
 		case VECTOR2I: {
-			uint32_t hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector2i *>(_data._mem)->x);
-			return hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector2i *>(_data._mem)->y, hash);
+			return hash_murmur3_32(reinterpret_cast<const Vector2i *>(_data._mem), sizeof(Vector2i));
 		} break;
 		case RECT2: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.x);
-			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.y, hash);
-			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.x, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.y, hash);
+			return hash_murmur3_32(reinterpret_cast<const Rect2 *>(_data._mem), sizeof(Rect2));
 		} break;
 		case RECT2I: {
-			uint32_t hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Rect2i *>(_data._mem)->position.x);
-			hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Rect2i *>(_data._mem)->position.y, hash);
-			hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Rect2i *>(_data._mem)->size.x, hash);
-			return hash_djb2_one_32((uint32_t) reinterpret_cast<const Rect2i *>(_data._mem)->size.y, hash);
+			return hash_murmur3_32(reinterpret_cast<const Rect2i *>(_data._mem), sizeof(Rect2i));
 		} break;
 		case TRANSFORM2D: {
-			uint32_t hash = 5831;
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 2; j++) {
-					hash = hash_djb2_one_float(_data._transform2d->columns[i][j], hash);
-				}
-			}
-
-			return hash;
+			return hash_murmur3_32(reinterpret_cast<const Transform2D *>(_data._transform2d), sizeof(Transform2D));
 		} break;
 		case VECTOR3: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->x);
-			hash = hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->y, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->z, hash);
+			return hash_murmur3_32(reinterpret_cast<const Vector3 *>(_data._mem), sizeof(Vector3));
 		} break;
 		case VECTOR3I: {
-			uint32_t hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->x);
-			hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->y, hash);
-			return hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->z, hash);
+			return hash_murmur3_32(reinterpret_cast<const Vector3i *>(_data._mem), sizeof(Vector3i));
 		} break;
 		case PLANE: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.x);
-			hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.y, hash);
-			hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.z, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->d, hash);
-
+			return hash_murmur3_32(reinterpret_cast<const Plane *>(_data._mem), sizeof(Plane));
 		} break;
 		case AABB: {
-			uint32_t hash = 5831;
-			for (int i = 0; i < 3; i++) {
-				hash = hash_djb2_one_float(_data._aabb->position[i], hash);
-				hash = hash_djb2_one_float(_data._aabb->size[i], hash);
-			}
-
-			return hash;
-
+			return hash_murmur3_32(_data._aabb, sizeof(AABB));
 		} break;
 		case QUATERNION: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Quaternion *>(_data._mem)->x);
-			hash = hash_djb2_one_float(reinterpret_cast<const Quaternion *>(_data._mem)->y, hash);
-			hash = hash_djb2_one_float(reinterpret_cast<const Quaternion *>(_data._mem)->z, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Quaternion *>(_data._mem)->w, hash);
-
+			return hash_murmur3_32(reinterpret_cast<const Quaternion *>(_data._mem), sizeof(Quaternion));
 		} break;
 		case BASIS: {
-			uint32_t hash = 5831;
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._basis->rows[i][j], hash);
-				}
-			}
-
-			return hash;
-
+			return hash_murmur3_32(_data._basis, sizeof(Basis));
 		} break;
 		case TRANSFORM3D: {
-			uint32_t hash = 5831;
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._transform3d->basis.rows[i][j], hash);
-				}
-				hash = hash_djb2_one_float(_data._transform3d->origin[i], hash);
-			}
-
-			return hash;
-
+			return hash_murmur3_32(_data._transform3d, sizeof(Transform3D));
 		} break;
-
 		// misc types
 		case COLOR: {
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->r);
-			hash = hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->g, hash);
-			hash = hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->b, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->a, hash);
-
+			return hash_murmur3_32(reinterpret_cast<const Color *>(_data._mem), sizeof(Color));
 		} break;
 		case RID: {
-			return hash_djb2_one_64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
+			return hash_one_uint64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_djb2_one_64(make_uint64_t(_get_obj().obj));
+			return hash_one_uint64(make_uint64_t(_get_obj().obj));
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();
@@ -2918,7 +2862,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			int len = arr.size();
 			if (likely(len)) {
 				const uint8_t *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len);
+				return hash_murmur3_32((uint8_t *)&r[0], len);
 			} else {
 				return hash_djb2_one_64(0);
 			}
@@ -2929,7 +2873,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			int len = arr.size();
 			if (likely(len)) {
 				const int32_t *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int32_t));
+				return hash_murmur3_32((uint8_t *)&r[0], len * sizeof(int32_t));
 			} else {
 				return hash_djb2_one_64(0);
 			}
@@ -2940,7 +2884,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			int len = arr.size();
 			if (likely(len)) {
 				const int64_t *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int64_t));
+				return hash_murmur3_32((uint8_t *)&r[0], len * sizeof(int64_t));
 			} else {
 				return hash_djb2_one_64(0);
 			}
@@ -2952,7 +2896,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			if (likely(len)) {
 				const float *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(float));
+				return hash_murmur3_32((uint8_t *)&r[0], len * sizeof(float));
 			} else {
 				return hash_djb2_one_float(0.0);
 			}
@@ -2964,7 +2908,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			if (likely(len)) {
 				const double *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(double));
+				return hash_murmur3_32((uint8_t *)&r[0], len * sizeof(double));
 			} else {
 				return hash_djb2_one_float(0.0);
 			}

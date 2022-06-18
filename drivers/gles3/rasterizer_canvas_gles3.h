@@ -238,6 +238,8 @@ public:
 		GLuint vertex_array;
 		GLuint index_buffer;
 		int count;
+		bool color_disabled = false;
+		Color color;
 	};
 
 	struct {
